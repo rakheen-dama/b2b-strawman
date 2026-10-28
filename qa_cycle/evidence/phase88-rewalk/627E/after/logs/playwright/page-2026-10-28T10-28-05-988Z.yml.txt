@@ -1,0 +1,68 @@
+- generic [active] [ref=f8e1]:
+  - link "Skip to content" [ref=f8e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f8e3]:
+    - complementary [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - img "Mathebula & Partners logo" [ref=f8e6]
+        - generic [ref=f8e7]: Kazi
+      - generic [ref=f8e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=f8e12]:
+        - text: Search...
+        - generic [ref=f8e16]: ⌘K
+      - navigation "Main navigation" [ref=f8e17]:
+        - generic [ref=f8e18]:
+          - button "Today" [expanded] [ref=f8e19]
+          - generic [ref=f8e23]:
+            - link "Home" [ref=f8e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+            - link "My work" [ref=f8e28] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+            - link "Diary" [ref=f8e32] [cursor=pointer]:
+              - /url: /org/mathebula-partners/diary
+        - generic [ref=f8e36]:
+          - button "Matters" [expanded] [ref=f8e37]
+          - generic [ref=f8e41]:
+            - link "Matters" [ref=f8e42] [cursor=pointer]:
+              - /url: /org/mathebula-partners/matters
+            - link "New matter" [ref=f8e47] [cursor=pointer]:
+              - /url: /org/mathebula-partners/matters/new
+            - link "Conflict check" [ref=f8e49] [cursor=pointer]:
+              - /url: /org/mathebula-partners/conflict-check
+            - link "Adverse parties" [ref=f8e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/legal/adverse-parties
+            - link "AI reviews" [ref=f8e60] [cursor=pointer]:
+              - /url: /org/mathebula-partners/ai/reviews
+        - generic [ref=f8e65]:
+          - button "Clients" [expanded] [ref=f8e66]
+          - generic [ref=f8e70]:
+            - link "Clients" [ref=f8e71] [cursor=pointer]:
+              - /url: /org/mathebula-partners/clients
+            - link "FICA & compliance" [ref=f8e76] [cursor=pointer]:
+              - /url: /org/mathebula-partners/compliance
+            - link "Data requests" [ref=f8e80] [cursor=pointer]:
+              - /url: /org/mathebula-partners/compliance/requests
+        - button "Fees" [ref=f8e86]
+        - button "Trust" [ref=f8e92]
+        - button "Firm" [ref=f8e98]
+      - link "Notifications" [ref=f8e104] [cursor=pointer]:
+        - /url: /org/mathebula-partners/notifications
+      - generic [ref=f8e109]:
+        - generic [ref=f8e110]: TM
+        - generic [ref=f8e111]:
+          - paragraph [ref=f8e112]: Thandi Mathebula
+          - paragraph [ref=f8e113]: thandi@mathebula-test.local
+    - generic [ref=f8e114]:
+      - banner [ref=f8e115]:
+        - navigation "Breadcrumb" [ref=f8e116]:
+          - link "Mathebula & Partners" [ref=f8e117] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - link "Reports" [ref=f8e121] [cursor=pointer]:
+            - /url: /org/mathebula-partners/reports
+          - generic [ref=f8e122]: Profitability
+        - generic [ref=f8e126]:
+          - button "User menu" [ref=f8e128]: "?"
+          - button "Notifications" [ref=f8e130]
+      - main [ref=f8e132]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f8e173] [cursor=pointer]

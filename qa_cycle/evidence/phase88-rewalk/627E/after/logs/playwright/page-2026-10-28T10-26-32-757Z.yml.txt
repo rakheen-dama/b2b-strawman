@@ -1,0 +1,172 @@
+- generic [active] [ref=f5e1]:
+  - link "Skip to content" [ref=f5e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f5e3]:
+    - complementary [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - img "Mathebula & Partners logo" [ref=f5e6]
+        - generic [ref=f5e7]: Kazi
+      - generic [ref=f5e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=f5e12]:
+        - text: Search...
+        - generic [ref=f5e16]: ⌘K
+      - navigation "Main navigation" [ref=f5e17]:
+        - generic [ref=f5e18]:
+          - button "Today" [expanded] [ref=f5e19]
+          - generic [ref=f5e23]:
+            - link "Home" [ref=f5e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+            - link "My work" [ref=f5e28] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+            - link "Diary" [ref=f5e32] [cursor=pointer]:
+              - /url: /org/mathebula-partners/diary
+        - generic [ref=f5e36]:
+          - button "Matters" [expanded] [ref=f5e37]
+          - generic [ref=f5e41]:
+            - link "Matters" [ref=f5e42] [cursor=pointer]:
+              - /url: /org/mathebula-partners/matters
+            - link "New matter" [ref=f5e47] [cursor=pointer]:
+              - /url: /org/mathebula-partners/matters/new
+            - link "Conflict check" [ref=f5e49] [cursor=pointer]:
+              - /url: /org/mathebula-partners/conflict-check
+            - link "Adverse parties" [ref=f5e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/legal/adverse-parties
+            - link "AI reviews" [ref=f5e60] [cursor=pointer]:
+              - /url: /org/mathebula-partners/ai/reviews
+        - generic [ref=f5e65]:
+          - button "Clients" [expanded] [ref=f5e66]
+          - generic [ref=f5e70]:
+            - link "Clients" [ref=f5e71] [cursor=pointer]:
+              - /url: /org/mathebula-partners/clients
+            - link "FICA & compliance" [ref=f5e76] [cursor=pointer]:
+              - /url: /org/mathebula-partners/compliance
+            - link "Data requests" [ref=f5e80] [cursor=pointer]:
+              - /url: /org/mathebula-partners/compliance/requests
+        - button "Fees" [ref=f5e86]
+        - button "Trust" [ref=f5e92]
+        - button "Firm" [ref=f5e98]
+      - link "Notifications" [ref=f5e104] [cursor=pointer]:
+        - /url: /org/mathebula-partners/notifications
+      - generic [ref=f5e109]:
+        - generic [ref=f5e110]: TM
+        - generic [ref=f5e111]:
+          - paragraph [ref=f5e112]: Thandi Mathebula
+          - paragraph [ref=f5e113]: thandi@mathebula-test.local
+    - generic [ref=f5e114]:
+      - banner [ref=f5e115]:
+        - navigation "Breadcrumb" [ref=f5e116]:
+          - link "Mathebula & Partners" [ref=f5e117] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - link "Trust Accounting" [ref=f5e121] [cursor=pointer]:
+            - /url: /org/mathebula-partners/trust-accounting
+          - link "Client Ledgers" [ref=f5e125] [cursor=pointer]:
+            - /url: /org/mathebula-partners/trust-accounting/client-ledgers
+          - generic [ref=f5e126]: Client Ledger
+        - generic [ref=f5e130]:
+          - button "User menu" [ref=f5e132]: "?"
+          - button "Notifications" [ref=f5e134]
+      - main [ref=f5e136]:
+        - generic [ref=f5e139]:
+          - generic [ref=f5e140]:
+            - link "Back to Client Ledgers" [ref=f5e141] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers
+            - heading "Moroka Family Trust" [level=1] [ref=f5e144]
+            - paragraph [ref=f5e145]: Client ledger detail and transaction history
+          - generic [ref=f5e146]:
+            - generic [ref=f5e148]:
+              - paragraph [ref=f5e149]: Trust Balance
+              - paragraph [ref=f5e150]: R 38 000,00
+            - generic [ref=f5e152]:
+              - paragraph [ref=f5e153]: Total Deposits
+              - paragraph [ref=f5e154]: R 50 000,00
+            - generic [ref=f5e156]:
+              - paragraph [ref=f5e157]: Total Payments
+              - paragraph [ref=f5e158]: R 12 000,00
+            - generic [ref=f5e160]:
+              - paragraph [ref=f5e161]: Total Fee Transfers
+              - paragraph [ref=f5e162]: R 0,00
+          - generic [ref=f5e163]:
+            - generic [ref=f5e164]:
+              - generic [ref=f5e165]: Generate Statement
+              - generic [ref=f5e166]: Select a date range and generate a PDF statement for this client
+            - generic [ref=f5e168]:
+              - generic [ref=f5e169]:
+                - generic [ref=f5e170]: From
+                - textbox "From" [ref=f5e171]
+              - generic [ref=f5e172]:
+                - generic [ref=f5e173]: To
+                - textbox "To" [ref=f5e174]
+              - button "Print Statement" [ref=f5e175]
+          - generic [ref=f5e176]:
+            - generic [ref=f5e177]: "Status:"
+            - link "All" [ref=f5e178] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279
+            - link "Recorded" [ref=f5e179] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?status=RECORDED
+            - link "Awaiting Approval" [ref=f5e180] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?status=AWAITING_APPROVAL
+            - link "Approved" [ref=f5e181] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?status=APPROVED
+            - link "Rejected" [ref=f5e182] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?status=REJECTED
+            - link "Reversed" [ref=f5e183] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?status=REVERSED
+          - generic [ref=f5e184]:
+            - generic [ref=f5e185]: "Type:"
+            - link "All" [ref=f5e186] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279
+            - link "Deposit" [ref=f5e187] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=DEPOSIT
+            - link "Payment" [ref=f5e188] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=PAYMENT
+            - link "Transfer In" [ref=f5e189] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=TRANSFER_IN
+            - link "Transfer Out" [ref=f5e190] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=TRANSFER_OUT
+            - link "Fee Transfer" [ref=f5e191] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=FEE_TRANSFER
+            - link "Refund" [ref=f5e192] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=REFUND
+            - link "Interest Credit" [ref=f5e193] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=INTEREST_CREDIT
+            - link "Interest LPFF" [ref=f5e194] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=INTEREST_LPFF
+            - link "Reversal" [ref=f5e195] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279?type=REVERSAL
+          - generic [ref=f5e196]:
+            - generic [ref=f5e197]:
+              - generic [ref=f5e198]: From
+              - textbox "From" [ref=f5e199]
+            - generic [ref=f5e200]:
+              - generic [ref=f5e201]: To
+              - textbox "To" [ref=f5e202]
+          - generic [ref=f5e203]:
+            - generic [ref=f5e204]:
+              - generic [ref=f5e205]: Transaction History
+              - generic [ref=f5e206]: 2 transactions found
+            - table [ref=f5e209]:
+              - rowgroup [ref=f5e210]:
+                - row [ref=f5e211]:
+                  - columnheader "Date" [ref=f5e212]
+                  - columnheader "Reference" [ref=f5e213]
+                  - columnheader "Type" [ref=f5e214]
+                  - columnheader "Amount" [ref=f5e215]
+                  - columnheader "Status" [ref=f5e216]
+                  - columnheader "Running Balance" [ref=f5e217]
+              - rowgroup [ref=f5e218]:
+                - row [ref=f5e219]:
+                  - cell "24 Oct 2026" [ref=f5e220]
+                  - cell "Initial fund for estate admin" [ref=f5e221]
+                  - cell "Deposit" [ref=f5e222]
+                  - cell "R 50 000,00" [ref=f5e224]
+                  - cell "RECORDED" [ref=f5e229]
+                  - cell "R 38 000,00" [ref=f5e231]
+                - row [ref=f5e232]:
+                  - cell "24 Oct 2026" [ref=f5e233]
+                  - cell "PAY/2026/001" [ref=f5e234]
+                  - cell "Payment" [ref=f5e235]
+                  - cell "R 12 000,00" [ref=f5e237]
+                  - cell "APPROVED" [ref=f5e242]
+                  - cell "-R 12 000,00" [ref=f5e244]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f5e250] [cursor=pointer]

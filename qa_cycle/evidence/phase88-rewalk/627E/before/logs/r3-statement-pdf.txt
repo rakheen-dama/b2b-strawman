@@ -1,0 +1,13 @@
+# frontend.log lines 2465-2468 (added by Print Statement click; note: Next dev log prints the GET of the redirect target before the POST summary line)
+ GET /sign-in?reason=expired&returnTo=%2Forg%2Fmathebula-partners%2Ftrust-accounting%2Fclient-ledgers%2Fdf7536c3-aa8d-4a49-b094-3db2bbbd2279 200 in 468ms (next.js: 420ms, proxy.ts: 4ms, application-code: 43ms)
+ POST /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279 200 in 518ms (next.js: 14ms, proxy.ts: 7ms, application-code: 497ms)
+  └─ ƒ generateStatementPdf("1a2cfeee-0562-47e6-88d3-8a79dd7ba746", "df7536c3-aa8d-4a49-b094-3db2bbbd2279", "2026-10-01", "2026-10-31") in 3ms app/(app)/org/[slug]/trust-accounting/client-ledgers/actions.ts
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+
+# backend.log lines 8760-8761 (added during click window)
+{"@timestamp":"2026-10-28T09:55:52.247725Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer"},"process":{"pid":39387,"thread":{"name":"scheduling-2"}},"service":{"name":"backend","node":{}},"message":"fanOutToAllTenants: type=automation_poll_triggers, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-10-28T09:55:58.006567Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer"},"process":{"pid":39387,"thread":{"name":"scheduling-2"}},"service":{"name":"backend","node":{}},"message":"fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0","ecs":{"version":"8.11"}}
+
+# grep -c 'export/pdf' backend.log => 0
+# REPORT_EXPORTED audit events in tenant_5039f2d497cf => 0
+# Follow-up: direct navigation back to the ledger URL loaded normally (h1 'Moroka Family Trust'), no login prompt => session was NOT expired

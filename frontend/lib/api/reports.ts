@@ -1,8 +1,8 @@
 import "server-only";
 
-import { getAuthToken } from "@/lib/auth";
-import { api, ApiError, resolveServerReturnTo } from "./client";
+import { api, ApiError, API_BASE, getAuthFetchOptions, resolveServerReturnTo } from "./client";
 import { redirectToReLogin } from "@/lib/auth/expiry";
+import type { ProblemDetail } from "@/lib/types";
 
 // ---- Response Interfaces ----
 
@@ -98,8 +98,6 @@ export async function executeReport(
   );
 }
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
-
 function buildExportQueryParams(parameters: Record<string, unknown>): string {
   const queryParams = new URLSearchParams();
   for (const [key, value] of Object.entries(parameters)) {
@@ -110,59 +108,86 @@ function buildExportQueryParams(parameters: Record<string, unknown>): string {
   return queryParams.toString();
 }
 
+function withQuery(path: string, qs: string): string {
+  return qs ? `${path}?${qs}` : path;
+}
+
+/**
+ * GET an export endpoint through the auth-mode-aware API base: the gateway with the forwarded
+ * SESSION cookie in Keycloak BFF mode, the backend with the mock token in mock mode (the same
+ * contract as the audit-log exports). Only the auth headers are sent, so a denied caller gets the
+ * backend's 403 problem+json and its detail becomes the ApiError message.
+ */
+async function fetchExport(path: string): Promise<Response> {
+  let auth: { headers: Record<string, string>; credentials?: RequestCredentials };
+  try {
+    auth = await getAuthFetchOptions("GET");
+  } catch {
+    // No usable session — funnel to the branded re-login route.
+    redirectToReLogin(await resolveServerReturnTo(), "expired");
+  }
+
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: "GET",
+    headers: auth.headers,
+    credentials: auth.credentials,
+    // A redirect here means the session is gone (a login page); surface it as 401 rather than
+    // following it and handing the login HTML back as the export.
+    redirect: "manual",
+  });
+
+  if (response.status >= 300 && response.status < 400) {
+    throw new ApiError(401, "Authentication session expired");
+  }
+  if (!response.ok) {
+    let detail: ProblemDetail | undefined;
+    try {
+      const parsed = (await response.json()) as unknown;
+      // RFC 9457 ProblemDetail body — guard the shape before forwarding.
+      if (parsed && typeof parsed === "object") {
+        detail = parsed as ProblemDetail;
+      }
+    } catch {
+      // Body wasn't JSON — fall through with the status text only.
+    }
+    const message =
+      (typeof detail?.detail === "string" && detail.detail) ||
+      `Export failed: ${response.statusText}`;
+    throw new ApiError(response.status, message, detail);
+  }
+  return response;
+}
+
 export async function exportReportCsv(
   slug: string,
   parameters: Record<string, unknown>
 ): Promise<string> {
-  let token: string;
-  try {
-    token = await getAuthToken();
-  } catch {
-    redirectToReLogin(await resolveServerReturnTo(), "expired");
-  }
   const qs = buildExportQueryParams(parameters);
-
-  const response = await fetch(
-    `${BACKEND_URL}/api/report-definitions/${encodeURIComponent(slug)}/export/csv?${qs}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  const response = await fetchExport(
+    withQuery(`/api/report-definitions/${encodeURIComponent(slug)}/export/csv`, qs)
   );
-
-  if (!response.ok) {
-    throw new ApiError(response.status, `Export failed: ${response.statusText}`);
-  }
-
   return response.text();
 }
 
+/** Returns the PDF bytes base64-encoded (server actions can only return serializable values). */
 export async function exportReportPdf(
   slug: string,
   parameters: Record<string, unknown>
 ): Promise<string> {
-  let token: string;
-  try {
-    token = await getAuthToken();
-  } catch {
-    redirectToReLogin(await resolveServerReturnTo(), "expired");
-  }
   const qs = buildExportQueryParams(parameters);
-
-  const response = await fetch(
-    `${BACKEND_URL}/api/report-definitions/${encodeURIComponent(slug)}/export/pdf?${qs}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  const response = await fetchExport(
+    withQuery(`/api/report-definitions/${encodeURIComponent(slug)}/export/pdf`, qs)
   );
-
-  if (!response.ok) {
-    throw new ApiError(response.status, `Export failed: ${response.statusText}`);
-  }
-
   const buffer = await response.arrayBuffer();
   return Buffer.from(buffer).toString("base64");
+}
+
+/**
+ * GET /api/reports/profitability/export/csv — the Profitability page's Matter rows as CSV for the
+ * given range; empty dates are omitted from the query.
+ */
+export async function exportProfitabilityCsv(from?: string, to?: string): Promise<string> {
+  const qs = buildExportQueryParams({ from, to });
+  const response = await fetchExport(withQuery("/api/reports/profitability/export/csv", qs));
+  return response.text();
 }

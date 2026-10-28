@@ -1,0 +1,16 @@
+# O2 Timesheet Export PDF
+## frontend
+ POST /org/mathebula-partners/reports/timesheet 200 in 3.4s (next.js: 46ms, proxy.ts: 87ms, application-code: 3.3s)
+  └─ ƒ exportReportPdfAction("timesheet", {"dateFrom":"2026-10-01","dateTo":"2026-10-31","groupBy":"member","...":"2 items not stringified"}) in 3298ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+## backend (request, openhtmltopdf render, completion)
+2026-10-28T10:25:48.589637Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/report-definitions/timesheet/export/pdf?groupBy=member&dateTo=2026-10-31&dateFrom=2026-10-01", parameters={masked}
+[non-json] com.openhtmltopdf.load INFO:: TIME: parse stylesheets 27ms
+[non-json] com.openhtmltopdf.match INFO:: Matcher created with 182 selectors
+[non-json] com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+[non-json] com.openhtmltopdf.load WARNING:: Couldn't resolve relative URI(org/tenant_5039f2d497cf/branding/logo.png) because no base URI was provided.
+[non-json] com.openhtmltopdf.load INFO:: URI resolver rejected loading image at (org/tenant_5039f2d497cf/branding/logo.png)
+[non-json] com.openhtmltopdf.load WARNING:: Couldn't resolve relative URI(org/tenant_5039f2d497cf/branding/logo.png) because no base URI was provided.
+[non-json] com.openhtmltopdf.load INFO:: URI resolver rejected loading image at (org/tenant_5039f2d497cf/branding/logo.png)
+[non-json] com.openhtmltopdf.load WARNING:: Couldn't resolve relative URI(org/tenant_5039f2d497cf/branding/logo.png) because no base URI was provided.
+[non-json] com.openhtmltopdf.load INFO:: URI resolver rejected loading image at (org/tenant_5039f2d497cf/branding/logo.png)
+2026-10-28T10:25:51.859088Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK

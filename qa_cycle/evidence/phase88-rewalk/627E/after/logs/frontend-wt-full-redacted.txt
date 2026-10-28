@@ -1,0 +1,183 @@
+
+> frontend@0.1.0 dev $WT/frontend
+> next dev
+
+▲ Next.js 16.3.8 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.112:3000
+✓ Ready in 422ms
+✓ Running next.config.ts took 82ms
+- Experiments (use with caution):
+  ⨯ useTypeScriptCli
+
+ GET / 200 in 2.4s (next.js: 2.1s, proxy.ts: 105ms, application-code: 209ms)
+ GET / 200 in 60ms (next.js: 1.9ms, proxy.ts: 2ms, application-code: 56ms)
+ GET /dashboard 200 in 550ms (next.js: 444ms, proxy.ts: 28ms, application-code: 79ms)
+ GET /org/mathebula-partners/dashboard 200 in 3.9s (next.js: 3.0s, proxy.ts: 4ms, application-code: 944ms)
+ POST /org/mathebula-partners/dashboard 200 in 71ms (next.js: 15ms, proxy.ts: 4ms, application-code: 51ms)
+  └─ ƒ fetchUnreadCount() in 39ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/dashboard 200 in 64ms (next.js: 3ms, proxy.ts: 5ms, application-code: 56ms)
+  └─ ƒ fetchOnboardingProgress() in 51ms lib/actions/onboarding.ts
+⨯ Error [ApiError]: 
+    at apiRequest (lib/api/client.ts:155:11)
+  153 |     }
+  154 |
+> 155 |     throw new ApiError(response.status, message, detail);
+      |           ^
+  156 |   }
+  157 |
+  158 |   const contentLength = response.headers.get("content-length"); {
+  status: 500,
+  detail: {
+    timestamp: '2026-10-28T10:24:49.814Z',
+    status: 500,
+    error: 'Internal Server Error',
+    path: '/api/notifications/unread-count'
+  },
+  digest: '3382061659'
+}
+ POST /org/mathebula-partners/dashboard 500 in 499ms (next.js: 77ms, proxy.ts: 10ms, application-code: 412ms)
+  └─ ƒ fetchUnreadCount() in 73ms lib/actions/notifications.ts
+⨯ Error [ApiError]: 
+    at apiRequest (lib/api/client.ts:155:11)
+  153 |     }
+  154 |
+> 155 |     throw new ApiError(response.status, message, detail);
+      |           ^
+  156 |   }
+  157 |
+  158 |   const contentLength = response.headers.get("content-length"); {
+  status: 500,
+  detail: {
+    timestamp: '2026-10-28T10:24:55.193Z',
+    status: 500,
+    error: 'Internal Server Error',
+    path: '/api/notifications/unread-count'
+  },
+  digest: '3382061659'
+}
+ POST /org/mathebula-partners/dashboard 500 in 33ms (next.js: 7ms, proxy.ts: 3ms, application-code: 23ms)
+  └─ ƒ fetchUnreadCount() in 14ms lib/actions/notifications.ts
+⨯ Error [ApiError]: 
+    at apiRequest (lib/api/client.ts:155:11)
+  153 |     }
+  154 |
+> 155 |     throw new ApiError(response.status, message, detail);
+      |           ^
+  156 |   }
+  157 |
+  158 |   const contentLength = response.headers.get("content-length"); {
+  status: 500,
+  detail: {
+    timestamp: '2026-10-28T10:25:05.245Z',
+    status: 500,
+    error: 'Internal Server Error',
+    path: '/api/notifications/unread-count'
+  },
+  digest: '3382061659'
+}
+ POST /org/mathebula-partners/dashboard 500 in 39ms (next.js: 8ms, proxy.ts: 4ms, application-code: 27ms)
+  └─ ƒ fetchUnreadCount() in 17ms lib/actions/notifications.ts
+ GET / 200 in 115ms (next.js: 37ms, proxy.ts: 2ms, application-code: 76ms)
+ GET /org/mathebula-partners/reports/timesheet 200 in 1428ms (next.js: 1151ms, proxy.ts: 2ms, application-code: 275ms)
+ POST /org/mathebula-partners/reports/timesheet 200 in 59ms (next.js: 6ms, proxy.ts: 8ms, application-code: 44ms)
+  └─ ƒ fetchUnreadCount() in 36ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/reports/timesheet 200 in 98ms (next.js: 7ms, proxy.ts: 3ms, application-code: 88ms)
+  └─ ƒ executeReportAction("timesheet", {"dateFrom":"2026-10-01","dateTo":"2026-10-31","groupBy":"member","...":"2 items not stringified"}, 0, 25) in 80ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+ POST /org/mathebula-partners/reports/timesheet 200 in 59ms (next.js: 6ms, proxy.ts: 2ms, application-code: 51ms)
+  └─ ƒ exportReportCsvAction("timesheet", {"dateFrom":"2026-10-01","dateTo":"2026-10-31","groupBy":"member","...":"2 items not stringified"}) in 47ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+ POST /org/mathebula-partners/reports/timesheet 200 in 143ms (next.js: 22ms, proxy.ts: 9ms, application-code: 112ms)
+  └─ ƒ fetchUnreadCount() in 86ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/reports/timesheet 200 in 3.4s (next.js: 46ms, proxy.ts: 87ms, application-code: 3.3s)
+  └─ ƒ exportReportPdfAction("timesheet", {"dateFrom":"2026-10-01","dateTo":"2026-10-31","groupBy":"member","...":"2 items not stringified"}) in 3298ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+ POST /org/mathebula-partners/reports/timesheet 200 in 91ms (next.js: 18ms, proxy.ts: 7ms, application-code: 66ms)
+  └─ ƒ fetchUnreadCount() in 52ms lib/actions/notifications.ts
+ GET / 200 in 85ms (next.js: 4ms, proxy.ts: 3ms, application-code: 79ms)
+ GET /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279 200 in 1254ms (next.js: 954ms, proxy.ts: 2ms, application-code: 298ms)
+ POST /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279 200 in 90ms (next.js: 11ms, proxy.ts: 11ms, application-code: 68ms)
+  └─ ƒ fetchUnreadCount() in 55ms lib/actions/notifications.ts
+⨯ Error [ApiError]: No reportdefinition found with id client-ledger-statement
+    at fetchExport (lib/api/reports.ts:152:11)
+    at async exportReportPdf (lib/api/reports.ts:174:20)
+  150 |       (typeof detail?.detail === "string" && detail.detail) ||
+  151 |       `Export failed: ${response.statusText}`;
+> 152 |     throw new ApiError(response.status, message, detail);
+      |           ^
+  153 |   }
+  154 |   return response;
+  155 | } {
+  status: 404,
+  detail: {
+    detail: 'No reportdefinition found with id client-ledger-statement',
+    instance: '/api/report-definitions/client-ledger-statement/export/pdf',
+    status: 404,
+    title: 'ReportDefinition not found'
+  },
+  digest: '3664599228'
+}
+ POST /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279 500 in 123ms (next.js: 64ms, proxy.ts: 10ms, application-code: 50ms)
+  └─ ƒ generateStatementPdf("1a2cfeee-0562-47e6-88d3-8a79dd7ba746", "df7536c3-aa8d-4a49-b094-3db2bbbd2279", "2026-10-01", "2026-10-31") in 41ms app/(app)/org/[slug]/trust-accounting/client-ledgers/actions.ts
+ POST /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279 200 in 66ms (next.js: 12ms, proxy.ts: 6ms, application-code: 48ms)
+  └─ ƒ fetchUnreadCount() in 35ms lib/actions/notifications.ts
+ GET / 200 in 110ms (next.js: 29ms, proxy.ts: 4ms, application-code: 77ms)
+ GET /org/mathebula-partners/reports/profitability 200 in 1455ms (next.js: 1048ms, proxy.ts: 4ms, application-code: 403ms)
+ POST /org/mathebula-partners/reports/profitability 200 in 104ms (next.js: 25ms, proxy.ts: 10ms, application-code: 69ms)
+  └─ ƒ fetchUnreadCount() in 49ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 68ms (next.js: 13ms, proxy.ts: 4ms, application-code: 51ms)
+  └─ ƒ exportProfitabilityCsvAction("2026-10-01", "2026-10-28") in 45ms app/(app)/org/[slug]/profitability/actions.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 81ms (next.js: 6ms, proxy.ts: 3ms, application-code: 72ms)
+  └─ ƒ getOrgProfitability("2026-10-24", "2026-10-28") in 62ms app/(app)/org/[slug]/profitability/actions.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 177ms (next.js: 15ms, proxy.ts: 6ms, application-code: 156ms)
+  └─ ƒ exportProfitabilityCsvAction("2026-10-24", "2026-10-28") in 149ms app/(app)/org/[slug]/profitability/actions.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 44ms (next.js: 12ms, proxy.ts: 4ms, application-code: 28ms)
+  └─ ƒ fetchUnreadCount() in 23ms lib/actions/notifications.ts
+ GET / 200 in 123ms (next.js: 29ms, proxy.ts: 2ms, application-code: 92ms)
+ GET /org/mathebula-partners/settings/firm?tab=audit-trail 200 in 2.8s (next.js: 2.2s, proxy.ts: 5ms, application-code: 550ms)
+ POST /org/mathebula-partners/settings/firm?tab=audit-trail 200 in 33ms (next.js: 5ms, proxy.ts: 4ms, application-code: 24ms)
+  └─ ƒ fetchUnreadCount() in 19ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/settings/firm?tab=audit-trail 200 in 45ms (next.js: 3ms, proxy.ts: 2ms, application-code: 40ms)
+  └─ ƒ countAuditEventsAction({"page":0,"size":50}) in 32ms app/(app)/org/[slug]/settings/firm/_tabs/audit-trail-actions.ts
+ POST /org/mathebula-partners/settings/firm?tab=audit-trail 200 in 1142ms (next.js: 12ms, proxy.ts: 5ms, application-code: 1125ms)
+  └─ ƒ exportAuditPdfAction({"page":0,"size":50}) in 1106ms app/(app)/org/[slug]/settings/firm/_tabs/audit-trail-actions.ts
+ GET / 200 in 115ms (next.js: 33ms, proxy.ts: 4ms, application-code: 79ms)
+ GET /org/mathebula-partners/reports/profitability 200 in 237ms (next.js: 53ms, proxy.ts: 2ms, application-code: 181ms)
+ POST /org/mathebula-partners/reports/profitability 200 in 48ms (next.js: 5ms, proxy.ts: 7ms, application-code: 37ms)
+  └─ ƒ fetchUnreadCount() in 32ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 138ms (next.js: 15ms, proxy.ts: 10ms, application-code: 112ms)
+  └─ ƒ fetchUnreadCount() in 105ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 56ms (next.js: 10ms, proxy.ts: 4ms, application-code: 42ms)
+  └─ ƒ fetchUnreadCount() in 31ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 100ms (next.js: 21ms, proxy.ts: 9ms, application-code: 70ms)
+  └─ ƒ fetchUnreadCount() in 48ms lib/actions/notifications.ts
+ GET /dashboard 200 in 73ms (next.js: 17ms, proxy.ts: 7ms, application-code: 49ms)
+ POST /org/mathebula-partners/dashboard 200 in 79ms (next.js: 4ms, proxy.ts: 4ms, application-code: 71ms)
+  └─ ƒ fetchUnreadCount() in 52ms lib/actions/notifications.ts
+ GET /org/mathebula-partners/dashboard 200 in 531ms (next.js: 26ms, proxy.ts: 3ms, application-code: 501ms)
+ GET /org/mathebula-partners/reports/profitability 200 in 112ms (next.js: 5ms, proxy.ts: 2ms, application-code: 104ms)
+ POST /org/mathebula-partners/dashboard 200 in 11ms (next.js: 5ms, proxy.ts: 3ms, application-code: 3ms)
+ POST /org/mathebula-partners/reports/profitability 200 in 45ms (next.js: 10ms, proxy.ts: 4ms, application-code: 31ms)
+  └─ ƒ fetchUnreadCount() in 25ms lib/actions/notifications.ts
+ GET /dashboard 200 in 45ms (next.js: 3ms, proxy.ts: 5ms, application-code: 37ms)
+ GET /org/mathebula-partners/dashboard 200 in 327ms (next.js: 8ms, proxy.ts: 2ms, application-code: 317ms)
+ POST /org/mathebula-partners/dashboard 200 in 62ms (next.js: 3ms, proxy.ts: 3ms, application-code: 55ms)
+  └─ ƒ fetchUnreadCount() in 37ms lib/actions/notifications.ts
+Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+⨯ uncaughtException: Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+⨯ uncaughtException:  Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+ GET /org/mathebula-partners/reports/profitability 200 in 170ms (next.js: 6ms, proxy.ts: 3ms, application-code: 161ms)
+ POST /org/mathebula-partners/reports/profitability 200 in 32ms (next.js: 6ms, proxy.ts: 4ms, application-code: 21ms)
+  └─ ƒ fetchUnreadCount() in 16ms lib/actions/notifications.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 33ms (next.js: 3ms, proxy.ts: 2ms, application-code: 28ms)
+  └─ ƒ exportProfitabilityCsvAction("2026-10-01", "2026-10-28") in 23ms app/(app)/org/[slug]/profitability/actions.ts
+ POST /org/mathebula-partners/reports/profitability 200 in 80ms (next.js: 20ms, proxy.ts: 6ms, application-code: 55ms)
+  └─ ƒ fetchUnreadCount() in 47ms lib/actions/notifications.ts
+ GET /signed-out 200 in 637ms (next.js: 581ms, proxy.ts: 3ms, application-code: 52ms)

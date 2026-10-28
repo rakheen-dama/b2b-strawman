@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import {
   Table,
@@ -14,9 +15,12 @@ import {
 } from "@/components/ui/table";
 import { HelpTip } from "@/components/help-tip";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
-import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
+import {
+  exportProfitabilityCsvAction,
+  getOrgProfitability,
+} from "@/app/(app)/org/[slug]/profitability/actions";
 import type { OrgProfitabilityResponse, MatterProfitabilitySummary } from "@/lib/types";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Download } from "lucide-react";
 
 interface ProjectProfitabilityTableProps {
   initialData: OrgProfitabilityResponse;
@@ -79,6 +83,7 @@ export function ProjectProfitabilityTable({
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isExporting, setIsExporting] = useState(false);
 
   function toggleSort(field: SortField) {
     if (sortField === field) {
@@ -103,6 +108,28 @@ export function ProjectProfitabilityTable({
     });
   }
 
+  async function handleExportCsv() {
+    setIsExporting(true);
+    setError(null);
+    try {
+      const result = await exportProfitabilityCsvAction(from, to);
+      if (result.data != null) {
+        const blob = new Blob([result.data], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        // Same naming rule as the backend's Content-Disposition filename.
+        a.download = from && to ? `profitability-${from}-to-${to}.csv` : "profitability.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        setError(result.error ?? "Failed to export CSV.");
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   const sorted = sortProjects(data.matters, sortField, sortDir);
 
   return (
@@ -113,7 +140,7 @@ export function ProjectProfitabilityTable({
             Matter Profitability
             <HelpTip code="dashboard.profitability" />
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <label htmlFor="prof-from" className="text-sm text-slate-600 dark:text-slate-400">
               From
             </label>
@@ -134,12 +161,26 @@ export function ProjectProfitabilityTable({
               onChange={(e) => handleDateChange(from, e.target.value)}
               className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCsv}
+              disabled={isExporting}
+              data-testid="profitability-export-csv"
+            >
+              <Download className="mr-1.5 size-4" />
+              {isExporting ? "Exporting…" : "Export CSV"}
+            </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
-        {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
+        {error && (
+          <div role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        )}
         {sorted.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">
             No project profitability data for this period

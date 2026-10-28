@@ -1,0 +1,355 @@
+[non-json] [INFO] Scanning for projects...
+[non-json] [INFO] 
+[non-json] [INFO] -----------------< io.b2mash.b2b:b2b-strawman-backend >-----------------
+[non-json] [INFO] Building backend 0.0.1-SNAPSHOT
+[non-json] [INFO]   from pom.xml
+[non-json] [INFO] --------------------------------[ jar ]---------------------------------
+[non-json] [INFO] 
+[non-json] [INFO] >>> spring-boot:4.0.2:run (default-cli) > test-compile @ b2b-strawman-backend >>>
+[non-json] [INFO] 
+[non-json] [INFO] --- spotless:3.2.1:check (default) @ b2b-strawman-backend ---
+[non-json] [INFO] Spotless.Java is keeping 2181 files clean - 0 needs changes to be clean, 0 were already clean, 2181 were skipped because caching determined they were already clean
+[non-json] [INFO] 
+[non-json] [INFO] --- resources:3.3.1:resources (default-resources) @ b2b-strawman-backend ---
+[non-json] [INFO] Copying 6 resources from src/main/resources to target/classes
+[non-json] [INFO] Copying 100 resources from src/main/resources to target/classes
+[non-json] [INFO] 
+[non-json] [INFO] --- compiler:3.14.1:compile (default-compile) @ b2b-strawman-backend ---
+[non-json] [INFO] Nothing to compile - all classes are up to date.
+[non-json] [INFO] 
+[non-json] [INFO] --- resources:3.3.1:testResources (default-testResources) @ b2b-strawman-backend ---
+[non-json] [INFO] Copying 33 resources from src/test/resources to target/test-classes
+[non-json] [INFO] 
+[non-json] [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ b2b-strawman-backend ---
+[non-json] [INFO] Nothing to compile - all classes are up to date.
+[non-json] [INFO] 
+[non-json] [INFO] <<< spring-boot:4.0.2:run (default-cli) < test-compile @ b2b-strawman-backend <<<
+[non-json] [INFO] 
+[non-json] [INFO] 
+[non-json] [INFO] --- spring-boot:4.0.2:run (default-cli) @ b2b-strawman-backend ---
+[non-json] [INFO] Attaching agents: []
+2026-10-28T10:24:56.842041Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | Starting BackendApplication using Java 25.0.1 with PID 5527 ($MAIN/backend/target/classes started by $USER in $MAIN/backend)
+2026-10-28T10:24:56.845910Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | The following 2 profiles are active: "local", "keycloak"
+2026-10-28T10:24:58.013689Z INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T10:24:58.283432Z INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 263 ms. Found 105 JPA repository interfaces.
+2026-10-28T10:24:58.705094Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManager] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [projectingArgumentResolverBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:24:58.708731Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [projectingArgumentResolverBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:24:58.737192Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:24:58.740082Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration$ServerMcpAnnotatedBeans] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:24:58.751140Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:24:58.938913Z INFO org.springframework.boot.tomcat.TomcatWebServer | Tomcat initialized with port 8080 (http)
+2026-10-28T10:24:58.949121Z INFO org.apache.catalina.core.StandardService | Starting service [Tomcat]
+2026-10-28T10:24:58.949506Z INFO org.apache.catalina.core.StandardEngine | Starting Servlet engine: [Apache Tomcat/11.0.15]
+2026-10-28T10:24:58.996323Z INFO org.springframework.boot.web.context.servlet.WebApplicationContextInitializer | Root WebApplicationContext: initialization completed in 2126 ms
+2026-10-28T10:24:59.324018Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-1 - Starting...
+2026-10-28T10:24:59.419656Z INFO com.zaxxer.hikari.pool.HikariPool | HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@47caa1ff
+2026-10-28T10:24:59.420634Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-1 - Start completed.
+2026-10-28T10:24:59.436745Z INFO org.flywaydb.core.FlywayExecutor | Database: jdbc:postgresql://localhost:5432/docteams (PostgreSQL 16.14)
+2026-10-28T10:24:59.481910Z INFO org.flywaydb.core.internal.command.DbValidate | Successfully validated 2 migrations (execution time 00:00.018s)
+2026-10-28T10:24:59.507726Z INFO org.flywaydb.core.internal.command.DbMigrate | Current version of schema "public": 2
+2026-10-28T10:24:59.509795Z INFO org.flywaydb.core.internal.command.DbMigrate | Schema "public" is up to date. No migration necessary.
+2026-10-28T10:24:59.626498Z INFO org.hibernate.orm.jpa | HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-28T10:24:59.654980Z INFO org.hibernate.orm.core | HHH000001: Hibernate ORM core version 7.2.1.Final
+2026-10-28T10:24:59.950532Z INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo | No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T10:24:59.974297Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-2 - Starting...
+2026-10-28T10:24:59.999018Z INFO com.zaxxer.hikari.pool.HikariPool | HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@18b36b93
+2026-10-28T10:24:59.999296Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-2 - Start completed.
+2026-10-28T10:25:00.015636Z WARN org.hibernate.orm.deprecation | HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-28T10:25:00.029988Z INFO org.hibernate.orm.connections.pooling | HHH10001005: Database info:
+	Database JDBC URL [undefined/unknown]
+	Database driver: undefined/unknown
+	Database dialect: PostgreSQLDialect
+	Database version: 16.14
+	Default catalog/schema: unknown/unknown
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	JDBC fetch size: undefined/unknown
+	Pool: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T10:25:01.341659Z INFO org.hibernate.orm.core | HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T10:25:01.343759Z INFO org.hibernate.orm.jdbc.batch | HHH100501: Automatic JDBC statement batching enabled (maximum batch size 25)
+2026-10-28T10:25:01.348611Z INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean | Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T10:25:01.406557Z INFO org.springframework.data.jpa.repository.query.QueryEnhancerFactories | Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-28T10:25:03.602168Z WARN org.springframework.aop.framework.CglibAopProxy | Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterBean.init(jakarta.servlet.FilterConfig) throws jakarta.servlet.ServletException] because it is marked as final, consider using interface-based JDK proxies instead.
+2026-10-28T10:25:03.757561Z INFO io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry | Loaded vertical profile: legal-za
+2026-10-28T10:25:03.757777Z INFO io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry | Loaded 1 vertical profile(s)
+2026-10-28T10:25:06.233726Z WARN io.b2mash.b2b.b2bstrawman.template.PdfConversionService | LibreOffice not found — PDF conversion will fall back to docx4j
+2026-10-28T10:25:07.235324Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobHandlerRegistry | Registered 18 job handler(s): [time_reminder_check, cash_digest, accounting_sync_drain, field_date_scan, acceptance_expiry, subscription_trial_expiry, subscription_cancellation_end, subscription_grace_expiry, portal_digest, request_reminder_check, automation_poll_triggers, automation_poll_delayed, dormancy_check, magic_link_cleanup, ai_gate_expiry, collections_scan, accounting_payment_poll, court_date_reminder]
+2026-10-28T10:25:08.650465Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Enable tools capabilities, notification: true
+2026-10-28T10:25:08.726798Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Registered tools: 21
+2026-10-28T10:25:08.726981Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Enable resources capabilities, notification: true
+2026-10-28T10:25:08.732868Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Registered resources: 1
+2026-10-28T10:25:08.732993Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Enable resources templates capabilities, notification: true
+2026-10-28T10:25:08.735074Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Registered resource templates: 2
+2026-10-28T10:25:08.987921Z INFO org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver | Exposing 2 endpoints beneath base path '/actuator'
+2026-10-28T10:25:09.074796Z INFO org.springframework.boot.tomcat.TomcatWebServer | Tomcat started on port 8080 (http) with context path '/'
+2026-10-28T10:25:09.077158Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobWorker | JobWorker started — pollInterval=2000ms, batchSize=20, parallelism=2
+2026-10-28T10:25:09.087018Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | Started BackendApplication in 12.566 seconds (process running for 12.798)
+2026-10-28T10:25:09.157941Z INFO io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner | Running tenant migrations for 2 schemas
+2026-10-28T10:25:09.170534Z INFO org.flywaydb.core.FlywayExecutor | Database: jdbc:postgresql://localhost:5432/docteams (PostgreSQL 16.14)
+2026-10-28T10:25:09.179853Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:25:09.182427Z INFO org.flywaydb.core.internal.command.DbValidate | Successfully validated 8 migrations (execution time 00:00.008s)
+2026-10-28T10:25:09.187585Z INFO org.flywaydb.core.internal.command.DbMigrate | Current version of schema "tenant_56399d06a773": 8
+2026-10-28T10:25:09.187965Z INFO org.flywaydb.core.internal.command.DbMigrate | Schema "tenant_56399d06a773" is up to date. No migration necessary.
+2026-10-28T10:25:09.189739Z INFO io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner | Migrated schema tenant_56399d06a773 — 0 migrations applied
+2026-10-28T10:25:09.195131Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:25:09.199304Z INFO org.flywaydb.core.FlywayExecutor | Database: jdbc:postgresql://localhost:5432/docteams (PostgreSQL 16.14)
+2026-10-28T10:25:09.208156Z INFO org.flywaydb.core.internal.command.DbValidate | Successfully validated 8 migrations (execution time 00:00.005s)
+2026-10-28T10:25:09.212878Z INFO org.flywaydb.core.internal.command.DbMigrate | Current version of schema "tenant_5039f2d497cf": 8
+2026-10-28T10:25:09.213305Z INFO org.flywaydb.core.internal.command.DbMigrate | Schema "tenant_5039f2d497cf" is up to date. No migration necessary.
+2026-10-28T10:25:09.214843Z INFO io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner | Migrated schema tenant_5039f2d497cf — 0 migrations applied
+2026-10-28T10:25:09.214952Z INFO io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner | Tenant migration runner completed
+2026-10-28T10:25:09.224280Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-3 - Starting...
+2026-10-28T10:25:09.239055Z INFO com.zaxxer.hikari.pool.HikariPool | HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@587c2c49
+2026-10-28T10:25:09.239481Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-3 - Start completed.
+2026-10-28T10:25:09.242665Z INFO io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryBackfillRunner | Portal contact directory backfill: 0 tenants scanned, 2 skipped (already marked), 0 failed, 0 rows upserted
+2026-10-28T10:25:09.246774Z INFO io.b2mash.b2b.b2bstrawman.provisioning.PackReconciliationRunner | Running pack reconciliation for 2 tenants
+2026-10-28T10:25:09.346413Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack common already installed (internal path), skipping
+2026-10-28T10:25:09.352624Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack compliance-za already installed (internal path), skipping
+2026-10-28T10:25:09.365866Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack legal-za already installed (internal path), skipping
+2026-10-28T10:25:09.398047Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack generic-onboarding already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:25:09.401945Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack legal-za-individual-onboarding already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:25:09.403393Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack legal-za-trust-onboarding already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:25:09.404905Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack sa-fica-company already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:25:09.406454Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack sa-fica-individual already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:25:09.431737Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack automation-common already installed (internal path), skipping
+2026-10-28T10:25:09.441029Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-28T10:25:09.451265Z INFO io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder | Project-template pack legal-za-project-templates already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:25:09.467058Z INFO io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder | Tariff schedule 'LSSA 2024/2025 High Court Party-and-Party' already exists for tenant tenant_56399d06a773, skipping
+2026-10-28T10:25:09.506549Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack common already installed (internal path), skipping
+2026-10-28T10:25:09.511240Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack compliance-za already installed (internal path), skipping
+2026-10-28T10:25:09.520306Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack legal-za already installed (internal path), skipping
+2026-10-28T10:25:09.534370Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack generic-onboarding already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:25:09.536240Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack legal-za-individual-onboarding already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:25:09.537479Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack legal-za-trust-onboarding already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:25:09.538592Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack sa-fica-company already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:25:09.539547Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack sa-fica-individual already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:25:09.559242Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack automation-common already installed (internal path), skipping
+2026-10-28T10:25:09.566741Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-28T10:25:09.570453Z INFO io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder | Project-template pack legal-za-project-templates already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:25:09.575707Z INFO io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder | Tariff schedule 'LSSA 2024/2025 High Court Party-and-Party' already exists for tenant tenant_5039f2d497cf, skipping
+2026-10-28T10:25:09.585775Z INFO io.b2mash.b2b.b2bstrawman.provisioning.PackReconciliationRunner | Pack reconciliation: checked 2 tenants, 2 succeeded, 0 failed
+2026-10-28T10:25:09.637172Z INFO io.b2mash.b2b.b2bstrawman.template.LegacyContentImportRunner | Legacy content import complete: 0 templates, 0 clauses converted across 2 tenants
+2026-10-28T10:25:10.945018Z INFO org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/] | Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-28T10:25:10.945246Z INFO org.springframework.web.servlet.DispatcherServlet | Initializing Servlet 'dispatcherServlet'
+2026-10-28T10:25:10.945388Z DEBUG org.springframework.web.servlet.DispatcherServlet | Detected StandardServletMultipartResolver
+2026-10-28T10:25:10.945464Z DEBUG org.springframework.web.servlet.DispatcherServlet | Detected AcceptHeaderLocaleResolver
+2026-10-28T10:25:10.947624Z DEBUG org.springframework.web.servlet.DispatcherServlet | Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@8c9f07e
+2026-10-28T10:25:10.948129Z DEBUG org.springframework.web.servlet.DispatcherServlet | Detected org.springframework.web.servlet.support.SessionFlashMapManager@54648a05
+2026-10-28T10:25:10.948428Z DEBUG org.springframework.web.servlet.DispatcherServlet | enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2026-10-28T10:25:10.948521Z INFO org.springframework.web.servlet.DispatcherServlet | Completed initialization in 3 ms
+2026-10-28T10:25:10.965136Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/actuator/health", parameters={}
+2026-10-28T10:25:11.154005Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:11.284756Z WARN io.b2mash.b2b.b2bstrawman.audit.AuditAuthenticationEntryPoint | security.auth_failed: path=/api/me, method=GET, reason=Full authentication is required to access this resource, remote_addr=0:0:0:0:0:0:0:1
+2026-10-28T10:25:17.039105Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:25:17.039106Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/report-definitions/timesheet", parameters={}
+2026-10-28T10:25:17.039106Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:25:17.039106Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:25:17.055182Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:17.057721Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:17.058820Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:17.072492Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:17.383295Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:25:17.398518Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:23.418160Z DEBUG org.springframework.web.servlet.DispatcherServlet | POST "/api/report-definitions/timesheet/execute", parameters={}
+2026-10-28T10:25:23.481146Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:27.978171Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/report-definitions/timesheet/export/csv?groupBy=member&dateTo=2026-10-31&dateFrom=2026-10-01", parameters={masked}
+2026-10-28T10:25:28.003637Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:39.228589Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:25:47.472085Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:25:47.491796Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:25:48.589637Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/report-definitions/timesheet/export/pdf?groupBy=member&dateTo=2026-10-31&dateFrom=2026-10-01", parameters={masked}
+[non-json] com.openhtmltopdf.load INFO:: TIME: parse stylesheets 27ms
+[non-json] com.openhtmltopdf.match INFO:: Matcher created with 182 selectors
+[non-json] com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+[non-json] com.openhtmltopdf.load WARNING:: Couldn't resolve relative URI(org/tenant_5039f2d497cf/branding/logo.png) because no base URI was provided.
+[non-json] com.openhtmltopdf.load INFO:: URI resolver rejected loading image at (org/tenant_5039f2d497cf/branding/logo.png)
+[non-json] com.openhtmltopdf.load WARNING:: Couldn't resolve relative URI(org/tenant_5039f2d497cf/branding/logo.png) because no base URI was provided.
+[non-json] com.openhtmltopdf.load INFO:: URI resolver rejected loading image at (org/tenant_5039f2d497cf/branding/logo.png)
+[non-json] com.openhtmltopdf.load WARNING:: Couldn't resolve relative URI(org/tenant_5039f2d497cf/branding/logo.png) because no base URI was provided.
+[non-json] com.openhtmltopdf.load INFO:: URI resolver rejected loading image at (org/tenant_5039f2d497cf/branding/logo.png)
+2026-10-28T10:25:51.859088Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:09.265456Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:26:09.339224Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:26:17.595555Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:26:17.604280Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:32.191110Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:26:32.192414Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:26:32.192413Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:26:32.196712Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:32.200138Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:32.211125Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:32.234167Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/trust-accounts", parameters={}
+2026-10-28T10:26:32.259428Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:32.276253Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/trust-accounts/1a2cfeee-0562-47e6-88d3-8a79dd7ba746/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279", parameters={}
+2026-10-28T10:26:32.297810Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:32.316503Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/trust-accounts/1a2cfeee-0562-47e6-88d3-8a79dd7ba746/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279/history?page=0&size=20&sort=transactionDate%2Cdesc", parameters={masked}
+2026-10-28T10:26:32.356103Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:32.814678Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:26:32.832023Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:26:39.369056Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:26:42.074245Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/report-definitions/client-ledger-statement/export/pdf?trust_account_id=1a2cfeee-0562-47e6-88d3-8a79dd7ba746&dateTo=2026-10-31&dateFrom=2026-10-01&customer_id=df7536c3-aa8d-4a49-b094-3db2bbbd2279", parameters={masked}
+2026-10-28T10:26:42.095625Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 404 NOT_FOUND
+2026-10-28T10:27:02.803007Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:27:02.810156Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:04.851725Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:27:04.855783Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:27:04.856104Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:27:04.856928Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:04.865845Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:04.874387Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:04.878563Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/utilization?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:04.886114Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:04.900425Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Utilization: 3 member(s) for date range 2026-10-01 to 2026-10-28
+2026-10-28T10:27:04.906995Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:04.943787Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:27:04.959438Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:05.451525Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:27:05.460392Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:09.326381Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:27:09.402882Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:27:10.870561Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability/export/csv?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:10.894306Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:27:10.894602Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Profitability CSV export: 3 row(s) for 2026-10-01 to 2026-10-28
+2026-10-28T10:27:10.899357Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:24.960175Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:27:24.967488Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:24.985129Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability?from=2026-10-24&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:24.999907Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:27:25.002793Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:28.023664Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability/export/csv?from=2026-10-24&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:28.127143Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:27:28.127459Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Profitability CSV export: 3 row(s) for 2026-10-24 to 2026-10-28
+2026-10-28T10:27:28.137317Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:35.305270Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:27:35.310692Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:39.430257Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:27:45.574496Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:27:45.584127Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:45.589743Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:27:45.593275Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:27:45.623782Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:45.627304Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:45.633734Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events?page=0&size=50", parameters={masked}
+2026-10-28T10:27:45.636704Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events/metadata", parameters={}
+2026-10-28T10:27:45.642551Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:45.682939Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events/facets/event-types?from=1970-01-01T00%3A00%3A00Z", parameters={masked}
+2026-10-28T10:27:45.683489Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events/facets/actors?from=1970-01-01T00%3A00%3A00Z", parameters={masked}
+2026-10-28T10:27:45.683503Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events/facets/entity-types?from=1970-01-01T00%3A00%3A00Z", parameters={masked}
+2026-10-28T10:27:45.691429Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:45.726728Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:45.726925Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:45.727598Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:46.496758Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:27:46.500821Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:46.849341Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events?page=0&size=1", parameters={masked}
+2026-10-28T10:27:46.864846Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:27:54.295846Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events/export.pdf", parameters={}
+[non-json] com.openhtmltopdf.load INFO:: TIME: parse stylesheets 3ms
+[non-json] com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+[non-json] com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+2026-10-28T10:27:55.371044Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:28:05.648553Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:28:05.648555Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:28:05.648553Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:28:05.659622Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:28:05.661583Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:28:05.671611Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:28:05.684731Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/utilization?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:28:05.684732Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:28:05.697395Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Utilization: 3 member(s) for date range 2026-10-01 to 2026-10-28
+2026-10-28T10:28:05.702407Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:28:05.710692Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:28:05.715411Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:28:06.040191Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:28:06.046333Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:28:09.363645Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:28:09.451802Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:28:36.154753Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:28:36.158779Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:28:39.481208Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:29:06.205875Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:29:06.216291Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:09.388913Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:29:09.503074Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:29:36.337091Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:29:36.343036Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.289742Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:29:38.289536Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:29:38.289981Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:29:38.298673Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.301076Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.309130Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.344700Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/dashboard/unbilled-wip", parameters={}
+2026-10-28T10:29:38.344700Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/members", parameters={}
+2026-10-28T10:29:38.345092Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/my-work/tasks", parameters={}
+2026-10-28T10:29:38.384888Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.396294Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/dashboard/matter-health", parameters={}
+2026-10-28T10:29:38.408689Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/dashboard/activity?limit=15", parameters={masked}
+2026-10-28T10:29:38.441811Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.477225Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.482470Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/diary?feeEarnerId=133de597-3305-4941-baf9-09cc0e46ba97&to=2026-10-28&from=2026-10-28", parameters={masked}
+2026-10-28T10:29:38.525235Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.563369Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.570377Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.571041Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:29:38.579026Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.689214Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:29:38.694561Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.698090Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:29:38.698090Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:29:38.705579Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.708228Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.808287Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/onboarding/progress", parameters={}
+2026-10-28T10:29:38.831104Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:38.890754Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:29:38.896257Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:39.532265Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:29:53.913567Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:29:53.913567Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:29:53.914688Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:29:53.918016Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:53.920800Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:53.924663Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:53.950819Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/diary?to=2026-10-28&from=2026-10-28", parameters={masked}
+2026-10-28T10:29:53.956654Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/dashboard/trust-position", parameters={}
+2026-10-28T10:29:53.956644Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/dashboard/fica-outstanding?limit=5", parameters={masked}
+2026-10-28T10:29:53.956875Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/dashboard/unbilled-wip", parameters={}
+2026-10-28T10:29:53.963897Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/collections/debtors?size=5", parameters={masked}
+2026-10-28T10:29:53.969702Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:53.969706Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:53.982868Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:53.992626Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:53.996135Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events?size=5&to=2026-10-28T10%3A29%3A53.933Z&page=0&severities=WARNING%2CCRITICAL&from=2026-10-21T10%3A29%3A53.933Z", parameters={masked}
+2026-10-28T10:29:53.998272Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events/facets/event-types?to=2026-10-28T10%3A29%3A53.933Z&from=2026-10-21T10%3A29%3A53.933Z", parameters={masked}
+2026-10-28T10:29:54.000953Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/dashboard/activity?limit=15", parameters={masked}
+2026-10-28T10:29:54.022560Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.061197Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.072697Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.079232Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.204929Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:29:54.209296Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.255259Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/me/capabilities", parameters={}
+2026-10-28T10:29:54.259670Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.262616Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/billing/subscription", parameters={}
+2026-10-28T10:29:54.262826Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/settings", parameters={}
+2026-10-28T10:29:54.268820Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.275100Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.283357Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/utilization?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:29:54.283357Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:29:54.291047Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Utilization: 3 member(s) for date range 2026-10-01 to 2026-10-28
+2026-10-28T10:29:54.295392Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.301091Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:29:54.302920Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.510970Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:29:54.514254Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:29:54.582157Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability/export/csv?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:29:54.591157Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:29:54.591335Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Profitability CSV export: 3 row(s) for 2026-10-01 to 2026-10-28
+2026-10-28T10:29:54.592729Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:30:09.450770Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:30:09.561302Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:30:24.561377Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/notifications/unread-count", parameters={}
+2026-10-28T10:30:24.566010Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK
+2026-10-28T10:30:39.582753Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0

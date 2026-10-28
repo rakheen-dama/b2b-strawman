@@ -1,0 +1,232 @@
+[non-json] [INFO] Scanning for projects...
+[non-json] [INFO] 
+[non-json] [INFO] -----------------< io.b2mash.b2b:b2b-strawman-backend >-----------------
+[non-json] [INFO] Building backend 0.0.1-SNAPSHOT
+[non-json] [INFO]   from pom.xml
+[non-json] [INFO] --------------------------------[ jar ]---------------------------------
+[non-json] [INFO] 
+[non-json] [INFO] >>> spring-boot:4.0.2:run (default-cli) > test-compile @ b2b-strawman-backend >>>
+[non-json] [INFO] 
+[non-json] [INFO] --- spotless:3.2.1:check (default) @ b2b-strawman-backend ---
+[non-json] [INFO] Spotless.Java is keeping 2181 files clean - 0 needs changes to be clean, 0 were already clean, 2181 were skipped because caching determined they were already clean
+[non-json] [INFO] 
+[non-json] [INFO] --- resources:3.3.1:resources (default-resources) @ b2b-strawman-backend ---
+[non-json] [INFO] Copying 6 resources from src/main/resources to target/classes
+[non-json] [INFO] Copying 100 resources from src/main/resources to target/classes
+[non-json] [INFO] 
+[non-json] [INFO] --- compiler:3.14.1:compile (default-compile) @ b2b-strawman-backend ---
+[non-json] [INFO] Nothing to compile - all classes are up to date.
+[non-json] [INFO] 
+[non-json] [INFO] --- resources:3.3.1:testResources (default-testResources) @ b2b-strawman-backend ---
+[non-json] [INFO] Copying 33 resources from src/test/resources to target/test-classes
+[non-json] [INFO] 
+[non-json] [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ b2b-strawman-backend ---
+[non-json] [INFO] Recompiling the module because of changed source code.
+[non-json] [INFO] Compiling 760 source files with javac [debug parameters release 25] to target/test-classes
+[non-json] [INFO] $MAIN/backend/src/test/java/io/b2mash/b2b/b2bstrawman/audit/export/AuditPdfExporterIntegrationTest.java: Some input files use or override a deprecated API.
+[non-json] [INFO] $MAIN/backend/src/test/java/io/b2mash/b2b/b2bstrawman/audit/export/AuditPdfExporterIntegrationTest.java: Recompile with -Xlint:deprecation for details.
+[non-json] [INFO] $MAIN/backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Some input files use unchecked or unsafe operations.
+[non-json] [INFO] $MAIN/backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Recompile with -Xlint:unchecked for details.
+[non-json] [INFO] 
+[non-json] [INFO] <<< spring-boot:4.0.2:run (default-cli) < test-compile @ b2b-strawman-backend <<<
+[non-json] [INFO] 
+[non-json] [INFO] 
+[non-json] [INFO] --- spring-boot:4.0.2:run (default-cli) @ b2b-strawman-backend ---
+[non-json] [INFO] Attaching agents: []
+2026-10-28T10:22:56.415014Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | Starting BackendApplication using Java 25.0.1 with PID 4150 ($MAIN/backend/target/classes started by $USER in $MAIN/backend)
+2026-10-28T10:22:56.418894Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | The following 2 profiles are active: "local", "keycloak"
+2026-10-28T10:22:57.649369Z INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T10:22:57.919680Z INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 263 ms. Found 105 JPA repository interfaces.
+2026-10-28T10:22:58.343445Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManager] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [projectingArgumentResolverBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:22:58.345432Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [projectingArgumentResolverBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:22:58.382878Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:22:58.384630Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration$ServerMcpAnnotatedBeans] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:22:58.395814Z WARN org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [serverAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-10-28T10:22:58.633930Z INFO org.springframework.boot.tomcat.TomcatWebServer | Tomcat initialized with port 8080 (http)
+2026-10-28T10:22:58.644324Z INFO org.apache.catalina.core.StandardService | Starting service [Tomcat]
+2026-10-28T10:22:58.644615Z INFO org.apache.catalina.core.StandardEngine | Starting Servlet engine: [Apache Tomcat/11.0.15]
+2026-10-28T10:22:58.689593Z INFO org.springframework.boot.web.context.servlet.WebApplicationContextInitializer | Root WebApplicationContext: initialization completed in 2240 ms
+2026-10-28T10:22:59.044287Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-1 - Starting...
+2026-10-28T10:22:59.155943Z INFO com.zaxxer.hikari.pool.HikariPool | HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@88d92e5
+2026-10-28T10:22:59.158016Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-1 - Start completed.
+2026-10-28T10:22:59.179170Z INFO org.flywaydb.core.FlywayExecutor | Database: jdbc:postgresql://localhost:5432/docteams (PostgreSQL 16.14)
+2026-10-28T10:22:59.228938Z INFO org.flywaydb.core.internal.command.DbValidate | Successfully validated 2 migrations (execution time 00:00.020s)
+2026-10-28T10:22:59.264597Z INFO org.flywaydb.core.internal.command.DbMigrate | Current version of schema "public": 2
+2026-10-28T10:22:59.267505Z INFO org.flywaydb.core.internal.command.DbMigrate | Schema "public" is up to date. No migration necessary.
+2026-10-28T10:22:59.405159Z INFO org.hibernate.orm.jpa | HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-28T10:22:59.444759Z INFO org.hibernate.orm.core | HHH000001: Hibernate ORM core version 7.2.1.Final
+2026-10-28T10:22:59.733817Z INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo | No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T10:22:59.753795Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-2 - Starting...
+2026-10-28T10:22:59.770983Z INFO com.zaxxer.hikari.pool.HikariPool | HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@3c2e5c75
+2026-10-28T10:22:59.771241Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-2 - Start completed.
+2026-10-28T10:22:59.791110Z WARN org.hibernate.orm.deprecation | HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-28T10:22:59.802837Z INFO org.hibernate.orm.connections.pooling | HHH10001005: Database info:
+	Database JDBC URL [undefined/unknown]
+	Database driver: undefined/unknown
+	Database dialect: PostgreSQLDialect
+	Database version: 16.14
+	Default catalog/schema: unknown/unknown
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	JDBC fetch size: undefined/unknown
+	Pool: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T10:23:01.282435Z INFO org.hibernate.orm.core | HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T10:23:01.284845Z INFO org.hibernate.orm.jdbc.batch | HHH100501: Automatic JDBC statement batching enabled (maximum batch size 25)
+2026-10-28T10:23:01.288269Z INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean | Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T10:23:01.352496Z INFO org.springframework.data.jpa.repository.query.QueryEnhancerFactories | Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-28T10:23:03.521186Z WARN org.springframework.aop.framework.CglibAopProxy | Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterBean.init(jakarta.servlet.FilterConfig) throws jakarta.servlet.ServletException] because it is marked as final, consider using interface-based JDK proxies instead.
+2026-10-28T10:23:03.711422Z INFO io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry | Loaded vertical profile: legal-za
+2026-10-28T10:23:03.711617Z INFO io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry | Loaded 1 vertical profile(s)
+2026-10-28T10:23:06.242448Z WARN io.b2mash.b2b.b2bstrawman.template.PdfConversionService | LibreOffice not found — PDF conversion will fall back to docx4j
+2026-10-28T10:23:07.267850Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobHandlerRegistry | Registered 18 job handler(s): [court_date_reminder, time_reminder_check, cash_digest, accounting_sync_drain, field_date_scan, acceptance_expiry, subscription_trial_expiry, subscription_cancellation_end, subscription_grace_expiry, portal_digest, request_reminder_check, automation_poll_triggers, automation_poll_delayed, dormancy_check, magic_link_cleanup, ai_gate_expiry, collections_scan, accounting_payment_poll]
+2026-10-28T10:23:08.626918Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Enable tools capabilities, notification: true
+2026-10-28T10:23:08.716317Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Registered tools: 21
+2026-10-28T10:23:08.716606Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Enable resources capabilities, notification: true
+2026-10-28T10:23:08.723680Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Registered resources: 1
+2026-10-28T10:23:08.723883Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Enable resources templates capabilities, notification: true
+2026-10-28T10:23:08.726563Z INFO org.springframework.ai.mcp.server.common.autoconfigure.McpServerAutoConfiguration | Registered resource templates: 2
+2026-10-28T10:23:08.983411Z INFO org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver | Exposing 2 endpoints beneath base path '/actuator'
+2026-10-28T10:23:09.081069Z INFO org.springframework.boot.tomcat.TomcatWebServer | Tomcat started on port 8080 (http) with context path '/'
+2026-10-28T10:23:09.084736Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobWorker | JobWorker started — pollInterval=2000ms, batchSize=20, parallelism=2
+2026-10-28T10:23:09.095790Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | Started BackendApplication in 12.973 seconds (process running for 13.193)
+2026-10-28T10:23:09.140021Z INFO io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGateService | AiExecutionGateService: starting hourly gate expiry sweep
+2026-10-28T10:23:09.140842Z INFO io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceExpiryProcessor | Acceptance expiry processor started
+2026-10-28T10:23:09.201345Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=acceptance_expiry, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:23:09.201337Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=magic_link_cleanup, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:23:09.201418Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=time_reminder_check, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:23:09.206858Z INFO io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner | Running tenant migrations for 2 schemas
+2026-10-28T10:23:09.210943Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=ai_gate_expiry, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:23:09.220920Z INFO org.flywaydb.core.FlywayExecutor | Database: jdbc:postgresql://localhost:5432/docteams (PostgreSQL 16.14)
+2026-10-28T10:23:09.230321Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_delayed, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:23:09.239699Z INFO org.flywaydb.core.internal.command.DbValidate | Successfully validated 8 migrations (execution time 00:00.011s)
+2026-10-28T10:23:09.251142Z INFO org.flywaydb.core.internal.command.DbMigrate | Current version of schema "tenant_56399d06a773": 5
+2026-10-28T10:23:09.255208Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_payment_poll, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:23:09.262120Z INFO org.flywaydb.core.internal.command.DbMigrate | Migrating schema "tenant_56399d06a773" to version "6 - phase88 audit customer index"
+2026-10-28T10:23:09.270787Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:23:09.277781Z WARN org.hibernate.orm.jdbc.error | HHH000247: ErrorCode: 0, SQLState: 42703
+2026-10-28T10:23:09.277818Z WARN org.hibernate.orm.jdbc.error | HHH000247: ErrorCode: 0, SQLState: 42703
+2026-10-28T10:23:09.278827Z WARN org.hibernate.orm.jdbc.error | ERROR: column os1_0.letterhead_address_line1 does not exist
+  Position: 891
+2026-10-28T10:23:09.278865Z WARN org.hibernate.orm.jdbc.error | ERROR: column os1_0.letterhead_address_line1 does not exist
+  Position: 891
+2026-10-28T10:23:09.287075Z WARN io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobWorker | Job failed, will retry: id=3eafc94c-c53b-4cbe-a136-9d731569582d, type=time_reminder_check, tenant=tenant_56399d06a773, retry=1/3, nextAttempt=2026-10-28T10:23:29.287048Z
+2026-10-28T10:23:09.287077Z WARN io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobWorker | Job failed, will retry: id=536ac889-1df3-40f2-a719-65b12d88fc62, type=time_reminder_check, tenant=tenant_5039f2d497cf, retry=1/3, nextAttempt=2026-10-28T10:23:29.287048Z
+2026-10-28T10:23:09.294824Z INFO org.flywaydb.core.internal.command.DbMigrate | Migrating schema "tenant_56399d06a773" to version "7 - phase88 letterhead"
+2026-10-28T10:23:09.314466Z INFO org.flywaydb.core.internal.command.DbMigrate | Migrating schema "tenant_56399d06a773" to version "8 - phase88 retention comment attachments"
+2026-10-28T10:23:09.334520Z INFO org.flywaydb.core.internal.command.DbMigrate | Successfully applied 3 migrations to schema "tenant_56399d06a773", now at version v8 (execution time 00:00.046s)
+2026-10-28T10:23:09.339052Z INFO io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner | Migrated schema tenant_56399d06a773 — 3 migrations applied
+2026-10-28T10:23:09.350640Z INFO org.flywaydb.core.FlywayExecutor | Database: jdbc:postgresql://localhost:5432/docteams (PostgreSQL 16.14)
+2026-10-28T10:23:09.362153Z INFO org.flywaydb.core.internal.command.DbValidate | Successfully validated 8 migrations (execution time 00:00.007s)
+2026-10-28T10:23:09.367122Z INFO org.flywaydb.core.internal.command.DbMigrate | Current version of schema "tenant_5039f2d497cf": 5
+2026-10-28T10:23:09.369224Z INFO org.flywaydb.core.internal.command.DbMigrate | Migrating schema "tenant_5039f2d497cf" to version "6 - phase88 audit customer index"
+2026-10-28T10:23:09.381065Z INFO org.flywaydb.core.internal.command.DbMigrate | Migrating schema "tenant_5039f2d497cf" to version "7 - phase88 letterhead"
+2026-10-28T10:23:09.392414Z INFO org.flywaydb.core.internal.command.DbMigrate | Migrating schema "tenant_5039f2d497cf" to version "8 - phase88 retention comment attachments"
+2026-10-28T10:23:09.406224Z INFO org.flywaydb.core.internal.command.DbMigrate | Successfully applied 3 migrations to schema "tenant_5039f2d497cf", now at version v8 (execution time 00:00.016s)
+2026-10-28T10:23:09.408160Z INFO io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner | Migrated schema tenant_5039f2d497cf — 3 migrations applied
+2026-10-28T10:23:09.408299Z INFO io.b2mash.b2b.b2bstrawman.provisioning.TenantMigrationRunner | Tenant migration runner completed
+2026-10-28T10:23:09.417612Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-3 - Starting...
+2026-10-28T10:23:09.436098Z INFO com.zaxxer.hikari.pool.HikariPool | HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@5b1a817e
+2026-10-28T10:23:09.436668Z INFO com.zaxxer.hikari.HikariDataSource | HikariPool-3 - Start completed.
+2026-10-28T10:23:09.442036Z INFO io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryBackfillRunner | Portal contact directory backfill: 0 tenants scanned, 2 skipped (already marked), 0 failed, 0 rows upserted
+2026-10-28T10:23:09.447679Z INFO io.b2mash.b2b.b2bstrawman.provisioning.PackReconciliationRunner | Running pack reconciliation for 2 tenants
+2026-10-28T10:23:09.512222Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack common-project at v2 for tenant tenant_56399d06a773
+2026-10-28T10:23:09.516694Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack common-task at v2 for tenant tenant_56399d06a773
+2026-10-28T10:23:09.519528Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack conveyancing-za-project at v1 for tenant tenant_56399d06a773
+2026-10-28T10:23:09.521950Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack legal-za-customer at v2 for tenant tenant_56399d06a773
+2026-10-28T10:23:09.524187Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack legal-za-project at v2 for tenant tenant_56399d06a773
+2026-10-28T10:23:09.548671Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack common already installed (internal path), skipping
+2026-10-28T10:23:09.555183Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack compliance-za already installed (internal path), skipping
+2026-10-28T10:23:09.728033Z INFO io.b2mash.b2b.b2bstrawman.packs.TemplatePackInstaller | Reconciled template pack legal-za to v9 for tenant tenant_56399d06a773 (0 new templates, 8 refreshed, 0 re-pinned after the reconcile block)
+2026-10-28T10:23:09.732114Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack legal-za reconciled to v9 for tenant tenant_56399d06a773 (internal path)
+2026-10-28T10:23:09.748900Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for CLAUSE pack conveyancing-za-clauses at v1 for tenant tenant_56399d06a773
+2026-10-28T10:23:09.752461Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Reconciling CLAUSE pack conveyancing-za-clauses v1 -> v2 for tenant tenant_56399d06a773
+2026-10-28T10:23:09.767535Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'voetstoots' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:09.775720Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'occupation-date' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:09.781586Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'suspensive-bond' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:09.786592Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'transfer-duty-liability' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:09.792810Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'fica-compliance' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:09.799977Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'rates-clearance' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:09.806870Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'jurisdiction-za' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:09.822805Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'transfer-duty-liability' -> 'deed-of-transfer' field association updated
+2026-10-28T10:23:09.833470Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'rates-clearance' -> 'deed-of-transfer' field association updated
+2026-10-28T10:23:09.847672Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'body-corporate-clearance' -> 'deed-of-transfer' field association updated
+2026-10-28T10:23:09.854158Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'fica-compliance' -> 'power-of-attorney-transfer' field association updated
+2026-10-28T10:23:09.860101Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-clauses clause_template_association 'cost-of-cancellation' -> 'bond-cancellation-instruction' field association updated
+2026-10-28T10:23:09.862385Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for CLAUSE pack legal-za-clauses at v1 for tenant tenant_56399d06a773
+2026-10-28T10:23:09.864698Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for CLAUSE pack standard-clauses at v1 for tenant tenant_56399d06a773
+2026-10-28T10:23:10.040834Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack generic-onboarding already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:23:10.047952Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack legal-za-individual-onboarding already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:23:10.049294Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack legal-za-trust-onboarding already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:23:10.050481Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack sa-fica-company already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:23:10.051824Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack sa-fica-individual already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:23:10.058560Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for REPORT pack standard-reports at v1 for tenant tenant_56399d06a773
+2026-10-28T10:23:10.069033Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for REQUEST pack conveyancing-intake-za at v1 for tenant tenant_56399d06a773
+2026-10-28T10:23:10.071160Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for REQUEST pack fica-onboarding-pack at v1 for tenant tenant_56399d06a773
+2026-10-28T10:23:10.072899Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for REQUEST pack legal-za-liquidation-distribution at v1 for tenant tenant_56399d06a773
+2026-10-28T10:23:10.082549Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Reconciling AUTOMATION_TEMPLATE pack automation-common v2 -> v3 for tenant tenant_56399d06a773
+2026-10-28T10:23:10.108204Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'document-review-notification' field name updated
+2026-10-28T10:23:10.111184Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'document-review-notification' field description updated
+2026-10-28T10:23:10.113977Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.title updated
+2026-10-28T10:23:10.118075Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.message updated
+2026-10-28T10:23:10.119509Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'document-review-notification' field enabled updated
+2026-10-28T10:23:10.127121Z INFO io.b2mash.b2b.b2bstrawman.packs.AutomationPackInstaller | Re-pinned content hash of 1 rules of automation pack automation-common after the reconcile block for tenant tenant_56399d06a773
+2026-10-28T10:23:10.129291Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack automation-common reconciled to v3 for tenant tenant_56399d06a773 (internal path)
+2026-10-28T10:23:10.140761Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-28T10:23:10.151964Z INFO io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder | Project-template pack legal-za-project-templates already applied for tenant tenant_56399d06a773, reconciling settings
+2026-10-28T10:23:10.168298Z INFO io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder | Tariff schedule 'LSSA 2024/2025 High Court Party-and-Party' already exists for tenant tenant_56399d06a773, skipping
+2026-10-28T10:23:10.195302Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack common-project at v2 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.197244Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack common-task at v2 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.198943Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack conveyancing-za-project at v1 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.200587Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack legal-za-customer at v2 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.202160Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for FIELD pack legal-za-project at v2 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.208820Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack common already installed (internal path), skipping
+2026-10-28T10:23:10.214828Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack compliance-za already installed (internal path), skipping
+2026-10-28T10:23:10.335921Z INFO io.b2mash.b2b.b2bstrawman.packs.TemplatePackInstaller | Reconciled template pack legal-za to v9 for tenant tenant_5039f2d497cf (0 new templates, 8 refreshed, 0 re-pinned after the reconcile block)
+2026-10-28T10:23:10.338349Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack legal-za reconciled to v9 for tenant tenant_5039f2d497cf (internal path)
+2026-10-28T10:23:10.346957Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for CLAUSE pack conveyancing-za-clauses at v1 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.349072Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Reconciling CLAUSE pack conveyancing-za-clauses v1 -> v2 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.356087Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'voetstoots' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:10.361721Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'occupation-date' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:10.365640Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'suspensive-bond' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:10.370259Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'transfer-duty-liability' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:10.373954Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'fica-compliance' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:10.377899Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'rates-clearance' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:10.383319Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'jurisdiction-za' -> 'offer-to-purchase' field association updated
+2026-10-28T10:23:10.387107Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'transfer-duty-liability' -> 'deed-of-transfer' field association updated
+2026-10-28T10:23:10.391301Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'rates-clearance' -> 'deed-of-transfer' field association updated
+2026-10-28T10:23:10.395245Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'body-corporate-clearance' -> 'deed-of-transfer' field association updated
+2026-10-28T10:23:10.400223Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'fica-compliance' -> 'power-of-attorney-transfer' field association updated
+2026-10-28T10:23:10.405142Z INFO io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-clauses clause_template_association 'cost-of-cancellation' -> 'bond-cancellation-instruction' field association updated
+2026-10-28T10:23:10.407183Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for CLAUSE pack legal-za-clauses at v1 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.409353Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for CLAUSE pack standard-clauses at v1 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.416127Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack generic-onboarding already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:23:10.417827Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack legal-za-individual-onboarding already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:23:10.418717Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack legal-za-trust-onboarding already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:23:10.419482Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack sa-fica-company already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:23:10.420347Z INFO io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder | Compliance pack sa-fica-individual already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:23:10.425948Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for REPORT pack standard-reports at v1 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.432052Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for REQUEST pack conveyancing-intake-za at v1 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.433462Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for REQUEST pack fica-onboarding-pack at v1 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.435455Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Backfilled pack_install row for REQUEST pack legal-za-liquidation-distribution at v1 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.442578Z INFO io.b2mash.b2b.b2bstrawman.packs.PackVersionGate | Reconciling AUTOMATION_TEMPLATE pack automation-common v2 -> v3 for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.453407Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'document-review-notification' field name updated
+2026-10-28T10:23:10.455654Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'document-review-notification' field description updated
+2026-10-28T10:23:10.458044Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.title updated
+2026-10-28T10:23:10.460561Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'document-review-notification' field actions[0].actionConfig.message updated
+2026-10-28T10:23:10.461498Z INFO io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder | Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'document-review-notification' field enabled updated
+2026-10-28T10:23:10.467080Z INFO io.b2mash.b2b.b2bstrawman.packs.AutomationPackInstaller | Re-pinned content hash of 1 rules of automation pack automation-common after the reconcile block for tenant tenant_5039f2d497cf
+2026-10-28T10:23:10.468688Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack automation-common reconciled to v3 for tenant tenant_5039f2d497cf (internal path)
+2026-10-28T10:23:10.480139Z INFO io.b2mash.b2b.b2bstrawman.packs.PackInstallService | Pack automation-legal-za already installed (internal path), skipping
+2026-10-28T10:23:10.484603Z INFO io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder | Project-template pack legal-za-project-templates already applied for tenant tenant_5039f2d497cf, reconciling settings
+2026-10-28T10:23:10.492245Z INFO io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder | Tariff schedule 'LSSA 2024/2025 High Court Party-and-Party' already exists for tenant tenant_5039f2d497cf, skipping
+2026-10-28T10:23:10.504081Z INFO io.b2mash.b2b.b2bstrawman.provisioning.PackReconciliationRunner | Pack reconciliation: checked 2 tenants, 2 succeeded, 0 failed
+2026-10-28T10:23:10.530093Z INFO io.b2mash.b2b.b2bstrawman.template.LegacyContentImportRunner | Legacy content import complete: 0 templates, 0 clauses converted across 2 tenants
+2026-10-28T10:23:12.022620Z INFO org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/] | Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-28T10:23:12.022867Z INFO org.springframework.web.servlet.DispatcherServlet | Initializing Servlet 'dispatcherServlet'
+2026-10-28T10:23:12.025683Z INFO org.springframework.web.servlet.DispatcherServlet | Completed initialization in 3 ms
+2026-10-28T10:23:39.299011Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:24:09.537783Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:24:09.808185Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0
+2026-10-28T10:24:39.885330Z INFO io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0

@@ -1,0 +1,11 @@
+# frontend.log lines 2453-2456 (added by Export PDF click)
+ POST /org/mathebula-partners/reports/timesheet 200 in 21ms (next.js: 8ms, proxy.ts: 3ms, application-code: 11ms)
+  └─ ƒ exportReportPdfAction("timesheet", {"dateFrom":"2026-10-01","dateTo":"2026-10-31","groupBy":"member","...":"2 items not stringified"}) in 2ms app/(app)/org/[slug]/reports/[reportSlug]/actions.ts
+ POST /org/mathebula-partners/reports/timesheet 200 in 64ms (next.js: 10ms, proxy.ts: 5ms, application-code: 48ms)
+  └─ ƒ fetchUnreadCount() in 22ms lib/actions/notifications.ts
+
+# backend.log line 8759 (added during click window)
+{"@timestamp":"2026-10-28T09:55:27.981368Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer"},"process":{"pid":39387,"thread":{"name":"scheduling-2"}},"service":{"name":"backend","node":{}},"message":"fanOutToAllTenants: type=accounting_sync_drain, tenants=2, enqueued=2, skippedByPreFilter=0, skippedByDedup=0","ecs":{"version":"8.11"}}
+
+# grep -c 'export/pdf' backend.log => 0
+# REPORT_EXPORTED audit events in tenant_5039f2d497cf => 0

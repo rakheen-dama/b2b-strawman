@@ -285,6 +285,67 @@ describe("EditCommentDialog", () => {
     expect(mockCancelUpload).not.toHaveBeenCalled();
   });
 
+  it("names a rejected kept attachment by its file name on a 422", async () => {
+    mockUpdateComment.mockResolvedValue({
+      success: false,
+      error: "Document doc-a cannot be attached to a client-visible comment",
+      attachmentDocumentId: "doc-a",
+    });
+    const user = userEvent.setup();
+
+    renderDialog("Edit kept rejected", makeComment({ attachments: [LETTER, RECEIPT] }));
+    await user.click(screen.getByRole("button", { name: "Edit kept rejected" }));
+
+    await user.click(screen.getByRole("button", { name: "Remove receipt.pdf" }));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(
+      await screen.findByText("Document letter.pdf cannot be attached to a client-visible comment")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/doc-a/)).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("Escape while saving neither closes the dialog nor releases the staged upload", async () => {
+    let resolveConfirm: (value: { success: boolean }) => void = () => {};
+    mockConfirmUpload.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveConfirm = resolve;
+        })
+    );
+    const user = userEvent.setup();
+
+    renderDialog("Edit escape saving", makeComment({ attachments: [LETTER] }));
+    await user.click(screen.getByRole("button", { name: "Edit escape saving" }));
+
+    await user.upload(
+      fileInput(),
+      new File(["%PDF-1.4 new"], "new.pdf", { type: "application/pdf" })
+    );
+    await screen.findByText("new.pdf");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(mockConfirmUpload).toHaveBeenCalledWith("acme", "p1", "doc-new"));
+
+    await user.keyboard("{Escape}");
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(mockCancelUpload).not.toHaveBeenCalled();
+
+    resolveConfirm({ success: true });
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Original comment body",
+        undefined,
+        ["doc-a", "doc-new"]
+      );
+    });
+    expect(mockCancelUpload).not.toHaveBeenCalled();
+  });
+
   it("cancel releases staged uploads and re-opening resets the chips", async () => {
     const user = userEvent.setup();
 

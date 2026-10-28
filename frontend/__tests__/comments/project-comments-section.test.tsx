@@ -31,6 +31,7 @@ function makeComment(overrides: Partial<Comment> = {}): Comment {
     parentId: null,
     createdAt: "2026-02-10T10:00:00Z",
     updatedAt: "2026-02-10T10:00:00Z",
+    attachments: [],
     ...overrides,
   };
 }

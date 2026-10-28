@@ -104,8 +104,14 @@ function PostedChip({ documentId, fileName, size }: PostedChipProps) {
   async function handleDownload() {
     setIsLoading(true);
     setError(null);
-    const result = await getDownloadUrl(documentId);
-    setIsLoading(false);
+    let result: Awaited<ReturnType<typeof getDownloadUrl>>;
+    try {
+      result = await getDownloadUrl(documentId);
+    } catch {
+      result = { success: false };
+    } finally {
+      setIsLoading(false);
+    }
 
     if (!result.success || !result.presignedUrl) {
       setError(result.error ?? "Download failed.");

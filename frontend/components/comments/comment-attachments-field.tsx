@@ -9,7 +9,7 @@ import type { CommentAttachment } from "@/lib/types";
 // legal-lifecycle E2E clicks the first button matching that pattern on the matter page.
 const DROPZONE_LABEL = "Attach files (drop or click to browse)";
 
-export const SHARED_ATTACHMENTS_HINT =
+const SHARED_ATTACHMENTS_HINT =
   "Attachments on a client-visible comment are shared with the client.";
 
 interface CommentAttachmentsFieldProps {

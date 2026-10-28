@@ -30,6 +30,15 @@ export interface StagedAttachment {
   confirmed: boolean;
 }
 
+/** Chip label for a staged document the backend refused to attach. */
+const ATTACHMENT_REJECTED_LABEL = "Not attached";
+
+/** Any attachment the composer can name in an error (a kept attachment, for instance). */
+interface NamedAttachment {
+  documentId: string;
+  fileName: string;
+}
+
 export type ConfirmAllResult = { ok: true; documentIds: string[] } | { ok: false; error: string };
 
 /** PUTs a file to a presigned S3 URL. Resolves true on a 2xx, false on failure or abort. */
@@ -116,7 +125,12 @@ export function useCommentAttachments({
 
   const upload = useCallback(
     async (localId: string, file: File, contentType: string) => {
-      const init = await initiateUpload(slug, projectId, file.name, contentType, file.size);
+      let init: Awaited<ReturnType<typeof initiateUpload>>;
+      try {
+        init = await initiateUpload(slug, projectId, file.name, contentType, file.size);
+      } catch {
+        init = { success: false };
+      }
       if (!init.success || !init.documentId || !init.presignedUrl) {
         if (hasItem(itemsRef.current, localId)) {
           patch(localId, { status: "error", error: init.error ?? "Failed to start the upload." });
@@ -218,7 +232,12 @@ export function useCommentAttachments({
       }
       if (!item.confirmed) {
         patch(item.localId, { status: "confirming" });
-        const result = await confirmUpload(slug, projectId, item.documentId);
+        let result: Awaited<ReturnType<typeof confirmUpload>>;
+        try {
+          result = await confirmUpload(slug, projectId, item.documentId);
+        } catch {
+          result = { success: false };
+        }
         if (!result.success) {
           const error = result.error ?? "Failed to finish the upload.";
           patch(item.localId, { status: "error", error });
@@ -231,13 +250,20 @@ export function useCommentAttachments({
     return { ok: true, documentIds };
   }, [slug, projectId, patch]);
 
-  /** Marks the staged chip holding `documentId` as rejected. Returns false if none matches. */
-  const markError = useCallback(
-    (documentId: string, error: string): boolean => {
-      const item = itemsRef.current.find((i) => i.documentId === documentId);
-      if (!item) return false;
-      patch(item.localId, { status: "error", error });
-      return true;
+  /**
+   * Turns a failed comment submit into the message to show. When the backend named the document it
+   * refused (`rejectedId`), a staged chip holding it is marked in error and the raw UUID in the
+   * message is replaced by the file name, looked up among the staged chips and then `others` (e.g.
+   * the attachments kept while editing).
+   */
+  const describeRejection = useCallback(
+    (message: string, rejectedId?: string, others: NamedAttachment[] = []): string => {
+      if (!rejectedId) return message;
+      const staged = itemsRef.current.find((i) => i.documentId === rejectedId);
+      if (staged) patch(staged.localId, { status: "error", error: ATTACHMENT_REJECTED_LABEL });
+      const fileName =
+        staged?.fileName ?? others.find((a) => a.documentId === rejectedId)?.fileName;
+      return fileName ? message.split(rejectedId).join(fileName) : message;
     },
     [patch]
   );
@@ -270,18 +296,10 @@ export function useCommentAttachments({
     addFiles,
     remove,
     confirmAll,
-    markError,
+    describeRejection,
     reset,
     releaseStaged,
   };
 }
 
 export type CommentAttachmentsState = ReturnType<typeof useCommentAttachments>;
-
-/** Replaces the raw document UUID in a backend attachment error with the chip's file name. */
-export function nameAttachmentInError(message: string, documentId: string, fileName: string) {
-  return message.split(documentId).join(fileName);
-}
-
-/** Chip label for a staged document the backend refused to attach. */
-export const ATTACHMENT_REJECTED_LABEL = "Not attached";

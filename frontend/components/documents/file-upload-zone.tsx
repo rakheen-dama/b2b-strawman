@@ -89,6 +89,7 @@ export function FileUploadZone({
     <div
       role="button"
       tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled || undefined}
       onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {

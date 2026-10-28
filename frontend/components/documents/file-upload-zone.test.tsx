@@ -41,6 +41,16 @@ describe("FileUploadZone", () => {
     expect(input.disabled).toBe(true);
   });
 
+  it("exposes aria-disabled only when disabled", () => {
+    const { container, rerender } = render(<FileUploadZone onFilesSelected={vi.fn()} />);
+
+    const zone = within(container).getByRole("button");
+    expect(zone).not.toHaveAttribute("aria-disabled");
+
+    rerender(<FileUploadZone onFilesSelected={vi.fn()} disabled={true} />);
+    expect(within(container).getByRole("button")).toHaveAttribute("aria-disabled", "true");
+  });
+
   it("calls onFilesSelected when files are dropped", () => {
     const onFilesSelected = vi.fn();
     const { container } = render(<FileUploadZone onFilesSelected={onFilesSelected} />);

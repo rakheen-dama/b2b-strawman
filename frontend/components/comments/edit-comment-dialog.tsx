@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { VariantProps } from "class-variance-authority";
 import { Button, buttonVariants } from "@b2mash/ui/button";
 import {
@@ -15,11 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
 import { updateComment } from "@/lib/actions/comments";
 import { CommentAttachmentsField } from "@/components/comments/comment-attachments-field";
-import {
-  ATTACHMENT_REJECTED_LABEL,
-  nameAttachmentInError,
-  useCommentAttachments,
-} from "@/components/comments/use-comment-attachments";
+import { useCommentAttachments } from "@/components/comments/use-comment-attachments";
 import type { Comment, CommentAttachment } from "@/lib/types";
 
 type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
@@ -58,6 +54,9 @@ export function EditCommentDialog({
 }: EditCommentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Synchronous in-flight flag: the form action runs inside a transition, so `isSubmitting` is not
+  // committed (and not visible to the close handler) until the action has finished.
+  const submittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   // Attachments already on the comment that the user is keeping (removable chips).
   const [kept, setKept] = useState<CommentAttachment[]>(comment.attachments ?? []);
@@ -81,6 +80,7 @@ export function EditCommentDialog({
     const visibility = canManageVisibility ? formData.get("visibility")?.toString() : undefined;
 
     setIsSubmitting(true);
+    submittingRef.current = true;
 
     try {
       const confirmed = await attachments.confirmAll();
@@ -109,22 +109,18 @@ export function EditCommentDialog({
         setOpen(false);
         onCommentChange?.();
       } else {
-        const message = result.error ?? "Failed to update comment.";
-        const rejectedId = result.attachmentDocumentId;
-        const rejectedName = rejectedId
-          ? (attachments.items.find((i) => i.documentId === rejectedId)?.fileName ??
-            kept.find((a) => a.documentId === rejectedId)?.fileName)
-          : undefined;
-        if (rejectedId && rejectedName) {
-          attachments.markError(rejectedId, ATTACHMENT_REJECTED_LABEL);
-          setError(nameAttachmentInError(message, rejectedId, rejectedName));
-        } else {
-          setError(message);
-        }
+        setError(
+          attachments.describeRejection(
+            result.error ?? "Failed to update comment.",
+            result.attachmentDocumentId,
+            kept
+          )
+        );
       }
     } catch {
       setError("An unexpected error occurred.");
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
       // The form action resets the uncontrolled select to its default after every submit.
       setVisibilityChoice(comment.visibility);
@@ -132,6 +128,9 @@ export function EditCommentDialog({
   }
 
   function handleOpenChange(newOpen: boolean) {
+    // Escape / overlay / close button while saving: releasing now would cancel uploads that
+    // confirmAll is in the middle of confirming.
+    if (!newOpen && submittingRef.current) return;
     if (newOpen) {
       setError(null);
       setKept(comment.attachments ?? []);

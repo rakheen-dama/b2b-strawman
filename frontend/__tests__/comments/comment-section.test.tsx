@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddCommentForm } from "@/components/comments/add-comment-form";
 import { CommentItem } from "@/components/comments/comment-item";
+import { useCommentAttachments } from "@/components/comments/use-comment-attachments";
 import type { Comment } from "@/lib/types";
 
 const mockCreateComment = vi.fn();
@@ -231,6 +232,34 @@ describe("CommentItem", () => {
 
     await user.click(screen.getByRole("button", { name: "Download letter.pdf" }));
     expect(await screen.findByText("Download failed.")).toBeInTheDocument();
+  });
+
+  it("recovers when the download action rejects: shows the error and re-enables the chip", async () => {
+    mockGetDownloadUrl.mockRejectedValue(new Error("network down"));
+    const user = userEvent.setup();
+
+    render(
+      <CommentItem
+        comment={makeComment({
+          attachments: [
+            {
+              documentId: "doc-1",
+              fileName: "letter.pdf",
+              contentType: "application/pdf",
+              size: 2048,
+            },
+          ],
+        })}
+        currentMemberId="other-member"
+        canManageVisibility={false}
+        orgSlug="acme"
+        projectId="p1"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Download letter.pdf" }));
+    expect(await screen.findByText("Download failed.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Download letter.pdf" })).not.toBeDisabled();
   });
 
   it("renders no attachment list when the comment has no attachments", () => {
@@ -531,6 +560,38 @@ describe("AddCommentForm", () => {
     expect(screen.queryByText(hint)).not.toBeInTheDocument();
   });
 
+  it("a rejected confirm leaves the chip in error (not stuck finishing) so Post recovers", async () => {
+    mockConfirmUpload.mockRejectedValue(new Error("network down"));
+    const user = userEvent.setup();
+    const { input } = renderForm(false);
+
+    await user.upload(input!, pdf("letter.pdf"));
+    await screen.findByText("letter.pdf");
+    await user.type(screen.getByLabelText("Add a comment"), "Confirm will throw");
+    await user.click(screen.getByRole("button", { name: "Post Comment" }));
+
+    expect(await screen.findByText("letter.pdf: Failed to finish the upload.")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Finishing")).not.toBeInTheDocument();
+    expect(screen.getByText("Remove failed attachments to continue.")).toBeInTheDocument();
+    expect(mockCreateComment).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Remove letter.pdf" }));
+    expect(screen.getByRole("button", { name: "Post Comment" })).not.toBeDisabled();
+  });
+
+  it("a rejected upload-init puts the chip in error instead of uploading forever", async () => {
+    mockInitiateUpload.mockRejectedValue(new Error("network down"));
+    const user = userEvent.setup();
+    const { input } = renderForm(false);
+
+    await user.upload(input!, pdf("letter.pdf"));
+
+    expect(await screen.findByText("Failed to start the upload.")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByText("Remove failed attachments to continue.")).toBeInTheDocument();
+    expect(FakeXhr.instances).toHaveLength(0);
+  });
+
   it("releases staged uploads when the form unmounts", async () => {
     const user = userEvent.setup();
     const { input, unmount } = renderForm(false);
@@ -541,5 +602,71 @@ describe("AddCommentForm", () => {
     unmount();
 
     expect(mockCancelUpload).toHaveBeenCalledWith("doc-1");
+  });
+});
+
+describe("useCommentAttachments.describeRejection", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    FakeXhr.instances = [];
+    vi.stubGlobal("XMLHttpRequest", FakeXhr);
+    mockInitiateUpload.mockResolvedValue({
+      success: true,
+      documentId: "doc-staged",
+      presignedUrl: "https://s3.example.com/put-staged",
+    });
+    mockCancelUpload.mockResolvedValue({ success: true });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  async function stagedHook() {
+    const hook = renderHook(() => useCommentAttachments({ slug: "acme", projectId: "p1" }));
+    act(() => hook.result.current.addFiles([pdf("staged.pdf")]));
+    await waitFor(() => expect(hook.result.current.items[0]?.status).toBe("ready"));
+    return hook;
+  }
+
+  it("names a staged chip and marks it in error", async () => {
+    const { result } = await stagedHook();
+
+    let message = "";
+    act(() => {
+      message = result.current.describeRejection(
+        "Document doc-staged is not allowed",
+        "doc-staged"
+      );
+    });
+
+    expect(message).toBe("Document staged.pdf is not allowed");
+    expect(result.current.items[0].status).toBe("error");
+    expect(result.current.items[0].error).toBe("Not attached");
+  });
+
+  it("names an attachment from the extra list without touching the staged chips", async () => {
+    const { result } = await stagedHook();
+
+    let message = "";
+    act(() => {
+      message = result.current.describeRejection("Document doc-kept is not allowed", "doc-kept", [
+        { documentId: "doc-kept", fileName: "kept.pdf" },
+      ]);
+    });
+
+    expect(message).toBe("Document kept.pdf is not allowed");
+    expect(result.current.items[0].status).toBe("ready");
+  });
+
+  it("returns the message unchanged when the id is absent or unknown", async () => {
+    const { result } = await stagedHook();
+
+    expect(result.current.describeRejection("Server error")).toBe("Server error");
+    expect(result.current.describeRejection("Document doc-x is gone", "doc-x")).toBe(
+      "Document doc-x is gone"
+    );
+    expect(result.current.items[0].status).toBe("ready");
   });
 });

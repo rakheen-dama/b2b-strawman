@@ -6,11 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
 import { createComment } from "@/lib/actions/comments";
 import { CommentAttachmentsField } from "@/components/comments/comment-attachments-field";
-import {
-  ATTACHMENT_REJECTED_LABEL,
-  nameAttachmentInError,
-  useCommentAttachments,
-} from "@/components/comments/use-comment-attachments";
+import { useCommentAttachments } from "@/components/comments/use-comment-attachments";
 
 interface AddCommentFormProps {
   projectId: string;
@@ -72,17 +68,12 @@ export function AddCommentForm({
         attachments.reset();
         onCommentChange?.();
       } else {
-        const message = result.error ?? "Failed to add comment.";
-        const rejectedId = result.attachmentDocumentId;
-        const rejected = rejectedId
-          ? attachments.items.find((i) => i.documentId === rejectedId)
-          : undefined;
-        if (rejectedId && rejected) {
-          attachments.markError(rejectedId, ATTACHMENT_REJECTED_LABEL);
-          setError(nameAttachmentInError(message, rejectedId, rejected.fileName));
-        } else {
-          setError(message);
-        }
+        setError(
+          attachments.describeRejection(
+            result.error ?? "Failed to add comment.",
+            result.attachmentDocumentId
+          )
+        );
       }
     } catch {
       setError("An unexpected error occurred.");

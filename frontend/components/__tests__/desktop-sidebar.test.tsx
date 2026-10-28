@@ -60,7 +60,7 @@ const LEGAL_MODULES = [
   "trust_accounting",
 ];
 
-function renderSidebar() {
+function renderSidebar(props: { orgName?: string; brandColor?: string } = {}) {
   return render(
     <OrgProfileProvider
       verticalProfile={null}
@@ -74,7 +74,7 @@ function renderSidebar() {
         isOwner={true}
       >
         <CommandPaletteProvider slug="test-org">
-          <DesktopSidebar slug="test-org" />
+          <DesktopSidebar slug="test-org" {...props} />
         </CommandPaletteProvider>
       </CapabilityProvider>
     </OrgProfileProvider>
@@ -127,6 +127,23 @@ describe("DesktopSidebar", () => {
       "href",
       "/org/test-org/settings/firm"
     );
+  });
+
+  // Phase 88 628B (G-A3, R-13): the brand colour is never the org name's text colour on the dark
+  // rail (#1B3A4B on slate-950 was illegible); it shows as a 3 px accent bar instead.
+  it("renders the org name in white/80 with a brand-colour accent bar", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/dashboard");
+    renderSidebar({ orgName: "Mathebula & Partners", brandColor: "#1B3A4B" });
+
+    const name = screen.getByText("Mathebula & Partners");
+    expect(name).toHaveClass("truncate", "text-xs", "font-medium", "text-white/80");
+    expect(name).not.toHaveClass("opacity-80");
+    expect(name.getAttribute("style")).toBeNull();
+
+    const accent = screen.getByTestId("org-brand-accent");
+    expect(accent).toHaveAttribute("aria-hidden", "true");
+    expect(accent).toHaveClass("h-4", "w-[3px]", "rounded-full");
+    expect(accent.style.backgroundColor).toBe("var(--brand-color)");
   });
 
   it("renders search pill with ⌘K badge", () => {

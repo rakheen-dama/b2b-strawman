@@ -64,7 +64,7 @@ const INTEGRATION_MANAGER = {
   isOwner: false,
 };
 
-const ALL_CONNECTIONS_TABS = ["Xero", "MCP", "AI", "Notifications", "Packs", "Automations"];
+const ALL_CONNECTIONS_TABS = ["Integrations", "MCP", "AI", "Notifications", "Packs", "Automations"];
 
 function props(searchParams: SettingsSearchParams) {
   return {
@@ -102,10 +102,13 @@ describe("Connections settings family page", () => {
     vi.clearAllMocks();
   });
 
-  it("renders all six tabs in §12.7.1 order for an owner and loads only Xero", async () => {
+  it("renders all six tabs in §12.7.1 order for an owner and loads only Integrations", async () => {
     await renderConnections();
     expect(tabNames()).toEqual(ALL_CONNECTIONS_TABS);
-    expect(screen.getByRole("tab", { name: "Xero" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Integrations" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
     expect(screen.getByText("xero panel")).toBeInTheDocument();
     expect(calledLoaders()).toEqual(["xero"]);
   });
@@ -129,7 +132,7 @@ describe("Connections settings family page", () => {
     expect(calledLoaders()).toEqual(["packs"]);
   });
 
-  it("falls back to Xero for an unknown tab silently — never a 404", async () => {
+  it("falls back to Integrations for an unknown tab silently — never a 404", async () => {
     await renderConnections("integrations"); // the old page name is not a tab id
     expect(screen.getByText("xero panel")).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
@@ -137,10 +140,10 @@ describe("Connections settings family page", () => {
 
   // Frozen old-nav flags (D24 ruling): ai, packs and automations stay adminOnly; mcp is gated by
   // INTEGRATION_MANAGE (D7); xero (first tab, D20) and notifications are ungated.
-  it("shows a plain member only Xero and Notifications — gated tabs are absent, not disabled", async () => {
+  it("shows a plain member only Integrations and Notifications — gated tabs are absent, not disabled", async () => {
     mockCaps.mockResolvedValue(MEMBER);
     await renderConnections();
-    expect(tabNames()).toEqual(["Xero", "Notifications"]);
+    expect(tabNames()).toEqual(["Integrations", "Notifications"]);
     for (const tab of screen.getAllByRole("tab")) {
       expect(tab).not.toHaveAttribute("data-disabled");
       expect(tab).not.toBeDisabled();
@@ -150,7 +153,7 @@ describe("Connections settings family page", () => {
   it("adds MCP for a member holding INTEGRATION_MANAGE (D7)", async () => {
     mockCaps.mockResolvedValue(INTEGRATION_MANAGER);
     await renderConnections();
-    expect(tabNames()).toEqual(["Xero", "MCP", "Notifications"]);
+    expect(tabNames()).toEqual(["Integrations", "MCP", "Notifications"]);
   });
 
   it.each([
@@ -159,13 +162,13 @@ describe("Connections settings family page", () => {
     ["packs", "Packs"],
     ["mcp", "MCP"],
   ] as const)(
-    "falls back to Xero with a notice when a member asks for %s",
+    "falls back to Integrations with a notice when a member asks for %s",
     async (tabId, label) => {
       mockCaps.mockResolvedValue(MEMBER);
       await renderConnections(tabId);
       expect(screen.getByText("xero panel")).toBeInTheDocument();
       expect(screen.getByRole("status")).toHaveTextContent(
-        new RegExp(`don.t have access to ${label} — showing Xero instead`)
+        new RegExp(`don.t have access to ${label} — showing Integrations instead`)
       );
       expect(loaders[tabId]).not.toHaveBeenCalled();
     }
@@ -189,7 +192,10 @@ describe("Connections settings family page", () => {
       "aria-selected",
       "true"
     );
-    expect(screen.getByRole("tab", { name: "Xero" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tab", { name: "Integrations" })).toHaveAttribute(
+      "aria-selected",
+      "false"
+    );
     expect(screen.getByRole("tabpanel", { name: "Notifications" })).toHaveTextContent(
       "notifications panel"
     );
@@ -211,14 +217,14 @@ describe("Connections settings family page", () => {
         title: "Connections — MCP · Settings",
       });
       expect(await generateMetadata(props({}))).toEqual({
-        title: "Connections — Xero · Settings",
+        title: "Connections — Integrations · Settings",
       });
     });
 
     it("uses the resolved tab for a member's forbidden tab", async () => {
       mockCaps.mockResolvedValue(MEMBER);
       expect(await generateMetadata(props({ tab: "packs" }))).toEqual({
-        title: "Connections — Xero · Settings",
+        title: "Connections — Integrations · Settings",
       });
     });
   });

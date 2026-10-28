@@ -19,11 +19,23 @@ import allowList from "./terminology-allow-list.json";
 //     ids, hrefs, enum values and comparisons are never visited as hits.
 // Legitimate uses go in terminology-allow-list.json as { file, text, reason } — matched on file +
 // whitespace-collapsed text (not line numbers); every entry must stay live and its reason must be
-// one of the ADR-357 reasons. Portal twin: portal/__tests__/no-terminology-remnants.test.ts (628B).
+// one of the ADR-357 reasons. Portal twin: portal/__tests__/no-terminology-remnants.test.ts (628B)
+// copies the <terminology-scanner> block below and asserts it has not drifted.
 
 const SCAN_ROOTS = ["app", "components", "lib", "hooks"];
 const BANNED =
   /useTerminology|TerminologyProvider|TerminologyText|TerminologyHeading|terminology-map|withIndefiniteArticle|auditTabLabel|PORTAL_TERMINOLOGY/;
+
+function bannedLines(rel: string, text: string): string[] {
+  return text
+    .split("\n")
+    .flatMap((line, i) => (BANNED.test(line) ? [`${rel}:${i + 1}: ${line.trim()}`] : []));
+}
+
+// The ADR-357 classifier sits between the <terminology-scanner> markers. The portal guard carries a
+// verbatim copy and fails if the two drift apart (compared with whitespace and trailing commas
+// normalised — the apps have different prettier configs), so edit both together.
+// <terminology-scanner>
 const NOUN = /\b(projects?|customers?|invoices?)\b/i;
 
 // ADR-357 Decision reason set + "third-party object name" (ADR-357 Consequences, R8 note 1).
@@ -131,12 +143,6 @@ function position(node: ts.Node, text: string, sf: ts.SourceFile): string | null
   return null;
 }
 
-function bannedLines(rel: string, text: string): string[] {
-  return text
-    .split("\n")
-    .flatMap((line, i) => (BANNED.test(line) ? [`${rel}:${i + 1}: ${line.trim()}`] : []));
-}
-
 function remnantHits(rel: string, source: string) {
   const kind = rel.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const sf = ts.createSourceFile(rel, source, ts.ScriptTarget.Latest, true, kind);
@@ -157,6 +163,7 @@ function remnantHits(rel: string, source: string) {
   visit(sf);
   return hits;
 }
+// </terminology-scanner>
 
 const sourceFiles = readSourceTree(SCAN_ROOTS);
 const hits = sourceFiles.flatMap((f) => remnantHits(f.rel, f.text));

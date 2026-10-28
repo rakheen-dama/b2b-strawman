@@ -53,7 +53,7 @@ const LEGAL_MODULES = [
   "trust_accounting",
 ];
 
-function renderMobileSidebar(props: { groups?: string[] } = {}) {
+function renderMobileSidebar(props: { groups?: string[]; orgName?: string } = {}) {
   return render(
     <OrgProfileProvider
       verticalProfile={null}
@@ -90,6 +90,22 @@ describe("MobileSidebar", () => {
     for (const label of ["Today", "Matters", "Clients", "Fees", "Trust", "Firm"]) {
       expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
     }
+  });
+
+  // Phase 88 628B (G-A3, R-13): same org-name treatment as the desktop rail.
+  it("renders the org name in white/80 with a brand-colour accent bar", async () => {
+    const user = userEvent.setup();
+    mockUsePathname.mockReturnValue("/org/test-org/dashboard");
+    renderMobileSidebar({ orgName: "Mathebula & Partners" });
+
+    await user.click(screen.getByRole("button", { name: /toggle menu/i }));
+
+    const name = screen.getByText("Mathebula & Partners");
+    expect(name).toHaveClass("truncate", "text-sm", "text-white/80");
+    const accent = screen.getByTestId("org-brand-accent");
+    expect(accent).toHaveAttribute("aria-hidden", "true");
+    expect(accent).toHaveClass("h-4", "w-[3px]", "rounded-full");
+    expect(accent.style.backgroundColor).toBe("var(--brand-color)");
   });
 
   it("renders the shared utility footer (Notifications only — Settings lives in Firm)", async () => {

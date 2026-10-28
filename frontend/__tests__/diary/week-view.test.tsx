@@ -150,6 +150,32 @@ describe("DiaryWeekView", () => {
     expect(within(courtRow).getByText("Thandi Nkosi")).toBeInTheDocument();
   });
 
+  // Phase 88 628B (G-D20, R-5): week day cells are ~150 px wide at 1440, so the compact row stacks
+  // the time above a two-line title instead of truncating the title beside the time.
+  it("stacks the time above a two-line, untruncated title in the day cells", () => {
+    renderWeek();
+    const courtRow = screen.getByTestId("diary-event-cd-1");
+    expect(courtRow).toHaveAttribute("data-density", "compact");
+    expect(courtRow).toHaveAttribute("title", "Johannesburg High Court — Trial");
+    const title = within(courtRow).getByText("Johannesburg High Court — Trial");
+    expect(title).toHaveClass("line-clamp-2", "break-words");
+    expect(title).not.toHaveClass("truncate");
+    const time = within(courtRow).getByText("09:30");
+    expect(time.parentElement).toBe(title.parentElement);
+    expect(time.parentElement).toHaveClass("flex-col");
+    expect(time.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("keeps the overdue strip rows at default density", () => {
+    renderWeek([court], [bandEvent]);
+    expect(screen.getByTestId("diary-event-old-1")).toHaveAttribute("data-density", "default");
+  });
+
+  it("lets each day cell shrink below its content width", () => {
+    renderWeek();
+    expect(screen.getByTestId("diary-day-2026-10-21")).toHaveClass("min-w-0");
+  });
+
   it("badges overdue rows", () => {
     renderWeek();
     expect(within(screen.getByTestId("diary-event-t-1")).getByText("Overdue")).toBeInTheDocument();

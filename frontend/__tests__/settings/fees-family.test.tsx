@@ -58,7 +58,7 @@ const MEMBER = { capabilities: [], role: "member", isAdmin: false, isOwner: fals
 
 const BOTH_MODULES = ["bulk_billing", "trust_accounting"];
 const ALL_FEES_TABS = [
-  "Tariffs",
+  "Rates",
   "Tax",
   "Time recording",
   "Fee runs",
@@ -106,10 +106,10 @@ describe("Fees & Trust settings family page", () => {
     vi.clearAllMocks();
   });
 
-  it("renders all six tabs in §12.7.1 order for an owner with both modules and loads only Tariffs", async () => {
+  it("renders all six tabs in §12.7.1 order for an owner with both modules and loads only Rates", async () => {
     await renderFees();
     expect(tabNames()).toEqual(ALL_FEES_TABS);
-    expect(screen.getByRole("tab", { name: "Tariffs" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Rates" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByText("tariffs panel")).toBeInTheDocument();
     expect(calledLoaders()).toEqual(["tariffs"]);
   });
@@ -122,29 +122,29 @@ describe("Fees & Trust settings family page", () => {
   it("hides the module-gated tabs when neither module is enabled", async () => {
     withModules([]);
     await renderFees();
-    expect(tabNames()).toEqual(["Tariffs", "Tax", "Time recording", "Collections"]);
+    expect(tabNames()).toEqual(["Rates", "Tax", "Time recording", "Collections"]);
   });
 
   it("shows Fee runs but not Trust accounting to an admin with bulk_billing only", async () => {
     mockCaps.mockResolvedValue(ADMIN);
     withModules(["bulk_billing"]);
     await renderFees();
-    expect(tabNames()).toEqual(["Tariffs", "Tax", "Time recording", "Fee runs", "Collections"]);
+    expect(tabNames()).toEqual(["Rates", "Tax", "Time recording", "Fee runs", "Collections"]);
   });
 
   it("treats a failing org-settings fetch as no modules — never an error page", async () => {
     mockGetOrgSettings.mockRejectedValue(new Error("network"));
     await renderFees();
-    expect(tabNames()).toEqual(["Tariffs", "Tax", "Time recording", "Collections"]);
+    expect(tabNames()).toEqual(["Rates", "Tax", "Time recording", "Collections"]);
     expect(screen.getByText("tariffs panel")).toBeInTheDocument();
   });
 
-  it("falls back to Tariffs with a notice when the module of a requested tab is off", async () => {
+  it("falls back to Rates with a notice when the module of a requested tab is off", async () => {
     withModules([]);
     await renderFees("trust-accounting");
     expect(screen.getByText("tariffs panel")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      /don.t have access to Trust accounting — showing Tariffs instead/
+      /don.t have access to Trust accounting — showing Rates instead/
     );
     expect(loaders["trust-accounting"]).not.toHaveBeenCalled();
   });
@@ -162,30 +162,30 @@ describe("Fees & Trust settings family page", () => {
     expect(calledLoaders()).toEqual(["time-recording"]);
   });
 
-  it("falls back to Tariffs for an unknown tab silently — never a 404", async () => {
+  it("falls back to Rates for an unknown tab silently — never a 404", async () => {
     await renderFees("rates"); // the old page name is not a tab id
     expect(screen.getByText("tariffs panel")).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  // D19 (D6/D18 rule) + D20: a member keeps only Tariffs (its loader keeps the in-page
+  // D19 (D6/D18 rule) + D20: a member keeps only Rates (its loader keeps the in-page
   // FINANCIAL_VISIBILITY denial); Tax and Time recording were denial-only pages → adminOnly.
-  it("shows a member only Tariffs — admin-only tabs are absent, not disabled", async () => {
+  it("shows a member only Rates — admin-only tabs are absent, not disabled", async () => {
     mockCaps.mockResolvedValue(MEMBER);
     await renderFees();
-    expect(tabNames()).toEqual(["Tariffs"]);
+    expect(tabNames()).toEqual(["Rates"]);
     for (const tab of screen.getAllByRole("tab")) {
       expect(tab).not.toHaveAttribute("data-disabled");
       expect(tab).not.toBeDisabled();
     }
   });
 
-  it("falls back to Tariffs with a notice when a member asks for Tax", async () => {
+  it("falls back to Rates with a notice when a member asks for Tax", async () => {
     mockCaps.mockResolvedValue(MEMBER);
     await renderFees("tax");
     expect(screen.getByText("tariffs panel")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      /don.t have access to Tax — showing Tariffs instead/
+      /don.t have access to Tax — showing Rates instead/
     );
     expect(loaders.tax).not.toHaveBeenCalled();
   });
@@ -205,7 +205,7 @@ describe("Fees & Trust settings family page", () => {
     await renderFees("tax");
     expect(screen.getByRole("tablist", { name: "Fees & Trust settings" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Tax" })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tab", { name: "Tariffs" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tab", { name: "Rates" })).toHaveAttribute("aria-selected", "false");
     expect(screen.getByRole("tabpanel", { name: "Tax" })).toHaveTextContent("tax panel");
   });
 
@@ -225,14 +225,14 @@ describe("Fees & Trust settings family page", () => {
         title: "Fees & Trust — Fee runs · Settings",
       });
       expect(await generateMetadata(props({}))).toEqual({
-        title: "Fees & Trust — Tariffs · Settings",
+        title: "Fees & Trust — Rates · Settings",
       });
     });
 
     it("uses the resolved tab for a member's forbidden tab", async () => {
       mockCaps.mockResolvedValue(MEMBER);
       expect(await generateMetadata(props({ tab: "collections" }))).toEqual({
-        title: "Fees & Trust — Tariffs · Settings",
+        title: "Fees & Trust — Rates · Settings",
       });
     });
   });

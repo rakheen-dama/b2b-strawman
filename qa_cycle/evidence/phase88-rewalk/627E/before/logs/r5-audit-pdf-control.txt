@@ -1,0 +1,14 @@
+# CONTROL: audit-log Download PDF (exportAuditPdf via getAuthFetchOptions) in the same BFF session
+# frontend.log lines 2484-2485
+ POST /org/mathebula-partners/settings/firm?tab=audit-trail 200 in 2.6s (next.js: 6ms, proxy.ts: 2ms, application-code: 2.5s)
+  └─ ƒ exportAuditPdfAction({"page":0,"size":50}) in 2535ms app/(app)/org/[slug]/settings/firm/_tabs/audit-trail-actions.ts
+
+# backend.log lines 8765-8768 (openhtmltopdf render = backend was hit)
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) var(-brand-color,#1a1a2e) is not a border width, style, or color at line 20. Skipping declaration.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 27ms
+com.openhtmltopdf.match INFO:: Matcher created with 173 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+
+# audit event written:
+audit.export.generated|2026-10-28 09:57:19.039906+00
+# downloaded: audit-log-2026-10-28.pdf,    65496 bytes, magic: %PDF-1.6

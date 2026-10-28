@@ -46,7 +46,7 @@ export function CustomerProjectsPanel({
       try {
         const result = await unlinkProject(slug, customerId, projectId);
         if (!result.success) {
-          setError(result.error ?? "Failed to unlink project.");
+          setError(result.error ?? "Failed to unlink matter.");
         }
       } catch {
         setError("An unexpected error occurred.");

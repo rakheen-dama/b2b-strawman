@@ -21,7 +21,7 @@ describe("DormancyCandidateList", () => {
 
   it("shows empty state when no candidates", () => {
     render(<DormancyCandidateList candidates={[]} orgSlug="test-org" />);
-    expect(screen.getByText("No dormant customers detected.")).toBeInTheDocument();
+    expect(screen.getByText("No dormant clients detected.")).toBeInTheDocument();
   });
 
   it("renders rows with customer name and days since activity", () => {

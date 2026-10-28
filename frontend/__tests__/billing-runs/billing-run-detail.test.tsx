@@ -102,7 +102,7 @@ describe("BillingRunItemsTable", () => {
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Beta LLC")).toBeInTheDocument();
-    expect(screen.getByText("View Invoice")).toBeInTheDocument();
+    expect(screen.getByText("View fee note")).toBeInTheDocument();
   });
 
   it("shows failure reason for failed items", () => {

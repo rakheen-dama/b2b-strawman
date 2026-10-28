@@ -222,15 +222,15 @@ describe("MemberDetailPanel", () => {
 
     // Wait for capabilities to load
     await waitFor(() => {
-      expect(screen.getByText("Project Management")).toBeInTheDocument();
+      expect(screen.getByText("Matter Management")).toBeInTheDocument();
     });
 
     // Check that all 6 capability labels are rendered
     expect(screen.getByText("Financial Visibility")).toBeInTheDocument();
-    expect(screen.getByText("Invoicing")).toBeInTheDocument();
-    expect(screen.getByText("Project Management")).toBeInTheDocument();
+    expect(screen.getByText("Billing")).toBeInTheDocument();
+    expect(screen.getByText("Matter Management")).toBeInTheDocument();
     expect(screen.getByText("Team Oversight")).toBeInTheDocument();
-    expect(screen.getByText("Customer Management")).toBeInTheDocument();
+    expect(screen.getByText("Client Management")).toBeInTheDocument();
     expect(screen.getByText("Automations")).toBeInTheDocument();
 
     // The "+" indicator should be visible for the INVOICING override
@@ -269,7 +269,7 @@ describe("MemberDetailPanel", () => {
 
     // Wait for capabilities to load
     await waitFor(() => {
-      expect(screen.getByText("Project Management")).toBeInTheDocument();
+      expect(screen.getByText("Matter Management")).toBeInTheDocument();
     });
 
     // Click Save button

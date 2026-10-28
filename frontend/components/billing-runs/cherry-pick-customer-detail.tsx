@@ -53,11 +53,11 @@ export function CherryPickCustomerDetail({
       <div className="mb-4 flex justify-end">
         {isExcluded ? (
           <Button variant="outline" size="sm" onClick={() => onInclude(itemId)}>
-            Include Customer
+            Include Client
           </Button>
         ) : (
           <Button variant="outline" size="sm" onClick={() => onExclude(itemId)}>
-            Exclude Customer
+            Exclude Client
           </Button>
         )}
       </div>
@@ -285,7 +285,7 @@ export function CherryPickCustomerDetail({
             data.expenses.length === 0 &&
             data.disbursements.length === 0 && (
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                No unbilled entries for this customer.
+                No unbilled entries for this client.
               </p>
             )}
 

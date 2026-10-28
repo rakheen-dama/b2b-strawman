@@ -6,7 +6,7 @@ export default function ProjectDetailLoading() {
       {/* Back link */}
       <Skeleton className="h-4 w-32" />
 
-      {/* Project Header */}
+      {/* Matter Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">

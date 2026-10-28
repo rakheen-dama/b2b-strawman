@@ -180,7 +180,7 @@ export async function instantiateTemplateAction(
       if (error.status === 403) {
         return {
           success: false,
-          error: "You do not have permission to create projects from templates.",
+          error: "You do not have permission to create matters from templates.",
         };
       }
       if (error.status === 400) {

@@ -77,7 +77,7 @@ describe("TaxRateTable", () => {
 
     expect(screen.getByText("No tax rates yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Create your first tax rate to apply taxes to invoices.")
+      screen.getByText("Create your first tax rate to apply taxes to fee notes.")
     ).toBeInTheDocument();
   });
 

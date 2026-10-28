@@ -107,11 +107,11 @@ describe("Customer detail action row — Edit + Archive (OBS-2103 + OBS-2103b)",
     await user.click(screen.getByRole("button", { name: "Edit Action Row" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Edit Customer")).toBeInTheDocument();
+      expect(screen.getByText("Edit Client")).toBeInTheDocument();
     });
     expect(screen.getByLabelText("Name")).toHaveValue("Sipho Dlamini");
     // Archive dialog must NOT have opened.
-    expect(screen.queryByText(/project links will be preserved/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/matter links will be preserved/)).not.toBeInTheDocument();
   });
 
   it("clicking Archive opens the Archive dialog (OBS-2103b: onClick survives commit)", async () => {
@@ -121,11 +121,11 @@ describe("Customer detail action row — Edit + Archive (OBS-2103 + OBS-2103b)",
     await user.click(screen.getByRole("button", { name: "Archive Action Row" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Archive Customer")).toBeInTheDocument();
+      expect(screen.getByText("Archive Client")).toBeInTheDocument();
     });
-    expect(screen.getByText(/project links will be preserved/)).toBeInTheDocument();
+    expect(screen.getByText(/matter links will be preserved/)).toBeInTheDocument();
     // Edit dialog must NOT have opened.
-    expect(screen.queryByText("Edit Customer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Edit Client")).not.toBeInTheDocument();
   });
 
   it("does not collide — clicking Edit does not open Archive (and vice versa)", async () => {
@@ -135,9 +135,9 @@ describe("Customer detail action row — Edit + Archive (OBS-2103 + OBS-2103b)",
     // Click Edit — Archive's confirmation copy must NOT appear.
     await user.click(screen.getByRole("button", { name: "Edit Action Row" }));
     await waitFor(() => {
-      expect(screen.getByText("Edit Customer")).toBeInTheDocument();
+      expect(screen.getByText("Edit Client")).toBeInTheDocument();
     });
-    expect(screen.queryByText(/project links will be preserved/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/matter links will be preserved/)).not.toBeInTheDocument();
   });
 
   it("both dialogs operate independently after a remount cycle", async () => {
@@ -147,7 +147,7 @@ describe("Customer detail action row — Edit + Archive (OBS-2103 + OBS-2103b)",
     // First mount — open + close Edit.
     await user.click(screen.getByRole("button", { name: "Edit Action Row" }));
     await waitFor(() => {
-      expect(screen.getByText("Edit Customer")).toBeInTheDocument();
+      expect(screen.getByText("Edit Client")).toBeInTheDocument();
     });
     await user.click(screen.getByRole("button", { name: "Cancel" }));
 
@@ -159,8 +159,8 @@ describe("Customer detail action row — Edit + Archive (OBS-2103 + OBS-2103b)",
     render(<ActionRow />);
     await user.click(screen.getByRole("button", { name: "Archive Action Row" }));
     await waitFor(() => {
-      expect(screen.getByText("Archive Customer")).toBeInTheDocument();
+      expect(screen.getByText("Archive Client")).toBeInTheDocument();
     });
-    expect(screen.queryByText("Edit Customer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Edit Client")).not.toBeInTheDocument();
   });
 });

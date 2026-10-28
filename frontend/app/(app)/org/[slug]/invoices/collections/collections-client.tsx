@@ -107,7 +107,7 @@ export function CollectionsClient({ slug, debtors, gates, previews }: Collection
                         {debtor.clientName}
                       </Link>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {debtor.invoiceCount} invoice{debtor.invoiceCount === 1 ? "" : "s"} ·{" "}
+                        {debtor.invoiceCount} fee note{debtor.invoiceCount === 1 ? "" : "s"} ·{" "}
                         {debtor.currency}
                       </p>
                     </td>

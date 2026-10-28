@@ -42,7 +42,7 @@ export function CommentItem({
           <span className="text-xs text-slate-500 dark:text-slate-400">
             <RelativeDate iso={comment.createdAt} />
           </span>
-          {comment.visibility === "SHARED" && <Badge variant="success">Customer visible</Badge>}
+          {comment.visibility === "SHARED" && <Badge variant="success">Client visible</Badge>}
         </div>
 
         <p className="mt-1 text-sm whitespace-pre-wrap text-slate-700 dark:text-slate-300">

@@ -69,7 +69,7 @@ export function CustomerInvoicesTab({
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
               <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                Invoice
+                Fee note
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Status

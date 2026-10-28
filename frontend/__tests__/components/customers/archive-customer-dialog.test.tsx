@@ -45,7 +45,7 @@ describe("ArchiveCustomerDialog", () => {
     await user.click(screen.getByRole("button", { name: "Archive Trigger" }));
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
-    expect(screen.getByText(/project links will be preserved/)).toBeInTheDocument();
+    expect(screen.getByText(/matter links will be preserved/)).toBeInTheDocument();
   });
 
   it("calls archiveCustomer and navigates on success", async () => {

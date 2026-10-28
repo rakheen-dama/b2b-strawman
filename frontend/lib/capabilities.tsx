@@ -23,17 +23,17 @@ export const CAPABILITY_META = [
   {
     value: CAPABILITIES.FINANCIAL_VISIBILITY,
     label: "Financial Visibility",
-    description: "View financial data including rates, budgets, and profitability reports",
+    description: "View financial data including rates, fee estimates, and profitability reports",
   },
   {
     value: CAPABILITIES.INVOICING,
-    label: "Invoicing",
-    description: "Create, edit, and send invoices to customers",
+    label: "Billing",
+    description: "Create, edit, and send fee notes to clients",
   },
   {
     value: CAPABILITIES.PROJECT_MANAGEMENT,
-    label: "Project Management",
-    description: "Create and manage projects, tasks, and documents",
+    label: "Matter Management",
+    description: "Create and manage matters, tasks, and documents",
   },
   {
     value: CAPABILITIES.TEAM_OVERSIGHT,
@@ -42,8 +42,8 @@ export const CAPABILITY_META = [
   },
   {
     value: CAPABILITIES.CUSTOMER_MANAGEMENT,
-    label: "Customer Management",
-    description: "Create and manage customer records and relationships",
+    label: "Client Management",
+    description: "Create and manage client records and relationships",
   },
   {
     value: CAPABILITIES.AUTOMATIONS,

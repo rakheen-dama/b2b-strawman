@@ -72,7 +72,7 @@ describe("SendForAcceptanceDialog", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("No portal contacts configured for this customer.")
+        screen.getByText("No portal contacts configured for this client.")
       ).toBeInTheDocument();
     });
   });

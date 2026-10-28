@@ -89,7 +89,7 @@ export interface PaiaGenerateResponse {
   generatedAt: string;
 }
 
-// ---- Standalone Customer Data Protection (Epic 380A) ----
+// ---- Standalone Client Data Protection (Epic 380A) ----
 
 /** `POST /api/clients/{id}/anonymize` body (`AnonymizationController.AnonymizationRequest`). */
 export interface AnonymizeClientRequest {

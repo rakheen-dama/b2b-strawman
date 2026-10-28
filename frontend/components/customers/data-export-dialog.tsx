@@ -91,8 +91,8 @@ export function DataExportDialog({
               </div>
               <DialogTitle className="text-center">Download All Data</DialogTitle>
               <DialogDescription className="text-center">
-                Export all customer data including profile information, documents, time entries,
-                invoices, and comments into a downloadable archive.
+                Export all client data including profile information, documents, time entries, fee
+                notes, and comments into a downloadable archive.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -109,7 +109,7 @@ export function DataExportDialog({
             <DialogHeader>
               <DialogTitle className="text-center">Generating Export</DialogTitle>
               <DialogDescription className="text-center">
-                Gathering and packaging customer data...
+                Gathering and packaging client data...
               </DialogDescription>
             </DialogHeader>
             <div className="flex justify-center py-6">

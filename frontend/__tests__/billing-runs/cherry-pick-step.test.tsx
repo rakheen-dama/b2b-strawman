@@ -274,10 +274,10 @@ describe("CherryPickStep", () => {
     await user.click(screen.getByText("Acme Corp"));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Exclude Customer" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Exclude Client" })).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole("button", { name: "Exclude Customer" }));
+    await user.click(screen.getByRole("button", { name: "Exclude Client" }));
 
     await waitFor(() => {
       expect(screen.getByText("Excluded")).toBeInTheDocument();

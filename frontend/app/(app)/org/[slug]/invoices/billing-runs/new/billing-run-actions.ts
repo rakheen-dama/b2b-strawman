@@ -197,7 +197,7 @@ export async function excludeCustomerAction(
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to exclude customer." };
+    return { success: false, error: "Failed to exclude client." };
   }
 }
 
@@ -217,6 +217,6 @@ export async function includeCustomerAction(
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to include customer." };
+    return { success: false, error: "Failed to include client." };
   }
 }

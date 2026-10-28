@@ -35,7 +35,7 @@ export function DeleteBudgetDialog({ slug, projectId, children }: DeleteBudgetDi
         setIsDeleting(false);
         setOpen(false);
       } else {
-        setError(result.error ?? "Failed to delete budget.");
+        setError(result.error ?? "Failed to delete fee estimate.");
         setIsDeleting(false);
       }
     } catch {
@@ -54,10 +54,10 @@ export function DeleteBudgetDialog({ slug, projectId, children }: DeleteBudgetDi
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">Delete Budget</AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Delete fee estimate</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            This will remove the budget configuration for this project. Time entries and billing
-            data will not be affected.
+            This will remove the fee estimate configuration for this matter. Time entries and
+            billing data will not be affected.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}
@@ -66,7 +66,7 @@ export function DeleteBudgetDialog({ slug, projectId, children }: DeleteBudgetDi
             Cancel
           </AlertDialogCancel>
           <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-            {isDeleting ? "Deleting..." : "Delete Budget"}
+            {isDeleting ? "Deleting..." : "Delete fee estimate"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

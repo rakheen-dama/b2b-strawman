@@ -211,7 +211,7 @@ export async function updateEntityCustomFieldsAction(
   const apiPrefix = entityApiPrefix(entityType);
   try {
     if (entityType === "INVOICE") {
-      // Invoices have a dedicated custom-fields endpoint; PUT /api/invoices/{id}
+      // Fee notes have a dedicated custom-fields endpoint; PUT /api/invoices/{id}
       // only accepts UpdateInvoiceRequest (4 fields) and would reject the full entity.
       await api.put(`/api/${apiPrefix}/${entityId}/custom-fields`, { customFields });
     } else {

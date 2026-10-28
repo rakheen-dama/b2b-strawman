@@ -30,8 +30,8 @@ const SYNC_STATES = [
 ];
 
 const ENTITY_TYPES = [
-  { value: "INVOICE", label: "Invoice" },
-  { value: "CUSTOMER", label: "Customer" },
+  { value: "INVOICE", label: "Fee note" },
+  { value: "CUSTOMER", label: "Client" },
 ];
 
 const DIRECTIONS = [

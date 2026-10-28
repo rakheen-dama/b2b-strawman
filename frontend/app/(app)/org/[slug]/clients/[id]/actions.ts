@@ -65,7 +65,7 @@ export async function linkProject(
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can link projects." };
+    return { success: false, error: "Only admins and owners can link matters." };
   }
 
   try {
@@ -89,7 +89,7 @@ export async function unlinkProject(
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can unlink projects." };
+    return { success: false, error: "Only admins and owners can unlink matters." };
   }
 
   try {
@@ -106,7 +106,7 @@ export async function unlinkProject(
   return { success: true };
 }
 
-// ---- Customer document actions ----
+// ---- Client document actions ----
 
 export async function fetchCustomerDocuments(customerId: string): Promise<Document[]> {
   return api.get<Document[]>(`/api/documents?scope=CUSTOMER&customerId=${customerId}`);

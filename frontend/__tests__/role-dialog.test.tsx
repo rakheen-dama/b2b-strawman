@@ -84,18 +84,18 @@ describe("RoleDialog", () => {
     expect(screen.getByDisplayValue("Bookkeeper")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Can manage invoices")).toBeInTheDocument();
 
-    // Financial Visibility and Invoicing should be checked
+    // Financial Visibility and Billing should be checked
     expect(screen.getByRole("checkbox", { name: /Financial Visibility/i })).toHaveAttribute(
       "data-state",
       "checked"
     );
-    expect(screen.getByRole("checkbox", { name: /Invoicing/i })).toHaveAttribute(
+    expect(screen.getByRole("checkbox", { name: /Billing/i })).toHaveAttribute(
       "data-state",
       "checked"
     );
 
-    // Project Management should not be checked
-    expect(screen.getByRole("checkbox", { name: /Project Management/i })).toHaveAttribute(
+    // Matter Management should not be checked
+    expect(screen.getByRole("checkbox", { name: /Matter Management/i })).toHaveAttribute(
       "data-state",
       "unchecked"
     );
@@ -109,8 +109,8 @@ describe("RoleDialog", () => {
 
     render(<RoleDialog slug="acme" role={role} open={true} onOpenChange={onOpenChange} />);
 
-    // Add Project Management capability
-    await user.click(screen.getByLabelText("Project Management"));
+    // Add Matter Management capability
+    await user.click(screen.getByLabelText("Matter Management"));
 
     await user.click(screen.getByRole("button", { name: "Save" }));
 

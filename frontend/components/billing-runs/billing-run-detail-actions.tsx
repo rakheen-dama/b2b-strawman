@@ -58,7 +58,7 @@ export function BillingRunDetailActions({
     try {
       const result = await batchApproveAction(slug, billingRunId);
       if (!result.success) {
-        setError(result.error ?? "Failed to approve invoices.");
+        setError(result.error ?? "Failed to approve fee notes.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -104,7 +104,7 @@ export function BillingRunDetailActions({
               <AlertDialogTitle className="text-center">Cancel Billing Run</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
                 Are you sure you want to cancel this billing run? This action cannot be undone. Any
-                generated invoices will remain but the run will be marked as cancelled.
+                generated fee notes will remain but the run will be marked as cancelled.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

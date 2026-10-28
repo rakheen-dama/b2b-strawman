@@ -53,7 +53,7 @@ export function DataRequestsSection({
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
                   <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                    Customer
+                    Client
                   </th>
                   <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
                     Type

@@ -79,7 +79,7 @@ export function ClientOverviewTab({
         {lifecycleStatus && <LifecycleStatusBadge status={lifecycleStatus} />}
         <p className="text-muted-foreground text-sm">
           {linkedProjectCount > 0
-            ? `Everything looks good — ${linkedProjectCount} linked ${linkedProjectCount === 1 ? "project" : "projects"}.`
+            ? `Everything looks good — ${linkedProjectCount} linked ${linkedProjectCount === 1 ? "matter" : "matters"}.`
             : "Everything looks good — no outstanding items."}
         </p>
       </div>
@@ -126,7 +126,7 @@ export function ClientOverviewTab({
                 </div>
                 <div className="flex items-center gap-2">
                   <Button asChild size="sm">
-                    <Link href={unbilledTimeData.createInvoiceHref}>Create Invoice</Link>
+                    <Link href={unbilledTimeData.createInvoiceHref}>Create fee note</Link>
                   </Button>
                   <Button asChild size="sm" variant="outline">
                     <Link href={unbilledTimeData.viewTimeHref}>View Time</Link>

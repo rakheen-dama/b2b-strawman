@@ -91,7 +91,7 @@ export async function getDownloadUrl(documentId: string): Promise<DownloadUrlRes
   }
 }
 
-// ---- Customer-project linking actions ----
+// ---- Client-matter linking actions ----
 
 export async function fetchCustomers(): Promise<Client[]> {
   return listClients();
@@ -104,7 +104,7 @@ export async function linkCustomerToProject(
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can link customers." };
+    return { success: false, error: "Only admins and owners can link clients." };
   }
 
   try {
@@ -127,7 +127,7 @@ export async function unlinkCustomerFromProject(
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can unlink customers." };
+    return { success: false, error: "Only admins and owners can unlink clients." };
   }
 
   try {

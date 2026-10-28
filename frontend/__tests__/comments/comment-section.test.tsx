@@ -135,7 +135,7 @@ describe("CommentItem", () => {
     expect(screen.getByText("This is a test comment.")).toBeInTheDocument();
   });
 
-  it("shows 'Customer visible' badge for SHARED comments", () => {
+  it("shows 'Client visible' badge for SHARED comments", () => {
     render(
       <CommentItem
         comment={makeComment({ visibility: "SHARED" })}
@@ -146,7 +146,7 @@ describe("CommentItem", () => {
       />
     );
 
-    expect(screen.getByText("Customer visible")).toBeInTheDocument();
+    expect(screen.getByText("Client visible")).toBeInTheDocument();
   });
 
   it("shows edit and delete buttons for own comments", () => {
@@ -313,7 +313,7 @@ describe("AddCommentForm", () => {
 
     expect(screen.getByLabelText("Visibility")).toBeInTheDocument();
     expect(screen.getByText("Internal only")).toBeInTheDocument();
-    expect(screen.getByText("Customer visible")).toBeInTheDocument();
+    expect(screen.getByText("Client visible")).toBeInTheDocument();
   });
 
   it("hides visibility toggle when canManageVisibility is false", () => {

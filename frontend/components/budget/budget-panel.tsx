@@ -26,7 +26,7 @@ const STATUS_BADGE: Record<
 > = {
   ON_TRACK: { label: "On Track", variant: "success" },
   AT_RISK: { label: "At Risk", variant: "warning" },
-  OVER_BUDGET: { label: "Over Budget", variant: "destructive" },
+  OVER_BUDGET: { label: "Over estimate", variant: "destructive" },
 };
 
 function BudgetProgressBar({ value, status }: { value: number; status: BudgetStatus }) {
@@ -116,7 +116,7 @@ export function BudgetPanel({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h3 className="font-display flex items-center gap-2 text-lg text-slate-950 dark:text-slate-50">
-            Budget Status
+            Fee estimate status
             <HelpTip code="budget.vsActual" />
           </h3>
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
@@ -159,7 +159,7 @@ export function BudgetPanel({
           </div>
           <BudgetProgressBar value={budget.hoursConsumedPct} status={budget.hoursStatus} />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <StatCard label="Budget" value={formatDuration(budget.budgetHours! * 60)} />
+            <StatCard label="Fee estimate" value={formatDuration(budget.budgetHours! * 60)} />
             <StatCard label="Consumed" value={formatDuration(budget.hoursConsumed * 60)} />
             <StatCard
               label="Remaining"
@@ -182,7 +182,7 @@ export function BudgetPanel({
           <BudgetProgressBar value={budget.amountConsumedPct} status={budget.amountStatus} />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard
-              label="Budget"
+              label="Fee estimate"
               value={formatCurrency(budget.budgetAmount!, budget.budgetCurrency!)}
             />
             <StatCard

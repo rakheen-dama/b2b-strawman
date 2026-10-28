@@ -70,7 +70,7 @@ export function SendForAcceptanceDialog({
       } catch {
         if (cancelled) return;
         setError(
-          "Could not load portal contacts. Please configure them in the customer's portal settings."
+          "Could not load portal contacts. Please configure them in the client's portal settings."
         );
       } finally {
         if (!cancelled) setIsLoadingContacts(false);
@@ -127,7 +127,7 @@ export function SendForAcceptanceDialog({
 
         {noContacts && !error && (
           <p className="py-4 text-sm text-slate-500">
-            No portal contacts configured for this customer.
+            No portal contacts configured for this client.
           </p>
         )}
 

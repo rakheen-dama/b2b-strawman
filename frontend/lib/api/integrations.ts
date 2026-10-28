@@ -96,7 +96,7 @@ export async function getXeroTaxRates(): Promise<XeroTaxRate[]> {
   return api.get<XeroTaxRate[]>("/api/integrations/xero/tax-rates");
 }
 
-// ---- Customer Import ----
+// ---- Client Import ----
 
 export async function importXeroCustomers(): Promise<XeroClientImportResult> {
   return api.post<XeroClientImportResult>("/api/integrations/xero/import-clients");

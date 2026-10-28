@@ -105,11 +105,11 @@ describe("Invite Form Role Selection", () => {
     // Should show capability pills
     await waitFor(() => {
       expect(screen.getByText("Financial Visibility")).toBeInTheDocument();
-      expect(screen.getByText("Invoicing")).toBeInTheDocument();
+      expect(screen.getByText("Billing")).toBeInTheDocument();
     });
 
     // Should not show capabilities not in the role
-    expect(screen.queryByText("Project Management")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matter Management")).not.toBeInTheDocument();
   });
 
   it("hides customization section when Admin is selected", async () => {

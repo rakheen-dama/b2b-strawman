@@ -166,7 +166,7 @@ export function ChecklistInstancePanel({
               <DialogHeader>
                 <DialogTitle>Add Checklist</DialogTitle>
                 <DialogDescription>
-                  Select a checklist template to instantiate for this customer.
+                  Select a checklist template to instantiate for this client.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-2">

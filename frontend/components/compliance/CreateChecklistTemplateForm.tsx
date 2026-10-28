@@ -123,7 +123,7 @@ export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFor
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="checklist-customer-type">Customer Type</Label>
+          <Label htmlFor="checklist-customer-type">Client Type</Label>
           <select
             id="checklist-customer-type"
             value={customerType}
@@ -159,7 +159,7 @@ export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFor
           className="size-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
         />
         <Label htmlFor="checklist-auto-instantiate" className="cursor-pointer">
-          Auto-instantiate when a matching customer is created
+          Auto-instantiate when a matching client is created
         </Label>
       </div>
 

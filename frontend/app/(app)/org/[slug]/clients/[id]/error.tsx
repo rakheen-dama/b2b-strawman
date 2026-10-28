@@ -13,7 +13,7 @@ export default function CustomerDetailError({
         Something went wrong
       </h2>
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        Unable to load customer data. Please try again.
+        Unable to load client data. Please try again.
       </p>
       <button onClick={reset} className="text-sm text-teal-600 hover:underline">
         Try again

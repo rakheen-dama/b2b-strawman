@@ -69,7 +69,7 @@ function AddDisbursementsPickerContent({
   const { data, error, isLoading } = useSWR<UnbilledDisbursementsResponse>(
     swrKey,
     async () => {
-      if (!projectId) throw new Error("No project selected");
+      if (!projectId) throw new Error("No matter selected");
       // The server action swallows errors and returns null — surface that as
       // an SWR error so the component's error UI is reachable.
       const result = await fetchUnbilledDisbursementsAction(projectId);
@@ -133,7 +133,7 @@ function AddDisbursementsPickerContent({
       const result = await addDisbursementLines(slug, invoiceId, customerId, idsToSubmit);
       if (result.success) {
         toast.success(
-          `Added ${idsToSubmit.length} disbursement line${idsToSubmit.length !== 1 ? "s" : ""} to invoice`
+          `Added ${idsToSubmit.length} disbursement line${idsToSubmit.length !== 1 ? "s" : ""} to fee note`
         );
         setSelectedIds(new Set());
         onSuccess();
@@ -161,14 +161,14 @@ function AddDisbursementsPickerContent({
         <DialogHeader>
           <DialogTitle>Add Disbursements</DialogTitle>
           <DialogDescription>
-            Select unbilled, approved disbursements to add as invoice lines.
+            Select unbilled, approved disbursements to add as fee note lines.
           </DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {!projectId && (
             <p className="py-6 text-center text-sm text-slate-500" data-testid="picker-no-project">
-              This invoice is not linked to a matter. Select a matter on the invoice to add
+              This fee note is not linked to a matter. Select a matter on the fee note to add
               disbursements.
             </p>
           )}
@@ -280,7 +280,7 @@ function AddDisbursementsPickerContent({
               disabled={selectedIds.size === 0 || isSubmitting}
               data-testid="picker-submit"
             >
-              {isSubmitting ? "Adding..." : "Add to Invoice"}
+              {isSubmitting ? "Adding..." : "Add to fee note"}
             </Button>
           </div>
         </DialogFooter>

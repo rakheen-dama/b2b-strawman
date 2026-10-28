@@ -44,7 +44,7 @@ export async function invokeMatterIntakeAction(
           success: false,
           error:
             error.message ||
-            "Intake pre-flight check failed. Ensure customer is selected and description is at least 20 characters.",
+            "Intake pre-flight check failed. Ensure client is selected and description is at least 20 characters.",
         };
       }
       return { success: false, error: error.message };

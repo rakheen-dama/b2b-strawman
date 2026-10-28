@@ -36,7 +36,7 @@ function getDisabledReason(
     return "Connect an Anthropic API key in Settings > AI to use this feature.";
   }
   if (!props.customerId) {
-    return "Select a customer before running AI intake.";
+    return "Select a client before running AI intake.";
   }
   if (props.description.trim().length < 20) {
     return "Enter at least 20 characters in the description.";

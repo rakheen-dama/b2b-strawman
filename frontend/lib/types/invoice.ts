@@ -1,4 +1,4 @@
-// ---- Invoices (from InvoiceController.java) ----
+// ---- Fee notes (from InvoiceController.java) ----
 
 import type { ExpenseCategory } from "./expense";
 
@@ -256,7 +256,7 @@ export interface UnbilledExpenseEntry {
   notes: string | null;
 }
 
-// ---- Invoice Validation ----
+// ---- Fee note Validation ----
 
 export type ValidationSeverity = "INFO" | "WARNING" | "CRITICAL";
 

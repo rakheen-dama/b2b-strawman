@@ -59,7 +59,7 @@ export function LinkProjectDialog({
       if (result.success) {
         setOpen(false);
       } else {
-        setLinkError(result.error ?? "Failed to link project.");
+        setLinkError(result.error ?? "Failed to link matter.");
       }
     } catch {
       setLinkError("An unexpected error occurred.");

@@ -99,7 +99,7 @@ export async function resolveConflict(
   }
 }
 
-// -- Projects & Customers (for form selectors) --
+// -- Matters & Clients (for form selectors) --
 // Both /api/matters and /api/clients return a flat List<...Response> (no
 // pagination envelope). We accept both shapes defensively in case those
 // endpoints are ever paginated. See backend CustomerController.listCustomers

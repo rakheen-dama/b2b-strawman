@@ -50,7 +50,7 @@ export async function batchApproveAction(
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to approve invoices." };
+    return { success: false, error: "Failed to approve fee notes." };
   }
 }
 
@@ -67,6 +67,6 @@ export async function batchSendAction(
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to send invoices." };
+    return { success: false, error: "Failed to send fee notes." };
   }
 }

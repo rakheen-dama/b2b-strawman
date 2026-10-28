@@ -64,7 +64,7 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
         if (!cancelled) setCustomers(data.filter((c) => c.status === "ACTIVE"));
       })
       .catch(() => {
-        if (!cancelled) setFetchError("Failed to load customers.");
+        if (!cancelled) setFetchError("Failed to load clients.");
       })
       .finally(() => {
         if (!cancelled) setIsLoadingCustomers(false);
@@ -128,12 +128,12 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
         <DialogHeader>
           <DialogTitle>New Data Request</DialogTitle>
           <DialogDescription>
-            Create a new data subject request (DSR) on behalf of a customer.
+            Create a new data subject request (DSR) on behalf of a client.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Customer selector */}
+          {/* Client selector */}
           <div className="space-y-1.5">
             <Label>Client</Label>
             {fetchError ? (
@@ -154,18 +154,18 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
                     className={cn(selectedCustomer ? "text-foreground" : "text-muted-foreground")}
                   >
                     {isLoadingCustomers
-                      ? "Loading customers..."
+                      ? "Loading clients..."
                       : selectedCustomer
                         ? selectedCustomer.name
-                        : "Select a customer..."}
+                        : "Select a client..."}
                   </span>
                 </button>
                 {customerSearchOpen && (
                   <div className="bg-popover absolute z-50 mt-1 w-full rounded-md border shadow-md">
                     <Command>
-                      <CommandInput placeholder="Search customers..." />
+                      <CommandInput placeholder="Search clients..." />
                       <CommandList>
-                        <CommandEmpty>No customers found.</CommandEmpty>
+                        <CommandEmpty>No clients found.</CommandEmpty>
                         <CommandGroup>
                           {customers.map((customer) => (
                             <CommandItem

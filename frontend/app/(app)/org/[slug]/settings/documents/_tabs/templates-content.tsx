@@ -31,6 +31,7 @@ import { formatFileSize } from "@/lib/format";
 import type {
   TemplateListResponse,
   TemplateCategory,
+  TemplateEntityType,
   TemplateFormat,
   OrgSettings,
 } from "@/lib/types";
@@ -39,8 +40,14 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   ENGAGEMENT_LETTER: "Engagement Letter",
   STATEMENT_OF_WORK: "Statement of Work",
   COVER_LETTER: "Cover Letter",
-  PROJECT_SUMMARY: "Project Summary",
+  PROJECT_SUMMARY: "Matter Summary",
   NDA: "NDA",
+};
+
+const ENTITY_TYPE_LABELS: Record<TemplateEntityType, string> = {
+  PROJECT: "Matter",
+  CUSTOMER: "Client",
+  INVOICE: "Fee note",
 };
 
 interface TemplatesContentProps {
@@ -171,7 +178,10 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
                         )}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <Badge variant="neutral">{template.primaryEntityType}</Badge>
+                        <Badge variant="neutral">
+                          {ENTITY_TYPE_LABELS[template.primaryEntityType] ??
+                            template.primaryEntityType}
+                        </Badge>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         {template.source === "PLATFORM" ? (

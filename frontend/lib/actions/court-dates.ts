@@ -194,7 +194,7 @@ export async function interruptPrescription(
   }
 }
 
-// ── Projects (for dialogs) ─────────────────────────────────────────
+// ── Matters (for dialogs) ──────────────────────────────────────────
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
   const result = await listMatters({ size: 200 });

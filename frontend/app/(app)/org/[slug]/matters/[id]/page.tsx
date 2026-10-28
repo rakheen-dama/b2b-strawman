@@ -129,18 +129,18 @@ export default async function ProjectDetailPage({
   const setupSteps: SetupStep[] = setupStatus
     ? [
         {
-          label: "Customer assigned",
+          label: "Client assigned",
           complete: setupStatus.clientAssigned,
           actionHref: `?tab=clients`,
         },
         {
-          label: "Rate card configured",
+          label: "Billing rate configured",
           complete: setupStatus.rateCardConfigured,
           actionHref: `?tab=rates`,
           permissionRequired: true,
         },
         {
-          label: "Budget set",
+          label: "Fee estimate set",
           complete: setupStatus.budgetConfigured,
           actionHref: `?tab=budget`,
         },
@@ -289,7 +289,7 @@ export default async function ProjectDetailPage({
     // Non-fatal: 404 means no budget set, other errors show empty state
   }
 
-  // Project profitability for the "Financials" tab (lead/admin/owner)
+  // Matter profitability for the "Financials" tab (lead/admin/owner)
   let projectProfitability: MatterProfitabilityResponse | null = null;
   if (canManage) {
     try {

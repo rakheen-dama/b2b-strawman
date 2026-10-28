@@ -149,7 +149,7 @@ export type CreateAdversePartyFormData = z.infer<typeof createAdversePartySchema
 
 export const linkAdversePartySchema = z.object({
   projectId: z.string().uuid("Please select a matter"),
-  customerId: z.string().uuid("Please select a customer"),
+  customerId: z.string().uuid("Please select a client"),
   relationship: z.enum(["OPPOSING_PARTY", "WITNESS", "CO_ACCUSED", "RELATED_ENTITY", "GUARANTOR"], {
     message: "Relationship is required",
   }),
@@ -210,7 +210,7 @@ const paymentSourceEnum = z.enum(["OFFICE_ACCOUNT", "TRUST_ACCOUNT"], {
 export const createDisbursementSchema = z
   .object({
     projectId: z.string().uuid("Please select a matter"),
-    customerId: z.string().uuid("Please select a customer"),
+    customerId: z.string().uuid("Please select a client"),
     category: disbursementCategoryEnum,
     description: z.string().min(1, "Description is required").max(5000),
     amount: z

@@ -81,17 +81,17 @@ export function DeletionConfirmDialog({
             <AlertDialogHeader>
               <AlertDialogTitle className="text-center">Deletion Complete</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
-                The customer data has been anonymized.
+                The client data has been anonymized.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <p>Anonymization summary:</p>
               <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
-                <li>Customer anonymized: {summary.customerAnonymized ? "Yes" : "No"}</li>
+                <li>Client anonymized: {summary.customerAnonymized ? "Yes" : "No"}</li>
                 <li>Documents deleted: {summary.documentsDeleted}</li>
                 <li>Comments redacted: {summary.commentsRedacted}</li>
                 <li>Portal contacts anonymized: {summary.portalContactsAnonymized}</li>
-                <li>Invoices preserved: {summary.invoicesPreserved}</li>
+                <li>Fee notes preserved: {summary.invoicesPreserved}</li>
               </ul>
             </div>
             <AlertDialogFooter>
@@ -117,11 +117,11 @@ export function DeletionConfirmDialog({
             <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
               <p className="font-medium">The following will happen:</p>
               <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
-                <li>Customer PII will be anonymized</li>
+                <li>Client PII will be anonymized</li>
                 <li>Documents will be permanently deleted</li>
                 <li>Comments will be redacted</li>
-                <li>Financial records (invoices, time entries) will be preserved</li>
-                <li>Customer will be marked as Offboarded</li>
+                <li>Financial records (fee notes, time entries) will be preserved</li>
+                <li>Client will be marked as Offboarded</li>
               </ul>
             </div>
 

@@ -58,22 +58,22 @@ export function BudgetConfigDialog({
     const budgetAmount = amountStr ? parseFloat(amountStr) : undefined;
 
     if (!budgetHours && !budgetAmount) {
-      setError("At least one of budget hours or budget amount is required.");
+      setError("At least one of fee estimate hours or fee estimate amount is required.");
       return;
     }
 
     if (budgetHours !== undefined && budgetHours <= 0) {
-      setError("Budget hours must be a positive number.");
+      setError("Fee estimate hours must be a positive number.");
       return;
     }
 
     if (budgetAmount !== undefined && budgetAmount <= 0) {
-      setError("Budget amount must be a positive number.");
+      setError("Fee estimate amount must be a positive number.");
       return;
     }
 
     if (budgetAmount !== undefined && !currency) {
-      setError("Currency is required when budget amount is set.");
+      setError("Currency is required when fee estimate amount is set.");
       return;
     }
 
@@ -97,7 +97,7 @@ export function BudgetConfigDialog({
       if (result.success) {
         setOpen(false);
       } else {
-        setError(result.error ?? "Failed to save budget.");
+        setError(result.error ?? "Failed to save fee estimate.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -112,11 +112,11 @@ export function BudgetConfigDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {existing ? "Edit Budget" : "Set Budget"}
+            {existing ? "Edit fee estimate" : "Set fee estimate"}
             <HelpTip code="budget.types" />
           </DialogTitle>
           <DialogDescription>
-            Configure budget limits for this project. Set hours, amount, or both.
+            Configure fee estimate limits for this matter. Set hours, amount, or both.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -128,7 +128,7 @@ export function BudgetConfigDialog({
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="budgetHours">Budget Hours</Label>
+              <Label htmlFor="budgetHours">Fee estimate hours</Label>
               <Input
                 id="budgetHours"
                 name="budgetHours"
@@ -140,7 +140,7 @@ export function BudgetConfigDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="budgetAmount">Budget Amount</Label>
+              <Label htmlFor="budgetAmount">Fee estimate amount</Label>
               <Input
                 id="budgetAmount"
                 name="budgetAmount"
@@ -181,7 +181,7 @@ export function BudgetConfigDialog({
             <Textarea
               id="notes"
               name="notes"
-              placeholder="Optional notes about this budget..."
+              placeholder="Optional notes about this fee estimate..."
               rows={3}
               defaultValue={existing?.notes ?? ""}
             />
@@ -199,7 +199,7 @@ export function BudgetConfigDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Budget"}
+              {isSubmitting ? "Saving..." : "Save fee estimate"}
             </Button>
           </DialogFooter>
         </form>

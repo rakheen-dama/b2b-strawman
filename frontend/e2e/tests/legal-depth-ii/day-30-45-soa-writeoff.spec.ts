@@ -203,17 +203,9 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     }
   });
 
-  // FIXME(depth-ii:soa-preview-unbounded-scale) PRODUCT BUG (reproduced): once the HTML
-  // preview renders, the Statement of Account
-  // dialog's layout never settles. A4PreviewWrapper (components/documents/a4-preview-wrapper.tsx)
-  // derives its scale from its own clientWidth via a ResizeObserver; inside the SoA dialog the
-  // preview container is not width-constrained, so every scale-up widens the container, which
-  // triggers another scale-up. The form grows without bound (measured scrollWidth ≈ 568 000px
-  // after a few seconds) and the footer actions (Download PDF / Regenerate / Close) drift
-  // off-screen. The page never produces two identical screenshots, so the regression capture
-  // below fails ("Failed to take two consecutive stable screenshots").
-  // The statement itself is generated and saved correctly — verified by the next test.
-  test.fixme("Alice: Generate Statement of Account with HTML preview", async ({ page }) => {
+  // Regression (was FIXME depth-ii:soa-preview-unbounded-scale, G-C4): the preview stays inside
+  // the dialog (626F A4PreviewWrapper contentRect + contain:inline-size, min-w-0 form).
+  test("Alice: Generate Statement of Account with HTML preview", async ({ page }) => {
     await loginAs(page, "alice");
     const tab = await openStatementsTab(page);
     const dialog = await generateStatement(page, tab);
@@ -244,7 +236,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     const dialog = await generateStatement(page, tab);
     const closingBalanceOwing = await verifyStatementPreview(dialog);
     await expect(page.getByText("Statement generated")).toBeVisible();
-    // Dismiss with Escape: the dialog footer drifts off-screen (preview layout bug above)
+    // Dismiss with Escape (the dialog footer sits below the fold at the default 1280×720 viewport)
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
 

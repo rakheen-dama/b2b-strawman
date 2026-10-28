@@ -1,7 +1,7 @@
 {
-  "commit": "37e4ae3757d60fd1c6c6bce4b2d758425e9bd626",
-  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm format:check && pnpm test && pnpm build (detached worktree-627F-gate at the PR head, NODE_OPTIONS=\"\")",
+  "commit": "f7206efe78b163d165a641f8f1ec9ca8618b867b",
+  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm format:check && pnpm test && pnpm build (detached worktree-627I-gate at the PR head, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-10-28T12:07:46Z",
-  "summary": "Slice 627F FE-GATE on 37e4ae375 (PR #1698 final head): lint 0 errors (91 warnings, unchanged); format clean; vitest 430 files / 3378 passed / 2 skipped (was 428/3356/2); build OK; CI Frontend pass. E2E-LEGAL fresh stack on 37e4ae375: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179); depth-ii 36/1/5/1 — day-14:335 networkidle@:353 timeout, the known flake (fails identically on main per 627A; passed 38/0/5 on b44f0e47f in this slice; neither head delta touches the conveyancing/document path). Observed O1–O7 PASS (:3001 + Keycloak :3000 for G-D12) on ca82fc0cc and F1–F3 PASS (Upcoming links) on b44f0e47f."
+  "ts": "2026-10-28T16:15:07Z",
+  "summary": "Slice 627I FE-GATE on f7206efe7 (PR #1700 final head): lint 0 errors (91 warnings, unchanged); format clean; vitest 431 files / 3421 passed / 2 skipped (was 430/3378/2); build OK (TypeScript pass). E2E-LEGAL fresh stack (e2e-down/up) on f7206efe7: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179 — unchanged); depth-ii 38/0/5. Observed on :3001: O1–O11 (O9 N/A) on 136ba30d7, F1–F7 on f943f72c5, G1–G6 on 1e4e5a71c — all PASS; f7206efe7 adds only a re-entry guard (unit-tested red→green; posting exercised by the lifecycle run)."
 }

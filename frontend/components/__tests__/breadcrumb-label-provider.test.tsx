@@ -64,6 +64,35 @@ describe("BreadcrumbLabelProvider (Phase 88 628B)", () => {
     expect(screen.getByText("Smith v Jones (appeal)")).toBeInTheDocument();
   });
 
+  it("keeps a shared href+label while another publisher of it is still mounted", () => {
+    const tree = (both: boolean) => (
+      <BreadcrumbLabelProvider>
+        <BreadcrumbLabel href="/org/t/matters/m-1" label="Smith v Jones" />
+        {both && <BreadcrumbLabel href="/org/t/matters/m-1" label="Smith v Jones" />}
+        <Labels />
+      </BreadcrumbLabelProvider>
+    );
+    const { rerender } = render(tree(true));
+    expect(screen.getByText("Smith v Jones")).toBeInTheDocument();
+    rerender(tree(false));
+    expect(screen.getByText("Smith v Jones")).toHaveAttribute("data-href", "/org/t/matters/m-1");
+  });
+
+  it("falls back to the earlier publisher's label when the newer one unmounts", () => {
+    const tree = (both: boolean) => (
+      <BreadcrumbLabelProvider>
+        <BreadcrumbLabel href="/org/t/matters/m-1" label="Smith v Jones" />
+        {both && <BreadcrumbLabel href="/org/t/matters/m-1" label="Smith v Jones (appeal)" />}
+        <Labels />
+      </BreadcrumbLabelProvider>
+    );
+    const { rerender } = render(tree(true));
+    expect(screen.getByText("Smith v Jones (appeal)")).toBeInTheDocument();
+    rerender(tree(false));
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(screen.getByText("Smith v Jones")).toBeInTheDocument();
+  });
+
   it("is a no-op without the provider (publisher renders nothing, consumer sees no labels)", () => {
     const { container } = render(
       <>

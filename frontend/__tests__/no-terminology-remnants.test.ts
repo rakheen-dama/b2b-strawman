@@ -33,8 +33,9 @@ function bannedLines(rel: string, text: string): string[] {
 }
 
 // The ADR-357 classifier sits between the <terminology-scanner> markers. The portal guard carries a
-// verbatim copy and fails if the two drift apart (compared with whitespace and trailing commas
-// normalised — the apps have different prettier configs), so edit both together.
+// verbatim copy and fails if the two drift apart (compared token by token, ignoring comments,
+// whitespace, trailing commas and prettier's return/arrow-body parentheses — the apps have
+// different prettier configs; literal contents are compared verbatim), so edit both together.
 // <terminology-scanner>
 const NOUN = /\b(projects?|customers?|invoices?)\b/i;
 

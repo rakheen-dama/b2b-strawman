@@ -405,6 +405,19 @@ describe("Breadcrumbs", () => {
       expect(screen.queryByText("Sipho Dlamini")).not.toBeInTheDocument();
     });
 
+    it("truncates a long last crumb and keeps the full name in its title", () => {
+      const longName =
+        "Dlamini v Road Accident Fund and Others — High Court Gauteng Division Pretoria (appeal)";
+      renderWithLabels(
+        `/org/acme/matters/${MATTER_ID}`,
+        <BreadcrumbLabel href={`/org/acme/matters/${MATTER_ID}`} label={longName} />
+      );
+      const last = screen.getByText(longName);
+      expect(last).toHaveClass("truncate");
+      expect(last).toHaveAttribute("title", longName);
+      expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("min-w-0");
+    });
+
     it("falls back to the generic label once the publisher unmounts", () => {
       mockUsePathname.mockReturnValue(`/org/acme/matters/${MATTER_ID}`);
       const tree = (withPublisher: boolean) => (

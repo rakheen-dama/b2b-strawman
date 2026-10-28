@@ -139,7 +139,10 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
   if (segments.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm">
+    // min-w-0: the nav sits in the fixed-height (h-14) header beside the bell and avatar, so a long
+    // published entity name must not wrap the header or push them — the nav shrinks and the last
+    // crumb truncates, with the full name in its title.
+    <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
       {/* Org name as root link (falls back to slug) */}
       <Link
         href={`/org/${slug}/dashboard`}
@@ -167,10 +170,18 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
           segment;
 
         return (
-          <span key={href} className="flex items-center gap-1">
-            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+          <span
+            key={href}
+            className={isLast ? "flex min-w-0 items-center gap-1" : "flex items-center gap-1"}
+          >
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             {isLast ? (
-              <span className="font-medium text-slate-900 dark:text-white">{label}</span>
+              <span
+                title={label}
+                className="max-w-md truncate font-medium text-slate-900 dark:text-white"
+              >
+                {label}
+              </span>
             ) : !isLinkableBreadcrumbPrefix(prefixSegments) ? (
               <span className="text-slate-500 dark:text-slate-400">{label}</span>
             ) : (

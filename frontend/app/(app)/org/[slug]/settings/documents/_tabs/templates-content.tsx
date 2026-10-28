@@ -71,7 +71,9 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      {/* flex-wrap: at 1024px the filter and both buttons are wider than the content column, so the
+          row wraps instead of spilling and clipping "New Template" (G-D15). */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Select
             value={formatFilter}
@@ -89,7 +91,7 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
           <HelpTip code="templates.packs" />
         </div>
         {canManage && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <UploadDocxDialog slug={slug}>
               <Button size="sm" variant="soft">
                 <FileUp className="mr-1 size-4" />

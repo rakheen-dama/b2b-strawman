@@ -14,13 +14,14 @@ import allowList from "./terminology-allow-list.json";
 //  2. Generic nouns — no user-visible literal says project(s) / customer(s) / invoice(s), any case,
 //     at the ADR-357 positions. The classifier between the <terminology-scanner> markers is a
 //     verbatim copy of the frontend guard's block; "the classifier has not drifted" fails when the
-//     two differ (compared as re-printed code, so formatting is not drift — the apps use different
-//     prettier configs). Edit both blocks together.
+//     two differ (compared token by token, ignoring comments, whitespace, trailing commas and
+//     prettier's return/arrow-body parentheses — the apps use different prettier configs; literal
+//     contents are compared verbatim). Edit both blocks together.
 // Legitimate uses go in terminology-allow-list.json as { file, text, reason } (same format and
 // reason set as the frontend allow-list); every entry must stay live.
 // Own walker — node:fs globSync needs Node 22 (CI runs Node 20) and the portal cannot import the
-// frontend's __tests__/helpers/source-scan.ts, so isModuleSpecifier is inlined below (also
-// drift-checked). The ESLint no-restricted-imports rule (eslint.config.mjs) bans the deleted module
+// frontend's __tests__/helpers/source-scan.ts, so its collectSourceFiles walker and
+// isModuleSpecifier are inlined below (both drift-checked). The ESLint no-restricted-imports rule (eslint.config.mjs) bans the deleted module
 // paths; __tests__/eslint-rules/no-terminology-imports.test.ts proves that rule is wired.
 
 const PORTAL_ROOT = path.resolve(__dirname, "..");
@@ -36,6 +37,7 @@ const SCAN_ROOTS = ["app", "components", "lib", "hooks"];
 const BANNED =
   /useTerminology|TerminologyProvider|TerminologyText|TerminologyHeading|terminology-map|withIndefiniteArticle|auditTabLabel|PORTAL_TERMINOLOGY/;
 
+// Copy of frontend/__tests__/helpers/source-scan.ts collectSourceFiles (drift-checked below).
 function collectSourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
@@ -230,9 +232,10 @@ function remnantHits(rel: string, source: string) {
 // </terminology-scanner>
 
 /**
- * The code re-printed by the TypeScript printer (comments dropped), with whitespace and trailing
- * commas removed, so formatting is not drift. Prettier also wraps a multi-line `return` or arrow
- * body in parentheses; those parentheses are dropped too.
+ * The code's tokens, joined by spaces. Comments and whitespace are trivia, not tokens, so formatting
+ * is not drift; a string, template or regex literal is one token compared verbatim, so a change
+ * inside it is. Two prettier-only differences are dropped too: trailing commas, and the parentheses
+ * prettier wraps around a multi-line `return` or arrow body.
  */
 function normalise(code: string): string {
   const sf = ts.createSourceFile(
@@ -241,27 +244,25 @@ function normalise(code: string): string {
     ts.ScriptTarget.Latest,
     true,
   );
-  const unwrap: ts.TransformerFactory<ts.SourceFile> = (ctx) => {
-    const visit = (node: ts.Node): ts.Node => {
-      const parent = node.parent;
-      if (
-        ts.isParenthesizedExpression(node) &&
-        parent &&
-        (ts.isReturnStatement(parent) ||
-          (ts.isArrowFunction(parent) && parent.body === node))
-      ) {
-        return visit(node.expression);
-      }
-      return ts.visitEachChild(node, visit, ctx);
-    };
-    return (root) => ts.visitNode(root, visit) as ts.SourceFile;
+  const tokens: string[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isJSDoc(node)) return;
+    const parent = node.parent;
+    if (
+      ts.isParenthesizedExpression(node) &&
+      (ts.isReturnStatement(parent) ||
+        (ts.isArrowFunction(parent) && parent.body === node))
+    ) {
+      return visit(node.expression);
+    }
+    const children = node.getChildren(sf);
+    if (children.length > 0) children.forEach(visit);
+    else if (node.getWidth(sf) > 0) tokens.push(node.getText(sf));
   };
-  const [out] = ts.transform(sf, [unwrap]).transformed;
-  return ts
-    .createPrinter({ removeComments: true })
-    .printFile(out)
-    .replace(/\s+/g, "")
-    .replace(/,(?=[)\]}])/g, "");
+  visit(sf);
+  return tokens
+    .filter((t, i) => !(t === "," && /^[)\]}]$/.test(tokens[i + 1] ?? "")))
+    .join(" ");
 }
 
 /** The text between the <terminology-scanner> markers of a guard file. */
@@ -273,12 +274,12 @@ function scannerBlock(source: string): string {
   return match[1];
 }
 
-/** The isModuleSpecifier declaration of a file, with `export` dropped. */
-function moduleSpecifierFn(source: string): string {
+/** The top-level `function <name>` declaration of a file, with `export` dropped. */
+function functionDecl(source: string, name: string): string {
   const match = source.match(
-    /(?:export )?function isModuleSpecifier\([\s\S]*?\n}\n/,
+    new RegExp(`(?:export )?function ${name}\\([\\s\\S]*?\\n}\\n`),
   );
-  if (!match) throw new Error("isModuleSpecifier not found");
+  if (!match) throw new Error(`${name} not found`);
   return match[0].replace(/^export /, "");
 }
 
@@ -359,6 +360,14 @@ describe("no runtime terminology layer remains in the portal (Phase 87 611E, ADR
     expect(normalise("const x = (a || b) && c;")).not.toBe(
       normalise("const x = a || (b && c);"),
     );
+    // Literal contents are code: whitespace or commas inside a string, template or regex are drift.
+    expect(normalise('const s = " ";')).not.toBe(normalise('const s = "";'));
+    expect(normalise("const t = `a ${b} c`;")).not.toBe(
+      normalise("const t = `a${b}c`;"),
+    );
+    expect(normalise("const r = /a, )/;")).not.toBe(
+      normalise("const r = /a)/;"),
+    );
   });
 
   it("the classifier has not drifted from the frontend guard's <terminology-scanner> block", () => {
@@ -368,9 +377,11 @@ describe("no runtime terminology layer remains in the portal (Phase 87 611E, ADR
       normalise(scannerBlock(frontendGuard)),
     );
     const frontendScan = fs.readFileSync(FRONTEND_SOURCE_SCAN, "utf8");
-    expect(normalise(moduleSpecifierFn(thisFile))).toBe(
-      normalise(moduleSpecifierFn(frontendScan)),
-    );
+    for (const name of ["isModuleSpecifier", "collectSourceFiles"]) {
+      expect(normalise(functionDecl(thisFile, name))).toBe(
+        normalise(functionDecl(frontendScan, name)),
+      );
+    }
   });
 
   it("scans the real source tree", () => {

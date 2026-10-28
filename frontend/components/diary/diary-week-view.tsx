@@ -27,9 +27,10 @@ interface DiaryWeekViewProps {
   onSelectDay?: (iso: string) => void;
 }
 
-const WEEK_GRID = "grid grid-cols-1 gap-2 md:grid-cols-7";
+// Seven columns from lg only: at md the day cells are too narrow for readable titles (G-D20).
+const WEEK_GRID = "grid grid-cols-1 gap-2 lg:grid-cols-7";
 // min-w-0: a day cell may shrink below its rows' content width (the rows wrap; G-D20).
-const DAY_CARD = "min-w-0 gap-0 py-0 md:min-h-24";
+const DAY_CARD = "min-w-0 gap-0 py-0 lg:min-h-24";
 
 /**
  * Week view — Mon–Sun day cells as a one-row `role="grid"` with a roving tab stop (Arrow keys,

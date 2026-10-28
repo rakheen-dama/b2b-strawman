@@ -2,15 +2,14 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementApprovalStatus;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementBillingStatus;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,7 +17,6 @@ import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,34 +36,55 @@ import org.springframework.transaction.annotation.Transactional;
  * here and threads them through {@code GeneratedDocumentService.generateForProject} as extra
  * context, merged over the builder-produced base context before rendering (LZKC-018).
  *
- * <p>{@code org.principal_attorney} (referenced by the template) has no backing OrgSettings field
- * yet and intentionally stays blank — it is not emitted here.
+ * <p>The signatory block reads {@code org.signatory.*} from the base org context (Phase 88 626B/D)
+ * — nothing signatory-related is emitted here.
+ *
+ * <p>The {@code matter.*} money totals are {@link BigDecimal}s formatted by the renderer through
+ * {@link #formatHints()} (626E): the variable registry does not describe the closure-only {@code
+ * matter.*} group, so {@code MatterClosureService} threads these hints next to the extra context.
  */
 @Component
 public class MatterClosureContextBuilder {
 
-  /** Issued fee notes (Phase 88 622D: PARTIALLY_PAID was issued too; 626E owns the arithmetic). */
+  /**
+   * Issued fee notes — exactly SENT, PARTIALLY_PAID and PAID (Phase 88 622D status set); DRAFT,
+   * APPROVED and VOID notes are never counted.
+   */
   private static final Set<InvoiceStatus> BILLED_INVOICE_STATUSES =
       Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
 
+  /** Currency hints for the {@code matter.*} totals, merged over the registry hints at render. */
+  static final Map<String, String> FORMAT_HINTS =
+      Map.of(
+          "matter.total_fees_billed", "currency",
+          "matter.total_vat", "currency",
+          "matter.total_disbursements", "currency");
+
   private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;
-  private final DisbursementRepository disbursementRepository;
+  private final InvoiceLineRepository invoiceLineRepository;
 
   public MatterClosureContextBuilder(
       ProjectRepository projectRepository,
       InvoiceRepository invoiceRepository,
-      DisbursementRepository disbursementRepository) {
+      InvoiceLineRepository invoiceLineRepository) {
     this.projectRepository = projectRepository;
     this.invoiceRepository = invoiceRepository;
-    this.disbursementRepository = disbursementRepository;
+    this.invoiceLineRepository = invoiceLineRepository;
+  }
+
+  /** Format hints for the {@code matter.*} totals — merged over the registry hints at render. */
+  static Map<String, String> formatHints() {
+    return FORMAT_HINTS;
   }
 
   /**
    * Returns a map with {@code closure.*} and {@code matter.*} keys suitable for merging over the
-   * {@code ProjectContextBuilder}-produced base context for Tiptap variable substitution. Values
-   * are pre-formatted (ISO date, plain decimal strings) — these keys carry no format hints in
-   * {@code VariableMetadataRegistry}, so the renderer emits them verbatim.
+   * {@code ProjectContextBuilder}-produced base context for Tiptap variable substitution. {@code
+   * closure.date} is an ISO date string; {@code matter.total_fees_billed}, {@code total_vat} and
+   * {@code total_disbursements} are {@link BigDecimal}s the renderer formats as currency through
+   * {@link #formatHints()} (626E) — fees and disbursements excl. VAT, VAT once, so the three add up
+   * to the issued fee notes' totals.
    *
    * <p>{@code @Transactional(readOnly = true)} so Hibernate lazy associations resolve within a
    * session — Spring Boot 4 disables OSIV by default, so the context assembly must run inside a
@@ -105,37 +124,56 @@ public class MatterClosureContextBuilder {
 
     // matter.*
     var matterMap = new LinkedHashMap<String, Object>();
-    matterMap.put("total_fees_billed", totalFeesBilled(projectId).toPlainString());
-    matterMap.put("total_disbursements", totalDisbursementsBilled(projectId).toPlainString());
+    BilledTotals totals = billedTotals(projectId);
+    matterMap.put("total_fees_billed", totals.fees());
+    matterMap.put("total_vat", totals.vat());
+    matterMap.put("total_disbursements", totals.disbursements());
     matterMap.put("duration_months", durationMonths(project.getCreatedAt()));
     context.put("matter", matterMap);
 
     return context;
   }
 
-  private BigDecimal totalFeesBilled(UUID projectId) {
-    List<Invoice> invoices = invoiceRepository.findByProjectId(projectId);
-    return invoices.stream()
-        .filter(i -> BILLED_INVOICE_STATUSES.contains(i.getStatus()))
-        .map(Invoice::getTotal)
-        .filter(t -> t != null)
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  /**
+   * Fees and disbursements excl. VAT summed from the lines of the matter's issued fee notes; VAT
+   * once, from each note (covers legacy notes with a manual invoice-level tax and no per-line tax).
+   * A fee note is "on the matter" when any of its lines carries the project ({@code
+   * InvoiceRepository.findByProjectId}); all its lines count. Disbursements are counted only as
+   * DISBURSEMENT lines of issued notes — never again from the disbursement register (N-4: they used
+   * to be added on top of the VAT-inclusive note totals, and disbursements sitting on DRAFT notes
+   * were counted because they are marked billed at draft time).
+   */
+  private BilledTotals billedTotals(UUID projectId) {
+    BigDecimal fees = BigDecimal.ZERO;
+    BigDecimal vat = BigDecimal.ZERO;
+    BigDecimal disbursements = BigDecimal.ZERO;
+    for (Invoice note : invoiceRepository.findByProjectId(projectId)) {
+      if (!BILLED_INVOICE_STATUSES.contains(note.getStatus())) {
+        continue;
+      }
+      BigDecimal noteVat = nz(note.getTaxAmount());
+      // Tax-inclusive per-line notes carry VAT inside each line amount (Invoice.recalculateTotals
+      // sets total == subtotal only for them); the invoice row has no tax-inclusive flag.
+      boolean inclusive =
+          noteVat.signum() > 0 && nz(note.getTotal()).compareTo(nz(note.getSubtotal())) == 0;
+      vat = vat.add(noteVat);
+      for (InvoiceLine line : invoiceLineRepository.findByInvoiceIdOrderBySortOrder(note.getId())) {
+        BigDecimal exclVat =
+            nz(line.getAmount()).subtract(inclusive ? nz(line.getTaxAmount()) : BigDecimal.ZERO);
+        if (line.getLineType() == InvoiceLineType.DISBURSEMENT) {
+          disbursements = disbursements.add(exclVat);
+        } else {
+          fees = fees.add(exclVat); // null line type (legacy rows) counts as a fee line
+        }
+      }
+    }
+    return new BilledTotals(fees, vat, disbursements);
   }
 
-  private BigDecimal totalDisbursementsBilled(UUID projectId) {
-    List<LegalDisbursement> billed =
-        disbursementRepository.findByProjectIdAndApprovalStatusAndBillingStatus(
-            projectId,
-            DisbursementApprovalStatus.APPROVED.name(),
-            DisbursementBillingStatus.BILLED.name());
-    return billed.stream()
-        .map(
-            d -> {
-              BigDecimal amt = d.getAmount() != null ? d.getAmount() : BigDecimal.ZERO;
-              BigDecimal vat = d.getVatAmount() != null ? d.getVatAmount() : BigDecimal.ZERO;
-              return amt.add(vat);
-            })
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  private record BilledTotals(BigDecimal fees, BigDecimal vat, BigDecimal disbursements) {}
+
+  private static BigDecimal nz(BigDecimal value) {
+    return value != null ? value : BigDecimal.ZERO;
   }
 
   private long durationMonths(Instant createdAt) {

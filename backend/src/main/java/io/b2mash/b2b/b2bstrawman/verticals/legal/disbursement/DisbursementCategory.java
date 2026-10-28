@@ -20,6 +20,16 @@ public enum DisbursementCategory {
   OTHER;
 
   /**
+   * Client-facing sentence-case label — {@code SHERIFF_FEES} → "Sheriff fees", {@code
+   * DEEDS_OFFICE_FEES} → "Deeds office fees" (Phase 88 626E, G-C12). Used by the fee-note line
+   * description and the Statement of Account category column.
+   */
+  public String label() {
+    String words = name().replace('_', ' ').toLowerCase(Locale.ROOT);
+    return Character.toUpperCase(words.charAt(0)) + words.substring(1);
+  }
+
+  /**
    * Case-insensitive lookup of a DisbursementCategory from a string value.
    *
    * @param value the string to convert

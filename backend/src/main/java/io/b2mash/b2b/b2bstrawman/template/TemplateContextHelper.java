@@ -92,6 +92,10 @@ public class TemplateContextHelper {
    * bankingDetails.{bankName,branchCode,accountNumber,accountType,referenceNote}}, {@code
    * signatory.{name,designation}} and the deprecated {@code principal_attorney} alias. See {@link
    * #putLetterheadKeys}.
+   *
+   * <p>{@code logoUrl} is an {@code InlineLogo} (presigned URL via {@code toString()}, data URI
+   * only via the {@code image} format hint) — never cast it to {@code String} or Jackson-serialise
+   * the org map.
    */
   public Map<String, Object> buildOrgContext() {
     var orgMap = new LinkedHashMap<String, Object>();

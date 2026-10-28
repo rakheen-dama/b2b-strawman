@@ -149,7 +149,7 @@
             "dataSource": "disbursements.entries",
             "columns": [
               { "header": "Date", "key": "incurredDate", "format": "date" },
-              { "header": "Category", "key": "category" },
+              { "header": "Category", "key": "categoryLabel" },
               { "header": "Description", "key": "description" },
               { "header": "Supplier", "key": "supplierName" },
               { "header": "Amount", "key": "amount", "format": "currency" },

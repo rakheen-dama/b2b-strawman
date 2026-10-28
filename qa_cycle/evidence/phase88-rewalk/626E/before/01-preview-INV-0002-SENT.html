@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Fee Note INV-0002</title>
+    <style>
+        /* Reset and Base */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 40px 24px;
+            color: #1a1a1a;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .header-right {
+            text-align: right;
+        }
+        .header-right .invoice-number {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .header-right .meta-line {
+            font-size: 0.875rem;
+            color: #475569;
+            margin-bottom: 2px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+        .status-DRAFT { background: #fef3c7; color: #92400e; }
+        .status-APPROVED { background: #dbeafe; color: #1e40af; }
+        .status-SENT { background: #e0e7ff; color: #3730a3; }
+        .status-PAID { background: #dcfce7; color: #166534; }
+        .status-VOID { background: #fee2e2; color: #991b1b; }
+
+        /* Bill To */
+        .bill-to {
+            margin-bottom: 32px;
+        }
+        .bill-to h2 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        .bill-to .customer-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .bill-to .customer-detail {
+            font-size: 0.875rem;
+            color: #475569;
+        }
+
+        /* Line Items */
+        .line-items {
+            margin-bottom: 32px;
+        }
+        .project-group {
+            margin-bottom: 20px;
+        }
+        .project-heading {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #0f172a;
+            padding: 8px 12px;
+            background: #f1f5f9;
+            border-left: 3px solid #3b82f6;
+            margin-bottom: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        th {
+            text-align: left;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        th.num, td.num {
+            text-align: right;
+        }
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+        }
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        .project-subtotal {
+            text-align: right;
+            padding: 8px 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #475569;
+            border-top: 1px solid #cbd5e1;
+        }
+
+        /* Totals */
+        .totals {
+            margin-left: auto;
+            width: 300px;
+            margin-bottom: 32px;
+        }
+        .totals table {
+            border: none;
+        }
+        .totals td {
+            border: none;
+            padding: 6px 12px;
+        }
+        .totals tr:last-child td {
+            font-weight: 700;
+            font-size: 1rem;
+            border-top: 2px solid #0f172a;
+            padding-top: 10px;
+            color: #0f172a;
+        }
+        .totals .label {
+            text-align: left;
+            color: #475569;
+        }
+        .totals .value {
+            text-align: right;
+            color: #0f172a;
+        }
+
+        /* Tax */
+        .tax-registration {
+            font-size: 0.875rem;
+            color: #475569;
+            margin-top: 4px;
+        }
+        .tax-col {
+            text-align: right;
+            width: 15%;
+        }
+        .tax-note {
+            font-style: italic;
+            font-size: 0.8125rem;
+            color: #64748b;
+            text-align: right;
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        .footer-row {
+            margin-bottom: 8px;
+        }
+        .footer-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                padding: 20mm 15mm;
+                font-size: 12px;
+            }
+            .status-badge {
+                display: none;
+            }
+            .header {
+                border-bottom-color: #000;
+            }
+            .project-heading {
+                background: none;
+                border-left-color: #000;
+            }
+            table th {
+                background: none;
+            }
+            tbody tr:nth-child(even) {
+                background: none;
+            }
+            table, th, td {
+                border-color: #000;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <h1>E2E Test Organization</h1>
+        <div class="tax-registration">
+            <span>Tax Number</span>:
+            <span>4123456789</span>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="invoice-number">Fee Note: INV-0002</div>
+        <div class="meta-line">Date: 2026-10-27</div>
+        <div class="meta-line">Due: 2026-11-26</div>
+        <div>
+            <span class="status-badge status-SENT">SENT</span>
+        </div>
+    </div>
+</div>
+
+<!-- Bill To -->
+<div class="bill-to">
+    <h2>Bill To</h2>
+    <div class="customer-name">Sipho Ndlovu mvr15e76ef9a</div>
+    <div class="customer-detail">sipho.ndlovu.mvr15e76ef9a@example.com</div>
+    
+</div>
+
+<!-- Line Items -->
+<div class="line-items">
+    <div class="project-group">
+        <div class="project-heading">Ndlovu v RAF — Depth II mvr15e76ef9a</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Description</th>
+                    <th class="num" style="width: 15%;">Qty</th>
+                    <th class="num" style="width: 15%;">Rate</th>
+                    <th class="num" style="width: 15%;">Amount</th>
+                    <th class="num tax-col">VAT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2026-10-27 · Alice Owner · Drafted and served letter of demand on the Road Accident Fund (mvr15e76ef9a)</td>
+                    <td class="num">2.0000</td>
+                    <td class="num">2500.00</td>
+                    <td class="num">5000.00</td>
+                    <td class="num tax-col">
+                        
+                        <span>VAT — Standard 15.00%</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="project-subtotal">Subtotal: 5000.00</div>
+    </div>
+</div>
+
+<!-- Totals -->
+<div class="totals">
+    <table>
+        <tr>
+            <td class="label">Subtotal</td>
+            <td class="value">5000.00</td>
+        </tr>
+        <!-- Legacy: single tax row (no per-line tax) -->
+        
+        <!-- Per-line tax: breakdown by rate -->
+        <tr>
+            <td class="label">VAT — Standard (15.00%)</td>
+            <td class="value">750.00</td>
+        </tr>
+        <!-- Tax-inclusive note -->
+        
+        <tr>
+            <td class="label">Total (ZAR)</td>
+            <td class="value">5750.00</td>
+        </tr>
+    </table>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    
+    
+</div>
+
+</body>
+</html>

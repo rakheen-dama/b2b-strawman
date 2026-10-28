@@ -165,6 +165,7 @@ public class GeneratedDocumentService {
         memberId,
         intendedVisibility,
         Map.of(),
+        Map.of(),
         false);
   }
 
@@ -180,6 +181,10 @@ public class GeneratedDocumentService {
    * PortalDocumentNotificationHandler} emails the client's portal contact only when it is {@code
    * true} and the linked Document is portal-visible. Only the closure letter passes the request's
    * intent; every other generation path passes {@code false}.
+   *
+   * <p>{@code extraFormatHints} (Phase 88 626E) are merged over the variable-registry format hints
+   * at render (caller wins) — for {@code extraContext} groups the registry does not describe, e.g.
+   * the closure letter's {@code matter.*} money totals ({@code currency}).
    */
   @Transactional
   public GenerationResult generateDocument(
@@ -191,6 +196,7 @@ public class GeneratedDocumentService {
       UUID memberId,
       String intendedVisibility,
       Map<String, Object> extraContext,
+      Map<String, String> extraFormatHints,
       boolean notifyClient) {
     // 0. Check action-point prerequisites
     var template =
@@ -229,7 +235,7 @@ public class GeneratedDocumentService {
     // 1. Generate PDF (clause-aware, extra context merged over the builder-produced context)
     var pdfResult =
         pdfRenderingService.generatePdf(
-            templateId, entityId, memberId, resolvedClauses, extraContext);
+            templateId, entityId, memberId, resolvedClauses, extraContext, extraFormatHints);
 
     // 2. Load template metadata
     var templateDetail = documentTemplateService.getById(templateId);
@@ -380,7 +386,7 @@ public class GeneratedDocumentService {
   public GenerationResult generateForProject(
       UUID projectId, String templateSlug, UUID actingMemberId, String intendedVisibility) {
     return generateForProject(
-        projectId, templateSlug, actingMemberId, intendedVisibility, Map.of(), false);
+        projectId, templateSlug, actingMemberId, intendedVisibility, Map.of(), Map.of(), false);
   }
 
   /**
@@ -389,7 +395,9 @@ public class GeneratedDocumentService {
    * {@code MatterClosureService.generateClosureLetterSafely} to supply the closure letter's {@code
    * closure.*} / {@code matter.*} variables, which the PROJECT-dispatched {@code
    * ProjectContextBuilder} cannot produce (LZKC-018), and to pass the closure request's {@code
-   * notifyClient} intent (ADR-350).
+   * notifyClient} intent (ADR-350). {@code extraFormatHints} format the {@code extraContext} values
+   * the variable registry does not describe (626E: the closure letter's {@code matter.*} totals as
+   * {@code currency}).
    */
   public GenerationResult generateForProject(
       UUID projectId,
@@ -397,6 +405,7 @@ public class GeneratedDocumentService {
       UUID actingMemberId,
       String intendedVisibility,
       Map<String, Object> extraContext,
+      Map<String, String> extraFormatHints,
       boolean notifyClient) {
     var template =
         documentTemplateRepository
@@ -412,6 +421,7 @@ public class GeneratedDocumentService {
         actingMemberId,
         intendedVisibility,
         extraContext,
+        extraFormatHints,
         notifyClient);
   }
 

@@ -97,6 +97,18 @@
       ]
     },
     {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "invoice.status", "operator": "eq", "value": "DRAFT" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "DRAFT — not yet issued" }
+          ]
+        }
+      ]
+    },
+    {
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "To:" },
@@ -216,19 +228,31 @@
     },
     { "type": "horizontalRule" },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "invoice.invoiceNumber", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Fee Note Number:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Fee Note Number:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
+          ]
+        }
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "invoice.issueDate", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Issue Date:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "invoice.issueDate" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Issue Date:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "invoice.issueDate" } }
+          ]
+        }
       ]
     },
     {
@@ -373,11 +397,17 @@
           ]
         },
         {
-          "type": "paragraph",
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "invoice.invoiceNumber", "operator": "isNotEmpty" },
           "content": [
-            { "type": "text", "marks": [{ "type": "bold" }], "text": "Payment reference:" },
-            { "type": "text", "text": " " },
-            { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Payment reference:" },
+                { "type": "text", "text": " " },
+                { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
+              ]
+            }
           ]
         },
         {

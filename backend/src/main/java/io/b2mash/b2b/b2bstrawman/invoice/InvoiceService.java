@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
@@ -12,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,7 @@ public class InvoiceService {
   private final InvoiceValidationService invoiceValidationService;
   private final InvoiceRepository invoiceRepository;
   private final PaymentEventRepository paymentEventRepository;
+  private final GeneratedDocumentService generatedDocumentService;
 
   public InvoiceService(
       InvoiceCreationService creationService,
@@ -42,7 +46,8 @@ public class InvoiceService {
       UnbilledTimeService unbilledTimeService,
       InvoiceValidationService invoiceValidationService,
       InvoiceRepository invoiceRepository,
-      PaymentEventRepository paymentEventRepository) {
+      PaymentEventRepository paymentEventRepository,
+      GeneratedDocumentService generatedDocumentService) {
     this.creationService = creationService;
     this.transitionService = transitionService;
     this.renderingService = renderingService;
@@ -50,6 +55,7 @@ public class InvoiceService {
     this.invoiceValidationService = invoiceValidationService;
     this.invoiceRepository = invoiceRepository;
     this.paymentEventRepository = paymentEventRepository;
+    this.generatedDocumentService = generatedDocumentService;
   }
 
   // --- Validation ---
@@ -243,8 +249,30 @@ public class InvoiceService {
 
   // --- Preview ---
 
+  /**
+   * Draft/issued fee-note preview (Phase 88 626E, A6 — one renderer): the template the client's
+   * emailed PDF uses ({@link GeneratedDocumentService#resolveDefaultInvoiceTemplate}), rendered
+   * through the same Tiptap pipeline (context builder, format hints, logo, letterhead) as HTML —
+   * byte-identical to the sent PDF's HTML for the same moment. No template → 409 with {@code code =
+   * invoice.preview.no_template}.
+   */
   @Transactional(readOnly = true)
-  public String renderPreview(UUID invoiceId) {
-    return renderingService.renderPreview(invoiceId);
+  public String renderPreview(UUID invoiceId, UUID memberId) {
+    invoiceRepository
+        .findById(invoiceId)
+        .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+    var template =
+        generatedDocumentService
+            .resolveDefaultInvoiceTemplate()
+            .orElseThrow(
+                () ->
+                    new ResourceConflictException(
+                        "No fee note template",
+                        "No active fee note template is available to preview this fee note."
+                            + " Check Settings \u203a Documents \u203a Templates.",
+                        Map.of("code", "invoice.preview.no_template")));
+    return generatedDocumentService
+        .previewDocument(template.getId(), invoiceId, List.of(), memberId)
+        .html();
   }
 }

@@ -85,7 +85,7 @@ public class InvoiceController {
   @GetMapping("/{id}/preview")
   @RequiresCapability("INVOICING")
   public ResponseEntity<String> preview(@PathVariable UUID id) {
-    String html = invoiceService.renderPreview(id);
+    String html = invoiceService.renderPreview(id, RequestScopes.requireMemberId());
     return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
   }
 

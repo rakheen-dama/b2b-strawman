@@ -1,18 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
-import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceLineResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
-import io.b2mash.b2b.b2bstrawman.notification.template.EmailTerminology;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.TariffItem;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.TariffItemRepository;
-import java.math.BigDecimal;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,13 +16,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.ITemplateEngine;
-import org.thymeleaf.context.Context;
 
 /**
- * Handles invoice rendering: entity-to-DTO conversion and Thymeleaf HTML preview generation.
- * Extracted from InvoiceService as a focused collaborator.
+ * Handles invoice rendering: entity-to-DTO conversion. Extracted from InvoiceService as a focused
+ * collaborator. The HTML preview is the fee-note Tiptap template rendered by {@code
+ * InvoiceService.renderPreview} (Phase 88 626E retired the separate Thymeleaf preview).
  */
 @Service
 public class InvoiceRenderingService {
@@ -35,11 +29,9 @@ public class InvoiceRenderingService {
   private final InvoiceLineRepository lineRepository;
   private final ProjectRepository projectRepository;
   private final MemberNameResolver memberNameResolver;
-  private final ITemplateEngine templateEngine;
   private final OrgSettingsRepository orgSettingsRepository;
   private final TaxCalculationService taxCalculationService;
   private final TariffItemRepository tariffItemRepository;
-  private final EmailTerminology emailTerminology;
   private final PaymentEventRepository paymentEventRepository;
 
   public InvoiceRenderingService(
@@ -47,94 +39,18 @@ public class InvoiceRenderingService {
       InvoiceLineRepository lineRepository,
       ProjectRepository projectRepository,
       MemberNameResolver memberNameResolver,
-      ITemplateEngine templateEngine,
       OrgSettingsRepository orgSettingsRepository,
       TaxCalculationService taxCalculationService,
       TariffItemRepository tariffItemRepository,
-      EmailTerminology emailTerminology,
       PaymentEventRepository paymentEventRepository) {
     this.paymentEventRepository = paymentEventRepository;
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.projectRepository = projectRepository;
     this.memberNameResolver = memberNameResolver;
-    this.templateEngine = templateEngine;
     this.orgSettingsRepository = orgSettingsRepository;
     this.taxCalculationService = taxCalculationService;
     this.tariffItemRepository = tariffItemRepository;
-    this.emailTerminology = emailTerminology;
-  }
-
-  @Transactional(readOnly = true)
-  public String renderPreview(UUID invoiceId) {
-    var invoice =
-        invoiceRepository
-            .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
-
-    var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
-    var projectNames = resolveProjectNames(lines);
-
-    var groupedLines = new LinkedHashMap<String, List<InvoiceLine>>();
-    var grouped =
-        lines.stream()
-            .collect(
-                Collectors.groupingBy(
-                    line -> {
-                      if (line.getProjectId() == null) {
-                        return "Other Items";
-                      }
-                      return projectNames.getOrDefault(line.getProjectId(), "Unknown Project");
-                    },
-                    LinkedHashMap::new,
-                    Collectors.toList()));
-
-    if (grouped.containsKey("Other Items")) {
-      var otherItems = grouped.remove("Other Items");
-      groupedLines.putAll(grouped);
-      groupedLines.put("Other Items", otherItems);
-    } else {
-      groupedLines.putAll(grouped);
-    }
-
-    var groupSubtotals = new LinkedHashMap<String, BigDecimal>();
-    for (var entry : groupedLines.entrySet()) {
-      BigDecimal subtotal =
-          entry.getValue().stream()
-              .map(InvoiceLine::getAmount)
-              .reduce(BigDecimal.ZERO, BigDecimal::add);
-      groupSubtotals.put(entry.getKey(), subtotal);
-    }
-
-    boolean hasPerLineTax = taxCalculationService.hasPerLineTax(lines);
-    var taxBreakdown = taxCalculationService.buildTaxBreakdown(lines);
-
-    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
-    String taxRegistrationNumber =
-        orgSettings != null ? orgSettings.getTax().getTaxRegistrationNumber() : null;
-    String taxRegistrationLabel =
-        orgSettings != null ? orgSettings.getTax().getTaxRegistrationLabel() : "Tax Number";
-    String taxLabel = orgSettings != null ? orgSettings.getTax().getTaxLabel() : "Tax";
-    boolean taxInclusive = orgSettings != null && orgSettings.getTax().isTaxInclusive();
-    // LZKC-009 (site 1): the preview header/title noun follows the tenant's vertical profile
-    // ("Fee Note: DRAFT" on legal-za).
-    String verticalProfile = orgSettings != null ? orgSettings.getVerticalProfile() : null;
-    String invoiceTerm =
-        emailTerminology.resolve(verticalProfile).getOrDefault("Invoice", "Invoice");
-
-    Context ctx = new Context();
-    ctx.setVariable("invoice", invoice);
-    ctx.setVariable("groupedLines", groupedLines);
-    ctx.setVariable("groupSubtotals", groupSubtotals);
-    ctx.setVariable("hasPerLineTax", hasPerLineTax);
-    ctx.setVariable("taxBreakdown", taxBreakdown);
-    ctx.setVariable("taxRegistrationNumber", taxRegistrationNumber);
-    ctx.setVariable("taxRegistrationLabel", taxRegistrationLabel);
-    ctx.setVariable("taxLabel", taxLabel);
-    ctx.setVariable("taxInclusive", taxInclusive);
-    ctx.setVariable("invoiceTerm", invoiceTerm);
-
-    return templateEngine.process("invoice-preview", ctx);
   }
 
   InvoiceResponse buildResponse(Invoice invoice) {

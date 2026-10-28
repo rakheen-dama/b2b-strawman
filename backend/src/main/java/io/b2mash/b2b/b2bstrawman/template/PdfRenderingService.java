@@ -104,6 +104,23 @@ public class PdfRenderingService {
       UUID memberId,
       List<Clause> resolvedClauses,
       Map<String, Object> extraContext) {
+    return generatePdf(templateId, entityId, memberId, resolvedClauses, extraContext, Map.of());
+  }
+
+  /**
+   * Variant of {@link #generatePdf(UUID, UUID, UUID, List, Map)} whose {@code extraFormatHints} are
+   * merged over the variable-registry format hints (caller wins) — for {@code extraContext} groups
+   * the registry does not describe, e.g. the closure letter's {@code matter.*} money totals (Phase
+   * 88 626E).
+   */
+  @Transactional(readOnly = true)
+  public PdfResult generatePdf(
+      UUID templateId,
+      UUID entityId,
+      UUID memberId,
+      List<Clause> resolvedClauses,
+      Map<String, Object> extraContext,
+      Map<String, String> extraFormatHints) {
     var template =
         documentTemplateRepository
             .findById(templateId)
@@ -115,7 +132,7 @@ public class PdfRenderingService {
       contextMap.putAll(extraContext);
     }
 
-    String fullHtml = renderTemplateToHtml(template, contextMap, resolvedClauses);
+    String fullHtml = renderTemplateToHtml(template, contextMap, resolvedClauses, extraFormatHints);
     byte[] pdfBytes = htmlToPdf(fullHtml);
     String fileName =
         generateFilename(template.getSlug(), template.getPrimaryEntityType(), contextMap);
@@ -159,7 +176,7 @@ public class PdfRenderingService {
     var builder = findBuilder(template.getPrimaryEntityType());
     var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
 
-    return renderTemplateToHtml(template, contextMap, resolvedClauses);
+    return renderTemplateToHtml(template, contextMap, resolvedClauses, Map.of());
   }
 
   /**
@@ -191,7 +208,7 @@ public class PdfRenderingService {
         templateValidationService.validateRequiredFields(
             template.getRequiredContextFields(), contextMap);
 
-    String html = renderTemplateToHtml(template, contextMap, resolvedClauses);
+    String html = renderTemplateToHtml(template, contextMap, resolvedClauses, Map.of());
 
     return new PreviewResponse(html, validationResult);
   }
@@ -215,9 +232,16 @@ public class PdfRenderingService {
     return builder.buildContext(entityId, memberId);
   }
 
-  /** Renders a template to a full HTML document string via {@link TiptapRenderer}. */
+  /**
+   * Renders a template to a full HTML document string via {@link TiptapRenderer}. {@code
+   * extraFormatHints} are merged over the registry hints for the template's entity type (caller
+   * wins).
+   */
   private String renderTemplateToHtml(
-      DocumentTemplate template, Map<String, Object> contextMap, List<Clause> resolvedClauses) {
+      DocumentTemplate template,
+      Map<String, Object> contextMap,
+      List<Clause> resolvedClauses,
+      Map<String, String> extraFormatHints) {
     Map<UUID, Clause> clauseMap = new LinkedHashMap<>();
     if (resolvedClauses != null) {
       for (var clause : resolvedClauses) {
@@ -226,7 +250,11 @@ public class PdfRenderingService {
     }
     Map<String, Object> content =
         template.getContent() != null ? template.getContent() : Map.of("type", "doc");
-    Map<String, String> formatHints = buildFormatHints(template.getPrimaryEntityType());
+    Map<String, String> formatHints =
+        new HashMap<>(buildFormatHints(template.getPrimaryEntityType()));
+    if (extraFormatHints != null) {
+      formatHints.putAll(extraFormatHints);
+    }
     return tiptapRenderer.render(content, contextMap, clauseMap, template.getCss(), formatHints);
   }
 

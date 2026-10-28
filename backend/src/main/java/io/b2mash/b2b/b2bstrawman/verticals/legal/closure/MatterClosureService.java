@@ -394,7 +394,8 @@ public class MatterClosureService {
    * <p>LZKC-018: the template's {@code closure.*} / {@code matter.*} variables cannot be produced
    * by the PROJECT-dispatched {@code ProjectContextBuilder} (they depend on the in-flight {@link
    * ClosureRequest}), so they are assembled by {@link MatterClosureContextBuilder} here and merged
-   * over the base context via the extra-context {@code generateForProject} overload.
+   * over the base context via the extra-context {@code generateForProject} overload, together with
+   * the builder's currency format hints for the {@code matter.*} totals (626E).
    */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public UUID generateClosureLetterSafely(
@@ -409,6 +410,7 @@ public class MatterClosureService {
               actingMemberId,
               req.isShareWithClient() ? Document.Visibility.PORTAL : Document.Visibility.INTERNAL,
               closureContext,
+              MatterClosureContextBuilder.formatHints(),
               req.isNotifyClient());
       if (result == null || result.generatedDocument() == null) {
         return null;

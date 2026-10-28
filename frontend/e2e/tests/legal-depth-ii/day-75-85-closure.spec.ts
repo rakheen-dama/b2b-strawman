@@ -251,7 +251,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
       await expect(report.getByTestId(`matter-closure-gate-pass-${gate}`)).toBeVisible();
     }
     await expect(report.locator("[data-testid^='matter-closure-gate-fail-']")).toHaveCount(0);
-    await expect(report).toContainText("Matter trust balance is R0.00.");
+    await expect(report).toContainText("Matter trust balance is R0,00.");
     await expect(report).toContainText("Final bill issued with no unbilled items.");
 
     await page.waitForLoadState("networkidle");

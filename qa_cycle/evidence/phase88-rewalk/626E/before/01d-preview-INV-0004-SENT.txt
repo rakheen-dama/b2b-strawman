@@ -1,0 +1,37 @@
+Fee Note INV-0004
+E2E Test Organization
+Tax Number
+:
+4123456789
+Fee Note: INV-0004
+Date: 2026-10-27
+Due: 2026-11-27
+SENT
+Bill To
+Sipho Ndlovu mvr15e76ef9a
+sipho.ndlovu.mvr15e76ef9a@example.com
+626E closure arithmetic repro
+Description
+Qty
+Rate
+Amount
+VAT
+2026-10-28 · Alice Owner · 626E settlement negotiations
+1.0000
+2500.00
+2500.00
+VAT — Standard 15.00%
+Deeds office fees: 626E deeds office search (Deeds Office Pretoria, 2026-10-27)
+1.0000
+1250.00
+1250.00
+Zero-rated 0.00%
+Subtotal: 3750.00
+Subtotal
+3750.00
+VAT — Standard (15.00%)
+375.00
+Zero-rated (0.00%)
+0.00
+Total (ZAR)
+4125.00

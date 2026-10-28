@@ -1,0 +1,91 @@
+[
+  {
+    "id": "cfa6b1be-35b6-472d-a48d-1986393be3b1",
+    "matterId": "b9174723-4c60-402d-9055-301221368b32",
+    "closedBy": "6f34745a-8dae-4de6-9876-ce2968f46524",
+    "closedByName": "Alice Owner",
+    "closedAt": "2026-10-27T23:48:26.593135Z",
+    "reason": "CONCLUDED",
+    "notes": null,
+    "gateReport": {
+      "gates": [
+        {
+          "code": "TRUST_BALANCE_ZERO",
+          "order": 1,
+          "detail": {
+            "balance": 38000.0
+          },
+          "passed": false,
+          "message": "Matter trust balance is R38000.00. Transfer to client or office before closure."
+        },
+        {
+          "code": "ALL_DISBURSEMENTS_APPROVED",
+          "order": 2,
+          "detail": {},
+          "passed": true,
+          "message": "All disbursements approved."
+        },
+        {
+          "code": "ALL_DISBURSEMENTS_SETTLED",
+          "order": 3,
+          "detail": {},
+          "passed": true,
+          "message": "All approved disbursements are settled."
+        },
+        {
+          "code": "FINAL_BILL_ISSUED",
+          "order": 4,
+          "detail": {},
+          "passed": true,
+          "message": "Final bill issued with no unbilled items."
+        },
+        {
+          "code": "NO_OPEN_COURT_DATES",
+          "order": 5,
+          "detail": {},
+          "passed": true,
+          "message": "No court dates scheduled for today or later."
+        },
+        {
+          "code": "NO_OPEN_PRESCRIPTIONS",
+          "order": 6,
+          "detail": {},
+          "passed": true,
+          "message": "No prescription timers still running."
+        },
+        {
+          "code": "ALL_TASKS_RESOLVED",
+          "order": 7,
+          "detail": {
+            "count": 1
+          },
+          "passed": false,
+          "message": "1 tasks remain open."
+        },
+        {
+          "code": "ALL_INFO_REQUESTS_CLOSED",
+          "order": 8,
+          "detail": {},
+          "passed": true,
+          "message": "All client information requests closed."
+        },
+        {
+          "code": "ALL_ACCEPTANCE_REQUESTS_FINAL",
+          "order": 9,
+          "detail": {},
+          "passed": true,
+          "message": "No document acceptances pending."
+        }
+      ],
+      "allPassed": false,
+      "evaluatedAt": "2026-10-27T23:48:26.593456879Z"
+    },
+    "overrideUsed": true,
+    "overrideJustification": "626E reproduction: closing with trust balance and open task intentionally to render the closure letter (QA test data).",
+    "closureLetterDocumentId": "31f37d54-9cbc-4db5-a6b7-43d23bd735ef",
+    "reopenedAt": null,
+    "reopenedBy": null,
+    "reopenedByName": null,
+    "reopenNotes": null
+  }
+]

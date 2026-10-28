@@ -37,6 +37,7 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementApprovalStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementBillingStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementCategory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
@@ -1138,24 +1139,10 @@ public class InvoiceCreationService {
    * defendant (Sheriff Edenvale, 2026-04-10)"}.
    */
   private String formatDisbursementLineDescription(LegalDisbursement d) {
-    String categoryLabel = humanizeCategoryLabel(d.getCategory());
+    String categoryLabel = DisbursementCategory.fromString(d.getCategory()).label();
     return String.format(
         "%s: %s (%s, %s)",
         categoryLabel, d.getDescription(), d.getSupplierName(), d.getIncurredDate());
-  }
-
-  /** Turns an enum-style name like {@code "SHERIFF_FEES"} into {@code "Sheriff fees"}. */
-  private String humanizeCategoryLabel(String enumName) {
-    if (enumName == null || enumName.isEmpty()) {
-      return "";
-    }
-    String[] parts = enumName.toLowerCase().split("_");
-    StringBuilder out = new StringBuilder();
-    out.append(Character.toUpperCase(parts[0].charAt(0))).append(parts[0].substring(1));
-    for (int i = 1; i < parts.length; i++) {
-      out.append(' ').append(parts[i]);
-    }
-    return out.toString();
   }
 
   private void applyFieldGroups(Invoice invoice) {

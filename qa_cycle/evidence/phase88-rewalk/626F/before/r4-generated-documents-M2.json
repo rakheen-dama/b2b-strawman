@@ -1,0 +1,30 @@
+[
+    {
+        "id": "b91daaa4-f5d0-4343-bfb7-7a32dbb2cf49",
+        "templateName": "Project Summary Report",
+        "primaryEntityType": "PROJECT",
+        "primaryEntityId": "2cb472bd-ab3e-41f3-8ad8-91ae08a7ff2a",
+        "fileName": "project-summary-report-626e-draft-fee-note-repro-2026-10-28.pdf",
+        "fileSize": 1170,
+        "generatedByName": "Alice Owner",
+        "generatedAt": "2026-10-28T01:15:00.299828Z",
+        "documentId": null,
+        "outputFormat": "PDF",
+        "hasDocxDownload": false,
+        "visibility": null
+    },
+    {
+        "id": "69495796-f631-42eb-91a5-fae049a2242f",
+        "templateName": "Statement of Account",
+        "primaryEntityType": "PROJECT",
+        "primaryEntityId": "2cb472bd-ab3e-41f3-8ad8-91ae08a7ff2a",
+        "fileName": "statement-of-account-626e-draft-fee-note-repro-2026-10-28.pdf",
+        "fileSize": 5604,
+        "generatedByName": "Alice Owner",
+        "generatedAt": "2026-10-28T01:13:17.241616Z",
+        "documentId": "cddad203-412c-42a9-9475-e4e14b155adf",
+        "outputFormat": "PDF",
+        "hasDocxDownload": false,
+        "visibility": "INTERNAL"
+    }
+]

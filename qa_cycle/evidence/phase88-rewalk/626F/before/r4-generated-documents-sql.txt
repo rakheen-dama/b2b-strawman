@@ -1,0 +1,6 @@
+ primary_entity_type | total | saved | not_saved 
+---------------------+-------+-------+-----------
+ INVOICE             |    12 |     0 |        12
+ PROJECT             |    31 |    17 |        14
+(2 rows)
+

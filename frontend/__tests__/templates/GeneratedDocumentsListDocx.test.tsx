@@ -80,6 +80,10 @@ describe("GeneratedDocumentsListDocx", () => {
     expect(screen.getByText("DOCX")).toBeInTheDocument();
     // Should not show PDF badge
     expect(screen.queryByText("PDF")).not.toBeInTheDocument();
+    // 626F: a DOCX generation is never linked to a Document (no save step), yet the list is its
+    // home — it is listed by default and never badged "Not saved".
+    expect(screen.queryByText("Not saved")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /unsaved/i })).not.toBeInTheDocument();
   });
 
   it("shows format badge for PDF document", async () => {
@@ -95,6 +99,7 @@ describe("GeneratedDocumentsListDocx", () => {
           generatedAt: "2026-03-01T11:00:00Z",
           outputFormat: "PDF",
           hasDocxDownload: false,
+          documentId: "doc-pdf-1",
         },
       ],
     });
@@ -189,6 +194,7 @@ describe("GeneratedDocumentsListDocx", () => {
           fileSize: 1024,
           generatedByName: "Bob",
           generatedAt: "2026-03-01T14:00:00Z",
+          documentId: "doc-legacy-1",
         },
       ],
     });

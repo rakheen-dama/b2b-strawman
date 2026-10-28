@@ -277,7 +277,9 @@ function StatementOfAccountDialogInner({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onPreview)} className="space-y-4">
+          {/* min-w-0: this form is the DialogContent grid item; with min-width:auto the A4
+              preview's min-content would widen the dialog (G-C4). */}
+          <form onSubmit={form.handleSubmit(onPreview)} className="min-w-0 space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}

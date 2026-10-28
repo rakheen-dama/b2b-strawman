@@ -190,6 +190,8 @@ export default async function InvoiceDetailPage({
           slug={slug}
           isAdmin={isAdmin}
           customerId={invoice!.clientId}
+          // 626F: these unsaved rows are the emailed fee-note attachments — list them as before.
+          distinguishUnsaved={false}
         />
       </div>
 

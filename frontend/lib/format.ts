@@ -16,5 +16,12 @@
 //     imports — preserves the exact process-wide load behaviour that existed
 //     when the implementation lived in this file, with no call-site churn.
 import "@/lib/intl-polyfill";
+// Loaded after the polyfill (module requests evaluate in source order).
+import { formatCurrency } from "@b2mash/shared/format";
 
 export * from "@b2mash/shared/format";
+
+/** Formats an integer minor-unit amount (cents) as currency, e.g. 12345 → "R 123,45". */
+export function formatCurrencyFromCents(cents: number, currency?: string): string {
+  return formatCurrency(cents / 100, currency);
+}

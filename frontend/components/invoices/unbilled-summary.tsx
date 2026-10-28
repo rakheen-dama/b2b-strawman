@@ -6,15 +6,6 @@ import type {
   UnbilledDisbursementEntry,
 } from "@/lib/types";
 
-/** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
-function safeFormatCurrency(amount: number, curr: string): string {
-  try {
-    return formatCurrency(amount, curr);
-  } catch {
-    return `${curr} ${amount.toFixed(2)}`;
-  }
-}
-
 interface UnbilledSummaryProps {
   data: UnbilledTimeResponse;
   /**
@@ -145,7 +136,7 @@ export function UnbilledSummary({
                           key={curr}
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          {safeFormatCurrency(total.amount, curr)} ({total.hours}h)
+                          {formatCurrency(total.amount, curr)} ({total.hours}h)
                         </span>
                       ))}
                     </div>
@@ -164,7 +155,7 @@ export function UnbilledSummary({
                   key={curr}
                   className="text-sm font-semibold text-slate-900 dark:text-slate-100"
                 >
-                  {safeFormatCurrency(total.amount, curr)}
+                  {formatCurrency(total.amount, curr)}
                 </span>
               ))}
             </div>
@@ -225,13 +216,13 @@ export function UnbilledSummary({
                         <ExpenseCategoryBadge category={expense.category} />
                       </td>
                       <td className="px-4 py-2.5 text-right text-sm text-slate-900 dark:text-slate-100">
-                        {safeFormatCurrency(expense.amount, expense.currency)}
+                        {formatCurrency(expense.amount, expense.currency)}
                       </td>
                       <td className="px-4 py-2.5 text-right text-sm text-slate-600 dark:text-slate-400">
                         {expense.markupPercent != null ? `${expense.markupPercent}%` : "\u2014"}
                       </td>
                       <td className="px-4 py-2.5 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
-                        {safeFormatCurrency(expense.billableAmount, expense.currency)}
+                        {formatCurrency(expense.billableAmount, expense.currency)}
                       </td>
                     </tr>
                   ))
@@ -250,7 +241,7 @@ export function UnbilledSummary({
                   key={curr}
                   className="text-sm font-semibold text-slate-900 dark:text-slate-100"
                 >
-                  {safeFormatCurrency(amount, curr)}
+                  {formatCurrency(amount, curr)}
                 </span>
               ))}
             </div>
@@ -304,7 +295,7 @@ export function UnbilledSummary({
                       {d.description}
                     </td>
                     <td className="px-4 py-2.5 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {safeFormatCurrency(d.amount + d.vatAmount, "ZAR")}
+                      {formatCurrency(d.amount + d.vatAmount, "ZAR")}
                     </td>
                   </tr>
                 ))}
@@ -322,7 +313,7 @@ export function UnbilledSummary({
                   key={curr}
                   className="text-sm font-semibold text-slate-900 dark:text-slate-100"
                 >
-                  {safeFormatCurrency(amount, curr)}
+                  {formatCurrency(amount, curr)}
                 </span>
               ))}
             </div>
@@ -339,7 +330,7 @@ export function UnbilledSummary({
           <div className="flex gap-3">
             {Object.entries(combinedTotals).map(([curr, amount]) => (
               <span key={curr} className="text-base font-bold text-slate-900 dark:text-slate-100">
-                {safeFormatCurrency(amount, curr)}
+                {formatCurrency(amount, curr)}
               </span>
             ))}
           </div>

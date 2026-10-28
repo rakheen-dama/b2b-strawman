@@ -5,19 +5,11 @@ import { Button } from "@b2mash/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { FileText } from "lucide-react";
 import type { MatterIntakeOutput } from "@/lib/api/ai";
+import { formatCurrencyFromCents } from "@/lib/format";
 
 interface IntakeResultDisplayProps {
   output: MatterIntakeOutput | null;
   onApplyTemplate?: (templateId: string) => void;
-}
-
-function formatZarCents(cents: number): string {
-  return new Intl.NumberFormat("en-ZA", {
-    style: "currency",
-    currency: "ZAR",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
 }
 
 function getPriorityBadgeVariant(priority: "HIGH" | "MEDIUM" | "LOW") {
@@ -168,8 +160,8 @@ export function IntakeResultDisplay({ output, onApplyTemplate }: IntakeResultDis
           <CardContent className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="font-mono text-sm font-semibold text-slate-900 tabular-nums dark:text-slate-100">
-                {formatZarCents(output.feeEstimate.estimatedRangeMinCents)} &ndash;{" "}
-                {formatZarCents(output.feeEstimate.estimatedRangeMaxCents)}
+                {formatCurrencyFromCents(output.feeEstimate.estimatedRangeMinCents)} &ndash;{" "}
+                {formatCurrencyFromCents(output.feeEstimate.estimatedRangeMaxCents)}
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">

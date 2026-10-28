@@ -11,6 +11,7 @@ import { invokeContractReviewAction } from "@/app/(app)/org/[slug]/matters/[id]/
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
 import type { ContractReviewResponse } from "@/lib/api/ai";
 import Link from "next/link";
+import { formatCurrencyFromCents } from "@/lib/format";
 
 interface ContractReviewButtonProps {
   documentId: string;
@@ -35,10 +36,6 @@ type PanelState =
   | { phase: "LOADING" }
   | { phase: "SUCCESS"; result: ContractReviewResponse }
   | { phase: "ERROR"; message: string };
-
-function formatZarCents(cents: number): string {
-  return `R ${(cents / 100).toFixed(2)}`;
-}
 
 function getDisabledReason(
   props: Pick<ContractReviewButtonProps, "isAiConfigured" | "canExecuteAi">
@@ -143,7 +140,7 @@ export function ContractReviewButton({
 
           {/* Execution metadata */}
           <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-            <span>Cost: {formatZarCents(state.result.costCents)}</span>
+            <span>Cost: {formatCurrencyFromCents(state.result.costCents)}</span>
             <span>Completed in {state.result.durationMs}ms</span>
             <Link
               href={`/org/${slug}/settings/ai/history`}

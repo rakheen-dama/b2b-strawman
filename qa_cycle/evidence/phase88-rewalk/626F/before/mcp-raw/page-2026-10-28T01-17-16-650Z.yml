@@ -1,0 +1,84 @@
+- generic [active] [ref=f10e1]:
+  - link "Skip to content" [ref=f10e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f10e3]:
+    - complementary [ref=f10e4]:
+      - generic [ref=f10e5]:
+        - img "E2E Test Organization logo" [ref=f10e6]
+        - generic [ref=f10e7]: Kazi
+      - generic [ref=f10e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f10e12]:
+        - text: Search...
+        - generic [ref=f10e16]: ⌘K
+      - navigation "Main navigation" [ref=f10e17]:
+        - generic [ref=f10e18]:
+          - button "Today" [expanded] [ref=f10e19]
+          - generic [ref=f10e23]:
+            - link "Home" [ref=f10e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f10e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f10e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f10e36]:
+          - button "Matters" [expanded] [ref=f10e37]
+          - generic [ref=f10e41]:
+            - link "Matters" [ref=f10e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f10e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f10e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f10e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f10e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f10e65]:
+          - button "Clients" [expanded] [ref=f10e66]
+          - generic [ref=f10e70]:
+            - link "Clients" [ref=f10e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f10e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f10e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f10e86]
+        - button "Trust" [ref=f10e92]
+        - button "Firm" [ref=f10e98]
+      - link "Platform Admin" [ref=f10e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f10e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f10e114]:
+        - generic [ref=f10e115]: AO
+        - generic [ref=f10e116]:
+          - paragraph [ref=f10e117]: Alice Owner
+          - paragraph [ref=f10e118]: alice@e2e-test.local
+    - generic [ref=f10e119]:
+      - banner [ref=f10e120]:
+        - navigation "Breadcrumb" [ref=f10e121]:
+          - link "E2E Test Organization" [ref=f10e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=f10e123]: Legal
+          - generic [ref=f10e127]: Tariffs
+        - generic [ref=f10e131]:
+          - generic [ref=f10e132]: e2e-test-org
+          - button "AO" [ref=f10e135]
+          - button "Notifications" [ref=f10e137]
+      - main [ref=f10e139]:
+        - generic [ref=f10e142]:
+          - generic [ref=f10e143]:
+            - heading "Tariff Schedules" [level=1] [ref=f10e144]
+            - paragraph [ref=f10e145]: Browse and manage LSSA tariff schedules and items
+          - generic [ref=f10e146]:
+            - generic [ref=f10e147]: 1 schedule
+            - generic [ref=f10e151] [cursor=pointer]:
+              - generic [ref=f10e155]:
+                - generic [ref=f10e156]: LSSA 2024/2025 High Court Party-and-Party
+                - generic [ref=f10e159]: Effective from 2024-04-01 · 19 items
+              - button "Clone" [ref=f10e161]
+  - generic [ref=f10e162]:
+    - heading "Command Palette" [level=2] [ref=f10e163]
+    - paragraph [ref=f10e164]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f10e165]

@@ -25,15 +25,6 @@ import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal"
 import { useInvoiceGeneration } from "@/components/invoices/use-invoice-generation";
 import { cn } from "@/lib/utils";
 
-/** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
-function safeFormatCurrency(amount: number, curr: string): string {
-  try {
-    return formatCurrency(amount, curr);
-  } catch {
-    return `${curr} ${amount.toFixed(2)}`;
-  }
-}
-
 interface InvoiceGenerationDialogProps {
   customerId: string;
   customerName: string;
@@ -242,7 +233,7 @@ export function InvoiceGenerationDialog({
                   Total ({h.totalItemCount} items)
                 </span>
                 <span className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-                  {safeFormatCurrency(h.runningTotal, h.currency)}
+                  {formatCurrency(h.runningTotal, h.currency)}
                 </span>
               </div>
 
@@ -497,7 +488,7 @@ function ExpenseSelectionSection({
                         </div>
                       </div>
                       <span className="shrink-0 text-right font-medium text-slate-700 dark:text-slate-300">
-                        {safeFormatCurrency(expense.billableAmount, expense.currency)}
+                        {formatCurrency(expense.billableAmount, expense.currency)}
                       </span>
                     </label>
                   );
@@ -587,7 +578,7 @@ function DisbursementSelectionSection({
                 </div>
               </div>
               <span className="shrink-0 text-right font-medium text-slate-700 dark:text-slate-300">
-                {safeFormatCurrency(d.amount + d.vatAmount, "ZAR")}
+                {formatCurrency(d.amount + d.vatAmount, "ZAR")}
               </span>
             </label>
           );

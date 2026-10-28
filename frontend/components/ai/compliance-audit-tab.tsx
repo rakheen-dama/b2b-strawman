@@ -17,6 +17,7 @@ import {
   fetchAuditReportsAction,
 } from "@/app/(app)/org/[slug]/compliance/actions";
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
+import { formatCurrencyFromCents } from "@/lib/format";
 import type {
   ComplianceAuditReportResponse,
   ComplianceAuditInvokeResponse,
@@ -183,7 +184,7 @@ export function ComplianceAuditTab({
 
           {/* Execution metadata */}
           <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-            <span>Cost: R {(state.result.costCents / 100).toFixed(2)}</span>
+            <span>Cost: {formatCurrencyFromCents(state.result.costCents)}</span>
             <span>Completed in {state.result.durationMs}ms</span>
           </div>
 

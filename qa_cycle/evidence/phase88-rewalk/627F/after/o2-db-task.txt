@@ -1,0 +1,5 @@
+                  id                  |              title               |  due_date  |   status    |      assignee      
+--------------------------------------+----------------------------------+------------+-------------+--------------------
+ cbd9376e-d69e-44f2-bc20-5d74647bf6e3 | 627F O2 - file heads of argument | 2026-11-05 | IN_PROGRESS | bob@e2e-test.local
+(1 row)
+

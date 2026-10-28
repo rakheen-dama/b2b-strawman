@@ -1,0 +1,5 @@
+                  id                  | scheduled_date |    date_type    |  status   |               name               |        lead        
+--------------------------------------+----------------+-----------------+-----------+----------------------------------+--------------------
+ cd4c6a2e-094b-4b9c-9460-fda74d0b7b99 | 2026-11-05     | CASE_MANAGEMENT | SCHEDULED | 627F repro - Bob lead court date | bob@e2e-test.local
+(1 row)
+

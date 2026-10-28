@@ -1,0 +1,7 @@
+          name           |   party_type   |                  id                  
+-------------------------+----------------+--------------------------------------
+ Road Accident Fund 627F | GOVERNMENT     | b582646a-cc8e-4653-b077-069d8969213e
+ Pillay                  | NATURAL_PERSON | a7e5e389-6341-4532-8a94-a7658b0ad785
+ Mokoena                 | NATURAL_PERSON | 1adab4da-cb8c-4cb7-93f8-4447177e4437
+(3 rows)
+

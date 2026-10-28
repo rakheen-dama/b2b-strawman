@@ -176,7 +176,11 @@ export function ProjectProfitabilityTable({
       </CardHeader>
       <CardContent>
         {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
-        {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
+        {error && (
+          <div role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        )}
         {sorted.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">
             No project profitability data for this period

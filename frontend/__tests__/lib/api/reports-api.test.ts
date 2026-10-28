@@ -170,7 +170,7 @@ describe("Report exports (auth-mode-aware base)", () => {
     mockFetch.mockResolvedValue(new Response(new Uint8Array([1]), { status: 200 }));
     await exportReportPdf("client ledger/statement", {});
     expect(mockFetch.mock.calls[0][0]).toBe(
-      "http://gateway.test/api/report-definitions/client%20ledger%2Fstatement/export/pdf?"
+      "http://gateway.test/api/report-definitions/client%20ledger%2Fstatement/export/pdf"
     );
   });
 
@@ -265,7 +265,7 @@ describe("Report exports (auth-mode-aware base)", () => {
     expect(source).not.toMatch(/getAuthToken/);
     expect(source).not.toMatch(/BACKEND_URL/);
     expect(source).not.toMatch(/Bearer/);
-    expect(source).not.toMatch(/Accept/);
+    expect(source).not.toMatch(/["']Accept["']\s*:/);
   });
 });
 

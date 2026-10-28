@@ -108,6 +108,10 @@ function buildExportQueryParams(parameters: Record<string, unknown>): string {
   return queryParams.toString();
 }
 
+function withQuery(path: string, qs: string): string {
+  return qs ? `${path}?${qs}` : path;
+}
+
 /**
  * GET an export endpoint through the auth-mode-aware API base: the gateway with the forwarded
  * SESSION cookie in Keycloak BFF mode, the backend with the mock token in mock mode (the same
@@ -160,7 +164,7 @@ export async function exportReportCsv(
 ): Promise<string> {
   const qs = buildExportQueryParams(parameters);
   const response = await fetchExport(
-    `/api/report-definitions/${encodeURIComponent(slug)}/export/csv?${qs}`
+    withQuery(`/api/report-definitions/${encodeURIComponent(slug)}/export/csv`, qs)
   );
   return response.text();
 }
@@ -172,7 +176,7 @@ export async function exportReportPdf(
 ): Promise<string> {
   const qs = buildExportQueryParams(parameters);
   const response = await fetchExport(
-    `/api/report-definitions/${encodeURIComponent(slug)}/export/pdf?${qs}`
+    withQuery(`/api/report-definitions/${encodeURIComponent(slug)}/export/pdf`, qs)
   );
   const buffer = await response.arrayBuffer();
   return Buffer.from(buffer).toString("base64");
@@ -184,6 +188,6 @@ export async function exportReportPdf(
  */
 export async function exportProfitabilityCsv(from?: string, to?: string): Promise<string> {
   const qs = buildExportQueryParams({ from, to });
-  const response = await fetchExport(`/api/reports/profitability/export/csv${qs ? `?${qs}` : ""}`);
+  const response = await fetchExport(withQuery("/api/reports/profitability/export/csv", qs));
   return response.text();
 }

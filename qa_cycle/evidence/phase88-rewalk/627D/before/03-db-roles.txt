@@ -1,0 +1,13 @@
+SET
+  name  |  slug  | is_system | has_fin_vis | ncaps 
+--------+--------+-----------+-------------+-------
+ Admin  | admin  | t         | t           |    20
+ Member | member | t         | f           |     5
+ Owner  | owner  | t         | t           |    22
+(3 rows)
+
+SET
+ member_id | override_value 
+-----------+----------------
+(0 rows)
+

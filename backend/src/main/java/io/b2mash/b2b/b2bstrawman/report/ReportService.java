@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.report.ReportController.MatterProfitabilitySumm
 import io.b2mash.b2b.b2bstrawman.report.ReportController.MemberUtilizationRecord;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.MemberValueBreakdown;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.OrgProfitabilityResponse;
+import io.b2mash.b2b.b2bstrawman.report.ReportController.ProfitabilityCsvExport;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.UtilizationResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
@@ -42,18 +43,21 @@ public class ReportService {
   private final CustomerRepository customerRepository;
   private final CustomerProjectRepository customerProjectRepository;
   private final ProjectRepository projectRepository;
+  private final ProfitabilityCsvExporter profitabilityCsvExporter;
 
   public ReportService(
       ReportRepository reportRepository,
       ProjectAccessService projectAccessService,
       CustomerRepository customerRepository,
       CustomerProjectRepository customerProjectRepository,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      ProfitabilityCsvExporter profitabilityCsvExporter) {
     this.reportRepository = reportRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
+    this.profitabilityCsvExporter = profitabilityCsvExporter;
   }
 
   /**
@@ -286,6 +290,28 @@ public class ReportService {
     log.debug("Org profitability: {} project-currency entries", projects.size());
 
     return new OrgProfitabilityResponse(projects);
+  }
+
+  /**
+   * CSV export of the Profitability page's matter rows. Delegates to {@link #getOrgProfitability}
+   * (without a client filter, which the page never applies) so the export has the same access
+   * guard, rows and margin ordering as the JSON the page renders. The rows are already fully loaded
+   * by that call and are few (one per matter and currency), so the CSV is built in memory.
+   */
+  @Transactional(readOnly = true)
+  public ProfitabilityCsvExport exportProfitabilityCsv(
+      LocalDate from, LocalDate to, ActorContext actor) {
+    var rows = getOrgProfitability(from, to, null, actor).matters();
+    log.debug("Profitability CSV export: {} row(s) for {} to {}", rows.size(), from, to);
+    return new ProfitabilityCsvExport(
+        profitabilityFilename(from, to), profitabilityCsvExporter.toCsv(rows));
+  }
+
+  /** Names the file after the range when both ends are given; ISO dates are filename-safe. */
+  private static String profitabilityFilename(LocalDate from, LocalDate to) {
+    return from != null && to != null
+        ? "profitability-" + from + "-to-" + to + ".csv"
+        : "profitability.csv";
   }
 
   /**

@@ -9,6 +9,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ReportController {
+
+  private static final MediaType TEXT_CSV_UTF8 =
+      MediaType.parseMediaType("text/csv; charset=UTF-8");
 
   private final ReportService reportService;
 
@@ -70,7 +76,26 @@ public class ReportController {
     return ResponseEntity.ok(response);
   }
 
+  @GetMapping("/api/reports/profitability/export/csv")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
+  public ResponseEntity<byte[]> exportProfitabilityCsv(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      ActorContext actor) {
+
+    var export = reportService.exportProfitabilityCsv(from, to, actor);
+    return ResponseEntity.ok()
+        .contentType(TEXT_CSV_UTF8)
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            ContentDisposition.attachment().filename(export.filename()).build().toString())
+        .body(export.bytes());
+  }
+
   // --- DTOs ---
+
+  /** A built CSV file: the download filename and its UTF-8 bytes. */
+  public record ProfitabilityCsvExport(String filename, byte[] bytes) {}
 
   public record CurrencyBreakdown(
       String currency,

@@ -632,20 +632,19 @@ public class CommentService {
 
   /**
    * The comment-attachment visibility rule, in one place. A PORTAL document (a generated artefact
-   * shared through its own flow) is never rewritten; otherwise the document follows the comment:
-   * SHARED comment → SHARED, INTERNAL comment → INTERNAL. Every document is also stamped source
-   * COMMENT when it is a plain MANUAL upload.
+   * shared through its own flow) is never written — neither its visibility nor its source;
+   * otherwise the document follows the comment: SHARED comment → SHARED, INTERNAL comment →
+   * INTERNAL, and it is stamped source COMMENT when it is a plain MANUAL upload.
    */
   private void applyAttachmentRule(List<Document> documents, String commentVisibility) {
     for (var document : documents) {
-      String target;
       if (Document.Visibility.PORTAL.equals(document.getVisibility())) {
-        target = Document.Visibility.PORTAL;
-      } else if ("SHARED".equals(commentVisibility)) {
-        target = Document.Visibility.SHARED;
-      } else {
-        target = Document.Visibility.INTERNAL;
+        continue;
       }
+      String target =
+          "SHARED".equals(commentVisibility)
+              ? Document.Visibility.SHARED
+              : Document.Visibility.INTERNAL;
       documentService.applyCommentAttachment(document.getId(), target);
     }
   }

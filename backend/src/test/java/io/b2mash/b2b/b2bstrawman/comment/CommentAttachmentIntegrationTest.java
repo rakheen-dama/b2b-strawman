@@ -215,17 +215,17 @@ class CommentAttachmentIntegrationTest extends AbstractIntegrationTest {
             postComment(owner(), "TASK", taskA, "SHARED", fresh, portal)
                 .andExpect(status().isCreated()));
     assertDocument(fresh, Document.Visibility.SHARED, Document.Source.COMMENT);
-    assertDocument(portal, Document.Visibility.PORTAL, Document.Source.COMMENT);
+    assertDocument(portal, Document.Visibility.PORTAL, Document.Source.MANUAL);
 
     putComment(owner(), commentId, "now internal", "INTERNAL", null)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.attachments", hasSize(2)));
     assertDocument(fresh, Document.Visibility.INTERNAL, Document.Source.COMMENT);
-    assertDocument(portal, Document.Visibility.PORTAL, Document.Source.COMMENT);
+    assertDocument(portal, Document.Visibility.PORTAL, Document.Source.MANUAL);
 
     putComment(owner(), commentId, "shared again", "SHARED", null).andExpect(status().isOk());
     assertDocument(fresh, Document.Visibility.SHARED, Document.Source.COMMENT);
-    assertDocument(portal, Document.Visibility.PORTAL, Document.Source.COMMENT);
+    assertDocument(portal, Document.Visibility.PORTAL, Document.Source.MANUAL);
   }
 
   // --- validation (422 "Attachment not allowed") ---

@@ -68,10 +68,10 @@ public class MatterClosureNotificationHandler {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onMatterReopened(MatterReopenedEvent event) {
     try {
-      // NOTE: retention soft-cancel is not yet persisted (TODO 489C). The reopen clears the
-      // project's closed_at, but the canonical retention anchor (retentionClockStartedAt) and
-      // the derived retention window are preserved — see MatterClosureService.reopen and
-      // RetentionElapsedException. Messaging intentionally omits any "soft-cancel" claim.
+      // The reopen clears the project's closed_at and its persisted retention_ends_on (an open
+      // matter has no scheduled retention end); retentionClockStartedAt is kept for audit and the
+      // next close re-stamps both (ADR-354). Messaging intentionally omits any "soft-cancel"
+      // claim.
       notificationService.notifyAdminsAndOwners(
           "MATTER_REOPENED",
           "Matter reopened",

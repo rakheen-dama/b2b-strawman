@@ -13,6 +13,10 @@ import java.util.UUID;
  * Wire DTO for a matter (Phase 87, ADR-337). Entity in, matter out: {@code Project} is the JPA
  * entity and keeps its name; only this record and its JSON components are legal-native. No
  * {@code @JsonProperty} — the component name IS the JSON name.
+ *
+ * <p>{@code retentionEndsOn} is the persisted {@code projects.retention_ends_on} (Phase 88 U17,
+ * ADR-354) on every factory: stamped at close, cleared on reopen, so it is null unless the matter
+ * is CLOSED. There is no read-time computation or fallback.
  */
 public record MatterResponse(
     UUID id,
@@ -60,7 +64,7 @@ public record MatterResponse(
         project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
         project.getArchivedAt(),
         project.getRetentionClockStartedAt(),
-        null,
+        project.getRetentionEndsOn(),
         null,
         project.getCustomFields(),
         project.getAppliedFieldGroups(),
@@ -88,7 +92,7 @@ public record MatterResponse(
         project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
         project.getArchivedAt(),
         project.getRetentionClockStartedAt(),
-        null,
+        project.getRetentionEndsOn(),
         matterRole,
         project.getCustomFields(),
         project.getAppliedFieldGroups(),
@@ -100,22 +104,6 @@ public record MatterResponse(
 
   public static MatterResponse from(
       Project project, String matterRole, List<TagResponse> tags, Map<UUID, String> memberNames) {
-    return from(project, matterRole, tags, memberNames, null);
-  }
-
-  /**
-   * Detail-endpoint factory that includes the per-matter retention end date
-   * (GAP-OBS-Day60-RetentionShape). {@code retentionEndsOn} is null whenever the matter is not
-   * CLOSED, the retention clock isn't stamped, or the org's {@code legalMatterRetentionYears} is
-   * unconfigured (see {@link
-   * io.b2mash.b2b.b2bstrawman.project.ProjectService#computeRetentionEndsOn}).
-   */
-  public static MatterResponse from(
-      Project project,
-      String matterRole,
-      List<TagResponse> tags,
-      Map<UUID, String> memberNames,
-      LocalDate retentionEndsOn) {
     return new MatterResponse(
         project.getId(),
         project.getName(),
@@ -132,7 +120,7 @@ public record MatterResponse(
         project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
         project.getArchivedAt(),
         project.getRetentionClockStartedAt(),
-        retentionEndsOn,
+        project.getRetentionEndsOn(),
         matterRole,
         project.getCustomFields(),
         project.getAppliedFieldGroups(),

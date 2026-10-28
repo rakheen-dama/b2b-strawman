@@ -44,7 +44,6 @@ import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +82,6 @@ public class ProjectService {
   private final ProjectFieldService projectFieldService;
   private final ProjectDeletionGuard projectDeletionGuard;
   private final CustomerProjectRepository customerProjectRepository;
-  private final OrgSettingsService orgSettingsService;
   private final EntityTagService entityTagService;
   private final ViewFilterHelper viewFilterHelper;
   private final MatterListRowRepository matterListRowRepository;
@@ -104,7 +102,6 @@ public class ProjectService {
       ProjectFieldService projectFieldService,
       ProjectDeletionGuard projectDeletionGuard,
       CustomerProjectRepository customerProjectRepository,
-      OrgSettingsService orgSettingsService,
       EntityTagService entityTagService,
       ViewFilterHelper viewFilterHelper,
       MatterListRowRepository matterListRowRepository,
@@ -123,7 +120,6 @@ public class ProjectService {
     this.projectFieldService = projectFieldService;
     this.projectDeletionGuard = projectDeletionGuard;
     this.customerProjectRepository = customerProjectRepository;
-    this.orgSettingsService = orgSettingsService;
     this.entityTagService = entityTagService;
     this.viewFilterHelper = viewFilterHelper;
     this.matterListRowRepository = matterListRowRepository;
@@ -131,43 +127,6 @@ public class ProjectService {
     this.clientLedgerCardRepository = clientLedgerCardRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.clock = clock;
-  }
-
-  /**
-   * Computes the per-matter retention end date (GAP-OBS-Day60-RetentionShape) for a CLOSED matter.
-   *
-   * <p>Returns {@code null} when:
-   *
-   * <ul>
-   *   <li>the project is not in {@link ProjectStatus#CLOSED} state, or
-   *   <li>{@code retentionClockStartedAt} is null (matter was never closed), or
-   *   <li>the org's {@code legalMatterRetentionYears} setting is null/missing/zero — in which case
-   *       a non-fatal log line is emitted to surface the misconfiguration. We deliberately do NOT
-   *       fall back to {@code DataProtectionSettings.DEFAULT_LEGAL_MATTER_RETENTION_YEARS} here so
-   *       the UI can distinguish "configured" from "unconfigured" tenants.
-   * </ul>
-   *
-   * <p>Calendar-year arithmetic via {@link LocalDate#plusYears(long)} so leap years don't shift the
-   * end date by a day. The clock instant is normalised to UTC before truncation.
-   */
-  LocalDate computeRetentionEndsOn(Project project) {
-    if (project.getStatus() != ProjectStatus.CLOSED) {
-      return null;
-    }
-    Instant clock = project.getRetentionClockStartedAt();
-    if (clock == null) {
-      return null;
-    }
-    Optional<Integer> years = orgSettingsService.getRawLegalMatterRetentionYears();
-    if (years.isEmpty()) {
-      log.debug(
-          "Cannot compute retentionEndsOn for project {}: legalMatterRetentionYears is "
-              + "null/zero/missing on the org. UI will hide the retention card until the setting "
-              + "is configured under data-protection settings.",
-          project.getId());
-      return null;
-    }
-    return clock.atZone(ZoneOffset.UTC).toLocalDate().plusYears(years.get());
   }
 
   @Transactional(readOnly = true)

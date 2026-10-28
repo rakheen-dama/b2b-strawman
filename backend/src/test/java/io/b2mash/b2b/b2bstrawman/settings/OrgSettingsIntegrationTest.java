@@ -761,6 +761,123 @@ class OrgSettingsIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  // --- Phase 88 U17 (ADR-354): firm matter-retention period on the data-protection panel ---
+
+  @Test
+  void getSettings_legalMatterRetentionYears_seededFive() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.legalMatterRetentionYears").value(5));
+  }
+
+  @Test
+  void patchDataProtection_setsLegalMatterRetentionYears() throws Exception {
+    try {
+      mockMvc
+          .perform(
+              patch("/api/settings/data-protection")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"legalMatterRetentionYears": 7}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.legalMatterRetentionYears").value(7));
+
+      mockMvc
+          .perform(
+              get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.legalMatterRetentionYears").value(7));
+
+      // A PATCH that omits the field leaves the stored value unchanged.
+      mockMvc
+          .perform(
+              patch("/api/settings/data-protection")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"informationOfficerName": "Retention Officer"}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.legalMatterRetentionYears").value(7));
+    } finally {
+      // Restore the seeded value so sibling methods are not order-dependent.
+      mockMvc
+          .perform(
+              patch("/api/settings/data-protection")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"legalMatterRetentionYears": 5}
+                      """))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.legalMatterRetentionYears").value(5));
+    }
+  }
+
+  @Test
+  void patchDataProtection_rejectsRetentionYearsAbove30() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"legalMatterRetentionYears": 31}
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("legalMatterRetentionYears"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message")
+                .value("legalMatterRetentionYears must be at most 30"));
+  }
+
+  @Test
+  void patchDataProtection_rejectsRetentionYearsBelow1() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"legalMatterRetentionYears": 0}
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("legalMatterRetentionYears"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message")
+                .value("legalMatterRetentionYears must be at least 1"));
+  }
+
+  @Test
+  void patchDataProtection_retentionYears_adminGetsForbidden() throws Exception {
+    // The data-protection panel is owner-only; the years field rides the same endpoint.
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_settings_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"legalMatterRetentionYears": 9}
+                    """))
+        .andExpect(status().isForbidden());
+    mockMvc
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.legalMatterRetentionYears").value(5));
+  }
+
   @Test
   @Order(28)
   void patchExpenseSettings_persistsMarkupAndIsReturnedByGet() throws Exception {

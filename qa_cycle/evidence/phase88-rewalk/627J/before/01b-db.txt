@@ -1,0 +1,23 @@
+SET
+                  id                  | entity_type |              entity_id               | visibility |                              body                              
+--------------------------------------+-------------+--------------------------------------+------------+----------------------------------------------------------------
+ 312f7a8b-0453-41e5-b0a3-c88db701fbbf | TASK        | 550761eb-a356-49ed-a813-45129a582159 | SHARED     | 627J before: SHARED comment with chip 627J-shared-chip.pdf
+ 734bac66-1c95-4d49-9dc4-63f429286b3b | TASK        | 550761eb-a356-49ed-a813-45129a582159 | INTERNAL   | 627J before: INTERNAL comment with chip 627J-internal-chip.pdf
+(2 rows)
+
+              comment_id              |             document_id              |       file_name        |  status  | visibility | source  
+--------------------------------------+--------------------------------------+------------------------+----------+------------+---------
+ 734bac66-1c95-4d49-9dc4-63f429286b3b | c72728db-ca26-4c91-b9e3-3fcdb96d6bcc | 627J-internal-chip.pdf | UPLOADED | INTERNAL   | COMMENT
+ 312f7a8b-0453-41e5-b0a3-c88db701fbbf | 9b24a239-a7c4-4f92-b33b-925f6f243978 | 627J-shared-chip.pdf   | UPLOADED | SHARED     | COMMENT
+(2 rows)
+
+                  id                  |          portal_project_id           | author_name |                          content                           
+--------------------------------------+--------------------------------------+-------------+------------------------------------------------------------
+ 312f7a8b-0453-41e5-b0a3-c88db701fbbf | ad89d02a-4990-4707-815e-99dcde0b63f9 | Alice Owner | 627J before: SHARED comment with chip 627J-shared-chip.pdf
+(1 row)
+
+                  id                  |        title         |  scope  
+--------------------------------------+----------------------+---------
+ 9b24a239-a7c4-4f92-b33b-925f6f243978 | 627J-shared-chip.pdf | PROJECT
+(1 row)
+

@@ -1,0 +1,2 @@
+request-link HTTP 200 (magicLink present; value redacted, path shape: /auth/exchange?token=<redacted>&orgId=e2e-test-org)
+exchange HTTP 200 {"clientId":"755901da-629d-442d-80df-4b20bcbfd7d3","clientName":"Acme Corp","tokenLen":288}

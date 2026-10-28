@@ -1,0 +1,5 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/components/invoices/invoice-generation-dialog.test.tsx > InvoiceGenerationDialog > calls createInvoiceDraft on Create Draft click
+TestingLibraryElementError: Unable to find role="button" and name "Create Draft"
+

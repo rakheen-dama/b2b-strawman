@@ -1,0 +1,6 @@
+testcases: 6238
+failures: 0
+errors: 0
+skipped: 26
+reports:      738
+EXIT=0 SECS=1226 COMMIT=3087d47aa

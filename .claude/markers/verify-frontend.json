@@ -1,7 +1,7 @@
 {
-  "commit": "f7206efe78b163d165a641f8f1ec9ca8618b867b",
-  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm format:check && pnpm test && pnpm build (detached worktree-627I-gate at the PR head, NODE_OPTIONS=\"\")",
+  "commit": "04fbfdd2b",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-10-28T16:15:07Z",
-  "summary": "Slice 627I FE-GATE on f7206efe7 (PR #1700 final head): lint 0 errors (91 warnings, unchanged); format clean; vitest 431 files / 3421 passed / 2 skipped (was 430/3378/2); build OK (TypeScript pass). E2E-LEGAL fresh stack (e2e-down/up) on f7206efe7: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179 — unchanged); depth-ii 38/0/5. Observed on :3001: O1–O11 (O9 N/A) on 136ba30d7, F1–F7 on f943f72c5, G1–G6 on 1e4e5a71c — all PASS; f7206efe7 adds only a re-entry guard (unit-tested red→green; posting exercised by the lifecycle run)."
+  "ts": "2026-10-28T18:15:21Z",
+  "summary": "627K epic gate FE-GATE on 04fbfdd2b: lint 0 errors / 91 warnings, format clean, vitest 431 files / 3421 passed / 2 skipped (re-run after 1 load flake in invoice-generation-dialog.test.tsx, default 1s waitFor), build OK; E2E-LEGAL fresh stack lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5"
 }

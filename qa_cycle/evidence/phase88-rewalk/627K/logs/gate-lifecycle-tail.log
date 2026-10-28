@@ -1,0 +1,40 @@
+    > 212 |       .toBeTruthy();
+          |        ^
+      213 |     expect
+      214 |       .soft(
+      215 |         await page
+        at /Users/rakheendama/Projects/2026/worktree-epic-627K/frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:212:8
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeTruthy[2m()[22m
+
+    Received: [31mfalse[39m
+
+      218 |           .catch(() => false)
+      219 |       )
+    > 220 |       .toBeTruthy();
+          |        ^
+      221 |
+      222 |     // Screenshot: profitability dashboard
+      223 |     await captureScreenshot(page, "day-90-profitability-dashboard-loaded");
+        at /Users/rakheendama/Projects/2026/worktree-epic-627K/frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:220:8
+
+    attachment #1: day-90-profitability-dashboard-loaded (image/png) ───────────────────────────────
+    Expected: e2e/screenshots/legal-lifecycle/day-90-profitability-dashboard-loaded.png
+    Received: test-results/day-90-review-Day-90-—-Qua-2b3f3-costs-margins-for-4-clients-chromium/day-90-profitability-dashboard-loaded-actual.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-90-review-Day-90-—-Qua-2b3f3-costs-margins-for-4-clients-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-90-review-Day-90-—-Qua-2b3f3-costs-margins-for-4-clients-chromium/error-context.md
+
+  4 failed
+    [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:282:7 › Day 0 — Firm Setup › Alice: Trust account settings page loads 
+    [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:32:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Sipho Ndlovu (hourly + tariff + disbursement) 
+    [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:41:7 › Day 45 — Reconciliation & Prescription › Alice: Start new bank reconciliation 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:179:7 › Day 90 — Quarter Review › Alice: Profitability dashboard — revenue, costs, margins for 4 clients 
+  5 skipped
+  14 did not run
+  75 passed (2.2m)
+ ELIFECYCLE  Command failed with exit code 1.

@@ -1,0 +1,31 @@
+# e2e stack recreated: e2e-down.sh (containers+volumes removed) then e2e-up.sh from $WT @ f022281c3 (worktree clean for backend/; backend/target is .dockerignored, Maven runs in the Docker builder)
+e2e-backend image=sha256:80f3d863083e2a85cc3afee4978e99c7f853946a0d80f5affe1609e23202da4b created=2026-10-28T13:27:05.59634996Z started=2026-10-28T13:27:12.527452005Z
+# health
+{"groups":["liveness","readiness"],"status":"UP"}
+SET
+ version |              description              | success |        installed_on        |  checksum   
+---------+---------------------------------------+---------+----------------------------+-------------
+ 9       | phase88 comment attachments           | t       | 2026-10-28 13:27:35.963156 |   733466875
+ 8       | phase88 retention comment attachments | t       | 2026-10-28 13:27:35.948455 |   163234837
+ 7       | phase88 letterhead                    | t       | 2026-10-28 13:27:35.935927 | -1173317990
+(3 rows)
+
+            indexname             |                                                         indexdef                                                          
+----------------------------------+---------------------------------------------------------------------------------------------------------------------------
+ idx_comment_attachments_document | CREATE UNIQUE INDEX idx_comment_attachments_document ON tenant_7d218705360b.comment_attachments USING btree (document_id)
+(1 row)
+
+             Table "tenant_7d218705360b.comment_attachments"
+   Column    |           Type           | Collation | Nullable | Default 
+-------------+--------------------------+-----------+----------+---------
+ comment_id  | uuid                     |           | not null | 
+ document_id | uuid                     |           | not null | 
+ sort_order  | integer                  |           | not null | 0
+ created_at  | timestamp with time zone |           | not null | now()
+Indexes:
+    "comment_attachments_pkey" PRIMARY KEY, btree (comment_id, document_id)
+    "idx_comment_attachments_document" UNIQUE, btree (document_id)
+Foreign-key constraints:
+    "comment_attachments_comment_id_fkey" FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE
+    "comment_attachments_document_id_fkey" FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+

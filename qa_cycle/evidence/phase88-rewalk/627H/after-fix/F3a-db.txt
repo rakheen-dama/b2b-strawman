@@ -1,0 +1,7 @@
+SET
+                  id                  |  file_name   |  status  | visibility | source  
+--------------------------------------+--------------+----------+------------+---------
+ 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | f-a-627H.pdf | UPLOADED | SHARED     | COMMENT
+ 12597af6-92a0-4a95-b247-5080b0975148 | f-b-627H.pdf | UPLOADED | SHARED     | COMMENT
+(2 rows)
+

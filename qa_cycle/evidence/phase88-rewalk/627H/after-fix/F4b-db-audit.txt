@@ -1,0 +1,34 @@
+SET
+                  id                  |  file_name   |  status  | visibility | source  
+--------------------------------------+--------------+----------+------------+---------
+ 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | f-a-627H.pdf | UPLOADED | SHARED     | COMMENT
+ 12597af6-92a0-4a95-b247-5080b0975148 | f-b-627H.pdf | UPLOADED | SHARED     | COMMENT
+ e26e743f-af0f-493e-bf45-a91c85764a55 | f-c-627H.pdf | UPLOADED | SHARED     | COMMENT
+(3 rows)
+
+SET
+          occurred_at          |         event_type          |              entity_id               |                                      details                                      
+-------------------------------+-----------------------------+--------------------------------------+-----------------------------------------------------------------------------------
+ 2026-10-28 13:28:36.084331+00 | document.visibility_changed | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+ 2026-10-28 13:28:44.914481+00 | document.visibility_changed | 12597af6-92a0-4a95-b247-5080b0975148 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+ 2026-10-28 13:28:51.441531+00 | document.visibility_changed | 12597af6-92a0-4a95-b247-5080b0975148 | {"actor_name": "Alice Owner", "visibility": {"to": "INTERNAL", "from": "SHARED"}}
+ 2026-10-28 13:28:52.054689+00 | document.visibility_changed | e26e743f-af0f-493e-bf45-a91c85764a55 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+ 2026-10-28 13:29:01.657807+00 | document.visibility_changed | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | {"actor_name": "Alice Owner", "visibility": {"to": "INTERNAL", "from": "SHARED"}}
+ 2026-10-28 13:29:01.659417+00 | document.visibility_changed | e26e743f-af0f-493e-bf45-a91c85764a55 | {"actor_name": "Alice Owner", "visibility": {"to": "INTERNAL", "from": "SHARED"}}
+ 2026-10-28 13:29:01.895878+00 | document.visibility_changed | 12597af6-92a0-4a95-b247-5080b0975148 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+ 2026-10-28 13:29:01.896835+00 | document.visibility_changed | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+ 2026-10-28 13:29:01.897291+00 | document.visibility_changed | e26e743f-af0f-493e-bf45-a91c85764a55 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+(9 rows)
+
+SET
+          occurred_at          |         event_type         |   vis    
+-------------------------------+----------------------------+----------
+ 2026-10-28 13:28:36.086468+00 | comment.created            | "SHARED"
+ 2026-10-28 13:28:44.916732+00 | comment.updated            | 
+ 2026-10-28 13:28:52.0553+00   | comment.updated            | 
+ 2026-10-28 13:29:01.659814+00 | comment.updated            | 
+ 2026-10-28 13:29:01.660656+00 | comment.visibility_changed | 
+ 2026-10-28 13:29:01.897597+00 | comment.updated            | 
+ 2026-10-28 13:29:01.898033+00 | comment.visibility_changed | 
+(7 rows)
+

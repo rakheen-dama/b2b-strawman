@@ -1,0 +1,33 @@
+SET
+                  id                  |  file_name   |  status  | visibility | source  
+--------------------------------------+--------------+----------+------------+---------
+ 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | f-a-627H.pdf | UPLOADED | SHARED     | COMMENT
+ 12597af6-92a0-4a95-b247-5080b0975148 | f-b-627H.pdf | UPLOADED | INTERNAL   | COMMENT
+ e26e743f-af0f-493e-bf45-a91c85764a55 | f-c-627H.pdf | UPLOADED | SHARED     | COMMENT
+(3 rows)
+
+SET
+              comment_id              |             document_id              | sort_order |          created_at           
+--------------------------------------+--------------------------------------+------------+-------------------------------
+ dac70b66-b73d-4426-bb37-60d7e3fe45ac | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 |          0 | 2026-10-28 13:28:36.056926+00
+ dac70b66-b73d-4426-bb37-60d7e3fe45ac | 12597af6-92a0-4a95-b247-5080b0975148 |          1 | 2026-10-28 13:28:44.908498+00
+ dac70b66-b73d-4426-bb37-60d7e3fe45ac | e26e743f-af0f-493e-bf45-a91c85764a55 |          2 | 2026-10-28 13:28:52.048937+00
+(3 rows)
+
+SET
+          occurred_at          |         event_type          |              entity_id               |                                      details                                      
+-------------------------------+-----------------------------+--------------------------------------+-----------------------------------------------------------------------------------
+ 2026-10-28 13:28:36.084331+00 | document.visibility_changed | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+ 2026-10-28 13:28:44.914481+00 | document.visibility_changed | 12597af6-92a0-4a95-b247-5080b0975148 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+ 2026-10-28 13:28:51.441531+00 | document.visibility_changed | 12597af6-92a0-4a95-b247-5080b0975148 | {"actor_name": "Alice Owner", "visibility": {"to": "INTERNAL", "from": "SHARED"}}
+ 2026-10-28 13:28:52.054689+00 | document.visibility_changed | e26e743f-af0f-493e-bf45-a91c85764a55 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+(4 rows)
+
+SET
+          occurred_at          |   event_type    |                                                                                                                                                                   details                                                                                                                                                                    
+-------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-28 13:28:36.086468+00 | comment.created | {"body": "627H after-fix F2: shared comment with a", "source": "INTERNAL", "entity_id": "56344385-8956-4eeb-99f5-35b52e80c377", "actor_name": "Alice Owner", "project_id": "e120be4a-1c8b-4ed8-b993-74f1ee5de29a", "visibility": "SHARED", "entity_name": "627H after-fix observation task", "entity_type": "TASK", "attachment_count": 1}
+ 2026-10-28 13:28:44.916732+00 | comment.updated | {"new_body": "627H after-fix F3a: [a,b]", "old_body": "627H after-fix F2: shared comment with a", "actor_name": "Alice Owner", "project_id": "e120be4a-1c8b-4ed8-b993-74f1ee5de29a", "attachment_document_ids": ["0a1da2a2-eaca-40da-8992-e3898aaf14f8", "12597af6-92a0-4a95-b247-5080b0975148"]}
+ 2026-10-28 13:28:52.0553+00   | comment.updated | {"new_body": "627H after-fix F3c: [a,b,c] same visibility", "old_body": "627H after-fix F3a: [a,b]", "actor_name": "Alice Owner", "project_id": "e120be4a-1c8b-4ed8-b993-74f1ee5de29a", "attachment_document_ids": ["0a1da2a2-eaca-40da-8992-e3898aaf14f8", "12597af6-92a0-4a95-b247-5080b0975148", "e26e743f-af0f-493e-bf45-a91c85764a55"]}
+(3 rows)
+

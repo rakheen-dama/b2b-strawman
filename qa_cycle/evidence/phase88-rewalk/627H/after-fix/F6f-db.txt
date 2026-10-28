@@ -1,0 +1,17 @@
+SET
+                  id                  |  file_name   |  status  | visibility | source  
+--------------------------------------+--------------+----------+------------+---------
+ 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | f-a-627H.pdf | UPLOADED | SHARED     | COMMENT
+ 12597af6-92a0-4a95-b247-5080b0975148 | f-b-627H.pdf | UPLOADED | INTERNAL   | COMMENT
+ e26e743f-af0f-493e-bf45-a91c85764a55 | f-c-627H.pdf | UPLOADED | SHARED     | COMMENT
+ e1db1bb6-5d74-460e-b63b-fabd95a5f255 | f-d-627H.pdf | UPLOADED | INTERNAL   | COMMENT
+(4 rows)
+
+SET
+                  id                  | visibility 
+--------------------------------------+------------
+ dac70b66-b73d-4426-bb37-60d7e3fe45ac | SHARED
+ 65ccf1a8-8195-46b3-8700-43454165e3da | SHARED
+ 2695c0c4-e6a3-406c-b1f8-db4ca9f5d472 | INTERNAL
+(3 rows)
+

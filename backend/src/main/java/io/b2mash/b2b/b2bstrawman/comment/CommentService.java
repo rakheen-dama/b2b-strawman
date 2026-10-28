@@ -278,8 +278,9 @@ public class CommentService {
   /**
    * Updates a comment. {@code attachmentDocumentIds}: {@code null} leaves the attachments as they
    * are; a list replaces them in that order ({@code []} clears). Removed documents are left as they
-   * were. When the attachments or the comment's visibility change, the visibility rule is
-   * re-applied to every attached document.
+   * were. A change of the comment's visibility re-applies the visibility rule to every document in
+   * the final set; an edit that only changes the attachments applies it to newly added documents
+   * only, so a kept document that was unshared directly stays unshared.
    */
   private Comment updateComment(
       UUID projectId,

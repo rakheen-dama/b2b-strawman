@@ -428,7 +428,9 @@ function ExpenseSelectionSection({
   return (
     <div data-testid="expense-selection-section">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Other Disbursements</h3>
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+          Other Disbursements
+        </h3>
         <button
           type="button"
           onClick={onToggleAll}

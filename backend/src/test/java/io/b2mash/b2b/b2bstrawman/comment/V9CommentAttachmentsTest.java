@@ -183,13 +183,16 @@ class V9CommentAttachmentsTest {
   }
 
   @Test
-  void reverseLookupIndexOnDocumentId() throws Exception {
+  void reverseLookupIndexOnDocumentIdIsUnique() throws Exception {
+    // UNIQUE: the database, not only the service's check-then-insert, enforces that a document
+    // is attached to at most one comment, so two concurrent attaches cannot both succeed.
     assertThat(
             queryOne(
                 """
                 SELECT indexdef FROM pg_indexes
                 WHERE schemaname = '%s' AND indexname = 'idx_comment_attachments_document'
                 """))
+        .startsWith("CREATE UNIQUE INDEX")
         .contains("comment_attachments")
         .endsWith("(document_id)");
   }

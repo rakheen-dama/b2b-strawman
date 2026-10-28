@@ -1,0 +1,2 @@
+{"id":"14dadb73-386e-46d6-8b35-842c2f13b450","matterId":"a0f5fc91-7bb3-4c46-b89d-e95813ae0f33","fileName":"o5-alice-upload-627H.pdf","contentType":"application/pdf","size":82,"status":"UPLOADED","scope":"PROJECT","clientId":null,"visibility":"INTERNAL","source":"MANUAL","uploadedBy":"8247b143-925f-4663-ad43-4d4cf3f6983b","uploadedByName":"Alice Owner","uploadedAt":"2026-10-28T13:09:39.358829462Z","createdAt":"2026-10-28T13:09:38.670179Z"}
+HTTP 200

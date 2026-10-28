@@ -1,0 +1,18 @@
+SET
+ comment_rows 
+--------------
+            0
+(1 row)
+
+SET
+ link_rows 
+-----------
+         0
+(1 row)
+
+SET
+                  id                  |          file_name          |  status  | visibility | source  
+--------------------------------------+-----------------------------+----------+------------+---------
+ f81ca6e7-9804-458a-96c3-a07b893c9544 | o2-internal-attach-627H.pdf | UPLOADED | INTERNAL   | COMMENT
+(1 row)
+

@@ -1,0 +1,2 @@
+{"id":"01e3174c-cb62-47fe-82b4-34800153b44c","matterId":"9cf2159e-213a-44d7-b7c8-ef184544ddac","fileName":"o1-shared-attach-627H.pdf","contentType":"application/pdf","size":83,"status":"UPLOADED","scope":"PROJECT","clientId":null,"visibility":"INTERNAL","source":"MANUAL","uploadedBy":"8247b143-925f-4663-ad43-4d4cf3f6983b","uploadedByName":"Alice Owner","uploadedAt":"2026-10-28T13:07:43.574983631Z","createdAt":"2026-10-28T13:07:42.296277Z"}
+HTTP 200

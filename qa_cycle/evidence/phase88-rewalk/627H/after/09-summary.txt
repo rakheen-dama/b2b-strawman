@@ -1,0 +1,4 @@
+comments 3 all have attachments key: True
+870fba72-a20d-49ea-9311-0a3e1a977361 INTERNAL [] 627H before: edited, still attaching the Master's 
+303b7d5a-3da8-46a0-9fea-a30d93bcb0b1 SHARED ['01e3174c-cb62-47fe-82b4-34800153b44c'] 627H after O1: shared comment with attachment
+d574e017-8c79-4613-827d-804641543c6e SHARED [] 627H after O4: cleared

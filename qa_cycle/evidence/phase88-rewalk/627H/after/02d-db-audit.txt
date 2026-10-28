@@ -1,0 +1,9 @@
+SET
+         event_type          |                 vis                  |          occurred_at          
+-----------------------------+--------------------------------------+-------------------------------
+ document.created            |                                      | 2026-10-28 13:08:09.298405+00
+ document.uploaded           |                                      | 2026-10-28 13:08:10.065391+00
+ document.visibility_changed | {"to": "SHARED", "from": "INTERNAL"} | 2026-10-28 13:08:11.505777+00
+ document.visibility_changed | {"to": "INTERNAL", "from": "SHARED"} | 2026-10-28 13:08:12.117826+00
+(4 rows)
+

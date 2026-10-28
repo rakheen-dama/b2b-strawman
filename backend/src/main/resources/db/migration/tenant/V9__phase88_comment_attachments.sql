@@ -18,4 +18,6 @@ CREATE TABLE IF NOT EXISTS comment_attachments (
     CONSTRAINT comment_attachments_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
 );
 -- Reverse lookup: "which comment is this document attached to" (Documents list chip, delete guard).
-CREATE INDEX IF NOT EXISTS idx_comment_attachments_document ON comment_attachments (document_id);
+-- UNIQUE: a document is attached to at most one comment, enforced by the database so two
+-- concurrent attaches of the same document cannot both succeed.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comment_attachments_document ON comment_attachments (document_id);

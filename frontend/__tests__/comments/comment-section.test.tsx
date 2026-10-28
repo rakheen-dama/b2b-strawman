@@ -592,6 +592,74 @@ describe("AddCommentForm", () => {
     expect(FakeXhr.instances).toHaveLength(0);
   });
 
+  it("keeps the typed body and chosen visibility when a staged confirm fails", async () => {
+    mockConfirmUpload.mockResolvedValue({ success: false, error: "Upload not found" });
+    const user = userEvent.setup();
+    const { input } = renderForm(true);
+
+    await user.upload(input!, pdf("letter.pdf"));
+    await screen.findByText("letter.pdf");
+    await user.type(screen.getByLabelText("Add a comment"), "Keep this draft");
+    await user.selectOptions(screen.getByLabelText("Visibility"), "SHARED");
+    await user.click(screen.getByRole("button", { name: "Post Comment" }));
+
+    expect(await screen.findByText("letter.pdf: Upload not found")).toBeInTheDocument();
+    expect(mockCreateComment).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Add a comment")).toHaveValue("Keep this draft");
+    expect(screen.getByLabelText("Visibility")).toHaveValue("SHARED");
+  });
+
+  it("keeps the typed body and chosen visibility when createComment returns a 422", async () => {
+    mockCreateComment.mockResolvedValue({
+      success: false,
+      error: "Document doc-1 cannot be attached to a client-visible comment",
+      attachmentDocumentId: "doc-1",
+    });
+    const user = userEvent.setup();
+    const { input } = renderForm(true);
+
+    await user.upload(input!, pdf("letter.pdf"));
+    await screen.findByText("letter.pdf");
+    await user.type(screen.getByLabelText("Add a comment"), "Shared draft");
+    await user.selectOptions(screen.getByLabelText("Visibility"), "SHARED");
+    await user.click(screen.getByRole("button", { name: "Post Comment" }));
+
+    expect(
+      await screen.findByText("Document letter.pdf cannot be attached to a client-visible comment")
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Add a comment")).toHaveValue("Shared draft");
+    expect(screen.getByLabelText("Visibility")).toHaveValue("SHARED");
+    expect(
+      screen.getByText("Attachments on a client-visible comment are shared with the client.")
+    ).toBeInTheDocument();
+  });
+
+  it("clears the body and resets visibility to the default after a successful post", async () => {
+    mockCreateComment.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    renderForm(true);
+
+    await user.type(screen.getByLabelText("Add a comment"), "Posted");
+    await user.selectOptions(screen.getByLabelText("Visibility"), "SHARED");
+    await user.click(screen.getByRole("button", { name: "Post Comment" }));
+
+    await waitFor(() => {
+      expect(mockCreateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "TASK",
+        "t1",
+        "Posted",
+        "SHARED",
+        []
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByLabelText("Add a comment")).toHaveValue("");
+    });
+    expect(screen.getByLabelText("Visibility")).toHaveValue("INTERNAL");
+  });
+
   it("releases staged uploads when the form unmounts", async () => {
     const user = userEvent.setup();
     const { input, unmount } = renderForm(false);

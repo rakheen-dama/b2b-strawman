@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { startTransition, useRef, useState, type FormEvent, type ReactNode } from "react";
 import type { VariantProps } from "class-variance-authority";
 import { Button, buttonVariants } from "@b2mash/ui/button";
 import {
@@ -60,24 +60,32 @@ export function EditCommentDialog({
   const [error, setError] = useState<string | null>(null);
   // Attachments already on the comment that the user is keeping (removable chips).
   const [kept, setKept] = useState<CommentAttachment[]>(comment.attachments ?? []);
-  // Mirrors the uncontrolled select so the client-visible hint can react to it.
-  const [visibilityChoice, setVisibilityChoice] = useState<string>(comment.visibility);
+  // Controlled draft, initialised from the comment on open: survives a handled failure (as the chips
+  // do), so a retry never saves the original body over the user's edit.
+  const [body, setBody] = useState(comment.body);
+  const [visibility, setVisibility] = useState<string>(comment.visibility);
   const attachments = useCommentAttachments({
     slug: orgSlug,
     projectId,
     existingCount: kept.length,
   });
 
-  async function handleSubmit(formData: FormData) {
+  // onSubmit + startTransition rather than `<form action>`: the same transition, minus React's
+  // automatic form reset, which a controlled <select> does not survive (its DOM would fall back to
+  // the first option while state keeps the user's choice).
+  function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    startTransition(() => handleSubmit());
+  }
+
+  async function handleSubmit() {
     setError(null);
 
-    const body = formData.get("body")?.toString().trim() ?? "";
-    if (!body) {
+    const trimmedBody = body.trim();
+    if (!trimmedBody) {
       setError("Comment cannot be empty.");
       return;
     }
-
-    const visibility = canManageVisibility ? formData.get("visibility")?.toString() : undefined;
 
     setIsSubmitting(true);
     submittingRef.current = true;
@@ -100,8 +108,8 @@ export function EditCommentDialog({
         orgSlug,
         projectId,
         comment.id,
-        body,
-        visibility,
+        trimmedBody,
+        canManageVisibility ? visibility : undefined,
         attachmentDocumentIds
       );
       if (result.success) {
@@ -122,8 +130,6 @@ export function EditCommentDialog({
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
-      // The form action resets the uncontrolled select to its default after every submit.
-      setVisibilityChoice(comment.visibility);
     }
   }
 
@@ -134,7 +140,8 @@ export function EditCommentDialog({
     if (newOpen) {
       setError(null);
       setKept(comment.attachments ?? []);
-      setVisibilityChoice(comment.visibility);
+      setBody(comment.body);
+      setVisibility(comment.visibility);
     } else {
       // Closing without saving: release staged (still PENDING) uploads.
       attachments.releaseStaged();
@@ -163,13 +170,14 @@ export function EditCommentDialog({
           <DialogTitle>Edit Comment</DialogTitle>
           <DialogDescription>Update your comment.</DialogDescription>
         </DialogHeader>
-        <form action={handleSubmit} className="space-y-4">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="edit-comment-body">Comment</Label>
             <Textarea
               id="edit-comment-body"
               name="body"
-              defaultValue={comment.body}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
               required
               disabled={isSubmitting}
             />
@@ -181,8 +189,8 @@ export function EditCommentDialog({
               <select
                 id="edit-comment-visibility"
                 name="visibility"
-                defaultValue={comment.visibility}
-                onChange={(e) => setVisibilityChoice(e.target.value)}
+                value={visibility}
+                onChange={(e) => setVisibility(e.target.value)}
                 disabled={isSubmitting}
                 className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
               >
@@ -199,7 +207,7 @@ export function EditCommentDialog({
               setKept((prev) => prev.filter((a) => a.documentId !== documentId))
             }
             disabled={isSubmitting}
-            shared={canManageVisibility && visibilityChoice === "SHARED"}
+            shared={canManageVisibility && visibility === "SHARED"}
           />
 
           {error && <p className="text-destructive text-sm">{error}</p>}

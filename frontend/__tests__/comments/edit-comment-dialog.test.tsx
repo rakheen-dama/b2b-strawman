@@ -346,6 +346,78 @@ describe("EditCommentDialog", () => {
     expect(mockCancelUpload).not.toHaveBeenCalled();
   });
 
+  it("keeps the edited body and visibility when a staged confirm fails, then saves them", async () => {
+    mockConfirmUpload.mockResolvedValue({ success: false, error: "Upload not found" });
+    const user = userEvent.setup();
+
+    renderDialog("Edit confirm fails", makeComment({ attachments: [LETTER] }), true);
+    await user.click(screen.getByRole("button", { name: "Edit confirm fails" }));
+
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Edited body");
+    await user.selectOptions(screen.getByLabelText("Visibility"), "SHARED");
+    await user.upload(
+      fileInput(),
+      new File(["%PDF-1.4 new"], "new.pdf", { type: "application/pdf" })
+    );
+    await screen.findByText("new.pdf");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("new.pdf: Upload not found")).toBeInTheDocument();
+    expect(mockUpdateComment).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Comment")).toHaveValue("Edited body");
+    expect(screen.getByLabelText("Visibility")).toHaveValue("SHARED");
+
+    // Drop the failed chip and save: the edit (not the original body) is persisted.
+    await user.click(screen.getByRole("button", { name: "Remove new.pdf" }));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Edited body",
+        "SHARED",
+        undefined
+      );
+    });
+  });
+
+  it("keeps the edited body when updateComment fails", async () => {
+    mockUpdateComment.mockResolvedValue({ success: false, error: "Server error" });
+    const user = userEvent.setup();
+
+    renderDialog("Edit update fails");
+    await user.click(screen.getByRole("button", { name: "Edit update fails" }));
+
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Edited body");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Server error")).toBeInTheDocument();
+    expect(screen.getByLabelText("Comment")).toHaveValue("Edited body");
+  });
+
+  it("re-opening after cancel resets the body and visibility from the comment", async () => {
+    const user = userEvent.setup();
+
+    renderDialog("Edit cancel body", makeComment(), true);
+    await user.click(screen.getByRole("button", { name: "Edit cancel body" }));
+
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Abandoned edit");
+    await user.selectOptions(screen.getByLabelText("Visibility"), "SHARED");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await user.click(screen.getByRole("button", { name: "Edit cancel body" }));
+    expect(screen.getByLabelText("Comment")).toHaveValue("Original comment body");
+    expect(screen.getByLabelText("Visibility")).toHaveValue("INTERNAL");
+  });
+
   it("cancel releases staged uploads and re-opening resets the chips", async () => {
     const user = userEvent.setup();
 

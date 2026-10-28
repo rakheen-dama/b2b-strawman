@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { startTransition, useState, type FormEvent } from "react";
 import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
@@ -29,21 +29,27 @@ export function AddCommentForm({
 }: AddCommentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Mirrors the uncontrolled select so the client-visible hint can react to it.
-  const [visibilityChoice, setVisibilityChoice] = useState(DEFAULT_VISIBILITY);
-  const formRef = useRef<HTMLFormElement>(null);
+  // Controlled draft: survives a handled failure (the chips stay too); cleared only on success.
+  const [body, setBody] = useState("");
+  const [visibility, setVisibility] = useState(DEFAULT_VISIBILITY);
   const attachments = useCommentAttachments({ slug: orgSlug, projectId });
 
-  async function handleSubmit(formData: FormData) {
+  // onSubmit + startTransition rather than `<form action>`: the same transition, minus React's
+  // automatic form reset, which a controlled <select> does not survive (its DOM would fall back to
+  // the first option while state keeps the user's choice).
+  function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    startTransition(() => handleSubmit());
+  }
+
+  async function handleSubmit() {
     setError(null);
 
-    const body = formData.get("body")?.toString().trim() ?? "";
-    if (!body) {
+    const trimmedBody = body.trim();
+    if (!trimmedBody) {
       setError("Comment cannot be empty.");
       return;
     }
-
-    const visibility = canManageVisibility ? formData.get("visibility")?.toString() : undefined;
 
     setIsSubmitting(true);
 
@@ -59,12 +65,13 @@ export function AddCommentForm({
         projectId,
         entityType,
         entityId,
-        body,
-        visibility,
+        trimmedBody,
+        canManageVisibility ? visibility : undefined,
         confirmed.documentIds
       );
       if (result.success) {
-        formRef.current?.reset();
+        setBody("");
+        setVisibility(DEFAULT_VISIBILITY);
         attachments.reset();
         onCommentChange?.();
       } else {
@@ -79,19 +86,19 @@ export function AddCommentForm({
       setError("An unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
-      // The form action resets the uncontrolled select to its default after every submit.
-      setVisibilityChoice(DEFAULT_VISIBILITY);
     }
   }
 
   return (
-    <form ref={formRef} action={handleSubmit} className="space-y-3">
+    <form onSubmit={handleFormSubmit} className="space-y-3">
       <div className="space-y-2">
         <Label htmlFor="comment-body">Add a comment</Label>
         <Textarea
           id="comment-body"
           name="body"
           placeholder="Write a comment..."
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
           required
           disabled={isSubmitting}
         />
@@ -103,8 +110,8 @@ export function AddCommentForm({
           <select
             id="comment-visibility"
             name="visibility"
-            defaultValue={DEFAULT_VISIBILITY}
-            onChange={(e) => setVisibilityChoice(e.target.value)}
+            value={visibility}
+            onChange={(e) => setVisibility(e.target.value)}
             disabled={isSubmitting}
             className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
           >
@@ -117,7 +124,7 @@ export function AddCommentForm({
       <CommentAttachmentsField
         attachments={attachments}
         disabled={isSubmitting}
-        shared={canManageVisibility && visibilityChoice === "SHARED"}
+        shared={canManageVisibility && visibility === "SHARED"}
       />
 
       {error && <p className="text-destructive text-sm">{error}</p>}

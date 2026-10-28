@@ -114,13 +114,25 @@ describe("Firm › Roles tab loader", () => {
     expect(screen.getByText("Bookkeeper")).toBeInTheDocument();
     expect(screen.getByText("Can manage invoices and view financials")).toBeInTheDocument();
 
-    // Capability pills (underscores replaced with spaces)
-    // "FINANCIAL VISIBILITY" appears on Owner, Admin, and Bookkeeper cards (3 total)
-    const financialBadges = screen.getAllByText("FINANCIAL VISIBILITY");
+    // Capability pills show the CAPABILITY_META label, not the enum value (628A).
+    // "Financial Visibility" appears on Owner, Admin, and Bookkeeper cards (3 total)
+    const financialBadges = screen.getAllByText("Financial Visibility");
     expect(financialBadges).toHaveLength(3);
-    // "INVOICING" appears on Owner, Admin, and Bookkeeper cards (3 total)
-    const invoicingBadges = screen.getAllByText("INVOICING");
+    // INVOICING → "Billing" on Owner, Admin, and Bookkeeper cards (3 total)
+    const invoicingBadges = screen.getAllByText("Billing");
     expect(invoicingBadges).toHaveLength(3);
+    // PROJECT_MANAGEMENT / CUSTOMER_MANAGEMENT → legal labels on Owner and Admin (2 each)
+    expect(screen.getAllByText("Matter Management")).toHaveLength(2);
+    expect(screen.getAllByText("Client Management")).toHaveLength(2);
+    expect(screen.queryByText("INVOICING")).not.toBeInTheDocument();
+    expect(screen.queryByText("PROJECT MANAGEMENT")).not.toBeInTheDocument();
+  });
+
+  it("custom role card falls back to the spaced enum for an unknown capability", async () => {
+    await renderPage([makeCustomRole({ capabilities: ["PROJECT_MANAGEMENT", "SOME_NEW_CAP"] })]);
+
+    expect(screen.getByText("Matter Management")).toBeInTheDocument();
+    expect(screen.getByText("SOME NEW CAP")).toBeInTheDocument();
   });
 
   it("renders member count per role", async () => {

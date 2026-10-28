@@ -19,6 +19,7 @@ import {
   executeRetentionPurge,
 } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 import type { RetentionPolicyExtended } from "@/lib/types/data-protection";
+import { entityNounLabel } from "@/components/audit/entity-type-labels";
 
 const ACTIONS = ["ANONYMIZE", "FLAG"] as const;
 const FINANCIAL_RECORD_TYPES = ["DOCUMENT", "AUDIT_EVENT"];
@@ -51,16 +52,11 @@ function toEditableRow(policy: RetentionPolicyExtended): EditableRow {
   };
 }
 
-// Display labels for the backend `recordType` enum (wire values unchanged). Unmapped types are
-// title-cased from the enum ("AUDIT_EVENT" → "Audit Event").
-const RECORD_TYPE_LABELS: Readonly<Record<string, string>> = {
-  CUSTOMER: "Client",
-  PROJECT: "Matter",
-  INVOICE: "Fee note",
-};
-
+// Display label for the backend `recordType` enum (wire values unchanged): the legal noun for
+// CUSTOMER / PROJECT / INVOICE, other types title-cased from the enum ("AUDIT_EVENT" → "Audit Event").
 function formatRecordType(type: string): string {
-  if (Object.hasOwn(RECORD_TYPE_LABELS, type)) return RECORD_TYPE_LABELS[type];
+  const noun = entityNounLabel(type);
+  if (noun) return noun;
   return type
     .split("_")
     .filter(Boolean)

@@ -151,11 +151,12 @@ export function CherryPickCustomerDetail({
             </div>
           )}
 
-          {/* Expenses Table */}
+          {/* Expenses Table — legacy expenses, labelled "Other Disbursements" beside the legal
+              Disbursements table (matches the fee-note line table). */}
           {data.expenses.length > 0 && (
             <div>
               <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                Expenses
+                Other Disbursements
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

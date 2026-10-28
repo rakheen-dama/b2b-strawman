@@ -17,20 +17,14 @@ import {
   fetchEntityOptionsAction,
   type EntityOption,
 } from "@/app/(app)/org/[slug]/reports/[reportSlug]/actions";
+import { entityNounLabel } from "@/components/audit/entity-type-labels";
 
 /**
- * Display nouns for the backend report parameter `entityType` (`project` / `customer` / …). The
- * wire value is passed to the server action unchanged; only the copy uses the legal noun.
+ * Lower-case display noun for the backend report parameter `entityType` (`project` → "matter").
+ * The wire value is passed to the server action unchanged; only the copy uses the legal noun.
  */
-const ENTITY_DISPLAY_NOUNS: Readonly<Record<string, string>> = {
-  project: "matter",
-  customer: "client",
-  invoice: "fee note",
-};
-
 function entityDisplayNoun(entityType: string): string {
-  const key = entityType.toLowerCase();
-  return Object.hasOwn(ENTITY_DISPLAY_NOUNS, key) ? ENTITY_DISPLAY_NOUNS[key] : key;
+  return (entityNounLabel(entityType) ?? entityType).toLowerCase();
 }
 
 interface EntityPickerProps {

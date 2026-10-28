@@ -123,7 +123,7 @@ export function EntityPicker({ entityType, open, onOpenChange, onSelect }: Entit
         }}
       >
         <DialogHeader>
-          <DialogTitle>Select a {entityLabel} for Preview</DialogTitle>
+          <DialogTitle>Select a {entityLabel.toLowerCase()} for preview</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">

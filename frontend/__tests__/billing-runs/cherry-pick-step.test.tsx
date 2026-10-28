@@ -189,7 +189,7 @@ describe("CherryPickStep", () => {
     });
     expect(screen.getByText("Code review")).toBeInTheDocument();
     expect(screen.getByText("Time Entries")).toBeInTheDocument();
-    expect(screen.getByText("Expenses")).toBeInTheDocument();
+    expect(screen.getByText("Other Disbursements")).toBeInTheDocument();
     expect(screen.getByText("Software license")).toBeInTheDocument();
 
     // Check checkboxes are rendered

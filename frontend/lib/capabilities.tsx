@@ -72,6 +72,15 @@ export const CAPABILITY_META = [
   },
 ] as const;
 
+const CAPABILITY_LABELS: ReadonlyMap<string, string> = new Map(
+  CAPABILITY_META.map((cap) => [cap.value, cap.label])
+);
+
+/** Display label for a capability enum value ("INVOICING" → "Billing"); unknown values are spaced. */
+export function capabilityLabel(cap: string): string {
+  return CAPABILITY_LABELS.get(cap) ?? cap.replace(/_/g, " ");
+}
+
 // ---- Owner-only capabilities ----
 // Must stay in sync with Capability.OWNER_ONLY (backend orgrole/Capability.java) — pinned by
 // __tests__/capabilities.test.tsx, which reads Capability.java at test time (ADR-355).

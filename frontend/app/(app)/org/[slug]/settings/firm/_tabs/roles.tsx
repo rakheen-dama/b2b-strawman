@@ -5,6 +5,7 @@ import { PermissionDenied } from "@/components/permission-denied";
 import { Badge } from "@b2mash/ui/badge";
 import { CAPABILITIES } from "@/lib/capabilities";
 import { CustomRolesSection } from "@/components/roles/custom-roles-section";
+import { CapabilityBadge } from "@/components/roles/role-card";
 import { CapabilityReference } from "./capability-reference";
 import type { OrgRole } from "@/lib/api/org-roles";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
@@ -82,9 +83,7 @@ export async function renderRolesTab({ slug }: SettingsTabProps) {
                 {displayCaps.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {displayCaps.map((cap) => (
-                      <Badge key={cap} variant="secondary">
-                        {cap.replace(/_/g, " ")}
-                      </Badge>
+                      <CapabilityBadge key={cap} cap={cap} />
                     ))}
                   </div>
                 ) : (

@@ -110,6 +110,21 @@ export function entityTypeLabel(literal: string, fallbackLabel?: string): string
   return fallbackLabel || sentenceCaseKey(literal);
 }
 
+/** The core legal nouns: `project` → Matter, `customer` → Client, `invoice` → Fee note. */
+const ENTITY_NOUN_KEYS: ReadonlySet<string> = new Set(["project", "customer", "invoice"]);
+
+/**
+ * Legal noun for a core entity-type literal in any case (`project` / `PROJECT` → "Matter",
+ * `customer` / `CUSTOMER` → "Client", `invoice` / `INVOICE` → "Fee note"), or `undefined` for
+ * anything else so each caller keeps its own fallback. The one home for entity-type → noun display
+ * outside the audit trail (report pickers, retention policies, template badges, prerequisites);
+ * wire values are never changed (ADR-342).
+ */
+export function entityNounLabel(literal: string): string | undefined {
+  const key = literal.toLowerCase();
+  return ENTITY_NOUN_KEYS.has(key) ? ENTITY_TYPE_LABELS[key] : undefined;
+}
+
 /**
  * Human name for an audit row's entity, read from the row's details. Only fee notes have one
  * today (`details.invoice_number`, e.g. "INV-0003"; absent on draft `invoice.created`). Returns

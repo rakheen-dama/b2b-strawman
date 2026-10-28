@@ -7,6 +7,7 @@ import {
   type FieldValue,
 } from "@/components/prerequisite/inline-field-editor";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
+import { entityNounLabel } from "@/components/audit/entity-type-labels";
 
 interface PrerequisiteViolationListProps {
   violations: PrerequisiteViolation[];
@@ -29,12 +30,10 @@ function groupByEntityType(violations: PrerequisiteViolation[]) {
   return groups;
 }
 
-const ENTITY_TYPE_LABELS: Record<string, string> = {
-  CUSTOMER: "Client",
-  PROJECT: "Matter",
-  INVOICE: "Fee note",
-  TASK: "Task",
-};
+/** Group heading: the legal noun for CUSTOMER / PROJECT / INVOICE, "Task" for TASK, else raw. */
+function entityTypeHeading(entityType: string): string {
+  return entityNounLabel(entityType) ?? (entityType === "TASK" ? "Task" : entityType);
+}
 
 export function PrerequisiteViolationList({
   violations,
@@ -51,7 +50,7 @@ export function PrerequisiteViolationList({
       {Object.entries(grouped).map(([entityType, items]) => (
         <div key={entityType} className="space-y-2">
           <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {ENTITY_TYPE_LABELS[entityType] ?? entityType}
+            {entityTypeHeading(entityType)}
           </h4>
           <ul className="space-y-2">
             {items.map((violation, idx) => {

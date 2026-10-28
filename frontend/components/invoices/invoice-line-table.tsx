@@ -58,6 +58,7 @@ function renderGroupedLines(
   return sections.map((section) => (
     <LineSection
       key={section.key}
+      type={section.key}
       label={section.label}
       lines={section.lines}
       currency={currency}
@@ -72,6 +73,7 @@ function renderGroupedLines(
 }
 
 function LineSection({
+  type,
   label,
   lines,
   currency,
@@ -82,6 +84,8 @@ function LineSection({
   onEditLine,
   onDeleteLine,
 }: {
+  /** Section key (TIME / EXPENSE / DISBURSEMENT / TARIFF / OTHER) — keys the test id, not the label. */
+  type: string;
   label: string;
   lines: InvoiceLineResponse[];
   currency: string;
@@ -95,7 +99,7 @@ function LineSection({
   return (
     <>
       {showHeader && (
-        <tr data-testid={`section-header-${label}`}>
+        <tr data-testid={`section-header-${type}`}>
           <td
             colSpan={colCount}
             className="bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-600 uppercase dark:bg-slate-900/50 dark:text-slate-400"

@@ -38,5 +38,10 @@
     "file": "components/marketing/integrations-section.tsx",
     "text": "Transactional email for invoices, information requests, and portal invitations. Delivery tracking and bounce monitoring.",
     "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/legal/create-disbursement-dialog.tsx",
+    "text": "Supplier invoice or reference number",
+    "reason": "third-party object name — supplier's own invoice number on a disbursement"
   }
 ]

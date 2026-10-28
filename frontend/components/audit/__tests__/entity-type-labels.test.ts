@@ -4,6 +4,7 @@ import { describe, it, expect } from "vitest";
 import {
   ENTITY_TYPE_LABELS,
   entityDisplayName,
+  entityNounLabel,
   entityTypeLabel,
   sentenceCaseKey,
 } from "../entity-type-labels";
@@ -127,6 +128,16 @@ describe("ENTITY_TYPE_LABELS", () => {
     expect(entityTypeLabel("toString")).toBe("ToString");
     expect(entityTypeLabel("hasOwnProperty", "Backend label")).toBe("Backend label");
     expect(entityTypeLabel("__proto__")).toBe("Proto");
+  });
+
+  it("entityNounLabel maps the core nouns in any case and nothing else (628A)", () => {
+    for (const v of ["project", "PROJECT", "Project"]) expect(entityNounLabel(v)).toBe("Matter");
+    for (const v of ["customer", "CUSTOMER"]) expect(entityNounLabel(v)).toBe("Client");
+    for (const v of ["invoice", "INVOICE"]) expect(entityNounLabel(v)).toBe("Fee note");
+    // Outside the core set: undefined, so callers keep their own fallback.
+    for (const v of ["TASK", "time_entry", "AUDIT_EVENT", "constructor", "__proto__", ""]) {
+      expect(entityNounLabel(v)).toBeUndefined();
+    }
   });
 
   it("derives a display name only from a string invoice number (R-4)", () => {

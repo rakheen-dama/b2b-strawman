@@ -28,10 +28,10 @@ import { UploadDocxDialog } from "./UploadDocxDialog";
 import { BrandingSection } from "./branding-section";
 import { uploadLogoAction, deleteLogoAction, saveBrandingAction } from "./template-support-actions";
 import { formatFileSize } from "@/lib/format";
+import { entityNounLabel } from "@/components/audit/entity-type-labels";
 import type {
   TemplateListResponse,
   TemplateCategory,
-  TemplateEntityType,
   TemplateFormat,
   OrgSettings,
 } from "@/lib/types";
@@ -42,12 +42,6 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   COVER_LETTER: "Cover Letter",
   PROJECT_SUMMARY: "Matter Summary",
   NDA: "NDA",
-};
-
-const ENTITY_TYPE_LABELS: Record<TemplateEntityType, string> = {
-  PROJECT: "Matter",
-  CUSTOMER: "Client",
-  INVOICE: "Fee note",
 };
 
 interface TemplatesContentProps {
@@ -179,7 +173,7 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <Badge variant="neutral">
-                          {ENTITY_TYPE_LABELS[template.primaryEntityType] ??
+                          {entityNounLabel(template.primaryEntityType) ??
                             template.primaryEntityType}
                         </Badge>
                       </TableCell>

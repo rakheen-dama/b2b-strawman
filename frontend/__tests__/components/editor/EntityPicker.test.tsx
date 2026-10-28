@@ -50,7 +50,7 @@ describe("EntityPicker", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Select a Matter for Preview")).toBeInTheDocument();
+      expect(screen.getByText("Select a matter for preview")).toBeInTheDocument();
     });
     expect(mockFetchProjects).toHaveBeenCalled();
   });
@@ -61,7 +61,7 @@ describe("EntityPicker", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Select a Client for Preview")).toBeInTheDocument();
+      expect(screen.getByText("Select a client for preview")).toBeInTheDocument();
     });
     expect(mockFetchCustomers).toHaveBeenCalled();
   });
@@ -72,7 +72,7 @@ describe("EntityPicker", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Select a Fee note for Preview")).toBeInTheDocument();
+      expect(screen.getByText("Select a fee note for preview")).toBeInTheDocument();
     });
     expect(mockFetchInvoices).toHaveBeenCalled();
   });

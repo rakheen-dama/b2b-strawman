@@ -160,7 +160,7 @@ export function TemplatePreviewDialog({ templateId, entityType }: TemplatePrevie
         <div className="space-y-4">
           <div className="flex items-end gap-3">
             <div className="flex-1 space-y-1.5">
-              <span className="text-sm font-medium">Select a {entityLabel}</span>
+              <span className="text-sm font-medium">Select a {entityLabel.toLowerCase()}</span>
               <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
                 <PopoverTrigger asChild>
                   <Button

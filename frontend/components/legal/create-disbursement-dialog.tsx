@@ -626,7 +626,11 @@ export function CreateDisbursementDialog({
                     <span className="font-normal text-slate-500">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Fee note or reference number" maxLength={100} {...field} />
+                    <Input
+                      placeholder="Supplier invoice or reference number"
+                      maxLength={100}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

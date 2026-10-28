@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TrustBalanceZeroGateTest {
 
   private static final UUID PROJECT_ID = UUID.randomUUID();
-  private static final char NBSP = ' ';
+  private static final char NBSP = '\u00A0';
 
   @Mock private TrustTransactionRepository trustTransactionRepository;
   @Mock private OrgSettingsRepository orgSettingsRepository;

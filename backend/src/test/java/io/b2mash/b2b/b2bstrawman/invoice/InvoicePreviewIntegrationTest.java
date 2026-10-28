@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,6 +64,22 @@ class InvoicePreviewIntegrationTest {
   private static final String ORG_ID_B = "org_inv_preview_test_b";
   private static final String ORG_ID_NO_TPL = "org_inv_preview_no_tpl";
 
+  /** The firm's banking reference note — speaks of "your fee note number", so issued-only. */
+  private static final String REFERENCE_NOTE =
+      "Please use your fee note number as the payment reference.";
+
+  private static final String BANKING_LETTERHEAD =
+      """
+      {
+        "bankName": "Preview Bank",
+        "bankBranchCode": "250655",
+        "bankAccountNumber": "62012345678",
+        "bankAccountType": "Cheque",
+        "paymentReferenceNote": "%s"
+      }
+      """
+          .formatted(REFERENCE_NOTE);
+
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -82,6 +100,8 @@ class InvoicePreviewIntegrationTest {
   private UUID projectId;
   private UUID invoiceId;
   private UUID noTemplateInvoiceId;
+  private UUID issuedInvoiceId;
+  private String issuedInvoiceNumber;
 
   @BeforeAll
   void setUp() throws Exception {
@@ -197,6 +217,64 @@ class InvoicePreviewIntegrationTest {
                       BigDecimal subtotal = line1.getAmount().add(line2.getAmount());
                       invoice.recalculateTotals(subtotal, false, BigDecimal.ZERO, false);
                       invoiceRepository.save(invoice);
+
+                      // Second fee note — issued below through the real approve/send endpoints.
+                      var issued =
+                          new Invoice(
+                              customerId,
+                              "ZAR",
+                              "Preview Corp",
+                              "preview@test.com",
+                              "123 Test Street, Cape Town",
+                              "Preview Test Org",
+                              memberIdOwner);
+                      issued = invoiceRepository.save(issued);
+                      issuedInvoiceId = issued.getId();
+                      var issuedLine =
+                          new InvoiceLine(
+                              issued.getId(),
+                              projectId,
+                              null,
+                              "Consultation on lease",
+                              new BigDecimal("1.0000"),
+                              new BigDecimal("2000.00"),
+                              0);
+                      invoiceLineRepository.save(issuedLine);
+                      issued.recalculateTotals(
+                          issuedLine.getAmount(), false, BigDecimal.ZERO, false);
+                      invoiceRepository.save(issued);
+                    }));
+
+    // Firm banking details incl. the reference note (626E F-1: the note is gated on the number).
+    mockMvc
+        .perform(
+            patch("/api/settings/letterhead")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(BANKING_LETTERHEAD))
+        .andExpect(status().isOk());
+
+    // Issue the second fee note: approve stamps number + issue date, send moves it to SENT.
+    mockMvc
+        .perform(
+            post("/api/invoices/" + issuedInvoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/invoices/" + issuedInvoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"overrideWarnings\": true}"))
+        .andExpect(status().isOk());
+    issuedInvoiceNumber =
+        inTenant(
+            () ->
+                transactionTemplate.execute(
+                    tx -> {
+                      var issued = invoiceRepository.findById(issuedInvoiceId).orElseThrow();
+                      assertThat(issued.getStatus()).isEqualTo(InvoiceStatus.SENT);
+                      return issued.getInvoiceNumber();
                     }));
 
     // --- Tenant B (for cross-tenant isolation test) ---
@@ -299,7 +377,28 @@ class InvoicePreviewIntegrationTest {
         .andExpect(content().string(containsString("DRAFT &mdash; not yet issued")))
         .andExpect(content().string(not(containsString("Fee Note Number:"))))
         .andExpect(content().string(not(containsString("Issue Date:"))))
-        .andExpect(content().string(not(containsString("Payment reference:"))));
+        .andExpect(content().string(not(containsString("Payment reference:"))))
+        // 626E F-1: banking renders on a draft, but the firm's "use your fee note number"
+        // note is gated on the number with the Payment reference line.
+        .andExpect(content().string(containsString("Preview Bank")))
+        .andExpect(content().string(not(containsString("Please use your fee note number"))));
+  }
+
+  @Test
+  void issuedFeeNote_showsNumberIssueDateAndPaymentReference_withoutDraftBanner() throws Exception {
+    assertThat(issuedInvoiceNumber).isNotBlank();
+    mockMvc
+        .perform(
+            get("/api/invoices/" + issuedInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Fee Note Number:")))
+        .andExpect(content().string(containsString(issuedInvoiceNumber)))
+        .andExpect(content().string(containsString("Issue Date:")))
+        .andExpect(content().string(containsString("Payment reference:")))
+        .andExpect(content().string(containsString(REFERENCE_NOTE)))
+        .andExpect(content().string(not(containsString("DRAFT &mdash; not yet issued"))))
+        .andExpect(content().string(not(containsString("not yet issued"))));
   }
 
   @Test

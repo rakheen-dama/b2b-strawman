@@ -2,6 +2,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { RetentionPolicyTable } from "@/components/compliance/RetentionPolicyTable";
 import { ComplianceSettingsForm } from "@/components/compliance/ComplianceSettingsForm";
+import { MatterRetentionSettingsForm } from "@/components/compliance/MatterRetentionSettingsForm";
 import { CompliancePackList } from "@/components/compliance/CompliancePackList";
 import type { OrgSettings, RetentionPolicy } from "@/lib/types";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
@@ -41,21 +42,29 @@ export async function renderComplianceTab({ slug }: SettingsTabProps) {
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage retention policies, dormancy thresholds, and data request deadlines.
+          Manage the matter retention period, retention policies, dormancy thresholds, and data
+          request deadlines.
         </p>
       </div>
 
-      {/* Section 1: General Settings */}
+      {/* Section 1: Matter retention period — owner-only on the backend, read-only for admins */}
+      <MatterRetentionSettingsForm
+        slug={slug}
+        legalMatterRetentionYears={settings.legalMatterRetentionYears ?? 5}
+        canEdit={caps.isOwner}
+      />
+
+      {/* Section 2: General Settings */}
       <ComplianceSettingsForm
         slug={slug}
         dormancyThresholdDays={settings.dormancyThresholdDays ?? 365}
         dataRequestDeadlineDays={settings.dataRequestDeadlineDays ?? 30}
       />
 
-      {/* Section 2: Retention Policies */}
+      {/* Section 3: Retention Policies */}
       <RetentionPolicyTable key={JSON.stringify(policies)} policies={policies} slug={slug} />
 
-      {/* Section 3: Compliance Packs */}
+      {/* Section 4: Compliance Packs */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
           Compliance Packs

@@ -10,3 +10,14 @@ export const paymentTermsDaysSchema = z
   .int("Payment terms must be a whole number of days.")
   .min(0, "Payment terms must be between 0 and 365 days.")
   .max(365, "Payment terms must be between 0 and 365 days.");
+
+/**
+ * Matter retention period in whole years (Phase 88 U17, ADR-354): a closed matter's scheduled
+ * deletion date is the close date plus these years, stamped at close. Mirrors the backend
+ * `DataProtectionSettingsRequest.legalMatterRetentionYears` `@Min(1) @Max(30)`.
+ */
+export const matterRetentionYearsSchema = z
+  .number({ error: "Enter the number of years." })
+  .int("Retention period must be a whole number of years.")
+  .min(1, "Retention period must be between 1 and 30 years.")
+  .max(30, "Retention period must be between 1 and 30 years.");

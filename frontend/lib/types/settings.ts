@@ -52,6 +52,9 @@ export interface OrgSettings {
   financialRetentionMonths?: number;
   informationOfficerName?: string | null;
   informationOfficerEmail?: string | null;
+  // Phase 88 U17 (ADR-354): matter retention period in years. The backend sends the effective
+  // value (5 when unset), never null; written through PATCH /api/settings/data-protection (owner).
+  legalMatterRetentionYears?: number;
   // portal settings (Epic 496A / 498A / 498C — surfaced by firm settings UI)
   portalDigestCadence?: PortalDigestCadence;
   // firm letterhead (Phase 88 U8, ADR-353). The backend always sends it (all-null object when

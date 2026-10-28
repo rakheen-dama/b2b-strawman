@@ -10,6 +10,7 @@ import {
   getMatterMemberHours,
   getMatterUpcomingDeadlines,
 } from "@/lib/api/matters";
+import { getOrgSettings } from "@/lib/api/settings";
 import { UpcomingDeadlinesTile } from "@/components/projects/upcoming-deadlines-tile";
 import { daysUntil, resolveDateRange } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
@@ -127,18 +128,24 @@ export async function KPIDashboard({
 }: KPIDashboardProps) {
   const { from, to } = resolveDateRange({});
 
-  const [healthResult, memberHoursResult, budgetResult, upcomingDeadlinesResult] =
+  // The retention card (COMPLETED / CLOSED only) states the firm's matter retention period
+  // (Phase 88 U17, ADR-354); other statuses render no card, so skip the settings read.
+  const showsRetentionCard = projectStatus === "CLOSED" || projectStatus === "COMPLETED";
+
+  const [healthResult, memberHoursResult, budgetResult, upcomingDeadlinesResult, settingsResult] =
     await Promise.allSettled([
       getMatterHealth(projectId),
       getMatterMemberHours(projectId, { from, to }),
       getMatterBudget(projectId),
       getMatterUpcomingDeadlines(projectId),
+      showsRetentionCard ? getOrgSettings() : Promise.resolve(null),
     ]);
 
   const health = settled(healthResult);
   const memberHours = settled(memberHoursResult);
   const budgetStatus = settled(budgetResult);
   const upcomingDeadlines = settled(upcomingDeadlinesResult) ?? [];
+  const firmRetentionYears = settled(settingsResult)?.legalMatterRetentionYears ?? null;
 
   // Health status
   const healthStatus = health?.healthStatus ?? "UNKNOWN";
@@ -318,6 +325,7 @@ export async function KPIDashboard({
         status={projectStatus}
         retentionClockStartedAt={retentionClockStartedAt}
         retentionEndsOn={retentionEndsOn}
+        firmRetentionYears={firmRetentionYears}
         slug={slug}
       />
 

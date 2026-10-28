@@ -27,15 +27,14 @@ export interface Matter {
   archivedAt: string | null;
   closedAt: string | null;
   /**
-   * Stamped on first ACTIVE→COMPLETED or ACTIVE→CLOSED transition (ADR-249) and preserved across
-   * reopens. Anchors the per-matter retention clock for legal-vertical CLOSED matters.
+   * ISO instant stamped at every close (ADR-354) and kept on reopen, so an ACTIVE or COMPLETED
+   * matter can carry the clock of an earlier close. Completion does not start it.
    */
   retentionClockStartedAt: string | null;
   /**
-   * GAP-OBS-Day60-RetentionShape — server-computed retention end date for CLOSED matters,
-   * derived from `retentionClockStartedAt + orgSettings.legalMatterRetentionYears`. Null when
-   * the matter isn't closed, the clock isn't stamped, or the org's retention years aren't
-   * configured.
+   * The persisted `retention_ends_on` (`YYYY-MM-DD`, ADR-354): the close's UTC date plus the
+   * firm's matter retention years, stamped at close and cleared on reopen — null unless the
+   * matter is CLOSED. Frozen once stamped: a later change to the firm setting does not move it.
    */
   retentionEndsOn: string | null;
   matterRole: MatterRole | null;

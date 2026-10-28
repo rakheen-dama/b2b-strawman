@@ -18,9 +18,10 @@ import org.springframework.stereotype.Component;
  * empty cell, never {@code 0} or "N/A", so a missing cost is not mistaken for a zero cost.
  *
  * <p>Text cells are defused against spreadsheet formula injection (OWASP) by prefixing an
- * apostrophe when they start with a formula trigger. Numeric cells are never defused: they are
- * produced by this class from a {@link BigDecimal}, so they cannot carry a formula, and a negative
- * margin must stay {@code -150.00} to remain a number in the spreadsheet.
+ * apostrophe when they start with a formula trigger (=, +, -, @, tab, carriage return or line
+ * feed). Numeric cells are never defused: they are produced by this class from a {@link
+ * BigDecimal}, so they cannot carry a formula, and a negative margin must stay {@code -150.00} to
+ * remain a number in the spreadsheet.
  */
 @Component
 public class ProfitabilityCsvExporter {
@@ -28,7 +29,7 @@ public class ProfitabilityCsvExporter {
   static final String HEADER = "Matter,Client,Currency,Billable Hours,Revenue,Cost,Margin,Margin %";
 
   private static final String CRLF = "\r\n";
-  private static final String FORMULA_TRIGGERS = "=+-@\t\r";
+  private static final String FORMULA_TRIGGERS = "=+-@\t\r\n";
 
   public byte[] toCsv(List<MatterProfitabilitySummary> rows) {
     var sb = new StringBuilder(HEADER).append(CRLF);

@@ -103,6 +103,19 @@ class ProfitabilityCsvExporterTest {
   }
 
   @Test
+  void textStartingWithLineBreak_isDefusedInsideTheQuotes() {
+    var rows =
+        List.of(
+            row("\n=HYPERLINK(\"x\")", "Acme", "ZAR", "1", "1", "1", "0", "0"),
+            row("\r=1+1", "Acme", "ZAR", "1", "1", "1", "0", "0"));
+
+    var csv = csv(rows);
+
+    assertThat(csv).contains(CRLF + "\"'\n=HYPERLINK(\"\"x\"\")\",Acme,ZAR,");
+    assertThat(csv).contains(CRLF + "\"'\r=1+1\",Acme,ZAR,");
+  }
+
+  @Test
   void rows_areWrittenInListOrder() {
     var rows =
         List.of(

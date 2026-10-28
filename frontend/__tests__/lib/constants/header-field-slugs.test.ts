@@ -65,9 +65,9 @@ describe("buildHeaderFields", () => {
   });
 
   it("falls back to the slug as label when the definition is not loaded", () => {
-    expect(buildHeaderFields(["court_name"], { court_name: "Western Cape High Court" }, [])).toEqual(
-      [{ slug: "court_name", label: "court_name", value: "Western Cape High Court" }]
-    );
+    expect(
+      buildHeaderFields(["court_name"], { court_name: "Western Cape High Court" }, [])
+    ).toEqual([{ slug: "court_name", label: "court_name", value: "Western Cape High Court" }]);
   });
 
   it("returns nothing when the record has no custom fields", () => {

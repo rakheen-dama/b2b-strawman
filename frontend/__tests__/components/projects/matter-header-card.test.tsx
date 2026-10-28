@@ -119,9 +119,7 @@ describe("MatterHeaderCard facts strip (G-B9)", () => {
     const text = strip.textContent ?? "";
     expect(text.indexOf("1234/2026")).toBeGreaterThan(-1);
     expect(text.indexOf("1234/2026")).toBeLessThan(text.indexOf("Gauteng Local Division"));
-    expect(text.indexOf("Gauteng Local Division")).toBeLessThan(
-      text.indexOf("Road Accident Fund")
-    );
+    expect(text.indexOf("Gauteng Local Division")).toBeLessThan(text.indexOf("Road Accident Fund"));
   });
 
   it("prefixes only the case number visibly; the other terms are screen-reader labels", () => {
@@ -129,17 +127,27 @@ describe("MatterHeaderCard facts strip (G-B9)", () => {
 
     const caseNumber = screen.getByTestId("matter-header-field-case_number");
     const caseTerm = within(caseNumber).getByText("Case no.");
-    expect(caseTerm.tagName).toBe("DT");
+    expect(caseTerm.closest("dt")).not.toBeNull();
     expect(caseTerm).not.toHaveClass("sr-only");
     expect(within(caseNumber).getByText("1234/2026").tagName).toBe("DD");
 
     const court = screen.getByTestId("matter-header-field-court_name");
     const courtTerm = within(court).getByText("Court");
-    expect(courtTerm.tagName).toBe("DT");
+    expect(courtTerm.closest("dt")).not.toBeNull();
     expect(courtTerm).toHaveClass("sr-only");
 
     const opposing = screen.getByTestId("matter-header-field-opposing_party");
     expect(within(opposing).getByText("Opposing Party")).toHaveClass("sr-only");
+  });
+
+  it("separates the facts with decorative dots hidden from screen readers", () => {
+    renderCard("ACTIVE", RAF_FIELDS);
+
+    const separators = screen
+      .getByTestId("matter-header-fields")
+      .querySelectorAll('[aria-hidden="true"]');
+    expect(separators).toHaveLength(2);
+    separators.forEach((sep) => expect(sep).toHaveTextContent("·"));
   });
 
   it("renders no strip when no header field is set", () => {
@@ -161,10 +169,13 @@ describe("MatterHeaderCard lifecycle actions (G-D2)", () => {
     expect(within(actions).getByTestId("archive-project-btn")).toBeInTheDocument();
   });
 
-  it.each(["CLOSED", "ARCHIVED"] as const)("does not offer Close Matter on a %s matter", (status) => {
-    renderCard(status);
-    expect(screen.queryByTestId("close-matter-btn")).not.toBeInTheDocument();
-  });
+  it.each(["CLOSED", "ARCHIVED"] as const)(
+    "does not offer Close Matter on a %s matter",
+    (status) => {
+      renderCard(status);
+      expect(screen.queryByTestId("close-matter-btn")).not.toBeInTheDocument();
+    }
+  );
 
   it("offers Reopen on a CLOSED matter only", () => {
     renderCard("CLOSED");

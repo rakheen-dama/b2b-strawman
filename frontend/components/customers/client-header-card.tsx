@@ -8,7 +8,9 @@ import { KycStatusBadge } from "@/components/customers/kyc-status-badge";
 import type { KycSummary } from "@/components/customers/kyc-status-badge";
 import { XeroContactBadge } from "@/components/customers/XeroContactBadge";
 import { ClientOverflowMenu } from "@/components/customers/client-overflow-menu";
+import { HeaderFactsStrip } from "@/components/shared/header-facts-strip";
 import { formatDate } from "@/lib/format";
+import type { HeaderField } from "@/lib/constants/header-field-slugs";
 import type { Client, ClientStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
 
 const STATUS_BADGE: Record<ClientStatus, { label: string; variant: "success" | "neutral" }> = {
@@ -75,6 +77,8 @@ export interface ClientHeaderCardProps {
   onPrimaryAction?: () => void;
   /** Called when "Summarise Activity" is selected from overflow menu */
   onSummariseActivity?: () => void;
+  /** ID / passport number fact (HEADER_FIELD_SLUGS.CUSTOMER, Phase 88 G-B9). */
+  headerFields?: HeaderField[];
 }
 
 export function ClientHeaderCard({
@@ -99,6 +103,7 @@ export function ClientHeaderCard({
   customer,
   onPrimaryAction,
   onSummariseActivity,
+  headerFields = [],
 }: ClientHeaderCardProps) {
   const statusBadge = STATUS_BADGE[customerStatus];
   const smartAction = getSmartPrimaryAction(lifecycleStatus, customerStatus);
@@ -130,6 +135,8 @@ export function ClientHeaderCard({
             {kycSummary && <KycStatusBadge summary={kycSummary} />}
             {xeroConnected && <XeroContactBadge customerId={customerId} slug={slug} />}
           </div>
+
+          <HeaderFactsStrip fields={headerFields} testIdPrefix="client-header-field" />
 
           {/* Row 3 — Contact */}
           {(email || phone) && (

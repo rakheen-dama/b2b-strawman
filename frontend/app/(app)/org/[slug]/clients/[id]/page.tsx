@@ -39,6 +39,7 @@ import type {
 } from "@/lib/types";
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
 import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
+import { HEADER_FIELD_SLUGS, buildHeaderFields } from "@/lib/constants/header-field-slugs";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
@@ -198,6 +199,13 @@ export default async function CustomerDetailPage({
   } catch {
     // Non-fatal: custom fields section won't render
   }
+
+  // Header facts strip (G-B9): id_passport_number is not promoted, so it survives the filter above.
+  const headerFields = buildHeaderFields(
+    HEADER_FIELD_SLUGS.CUSTOMER,
+    customer.customFields,
+    customerFieldDefs
+  );
 
   // Tags for the Tags section
   let customerTags: TagResponse[] = [];
@@ -510,6 +518,7 @@ export default async function CustomerDetailPage({
           kycVerified={kycSummary?.state === "verified"}
           customer={customer}
           targetLifecycleStatus={lifecycleActionPrompt?.targetStatus ?? null}
+          headerFields={headerFields}
         />
       </div>
 

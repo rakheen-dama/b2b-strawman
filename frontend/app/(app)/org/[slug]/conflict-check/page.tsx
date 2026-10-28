@@ -2,33 +2,18 @@ import { notFound } from "next/navigation";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchConflictChecks, fetchCustomers, fetchProjects } from "./actions";
 import { ConflictCheckClient } from "./conflict-check-client";
+import { buildConflictCheckFormDefaults, type ConflictCheckSearchParams } from "./form-defaults";
 import type { ConflictCheck } from "@/lib/types";
-import type { PerformConflictCheckFormData } from "@/lib/schemas/legal";
 
 export default async function ConflictCheckPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{
-    customerId?: string;
-    checkedName?: string;
-    checkedIdNumber?: string;
-  }>;
+  searchParams?: Promise<ConflictCheckSearchParams>;
 }) {
   const { slug } = await params;
-  const resolvedSearchParams = (await searchParams) ?? {};
-
-  const initialFormDefaults: Partial<PerformConflictCheckFormData> = {};
-  if (resolvedSearchParams.customerId) {
-    initialFormDefaults.customerId = resolvedSearchParams.customerId;
-  }
-  if (resolvedSearchParams.checkedName) {
-    initialFormDefaults.checkedName = resolvedSearchParams.checkedName;
-  }
-  if (resolvedSearchParams.checkedIdNumber) {
-    initialFormDefaults.checkedIdNumber = resolvedSearchParams.checkedIdNumber;
-  }
+  const initialFormDefaults = buildConflictCheckFormDefaults((await searchParams) ?? {});
 
   let settings;
   try {

@@ -87,6 +87,7 @@ import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { RecordRecentItem } from "@/components/record-recent-item";
 import { createSavedViewAction } from "./view-actions";
 import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
+import { HEADER_FIELD_SLUGS, buildHeaderFields } from "@/lib/constants/header-field-slugs";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -115,7 +116,6 @@ export default async function ProjectDetailPage({
   const canEdit = isAdmin || project.matterRole === "lead";
   const isCurrentLead = project.matterRole === "lead";
   const canManage = isAdmin || isCurrentLead;
-  // TODO(epic-535): re-add roleBadge to MatterSidebar (projectRole omitted in 532B)
 
   // Setup guidance data (Epic 112A)
   let setupStatus: MatterSetupStatus | null = null;
@@ -343,6 +343,14 @@ export default async function ProjectDetailPage({
     // Non-fatal: custom fields section won't render
   }
 
+  // Header facts strip (G-B9): header slugs are not promoted, so they survive the filter above;
+  // without definitions the strip still renders, labelled by slug.
+  const headerFields = buildHeaderFields(
+    HEADER_FIELD_SLUGS.PROJECT,
+    project.customFields,
+    projectFieldDefs
+  );
+
   // Custom field definitions for tasks (for TaskDetailSheet)
   let taskFieldDefs: FieldDefinitionResponse[] = [];
   let taskFieldGroups: FieldGroupResponse[] = [];
@@ -452,6 +460,7 @@ export default async function ProjectDetailPage({
         customers={customers.map((c) => ({ id: c.id, name: c.name }))}
         slug={slug}
         isAdmin={isAdmin}
+        headerFields={headerFields}
       />
 
       {/* Tabbed Content */}

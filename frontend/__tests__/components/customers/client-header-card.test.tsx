@@ -154,7 +154,7 @@ describe("ClientHeaderCard", () => {
     const strip = screen.getByTestId("client-header-fields");
     expect(strip.tagName).toBe("DL");
     const term = within(strip).getByText("ID");
-    expect(term.tagName).toBe("DT");
+    expect(term.closest("dt")).not.toBeNull();
     expect(term).not.toHaveClass("sr-only");
     expect(within(strip).getByText("8501015800087").tagName).toBe("DD");
   });

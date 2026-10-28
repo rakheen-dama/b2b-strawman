@@ -41,3 +41,15 @@ export function buildHeaderFields(
     return [{ slug, label, value }];
   });
 }
+
+/**
+ * Client header values: the structural `idNumber` (what the Edit dialog writes and the conflict
+ * check matches) wins over the legacy `id_passport_number` custom field when non-blank (R-19).
+ */
+export function clientHeaderFieldValues(
+  customFields: Record<string, unknown> | null | undefined,
+  idNumber: string | null | undefined
+): Record<string, unknown> {
+  const structural = idNumber?.trim();
+  return structural ? { ...customFields, id_passport_number: structural } : { ...customFields };
+}

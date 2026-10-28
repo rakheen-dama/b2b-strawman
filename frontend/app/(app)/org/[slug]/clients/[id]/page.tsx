@@ -39,7 +39,11 @@ import type {
 } from "@/lib/types";
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
 import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
-import { HEADER_FIELD_SLUGS, buildHeaderFields } from "@/lib/constants/header-field-slugs";
+import {
+  HEADER_FIELD_SLUGS,
+  buildHeaderFields,
+  clientHeaderFieldValues,
+} from "@/lib/constants/header-field-slugs";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
@@ -200,10 +204,11 @@ export default async function CustomerDetailPage({
     // Non-fatal: custom fields section won't render
   }
 
-  // Header facts strip (G-B9): id_passport_number is not promoted, so it survives the filter above.
+  // Header facts strip (G-B9): the ID shows the structural idNumber first (what the Edit dialog
+  // writes and the conflict check matches), falling back to the legacy id_passport_number (R-19).
   const headerFields = buildHeaderFields(
     HEADER_FIELD_SLUGS.CUSTOMER,
-    customer.customFields,
+    clientHeaderFieldValues(customer.customFields, customer.idNumber),
     customerFieldDefs
   );
 

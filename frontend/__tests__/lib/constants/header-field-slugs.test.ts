@@ -3,6 +3,7 @@ import {
   HEADER_FIELD_PREFIXES,
   HEADER_FIELD_SLUGS,
   buildHeaderFields,
+  clientHeaderFieldValues,
 } from "@/lib/constants/header-field-slugs";
 import type { FieldDefinitionResponse } from "@/lib/types";
 
@@ -73,5 +74,42 @@ describe("buildHeaderFields", () => {
   it("returns nothing when the record has no custom fields", () => {
     expect(buildHeaderFields(HEADER_FIELD_SLUGS.PROJECT, undefined, PROJECT_DEFS)).toEqual([]);
     expect(buildHeaderFields(HEADER_FIELD_SLUGS.CUSTOMER, null, [])).toEqual([]);
+  });
+});
+
+describe("clientHeaderFieldValues (R-19)", () => {
+  const ID_DEFS = [def("id_passport_number", "ID / Passport Number")];
+
+  it("prefers the structural idNumber over the legacy custom field", () => {
+    const values = clientHeaderFieldValues(
+      { id_passport_number: "8001015009087", other: "kept" },
+      "  9002025009088  "
+    );
+    expect(values).toEqual({ id_passport_number: "9002025009088", other: "kept" });
+    expect(buildHeaderFields(HEADER_FIELD_SLUGS.CUSTOMER, values, ID_DEFS)).toEqual([
+      { slug: "id_passport_number", label: "ID / Passport Number", value: "9002025009088" },
+    ]);
+  });
+
+  it("falls back to the custom field when idNumber is blank, whitespace-only or null", () => {
+    for (const idNumber of ["", "   ", null, undefined]) {
+      const values = clientHeaderFieldValues({ id_passport_number: "8001015009087" }, idNumber);
+      expect(buildHeaderFields(HEADER_FIELD_SLUGS.CUSTOMER, values, ID_DEFS)).toEqual([
+        { slug: "id_passport_number", label: "ID / Passport Number", value: "8001015009087" },
+      ]);
+    }
+  });
+
+  it("uses the structural idNumber when the record has no custom fields", () => {
+    expect(clientHeaderFieldValues(null, "8001015009087")).toEqual({
+      id_passport_number: "8001015009087",
+    });
+  });
+
+  it("leaves the strip empty when neither value is present", () => {
+    for (const customFields of [null, undefined, {}, { id_passport_number: "  " }]) {
+      const values = clientHeaderFieldValues(customFields, "   ");
+      expect(buildHeaderFields(HEADER_FIELD_SLUGS.CUSTOMER, values, ID_DEFS)).toEqual([]);
+    }
   });
 });

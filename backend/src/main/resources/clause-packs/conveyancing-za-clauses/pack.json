@@ -1,6 +1,20 @@
 {
   "packId": "conveyancing-za-clauses",
-  "version": 1,
+  "version": 2,
+  "reconcile": [
+    { "entity": "clause_template_association", "key": "voetstoots", "field": "association", "to": "offer-to-purchase" },
+    { "entity": "clause_template_association", "key": "occupation-date", "field": "association", "to": "offer-to-purchase" },
+    { "entity": "clause_template_association", "key": "suspensive-bond", "field": "association", "to": "offer-to-purchase" },
+    { "entity": "clause_template_association", "key": "transfer-duty-liability", "field": "association", "to": "offer-to-purchase" },
+    { "entity": "clause_template_association", "key": "fica-compliance", "field": "association", "to": "offer-to-purchase" },
+    { "entity": "clause_template_association", "key": "rates-clearance", "field": "association", "to": "offer-to-purchase" },
+    { "entity": "clause_template_association", "key": "jurisdiction-za", "field": "association", "to": "offer-to-purchase" },
+    { "entity": "clause_template_association", "key": "transfer-duty-liability", "field": "association", "to": "deed-of-transfer" },
+    { "entity": "clause_template_association", "key": "rates-clearance", "field": "association", "to": "deed-of-transfer" },
+    { "entity": "clause_template_association", "key": "body-corporate-clearance", "field": "association", "to": "deed-of-transfer" },
+    { "entity": "clause_template_association", "key": "fica-compliance", "field": "association", "to": "power-of-attorney-transfer" },
+    { "entity": "clause_template_association", "key": "cost-of-cancellation", "field": "association", "to": "bond-cancellation-instruction" }
+  ],
   "verticalProfile": "legal-za",
   "name": "SA Conveyancing Clauses",
   "description": "Clauses for South African conveyancing transactions, covering voetstoots, occupation, suspensive conditions, FICA, transfer duty, sectional title, municipal rates, breach, and jurisdiction",
@@ -285,5 +299,51 @@
       "sortOrder": 10
     }
   ],
-  "templateAssociations": []
+  "templateAssociations": [
+    {
+      "templatePackId": "legal-za",
+      "templateKey": "offer-to-purchase",
+      "clauseSlugs": [
+        "voetstoots",
+        "occupation-date",
+        "suspensive-bond",
+        "transfer-duty-liability",
+        "fica-compliance",
+        "rates-clearance",
+        "jurisdiction-za"
+      ],
+      "requiredSlugs": [
+        "voetstoots",
+        "suspensive-bond",
+        "transfer-duty-liability",
+        "fica-compliance"
+      ]
+    },
+    {
+      "templatePackId": "legal-za",
+      "templateKey": "deed-of-transfer",
+      "clauseSlugs": [
+        "transfer-duty-liability",
+        "rates-clearance",
+        "body-corporate-clearance"
+      ],
+      "requiredSlugs": []
+    },
+    {
+      "templatePackId": "legal-za",
+      "templateKey": "power-of-attorney-transfer",
+      "clauseSlugs": [
+        "fica-compliance"
+      ],
+      "requiredSlugs": []
+    },
+    {
+      "templatePackId": "legal-za",
+      "templateKey": "bond-cancellation-instruction",
+      "clauseSlugs": [
+        "cost-of-cancellation"
+      ],
+      "requiredSlugs": []
+    }
+  ]
 }

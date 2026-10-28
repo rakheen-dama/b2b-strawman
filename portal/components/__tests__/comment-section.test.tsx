@@ -158,9 +158,12 @@ describe("CommentSection", () => {
     const user = userEvent.setup();
     const textarea = screen.getByPlaceholderText("Write a comment...");
 
-    // Type text that exceeds 1800 chars to trigger counter
+    // Text past the 1800-char warning threshold triggers the counter. Paste it
+    // in one input event: typing 1850 keystrokes took ~3.5 s of the 5 s test
+    // budget and timed out under machine load.
     const longText = "a".repeat(1850);
-    await user.type(textarea, longText);
+    await user.click(textarea);
+    await user.paste(longText);
 
     await waitFor(() => {
       expect(screen.getByText("1850/2000")).toBeInTheDocument();

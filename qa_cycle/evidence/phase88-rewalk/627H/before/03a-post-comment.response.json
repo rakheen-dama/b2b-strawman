@@ -1,0 +1,15 @@
+{
+    "id": "870fba72-a20d-49ea-9311-0a3e1a977361",
+    "entityType": "TASK",
+    "entityId": "f153f432-4a0b-4098-bbc8-f44b49cd0738",
+    "matterId": "9cf2159e-213a-44d7-b7c8-ef184544ddac",
+    "authorMemberId": "8247b143-925f-4663-ad43-4d4cf3f6983b",
+    "authorName": "Alice Owner",
+    "authorAvatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AO",
+    "body": "627H before: attaching the Master's letter",
+    "visibility": "INTERNAL",
+    "source": "INTERNAL",
+    "parentId": null,
+    "createdAt": "2026-10-28T12:23:26.387080387Z",
+    "updatedAt": "2026-10-28T12:23:26.387081304Z"
+}

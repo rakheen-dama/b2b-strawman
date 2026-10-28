@@ -337,6 +337,36 @@ public class DocumentService {
     return applyVisibilityChange(documentId, Document.Visibility.PORTAL);
   }
 
+  /**
+   * Applies the comment-attachment rule to a document (Phase 88 U24, A13): stamps {@link
+   * Document.Source#COMMENT} over {@link Document.Source#MANUAL} only (other sources keep their
+   * provenance; {@code chk_documents_provenance} forbids rewriting AI_GENERATED), and moves the
+   * visibility to {@code targetVisibility} through {@link #applyVisibilityChange} so {@code
+   * document.visibility_changed} is audited and the portal read model is re-projected. The
+   * visibility is left alone when it already equals the target; otherwise the target must be
+   * INTERNAL or SHARED (PORTAL is reserved for generated artefacts).
+   */
+  @Transactional
+  public Document applyCommentAttachment(UUID documentId, String targetVisibility) {
+    var document =
+        documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    if (Document.Source.MANUAL.equals(document.getSource())) {
+      document.setSource(Document.Source.COMMENT);
+    }
+    if (targetVisibility.equals(document.getVisibility())) {
+      return documentRepository.save(document);
+    }
+    if (!Document.Visibility.INTERNAL.equals(targetVisibility)
+        && !Document.Visibility.SHARED.equals(targetVisibility)) {
+      throw new IllegalArgumentException(
+          "Comment attachments can only be INTERNAL or SHARED, not " + targetVisibility);
+    }
+    // Same persistence context: applyVisibilityChange re-reads this managed row.
+    return applyVisibilityChange(documentId, targetVisibility);
+  }
+
   private Document applyVisibilityChange(UUID documentId, String visibility) {
     var document =
         documentRepository

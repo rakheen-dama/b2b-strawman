@@ -1334,6 +1334,9 @@ END $$;
 -- DECLINED falls outside them by construction, so a declined document can be re-sent.
 
 -- ---------- §7 U24: comment attachments ------------------------------------------------
+-- Shipped as tenant V9__phase88_comment_attachments.sql §7 (627H) — V8 was applied to the
+-- Keycloak dev DB on 2026-10-28, so §7 took the next free file. That file is authoritative;
+-- the SQL below matches it.
 CREATE TABLE IF NOT EXISTS comment_attachments (
     comment_id  uuid NOT NULL,
     document_id uuid NOT NULL,

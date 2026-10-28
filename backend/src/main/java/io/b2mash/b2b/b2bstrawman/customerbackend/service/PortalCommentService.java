@@ -3,13 +3,21 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.comment.Comment;
+import io.b2mash.b2b.b2bstrawman.comment.CommentAttachmentRepository;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalCommentController.PortalCommentAttachmentResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalCommentController.PortalCommentResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalCommentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -19,8 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service for creating portal comments. Encapsulates save, read-model sync, audit logging, and
- * event publishing in a single transaction.
+ * Service for portal comments. Creating encapsulates save, read-model sync, audit logging, and
+ * event publishing in a single transaction; listing enriches the read model with attachment chips.
  */
 @Service
 public class PortalCommentService {
@@ -33,6 +41,8 @@ public class PortalCommentService {
   private final ApplicationEventPublisher eventPublisher;
   private final PortalContactRepository portalContactRepository;
   private final ProjectRepository projectRepository;
+  private final PortalReadModelService portalReadModelService;
+  private final CommentAttachmentRepository commentAttachmentRepository;
 
   public PortalCommentService(
       CommentRepository commentRepository,
@@ -40,13 +50,63 @@ public class PortalCommentService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       PortalContactRepository portalContactRepository,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      PortalReadModelService portalReadModelService,
+      CommentAttachmentRepository commentAttachmentRepository) {
     this.commentRepository = commentRepository;
     this.readModelRepository = readModelRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.portalContactRepository = portalContactRepository;
     this.projectRepository = projectRepository;
+    this.portalReadModelService = portalReadModelService;
+    this.commentAttachmentRepository = commentAttachmentRepository;
+  }
+
+  /**
+   * Lists the matter's portal comments (the read model holds SHARED comments only) with attachment
+   * chips for the documents the client may see by the existing portal rule (as in {@code
+   * PortalQueryService}): portal-visible (SHARED or PORTAL), UPLOADED, and PROJECT-scoped on this
+   * matter. Chips for a whole page come from one query. TENANT_ID is bound by CustomerAuthFilter,
+   * so the tenant tables are readable here. Throws 404 if the matter is not linked to the customer.
+   */
+  @Transactional(readOnly = true)
+  public List<PortalCommentResponse> listProjectComments(
+      UUID projectId, UUID customerId, String orgId) {
+    var comments = portalReadModelService.listProjectComments(projectId, customerId, orgId);
+    if (comments.isEmpty()) {
+      return List.of();
+    }
+    var chips = new HashMap<UUID, List<PortalCommentAttachmentResponse>>();
+    for (var chip :
+        commentAttachmentRepository.findChipsByCommentIds(
+            comments.stream().map(PortalCommentView::id).toList())) {
+      boolean clientVisible =
+          Document.Visibility.isPortalVisible(chip.getVisibility())
+              && chip.getStatus() == Document.Status.UPLOADED
+              && Document.Scope.PROJECT.equals(chip.getScope())
+              && projectId.equals(chip.getProjectId());
+      if (clientVisible) {
+        chips
+            .computeIfAbsent(chip.getCommentId(), k -> new ArrayList<>())
+            .add(
+                new PortalCommentAttachmentResponse(
+                    chip.getDocumentId(),
+                    chip.getFileName(),
+                    chip.getContentType(),
+                    chip.getFileSize()));
+      }
+    }
+    return comments.stream()
+        .map(
+            c ->
+                new PortalCommentResponse(
+                    c.id(),
+                    c.authorName(),
+                    c.content(),
+                    c.createdAt(),
+                    chips.getOrDefault(c.id(), List.of())))
+        .toList();
   }
 
   /**

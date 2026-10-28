@@ -37,20 +37,18 @@ public class CommentController {
       @PathVariable UUID matterId,
       @Valid @RequestBody CreateCommentRequest request,
       ActorContext actor) {
-
-    var comment =
-        commentService.createComment(
+    var response =
+        commentService.createCommentResponse(
             matterId,
             request.entityType(),
             request.entityId(),
             request.body(),
             request.visibility(),
+            request.attachmentDocumentIds(),
             actor);
-
-    var authors = commentService.resolveAuthors(List.of(comment));
     return ResponseEntity.created(
-            URI.create("/api/matters/" + matterId + "/comments/" + comment.getId()))
-        .body(CommentResponse.from(comment, authors));
+            URI.create("/api/matters/" + matterId + "/comments/" + response.id()))
+        .body(response);
   }
 
   @GetMapping
@@ -61,16 +59,9 @@ public class CommentController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "50") int size,
       ActorContext actor) {
-
-    var commentPage =
-        commentService.listComments(
-            matterId, entityType, entityId, PageRequest.of(page, size), actor);
-
-    var comments = commentPage.getContent();
-    var authors = commentService.resolveAuthors(comments);
-    var responses = comments.stream().map(c -> CommentResponse.from(c, authors)).toList();
-
-    return ResponseEntity.ok(responses);
+    return ResponseEntity.ok(
+        commentService.listCommentResponses(
+            matterId, entityType, entityId, PageRequest.of(page, size), actor));
   }
 
   @PutMapping("/{commentId}")
@@ -79,13 +70,14 @@ public class CommentController {
       @PathVariable UUID commentId,
       @Valid @RequestBody UpdateCommentRequest request,
       ActorContext actor) {
-
-    var comment =
-        commentService.updateComment(
-            matterId, commentId, request.body(), request.visibility(), actor);
-
-    var authors = commentService.resolveAuthors(List.of(comment));
-    return ResponseEntity.ok(CommentResponse.from(comment, authors));
+    return ResponseEntity.ok(
+        commentService.updateCommentResponse(
+            matterId,
+            commentId,
+            request.body(),
+            request.visibility(),
+            request.attachmentDocumentIds(),
+            actor));
   }
 
   @DeleteMapping("/{commentId}")
@@ -104,13 +96,21 @@ public class CommentController {
       @NotBlank(message = "body is required")
           @Size(max = 10000, message = "body must be at most 10000 characters")
           String body,
-      String visibility) {}
+      String visibility,
+      // At most 5 — enforced in the service as a 422, so no @Size here (that would be a 400).
+      List<UUID> attachmentDocumentIds) {}
 
   public record UpdateCommentRequest(
       @NotBlank(message = "body is required")
           @Size(max = 10000, message = "body must be at most 10000 characters")
           String body,
-      String visibility) {}
+      String visibility,
+      // null = leave the attachments unchanged; a list replaces them in order; [] clears.
+      List<UUID> attachmentDocumentIds) {}
+
+  /** One attachment chip on a comment; the document is fetched via its own download route. */
+  public record CommentAttachmentResponse(
+      UUID documentId, String fileName, String contentType, long size) {}
 
   public record CommentResponse(
       UUID id,
@@ -125,10 +125,13 @@ public class CommentController {
       String source,
       UUID parentId,
       Instant createdAt,
-      Instant updatedAt) {
+      Instant updatedAt,
+      List<CommentAttachmentResponse> attachments) {
 
     public static CommentResponse from(
-        Comment comment, Map<UUID, CommentService.AuthorInfo> authors) {
+        Comment comment,
+        Map<UUID, CommentService.AuthorInfo> authors,
+        List<CommentAttachmentResponse> attachments) {
       var author = authors.get(comment.getAuthorMemberId());
       return new CommentResponse(
           comment.getId(),
@@ -143,7 +146,8 @@ public class CommentController {
           comment.getSource(),
           comment.getParentId(),
           comment.getCreatedAt(),
-          comment.getUpdatedAt());
+          comment.getUpdatedAt(),
+          attachments);
     }
   }
 }

@@ -42,14 +42,7 @@ public class PortalCommentController {
       @PathVariable UUID matterId) {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
-    var comments = portalReadModelService.listProjectComments(matterId, customerId, orgId);
-
-    var response =
-        comments.stream()
-            .map(c -> new PortalCommentResponse(c.id(), c.authorName(), c.content(), c.createdAt()))
-            .toList();
-
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(portalCommentService.listProjectComments(matterId, customerId, orgId));
   }
 
   /** Posts a new comment on a portal project. Returns 404 if project is not linked to customer. */
@@ -82,11 +75,22 @@ public class PortalCommentController {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new PortalCommentResponse(
-                comment.getId(), authorName, request.content(), comment.getCreatedAt()));
+                comment.getId(), authorName, request.content(), comment.getCreatedAt(), List.of()));
   }
 
+  /** Portal-authored comments carry no attachments, so POST returns an empty list. */
   public record PortalCommentResponse(
-      UUID id, String authorName, String content, Instant createdAt) {}
+      UUID id,
+      String authorName,
+      String content,
+      Instant createdAt,
+      List<PortalCommentAttachmentResponse> attachments) {}
+
+  /**
+   * A chip; the client downloads via {@code GET /portal/documents/{documentId}/presign-download}.
+   */
+  public record PortalCommentAttachmentResponse(
+      UUID documentId, String fileName, String contentType, long size) {}
 
   public record CreateCommentRequest(@NotBlank @Size(max = 2000) String content) {}
 }

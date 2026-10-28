@@ -197,7 +197,9 @@ class PortalCommentControllerTest {
         .andExpect(jsonPath("$.length()").value(3))
         .andExpect(jsonPath("$[0].authorName").exists())
         .andExpect(jsonPath("$[0].content").exists())
-        .andExpect(jsonPath("$[0].createdAt").exists());
+        .andExpect(jsonPath("$[0].createdAt").exists())
+        .andExpect(jsonPath("$[0].attachments").isArray())
+        .andExpect(jsonPath("$[0].attachments.length()").value(0));
   }
 
   @Test

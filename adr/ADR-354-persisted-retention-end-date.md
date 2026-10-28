@@ -55,7 +55,7 @@ Closing the estate matter on Day 75 showed "Retention isn't configured yet" (G-D
   - `ProjectStatusTest` re-run.
   - `OrgSettingsSchemaSnapshotTest` is unaffected (the column already exists) but `OrgSettingsEmbeddableNullReloadTest:112` (NULL reload) gains the seeded-5 case.
   - `DataProtectionSettingsRequest` DTO and the `settings-sections.test.tsx` / `retention-card.test.tsx` vitests change.
-  - V8 is shared with the comment-attachments section (627H) while it is unapplied.
+  - §7 comment attachments (627H) shipped as V9 because V8 was applied to the Keycloak dev DB on 2026-10-28.
   - Matters closed before V8 are backfilled by the migration (`closed_at + years`, default 5); there is no read-time fallback, and a COMPLETED-but-not-closed matter shows no date.
   - The re-walk closes fresh matters.
 - Related:

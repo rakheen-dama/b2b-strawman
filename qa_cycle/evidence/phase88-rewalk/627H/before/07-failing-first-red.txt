@@ -1,0 +1,31 @@
+# 627H failing-first (P-1) — tests written first, run against unmodified product code (only Document.Source.COMMENT constant added so the test compiles)
+# base 69a4d4e16; cmd: ./mvnw test -Dtest=CommentAttachmentIntegrationTest,CommentControllerTest,PortalCommentControllerTest,V9CommentAttachmentsTest -q
+# 2026-10-28T12:45Z
+[ERROR] Tests run: 13, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 11.99 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.comment.CommentControllerTest
+[ERROR] Tests run: 19, Failures: 18, Errors: 1, Skipped: 0, Time elapsed: 1.593 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.comment.CommentAttachmentIntegrationTest
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.390 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.comment.V9CommentAttachmentsTest
+[ERROR] Tests run: 6, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.589 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalCommentControllerTest
+[ERROR]   CommentAttachmentIntegrationTest.clientVisibleDocumentCannotBeAttachedToAnInternalComment:326->expectNotAllowed:592 Status expected:<422> but was:<201>
+[ERROR]   CommentAttachmentIntegrationTest.commentVisibilityChangeReappliesToAttachmentsButNeverTouchesPortalDocuments:217->assertDocument:608 JSON path "$[?(@.id == '2c6bedf7-90a3-4f40-b68e-77e0172720a9')].visibility" expected:<SHARED> but was:<INTERNAL>
+[ERROR]   CommentAttachmentIntegrationTest.commentWithoutAttachmentsReturnsEmptyArray:166 No value at JSON path "$.attachments"
+[ERROR]   CommentAttachmentIntegrationTest.createLinksAttachmentsInRequestOrderAndListsThem:133 No value at JSON path "$.attachments"
+[ERROR]   CommentAttachmentIntegrationTest.documentAlreadyAttachedToAnotherCommentIsRejected:305->expectNotAllowed:592 Status expected:<422> but was:<201>
+[ERROR]   CommentAttachmentIntegrationTest.documentOnAnotherMatterIsRejected:237->expectNotAllowed:592 Status expected:<422> but was:<201>
+[ERROR]   CommentAttachmentIntegrationTest.documentThatHasNotFinishedUploadingIsRejected:293->expectNotAllowed:592 Status expected:<422> but was:<201>
+[ERROR]   CommentAttachmentIntegrationTest.duplicateIdsAreDeDuplicatedKeepingFirstPosition:284 No value at JSON path "$.attachments"
+[ERROR]   CommentAttachmentIntegrationTest.internalCommentKeepsItsAttachmentInternal:185->assertDocument:609 No matching value at JSON path "$[?(@.id == '76612c59-b4ba-4c67-a55d-6c2dd4057bb4')].source"
+[ERROR]   CommentAttachmentIntegrationTest.nonManualSourceKeepsItsProvenance:202->assertDocument:608 JSON path "$[?(@.id == 'cc697c86-8435-4f59-b2bd-d38daaa2be75')].visibility" expected:<SHARED> but was:<INTERNAL>
+[ERROR]   CommentAttachmentIntegrationTest.nonexistentDocumentGetsTheSameDetailAsCrossMatter:247->expectNotAllowed:592 Status expected:<422> but was:<201>
+[ERROR]   CommentAttachmentIntegrationTest.portalShowsChipsOnlyOnSharedCommentsAndOnlyForClientVisibleDocuments:484 No matching value at JSON path "$[?(@.id == 'ac36e0c0-9299-4eb0-b540-32fc177f12dd')].attachments[0].documentId"
+[ERROR]   CommentAttachmentIntegrationTest.rejectedAttachmentDoesNotPersistTheComment:373 Status expected:<422> but was:<201>
+[ERROR]   CommentAttachmentIntegrationTest.sharedCommentSharesItsAttachmentAndStampsSourceComment:176->assertDocument:608 JSON path "$[?(@.id == 'd9cb7eb4-a2b6-4a09-a40e-a80c2a214bf4')].visibility" expected:<SHARED> but was:<INTERNAL>
+[ERROR]   CommentAttachmentIntegrationTest.sixthDistinctAttachmentIsRejected:265 No value at JSON path "$.attachments"
+[ERROR]   CommentAttachmentIntegrationTest.updateNullKeepsTheSetListReplacesAndEmptyClears:397 No value at JSON path "$.attachments"
+[ERROR]   CommentAttachmentIntegrationTest.updateReordersKeptAttachments:425 No value at JSON path "$.attachments[0].documentId"
+[ERROR]   CommentAttachmentIntegrationTest.uploaderMayAttachOwnUploadButNotSomeoneElses:344 No value at JSON path "$.attachments[0].documentId"
+[ERROR]   CommentControllerTest.postCreatesCommentAndReturns201WithCorrectShape:118 No value at JSON path "$.attachments"
+[ERROR]   CommentControllerTest.postWithAttachmentReturnsAttachmentShape:159 No value at JSON path "$.attachments"
+[ERROR]   PortalCommentControllerTest.listCommentsReturnsCommentsForLinkedProject:201 No value at JSON path "$[0].attachments"
+[ERROR]   CommentAttachmentIntegrationTest.deletingTheCommentRemovesLinksAndKeepsTheDocument:436->linkCount:614 » BadSqlGrammar PreparedStatementCallback; bad SQL grammar [SELECT count(*) FROM "tenant_4f6a3e9d72ef".comment_attachments WHERE comment_id = ?::uuid]
+[ERROR]   V9CommentAttachmentsTest.migrateScratchSchemaFromV8:107 » Flyway No migration with a target version 9 could be found. Ensure target is specified correctly and the migration exists.
+[ERROR] Tests run: 39, Failures: 21, Errors: 2, Skipped: 0

@@ -1,0 +1,5 @@
+                  id                  |              project_id              |        file_name        |  content_type   | size |  status  | visibility | source |  scope  
+--------------------------------------+--------------------------------------+-------------------------+-----------------+------+----------+------------+--------+---------
+ ad27ffcc-b334-4e6c-97ac-46397e0fcc21 | 9cf2159e-213a-44d7-b7c8-ef184544ddac | masters-letter-627H.pdf | application/pdf |  107 | UPLOADED | INTERNAL   | MANUAL | PROJECT
+(1 row)
+

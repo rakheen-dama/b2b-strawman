@@ -114,7 +114,53 @@ class CommentControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.visibility").value("INTERNAL"))
         .andExpect(jsonPath("$.parentId").isEmpty())
         .andExpect(jsonPath("$.createdAt").exists())
-        .andExpect(jsonPath("$.updatedAt").exists());
+        .andExpect(jsonPath("$.updatedAt").exists())
+        .andExpect(jsonPath("$.attachments").isArray())
+        .andExpect(jsonPath("$.attachments", hasSize(0)));
+  }
+
+  @Test
+  void postWithAttachmentReturnsAttachmentShape() throws Exception {
+    var init =
+        mockMvc
+            .perform(
+                post("/api/matters/" + projectId + "/documents/upload-init")
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "cc-attach.pdf", "contentType": "application/pdf", "size": 2048}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String documentId = JsonPath.read(init.getResponse().getContentAsString(), "$.documentId");
+    mockMvc
+        .perform(
+            post("/api/documents/" + documentId + "/confirm")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member")))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/comments")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "TASK",
+                      "entityId": "%s",
+                      "body": "Comment with attachment",
+                      "attachmentDocumentIds": ["%s"]
+                    }
+                    """
+                        .formatted(taskId, documentId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.attachments", hasSize(1)))
+        .andExpect(jsonPath("$.attachments[0].documentId").value(documentId))
+        .andExpect(jsonPath("$.attachments[0].fileName").value("cc-attach.pdf"))
+        .andExpect(jsonPath("$.attachments[0].contentType").value("application/pdf"))
+        .andExpect(jsonPath("$.attachments[0].size").value(2048));
   }
 
   @Test

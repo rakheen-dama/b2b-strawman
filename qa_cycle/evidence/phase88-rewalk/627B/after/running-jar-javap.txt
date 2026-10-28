@@ -1,0 +1,23 @@
+# javap of classes inside the RUNNING e2e-backend container's /app/app.jar (docker cp), 2026-10-28T06:42:29Z
+      935  10-28-2026 08:39   io/b2mash/b2b/b2bstrawman/retention/RetentionPolicyRepository.class
+    27774  10-28-2026 08:39   io/b2mash/b2b/b2bstrawman/verticals/legal/closure/MatterClosureService.class
+     2112  10-28-2026 08:39   db/migration/tenant/V8__phase88_retention_comment_attachments.sql
+
+Compiled from "RetentionPolicyRepository.java"
+public interface io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository extends org.springframework.data.jpa.repository.JpaRepository<io.b2mash.b2b.b2bstrawman.retention.RetentionPolicy, java.util.UUID> {
+  public abstract java.util.List<io.b2mash.b2b.b2bstrawman.retention.RetentionPolicy> findByActive(boolean);
+  public abstract boolean existsByRecordTypeAndTriggerEvent(java.lang.String, java.lang.String);
+  public abstract java.util.Optional<io.b2mash.b2b.b2bstrawman.retention.RetentionPolicy> findByRecordTypeAndTriggerEvent(java.lang.String, java.lang.String);
+}
+
+## MatterClosureService members matching retention|ensure|RetentionPolicy:
+(none)
+
+## Project members matching close|retention:
+  private java.time.Instant closedAt;
+  private java.time.Instant retentionClockStartedAt;
+  private java.time.LocalDate retentionEndsOn;
+  public java.time.Instant getClosedAt();
+  public java.time.Instant getRetentionClockStartedAt();
+  public java.time.LocalDate getRetentionEndsOn();
+  public void closeMatter(java.time.Instant, int);

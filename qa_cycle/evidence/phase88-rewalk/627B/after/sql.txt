@@ -1,0 +1,219 @@
+
+=== 2026-10-28T06:40:43Z O1 — after rebuild from c8371067c (V8 applied 06:40:26) ===
+SQL> select installed_rank, version, description, installed_on, success from flyway_schema_history order by installed_rank
+ installed_rank | version |              description              |        installed_on        | success 
+----------------+---------+---------------------------------------+----------------------------+---------
+              1 | 1       | baseline                              | 2026-10-28 05:41:11.886256 | t
+              2 | 2       | add project template work type        | 2026-10-28 05:41:15.145891 | t
+              3 | 3       | normalise work types                  | 2026-10-28 05:41:15.171136 | t
+              4 | 4       | phase88 demo ready                    | 2026-10-28 05:41:15.210131 | t
+              5 | 5       | phase88 acceptance decline            | 2026-10-28 05:41:15.274367 | t
+              6 | 6       | phase88 audit customer index          | 2026-10-28 05:41:15.29174  | t
+              7 | 7       | phase88 letterhead                    | 2026-10-28 05:41:15.319129 | t
+              8 | 8       | phase88 retention comment attachments | 2026-10-28 06:40:26.07271  | t
+(8 rows)
+
+SQL> select id, legal_matter_retention_years from org_settings
+                  id                  | legal_matter_retention_years 
+--------------------------------------+------------------------------
+ df96f169-9387-40fb-9f0e-168fb02f9c81 |                            5
+(1 row)
+
+SQL> select id, name, status, completed_at, closed_at, retention_clock_started_at, retention_ends_on, (coalesce(closed_at, retention_clock_started_at) at time zone 'UTC')::date + interval '5 years' as expected from projects where id in ('7c28d1cf-6fc5-428a-9690-054f49ae7370','68b5e1e8-ece3-479e-88e9-ffdd7b38b364')
+                  id                  |                            name                             | status |         completed_at          |           closed_at           | retention_clock_started_at | retention_ends_on |      expected       
+--------------------------------------+-------------------------------------------------------------+--------+-------------------------------+-------------------------------+----------------------------+-------------------+---------------------
+ 68b5e1e8-ece3-479e-88e9-ffdd7b38b364 | Apex Holdings — Shareholders' Agreement Review mvrovhe0b72d | CLOSED |                               | 2026-10-28 05:45:57.179425+00 | 2026-10-28 05:45:57.179425 | 2031-10-28        | 2031-10-28 00:00:00
+ 7c28d1cf-6fc5-428a-9690-054f49ae7370 | 627B retention repro                                        | CLOSED | 2026-10-28 06:06:30.458388+00 | 2026-10-28 06:08:47.92919+00  | 2026-10-28 06:06:30.458388 | 2031-10-28        | 2031-10-28 00:00:00
+(2 rows)
+
+SQL> select id, name, status, closed_at, retention_clock_started_at, retention_ends_on from projects where status='CLOSED' order by closed_at
+                  id                  |                            name                             | status |           closed_at           | retention_clock_started_at | retention_ends_on 
+--------------------------------------+-------------------------------------------------------------+--------+-------------------------------+----------------------------+-------------------
+ 68b5e1e8-ece3-479e-88e9-ffdd7b38b364 | Apex Holdings — Shareholders' Agreement Review mvrovhe0b72d | CLOSED | 2026-10-28 05:45:57.179425+00 | 2026-10-28 05:45:57.179425 | 2031-10-28
+ 077a4ed6-91b6-4475-97b4-c84b440ad1c2 | Ndlovu v RAF — Depth II mvrovhe0b72d                        | CLOSED | 2026-10-28 05:46:02.867722+00 | 2026-10-28 05:46:02.867722 | 2031-10-28
+ 7c28d1cf-6fc5-428a-9690-054f49ae7370 | 627B retention repro                                        | CLOSED | 2026-10-28 06:08:47.92919+00  | 2026-10-28 06:06:30.458388 | 2031-10-28
+(3 rows)
+
+SQL> select status, count(*), count(retention_ends_on) from projects group by status order by status
+ status | count | count 
+--------+-------+-------
+ ACTIVE |     9 |     0
+ CLOSED |     3 |     3
+(2 rows)
+
+SQL> select indexname, indexdef from pg_indexes where schemaname='tenant_7d218705360b' and indexname='idx_projects_retention_ends_on'
+           indexname            |                                                                     indexdef                                                                      
+--------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------
+ idx_projects_retention_ends_on | CREATE INDEX idx_projects_retention_ends_on ON tenant_7d218705360b.projects USING btree (retention_ends_on) WHERE (retention_ends_on IS NOT NULL)
+(1 row)
+
+SQL> select column_name, data_type, is_nullable from information_schema.columns where table_schema='tenant_7d218705360b' and table_name='projects' and column_name ilike '%retention%' order by 1
+        column_name         |          data_type          | is_nullable 
+----------------------------+-----------------------------+-------------
+ retention_clock_started_at | timestamp without time zone | YES
+ retention_ends_on          | date                        | YES
+(2 rows)
+
+SQL> select id, record_type, retention_days, trigger_event, action, active, created_at, updated_at, cancelled_at from retention_policies order by created_at
+                  id                  | record_type | retention_days |    trigger_event    | action  | active |          created_at           |          updated_at           | cancelled_at 
+--------------------------------------+-------------+----------------+---------------------+---------+--------+-------------------------------+-------------------------------+--------------
+ d69072fa-1cb9-4363-ad28-27be01be237e | CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG    | t      | 2026-10-28 05:41:16.935282+00 | 2026-10-28 05:41:16.935282+00 | 
+ 58362daf-68f9-4a06-8dba-1ea0c1fd5b38 | AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG    | t      | 2026-10-28 05:41:16.985274+00 | 2026-10-28 05:41:16.985274+00 | 
+ 8334a16d-0e6c-4e7c-9a64-d0c1a95ce226 | MATTER      |           1825 | MATTER_CLOSED       | ARCHIVE | t      | 2026-10-28 05:45:57.171219+00 | 2026-10-28 05:45:57.171219+00 | 
+(3 rows)
+
+
+=== 2026-10-28T06:41:31Z O3 — fresh matter created via New Matter UI ===
+SQL> select id, name, status, customer_id, created_at, completed_at, closed_at, retention_clock_started_at, retention_ends_on from projects where name='627B observer O3-O6'
+                  id                  |        name         | status |             customer_id              |          created_at          | completed_at | closed_at | retention_clock_started_at | retention_ends_on 
+--------------------------------------+---------------------+--------+--------------------------------------+------------------------------+--------------+-----------+----------------------------+-------------------
+ 7d0aaa19-fad5-41d2-89a5-c34bd5639767 | 627B observer O3-O6 | ACTIVE | 3c1891ee-7557-4acb-b985-2bea77607f8b | 2026-10-28 06:41:24.69396+00 |              |           |                            | 
+(1 row)
+
+SQL> select t.status, count(*) from tasks t join projects p on p.id=t.project_id where p.name='627B observer O3-O6' group by 1
+ status | count 
+--------+-------
+(0 rows)
+
+
+=== 2026-10-28T06:41:59Z O3 — AFTER UI 'Complete Matter' on 7d0aaa19 ===
+SQL> select id, status, completed_at, closed_at, retention_clock_started_at, retention_ends_on from projects where id='7d0aaa19-fad5-41d2-89a5-c34bd5639767'
+                  id                  |  status   |         completed_at          | closed_at | retention_clock_started_at | retention_ends_on 
+--------------------------------------+-----------+-------------------------------+-----------+----------------------------+-------------------
+ 7d0aaa19-fad5-41d2-89a5-c34bd5639767 | COMPLETED | 2026-10-28 06:41:42.542468+00 |           |                            | 
+(1 row)
+
+SQL> select count(*) as retention_policies_rows_before_close from retention_policies
+ retention_policies_rows_before_close 
+--------------------------------------
+                                    3
+(1 row)
+
+
+=== 2026-10-28T06:42:07Z O4 pre-close — retention_policies table stats ===
+SQL> select relname, n_tup_ins, n_tup_upd, n_tup_del from pg_stat_user_tables where schemaname='tenant_7d218705360b' and relname='retention_policies'
+      relname       | n_tup_ins | n_tup_upd | n_tup_del 
+--------------------+-----------+-----------+-----------
+ retention_policies |         3 |         0 |         0
+(1 row)
+
+SQL> select id, record_type, updated_at from retention_policies order by created_at
+                  id                  | record_type |          updated_at           
+--------------------------------------+-------------+-------------------------------
+ d69072fa-1cb9-4363-ad28-27be01be237e | CUSTOMER    | 2026-10-28 05:41:16.935282+00
+ 58362daf-68f9-4a06-8dba-1ea0c1fd5b38 | AUDIT_EVENT | 2026-10-28 05:41:16.985274+00
+ 8334a16d-0e6c-4e7c-9a64-d0c1a95ce226 | MATTER      | 2026-10-28 05:45:57.171219+00
+(3 rows)
+
+
+=== 2026-10-28T06:43:34Z O4 — AFTER UI 'Close matter' (override FINAL_BILL) on 7d0aaa19 ===
+SQL> select id, status, completed_at, closed_at, retention_clock_started_at, retention_ends_on, (closed_at at time zone 'UTC')::date + interval '5 years' as expected_ends_on, (closed_at at time zone 'UTC') = retention_clock_started_at as clock_eq_closed from projects where id='7d0aaa19-fad5-41d2-89a5-c34bd5639767'
+                  id                  | status |         completed_at          |           closed_at           | retention_clock_started_at | retention_ends_on |  expected_ends_on   | clock_eq_closed 
+--------------------------------------+--------+-------------------------------+-------------------------------+----------------------------+-------------------+---------------------+-----------------
+ 7d0aaa19-fad5-41d2-89a5-c34bd5639767 | CLOSED | 2026-10-28 06:41:42.542468+00 | 2026-10-28 06:42:50.690328+00 | 2026-10-28 06:42:50.690328 | 2031-10-28        | 2031-10-28 00:00:00 | t
+(1 row)
+
+SQL> select count(*) as retention_policies_rows_after_close from retention_policies
+ retention_policies_rows_after_close 
+-------------------------------------
+                                   3
+(1 row)
+
+SQL> select id, record_type, retention_days, trigger_event, action, active, created_at, updated_at, cancelled_at from retention_policies order by created_at
+                  id                  | record_type | retention_days |    trigger_event    | action  | active |          created_at           |          updated_at           | cancelled_at 
+--------------------------------------+-------------+----------------+---------------------+---------+--------+-------------------------------+-------------------------------+--------------
+ d69072fa-1cb9-4363-ad28-27be01be237e | CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG    | t      | 2026-10-28 05:41:16.935282+00 | 2026-10-28 05:41:16.935282+00 | 
+ 58362daf-68f9-4a06-8dba-1ea0c1fd5b38 | AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG    | t      | 2026-10-28 05:41:16.985274+00 | 2026-10-28 05:41:16.985274+00 | 
+ 8334a16d-0e6c-4e7c-9a64-d0c1a95ce226 | MATTER      |           1825 | MATTER_CLOSED       | ARCHIVE | t      | 2026-10-28 05:45:57.171219+00 | 2026-10-28 05:45:57.171219+00 | 
+(3 rows)
+
+SQL> select relname, n_tup_ins, n_tup_upd, n_tup_del from pg_stat_user_tables where schemaname='tenant_7d218705360b' and relname='retention_policies'
+      relname       | n_tup_ins | n_tup_upd | n_tup_del 
+--------------------+-----------+-----------+-----------
+ retention_policies |         3 |         0 |         0
+(1 row)
+
+SQL> select id, project_id, closed_at, reopened_at, override_used from matter_closure_log where project_id='7d0aaa19-fad5-41d2-89a5-c34bd5639767' order by closed_at
+                  id                  |              project_id              |           closed_at           | reopened_at | override_used 
+--------------------------------------+--------------------------------------+-------------------------------+-------------+---------------
+ b65e805c-08ca-4330-b784-c90d80a6c3e3 | 7d0aaa19-fad5-41d2-89a5-c34bd5639767 | 2026-10-28 06:42:50.690328+00 |             | t
+(1 row)
+
+
+=== 2026-10-28T06:44:08Z O5 — AFTER UI 'Reopen matter' on 7d0aaa19 ===
+SQL> select id, status, completed_at, closed_at, retention_clock_started_at, retention_ends_on from projects where id='7d0aaa19-fad5-41d2-89a5-c34bd5639767'
+                  id                  | status |         completed_at          | closed_at | retention_clock_started_at | retention_ends_on 
+--------------------------------------+--------+-------------------------------+-----------+----------------------------+-------------------
+ 7d0aaa19-fad5-41d2-89a5-c34bd5639767 | ACTIVE | 2026-10-28 06:41:42.542468+00 |           | 2026-10-28 06:42:50.690328 | 
+(1 row)
+
+SQL> select id, closed_at, reopened_at, override_used from matter_closure_log where project_id='7d0aaa19-fad5-41d2-89a5-c34bd5639767' order by closed_at
+                  id                  |           closed_at           |          reopened_at          | override_used 
+--------------------------------------+-------------------------------+-------------------------------+---------------
+ b65e805c-08ca-4330-b784-c90d80a6c3e3 | 2026-10-28 06:42:50.690328+00 | 2026-10-28 06:43:46.808412+00 | t
+(1 row)
+
+SQL> select count(*) from retention_policies
+ count 
+-------
+     3
+(1 row)
+
+
+=== 2026-10-28T06:44:44Z O6 — AFTER UI re-close (ACTIVE→CLOSED, override) on 7d0aaa19 ===
+SQL> select id, status, completed_at, closed_at, retention_clock_started_at, retention_ends_on, (closed_at at time zone 'UTC')::date + interval '5 years' as expected_ends_on, (closed_at at time zone 'UTC') = retention_clock_started_at as clock_eq_closed, retention_clock_started_at > timestamp '2026-10-28 06:42:50.690328' as clock_later_than_o4 from projects where id='7d0aaa19-fad5-41d2-89a5-c34bd5639767'
+                  id                  | status |         completed_at          |           closed_at           | retention_clock_started_at | retention_ends_on |  expected_ends_on   | clock_eq_closed | clock_later_than_o4 
+--------------------------------------+--------+-------------------------------+-------------------------------+----------------------------+-------------------+---------------------+-----------------+---------------------
+ 7d0aaa19-fad5-41d2-89a5-c34bd5639767 | CLOSED | 2026-10-28 06:41:42.542468+00 | 2026-10-28 06:44:25.034385+00 | 2026-10-28 06:44:25.034385 | 2031-10-28        | 2031-10-28 00:00:00 | t               | t
+(1 row)
+
+SQL> select id, closed_at, reopened_at, override_used from matter_closure_log where project_id='7d0aaa19-fad5-41d2-89a5-c34bd5639767' order by closed_at
+                  id                  |           closed_at           |          reopened_at          | override_used 
+--------------------------------------+-------------------------------+-------------------------------+---------------
+ b65e805c-08ca-4330-b784-c90d80a6c3e3 | 2026-10-28 06:42:50.690328+00 | 2026-10-28 06:43:46.808412+00 | t
+ d2781c01-e149-4ba5-8e04-e70e1b957597 | 2026-10-28 06:44:25.034385+00 |                               | t
+(2 rows)
+
+SQL> select count(*) from retention_policies
+ count 
+-------
+     3
+(1 row)
+
+SQL> select id, record_type, updated_at from retention_policies order by created_at
+                  id                  | record_type |          updated_at           
+--------------------------------------+-------------+-------------------------------
+ d69072fa-1cb9-4363-ad28-27be01be237e | CUSTOMER    | 2026-10-28 05:41:16.935282+00
+ 58362daf-68f9-4a06-8dba-1ea0c1fd5b38 | AUDIT_EVENT | 2026-10-28 05:41:16.985274+00
+ 8334a16d-0e6c-4e7c-9a64-d0c1a95ce226 | MATTER      | 2026-10-28 05:45:57.171219+00
+(3 rows)
+
+
+=== 2026-10-28T06:45:50Z EXTRA — AFTER UI reopen (06:45:3x) then 'Complete Matter' on 7d0aaa19 ===
+SQL> select id, status, completed_at, closed_at, retention_clock_started_at, retention_ends_on from projects where id='7d0aaa19-fad5-41d2-89a5-c34bd5639767'
+                  id                  |  status   |         completed_at          | closed_at | retention_clock_started_at | retention_ends_on 
+--------------------------------------+-----------+-------------------------------+-----------+----------------------------+-------------------
+ 7d0aaa19-fad5-41d2-89a5-c34bd5639767 | COMPLETED | 2026-10-28 06:45:35.243421+00 |           | 2026-10-28 06:44:25.034385 | 
+(1 row)
+
+SQL> select id, closed_at, reopened_at from matter_closure_log where project_id='7d0aaa19-fad5-41d2-89a5-c34bd5639767' order by closed_at
+                  id                  |           closed_at           |          reopened_at          
+--------------------------------------+-------------------------------+-------------------------------
+ b65e805c-08ca-4330-b784-c90d80a6c3e3 | 2026-10-28 06:42:50.690328+00 | 2026-10-28 06:43:46.808412+00
+ d2781c01-e149-4ba5-8e04-e70e1b957597 | 2026-10-28 06:44:25.034385+00 | 2026-10-28 06:45:28.659399+00
+(2 rows)
+
+SQL> select status, count(*), count(retention_ends_on), count(retention_clock_started_at) as with_clock from projects group by status order by status
+  status   | count | count | with_clock 
+-----------+-------+-------+------------
+ ACTIVE    |     9 |     0 |          0
+ CLOSED    |     3 |     3 |          3
+ COMPLETED |     1 |     0 |          1
+(3 rows)
+
+SQL> select count(*) from retention_policies
+ count 
+-------
+     3
+(1 row)
+

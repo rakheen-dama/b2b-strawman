@@ -1,0 +1,106 @@
+{
+  "request": "GET http://localhost:8081/api/settings (Bearer = mock-idp POST /token {userId:user_e2e_alice, orgSlug:e2e-test-org}; token not stored)",
+  "status": 200,
+  "retentionFields": {
+    "dataRequestDeadlineDays": null,
+    "dataProtectionJurisdiction": null,
+    "retentionPolicyEnabled": false,
+    "defaultRetentionMonths": null,
+    "financialRetentionMonths": 60,
+    "legalMatterRetentionYears": 5
+  },
+  "fullBody": {
+    "orgName": "E2E Test Organization",
+    "defaultCurrency": "ZAR",
+    "logoUrl": null,
+    "brandColor": "#1b3a4b",
+    "documentFooterText": null,
+    "dormancyThresholdDays": null,
+    "dataRequestDeadlineDays": null,
+    "compliancePackStatus": [
+      {
+        "packId": "generic-onboarding",
+        "version": "1.0.0",
+        "appliedAt": "2026-10-28T05:41:16.914670927Z"
+      },
+      {
+        "packId": "legal-za-individual-onboarding",
+        "version": "1.0.0",
+        "appliedAt": "2026-10-28T05:41:16.916650636Z"
+      },
+      {
+        "packId": "legal-za-trust-onboarding",
+        "version": "1.0.0",
+        "appliedAt": "2026-10-28T05:41:16.918261011Z"
+      },
+      {
+        "packId": "sa-fica-company",
+        "version": "1.0.0",
+        "appliedAt": "2026-10-28T05:41:16.923744886Z"
+      },
+      {
+        "packId": "sa-fica-individual",
+        "version": "1.0.0",
+        "appliedAt": "2026-10-28T05:41:16.985628802Z"
+      }
+    ],
+    "accountingEnabled": false,
+    "aiEnabled": false,
+    "documentSigningEnabled": false,
+    "taxRegistrationNumber": null,
+    "taxRegistrationLabel": null,
+    "taxLabel": "VAT",
+    "taxInclusive": false,
+    "acceptanceExpiryDays": null,
+    "defaultRequestReminderDays": null,
+    "timeReminderEnabled": false,
+    "timeReminderDays": null,
+    "timeReminderTime": null,
+    "timeReminderMinHours": 4.0,
+    "defaultExpenseMarkupPercent": null,
+    "billingBatchAsyncThreshold": 50,
+    "billingEmailRateLimit": 5,
+    "defaultBillingRunCurrency": null,
+    "defaultPaymentTermsDays": 30,
+    "matterNamingPattern": null,
+    "verticalProfile": "legal-za",
+    "enabledModules": [
+      "court_calendar",
+      "conflict_check",
+      "lssa_tariff",
+      "trust_accounting",
+      "disbursements",
+      "matter_closure",
+      "deadlines",
+      "information_requests",
+      "bulk_billing"
+    ],
+    "terminologyNamespace": "en-ZA-legal",
+    "dataProtectionJurisdiction": null,
+    "retentionPolicyEnabled": false,
+    "defaultRetentionMonths": null,
+    "financialRetentionMonths": 60,
+    "informationOfficerName": null,
+    "informationOfficerEmail": null,
+    "legalMatterRetentionYears": 5,
+    "portalDigestCadence": "WEEKLY",
+    "letterhead": {
+      "addressLine1": null,
+      "addressLine2": null,
+      "addressLine3": null,
+      "city": null,
+      "postalCode": null,
+      "country": null,
+      "phone": null,
+      "email": null,
+      "website": null,
+      "bankName": null,
+      "bankBranchCode": null,
+      "bankAccountNumber": null,
+      "bankAccountType": null,
+      "paymentReferenceNote": null,
+      "signatoryName": null,
+      "signatoryDesignation": null
+    }
+  }
+}

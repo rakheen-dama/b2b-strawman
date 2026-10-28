@@ -1,0 +1,26 @@
+E2E chain on fa0225e725c3a54084e5d02cbaeca834269dff43 start 2026-10-28T07:20:21Z
+down=0
+up=0 07:21:45
+ready after 1 polls
+install=0
+lifecycle=1 07:24:09
+  4 failed
+  5 skipped
+  14 did not run
+  74 passed (2.2m)
+  ✘  13 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:282:7 › Day 0 — Firm Setup › Alice: Trust account settings page loads (1.7s)
+  ✘  48 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:32:7 › Day 30 — First Billing Cycle › Alice: Create fee note for Sipho Ndlovu (hourly + tariff + disbursement) (1.7s)
+  ✘  55 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:41:7 › Day 45 — Reconciliation & Prescription › Alice: Start new bank reconciliation (606ms)
+  ✘  83 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:179:7 › Day 90 — Quarter Review › Alice: Profitability dashboard — revenue, costs, margins for 4 clients (535ms)
+depth-ii=1 07:26:22
+  1 failed
+  6 skipped
+  1 did not run
+  35 passed (2.2m)
+  ✘  19 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:335:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document with conveyancing clauses (30.3s)
+?? documentation/screenshots/legal-vertical/bank-reconciliation-matched.png
+?? documentation/screenshots/legal-vertical/closure-letter-preview.png
+?? documentation/screenshots/legal-vertical/conflict-check-clear-result.png
+?? documentation/screenshots/legal-vertical/conveyancing-matter-detail-custom-fields.png
+?? documentation/screenshots/legal-vertical/court-calendar-scheduled.png
+end 2026-10-28T07:26:22Z

@@ -1,0 +1,54 @@
+{
+  "matter": "7d0aaa19-fad5-41d2-89a5-c34bd5639767 (627B observer O3-O6)",
+  "note": "Server-action (closeMatterAction) results as returned in the RSC payload line 1; the same payload's refreshed MatterResponse carries retentionEndsOn/retentionClockStartedAt. Raw payloads in network-115-*.txt and network-196-*.txt.",
+  "closes": [
+    {
+      "label": "O4 first close (COMPLETED->CLOSED)",
+      "playwrightRequest": 115,
+      "actionResult": {
+        "success": true,
+        "data": {
+          "matterId": "7d0aaa19-fad5-41d2-89a5-c34bd5639767",
+          "status": "CLOSED",
+          "closedAt": "2026-10-28T06:42:50.690328345Z",
+          "closureLogId": "b65e805c-08ca-4330-b784-c90d80a6c3e3",
+          "closureLetterDocumentId": "9ffad332-f223-4292-abb6-8da98f36a5f0",
+          "statementOfAccountDocumentId": "a3df4dd6-2e96-497c-a4f9-e5050fabd36f",
+          "retentionEndsAt": "2031-10-28"
+        }
+      },
+      "pageMatterResponse": {
+        "retentionEndsOn": [
+          "2031-10-28"
+        ],
+        "retentionClockStartedAt": [
+          "2026-10-28T06:42:50.690328Z"
+        ]
+      }
+    },
+    {
+      "label": "O6 re-close after reopen (ACTIVE->CLOSED)",
+      "playwrightRequest": 196,
+      "actionResult": {
+        "success": true,
+        "data": {
+          "matterId": "7d0aaa19-fad5-41d2-89a5-c34bd5639767",
+          "status": "CLOSED",
+          "closedAt": "2026-10-28T06:44:25.034385166Z",
+          "closureLogId": "d2781c01-e149-4ba5-8e04-e70e1b957597",
+          "closureLetterDocumentId": "0b4b7d03-c3d6-4a73-b95e-1eb1f5140c27",
+          "statementOfAccountDocumentId": "c4d85b3a-4f2d-4625-bdf6-1b1a842eb30f",
+          "retentionEndsAt": "2031-10-28"
+        }
+      },
+      "pageMatterResponse": {
+        "retentionEndsOn": [
+          "2031-10-28"
+        ],
+        "retentionClockStartedAt": [
+          "2026-10-28T06:44:25.034385Z"
+        ]
+      }
+    }
+  ]
+}

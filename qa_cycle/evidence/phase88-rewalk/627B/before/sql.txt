@@ -1,0 +1,201 @@
+=== 2026-10-28T06:03:40Z e2e DB (e2e-postgres) tenant schema tenant_7d218705360b — BEFORE any UI action ===
+SQL> select * from public.org_schema_mapping
+                  id                  | external_org_id |     schema_name     |          created_at           | shard_id 
+--------------------------------------+-----------------+---------------------+-------------------------------+----------
+ 0abd0046-752f-4557-9f43-fb050f99a231 | e2e-test-org    | tenant_7d218705360b | 2026-10-28 05:41:17.558669+00 | primary
+(1 row)
+
+SQL> select column_name, data_type from information_schema.columns where table_schema='tenant_7d218705360b' and table_name='org_settings' and (column_name ilike '%retention%' or column_name ilike '%retain%') order by 1
+         column_name          | data_type 
+------------------------------+-----------
+ default_retention_months     | integer
+ financial_retention_months   | integer
+ legal_matter_retention_years | integer
+ retention_policy_enabled     | boolean
+(4 rows)
+
+SQL> set search_path=tenant_7d218705360b; select id, legal_matter_retention_years from org_settings
+SET
+                  id                  | legal_matter_retention_years 
+--------------------------------------+------------------------------
+ df96f169-9387-40fb-9f0e-168fb02f9c81 |                             
+(1 row)
+
+SQL> select column_name, data_type, is_nullable from information_schema.columns where table_schema='tenant_7d218705360b' and table_name='projects' and (column_name ilike '%retention%' or column_name ilike '%close%' or column_name ilike '%complet%' or column_name ilike '%status%') order by 1
+        column_name         |          data_type          | is_nullable 
+----------------------------+-----------------------------+-------------
+ closed_at                  | timestamp with time zone    | YES
+ completed_at               | timestamp with time zone    | YES
+ completed_by               | uuid                        | YES
+ retention_clock_started_at | timestamp without time zone | YES
+ status                     | character varying           | NO
+(5 rows)
+
+SQL> select column_name, data_type from information_schema.columns where table_schema='tenant_7d218705360b' and table_name='retention_policies' order by ordinal_position
+    column_name    |        data_type         
+-------------------+--------------------------
+ id                | uuid
+ record_type       | character varying
+ retention_days    | integer
+ trigger_event     | character varying
+ action            | character varying
+ active            | boolean
+ created_at        | timestamp with time zone
+ updated_at        | timestamp with time zone
+ description       | text
+ last_evaluated_at | timestamp with time zone
+ cancelled_at      | timestamp with time zone
+(11 rows)
+
+SQL> set search_path=tenant_7d218705360b; select * from retention_policies
+SET
+                  id                  | record_type | retention_days |    trigger_event    | action  | active |          created_at           |          updated_at           | description | last_evaluated_at | cancelled_at 
+--------------------------------------+-------------+----------------+---------------------+---------+--------+-------------------------------+-------------------------------+-------------+-------------------+--------------
+ d69072fa-1cb9-4363-ad28-27be01be237e | CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG    | t      | 2026-10-28 05:41:16.935282+00 | 2026-10-28 05:41:16.935282+00 |             |                   | 
+ 58362daf-68f9-4a06-8dba-1ea0c1fd5b38 | AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG    | t      | 2026-10-28 05:41:16.985274+00 | 2026-10-28 05:41:16.985274+00 |             |                   | 
+ 8334a16d-0e6c-4e7c-9a64-d0c1a95ce226 | MATTER      |           1825 | MATTER_CLOSED       | ARCHIVE | t      | 2026-10-28 05:45:57.171219+00 | 2026-10-28 05:45:57.171219+00 |             |                   | 
+(3 rows)
+
+SQL> select max(version::int) as max_numeric_version, count(*) from tenant_7d218705360b.flyway_schema_history where version ~ '^[0-9]+$'
+ max_numeric_version | count 
+---------------------+-------
+                   7 |     7
+(1 row)
+
+SQL> select installed_rank, version, description, installed_on, success from tenant_7d218705360b.flyway_schema_history order by installed_rank
+ installed_rank | version |          description           |        installed_on        | success 
+----------------+---------+--------------------------------+----------------------------+---------
+              1 | 1       | baseline                       | 2026-10-28 05:41:11.886256 | t
+              2 | 2       | add project template work type | 2026-10-28 05:41:15.145891 | t
+              3 | 3       | normalise work types           | 2026-10-28 05:41:15.171136 | t
+              4 | 4       | phase88 demo ready             | 2026-10-28 05:41:15.210131 | t
+              5 | 5       | phase88 acceptance decline     | 2026-10-28 05:41:15.274367 | t
+              6 | 6       | phase88 audit customer index   | 2026-10-28 05:41:15.29174  | t
+              7 | 7       | phase88 letterhead             | 2026-10-28 05:41:15.319129 | t
+(7 rows)
+
+SQL> set search_path=tenant_7d218705360b; select p.id, p.name, p.status, p.customer_id, p.completed_at, p.closed_at, p.retention_clock_started_at, p.created_at from projects p order by p.created_at
+SET
+                  id                  |                                name                                | status |             customer_id              | completed_at |           closed_at           | retention_clock_started_at |          created_at           
+--------------------------------------+--------------------------------------------------------------------+--------+--------------------------------------+--------------+-------------------------------+----------------------------+-------------------------------
+ b556865d-3525-42ea-ab89-89744c633d2a | Website Redesign                                                   | ACTIVE | ffa9c3be-977f-4f8e-8913-dfb3a18a9988 |              |                               |                            | 2026-10-28 05:41:20.039022+00
+ 1af2ced8-3395-4230-8528-941e44722650 | Ndlovu v RAF spp1                                                  | ACTIVE |                                      |              |                               |                            | 2026-10-28 05:41:59.013444+00
+ 51d87471-ae46-4e17-81f4-1d0fb26926a9 | Estate Late Peter Moroka spp1                                      | ACTIVE |                                      |              |                               |                            | 2026-10-28 05:42:18.573805+00
+ 2c3a3aff-c39a-48d5-a807-f057779266d2 | QC Debt Recovery #1 spp1                                           | ACTIVE |                                      |              |                               |                            | 2026-10-28 05:42:28.558846+00
+ 28695c1a-b3c7-4381-8d3e-ba826f28bfd4 | Ndlovu Property Dispute ui7v                                       | ACTIVE |                                      |              |                               |                            | 2026-10-28 05:43:04.330882+00
+ 392e5664-7d75-4925-9c69-438568c9909b | Apex Annual Returns ui7v                                           | ACTIVE |                                      |              |                               |                            | 2026-10-28 05:43:18.066814+00
+ d6b75bf2-6455-49a7-8079-92ad5b9d73a0 | Team spec mvrov2ns5035                                             | ACTIVE |                                      |              |                               |                            | 2026-10-28 05:43:30.928888+00
+ 077a4ed6-91b6-4475-97b4-c84b440ad1c2 | Ndlovu v RAF — Depth II mvrovhe0b72d                               | CLOSED | 3c1891ee-7557-4acb-b985-2bea77607f8b |              | 2026-10-28 05:46:02.867722+00 | 2026-10-28 05:46:02.867722 | 2026-10-28 05:43:54.565551+00
+ 315918eb-6909-4f61-8481-537df17a8bff | Ndlovu — transition repro mvrovhe0b72d                             | ACTIVE | 3c1891ee-7557-4acb-b985-2bea77607f8b |              |                               |                            | 2026-10-28 05:44:17.84042+00
+ 298be0f4-ac0f-47a8-ac3f-994365cc4e7e | Khumalo Property Holdings — Erf 1234 Sandton Transfer mvrovhe0b72d | ACTIVE | 78c2e21b-5846-4671-b227-9f027d050804 |              |                               |                            | 2026-10-28 05:44:30.63212+00
+ 68b5e1e8-ece3-479e-88e9-ffdd7b38b364 | Apex Holdings — Shareholders' Agreement Review mvrovhe0b72d        | CLOSED | c259b987-f594-4c12-a993-18e4df5554a8 |              | 2026-10-28 05:45:57.179425+00 | 2026-10-28 05:45:57.179425 | 2026-10-28 05:45:44.705671+00
+(11 rows)
+
+
+=== 2026-10-28T06:06:46Z AFTER UI 'Complete Matter' on 7c28d1cf (9 template tasks cancelled via UI first) ===
+SQL> set search_path=tenant_7d218705360b; select id, name, status, completed_at, closed_at, retention_clock_started_at from projects where id='7c28d1cf-6fc5-428a-9690-054f49ae7370'
+SET
+                  id                  |         name         |  status   |         completed_at          | closed_at | retention_clock_started_at 
+--------------------------------------+----------------------+-----------+-------------------------------+-----------+----------------------------
+ 7c28d1cf-6fc5-428a-9690-054f49ae7370 | 627B retention repro | COMPLETED | 2026-10-28 06:06:30.458388+00 |           | 2026-10-28 06:06:30.458388
+(1 row)
+
+SQL> set search_path=tenant_7d218705360b; select status, count(*) from tasks where project_id='7c28d1cf-6fc5-428a-9690-054f49ae7370' group by 1
+SET
+  status   | count 
+-----------+-------
+ CANCELLED |     9
+(1 row)
+
+
+=== 2026-10-28T06:08:09Z AFTER UI 'Close matter' (override gate FINAL_BILL) on 7c28d1cf ===
+SQL> set search_path=tenant_7d218705360b; select id, name, status, completed_at, closed_at, retention_clock_started_at from projects where id='7c28d1cf-6fc5-428a-9690-054f49ae7370'
+SET
+                  id                  |         name         | status |         completed_at          |           closed_at           | retention_clock_started_at 
+--------------------------------------+----------------------+--------+-------------------------------+-------------------------------+----------------------------
+ 7c28d1cf-6fc5-428a-9690-054f49ae7370 | 627B retention repro | CLOSED | 2026-10-28 06:06:30.458388+00 | 2026-10-28 06:07:11.341575+00 | 2026-10-28 06:06:30.458388
+(1 row)
+
+SQL> set search_path=tenant_7d218705360b; select * from retention_policies order by created_at
+SET
+                  id                  | record_type | retention_days |    trigger_event    | action  | active |          created_at           |          updated_at           | description | last_evaluated_at | cancelled_at 
+--------------------------------------+-------------+----------------+---------------------+---------+--------+-------------------------------+-------------------------------+-------------+-------------------+--------------
+ d69072fa-1cb9-4363-ad28-27be01be237e | CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG    | t      | 2026-10-28 05:41:16.935282+00 | 2026-10-28 05:41:16.935282+00 |             |                   | 
+ 58362daf-68f9-4a06-8dba-1ea0c1fd5b38 | AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG    | t      | 2026-10-28 05:41:16.985274+00 | 2026-10-28 05:41:16.985274+00 |             |                   | 
+ 8334a16d-0e6c-4e7c-9a64-d0c1a95ce226 | MATTER      |           1825 | MATTER_CLOSED       | ARCHIVE | t      | 2026-10-28 05:45:57.171219+00 | 2026-10-28 05:45:57.171219+00 |             |                   | 
+(3 rows)
+
+SQL> set search_path=tenant_7d218705360b; select legal_matter_retention_years from org_settings
+SET
+ legal_matter_retention_years 
+------------------------------
+                             
+(1 row)
+
+SQL> select column_name from information_schema.columns where table_schema='tenant_7d218705360b' and table_name='projects' and column_name ilike '%retention%'
+        column_name         
+----------------------------
+ retention_clock_started_at
+(1 row)
+
+SQL> select table_name, column_name from information_schema.columns where table_schema='tenant_7d218705360b' and column_name ilike '%retention_end%'
+ table_name | column_name 
+------------+-------------
+(0 rows)
+
+SQL> select conname, pg_get_constraintdef(oid) from pg_constraint where conrelid='tenant_7d218705360b.retention_policies'::regclass
+              conname               |        pg_get_constraintdef         
+------------------------------------+-------------------------------------
+ retention_policies_pkey            | PRIMARY KEY (id)
+ uq_retention_policies_type_trigger | UNIQUE (record_type, trigger_event)
+(2 rows)
+
+SQL> set search_path=tenant_7d218705360b; select id, project_id, created_at from matter_closure_log where project_id='7c28d1cf-6fc5-428a-9690-054f49ae7370' order by created_at
+SET
+                  id                  |              project_id              |          created_at           
+--------------------------------------+--------------------------------------+-------------------------------
+ b43e4939-c097-421b-a66f-157ecff39a81 | 7c28d1cf-6fc5-428a-9690-054f49ae7370 | 2026-10-28 06:07:11.342047+00
+(1 row)
+
+
+=== 2026-10-28T06:08:37Z AFTER UI 'Reopen matter' on 7c28d1cf ===
+SQL> set search_path=tenant_7d218705360b; select id, name, status, completed_at, closed_at, retention_clock_started_at from projects where id='7c28d1cf-6fc5-428a-9690-054f49ae7370'
+SET
+                  id                  |         name         | status |         completed_at          | closed_at | retention_clock_started_at 
+--------------------------------------+----------------------+--------+-------------------------------+-----------+----------------------------
+ 7c28d1cf-6fc5-428a-9690-054f49ae7370 | 627B retention repro | ACTIVE | 2026-10-28 06:06:30.458388+00 |           | 2026-10-28 06:06:30.458388
+(1 row)
+
+SQL> set search_path=tenant_7d218705360b; select id, record_type, trigger_event, active, cancelled_at, updated_at from retention_policies where record_type='MATTER'
+SET
+                  id                  | record_type | trigger_event | active | cancelled_at |          updated_at           
+--------------------------------------+-------------+---------------+--------+--------------+-------------------------------
+ 8334a16d-0e6c-4e7c-9a64-d0c1a95ce226 | MATTER      | MATTER_CLOSED | t      |              | 2026-10-28 05:45:57.171219+00
+(1 row)
+
+
+=== 2026-10-28T06:10:05Z AFTER UI re-close (ACTIVE -> CLOSED, override FINAL_BILL) on 7c28d1cf ===
+SQL> set search_path=tenant_7d218705360b; select id, name, status, completed_at, closed_at, retention_clock_started_at from projects where id='7c28d1cf-6fc5-428a-9690-054f49ae7370'
+SET
+                  id                  |         name         | status |         completed_at          |          closed_at           | retention_clock_started_at 
+--------------------------------------+----------------------+--------+-------------------------------+------------------------------+----------------------------
+ 7c28d1cf-6fc5-428a-9690-054f49ae7370 | 627B retention repro | CLOSED | 2026-10-28 06:06:30.458388+00 | 2026-10-28 06:08:47.92919+00 | 2026-10-28 06:06:30.458388
+(1 row)
+
+SQL> set search_path=tenant_7d218705360b; select id, record_type, retention_days, trigger_event, action, active, cancelled_at, created_at, updated_at from retention_policies order by created_at
+SET
+                  id                  | record_type | retention_days |    trigger_event    | action  | active | cancelled_at |          created_at           |          updated_at           
+--------------------------------------+-------------+----------------+---------------------+---------+--------+--------------+-------------------------------+-------------------------------
+ d69072fa-1cb9-4363-ad28-27be01be237e | CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG    | t      |              | 2026-10-28 05:41:16.935282+00 | 2026-10-28 05:41:16.935282+00
+ 58362daf-68f9-4a06-8dba-1ea0c1fd5b38 | AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG    | t      |              | 2026-10-28 05:41:16.985274+00 | 2026-10-28 05:41:16.985274+00
+ 8334a16d-0e6c-4e7c-9a64-d0c1a95ce226 | MATTER      |           1825 | MATTER_CLOSED       | ARCHIVE | t      |              | 2026-10-28 05:45:57.171219+00 | 2026-10-28 05:45:57.171219+00
+(3 rows)
+
+SQL> set search_path=tenant_7d218705360b; select id, closed_at, reopened_at, reopen_notes, override_used from matter_closure_log where project_id='7c28d1cf-6fc5-428a-9690-054f49ae7370' order by closed_at
+SET
+                  id                  |           closed_at           |          reopened_at          |                     reopen_notes                     | override_used 
+--------------------------------------+-------------------------------+-------------------------------+------------------------------------------------------+---------------
+ b43e4939-c097-421b-a66f-157ecff39a81 | 2026-10-28 06:07:11.341575+00 | 2026-10-28 06:08:21.936751+00 | 627B repro: reopen to test re-close retention anchor | t
+ 74a6e7cd-8aeb-43cc-be59-706cbf6ea412 | 2026-10-28 06:08:47.92919+00  |                               |                                                      | t
+(2 rows)
+

@@ -1,7 +1,7 @@
 {
-  "commit": "76dd7971f6dcefda6a2625983ae541e08bc9c2f1",
-  "command": "cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-626H @76dd7971f = main after 626G)",
+  "commit": "fa0225e725c3a54084e5d02cbaeca834269dff43",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-627B @fa0225e72 = PR #1694 final head, squash f78b041f6)",
   "exit": 0,
-  "ts": "2026-10-28T05:10:00Z",
-  "summary": "Epic 626 gate BE-VERIFY on merged head 76dd7971f (626.18): 6159 tests / 0 failures / 0 errors / 26 skipped in 16:11; spotless no diff. = 626G final head 8c9023427 (6159)."
+  "ts": "2026-10-28T07:20:00Z",
+  "summary": "Slice 627B BE-VERIFY (627.6) on final head fa0225e72: 6187 tests / 0 failures / 0 errors / 26 skipped (baseline 6159 → +28). Earlier head c8371067c also green (6184). Backend CI run 40647043268 success on fa0225e72."
 }

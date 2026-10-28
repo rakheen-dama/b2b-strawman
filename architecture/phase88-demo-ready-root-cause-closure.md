@@ -232,7 +232,7 @@ erDiagram
     }
     projects {
         date retention_ends_on "U17"
-        timestamptz retention_clock_started_at "close only — U17"
+        timestamp retention_clock_started_at "close only — U17 (UTC wall time, no tz)"
     }
     invoices {
         date due_date "stamped at approve — U3"
@@ -727,7 +727,7 @@ The `var(--brand-color)` line in `document-default.css` is deleted. Headings and
 
 **Closes** G-D3. **Root cause** (R7 Q5): `legal_matter_retention_years` is NULL because the insert bypasses `DEFAULT 5`; `setLegalMatterRetentionYears` has no caller and no UI; `retentionEndsAt` is computed into the closure response only; `complete()` starts the clock contrary to ADR-249; the read side refuses the default so closure and the card disagree.
 
-**Design (D10, [ADR-354](../adr/ADR-354-persisted-retention-end-date.md)).** `DataProtectionSettingsRequest`/`SettingsResponse` expose `legalMatterRetentionYears`; 5 is seeded by the `DataProtectionSettings.legalMatterRetentionYears` field initialiser (every new org-settings row) and tenant V8 backfills existing NULL rows; a "Matter retention period (years)" field on Firm › Compliance. `Project.closeMatter(Instant now, int years)` stamps `retentionClockStartedAt = now` and `retentionEndsOn = now.toLocalDate().plusYears(years)` **every** close (re-close resets); `reopenMatter` clears `retentionEndsOn` and keeps `retentionClockStartedAt` for audit (the next close overwrites it); `complete()` no longer touches the clock. `MatterResponse.retentionEndsOn` reads the column; the Overview card shows the persisted date, with "(firm default 5 years)" when the setting equals the default. The read side has no fallback: already-CLOSED matters are backfilled by the tenant `V8__phase88_retention_comment_attachments.sql` §5 (`closed_at + years`), and a COMPLETED-but-not-closed matter shows no date. The closure-side firm `retention_policies` insert is removed; existing rows stay as policy metadata (§13.2.6).
+**Design (D10, [ADR-354](../adr/ADR-354-persisted-retention-end-date.md)).** `DataProtectionSettingsRequest`/`SettingsResponse` expose `legalMatterRetentionYears`; 5 is seeded by the `DataProtectionSettings.legalMatterRetentionYears` field initialiser (every new org-settings row) and tenant V8 backfills existing NULL rows; a "Matter retention period (years)" field on Firm › Compliance. `Project.closeMatter(Instant now, int years)` stamps `retentionClockStartedAt = now` and `retentionEndsOn = now.atZone(ZoneOffset.UTC).toLocalDate().plusYears(years)` **every** close (re-close resets); `reopenMatter` clears `retentionEndsOn` and keeps `retentionClockStartedAt` for audit (the next close overwrites it); `complete()` no longer touches the clock. `MatterResponse.retentionEndsOn` reads the column; the Overview card shows the persisted date, with "(firm default 5 years)" when the setting equals the default. The read side has no fallback (one exception: the reopen retention-elapsed guard computes `COALESCE(closedAt, retentionClockStartedAt) + years` for a legacy CLOSED row whose `retention_ends_on` is NULL, ADR-354): already-CLOSED matters are backfilled by the tenant `V8__phase88_retention_comment_attachments.sql` §5 (`closed_at + years`), and a COMPLETED-but-not-closed matter shows no date. The closure-side firm `retention_policies` insert is removed; existing rows stay as policy metadata (§13.2.6).
 
 **Acceptance (observed).** Closing on Day 75 (2026-10-22) shows "Scheduled deletion 2031-10-22" on the matter; reopening clears it; re-closing a day later shows 2031-10-23; Firm › Compliance shows 5.
 
@@ -881,7 +881,7 @@ POST /api/portal/acceptance/3f9a…/decline
 | POST | `/api/matters/{matterId}/statements` | `{periodStart, periodEnd, templateId?, shareWithClient=false, notifyClient=false}` | `GENERATE_STATEMENT_OF_ACCOUNT` | W |
 | POST | `/api/matters/{matterId}/closure` | `ClosureRequest` gains `shareWithClient`, `notifyClient` (letter + SoA); response `retentionEndsOn` now persisted | `CLOSE_MATTER` (+ `OVERRIDE_MATTER_CLOSURE` owner-only for override) | W |
 | POST | `/api/generated-documents/{id}/share` | **new** `{notifyClient=false}` — INTERNAL → PORTAL, optional document-ready email | `PROJECT_MANAGEMENT` | W |
-| GET/PATCH | `/api/settings/data-protection` | `legalMatterRetentionYears` (1–30) exposed and writable | `TEAM_OVERSIGHT` | R/W |
+| PATCH (read via `GET /api/settings`) | `/api/settings/data-protection` | `legalMatterRetentionYears` (1–30) exposed and writable | Owner (shipped in 627B: the existing data-protection PATCH is owner-only; `TEAM_OVERSIGHT` not adopted) | R/W |
 | GET | `/api/matters/{id}` | `retentionEndsOn` from the column; `headerFields` not added (frontend composes from `customFields`) | view access | R |
 
 ### 13.4.6 Letterhead, comments, audit, diary, invitations, reports (U8, U24, U6, U20, U19)
@@ -1298,6 +1298,10 @@ ALTER TABLE org_settings
   ADD COLUMN IF NOT EXISTS letterhead_signatory_designation varchar(255);
 
 -- ---------- §5 U17: per-matter retention end -------------------------------------------
+-- Shipped as tenant V8__phase88_retention_comment_attachments.sql §5 (627B, PR #1694) — that
+-- file is authoritative. The SQL below matches it: the clock column is timestamp WITHOUT tz
+-- (UTC wall time), so it is read AT TIME ZONE 'UTC' before the COALESCE with timestamptz
+-- closed_at; the years COALESCE sits outside the scalar subquery (no org_settings row → 5).
 -- The data-protection years column is NULL on every tenant because the entity insert bypassed
 -- DEFAULT 5; seed it so closure and the read side agree (the setting becomes firm-editable).
 UPDATE org_settings SET legal_matter_retention_years = 5 WHERE legal_matter_retention_years IS NULL;
@@ -1305,10 +1309,10 @@ UPDATE org_settings SET legal_matter_retention_years = 5 WHERE legal_matter_rete
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS retention_ends_on date;
 -- Backfill CLOSED matters from their anchor + the (now seeded) firm years. ADR-249: anchor = closure.
 UPDATE projects p
-SET retention_ends_on = (COALESCE(p.closed_at, p.retention_clock_started_at) AT TIME ZONE 'UTC')::date
-                        + make_interval(years => (SELECT COALESCE(s.legal_matter_retention_years, 5) FROM org_settings s LIMIT 1))
+SET retention_ends_on = (COALESCE(p.closed_at, p.retention_clock_started_at AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')::date
+                        + make_interval(years => COALESCE((SELECT s.legal_matter_retention_years FROM org_settings s LIMIT 1), 5))
 WHERE p.status = 'CLOSED' AND p.retention_ends_on IS NULL
-  AND COALESCE(p.closed_at, p.retention_clock_started_at) IS NOT NULL;
+  AND (p.closed_at IS NOT NULL OR p.retention_clock_started_at IS NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_projects_retention_ends_on ON projects (retention_ends_on)
   WHERE retention_ends_on IS NOT NULL;   -- the retention evaluator scans "due for action by date"
 

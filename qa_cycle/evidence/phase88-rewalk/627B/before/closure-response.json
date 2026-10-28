@@ -1,0 +1,22 @@
+{
+  "_source": "Playwright network request #114 \u2014 POST http://localhost:3001/org/e2e-test-org/matters/7c28d1cf-6fc5-428a-9690-054f49ae7370 (Next server action, text/x-component), close dialog submit 2026-10-28T06:07:11Z. Row 1 of the RSC payload = server-action return value (frontend passes through backend POST /api/matters/{id}/closure/close response).",
+  "closeActionResult": {
+    "success": true,
+    "data": {
+      "matterId": "7c28d1cf-6fc5-428a-9690-054f49ae7370",
+      "status": "CLOSED",
+      "closedAt": "2026-10-28T06:07:11.341575008Z",
+      "closureLogId": "b43e4939-c097-421b-a66f-157ecff39a81",
+      "closureLetterDocumentId": "48a84fc9-de38-4331-bf33-0be8f1d879c1",
+      "statementOfAccountDocumentId": "470eda71-9758-41f8-9824-a1edb1f37e49",
+      "retentionEndsAt": "2031-10-28"
+    }
+  },
+  "_same_payload_rerendered_page_project_fields": {
+    "_note": "Row 58 of the same RSC payload: the revalidated matter detail page's project DTO (GET matter detail MatterResponse) that feeds RetentionCard",
+    "status": "CLOSED",
+    "completedAt": "2026-10-28T06:06:30.458388Z",
+    "retentionClockStartedAt": "2026-10-28T06:06:30.458388Z",
+    "retentionEndsOn": null
+  }
+}

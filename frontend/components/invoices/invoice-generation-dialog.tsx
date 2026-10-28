@@ -428,14 +428,14 @@ function ExpenseSelectionSection({
   return (
     <div data-testid="expense-selection-section">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Disbursements</h3>
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Other Disbursements</h3>
         <button
           type="button"
           onClick={onToggleAll}
           className="text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400"
           disabled={selectableExpenses.length === 0}
         >
-          {allSelected ? "Deselect All" : "Select All Disbursements"}
+          {allSelected ? "Deselect All" : "Select All Other Disbursements"}
         </button>
       </div>
       <div className="max-h-60 space-y-3 overflow-y-auto">

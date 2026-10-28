@@ -163,11 +163,11 @@ export function UnbilledSummary({
         </div>
       )}
 
-      {/* Disbursements Section */}
+      {/* Legacy expenses section ("Other Disbursements") */}
       {hasExpenses && (
         <div>
           <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
-            Disbursements
+            Other Disbursements
           </h3>
           <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
             <table className="w-full">
@@ -233,7 +233,7 @@ export function UnbilledSummary({
           {/* Expense totals */}
           <div className="mt-3 flex items-center justify-between">
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-              Disbursement Subtotal
+              Other Disbursement Subtotal
             </span>
             <div className="flex gap-3">
               {Object.entries(data.unbilledExpenseTotals).map(([curr, amount]) => (

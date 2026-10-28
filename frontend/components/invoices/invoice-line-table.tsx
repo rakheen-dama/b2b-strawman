@@ -8,7 +8,7 @@ import type { InvoiceLineResponse } from "@/lib/types";
 
 const SECTION_LABELS: Record<string, string> = {
   TIME: "Time Entries",
-  EXPENSE: "Disbursements",
+  EXPENSE: "Other Disbursements",
   DISBURSEMENT: "Disbursements",
   TARIFF: "Tariff Items",
   OTHER: "Other",

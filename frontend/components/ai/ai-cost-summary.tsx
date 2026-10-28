@@ -1,4 +1,5 @@
 import { Progress } from "@/components/ui/progress";
+import { formatCurrency } from "@/lib/format";
 
 interface AiCostSummaryProps {
   costSummary: {
@@ -12,7 +13,7 @@ interface AiCostSummaryProps {
 }
 
 function formatZarCents(cents: number): string {
-  return `R ${(cents / 100).toFixed(2)}`;
+  return formatCurrency(cents / 100);
 }
 
 function formatPeriod(dateStr: string): string {

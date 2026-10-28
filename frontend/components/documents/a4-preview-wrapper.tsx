@@ -16,18 +16,18 @@ export function A4PreviewWrapper({ html, className }: A4PreviewWrapperProps) {
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
-    const updateScale = () => {
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.clientWidth;
-        if (containerWidth > 0) {
-          setScale(containerWidth / A4_WIDTH);
-        }
-      }
-    };
-
-    updateScale();
-    const observer = new ResizeObserver(updateScale);
-    if (containerRef.current) observer.observe(containerRef.current);
+    const el = containerRef.current;
+    if (!el) return;
+    // G-C4 (Phase 88 626F): size the page from the CONTENT box — contentRect excludes the p-6
+    // padding. Reading the padding-inclusive clientWidth made the page 48px wider than the box it
+    // sits in, which widened any host whose width follows its min-content (the SoA dialog's <form>
+    // grid item), re-fired this observer, and grew without bound. ResizeObserver delivers an
+    // initial notification on observe(), so there is no separate first read.
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[entries.length - 1]?.contentRect.width ?? 0;
+      if (width > 0) setScale(width / A4_WIDTH);
+    });
+    observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
@@ -35,8 +35,8 @@ export function A4PreviewWrapper({ html, className }: A4PreviewWrapperProps) {
     <div
       ref={containerRef}
       className={cn(
-        // Dark surround — PDF viewer feel
-        "rounded-lg bg-slate-800 p-6 dark:bg-slate-900",
+        // Dark surround — PDF viewer feel. min-w-0 + overflow-hidden: never widen the host (G-C4).
+        "min-w-0 overflow-hidden rounded-lg bg-slate-800 p-6 dark:bg-slate-900",
         className
       )}
       data-testid="a4-preview-wrapper"

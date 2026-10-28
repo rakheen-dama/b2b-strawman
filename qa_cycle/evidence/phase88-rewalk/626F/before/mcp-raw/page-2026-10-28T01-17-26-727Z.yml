@@ -1,0 +1,219 @@
+- generic [active] [ref=f10e1]:
+  - link "Skip to content" [ref=f10e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f10e3]:
+    - complementary [ref=f10e4]:
+      - generic [ref=f10e5]:
+        - img "E2E Test Organization logo" [ref=f10e6]
+        - generic [ref=f10e7]: Kazi
+      - generic [ref=f10e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f10e12]:
+        - text: Search...
+        - generic [ref=f10e16]: ⌘K
+      - navigation "Main navigation" [ref=f10e17]:
+        - generic [ref=f10e18]:
+          - button "Today" [expanded] [ref=f10e19]
+          - generic [ref=f10e23]:
+            - link "Home" [ref=f10e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f10e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f10e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f10e36]:
+          - button "Matters" [expanded] [ref=f10e37]
+          - generic [ref=f10e41]:
+            - link "Matters" [ref=f10e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f10e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f10e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f10e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f10e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f10e65]:
+          - button "Clients" [expanded] [ref=f10e66]
+          - generic [ref=f10e70]:
+            - link "Clients" [ref=f10e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f10e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f10e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f10e86]
+        - button "Trust" [ref=f10e92]
+        - button "Firm" [ref=f10e98]
+      - link "Platform Admin" [ref=f10e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f10e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f10e114]:
+        - generic [ref=f10e115]: AO
+        - generic [ref=f10e116]:
+          - paragraph [ref=f10e117]: Alice Owner
+          - paragraph [ref=f10e118]: alice@e2e-test.local
+    - generic [ref=f10e119]:
+      - banner [ref=f10e120]:
+        - navigation "Breadcrumb" [ref=f10e121]:
+          - link "E2E Test Organization" [ref=f10e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=f10e123]: Legal
+          - generic [ref=f10e127]: Tariffs
+        - generic [ref=f10e131]:
+          - generic [ref=f10e132]: e2e-test-org
+          - button "AO" [ref=f10e135]
+          - button "Notifications" [ref=f10e137]:
+            - generic [ref=f10e138]: 10 unread notifications
+            - generic [aria-hidden] [ref=f10e166]: "10"
+      - main [ref=f10e139]:
+        - generic [ref=f10e142]:
+          - generic [ref=f10e143]:
+            - heading "Tariff Schedules" [level=1] [ref=f10e144]
+            - paragraph [ref=f10e145]: Browse and manage LSSA tariff schedules and items
+          - generic [ref=f10e146]:
+            - generic [ref=f10e147]: 1 schedule
+            - generic [ref=f10e150]:
+              - generic [ref=f10e151] [cursor=pointer]:
+                - generic [ref=f10e155]:
+                  - generic [ref=f10e156]: LSSA 2024/2025 High Court Party-and-Party
+                  - generic [ref=f10e159]: Effective from 2024-04-01 · 19 items
+                - button "Clone" [ref=f10e161]
+              - generic [ref=f10e170]:
+                - textbox "Search items..." [ref=f10e175]
+                - generic [ref=f10e176]:
+                  - generic [ref=f10e177]:
+                    - button "Section 1 (3)" [ref=f10e178]:
+                      - text: Section 1
+                      - generic [ref=f10e181]: (3)
+                    - generic [ref=f10e182]:
+                      - generic [ref=f10e183]:
+                        - generic [ref=f10e184]: 1(a)
+                        - generic [ref=f10e185]: Instructions to sue or defend
+                        - generic [ref=f10e186]: Per Item
+                        - generic [ref=f10e187]: R 780.00
+                      - generic [ref=f10e188]:
+                        - generic [ref=f10e189]: 1(b)
+                        - generic [ref=f10e190]: Consultation with client (per quarter-hour)
+                        - generic [ref=f10e191]: Per 15 min
+                        - generic [ref=f10e192]: R 780.00
+                      - generic [ref=f10e193]:
+                        - generic [ref=f10e194]: 1(c)
+                        - generic [ref=f10e195]: Consultation with advocate (per quarter-hour)
+                        - generic [ref=f10e196]: Per 15 min
+                        - generic [ref=f10e197]: R 780.00
+                  - generic [ref=f10e198]:
+                    - button "Section 2 (4)" [ref=f10e199]:
+                      - text: Section 2
+                      - generic [ref=f10e202]: (4)
+                    - generic [ref=f10e203]:
+                      - generic [ref=f10e204]:
+                        - generic [ref=f10e205]: 2(a)
+                        - generic [ref=f10e206]: Drawing of summons
+                        - generic [ref=f10e207]: Per Item
+                        - generic [ref=f10e208]: R 1250.00
+                      - generic [ref=f10e209]:
+                        - generic [ref=f10e210]: 2(b)
+                        - generic [ref=f10e211]: Drawing of plea or exception
+                        - generic [ref=f10e212]: Per Item
+                        - generic [ref=f10e213]: R 1250.00
+                      - generic [ref=f10e214]:
+                        - generic [ref=f10e215]: 2(c)
+                        - generic [ref=f10e216]: Drawing of notice of motion
+                        - generic [ref=f10e217]: Per Item
+                        - generic [ref=f10e218]: R 1250.00
+                      - generic [ref=f10e219]:
+                        - generic [ref=f10e220]: 2(d)
+                        - generic [ref=f10e221]: Drawing of affidavit (per folio)
+                        - generic [ref=f10e222]: Per Folio
+                        - generic [ref=f10e223]: R 195.00
+                  - generic [ref=f10e224]:
+                    - button "Section 3 (4)" [ref=f10e225]:
+                      - text: Section 3
+                      - generic [ref=f10e228]: (4)
+                    - generic [ref=f10e229]:
+                      - generic [ref=f10e230]:
+                        - generic [ref=f10e231]: 3(a)
+                        - generic [ref=f10e232]: Letters written (per folio)
+                        - generic [ref=f10e233]: Per Folio
+                        - generic [ref=f10e234]: R 195.00
+                      - generic [ref=f10e235]:
+                        - generic [ref=f10e236]: 3(b)
+                        - generic [ref=f10e237]: Letters received and perused (per folio)
+                        - generic [ref=f10e238]: Per Folio
+                        - generic [ref=f10e239]: R 130.00
+                      - generic [ref=f10e240]:
+                        - generic [ref=f10e241]: 3(c)
+                        - generic [ref=f10e242]: Telephone calls (per call)
+                        - generic [ref=f10e243]: Per Item
+                        - generic [ref=f10e244]: R 195.00
+                      - generic [ref=f10e245]:
+                        - generic [ref=f10e246]: 3(d)
+                        - generic [ref=f10e247]: Emails sent (per email)
+                        - generic [ref=f10e248]: Per Item
+                        - generic [ref=f10e249]: R 130.00
+                  - generic [ref=f10e250]:
+                    - button "Section 4 (3)" [ref=f10e251]:
+                      - text: Section 4
+                      - generic [ref=f10e254]: (3)
+                    - generic [ref=f10e255]:
+                      - generic [ref=f10e256]:
+                        - generic [ref=f10e257]: 4(a)
+                        - generic [ref=f10e258]: Attendance at court (per day)
+                        - generic [ref=f10e259]: Per Day
+                        - generic [ref=f10e260]: R 7800.00
+                      - generic [ref=f10e261]:
+                        - generic [ref=f10e262]: 4(b)
+                        - generic [ref=f10e263]: Attendance at court (per half day)
+                        - generic [ref=f10e264]: Per Item
+                        - generic [ref=f10e265]: R 4680.00
+                      - generic [ref=f10e266]:
+                        - generic [ref=f10e267]: 4(c)
+                        - generic [ref=f10e268]: Waiting time at court (per hour)
+                        - generic [ref=f10e269]: Per Hour
+                        - generic [ref=f10e270]: R 780.00
+                  - generic [ref=f10e271]:
+                    - button "Section 5 (2)" [ref=f10e272]:
+                      - text: Section 5
+                      - generic [ref=f10e275]: (2)
+                    - generic [ref=f10e276]:
+                      - generic [ref=f10e277]:
+                        - generic [ref=f10e278]: 5(a)
+                        - generic [ref=f10e279]: Preparation of discovery affidavit
+                        - generic [ref=f10e280]: Per Item
+                        - generic [ref=f10e281]: R 1250.00
+                      - generic [ref=f10e282]:
+                        - generic [ref=f10e283]: 5(b)
+                        - generic [ref=f10e284]: Inspection of documents (per hour)
+                        - generic [ref=f10e285]: Per Hour
+                        - generic [ref=f10e286]: R 780.00
+                  - generic [ref=f10e287]:
+                    - button "Section 6 (2)" [ref=f10e288]:
+                      - text: Section 6
+                      - generic [ref=f10e291]: (2)
+                    - generic [ref=f10e292]:
+                      - generic [ref=f10e293]:
+                        - generic [ref=f10e294]: 6(a)
+                        - generic [ref=f10e295]: Preparation for trial (per day)
+                        - generic [ref=f10e296]: Per Day
+                        - generic [ref=f10e297]: R 7800.00
+                      - generic [ref=f10e298]:
+                        - generic [ref=f10e299]: 6(b)
+                        - generic [ref=f10e300]: Preparation of heads of argument (per folio)
+                        - generic [ref=f10e301]: Per Folio
+                        - generic [ref=f10e302]: R 260.00
+                  - generic [ref=f10e303]:
+                    - button "Section 7 (1)" [ref=f10e304]:
+                      - text: Section 7
+                      - generic [ref=f10e307]: (1)
+                    - generic [ref=f10e309]:
+                      - generic [ref=f10e310]: 7(a)
+                      - generic [ref=f10e311]: Service of process (per service)
+                      - generic [ref=f10e312]: Per Item
+                      - generic [ref=f10e313]: R 390.00
+  - generic [ref=f10e162]:
+    - heading "Command Palette" [level=2] [ref=f10e163]
+    - paragraph [ref=f10e164]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f10e165]

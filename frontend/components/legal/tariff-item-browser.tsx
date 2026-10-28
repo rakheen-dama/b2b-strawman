@@ -5,6 +5,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { Input } from "@b2mash/ui/input";
 import { Search, ChevronRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 import { fetchTariffItems } from "@/app/(app)/org/[slug]/legal/tariffs/actions";
 import type { TariffItem } from "@/lib/types";
 
@@ -16,10 +17,6 @@ const UNIT_LABELS: Record<string, string> = {
   PER_HOUR: "Per Hour",
   PER_DAY: "Per Day",
 };
-
-function formatZAR(amount: number): string {
-  return `R ${amount.toFixed(2)}`;
-}
 
 /** Group items by a simple section heuristic: first word(s) of itemNumber or description prefix */
 function groupBySection(items: TariffItem[]): { section: string; items: TariffItem[] }[] {
@@ -181,7 +178,7 @@ export function TariffItemBrowser({
                           {UNIT_LABELS[item.unit] ?? item.unit}
                         </Badge>
                         <span className="shrink-0 font-medium text-slate-900 dark:text-slate-100">
-                          {formatZAR(item.amount)}
+                          {formatCurrency(item.amount)}
                         </span>
                       </div>
                     );

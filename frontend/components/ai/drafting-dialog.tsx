@@ -38,6 +38,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import type { DraftingResponse, VariableFill } from "@/lib/api/ai";
 import type { TemplateListResponse } from "@/lib/types";
+import { formatCurrency } from "@/lib/format";
 
 interface DraftingDialogProps {
   projectId: string;
@@ -51,7 +52,7 @@ interface DraftingDialogProps {
 type Step = "SELECT_TEMPLATE" | "LOADING" | "RESULTS" | "CONFIRMED";
 
 function formatZarCents(cents: number): string {
-  return `R ${(cents / 100).toFixed(2)}`;
+  return formatCurrency(cents / 100);
 }
 
 export function DraftingDialog({

@@ -1,0 +1,1 @@
+- generic [active] [ref=f8e1]: "{\"detail\":\"No invoice found with id 00000000-0000-4000-8000-000000000000\",\"instance\":\"/api/invoices/00000000-0000-4000-8000-000000000000/preview\",\"status\":404,\"title\":\"Invoice not found\"}"

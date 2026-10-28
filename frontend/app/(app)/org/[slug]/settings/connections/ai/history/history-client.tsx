@@ -14,6 +14,7 @@ import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { ChevronLeft, ChevronRight, Activity } from "lucide-react";
 import type { AiExecutionListItem } from "@/lib/api/ai";
+import { formatCurrency } from "@/lib/format";
 
 interface ExecutionHistoryClientProps {
   slug: string;
@@ -39,7 +40,7 @@ function getStatusVariant(status: string) {
 }
 
 function formatCostZAR(costCents: number): string {
-  return `R ${(costCents / 100).toFixed(2)}`;
+  return formatCurrency(costCents / 100);
 }
 
 function formatDuration(ms: number | null): string {

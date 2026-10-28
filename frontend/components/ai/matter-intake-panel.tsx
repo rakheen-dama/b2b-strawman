@@ -12,6 +12,7 @@ import { invokeMatterIntakeAction } from "@/app/(app)/org/[slug]/matters/new/int
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
 import type { MatterIntakeResponse } from "@/lib/api/ai";
 import Link from "next/link";
+import { formatCurrency } from "@/lib/format";
 
 interface MatterIntakePanelProps {
   customerId: string;
@@ -29,7 +30,7 @@ type PanelState =
   | { phase: "ERROR"; message: string };
 
 function formatZarCents(cents: number): string {
-  return `R ${(cents / 100).toFixed(2)}`;
+  return formatCurrency(cents / 100);
 }
 
 function getDisabledReason(

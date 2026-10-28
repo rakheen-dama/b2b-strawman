@@ -7,6 +7,7 @@ import { Input } from "@b2mash/ui/input";
 import { Badge } from "@b2mash/ui/badge";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { formatCurrency } from "@/lib/format";
 import { TariffItemBrowser } from "@/components/legal/tariff-item-browser";
 import {
   fetchTariffSchedules,
@@ -18,10 +19,6 @@ import type { TariffSchedule, TariffItem } from "@/lib/types";
 interface SelectedItem {
   item: TariffItem;
   quantity: number;
-}
-
-function formatZAR(amount: number): string {
-  return `R ${amount.toFixed(2)}`;
 }
 
 interface TariffLineDialogProps {
@@ -209,7 +206,7 @@ export function TariffLineDialog({
                       {item.itemNumber} - {item.description}
                     </span>
                     <Badge variant="neutral" className="shrink-0 text-xs">
-                      {formatZAR(item.amount)}
+                      {formatCurrency(item.amount)}
                     </Badge>
                     <span className="shrink-0 text-slate-500">&times;</span>
                     <Input
@@ -247,7 +244,7 @@ export function TariffLineDialog({
                 </span>{" "}
                 item{selectedEntries.length !== 1 ? "s" : ""} &middot;{" "}
                 <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {formatZAR(totalAmount)}
+                  {formatCurrency(totalAmount)}
                 </span>
               </>
             ) : (

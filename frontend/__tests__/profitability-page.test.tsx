@@ -8,10 +8,12 @@ import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types"
 // Mock server actions
 const mockGetUtilization = vi.fn();
 const mockGetOrgProfitability = vi.fn();
+const mockExportProfitabilityCsvAction = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/profitability/actions", () => ({
   getUtilization: (...args: unknown[]) => mockGetUtilization(...args),
   getOrgProfitability: (...args: unknown[]) => mockGetOrgProfitability(...args),
+  exportProfitabilityCsvAction: (...args: unknown[]) => mockExportProfitabilityCsvAction(...args),
 }));
 
 function makeUtilization(overrides: Partial<UtilizationResponse> = {}): UtilizationResponse {
@@ -220,6 +222,124 @@ describe("Profitability Page", () => {
 
       // Beta Project has no customer
       expect(screen.getByText("\u2014")).toBeInTheDocument();
+    });
+
+    describe("Export CSV", () => {
+      let originalCreateObjectURL: typeof URL.createObjectURL | undefined;
+      let originalRevokeObjectURL: typeof URL.revokeObjectURL | undefined;
+      let originalAnchorClick: HTMLAnchorElement["click"] | undefined;
+      let clickedDownloads: string[];
+
+      beforeEach(() => {
+        originalCreateObjectURL = global.URL.createObjectURL;
+        originalRevokeObjectURL = global.URL.revokeObjectURL;
+        originalAnchorClick = HTMLAnchorElement.prototype.click;
+        clickedDownloads = [];
+        // happy-dom doesn't ship URL.createObjectURL — stub.
+        global.URL.createObjectURL = vi.fn(() => "blob:mock");
+        global.URL.revokeObjectURL = vi.fn();
+        // Stub anchor.click() so the test doesn't navigate; record the download name.
+        const anchorProto = HTMLAnchorElement.prototype as unknown as {
+          click: (this: HTMLAnchorElement) => void;
+        };
+        anchorProto.click = vi.fn(function (this: HTMLAnchorElement) {
+          clickedDownloads.push(this.download);
+        });
+      });
+
+      afterEach(() => {
+        if (originalCreateObjectURL) global.URL.createObjectURL = originalCreateObjectURL;
+        if (originalRevokeObjectURL) global.URL.revokeObjectURL = originalRevokeObjectURL;
+        if (originalAnchorClick) HTMLAnchorElement.prototype.click = originalAnchorClick;
+      });
+
+      it("exports the Matter card's current range and downloads profitability-<from>-to-<to>.csv", async () => {
+        const user = userEvent.setup();
+        mockExportProfitabilityCsvAction.mockResolvedValue({
+          data: "Matter,Client\r\nAlpha Project,Acme Corp\r\n",
+        });
+        render(
+          <ProjectProfitabilityTable
+            initialData={makeProfitability()}
+            initialFrom="2026-02-01"
+            initialTo="2026-02-14"
+          />
+        );
+
+        const button = screen.getByTestId("profitability-export-csv");
+        expect(button).toHaveTextContent("Export CSV");
+        await user.click(button);
+
+        expect(mockExportProfitabilityCsvAction).toHaveBeenCalledWith("2026-02-01", "2026-02-14");
+        expect(global.URL.createObjectURL).toHaveBeenCalledTimes(1);
+        expect(clickedDownloads).toEqual(["profitability-2026-02-01-to-2026-02-14.csv"]);
+        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock");
+      });
+
+      it("follows the card's From date after it changes", async () => {
+        const user = userEvent.setup();
+        mockGetOrgProfitability.mockResolvedValue({ data: makeProfitability() });
+        mockExportProfitabilityCsvAction.mockResolvedValue({ data: "Matter\r\n" });
+        render(
+          <ProjectProfitabilityTable
+            initialData={makeProfitability()}
+            initialFrom="2026-02-01"
+            initialTo="2026-02-14"
+          />
+        );
+
+        const fromInput = screen.getByLabelText("From");
+        await user.clear(fromInput);
+        await user.type(fromInput, "2026-01-01");
+        await user.click(screen.getByTestId("profitability-export-csv"));
+
+        expect(mockExportProfitabilityCsvAction).toHaveBeenLastCalledWith(
+          "2026-01-01",
+          "2026-02-14"
+        );
+        expect(clickedDownloads.at(-1)).toBe("profitability-2026-01-01-to-2026-02-14.csv");
+      });
+
+      it("falls back to profitability.csv when a date is empty", async () => {
+        const user = userEvent.setup();
+        mockGetOrgProfitability.mockResolvedValue({ data: makeProfitability() });
+        mockExportProfitabilityCsvAction.mockResolvedValue({ data: "Matter\r\n" });
+        render(
+          <ProjectProfitabilityTable
+            initialData={makeProfitability()}
+            initialFrom="2026-02-01"
+            initialTo="2026-02-14"
+          />
+        );
+
+        await user.clear(screen.getByLabelText("To"));
+        await user.click(screen.getByTestId("profitability-export-csv"));
+
+        expect(mockExportProfitabilityCsvAction).toHaveBeenLastCalledWith("2026-02-01", "");
+        expect(clickedDownloads.at(-1)).toBe("profitability.csv");
+      });
+
+      it("shows the export error inline and downloads nothing", async () => {
+        const user = userEvent.setup();
+        mockExportProfitabilityCsvAction.mockResolvedValue({
+          data: null,
+          error: "Insufficient permissions",
+        });
+        render(
+          <ProjectProfitabilityTable
+            initialData={makeProfitability()}
+            initialFrom="2026-02-01"
+            initialTo="2026-02-14"
+          />
+        );
+
+        await user.click(screen.getByTestId("profitability-export-csv"));
+
+        expect(await screen.findByText("Insufficient permissions")).toBeInTheDocument();
+        expect(global.URL.createObjectURL).not.toHaveBeenCalled();
+        expect(clickedDownloads).toEqual([]);
+        expect(screen.getByTestId("profitability-export-csv")).not.toBeDisabled();
+      });
     });
   });
 });

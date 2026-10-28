@@ -1,5 +1,6 @@
 "use server";
 
+import { unstable_rethrow } from "next/navigation";
 import {
   executeReport,
   exportReportCsv,
@@ -26,6 +27,8 @@ export async function executeReportAction(
     const data = await executeReport(slug, parameters, page, size);
     return { data };
   } catch (error) {
+    // Next control flow (e.g. the re-login redirect on an expired session) must propagate.
+    unstable_rethrow(error);
     if (error instanceof ApiError) {
       return { data: null, error: error.message };
     }
@@ -41,6 +44,8 @@ export async function exportReportCsvAction(
     const data = await exportReportCsv(slug, parameters);
     return { data };
   } catch (error) {
+    // Next control flow (e.g. the re-login redirect on an expired session) must propagate.
+    unstable_rethrow(error);
     if (error instanceof ApiError) {
       return { data: null, error: error.message };
     }
@@ -56,6 +61,8 @@ export async function exportReportPdfAction(
     const data = await exportReportPdf(slug, parameters);
     return { data };
   } catch (error) {
+    // Next control flow (e.g. the re-login redirect on an expired session) must propagate.
+    unstable_rethrow(error);
     if (error instanceof ApiError) {
       return { data: null, error: error.message };
     }
@@ -100,6 +107,8 @@ export async function fetchEntityOptionsAction(
     }
     return { data: null, error: `Unknown entity type: ${entityType}` };
   } catch (error) {
+    // Next control flow (e.g. the re-login redirect on an expired session) must propagate.
+    unstable_rethrow(error);
     if (error instanceof ApiError) {
       return { data: null, error: error.message };
     }

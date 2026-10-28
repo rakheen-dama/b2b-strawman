@@ -1,7 +1,9 @@
 "use server";
 
+import { unstable_rethrow } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
+import { exportProfitabilityCsv } from "@/lib/api/reports";
 import { getMatterProfitability } from "@/lib/api/matters";
 import { getClientProfitability } from "@/lib/api/clients";
 import type {
@@ -106,5 +108,27 @@ export async function getCustomerProfitability(
       return { data: null, error: error.message };
     }
     return { data: null, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * CSV of the Matter Profitability card's rows for its own date range. No frontend capability
+ * check: the backend's FINANCIAL_VISIBILITY gate is the authority (the page itself renders only
+ * for admin / owner / FINANCIAL_VISIBILITY), and a denial comes back as the 403 message.
+ */
+export async function exportProfitabilityCsvAction(
+  from?: string,
+  to?: string
+): Promise<ActionResult<string>> {
+  try {
+    const data = await exportProfitabilityCsv(from || undefined, to || undefined);
+    return { data };
+  } catch (error) {
+    // Next control flow (e.g. the re-login redirect on an expired session) must propagate.
+    unstable_rethrow(error);
+    if (error instanceof ApiError) {
+      return { data: null, error: error.message };
+    }
+    return { data: null, error: "Failed to export CSV." };
   }
 }

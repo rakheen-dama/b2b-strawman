@@ -28,7 +28,9 @@ import tools.jackson.databind.ObjectMapper;
  * added to {@code templateAssociations} without a reconcile entry would otherwise silently never
  * reach existing tenants. (A reconcile pair that no declaration covers already fails loud at
  * reconcile time in {@code ClausePackSeeder.applyReconcileEntry}; this guard catches it at build
- * time too.)
+ * time too.) Every association entry must also be one the seeder applies — {@code field} {@value
+ * ClausePackSeeder#ASSOCIATION_FIELD} and a string {@code to}; anything else is WARN-skipped at
+ * reconcile time, so existing tenants would never get the association.
  *
  * <p>Out of the rule: packs with {@code templateAssociations} but no association reconcile entries
  * — e.g. {@code legal-za-clauses} v1, whose associations shipped with the pack's first version, so
@@ -55,7 +57,7 @@ class ClausePackReconcileGuardTest {
   void everyClausePackWithAssociationReconcile_reconcilesExactlyItsDeclaredAssociations()
       throws IOException {
     List<ClausePackDefinition> inScope =
-        loadClausePacks().stream().filter(p -> !reconcilePairs(p).isEmpty()).toList();
+        loadClausePacks().stream().filter(p -> !associationEntries(p).isEmpty()).toList();
 
     assertThat(inScope)
         .as("clause packs with association reconcile entries")
@@ -140,6 +142,40 @@ class ClausePackReconcileGuardTest {
         .contains(dropped.key());
   }
 
+  @Test
+  void guard_flagsAnAssociationEntryTheSeederWouldSkip() throws IOException {
+    var pack = conveyancingPack();
+    var original = pack.reconcile().getFirst();
+
+    var wrongField = new ArrayList<>(pack.reconcile());
+    wrongField.set(
+        0,
+        new PackReconcileEntry(
+            original.entity(), original.key(), "associations", null, original.to()));
+    assertThat(violations(withReconcile(pack, wrongField)))
+        .anySatisfy(
+            v ->
+                assertThat(v)
+                    .contains("unsupported association reconcile entry")
+                    .contains(original.key())
+                    .contains("associations"))
+        .anySatisfy(v -> assertThat(v).contains("declared but not reconciled"));
+
+    var nonStringTo = new ArrayList<>(pack.reconcile());
+    nonStringTo.set(
+        0,
+        new PackReconcileEntry(
+            original.entity(), original.key(), ClausePackSeeder.ASSOCIATION_FIELD, null, 42));
+    assertThat(violations(withReconcile(pack, nonStringTo)))
+        .anySatisfy(
+            v ->
+                assertThat(v)
+                    .contains("unsupported association reconcile entry")
+                    .contains(original.key())
+                    .contains("42"))
+        .anySatisfy(v -> assertThat(v).contains("declared but not reconciled"));
+  }
+
   // --- the rule ---
 
   /** Empty when the pack's association reconcile entries match its declarations exactly. */
@@ -147,6 +183,19 @@ class ClausePackReconcileGuardTest {
     List<Pair> reconciled = reconcilePairs(pack);
     Set<Pair> declared = declaredPairs(pack);
     var problems = new ArrayList<String>();
+    for (PackReconcileEntry entry : associationEntries(pack)) {
+      if (!seederApplies(entry)) {
+        problems.add(
+            "unsupported association reconcile entry (seeder skips it: field must be '"
+                + ClausePackSeeder.ASSOCIATION_FIELD
+                + "' and 'to' a string) key="
+                + entry.key()
+                + " field="
+                + entry.field()
+                + " to="
+                + entry.to());
+      }
+    }
     var seen = new HashSet<Pair>();
     for (Pair pair : reconciled) {
       if (!seen.add(pair)) {
@@ -166,16 +215,29 @@ class ClausePackReconcileGuardTest {
     return problems;
   }
 
-  /**
-   * The pack's association reconcile entries as (to, key) pairs, in file order (duplicates kept).
-   */
-  static List<Pair> reconcilePairs(ClausePackDefinition pack) {
+  /** The pack's {@value ClausePackSeeder#ASSOCIATION_ENTITY} reconcile entries, in file order. */
+  static List<PackReconcileEntry> associationEntries(ClausePackDefinition pack) {
     if (pack.reconcile() == null) {
       return List.of();
     }
     return pack.reconcile().stream()
         .filter(e -> ClausePackSeeder.ASSOCIATION_ENTITY.equals(e.entity()))
-        .map(e -> new Pair(String.valueOf(e.to()), e.key()))
+        .toList();
+  }
+
+  /** Mirrors the skip check in {@code ClausePackSeeder.applyReconcileEntry}. */
+  static boolean seederApplies(PackReconcileEntry entry) {
+    return ClausePackSeeder.ASSOCIATION_FIELD.equals(entry.field()) && entry.to() instanceof String;
+  }
+
+  /**
+   * The (to, key) pairs of the association reconcile entries the seeder applies, in file order
+   * (duplicates kept).
+   */
+  static List<Pair> reconcilePairs(ClausePackDefinition pack) {
+    return associationEntries(pack).stream()
+        .filter(ClausePackReconcileGuardTest::seederApplies)
+        .map(e -> new Pair((String) e.to(), e.key()))
         .toList();
   }
 

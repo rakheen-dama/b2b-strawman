@@ -93,6 +93,15 @@ public class ReportDefinition {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Renames this definition (ADR-356 reconcile of the standard-reports pack; the slug is an
+   * identifier and never changes).
+   */
+  public void rename(String name) {
+    this.name = name;
+    this.updatedAt = Instant.now();
+  }
+
   // --- Getters ---
 
   public UUID getId() {

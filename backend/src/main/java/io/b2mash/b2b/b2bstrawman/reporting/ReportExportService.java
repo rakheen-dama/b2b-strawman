@@ -23,7 +23,7 @@ public class ReportExportService {
       Map.of(
           "TIME_ATTENDANCE", "Time & Attendance",
           "FINANCIAL", "Financial",
-          "PROJECT", "Project");
+          "PROJECT", "Matter");
 
   private final ReportDefinitionRepository reportDefinitionRepository;
   private final ReportExecutionService reportExecutionService;

@@ -178,8 +178,10 @@ class InvoiceSentDocumentPersistenceIntegrationTest {
                       var template =
                           new DocumentTemplate(
                               TemplateEntityType.INVOICE,
-                              "Fee Note Cover Letter",
-                              "fee-note-cover-letter",
+                              "Firm Fee Note Cover Letter",
+                              // not "fee-note-cover-letter": since 628C the common pack's cover
+                              // letter owns that slug
+                              "firm-fee-note-cover-letter",
                               TemplateCategory.COVER_LETTER,
                               TEMPLATE_CONTENT);
                       documentTemplateRepository.save(template);

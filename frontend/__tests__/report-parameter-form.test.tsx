@@ -146,6 +146,35 @@ describe("ReportParameterForm", () => {
     expect(trigger).toHaveTextContent("member");
   });
 
+  it("shows an enum option's label but submits its value", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const schema = makeSchema({
+      parameters: [
+        {
+          name: "groupBy",
+          type: "enum",
+          label: "Group By",
+          options: ["member", "project", "date"],
+          optionLabels: { member: "Member", project: "Matter", date: "Date" },
+          default: "project",
+        },
+      ],
+    });
+
+    render(<ReportParameterForm schema={schema} onSubmit={onSubmit} isLoading={false} />);
+
+    const trigger = screen.getByRole("combobox", { name: /group by/i });
+    expect(trigger).toHaveTextContent("Matter");
+    expect(trigger).not.toHaveTextContent("project");
+
+    await user.click(screen.getByRole("button", { name: /run report/i }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({ groupBy: "project" });
+    });
+  });
+
   it("disables inputs and button when isLoading is true", () => {
     render(<ReportParameterForm schema={makeSchema()} onSubmit={vi.fn()} isLoading={true} />);
 

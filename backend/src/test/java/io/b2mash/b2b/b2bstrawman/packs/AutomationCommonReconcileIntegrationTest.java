@@ -39,9 +39,11 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <p>A v2 tenant is simulated by rewriting the provisioned {@code document-review-notification}
  * rule to its exact v2 shipped state (hash pinned → pristine), rewinding {@code
- * pack_install.pack_version} 3 → 2 and the OrgSettings automation status to 2. Each test re-runs
- * the simulation, so tests are order-independent; assertions target this tenant's single seeded
- * rule only (no global counts).
+ * pack_install.pack_version} 4 → 2 (the v4 entries target other slugs, already current on this
+ * tenant) and the OrgSettings automation status to 2. Each test re-runs the simulation, so tests
+ * are order-independent; assertions target this tenant's single seeded rule only (no global
+ * counts). The 628C v3 → v4 cases (fee-note / fee-estimate wording) rewind 4 → 3 and restore the
+ * shipped rule afterwards.
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -104,8 +106,8 @@ class AutomationCommonReconcileIntegrationTest {
               .isEqualTo(automationPackInstaller.computeRuleHash(rule))
               .isNotEqualTo(v2Hash);
           assertThat(packInstallRepository.findByPackId(PACK_ID).orElseThrow().getPackVersion())
-              .isEqualTo("3");
-          assertThat(automationStatusVersion()).isEqualTo(3);
+              .isEqualTo("4");
+          assertThat(automationStatusVersion()).isEqualTo(4);
           return null;
         });
     // Fresh tenant, no executions, every automation-common rule pristine → nothing blocks
@@ -198,7 +200,7 @@ class AutomationCommonReconcileIntegrationTest {
               actionRepository.save(
                   new AutomationAction(
                       copy.getId(), 0, ActionType.SEND_NOTIFICATION, v2Config(), null, null));
-              assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, "3", "2"))
+              assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, "4", "2"))
                   .isEqualTo(1);
               return copy.getId();
             });
@@ -253,7 +255,7 @@ class AutomationCommonReconcileIntegrationTest {
               actionRepository.save(
                   new AutomationAction(
                       foreign.getId(), 0, ActionType.SEND_NOTIFICATION, v2Config(), null, null));
-              assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, "3", "2"))
+              assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, "4", "2"))
                   .isEqualTo(1);
               return foreign.getId();
             });
@@ -327,6 +329,197 @@ class AutomationCommonReconcileIntegrationTest {
     assertThat(snap.get()).isEqualTo(first);
   }
 
+  // --- 628C: v3 -> v4 entries (overdue-invoice-reminder, budget-alert-escalation) ---
+
+  static final String OVERDUE_SLUG = "overdue-invoice-reminder";
+  static final String BUDGET_SLUG = "budget-alert-escalation";
+  static final String CUSTOM_SUBJECT = "Our own subject {{invoice.invoiceNumber}}";
+
+  @Test
+  void overdueReminderV3_isReconciledToV4_firmEditedSubjectSurvives() {
+    simulateV3Rule(OVERDUE_SLUG, true);
+    try {
+      packInstallService.internalInstall(PACK_ID, schema);
+
+      inTenantTx(
+          () -> {
+            var rule = seededRule(OVERDUE_SLUG);
+            assertThat(rule.getName()).isEqualTo("Overdue Fee Note Reminder");
+            assertThat(rule.getDescription())
+                .isEqualTo(
+                    "Sends email to the client when a fee note becomes overdue, then notifies the"
+                        + " matter lead after 7 days");
+            assertThat(actionConfig(rule, 0))
+                .containsEntry("subject", CUSTOM_SUBJECT)
+                .containsEntry(
+                    "body",
+                    "Dear {{customer.name}},\n\nYour fee note {{invoice.invoiceNumber}} is now"
+                        + " overdue. Please arrange payment at your earliest convenience.");
+            assertThat(actionConfig(rule, 1))
+                .containsEntry("title", "Fee note {{invoice.invoiceNumber}} still overdue")
+                .containsEntry(
+                    "message",
+                    "Fee note {{invoice.invoiceNumber}} for {{customer.name}} has been overdue"
+                        + " for 7 days.");
+            assertThat(packInstallRepository.findByPackId(PACK_ID).orElseThrow().getPackVersion())
+                .isEqualTo("4");
+            return null;
+          });
+    } finally {
+      restoreShipped(OVERDUE_SLUG);
+    }
+  }
+
+  @Test
+  void budgetAlertV3_isReconciledToV4_andHashRepinned() {
+    simulateV3Rule(BUDGET_SLUG, false);
+    try {
+      packInstallService.internalInstall(PACK_ID, schema);
+
+      inTenantTx(
+          () -> {
+            var rule = seededRule(BUDGET_SLUG);
+            assertThat(rule.getName()).isEqualTo("Fee Estimate Alert Escalation");
+            assertThat(rule.getDescription())
+                .isEqualTo("Notifies admins when a matter fee estimate threshold is reached");
+            assertThat(actionConfig(rule, 0))
+                .containsEntry("title", "Fee estimate alert: {{project.name}}")
+                .containsEntry(
+                    "message", "Matter {{project.name}} has reached its fee estimate threshold.");
+            assertThat(rule.getContentHash())
+                .as("pristine v3 rule is re-pinned to the reconciled content")
+                .isEqualTo(automationPackInstaller.computeRuleHash(rule));
+            return null;
+          });
+    } finally {
+      restoreShipped(BUDGET_SLUG);
+    }
+  }
+
+  /** The exact v3 ({@code fe579bdc9}) action configs of the two rules re-worded in v4. */
+  private static Map<Integer, Map<String, Object>> v3Configs(String slug) {
+    if (OVERDUE_SLUG.equals(slug)) {
+      var email = new LinkedHashMap<String, Object>();
+      email.put("recipientType", "CUSTOMER_CONTACT");
+      email.put("subject", "Invoice {{invoice.invoiceNumber}} is overdue");
+      email.put(
+          "body",
+          "Dear {{customer.name}},\n\nYour invoice {{invoice.invoiceNumber}} is now overdue."
+              + " Please arrange payment at your earliest convenience.");
+      var notify = new LinkedHashMap<String, Object>();
+      notify.put("recipientType", "PROJECT_OWNER");
+      notify.put("title", "Invoice {{invoice.invoiceNumber}} still overdue");
+      notify.put(
+          "message",
+          "Invoice {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7 days.");
+      return Map.of(0, email, 1, notify);
+    }
+    var notify = new LinkedHashMap<String, Object>();
+    notify.put("recipientType", "ORG_ADMINS");
+    notify.put("title", "Budget alert: {{project.name}}");
+    notify.put("message", "Project {{project.name}} has reached its budget threshold.");
+    return Map.of(0, notify);
+  }
+
+  /**
+   * Rewrites the provisioned rule to its exact v3 shipped state (hash pinned → pristine), then
+   * optionally edits the SEND_EMAIL subject (firm edit after the pin), and rewinds the recorded
+   * version 4 → 3.
+   */
+  private void simulateV3Rule(String slug, boolean firmEditsSubject) {
+    inTenantTx(
+        () -> {
+          var rule = seededRule(slug);
+          boolean overdue = OVERDUE_SLUG.equals(slug);
+          rule.update(
+              overdue ? "Overdue Invoice Reminder" : "Budget Alert Escalation",
+              overdue
+                  ? "Sends email to customer when invoice becomes overdue, then notifies project"
+                      + " owner after 7 days"
+                  : "Notifies admins when a project budget threshold is reached",
+              rule.getTriggerType(),
+              rule.getTriggerConfig(),
+              rule.getConditions());
+          var configs = v3Configs(slug);
+          var actions = actionRepository.findByRuleIdOrderBySortOrder(rule.getId());
+          assertThat(actions).hasSize(configs.size());
+          for (AutomationAction action : actions) {
+            action.update(
+                action.getActionType(),
+                new LinkedHashMap<>(configs.get(action.getSortOrder())),
+                action.getSortOrder(),
+                action.getDelayDuration(),
+                action.getDelayUnit());
+          }
+          rule.setContentHash(automationPackInstaller.computeRuleHash(rule));
+          if (firmEditsSubject) {
+            var email = actions.getFirst();
+            var edited = new LinkedHashMap<>(email.getActionConfig());
+            edited.put("subject", CUSTOM_SUBJECT);
+            email.update(
+                email.getActionType(),
+                edited,
+                email.getSortOrder(),
+                email.getDelayDuration(),
+                email.getDelayUnit());
+          }
+          ruleRepository.save(rule);
+          actionRepository.saveAll(actions);
+          var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+          settings.getPackStatus().recordAutomationPackApplication(PACK_ID, 3);
+          orgSettingsRepository.save(settings);
+          assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, "4", "3"))
+              .as("rewind %s 4 -> 3", PACK_ID)
+              .isEqualTo(1);
+          return null;
+        });
+  }
+
+  /**
+   * Puts the rule back to the shipped v4 action configs with a pristine hash, so sibling tests
+   * (which assert "no uninstall blocker") stay order-independent.
+   */
+  private void restoreShipped(String slug) {
+    inTenantTx(
+        () -> {
+          var rule = seededRule(slug);
+          for (AutomationAction action :
+              actionRepository.findByRuleIdOrderBySortOrder(rule.getId())) {
+            var config = new LinkedHashMap<>(action.getActionConfig());
+            if (config.containsKey("subject")) {
+              config.put("subject", "Fee note {{invoice.invoiceNumber}} is overdue");
+            }
+            action.update(
+                action.getActionType(),
+                config,
+                action.getSortOrder(),
+                action.getDelayDuration(),
+                action.getDelayUnit());
+            actionRepository.save(action);
+          }
+          rule.setContentHash(automationPackInstaller.computeRuleHash(rule));
+          ruleRepository.save(rule);
+          return null;
+        });
+  }
+
+  private AutomationRule seededRule(String slug) {
+    var rules =
+        ruleRepository.findPackSeededByTemplateSlug(PACK_ID, slug, RuleSource.TEMPLATE).stream()
+            .filter(r -> SYSTEM.equals(r.getCreatedBy()))
+            .toList();
+    assertThat(rules).hasSize(1);
+    return rules.getFirst();
+  }
+
+  private Map<String, Object> actionConfig(AutomationRule rule, int sortOrder) {
+    return actionRepository.findByRuleIdOrderBySortOrder(rule.getId()).stream()
+        .filter(a -> a.getSortOrder() == sortOrder)
+        .findFirst()
+        .orElseThrow()
+        .getActionConfig();
+  }
+
   /**
    * Rewrites the provisioned pack-seeded rule to its exact v2 shipped state with a matching
    * (pristine) content hash, then applies the firm edit. When {@code firmEditsTitle}, the action
@@ -367,8 +560,8 @@ class AutomationCommonReconcileIntegrationTest {
             var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
             settings.getPackStatus().recordAutomationPackApplication(PACK_ID, 2);
             orgSettingsRepository.save(settings);
-            assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, "3", "2"))
-                .as("rewind %s 3 -> 2", PACK_ID)
+            assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, "4", "2"))
+                .as("rewind %s 4 -> 2", PACK_ID)
                 .isEqualTo(1);
           }
           return v2Hash;

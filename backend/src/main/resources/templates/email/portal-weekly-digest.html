@@ -8,9 +8,9 @@
     <strong th:text="${lookbackDays != null ? lookbackDays + ' days' : '7 days'}">7 days</strong>.
   </p>
 
-  <!-- New invoices -->
+  <!-- New fee notes -->
   <div th:if="${hasInvoices}" style="margin: 0 0 20px 0;">
-    <h3 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #111827;" th:text="|Recent ${invoiceTermPluralLower}|">Recent invoices</h3>
+    <h3 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #111827;" th:text="|Recent ${invoiceTermPluralLower}|">Recent fee notes</h3>
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
       <tr th:each="inv : ${recentInvoices}">
         <td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; color: #374151;">

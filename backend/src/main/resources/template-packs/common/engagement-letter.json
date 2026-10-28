@@ -34,7 +34,7 @@
     {
       "type": "paragraph",
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Project:" },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter:" },
         { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "project.name" } }
       ]

@@ -1,6 +1,10 @@
 {
   "packId": "standard-clauses",
-  "version": 1,
+  "version": 2,
+  "reconcile": [
+    { "entity": "clause", "key": "payment-terms", "field": "body", "from": "sha256:0170da25c3026d2ad56e8b0382421544ac9e05452bd36df2c02ee6e74ef19eee", "to": "sha256:65b8a352ee287d507933b8efb5e900058d148e8c9b72be61201bfb124802896b" },
+    { "entity": "clause", "key": "fee-schedule", "field": "body", "from": "sha256:7a64a58656182414cf44b4fef26d451106fab3aa405c69e5f5d7deec0f6c80dc", "to": "sha256:2e860429a159f099aa70f4dce3687bb43958a818738c8f3d68789b4928b0c964" }
+  ],
   "name": "Standard Clauses",
   "description": "Standard legal and commercial clauses for professional services",
   "clauses": [
@@ -15,17 +19,17 @@
           {
             "type": "paragraph",
             "content": [
-              { "type": "text", "text": "All invoices issued by " },
+              { "type": "text", "text": "All fee notes issued by " },
               { "type": "variable", "attrs": { "key": "org.name" } },
               { "type": "text", "text": " to " },
               { "type": "variable", "attrs": { "key": "customer.name" } },
-              { "type": "text", "text": " are payable within thirty (30) days of the invoice date. Late payments shall incur interest at a rate of 2% per month on the outstanding balance." }
+              { "type": "text", "text": " are payable within thirty (30) days of the fee note date. Late payments shall incur interest at a rate of 2% per month on the outstanding balance." }
             ]
           },
           {
             "type": "paragraph",
             "content": [
-              { "type": "text", "text": "Payment shall be made by electronic funds transfer to the bank account details provided on the invoice, unless otherwise agreed in writing." }
+              { "type": "text", "text": "Payment shall be made by electronic funds transfer to the bank account details provided on the fee note, unless otherwise agreed in writing." }
             ]
           }
         ]
@@ -52,7 +56,7 @@
           {
             "type": "paragraph",
             "content": [
-              { "type": "text", "text": "Any disbursements or third-party costs incurred on behalf of the client will be invoiced at cost, plus a reasonable administration fee where applicable." }
+              { "type": "text", "text": "Any disbursements or third-party costs incurred on behalf of the client will be billed at cost, plus a reasonable administration fee where applicable." }
             ]
           }
         ]

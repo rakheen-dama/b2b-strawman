@@ -101,7 +101,7 @@ export function ReportParameterForm({ schema, onSubmit, isLoading }: ReportParam
                 <SelectContent>
                   {param.options?.map((opt) => (
                     <SelectItem key={opt} value={opt}>
-                      {opt}
+                      {param.optionLabels?.[opt] ?? opt}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -278,23 +278,14 @@ class AutomationTemplateSeederTest {
    */
   @Test
   void shippedCommonPack_reconcileBlockTakesV2RuleToTheV3Template() throws IOException {
-    AutomationTemplatePack pack;
-    try (InputStream in =
-        new ClassPathResource("automation-templates/common.json").getInputStream()) {
-      pack =
-          JsonMapper.builder()
-              .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-              .build()
-              .readValue(in, AutomationTemplatePack.class);
-    }
-    assertThat(pack.version()).isEqualTo(3);
+    AutomationTemplatePack pack = shippedCommonPack();
+    assertThat(pack.version()).isEqualTo(4);
     assertThat(pack.reconcile()).isNotEmpty();
     assertThat(pack.reconcile())
-        .allSatisfy(
-            e -> {
-              assertThat(e.entity()).isEqualTo("automation_rule");
-              assertThat(e.key()).isEqualTo(SLUG);
-            });
+        .allSatisfy(e -> assertThat(e.entity()).isEqualTo("automation_rule"));
+    // v2 -> v3 entries (625F); the v3 -> v4 entries (628C) target other slugs — see the guard
+    // below.
+    assertThat(pack.reconcile()).filteredOn(e -> SLUG.equals(e.key())).hasSize(5);
     var template =
         pack.templates().stream().filter(t -> SLUG.equals(t.slug())).findFirst().orElseThrow();
     var templateConfig = template.actions().getFirst().actionConfig();
@@ -324,6 +315,83 @@ class AutomationTemplateSeederTest {
         .noneMatch(m -> m.startsWith("Reconcile entry ignored"));
   }
 
+  /**
+   * Guard for the v3 -> v4 entries (628C, U21 terminology): pristine v3 {@code
+   * overdue-invoice-reminder} and {@code budget-alert-escalation} rules reach exactly the v4
+   * templates shipped in the same file (name, description and every action-config string), with no
+   * entry ignored — a later JSON edit without updating {@code to} fails here.
+   */
+  @Test
+  void shippedCommonPack_v4EntriesTakeV3RulesToTheV4Templates() throws IOException {
+    AutomationTemplatePack pack = shippedCommonPack();
+    var v4Entries = pack.reconcile().stream().filter(e -> V4_SLUGS.contains(e.key())).toList();
+    assertThat(v4Entries).hasSize(10);
+    assertThat(v4Entries).allSatisfy(e -> assertThat(e.to()).isNotEqualTo(e.from()));
+
+    var overdue =
+        v3Rule(
+            OVERDUE_SLUG,
+            "Overdue Invoice Reminder",
+            "Sends email to customer when invoice becomes overdue, then notifies project owner"
+                + " after 7 days",
+            List.of(
+                Map.of(
+                    "recipientType",
+                    "CUSTOMER_CONTACT",
+                    "subject",
+                    "Invoice {{invoice.invoiceNumber}} is overdue",
+                    "body",
+                    "Dear {{customer.name}},\n\nYour invoice {{invoice.invoiceNumber}} is now"
+                        + " overdue. Please arrange payment at your earliest convenience."),
+                Map.of(
+                    "recipientType",
+                    "PROJECT_OWNER",
+                    "title",
+                    "Invoice {{invoice.invoiceNumber}} still overdue",
+                    "message",
+                    "Invoice {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7"
+                        + " days.")));
+    var budget =
+        v3Rule(
+            BUDGET_SLUG,
+            "Budget Alert Escalation",
+            "Notifies admins when a project budget threshold is reached",
+            List.of(
+                Map.of(
+                    "recipientType",
+                    "ORG_ADMINS",
+                    "title",
+                    "Budget alert: {{project.name}}",
+                    "message",
+                    "Project {{project.name}} has reached its budget threshold.")));
+
+    var logs = captureSeederLogs(() -> seeder.reconcileInstalledPack(pack, null, "tenant_test"));
+
+    for (SeededRules seeded : List.of(overdue, budget)) {
+      var template =
+          pack.templates().stream()
+              .filter(t -> seeded.rule().getTemplateSlug().equals(t.slug()))
+              .findFirst()
+              .orElseThrow();
+      assertThat(seeded.rule().getName()).isEqualTo(template.name());
+      assertThat(seeded.rule().getDescription()).isEqualTo(template.description());
+      for (AutomationAction action : seeded.actions()) {
+        var shipped =
+            template.actions().stream()
+                .filter(a -> a.sortOrder() == action.getSortOrder())
+                .findFirst()
+                .orElseThrow();
+        assertThat(action.getActionConfig())
+            .as("%s actions[%d]", template.slug(), action.getSortOrder())
+            .isEqualTo(shipped.actionConfig());
+      }
+    }
+    assertThat(overdue.rule().getName()).isEqualTo("Overdue Fee Note Reminder");
+    assertThat(budget.rule().getName()).isEqualTo("Fee Estimate Alert Escalation");
+    assertThat(logs).noneMatch(m -> m.startsWith("Reconcile entry ignored"));
+    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile applied")).hasSize(10);
+  }
+
   @Test
   void reconcile_sameSlugRuleOfAnotherPack_isNeverResolved() {
     // The only same-slug rule is tagged with automation-common's install; a pack with a different
@@ -347,6 +415,73 @@ class AutomationTemplateSeederTest {
     assertThat(foreign.action().getActionConfig()).containsEntry("title", V2_TITLE);
     Mockito.verify(ruleRepository, Mockito.atLeastOnce())
         .findPackSeededByTemplateSlug("automation-legal-za", SLUG, RuleSource.TEMPLATE);
+  }
+
+  private record SeededRules(AutomationRule rule, List<AutomationAction> actions) {}
+
+  static final String OVERDUE_SLUG = "overdue-invoice-reminder";
+  static final String BUDGET_SLUG = "budget-alert-escalation";
+  static final List<String> V4_SLUGS = List.of(OVERDUE_SLUG, BUDGET_SLUG);
+
+  /** A pristine v3 rule (one action per config, sortOrder = list index), stubbed as pack-seeded. */
+  private SeededRules v3Rule(
+      String slug, String name, String description, List<Map<String, Object>> configs) {
+    var rule =
+        new AutomationRule(
+            name,
+            description,
+            TriggerType.INVOICE_STATUS_CHANGED,
+            Map.of(),
+            List.of(),
+            RuleSource.TEMPLATE,
+            slug,
+            SYSTEM);
+    TestIds.withId(rule, UUID.randomUUID());
+    rule.setSourcePackInstallId(UUID.randomUUID());
+    rule.setContentHash(PINNED_HASH);
+    var actions = new java.util.ArrayList<AutomationAction>();
+    for (int i = 0; i < configs.size(); i++) {
+      actions.add(
+          new AutomationAction(
+              rule.getId(),
+              i,
+              i == 0 && OVERDUE_SLUG.equals(slug)
+                  ? ActionType.SEND_EMAIL
+                  : ActionType.SEND_NOTIFICATION,
+              new LinkedHashMap<>(configs.get(i)),
+              null,
+              null));
+    }
+    when(ruleRepository.findPackSeededByTemplateSlug(
+            "automation-common", slug, RuleSource.TEMPLATE))
+        .thenReturn(List.of(rule));
+    when(actionRepository.findByRuleIdOrderBySortOrder(rule.getId())).thenReturn(actions);
+    return new SeededRules(rule, actions);
+  }
+
+  private static AutomationTemplatePack shippedCommonPack() throws IOException {
+    try (InputStream in =
+        new ClassPathResource("automation-templates/common.json").getInputStream()) {
+      return JsonMapper.builder()
+          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+          .build()
+          .readValue(in, AutomationTemplatePack.class);
+    }
+  }
+
+  private static List<String> captureSeederLogs(Runnable action) {
+    ListAppender<ILoggingEvent> appender = new ListAppender<>();
+    appender.start();
+    Logger logger = (Logger) LoggerFactory.getLogger(AutomationTemplateSeeder.class);
+    logger.addAppender(appender);
+    logger.setLevel(Level.INFO);
+    try {
+      action.run();
+    } finally {
+      logger.detachAppender(appender);
+      logger.setLevel(null);
+    }
+    return appender.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
   }
 
   private record SeededRule(AutomationRule rule, AutomationAction action) {}

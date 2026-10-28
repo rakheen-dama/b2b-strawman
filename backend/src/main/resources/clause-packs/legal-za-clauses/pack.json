@@ -1,6 +1,9 @@
 {
   "packId": "legal-za-clauses",
-  "version": 1,
+  "version": 2,
+  "reconcile": [
+    { "entity": "clause", "key": "legal-za-fees-hourly", "field": "body", "from": "sha256:61b9a93da416246b3d90e1cc3374cee6d9699a2f35205d1e392d75a1281fcbe2", "to": "sha256:8d5051abc196da18687746695c4000d5283974f692981e4615b68d6b7c910b87" }
+  ],
   "verticalProfile": "legal-za",
   "name": "SA Legal Clauses",
   "description": "Clauses for South African law firm engagement letters and legal documents",
@@ -53,7 +56,7 @@
           {
             "type": "paragraph",
             "content": [
-              { "type": "text", "text": "Invoices shall be rendered monthly or at the conclusion of the matter, whichever occurs first. Payment is due within thirty (30) days of the date of the invoice. Interest on overdue accounts shall accrue at the prescribed rate under the Prescribed Rate of Interest Act 55 of 1975." }
+              { "type": "text", "text": "Fee notes shall be rendered monthly or at the conclusion of the matter, whichever occurs first. Payment is due within thirty (30) days of the date of the fee note. Interest on overdue accounts shall accrue at the prescribed rate under the Prescribed Rate of Interest Act 55 of 1975." }
             ]
           }
         ]

@@ -1,6 +1,6 @@
 {
   "packId": "automation-common",
-  "version": 3,
+  "version": 4,
   "reconcile": [
     {
       "entity": "automation_rule",
@@ -36,6 +36,76 @@
       "field": "enabled",
       "from": true,
       "to": false
+    },
+    {
+      "entity": "automation_rule",
+      "key": "overdue-invoice-reminder",
+      "field": "name",
+      "from": "Overdue Invoice Reminder",
+      "to": "Overdue Fee Note Reminder"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "overdue-invoice-reminder",
+      "field": "description",
+      "from": "Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days",
+      "to": "Sends email to the client when a fee note becomes overdue, then notifies the matter lead after 7 days"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "overdue-invoice-reminder",
+      "field": "actions[0].actionConfig.subject",
+      "from": "Invoice {{invoice.invoiceNumber}} is overdue",
+      "to": "Fee note {{invoice.invoiceNumber}} is overdue"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "overdue-invoice-reminder",
+      "field": "actions[0].actionConfig.body",
+      "from": "Dear {{customer.name}},\n\nYour invoice {{invoice.invoiceNumber}} is now overdue. Please arrange payment at your earliest convenience.",
+      "to": "Dear {{customer.name}},\n\nYour fee note {{invoice.invoiceNumber}} is now overdue. Please arrange payment at your earliest convenience."
+    },
+    {
+      "entity": "automation_rule",
+      "key": "overdue-invoice-reminder",
+      "field": "actions[1].actionConfig.title",
+      "from": "Invoice {{invoice.invoiceNumber}} still overdue",
+      "to": "Fee note {{invoice.invoiceNumber}} still overdue"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "overdue-invoice-reminder",
+      "field": "actions[1].actionConfig.message",
+      "from": "Invoice {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7 days.",
+      "to": "Fee note {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7 days."
+    },
+    {
+      "entity": "automation_rule",
+      "key": "budget-alert-escalation",
+      "field": "name",
+      "from": "Budget Alert Escalation",
+      "to": "Fee Estimate Alert Escalation"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "budget-alert-escalation",
+      "field": "description",
+      "from": "Notifies admins when a project budget threshold is reached",
+      "to": "Notifies admins when a matter fee estimate threshold is reached"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "budget-alert-escalation",
+      "field": "actions[0].actionConfig.title",
+      "from": "Budget alert: {{project.name}}",
+      "to": "Fee estimate alert: {{project.name}}"
+    },
+    {
+      "entity": "automation_rule",
+      "key": "budget-alert-escalation",
+      "field": "actions[0].actionConfig.message",
+      "from": "Project {{project.name}} has reached its budget threshold.",
+      "to": "Matter {{project.name}} has reached its fee estimate threshold."
     }
   ],
   "templates": [
@@ -64,8 +134,8 @@
     },
     {
       "slug": "overdue-invoice-reminder",
-      "name": "Overdue Invoice Reminder",
-      "description": "Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days",
+      "name": "Overdue Fee Note Reminder",
+      "description": "Sends email to the client when a fee note becomes overdue, then notifies the matter lead after 7 days",
       "category": "notifications",
       "triggerType": "INVOICE_STATUS_CHANGED",
       "triggerConfig": { "toStatus": "OVERDUE" },
@@ -75,8 +145,8 @@
           "actionType": "SEND_EMAIL",
           "actionConfig": {
             "recipientType": "CUSTOMER_CONTACT",
-            "subject": "Invoice {{invoice.invoiceNumber}} is overdue",
-            "body": "Dear {{customer.name}},\n\nYour invoice {{invoice.invoiceNumber}} is now overdue. Please arrange payment at your earliest convenience."
+            "subject": "Fee note {{invoice.invoiceNumber}} is overdue",
+            "body": "Dear {{customer.name}},\n\nYour fee note {{invoice.invoiceNumber}} is now overdue. Please arrange payment at your earliest convenience."
           },
           "delayDuration": null,
           "delayUnit": null,
@@ -86,8 +156,8 @@
           "actionType": "SEND_NOTIFICATION",
           "actionConfig": {
             "recipientType": "PROJECT_OWNER",
-            "title": "Invoice {{invoice.invoiceNumber}} still overdue",
-            "message": "Invoice {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7 days."
+            "title": "Fee note {{invoice.invoiceNumber}} still overdue",
+            "message": "Fee note {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7 days."
           },
           "delayDuration": 7,
           "delayUnit": "DAYS",
@@ -97,8 +167,8 @@
     },
     {
       "slug": "budget-alert-escalation",
-      "name": "Budget Alert Escalation",
-      "description": "Notifies admins when a project budget threshold is reached",
+      "name": "Fee Estimate Alert Escalation",
+      "description": "Notifies admins when a matter fee estimate threshold is reached",
       "category": "monitoring",
       "triggerType": "BUDGET_THRESHOLD_REACHED",
       "triggerConfig": {},
@@ -108,8 +178,8 @@
           "actionType": "SEND_NOTIFICATION",
           "actionConfig": {
             "recipientType": "ORG_ADMINS",
-            "title": "Budget alert: {{project.name}}",
-            "message": "Project {{project.name}} has reached its budget threshold."
+            "title": "Fee estimate alert: {{project.name}}",
+            "message": "Matter {{project.name}} has reached its fee estimate threshold."
           },
           "delayDuration": null,
           "delayUnit": null,

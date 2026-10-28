@@ -4,9 +4,13 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -21,6 +25,12 @@ import tools.jackson.databind.ObjectMapper;
 public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
 
   private static final String PACK_LOCATION = "classpath:field-packs/*.json";
+
+  /** ADR-356 reconcile entity of a pack's field group (key = the group slug). */
+  static final String GROUP_ENTITY = "field_group";
+
+  /** ADR-356 reconcile entity of a pack's field definitions (key = the field slug). */
+  static final String DEFINITION_ENTITY = "field_definition";
 
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final FieldGroupRepository fieldGroupRepository;
@@ -162,5 +172,116 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
       var member = new FieldGroupMember(group.getId(), fd.getId(), field.sortOrder());
       fieldGroupMemberRepository.save(member);
     }
+  }
+
+  /**
+   * ADR-356 reconcile target (628C): {@value #GROUP_ENTITY} ({@code key} = the pack's group slug)
+   * or {@value #DEFINITION_ENTITY} ({@code key} = one of the pack's field slugs = {@code
+   * pack_field_key}), {@code field} {@code name} or {@code description}, string {@code to} equal to
+   * the value shipped in this pack. The target is the row of the pack's entity type with that slug
+   * AND this pack's {@code pack_id} (definitions also {@code pack_field_key}), so firm-created
+   * groups and fields ({@code pack_id} null) are never written; the one rule (current value =
+   * {@code from}) keeps firm renames. Unsupported entries are WARN-logged and skipped; nothing here
+   * throws at boot.
+   */
+  @Override
+  protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
+      FieldPackDefinition pack, PackReconcileEntry entry, Resource packResource) {
+    boolean nameField = "name".equals(entry.field());
+    if (!(nameField || "description".equals(entry.field())) || !(entry.to() instanceof String to)) {
+      return unsupported(pack, entry, "only name/description with a string 'to' are supported");
+    }
+    EntityType entityType = EntityType.valueOf(pack.entityType());
+    return switch (entry.entity()) {
+      case GROUP_ENTITY -> groupTarget(pack, entry, entityType, nameField, to);
+      case DEFINITION_ENTITY -> definitionTarget(pack, entry, entityType, nameField, to);
+      default -> unsupported(pack, entry, "unsupported entity");
+    };
+  }
+
+  private Optional<PackReconcileEntry.Target> groupTarget(
+      FieldPackDefinition pack,
+      PackReconcileEntry entry,
+      EntityType entityType,
+      boolean nameField,
+      String to) {
+    if (!entry.key().equals(pack.group().slug())) {
+      return unsupported(pack, entry, "key is not this pack's group slug");
+    }
+    String shipped = nameField ? pack.group().name() : pack.group().description();
+    if (!to.equals(shipped)) {
+      return unsupported(pack, entry, "'to' does not match the shipped value");
+    }
+    return fieldGroupRepository
+        .findByEntityTypeAndSlug(entityType, entry.key())
+        .filter(g -> pack.packId().equals(g.getPackId()))
+        .map(
+            g ->
+                nameField
+                    ? target(
+                        g::getName, v -> g.updateMetadata(v, g.getDescription(), g.getSortOrder()))
+                    : target(
+                        g::getDescription,
+                        v -> g.updateMetadata(g.getName(), v, g.getSortOrder())));
+  }
+
+  private Optional<PackReconcileEntry.Target> definitionTarget(
+      FieldPackDefinition pack,
+      PackReconcileEntry entry,
+      EntityType entityType,
+      boolean nameField,
+      String to) {
+    var shippedField = pack.fields().stream().filter(f -> entry.key().equals(f.slug())).findFirst();
+    if (shippedField.isEmpty()) {
+      return unsupported(pack, entry, "key is not a field slug of this pack");
+    }
+    String shipped = nameField ? shippedField.get().name() : shippedField.get().description();
+    if (!to.equals(shipped)) {
+      return unsupported(pack, entry, "'to' does not match the shipped value");
+    }
+    return fieldDefinitionRepository
+        .findByEntityTypeAndSlug(entityType, entry.key())
+        .filter(
+            fd -> pack.packId().equals(fd.getPackId()) && entry.key().equals(fd.getPackFieldKey()))
+        .map(
+            fd ->
+                nameField
+                    ? target(
+                        fd::getName,
+                        v ->
+                            fd.updateMetadata(
+                                v, fd.getDescription(), fd.isRequired(), fd.getValidation()))
+                    : target(
+                        fd::getDescription,
+                        v ->
+                            fd.updateMetadata(
+                                fd.getName(), v, fd.isRequired(), fd.getValidation())));
+  }
+
+  private Optional<PackReconcileEntry.Target> unsupported(
+      FieldPackDefinition pack, PackReconcileEntry entry, String reason) {
+    log.warn(
+        "Reconcile entry ignored: field pack {} entry '{}'.{} (key {}) — {}",
+        pack.packId(),
+        entry.entity(),
+        entry.field(),
+        entry.key(),
+        reason);
+    return Optional.empty();
+  }
+
+  private static PackReconcileEntry.Target target(
+      Supplier<String> current, Consumer<String> write) {
+    return new PackReconcileEntry.Target() {
+      @Override
+      public Object currentValue() {
+        return current.get();
+      }
+
+      @Override
+      public void apply(Object to) {
+        write.accept((String) to);
+      }
+    };
   }
 }

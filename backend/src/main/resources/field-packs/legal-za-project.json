@@ -1,12 +1,21 @@
 {
   "packId": "legal-za-project",
-  "version": 2,
+  "version": 3,
+  "reconcile": [
+    {
+      "entity": "field_group",
+      "key": "legal_za_matter",
+      "field": "description",
+      "from": "South African legal-specific fields for matter (project) entities",
+      "to": "South African legal-specific fields for matters"
+    }
+  ],
   "verticalProfile": "legal-za",
   "entityType": "PROJECT",
   "group": {
     "slug": "legal_za_matter",
     "name": "SA Legal — Matter Details",
-    "description": "South African legal-specific fields for matter (project) entities",
+    "description": "South African legal-specific fields for matters",
     "autoApply": true
   },
   "fields": [

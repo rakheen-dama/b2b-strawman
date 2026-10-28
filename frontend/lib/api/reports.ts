@@ -28,6 +28,8 @@ export interface ParameterDefinition {
   label: string;
   required?: boolean;
   options?: string[];
+  /** Display label per enum option value (the submitted value stays the option). */
+  optionLabels?: Record<string, string>;
   default?: string;
   entityType?: string;
 }

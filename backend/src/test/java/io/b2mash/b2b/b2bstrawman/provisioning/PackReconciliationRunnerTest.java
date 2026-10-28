@@ -147,19 +147,19 @@ class PackReconciliationRunnerTest {
 
   @Test
   void gateRunsAtLowerVersionAndRecordsClasspathVersion() {
-    rewind("common-project", "2", "1"); // FIELD
-    rewind("standard-reports", "1", "0"); // REPORT
+    rewind("common-project", "3", "2"); // FIELD
+    rewind("standard-reports", "2", "1"); // REPORT
     rewind("fica-onboarding-pack", "1", "0"); // REQUEST
-    rewind("automation-common", "3", "2"); // AUTOMATION_TEMPLATE (installer-managed)
+    rewind("automation-common", "4", "3"); // AUTOMATION_TEMPLATE (installer-managed)
 
     reconciliationRunner.reconcilePacksForTenant(gateSchema, GATE_ORG_ID);
 
     Map<String, String> after = gateVersions();
     assertThat(after)
-        .containsEntry("common-project", "2")
-        .containsEntry("standard-reports", "1")
+        .containsEntry("common-project", "3")
+        .containsEntry("standard-reports", "2")
         .containsEntry("fica-onboarding-pack", "1")
-        .containsEntry("automation-common", "3");
+        .containsEntry("automation-common", "4");
 
     // AutomationPackInstaller.reconcile returned true → PackInstallService re-recorded the pack
     // in the OrgSettings automation list at the classpath version.
@@ -179,19 +179,19 @@ class PackReconciliationRunnerTest {
                       .filteredOn(e -> "automation-common".equals(e.get("packId")))
                       .singleElement()
                       .satisfies(
-                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(3));
+                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(4));
                 }));
   }
 
   @Test
   void gateClosedOnNonNumericVersion() {
-    rewind("legal-za-clauses", "1", "v1-legacy");
+    rewind("legal-za-clauses", "2", "v1-legacy");
     try {
       assertThatCode(() -> reconciliationRunner.reconcilePacksForTenant(gateSchema, GATE_ORG_ID))
           .doesNotThrowAnyException();
       assertThat(gateVersions()).containsEntry("legal-za-clauses", "v1-legacy");
     } finally {
-      rewind("legal-za-clauses", "v1-legacy", "1");
+      rewind("legal-za-clauses", "v1-legacy", "2");
     }
   }
 

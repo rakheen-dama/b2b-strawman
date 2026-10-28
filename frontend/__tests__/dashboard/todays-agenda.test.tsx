@@ -434,6 +434,10 @@ describe("TodaysAgenda", () => {
     expect(
       within(upcoming).queryByText("Nothing in the diary for the next 14 days")
     ).not.toBeInTheDocument();
+    // A "mine" link would open every fee earner's diary when the member can't be resolved.
+    expect(
+      within(upcoming).queryByRole("link", { name: "Open diary list" })
+    ).not.toBeInTheDocument();
   });
 
   it("handles an empty diary without crashing", () => {

@@ -42,12 +42,15 @@ export function UpcomingDiaryList({ slug, today, events }: UpcomingDiaryListProp
         <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
           Upcoming · next {UPCOMING_DIARY_DAYS} days
         </p>
-        <Link
-          href={upcomingDiaryHref(slug, addDays(today, 1))}
-          className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-        >
-          Open diary list
-        </Link>
+        {/* The link filters to "mine"; with no resolved member the Diary would show everyone. */}
+        {events !== "unidentified" && (
+          <Link
+            href={upcomingDiaryHref(slug, addDays(today, 1))}
+            className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+          >
+            Open diary list
+          </Link>
+        )}
       </div>
       {events === "unidentified" ? (
         <p className="text-sm text-slate-400">{UPCOMING_UNIDENTIFIED_COPY}</p>

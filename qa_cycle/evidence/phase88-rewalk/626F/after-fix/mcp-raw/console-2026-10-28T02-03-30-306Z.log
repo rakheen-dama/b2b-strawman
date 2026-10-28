@@ -1,0 +1,1 @@
+[    8036ms] [WARNING] [tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues. @ http://localhost:3001/_next/static/chunks/0o-qdq722ee-n.js:0

@@ -1,0 +1,484 @@
+- generic [active] [ref=f30e1]:
+  - link "Skip to content" [ref=f30e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f30e3]:
+    - complementary [ref=f30e4]:
+      - generic [ref=f30e5]:
+        - img "E2E Test Organization logo" [ref=f30e6]
+        - generic [ref=f30e7]: Kazi
+      - generic [ref=f30e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f30e12]:
+        - text: Search...
+        - generic [ref=f30e16]: ⌘K
+      - navigation "Main navigation" [ref=f30e17]:
+        - generic [ref=f30e18]:
+          - button "Today" [expanded] [ref=f30e19]
+          - generic [ref=f30e23]:
+            - link "Home" [ref=f30e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f30e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f30e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f30e36]:
+          - button "Matters" [expanded] [ref=f30e37]
+          - generic [ref=f30e41]:
+            - link "Matters" [ref=f30e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f30e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f30e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f30e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f30e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f30e65]:
+          - button "Clients" [expanded] [ref=f30e66]
+          - generic [ref=f30e70]:
+            - link "Clients" [ref=f30e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f30e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f30e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f30e86]
+        - button "Trust" [ref=f30e92]
+        - button "Firm" [ref=f30e98]
+      - link "Platform Admin" [ref=f30e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f30e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+    - generic [ref=f30e113]:
+      - banner [ref=f30e114]:
+        - navigation "Breadcrumb" [ref=f30e115]:
+          - link "E2E Test Organization" [ref=f30e116] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Settings" [ref=f30e120] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings
+          - generic [ref=f30e121]: Documents
+        - generic [ref=f30e125]:
+          - button "…" [ref=f30e127]
+          - button "Notifications" [ref=f30e129]
+      - main [ref=f30e131]:
+        - generic [ref=f30e134]:
+          - complementary [ref=f30e135]:
+            - navigation "Settings navigation" [ref=f30e136]:
+              - list [ref=f30e137]:
+                - listitem [ref=f30e138]:
+                  - link "Firm" [ref=f30e139] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/firm
+                - listitem [ref=f30e144]:
+                  - link "Matters" [ref=f30e145] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/matters
+                - listitem [ref=f30e150]:
+                  - link "Documents" [ref=f30e151] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/documents
+                  - list [ref=f30e155]:
+                    - listitem [ref=f30e156]:
+                      - link "Templates" [ref=f30e157] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=templates
+                    - listitem [ref=f30e158]:
+                      - link "Clauses" [ref=f30e159] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=clauses
+                    - listitem [ref=f30e160]:
+                      - link "Acceptance" [ref=f30e161] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=acceptance
+                    - listitem [ref=f30e162]:
+                      - link "Email" [ref=f30e163] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=email
+                - listitem [ref=f30e164]:
+                  - link "Fees & Trust" [ref=f30e165] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/fees
+                - listitem [ref=f30e169]:
+                  - link "Connections" [ref=f30e170] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/connections
+          - generic [ref=f30e174]:
+            - tablist "Documents settings" [ref=f30e176]:
+              - tab "Templates" [selected] [ref=f30e177]
+              - tab "Clauses" [ref=f30e178]
+              - tab "Acceptance" [ref=f30e179]
+              - tab "Email" [ref=f30e180]
+            - tabpanel "Templates" [ref=f30e181]:
+              - generic [ref=f30e182]:
+                - generic [ref=f30e183]:
+                  - heading [level=1] [ref=f30e184]:
+                    - text: Templates
+                    - 'button "Help: Tiptap vs. Word templates" [ref=f30e185] [cursor=pointer]'
+                  - paragraph [ref=f30e189]: Manage document templates for engagement letters, statements of work, and more.
+                - generic [ref=f30e190]:
+                  - generic [ref=f30e191]:
+                    - generic [ref=f30e192]:
+                      - combobox [ref=f30e193]:
+                        - generic: All Formats
+                      - 'button "Help: Template packs" [ref=f30e194] [cursor=pointer]'
+                    - generic [ref=f30e198]:
+                      - button "Upload Word Template" [ref=f30e199]
+                      - link [ref=f30e200] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents/templates/new
+                        - button "New Template" [ref=f30e201]
+                  - generic [ref=f30e202]:
+                    - heading "CLOSURE" [level=2] [ref=f30e203]
+                    - table [ref=f30e206]:
+                      - rowgroup [ref=f30e207]:
+                        - row [ref=f30e208]:
+                          - columnheader "Name" [ref=f30e209]
+                          - columnheader "Format" [ref=f30e210]
+                          - columnheader "Entity Type" [ref=f30e211]
+                          - columnheader "Source" [ref=f30e212]
+                          - columnheader "Status" [ref=f30e213]
+                          - columnheader "Actions" [ref=f30e214]
+                      - rowgroup [ref=f30e215]:
+                        - row [ref=f30e216]:
+                          - cell [ref=f30e217]:
+                            - link "Matter Closure Letter" [ref=f30e218] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/30854651-553f-4eb1-88af-8a87e5706dd7/edit
+                            - paragraph [ref=f30e219]: Closure letter issued to the client at matter conclusion summarising fees, disbursements, and retention terms.
+                          - cell "Tiptap" [ref=f30e220]
+                          - cell "PROJECT" [ref=f30e222]
+                          - cell "Platform" [ref=f30e224]
+                          - cell "Active" [ref=f30e226]
+                          - cell [ref=f30e228]:
+                            - button [ref=f30e230]
+                  - generic [ref=f30e231]:
+                    - heading "COMPLIANCE" [level=2] [ref=f30e232]
+                    - table [ref=f30e235]:
+                      - rowgroup [ref=f30e236]:
+                        - row [ref=f30e237]:
+                          - columnheader "Name" [ref=f30e238]
+                          - columnheader "Format" [ref=f30e239]
+                          - columnheader "Entity Type" [ref=f30e240]
+                          - columnheader "Source" [ref=f30e241]
+                          - columnheader "Status" [ref=f30e242]
+                          - columnheader "Actions" [ref=f30e243]
+                      - rowgroup [ref=f30e244]:
+                        - row [ref=f30e245]:
+                          - cell [ref=f30e246]:
+                            - link "PAIA Section 51 Manual" [ref=f30e247] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/4a142d5f-84ab-4d1f-9d49-e6fe2b7bd680/edit
+                            - paragraph [ref=f30e248]: PAIA Section 51 manual required for South African private bodies
+                          - cell "Tiptap" [ref=f30e249]
+                          - cell "ORGANIZATION" [ref=f30e251]
+                          - cell "Platform" [ref=f30e253]
+                          - cell "Active" [ref=f30e255]
+                          - cell [ref=f30e257]:
+                            - button [ref=f30e259]
+                  - generic [ref=f30e260]:
+                    - heading "Cover Letter" [level=2] [ref=f30e261]
+                    - table [ref=f30e264]:
+                      - rowgroup [ref=f30e265]:
+                        - row [ref=f30e266]:
+                          - columnheader "Name" [ref=f30e267]
+                          - columnheader "Format" [ref=f30e268]
+                          - columnheader "Entity Type" [ref=f30e269]
+                          - columnheader "Source" [ref=f30e270]
+                          - columnheader "Status" [ref=f30e271]
+                          - columnheader "Actions" [ref=f30e272]
+                      - rowgroup [ref=f30e273]:
+                        - row [ref=f30e274]:
+                          - cell [ref=f30e275]:
+                            - link "Invoice Cover Letter" [ref=f30e276] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/ec410665-72e3-42bb-bb20-10c3a1a3d6ef/edit
+                            - paragraph [ref=f30e277]: Cover letter for invoices
+                          - cell "Tiptap" [ref=f30e278]
+                          - cell "INVOICE" [ref=f30e280]
+                          - cell "Platform" [ref=f30e282]
+                          - cell "Active" [ref=f30e284]
+                          - cell [ref=f30e286]:
+                            - button [ref=f30e288]
+                        - row [ref=f30e289]:
+                          - cell [ref=f30e290]:
+                            - link "Section 35 Cover Letter" [ref=f30e291] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/fc5db0c9-1f53-465c-9301-ebfbb6913392/edit
+                            - paragraph [ref=f30e292]: Cover letter for Section 35 trust account audit submission to the Legal Practice Council.
+                          - cell "Tiptap" [ref=f30e293]
+                          - cell "ORGANIZATION" [ref=f30e295]
+                          - cell "Platform" [ref=f30e297]
+                          - cell "Active" [ref=f30e299]
+                          - cell [ref=f30e301]:
+                            - button [ref=f30e303]
+                  - generic [ref=f30e304]:
+                    - heading "Engagement Letter" [level=2] [ref=f30e305]
+                    - table [ref=f30e308]:
+                      - rowgroup [ref=f30e309]:
+                        - row [ref=f30e310]:
+                          - columnheader "Name" [ref=f30e311]
+                          - columnheader "Format" [ref=f30e312]
+                          - columnheader "Entity Type" [ref=f30e313]
+                          - columnheader "Source" [ref=f30e314]
+                          - columnheader "Status" [ref=f30e315]
+                          - columnheader "Actions" [ref=f30e316]
+                      - rowgroup [ref=f30e317]:
+                        - row [ref=f30e318]:
+                          - cell [ref=f30e319]:
+                            - link "626B probe — letterhead keys" [ref=f30e320] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/6ce14be3-8750-45a5-a44b-d33295e832d1/edit
+                            - paragraph [ref=f30e321]: "Reproducer probe for slice 626B: letterhead org.* context keys. Leave in place for 626B observers."
+                          - cell "Tiptap" [ref=f30e322]
+                          - cell "PROJECT" [ref=f30e324]
+                          - cell "Custom" [ref=f30e326]
+                          - cell "Active" [ref=f30e328]
+                          - cell [ref=f30e330]:
+                            - button [ref=f30e332]
+                        - row [ref=f30e333]:
+                          - cell [ref=f30e334]:
+                            - link "Engagement Letter — Litigation" [ref=f30e335] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/bc89ee05-e496-43b0-ae7e-cecdde3df78b/edit
+                            - paragraph [ref=f30e336]: Standard litigation engagement letter covering scope, fees, and court procedures.
+                          - cell "Tiptap" [ref=f30e337]
+                          - cell "PROJECT" [ref=f30e339]
+                          - cell "Platform" [ref=f30e341]
+                          - cell "Active" [ref=f30e343]
+                          - cell [ref=f30e345]:
+                            - button [ref=f30e347]
+                        - row [ref=f30e348]:
+                          - cell [ref=f30e349]:
+                            - link "Engagement Letter — Litigation (Custom)" [ref=f30e350] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/80791878-6e4d-47fc-acbc-9ec04a2a1c54/edit
+                            - paragraph [ref=f30e351]: Standard litigation engagement letter covering scope, fees, and court procedures.
+                          - cell "Tiptap" [ref=f30e352]
+                          - cell "PROJECT" [ref=f30e354]
+                          - cell "Custom" [ref=f30e356]
+                          - cell "Active" [ref=f30e358]
+                          - cell [ref=f30e360]:
+                            - button [ref=f30e362]
+                        - row [ref=f30e363]:
+                          - cell [ref=f30e364]:
+                            - link "Standard Engagement Letter" [ref=f30e365] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/f304e6f1-f67d-46c3-94e0-85b87c9cdf69/edit
+                            - paragraph [ref=f30e366]: Client engagement letter template
+                          - cell "Tiptap" [ref=f30e367]
+                          - cell "PROJECT" [ref=f30e369]
+                          - cell "Platform" [ref=f30e371]
+                          - cell "Active" [ref=f30e373]
+                          - cell [ref=f30e375]:
+                            - button [ref=f30e377]
+                        - row [ref=f30e378]:
+                          - cell [ref=f30e379]:
+                            - link "Engagement Letter — Conveyancing" [ref=f30e380] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/4ee6eab3-0ac6-4930-b644-b1a67a5919f7/edit
+                            - paragraph [ref=f30e381]: Conveyancing engagement letter for property transfer matters.
+                          - cell "Tiptap" [ref=f30e382]
+                          - cell "PROJECT" [ref=f30e384]
+                          - cell "Platform" [ref=f30e386]
+                          - cell "Active" [ref=f30e388]
+                          - cell [ref=f30e390]:
+                            - button [ref=f30e392]
+                        - row [ref=f30e393]:
+                          - cell [ref=f30e394]:
+                            - link "Engagement Letter — General" [ref=f30e395] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/4aa035e5-dcd4-4c4e-9146-c2dcee848e8c/edit
+                            - paragraph [ref=f30e396]: General legal engagement letter for advisory and non-litigation matters.
+                          - cell "Tiptap" [ref=f30e397]
+                          - cell "PROJECT" [ref=f30e399]
+                          - cell "Platform" [ref=f30e401]
+                          - cell "Active" [ref=f30e403]
+                          - cell [ref=f30e405]:
+                            - button [ref=f30e407]
+                  - generic [ref=f30e408]:
+                    - heading "OTHER" [level=2] [ref=f30e409]
+                    - table [ref=f30e412]:
+                      - rowgroup [ref=f30e413]:
+                        - row [ref=f30e414]:
+                          - columnheader "Name" [ref=f30e415]
+                          - columnheader "Format" [ref=f30e416]
+                          - columnheader "Entity Type" [ref=f30e417]
+                          - columnheader "Source" [ref=f30e418]
+                          - columnheader "Status" [ref=f30e419]
+                          - columnheader "Actions" [ref=f30e420]
+                      - rowgroup [ref=f30e421]:
+                        - row [ref=f30e422]:
+                          - cell [ref=f30e423]:
+                            - link "Power of Attorney" [ref=f30e424] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/62102f39-d714-43ad-9de5-71852ed08d93/edit
+                            - paragraph [ref=f30e425]: Standard power of attorney template for authorising legal representation.
+                          - cell "Tiptap" [ref=f30e426]
+                          - cell "CUSTOMER" [ref=f30e428]
+                          - cell "Platform" [ref=f30e430]
+                          - cell "Active" [ref=f30e432]
+                          - cell [ref=f30e434]:
+                            - button [ref=f30e436]
+                        - row [ref=f30e437]:
+                          - cell [ref=f30e438]:
+                            - link "Notice of Motion" [ref=f30e439] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/3e376975-c3a3-466d-a22a-23784551dcd6/edit
+                            - paragraph [ref=f30e440]: Court filing template for notice of motion applications.
+                          - cell "Tiptap" [ref=f30e441]
+                          - cell "PROJECT" [ref=f30e443]
+                          - cell "Platform" [ref=f30e445]
+                          - cell "Active" [ref=f30e447]
+                          - cell [ref=f30e449]:
+                            - button [ref=f30e451]
+                        - row [ref=f30e452]:
+                          - cell [ref=f30e453]:
+                            - link "Founding Affidavit" [ref=f30e454] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/172d4dea-bc5f-44b8-a619-e243543c78ea/edit
+                            - paragraph [ref=f30e455]: Court filing template for founding affidavit in motion proceedings.
+                          - cell "Tiptap" [ref=f30e456]
+                          - cell "PROJECT" [ref=f30e458]
+                          - cell "Platform" [ref=f30e460]
+                          - cell "Active" [ref=f30e462]
+                          - cell [ref=f30e464]:
+                            - button [ref=f30e466]
+                        - row [ref=f30e467]:
+                          - cell [ref=f30e468]:
+                            - link "Letter of Demand" [ref=f30e469] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/fa103980-aae2-44ce-9a99-c08c0b719532/edit
+                            - paragraph [ref=f30e470]: Demand letter for collections and debt recovery matters.
+                          - cell "Tiptap" [ref=f30e471]
+                          - cell "CUSTOMER" [ref=f30e473]
+                          - cell "Platform" [ref=f30e475]
+                          - cell "Active" [ref=f30e477]
+                          - cell [ref=f30e479]:
+                            - button [ref=f30e481]
+                        - row [ref=f30e482]:
+                          - cell [ref=f30e483]:
+                            - link "Trust Receipt" [ref=f30e484] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/5a723620-4ea5-43af-ad61-d7d3240ea684/edit
+                            - paragraph [ref=f30e485]: Receipt for funds received into the trust account on behalf of a client.
+                          - cell "Tiptap" [ref=f30e486]
+                          - cell "CUSTOMER" [ref=f30e488]
+                          - cell "Platform" [ref=f30e490]
+                          - cell "Active" [ref=f30e492]
+                          - cell [ref=f30e494]:
+                            - button [ref=f30e496]
+                        - row [ref=f30e497]:
+                          - cell [ref=f30e498]:
+                            - link "Offer to Purchase" [ref=f30e499] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/880f4fd6-649c-416a-89ca-b9b9875cd4ed/edit
+                            - paragraph [ref=f30e500]: Offer to purchase for a conveyancing property transfer, covering parties, property, purchase price, occupation, and standard SA sale conditions (voetstoots, suspensive bond, transfer duty, FICA, rates clearance).
+                          - cell "Tiptap" [ref=f30e501]
+                          - cell "PROJECT" [ref=f30e503]
+                          - cell "Platform" [ref=f30e505]
+                          - cell "Active" [ref=f30e507]
+                          - cell [ref=f30e509]:
+                            - button [ref=f30e511]
+                        - row [ref=f30e512]:
+                          - cell [ref=f30e513]:
+                            - link "Deed of Transfer" [ref=f30e514] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/c47c8399-ba10-4f3f-8ca4-7c44a51ff8c1/edit
+                            - paragraph [ref=f30e515]: Deed of transfer instrument lodged at the Deeds Office recording transfer of immovable property from transferor to transferee.
+                          - cell "Tiptap" [ref=f30e516]
+                          - cell "PROJECT" [ref=f30e518]
+                          - cell "Platform" [ref=f30e520]
+                          - cell "Active" [ref=f30e522]
+                          - cell [ref=f30e524]:
+                            - button [ref=f30e526]
+                        - row [ref=f30e527]:
+                          - cell [ref=f30e528]:
+                            - link "Power of Attorney to Pass Transfer" [ref=f30e529] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/71d50aaf-b928-4296-be84-5545f944dfc6/edit
+                            - paragraph [ref=f30e530]: Power of attorney authorising the conveyancer to appear before the Registrar of Deeds and pass transfer on behalf of the transferor.
+                          - cell "Tiptap" [ref=f30e531]
+                          - cell "PROJECT" [ref=f30e533]
+                          - cell "Platform" [ref=f30e535]
+                          - cell "Active" [ref=f30e537]
+                          - cell [ref=f30e539]:
+                            - button [ref=f30e541]
+                        - row [ref=f30e542]:
+                          - cell [ref=f30e543]:
+                            - link "Bond Cancellation Instruction" [ref=f30e544] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/629a7ecc-763c-4c82-b426-0d1dd98e207b/edit
+                            - paragraph [ref=f30e545]: Instruction letter to the bond institution to cancel the mortgage bond and furnish the title deed and Form J consent.
+                          - cell "Tiptap" [ref=f30e546]
+                          - cell "PROJECT" [ref=f30e548]
+                          - cell "Platform" [ref=f30e550]
+                          - cell "Active" [ref=f30e552]
+                          - cell [ref=f30e554]:
+                            - button [ref=f30e556]
+                        - row [ref=f30e557]:
+                          - cell [ref=f30e558]:
+                            - link "Fee Note" [ref=f30e559] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/c543e678-a7e0-4db8-963d-4b9c18d31e1f/edit
+                            - paragraph [ref=f30e560]: Client-facing fee note with itemised fees and disbursements, VAT breakdown, matter reference, and totals.
+                          - cell "Tiptap" [ref=f30e561]
+                          - cell "INVOICE" [ref=f30e563]
+                          - cell "Platform" [ref=f30e565]
+                          - cell "Active" [ref=f30e567]
+                          - cell [ref=f30e569]:
+                            - button [ref=f30e571]
+                  - generic [ref=f30e572]:
+                    - heading "Project Summary" [level=2] [ref=f30e573]
+                    - table [ref=f30e576]:
+                      - rowgroup [ref=f30e577]:
+                        - row [ref=f30e578]:
+                          - columnheader "Name" [ref=f30e579]
+                          - columnheader "Format" [ref=f30e580]
+                          - columnheader "Entity Type" [ref=f30e581]
+                          - columnheader "Source" [ref=f30e582]
+                          - columnheader "Status" [ref=f30e583]
+                          - columnheader "Actions" [ref=f30e584]
+                      - rowgroup [ref=f30e585]:
+                        - row [ref=f30e586]:
+                          - cell [ref=f30e587]:
+                            - link "Project Summary Report" [ref=f30e588] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/f2056da3-adad-4a5d-b979-49900b493eb9/edit
+                            - paragraph [ref=f30e589]: Project summary report template
+                          - cell "Tiptap" [ref=f30e590]
+                          - cell "PROJECT" [ref=f30e592]
+                          - cell "Platform" [ref=f30e594]
+                          - cell "Active" [ref=f30e596]
+                          - cell [ref=f30e598]:
+                            - button [ref=f30e600]
+                  - generic [ref=f30e601]:
+                    - heading "REPORT" [level=2] [ref=f30e602]
+                    - table [ref=f30e605]:
+                      - rowgroup [ref=f30e606]:
+                        - row [ref=f30e607]:
+                          - columnheader "Name" [ref=f30e608]
+                          - columnheader "Format" [ref=f30e609]
+                          - columnheader "Entity Type" [ref=f30e610]
+                          - columnheader "Source" [ref=f30e611]
+                          - columnheader "Status" [ref=f30e612]
+                          - columnheader "Actions" [ref=f30e613]
+                      - rowgroup [ref=f30e614]:
+                        - row [ref=f30e615]:
+                          - cell [ref=f30e616]:
+                            - link "Client Trust Statement" [ref=f30e617] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/5bbefa2c-d982-4577-87d3-cbbb694283a8/edit
+                            - paragraph [ref=f30e618]: Statement of trust account transactions and balances for a specific client.
+                          - cell "Tiptap" [ref=f30e619]
+                          - cell "CUSTOMER" [ref=f30e621]
+                          - cell "Platform" [ref=f30e623]
+                          - cell "Active" [ref=f30e625]
+                          - cell [ref=f30e627]:
+                            - button [ref=f30e629]
+                        - row [ref=f30e630]:
+                          - cell [ref=f30e631]:
+                            - link "Statement of Account" [ref=f30e632] [cursor=pointer]:
+                              - /url: /org/e2e-test-org/settings/documents/templates/e30f171e-2468-4ee6-b1ff-1b52af046bcc/edit
+                            - paragraph [ref=f30e633]: Statement of account summarising fees, disbursements, trust activity, and balance for a matter period.
+                          - cell "Tiptap" [ref=f30e634]
+                          - cell "PROJECT" [ref=f30e636]
+                          - cell "Platform" [ref=f30e638]
+                          - cell "Active" [ref=f30e640]
+                          - cell [ref=f30e642]:
+                            - button [ref=f30e644]
+                  - generic [ref=f30e645]:
+                    - heading "Branding" [level=2] [ref=f30e653]
+                    - paragraph [ref=f30e654]: Customize your organization's branding for generated documents.
+                    - generic [ref=f30e655]:
+                      - generic [ref=f30e656]: Logo
+                      - generic [ref=f30e657]:
+                        - generic [ref=f30e658]:
+                          - img "Organization logo" [ref=f30e659]
+                          - button [ref=f30e660]
+                        - generic [ref=f30e664]:
+                          - button "Upload Logo" [ref=f30e665]
+                          - paragraph [ref=f30e666]: PNG, JPG, or SVG. Max 2 MB.
+                    - generic [ref=f30e667]:
+                      - generic [ref=f30e668]: Brand Color
+                      - generic [ref=f30e669]:
+                        - textbox [ref=f30e670] [cursor=pointer]: "#1b3a4b"
+                        - textbox "Brand Color" [ref=f30e671]:
+                          - /placeholder: "#000000"
+                          - text: "#1b3a4b"
+                    - generic [ref=f30e672]:
+                      - generic [ref=f30e673]: Document Footer Text
+                      - textbox "Document Footer Text" [ref=f30e674]:
+                        - /placeholder: Text that appears at the bottom of generated documents...
+                        - text: Test Footer 1793137061590
+                      - paragraph [ref=f30e675]: 25/500 characters
+                    - button "Save Branding" [ref=f30e677]
+  - region "Notifications alt+T"
+  - alert [ref=f30e678]

@@ -1,0 +1,607 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/settings
+              - text: Settings
+          - generic: Documents
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 11 unread notifications
+              - generic [aria-hidden]: "11"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - complementary:
+                - navigation:
+                  - list:
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/firm
+                        - text: Firm
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/matters
+                        - text: Matters
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/documents
+                        - text: Documents
+                      - list:
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/documents?tab=templates
+                            - text: Templates
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/documents?tab=clauses
+                            - text: Clauses
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/documents?tab=acceptance
+                            - text: Acceptance
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/documents?tab=email
+                            - text: Email
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/fees
+                        - text: Fees & Trust
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/connections
+                        - text: Connections
+              - generic:
+                - generic:
+                  - generic:
+                    - tablist:
+                      - tab: Templates
+                      - tab [selected]: Clauses
+                      - tab: Acceptance
+                      - tab: Email
+                  - tabpanel:
+                    - generic:
+                      - generic:
+                        - heading [level=1]: Clause Library
+                        - paragraph: Manage reusable clauses for document generation. System clauses can be cloned and customized.
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - textbox:
+                                - /placeholder: Search clauses...
+                            - combobox:
+                              - generic: All Categories
+                          - button: New Clause
+                        - generic:
+                          - button:
+                            - heading [level=2]: Commercial
+                            - generic: "2"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Payment Terms
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Standard 30-day payment terms
+                                - generic:
+                                  - button [expanded]
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Fee Schedule
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Professional fees and billing arrangements
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: Compliance
+                            - generic: "1"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Document Retention
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Records retention and disposal policy
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: Engagement
+                            - generic: "3"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Engagement Acceptance
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Client acceptance of engagement terms
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Scope of Work
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Description of services to be provided
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Client Responsibilities
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Obligations and duties of the client
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: Legal
+                            - generic: "6"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Limitation of Liability
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Caps and exclusions on liability
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Professional Indemnity
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Professional indemnity insurance disclosure
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Confidentiality
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Mutual confidentiality obligations
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Termination
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Terms for ending the engagement
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Force Majeure
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Provisions for events beyond control
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Dispute Resolution
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Process for resolving disagreements
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: compliance
+                            - generic: "6"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: FICA Compliance
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Both parties to provide FICA documentation per Financial Intelligence Centre Act 38 of 2001
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Body Corporate Clearance
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Seller to obtain levy clearance certificate from the body corporate per Sectional Titles Schemes Management Act 8 of 2011
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: FICA Consent
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Client consent for FICA/KYC verification under FIC Act
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Municipal Rates Clearance
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: "Seller to obtain municipal rates clearance certificate per Local Government: Municipal Systems Act 32 of 2000 section 118"
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Data Protection (POPIA)
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Data protection and POPIA compliance provisions
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Conflict of Interest Waiver
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Conflict of interest disclosure and waiver provisions
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: conveyancing
+                            - generic: "4"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Voetstoots (As Is)
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Seller sells in current condition; buyer accepts latent defects subject to CPA consumer-buyer carve-outs
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Occupation Date & Occupational Rent
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Date buyer takes occupation; occupational rent per month if occupation does not coincide with registration date
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Suspensive Condition -- Bond Approval
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Sale subject to buyer obtaining mortgage bond approval within N business days; failure voids the sale
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Sectional Title Levies
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Monthly levies apportioned pro-rata to occupation date; special levies allocated to seller if raised pre-transfer
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: engagement
+                            - generic: "1"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Scope of Mandate
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Defines the scope and limits of the attorney's mandate
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: fees
+                            - generic: "4"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Fees — Hourly Basis
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Hourly fee structure for legal services
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Fees — Tariff Basis
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Tariff-based fee structure per LSSA guidelines
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Fees — Contingency
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Contingency fee arrangement per Contingency Fees Act
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Transfer Duty Liability
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Purchaser liable for transfer duty per Transfer Duty Act 40 of 1949 unless the transaction is subject to VAT
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: general
+                            - generic: "4"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Jurisdiction & Domicilium
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Jurisdiction and domicilium citandi et executandi provisions
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Termination of Mandate
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Provisions for termination of the attorney-client relationship
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Breach & Cost of Cancellation
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Breach remedies; defaulting party liable for cancellation costs, agent commission, and reinstatement charges
+                                - generic:
+                                  - button
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: SA Law & Jurisdiction
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Agreement governed by South African law; parties submit to jurisdiction of Magistrate's Court per section 45 of the Magistrates' Courts Act 32 of 1944
+                                - generic:
+                                  - button
+                        - generic:
+                          - button:
+                            - heading [level=2]: trust
+                            - generic: "1"
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - button
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Trust Account Deposits
+                                      - generic: System
+                                      - generic: Active
+                                    - paragraph: Trust account deposit requirements per Section 86 of the Attorneys Act
+                                - generic:
+                                  - button
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - menu "Clause actions" [active] [ref=f34e715]:
+    - menuitem "View" [ref=f34e716]
+    - menuitem "Clone & Customize" [ref=f34e717]

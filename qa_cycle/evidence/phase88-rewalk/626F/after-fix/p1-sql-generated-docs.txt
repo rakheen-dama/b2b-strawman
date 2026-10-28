@@ -1,0 +1,9 @@
+SET
+                  id                  |             document_id              |                            file_name                            |         generated_at          
+--------------------------------------+--------------------------------------+-----------------------------------------------------------------+-------------------------------
+ 69495796-f631-42eb-91a5-fae049a2242f | cddad203-412c-42a9-9475-e4e14b155adf | statement-of-account-626e-draft-fee-note-repro-2026-10-28.pdf   | 2026-10-28 01:13:17.241616+00
+ b91daaa4-f5d0-4343-bfb7-7a32dbb2cf49 |                                      | project-summary-report-626e-draft-fee-note-repro-2026-10-28.pdf | 2026-10-28 01:15:00.299828+00
+ 0240c404-6343-4911-9f40-0b30a4d3d7be | e11fd0e5-1c02-4196-9eca-d84f70a71e10 | statement-of-account-626e-draft-fee-note-repro-2026-10-28.pdf   | 2026-10-28 01:41:18.202156+00
+ 4bc8598a-ac49-43f3-8cfb-0ca8a2fd8825 | e0783d6d-c2a1-4970-95de-95a9c1a95404 | statement-of-account-626e-draft-fee-note-repro-2026-10-28.pdf   | 2026-10-28 01:58:32.898555+00
+(4 rows)
+

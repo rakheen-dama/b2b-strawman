@@ -1,0 +1,148 @@
+- generic [active] [ref=f18e1]:
+  - link "Skip to content" [ref=f18e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f18e3]:
+    - complementary [ref=f18e4]:
+      - generic [ref=f18e5]:
+        - img "E2E Test Organization logo" [ref=f18e6]
+        - generic [ref=f18e7]: Kazi
+      - generic [ref=f18e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f18e12]:
+        - text: Search...
+        - generic [ref=f18e16]: ⌘K
+      - navigation "Main navigation" [ref=f18e17]:
+        - generic [ref=f18e18]:
+          - button "Today" [expanded] [ref=f18e19]
+          - generic [ref=f18e23]:
+            - link "Home" [ref=f18e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f18e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f18e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f18e36]:
+          - button "Matters" [expanded] [ref=f18e37]
+          - generic [ref=f18e41]:
+            - link "Matters" [ref=f18e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f18e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f18e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f18e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f18e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f18e65]:
+          - button "Clients" [expanded] [ref=f18e66]
+          - generic [ref=f18e70]:
+            - link "Clients" [ref=f18e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f18e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f18e81] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f18e87]
+        - button "Trust" [ref=f18e93]
+        - button "Firm" [ref=f18e99]
+      - link "Platform Admin" [ref=f18e105] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f18e110] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f18e115]:
+        - generic [ref=f18e116]: AO
+        - generic [ref=f18e117]:
+          - paragraph [ref=f18e118]: Alice Owner
+          - paragraph [ref=f18e119]: alice@e2e-test.local
+    - generic [ref=f18e120]:
+      - banner [ref=f18e121]:
+        - navigation "Breadcrumb" [ref=f18e122]:
+          - link "E2E Test Organization" [ref=f18e123] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Clients" [ref=f18e127] [cursor=pointer]:
+            - /url: /org/e2e-test-org/clients
+          - generic [ref=f18e128]: Client
+        - generic [ref=f18e132]:
+          - generic [ref=f18e133]: e2e-test-org
+          - button "AO" [ref=f18e136]
+          - button "Notifications" [ref=f18e138]:
+            - generic [ref=f18e139]: 10 unread notifications
+            - generic [aria-hidden] [ref=f18e140]: "10"
+      - main [ref=f18e141]:
+        - generic [ref=f18e144]:
+          - link "Back to Clients" [ref=f18e146] [cursor=pointer]:
+            - /url: /org/e2e-test-org/clients
+          - generic [ref=f18e151]:
+            - generic [ref=f18e152]:
+              - heading "Sipho Ndlovu mvr15e76ef9a" [level=1] [ref=f18e153]
+              - generic [ref=f18e154]:
+                - generic [ref=f18e155]: Active
+                - generic [ref=f18e156]: Onboarding
+              - paragraph [ref=f18e158]: sipho.ndlovu.mvr15e76ef9a@example.com
+              - paragraph [ref=f18e159]: Since 27 Oct 2026 · 4 engagements
+            - generic [ref=f18e160]:
+              - button "Activate Customer" [ref=f18e161]
+              - button "More actions" [ref=f18e162]
+          - generic [ref=f18e164]:
+            - tablist [ref=f18e165]:
+              - tab "Details" [ref=f18e166] [cursor=pointer]
+              - tab "Overview" [selected] [ref=f18e169] [cursor=pointer]
+              - tab "Matters" [ref=f18e171] [cursor=pointer]
+              - tab "Fees" [ref=f18e174] [cursor=pointer]
+              - tab "FICA & compliance" [ref=f18e177] [cursor=pointer]
+              - tab "Activity" [ref=f18e180] [cursor=pointer]
+            - tabpanel [ref=f18e181]:
+              - generic [ref=f18e182]:
+                - generic [ref=f18e183]:
+                  - generic [ref=f18e185]:
+                    - generic [ref=f18e186]: Client Readiness
+                    - button "Collapse setup steps" [ref=f18e187]
+                  - generic [ref=f18e188]:
+                    - generic [ref=f18e189]:
+                      - generic [ref=f18e190]:
+                        - generic [ref=f18e191]: Progress
+                        - generic [ref=f18e192]: 67%
+                      - progressbar [ref=f18e193]
+                    - list [ref=f18e195]:
+                      - listitem [ref=f18e196]:
+                        - generic [ref=f18e200]: Projects linked
+                        - link "View" [ref=f18e201] [cursor=pointer]:
+                          - /url: "?tab=matters"
+                      - listitem [ref=f18e202]:
+                        - generic [ref=f18e205]: Onboarding checklist (0/8)
+                        - link "Set up" [ref=f18e206] [cursor=pointer]:
+                          - /url: "?tab=onboarding"
+                      - listitem [ref=f18e207]:
+                        - generic [ref=f18e211]: No required fields defined
+                        - link "View" [ref=f18e212] [cursor=pointer]:
+                          - /url: "#custom-fields"
+                - generic [ref=f18e213]:
+                  - generic [ref=f18e214]: Document Templates
+                  - list [ref=f18e217]:
+                    - listitem [ref=f18e218]:
+                      - generic [ref=f18e219]: Power of Attorney
+                      - link "Generate" [ref=f18e224] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?generateTemplate=62102f39-d714-43ad-9de5-71852ed08d93
+                    - listitem [ref=f18e225]:
+                      - generic [ref=f18e226]: Letter of Demand
+                      - link "Generate" [ref=f18e231] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?generateTemplate=fa103980-aae2-44ce-9a99-c08c0b719532
+                    - listitem [ref=f18e232]:
+                      - generic [ref=f18e233]: Client Trust Statement
+                      - link "Generate" [ref=f18e238] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?generateTemplate=5bbefa2c-d982-4577-87d3-cbbb694283a8
+                    - listitem [ref=f18e239]:
+                      - generic [ref=f18e240]: Trust Receipt
+                      - link "Generate" [ref=f18e245] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?generateTemplate=5a723620-4ea5-43af-ad61-d7d3240ea684
+                - generic [ref=f18e246]:
+                  - generic [ref=f18e248]:
+                    - generic [ref=f18e252]: FICA Verification
+                    - generic [ref=f18e253]: AI
+                  - generic [ref=f18e255]:
+                    - button "Verify with AI" [disabled]
+  - generic [ref=f18e256]:
+    - heading "Command Palette" [level=2] [ref=f18e257]
+    - paragraph [ref=f18e258]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f18e259]

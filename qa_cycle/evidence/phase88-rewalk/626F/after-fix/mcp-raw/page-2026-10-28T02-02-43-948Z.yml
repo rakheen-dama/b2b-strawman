@@ -1,0 +1,183 @@
+- generic [active] [ref=f31e1]:
+  - link "Skip to content" [ref=f31e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f31e3]:
+    - complementary [ref=f31e4]:
+      - generic [ref=f31e5]:
+        - img "E2E Test Organization logo" [ref=f31e6]
+        - generic [ref=f31e7]: Kazi
+      - generic [ref=f31e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f31e12]:
+        - text: Search...
+        - generic [ref=f31e16]: ⌘K
+      - navigation "Main navigation" [ref=f31e17]:
+        - generic [ref=f31e18]:
+          - button "Today" [expanded] [ref=f31e19]
+          - generic [ref=f31e23]:
+            - link "Home" [ref=f31e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f31e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f31e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f31e36]:
+          - button "Matters" [expanded] [ref=f31e37]
+          - generic [ref=f31e41]:
+            - link "Matters" [ref=f31e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f31e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f31e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f31e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f31e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f31e65]:
+          - button "Clients" [expanded] [ref=f31e66]
+          - generic [ref=f31e70]:
+            - link "Clients" [ref=f31e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f31e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f31e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f31e86]
+        - button "Trust" [ref=f31e92]
+        - button "Firm" [ref=f31e98]
+      - link "Platform Admin" [ref=f31e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f31e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f31e114]:
+        - generic [ref=f31e115]: AO
+        - generic [ref=f31e116]:
+          - paragraph [ref=f31e117]: Alice Owner
+          - paragraph [ref=f31e118]: alice@e2e-test.local
+    - generic [ref=f31e119]:
+      - banner [ref=f31e120]:
+        - navigation "Breadcrumb" [ref=f31e121]:
+          - link "E2E Test Organization" [ref=f31e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Settings" [ref=f31e126] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings
+          - link "Documents" [ref=f31e130] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings/documents
+          - generic [ref=f31e131]: Templates
+          - generic [ref=f31e135]: 30854651-553f-4eb1-88af-8a87e5706dd7
+          - generic [ref=f31e139]: edit
+        - generic [ref=f31e143]:
+          - generic [ref=f31e144]: e2e-test-org
+          - button "AO" [ref=f31e147]
+          - button "Notifications" [ref=f31e149]:
+            - generic [ref=f31e150]: 11 unread notifications
+            - generic [aria-hidden] [ref=f31e364]: "11"
+      - main [ref=f31e151]:
+        - generic [ref=f31e154]:
+          - complementary [ref=f31e155]:
+            - navigation "Settings navigation" [ref=f31e156]:
+              - list [ref=f31e157]:
+                - listitem [ref=f31e158]:
+                  - link "Firm" [ref=f31e159] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/firm
+                - listitem [ref=f31e164]:
+                  - link "Matters" [ref=f31e165] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/matters
+                - listitem [ref=f31e170]:
+                  - link "Documents" [ref=f31e171] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/documents
+                  - list [ref=f31e175]:
+                    - listitem [ref=f31e176]:
+                      - link "Templates" [ref=f31e177] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=templates
+                    - listitem [ref=f31e178]:
+                      - link "Clauses" [ref=f31e179] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=clauses
+                    - listitem [ref=f31e180]:
+                      - link "Acceptance" [ref=f31e181] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=acceptance
+                    - listitem [ref=f31e182]:
+                      - link "Email" [ref=f31e183] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=email
+                - listitem [ref=f31e184]:
+                  - link "Fees & Trust" [ref=f31e185] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/fees
+                - listitem [ref=f31e189]:
+                  - link "Connections" [ref=f31e190] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/connections
+          - generic [ref=f31e194]:
+            - generic [ref=f31e195]:
+              - generic [ref=f31e196]:
+                - link "Templates" [ref=f31e197] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/documents?tab=templates
+                - heading [level=1] [ref=f31e200]:
+                  - text: Matter Closure Letter
+                  - 'button "Help: Template variables" [ref=f31e201] [cursor=pointer]'
+              - generic [ref=f31e205]:
+                - button "Preview" [ref=f31e206]
+                - button "Preview with data" [ref=f31e207]
+            - button "Settings" [ref=f31e209]
+            - generic [ref=f31e365]:
+              - generic [ref=f31e366]: 12 variables have no value for the selected entity
+              - button "Dismiss" [ref=f31e370]
+            - textbox [ref=f31e216]:
+              - paragraph [ref=f31e217]:
+                - generic "This variable has no value for the selected entity" [ref=f31e371]: "{org.logoUrl}"
+              - heading [level=1] [ref=f31e220]:
+                - generic "This variable has no value for the selected entity" [ref=f31e374]: "{org.name}"
+              - heading "Matter Closure Letter" [level=2] [ref=f31e223]
+              - separator [ref=f31e224]
+              - paragraph [ref=f31e225]:
+                - strong [ref=f31e226]: "Date:"
+                - generic "This variable has no value for the selected entity" [ref=f31e377]: "{closure.date}"
+              - paragraph [ref=f31e229]:
+                - strong [ref=f31e230]: "Client:"
+                - generic "This variable has no value for the selected entity" [ref=f31e380]: "{customer.name}"
+              - paragraph [ref=f31e233]:
+                - strong [ref=f31e234]: "Matter:"
+                - generic [ref=f31e235]: "{project.name}"
+              - separator [ref=f31e237]
+              - paragraph [ref=f31e238]: "We confirm that this matter has been concluded on the following basis:"
+              - paragraph [ref=f31e239]:
+                - strong [ref=f31e240]: "Reason for closure:"
+                - generic "This variable has no value for the selected entity" [ref=f31e383]: "{closure.reason_label}"
+              - paragraph [ref=f31e243]:
+                - generic "This variable has no value for the selected entity" [ref=f31e386]: "{closure.notes}"
+              - separator [ref=f31e246]
+              - heading "Summary of Account" [level=3] [ref=f31e247]
+              - paragraph [ref=f31e248]:
+                - strong [ref=f31e249]: "Total fees billed:"
+                - generic "This variable has no value for the selected entity" [ref=f31e389]: "{matter.total_fees_billed}"
+              - paragraph [ref=f31e252]:
+                - strong [ref=f31e253]: "VAT:"
+                - generic "This variable has no value for the selected entity" [ref=f31e392]: "{matter.total_vat}"
+              - paragraph [ref=f31e256]:
+                - strong [ref=f31e257]: "Total disbursements:"
+                - generic "This variable has no value for the selected entity" [ref=f31e395]: "{matter.total_disbursements}"
+              - paragraph [ref=f31e260]:
+                - strong [ref=f31e261]: "Duration (months):"
+                - generic "This variable has no value for the selected entity" [ref=f31e398]: "{matter.duration_months}"
+              - separator [ref=f31e264]
+              - paragraph [ref=f31e265]: The file will be retained in accordance with our retention policy and the Legal Practice Act. Thank you for entrusting us with your matter.
+              - paragraph [ref=f31e266]: Yours faithfully,
+              - generic [ref=f31e269]:
+                - generic [ref=f31e270]:
+                  - generic [ref=f31e275]: "Show if: org.signatory.name has a value"
+                  - button "Configure condition" [ref=f31e276]
+                  - button "Remove conditional block" [ref=f31e277]
+                - paragraph [ref=f31e281]:
+                  - generic "This variable has no value for the selected entity" [ref=f31e401]: "{org.signatory.name}"
+              - generic [ref=f31e286]:
+                - generic [ref=f31e287]:
+                  - generic [ref=f31e292]: "Show if: org.signatory.designation has a value"
+                  - button "Configure condition" [ref=f31e293]
+                  - button "Remove conditional block" [ref=f31e294]
+                - paragraph [ref=f31e298]:
+                  - generic "This variable has no value for the selected entity" [ref=f31e404]: "{org.signatory.designation}"
+              - paragraph [ref=f31e301]:
+                - generic "This variable has no value for the selected entity" [ref=f31e407]: "{org.name}"
+  - generic [ref=f31e304]:
+    - heading "Command Palette" [level=2] [ref=f31e305]
+    - paragraph [ref=f31e306]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f31e307]

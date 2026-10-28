@@ -1,0 +1,32 @@
+{
+  "id": "radix-_r_1u_-content-generated",
+  "before": {
+    "rows": 3,
+    "btn": "Show unsaved (1)",
+    "pressed": "false",
+    "notSaved": 0,
+    "names": [
+      "Statement of Account",
+      "Statement of Account",
+      "Statement of Account"
+    ]
+  },
+  "afterShow": {
+    "rows": 4,
+    "btn": "Hide unsaved",
+    "pressed": "true",
+    "notSaved": 1,
+    "names": [
+      "Statement of Account",
+      "Statement of Account",
+      "Project Summary Report Not saved",
+      "Statement of Account"
+    ]
+  },
+  "afterHideRealClick": {
+    "rows": 3,
+    "btn": "Show unsaved (1)",
+    "pressed": "false",
+    "notSaved": 0
+  }
+}

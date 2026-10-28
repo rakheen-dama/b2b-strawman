@@ -1,0 +1,384 @@
+- generic [active]:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+          - generic: Matter
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 10 unread notifications
+              - generic [aria-hidden]: "10"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/matters
+                  - text: Back to Matters
+                - generic:
+                  - button: Generate Document
+                  - button: Generate Statement of Account
+                  - button:
+                    - generic: More actions
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: 626E draft fee note repro
+                    - generic:
+                      - generic: Active
+                      - code: 626E-draft-f
+                    - generic:
+                      - link:
+                        - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4
+                        - text: Sipho Ndlovu mvr15e76ef9a
+                  - generic:
+                    - button: Close Matter
+                    - button: Complete Matter
+                    - button
+              - generic:
+                - tablist:
+                  - tab: Details
+                  - tab [selected]: Overview
+                  - tab: Work
+                  - tab: Fees
+                  - tab: Client
+                  - tab: Diary
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Healthy
+                        - paragraph: "Customer: Sipho Ndlovu mvr15e76ef9a"
+                    - group:
+                      - generic:
+                        - generic:
+                          - generic: 3/5 setup steps complete
+                          - generic: 60%
+                    - generic:
+                      - link:
+                        - /url: "?tab=time"
+                        - generic:
+                          - generic:
+                            - generic: 1.5h
+                            - generic: Hours logged
+                      - link:
+                        - /url: "?tab=tasks"
+                        - generic:
+                          - generic:
+                            - generic: 0%
+                            - generic: Task completion
+                      - link:
+                        - /url: "?tab=statements"
+                        - generic:
+                          - generic:
+                            - generic: "--"
+                            - generic: Outstanding fee notes
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: FICA
+                          - generic: In Progress
+                      - generic:
+                        - paragraph: Onboarding checklist in progress.
+                        - link:
+                          - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?tab=onboarding
+                          - text: View checklist
+                    - generic:
+                      - generic: Upcoming Deadlines
+                      - generic:
+                        - paragraph: No upcoming deadlines.
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f13e257]:
+    - generic [ref=f13e258]:
+      - generic [ref=f13e259]:
+        - heading "Generate Statement of Account" [level=2] [ref=f13e260]
+        - paragraph [ref=f13e261]: Generate a statement of account for 626E draft fee note repro. The PDF will be saved to this matter's documents.
+      - generic [ref=f13e262]:
+        - generic [ref=f13e263]:
+          - generic [ref=f13e264]:
+            - generic [ref=f13e265]: Period start
+            - textbox "Period start" [ref=f13e266]: 2026-10-01
+          - generic [ref=f13e267]:
+            - generic [ref=f13e268]: Period end
+            - textbox "Period end" [ref=f13e269]: 2026-10-28
+        - generic [ref=f13e270]:
+          - generic [ref=f13e271]:
+            - checkbox "Share on the client portal" [ref=f13e272]
+            - checkbox [aria-hidden]
+            - generic [ref=f13e273]:
+              - generic [ref=f13e274]: Share on the client portal
+              - paragraph [ref=f13e275]: The client can see this statement when they sign in to the portal.
+          - generic [ref=f13e276]:
+            - checkbox "Email the client now" [ref=f13e277]
+            - checkbox [aria-hidden]
+            - generic [ref=f13e278]:
+              - generic [ref=f13e279]: Email the client now
+              - paragraph [ref=f13e280]: Also shares it, and requests an email with a link to the client's portal contact.
+              - paragraph [ref=f13e281]: No email is sent if the client has no portal contact, or if they were already emailed about this kind of document on this matter in the last 5 minutes.
+          - paragraph [ref=f13e282]: Save as internal draft — the client will not see it.
+        - generic [ref=f13e283]:
+          - iframe [ref=f13e295]:
+            - generic [ref=f14e1]:
+              - paragraph [ref=f14e2]:
+                - img "Logo" [ref=f14e3]
+              - heading "E2E Test Organization" [level=1] [ref=f14e4]
+              - paragraph [ref=f14e5]:
+                - strong [ref=f14e6]: "VAT Reg:"
+                - text: "4123456789"
+              - heading "Statement of Account" [level=2] [ref=f14e7]
+              - paragraph [ref=f14e8]:
+                - strong [ref=f14e9]: "Reference:"
+                - text: SOA-2cb472bd-20261028
+              - paragraph [ref=f14e10]:
+                - strong [ref=f14e11]: "Period:"
+                - text: 1 October 2026 — 28 October 2026
+              - paragraph [ref=f14e12]:
+                - strong [ref=f14e13]: "Generated:"
+                - text: 28 October 2026
+              - separator [ref=f14e14]
+              - heading "To" [level=3] [ref=f14e15]
+              - paragraph [ref=f14e16]: Sipho Ndlovu mvr15e76ef9a
+              - paragraph [ref=f14e17]: 12 Rivonia Road Sandton 2196 ZA
+              - separator [ref=f14e18]
+              - heading "Matter" [level=3] [ref=f14e19]
+              - paragraph [ref=f14e20]:
+                - strong [ref=f14e21]: "Matter:"
+                - text: 626E draft fee note repro
+              - paragraph [ref=f14e22]:
+                - strong [ref=f14e23]: "File reference:"
+                - text: 626E-draft-f
+              - paragraph [ref=f14e24]:
+                - strong [ref=f14e25]: "Opened:"
+                - text: 27 October 2026
+              - separator [ref=f14e26]
+              - heading "Professional Fees" [level=3] [ref=f14e27]
+              - table [ref=f14e28]:
+                - rowgroup [ref=f14e29]:
+                  - row [ref=f14e30]:
+                    - columnheader "Date" [ref=f14e31]
+                    - columnheader "Fee Earner" [ref=f14e32]
+                    - columnheader "Description" [ref=f14e33]
+                    - columnheader "Hours" [ref=f14e34]
+                    - columnheader "Rate" [ref=f14e35]
+                    - columnheader "Amount" [ref=f14e36]
+                - rowgroup [ref=f14e37]:
+                  - row [ref=f14e38]:
+                    - cell "28 October 2026" [ref=f14e39]
+                    - cell "Alice Owner" [ref=f14e40]
+                    - cell "626E draft fee note work" [ref=f14e41]
+                    - cell "1,5" [ref=f14e42]
+                    - cell "R2 500,00" [ref=f14e43]
+                    - cell "R3 750,00" [ref=f14e44]
+              - paragraph [ref=f14e45]:
+                - strong [ref=f14e46]: "Total fees (excl. VAT):"
+                - text: R3 750,00
+              - paragraph [ref=f14e47]:
+                - strong [ref=f14e48]: "VAT:"
+                - text: R562,50
+              - paragraph [ref=f14e49]:
+                - strong [ref=f14e50]: "Total fees (incl. VAT):"
+                - text: R4 312,50
+              - separator [ref=f14e51]
+              - heading "Disbursements" [level=3] [ref=f14e52]
+              - table [ref=f14e53]:
+                - rowgroup [ref=f14e54]:
+                  - row [ref=f14e55]:
+                    - columnheader "Date" [ref=f14e56]
+                    - columnheader "Category" [ref=f14e57]
+                    - columnheader "Description" [ref=f14e58]
+                    - columnheader "Supplier" [ref=f14e59]
+                    - columnheader "Amount" [ref=f14e60]
+                    - columnheader "VAT" [ref=f14e61]
+                - rowgroup [ref=f14e62]:
+                  - row [ref=f14e63]:
+                    - cell "27 October 2026" [ref=f14e64]
+                    - cell "Sheriff fees" [ref=f14e65]
+                    - cell "626E service of notice" [ref=f14e66]
+                    - cell "Sheriff Randburg" [ref=f14e67]
+                    - cell "R300,00" [ref=f14e68]
+                    - cell "R45,00" [ref=f14e69]
+              - paragraph [ref=f14e70]:
+                - strong [ref=f14e71]: "Total disbursements:"
+                - text: R345,00
+              - separator [ref=f14e72]
+              - heading "Trust Activity" [level=3] [ref=f14e73]
+              - paragraph [ref=f14e74]:
+                - strong [ref=f14e75]: "Opening balance:"
+                - text: R0,00
+              - paragraph [ref=f14e76]:
+                - strong [ref=f14e77]: Deposits
+              - table [ref=f14e78]:
+                - rowgroup [ref=f14e79]:
+                  - row [ref=f14e80]:
+                    - columnheader "Date" [ref=f14e81]
+                    - columnheader "Reference" [ref=f14e82]
+                    - columnheader "Description" [ref=f14e83]
+                    - columnheader "Amount" [ref=f14e84]
+                - rowgroup [ref=f14e85]:
+                  - row [ref=f14e86]:
+                    - cell "27 October 2026" [ref=f14e87]
+                    - cell "DEP/mvr15e76ef9a" [ref=f14e88]
+                    - cell "Client deposit — RAF claim disbursements" [ref=f14e89]
+                    - cell "R5 000,00" [ref=f14e90]
+                  - row [ref=f14e91]:
+                    - cell "27 October 2026" [ref=f14e92]
+                    - cell "626E-DEP-001" [ref=f14e93]
+                    - cell "626E trust deposit for closure gate repro" [ref=f14e94]
+                    - cell "R38 000,00" [ref=f14e95]
+              - paragraph [ref=f14e96]:
+                - strong [ref=f14e97]: Payments
+              - table [ref=f14e98]:
+                - rowgroup [ref=f14e99]:
+                  - row [ref=f14e100]:
+                    - columnheader "Date" [ref=f14e101]
+                    - columnheader "Type" [ref=f14e102]
+                    - columnheader "Reference" [ref=f14e103]
+                    - columnheader "Description" [ref=f14e104]
+                    - columnheader "Amount" [ref=f14e105]
+                - rowgroup [ref=f14e106]:
+                  - row [ref=f14e107]:
+                    - cell "27 October 2026" [ref=f14e108]
+                    - cell "PAYMENT" [ref=f14e109]
+                    - cell "PAY/DEEDS/mvr15e76ef9a" [ref=f14e110]
+                    - cell "Deeds office search fee — Deeds Office Pretoria" [ref=f14e111]
+                    - cell "R1 250,00" [ref=f14e112]
+              - paragraph [ref=f14e113]:
+                - strong [ref=f14e114]: "Closing balance:"
+                - text: R41 750,00
+              - separator [ref=f14e115]
+              - heading "Summary" [level=3] [ref=f14e116]
+              - paragraph [ref=f14e117]:
+                - strong [ref=f14e118]: "Total fees:"
+                - text: R4 312,50
+              - paragraph [ref=f14e119]:
+                - strong [ref=f14e120]: "Total disbursements:"
+                - text: R345,00
+              - paragraph [ref=f14e121]:
+                - strong [ref=f14e122]: "Previous balance owing:"
+                - text: R0,00
+              - paragraph [ref=f14e123]:
+                - strong [ref=f14e124]: "Payments received:"
+                - text: R0,00
+              - paragraph [ref=f14e125]:
+                - strong [ref=f14e126]: "Closing balance owing:"
+                - text: R4 657,50
+              - paragraph [ref=f14e127]:
+                - strong [ref=f14e128]: "Trust balance held:"
+                - text: R41 750,00
+              - separator [ref=f14e129]
+              - heading "Payment Instructions" [level=3] [ref=f14e130]
+              - paragraph [ref=f14e131]:
+                - strong [ref=f14e132]: "Bank:"
+                - text: Standard Bank
+              - paragraph [ref=f14e133]:
+                - strong [ref=f14e134]: "Branch code:"
+                - text: "051001"
+              - paragraph [ref=f14e135]:
+                - strong [ref=f14e136]: "Account number:"
+                - text: "0012345678"
+              - paragraph [ref=f14e137]:
+                - strong [ref=f14e138]: "Account type:"
+                - text: Cheque
+              - paragraph [ref=f14e139]: Please use your fee note number as the payment reference.
+              - paragraph [ref=f14e140]: Test Footer 1793137061590
+          - alert [ref=f13e296]: Failed to download document.
+        - generic [ref=f13e285]:
+          - button "Close" [ref=f13e286]
+          - button "Download PDF" [ref=f13e297]
+          - button "Regenerate" [ref=f13e298]
+      - button "Close" [ref=f13e288]

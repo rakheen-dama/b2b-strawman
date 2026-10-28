@@ -1,0 +1,147 @@
+- generic [ref=f16e6]:
+  - link "Skip to content" [ref=f16e7] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f16e8]:
+    - complementary [ref=f16e9]:
+      - generic [ref=f16e10]:
+        - img "E2E Test Organization logo" [ref=f16e11]
+        - generic [ref=f16e12]: Kazi
+      - generic [ref=f16e14]: E2E Test Organization
+      - button "Search, Command K" [ref=f16e17]:
+        - text: Search...
+        - generic [ref=f16e21]: ⌘K
+      - navigation "Main navigation" [ref=f16e22]:
+        - generic [ref=f16e23]:
+          - button "Today" [expanded] [ref=f16e24]
+          - generic [ref=f16e28]:
+            - link "Home" [ref=f16e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f16e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f16e37] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f16e41]:
+          - button "Matters" [expanded] [ref=f16e42]
+          - generic [ref=f16e46]:
+            - link "Matters" [ref=f16e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f16e53] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f16e55] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f16e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f16e66] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f16e71]:
+          - button "Clients" [expanded] [ref=f16e72]
+          - generic [ref=f16e76]:
+            - link "Clients" [ref=f16e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f16e82] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f16e86] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f16e92]
+        - button "Trust" [ref=f16e98]
+        - button "Firm" [ref=f16e104]
+      - link "Platform Admin" [ref=f16e110] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f16e115] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f16e120]:
+        - generic [ref=f16e121]: AO
+        - generic [ref=f16e122]:
+          - paragraph [ref=f16e123]: Alice Owner
+          - paragraph [ref=f16e124]: alice@e2e-test.local
+    - generic [ref=f16e125]:
+      - banner [ref=f16e126]:
+        - navigation "Breadcrumb" [ref=f16e127]:
+          - link "E2E Test Organization" [ref=f16e128] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Matters" [ref=f16e132] [cursor=pointer]:
+            - /url: /org/e2e-test-org/matters
+          - generic [ref=f16e133]: Matter
+        - generic [ref=f16e137]:
+          - generic [ref=f16e138]: e2e-test-org
+          - button "AO" [ref=f16e141]
+          - button "Notifications" [ref=f16e143]:
+            - generic [ref=f16e144]: 10 unread notifications
+            - generic [aria-hidden] [ref=f16e145]: "10"
+      - main [ref=f16e146]:
+        - generic [ref=f16e149]:
+          - generic [ref=f16e150]:
+            - link "Back to Matters" [ref=f16e151] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - generic [ref=f16e154]:
+              - button "Generate Document" [ref=f16e155]
+              - button "Generate Statement of Account" [ref=f16e156]
+              - button "More actions" [ref=f16e157]
+          - generic [ref=f16e160]:
+            - generic [ref=f16e161]:
+              - heading "626E draft fee note repro" [level=1] [ref=f16e162]
+              - generic [ref=f16e163]:
+                - generic [ref=f16e164]: Active
+                - code [ref=f16e165]: 626E-draft-f
+              - link "Sipho Ndlovu mvr15e76ef9a" [ref=f16e167] [cursor=pointer]:
+                - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4
+            - generic [ref=f16e168]:
+              - button "Close Matter" [ref=f16e169]
+              - button "Complete Matter" [ref=f16e170]
+              - button [ref=f16e171]
+          - generic [ref=f16e172]:
+            - tablist [ref=f16e173]:
+              - tab "Details" [ref=f16e174] [cursor=pointer]
+              - tab "Overview" [ref=f16e177] [cursor=pointer]
+              - tab "Work · Generated documents" [active] [selected] [ref=f16e178] [cursor=pointer]:
+                - text: Work
+                - generic [ref=f16e179]: · Generated documents
+              - tab "Fees" [ref=f16e183] [cursor=pointer]
+              - tab "Client" [ref=f16e186] [cursor=pointer]
+              - tab "Diary" [ref=f16e189] [cursor=pointer]
+              - tab "Activity" [ref=f16e190] [cursor=pointer]
+            - tabpanel [ref=f16e193]:
+              - generic [ref=f16e194]:
+                - button "Show unsaved (1)" [ref=f16e196]
+                - table [ref=f16e198]:
+                  - rowgroup [ref=f16e199]:
+                    - row [ref=f16e200]:
+                      - columnheader "Template Name" [ref=f16e201]
+                      - columnheader "Generated By" [ref=f16e202]
+                      - columnheader "Date" [ref=f16e203]
+                      - columnheader "File Size" [ref=f16e204]
+                      - columnheader "Format" [ref=f16e205]
+                      - columnheader "Acceptance" [ref=f16e206]
+                      - columnheader "Actions" [ref=f16e207]
+                  - rowgroup [ref=f16e208]:
+                    - row [ref=f16e209]:
+                      - cell "Statement of Account" [ref=f16e210]
+                      - cell "Alice Owner" [ref=f16e213]
+                      - cell "28 Oct 2026" [ref=f16e214]
+                      - cell "5.5 KB" [ref=f16e215]
+                      - cell "PDF" [ref=f16e216]
+                      - cell [ref=f16e218]
+                      - cell [ref=f16e219]:
+                        - generic [ref=f16e220]:
+                          - button "Download PDF" [ref=f16e221]
+                          - button "Share with client" [ref=f16e222]
+                          - button "Send for Acceptance" [ref=f16e223]
+                          - button "Delete" [ref=f16e224]
+                    - row [ref=f16e225]:
+                      - cell "Statement of Account" [ref=f16e226]
+                      - cell "Alice Owner" [ref=f16e229]
+                      - cell "28 Oct 2026" [ref=f16e230]
+                      - cell "5.5 KB" [ref=f16e231]
+                      - cell "PDF" [ref=f16e232]
+                      - cell [ref=f16e234]
+                      - cell [ref=f16e235]:
+                        - generic [ref=f16e236]:
+                          - button "Download PDF" [ref=f16e237]
+                          - button "Share with client" [ref=f16e238]
+                          - button "Send for Acceptance" [ref=f16e239]
+                          - button "Delete" [ref=f16e240]
+  - generic [ref=f16e241]:
+    - heading "Command Palette" [level=2] [ref=f16e242]
+    - paragraph [ref=f16e243]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f16e244]

@@ -1,0 +1,250 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/settings
+              - text: Settings
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/settings/documents
+              - text: Documents
+          - generic: Templates
+          - generic: 30854651-553f-4eb1-88af-8a87e5706dd7
+          - generic: edit
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 11 unread notifications
+              - generic [aria-hidden]: "11"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - complementary:
+                - navigation:
+                  - list:
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/firm
+                        - text: Firm
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/matters
+                        - text: Matters
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/documents
+                        - text: Documents
+                      - list:
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/documents?tab=templates
+                            - text: Templates
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/documents?tab=clauses
+                            - text: Clauses
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/documents?tab=acceptance
+                            - text: Acceptance
+                        - listitem:
+                          - link:
+                            - /url: /org/e2e-test-org/settings/documents?tab=email
+                            - text: Email
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/fees
+                        - text: Fees & Trust
+                    - listitem:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/connections
+                        - text: Connections
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - link:
+                        - /url: /org/e2e-test-org/settings/documents?tab=templates
+                        - text: Templates
+                      - heading [level=1]:
+                        - text: Matter Closure Letter
+                        - button
+                    - generic:
+                      - button: Preview
+                      - button [active]: Preview with data
+                  - generic:
+                    - button: Settings
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - textbox:
+                            - paragraph:
+                              - generic: "{org.logoUrl}"
+                            - heading [level=1]:
+                              - generic: "{org.name}"
+                            - heading [level=2]: Matter Closure Letter
+                            - separator
+                            - paragraph:
+                              - strong: "Date:"
+                              - generic: "{closure.date}"
+                            - paragraph:
+                              - strong: "Client:"
+                              - generic: "{customer.name}"
+                            - paragraph:
+                              - strong: "Matter:"
+                              - generic: "{project.name}"
+                            - separator
+                            - paragraph: "We confirm that this matter has been concluded on the following basis:"
+                            - paragraph:
+                              - strong: "Reason for closure:"
+                              - generic: "{closure.reason_label}"
+                            - paragraph:
+                              - generic: "{closure.notes}"
+                            - separator
+                            - heading [level=3]: Summary of Account
+                            - paragraph:
+                              - strong: "Total fees billed:"
+                              - generic: "{matter.total_fees_billed}"
+                            - paragraph:
+                              - strong: "VAT:"
+                              - generic: "{matter.total_vat}"
+                            - paragraph:
+                              - strong: "Total disbursements:"
+                              - generic: "{matter.total_disbursements}"
+                            - paragraph:
+                              - strong: "Duration (months):"
+                              - generic: "{matter.duration_months}"
+                            - separator
+                            - paragraph: The file will be retained in accordance with our retention policy and the Legal Practice Act. Thank you for entrusting us with your matter.
+                            - paragraph: Yours faithfully,
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: "Show if: org.signatory.name has a value"
+                                    - button
+                                    - button
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - paragraph:
+                                          - generic: "{org.signatory.name}"
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic: "Show if: org.signatory.designation has a value"
+                                    - button
+                                    - button
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - paragraph:
+                                          - generic: "{org.signatory.designation}"
+                            - paragraph:
+                              - generic: "{org.name}"
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f31e309]:
+    - generic [ref=f31e310]:
+      - heading "Select a Project for Preview" [level=2] [ref=f31e312]
+      - generic [ref=f31e313]:
+        - generic [ref=f31e314]:
+          - text: Project
+          - combobox [ref=f31e315]: Select a project
+        - generic [ref=f31e316]:
+          - button "Cancel" [ref=f31e317]
+          - button "Select" [disabled]
+      - button "Close" [ref=f31e318]

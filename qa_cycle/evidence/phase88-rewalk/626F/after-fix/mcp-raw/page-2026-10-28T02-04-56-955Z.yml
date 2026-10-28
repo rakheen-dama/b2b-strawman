@@ -1,0 +1,138 @@
+- generic [active] [ref=f39e1]:
+  - link "Skip to content" [ref=f39e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f39e3]:
+    - complementary [ref=f39e4]:
+      - generic [ref=f39e5]:
+        - img "E2E Test Organization logo" [ref=f39e6]
+        - generic [ref=f39e7]: Kazi
+      - generic [ref=f39e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f39e12]:
+        - text: Search...
+        - generic [ref=f39e16]: ⌘K
+      - navigation "Main navigation" [ref=f39e17]:
+        - generic [ref=f39e18]:
+          - button "Today" [expanded] [ref=f39e19]
+          - generic [ref=f39e23]:
+            - link "Home" [ref=f39e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f39e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f39e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f39e36]:
+          - button "Matters" [expanded] [ref=f39e37]
+          - generic [ref=f39e41]:
+            - link "Matters" [ref=f39e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f39e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f39e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f39e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f39e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f39e65]:
+          - button "Clients" [expanded] [ref=f39e66]
+          - generic [ref=f39e70]:
+            - link "Clients" [ref=f39e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f39e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f39e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f39e86]
+        - button "Trust" [ref=f39e92]
+        - button "Firm" [ref=f39e98]
+      - link "Platform Admin" [ref=f39e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f39e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+    - generic [ref=f39e113]:
+      - banner [ref=f39e114]:
+        - navigation "Breadcrumb" [ref=f39e115]:
+          - link "E2E Test Organization" [ref=f39e116] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Fee notes" [ref=f39e120] [cursor=pointer]:
+            - /url: /org/e2e-test-org/invoices
+          - generic [ref=f39e121]: Fee note
+        - generic [ref=f39e125]:
+          - button "…" [ref=f39e127]
+          - button "Notifications" [ref=f39e129]
+      - main [ref=f39e131]:
+        - generic [ref=f39e134]:
+          - generic [ref=f39e135]:
+            - link "Back to fee notes" [ref=f39e136] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices
+            - button "Generate Document" [ref=f39e139]
+          - generic [ref=f39e140]:
+            - generic [ref=f39e141]:
+              - generic [ref=f39e142]:
+                - generic [ref=f39e143]:
+                  - heading [level=1] [ref=f39e144]:
+                    - text: INV-0001
+                    - 'button "Help: Fee note numbering" [ref=f39e145] [cursor=pointer]'
+                  - generic [ref=f39e149]: Sent
+                - generic [ref=f39e150]:
+                  - generic [ref=f39e151]: "Client: Apex Holdings mvr15e76ef9a"
+                  - generic [ref=f39e152]: "Issued: 27 Oct 2026"
+                  - generic [ref=f39e153]: "Due: 26 Nov 2026"
+                  - generic [ref=f39e154]: "Currency: ZAR"
+              - generic [ref=f39e155]:
+                - button "Preview" [ref=f39e156]
+                - button "Record Payment" [ref=f39e157]
+                - button "Void" [ref=f39e158]
+            - generic [ref=f39e159]:
+              - heading "Payment History" [level=3] [ref=f39e160]
+              - paragraph [ref=f39e161]: No payment events yet.
+            - generic [ref=f39e162]:
+              - heading "Fee note details" [level=2] [ref=f39e163]
+              - generic [ref=f39e165]:
+                - term [ref=f39e166]: Due Date
+                - definition [ref=f39e167]: 26 Nov 2026
+            - generic [ref=f39e168]:
+              - heading "Line Items" [level=2] [ref=f39e170]
+              - table [ref=f39e172]:
+                - rowgroup [ref=f39e173]:
+                  - row [ref=f39e174]:
+                    - columnheader "Description" [ref=f39e175]
+                    - columnheader "Project" [ref=f39e176]
+                    - columnheader "Qty" [ref=f39e177]
+                    - columnheader "Rate" [ref=f39e178]
+                    - columnheader "Amount" [ref=f39e179]
+                    - columnheader "Tax" [ref=f39e180]
+                - rowgroup [ref=f39e181]:
+                  - row [ref=f39e182]:
+                    - 'cell "Counsel fees: Counsel''s opinion on shareholders'' agreement mvr15e76ef9a (Adv. N. Mokoena SC, 2026-10-27)" [ref=f39e183]'
+                    - cell "Apex Holdings — Shareholders' Agreement Review mvr15e76ef9a" [ref=f39e185]
+                    - cell "1" [ref=f39e186]
+                    - cell "R 3 500,00" [ref=f39e187]
+                    - cell "R 3 500,00" [ref=f39e188]
+                    - cell "VAT — Standard (15%) R 525,00" [ref=f39e189]
+            - generic [ref=f39e192]:
+              - generic [ref=f39e193]:
+                - generic [ref=f39e194]: Subtotal
+                - generic [ref=f39e195]: R 3 500,00
+              - generic [ref=f39e196]:
+                - generic [ref=f39e197]: VAT — Standard (15%)
+                - generic [ref=f39e198]: R 525,00
+              - generic [ref=f39e199]:
+                - generic [ref=f39e200]: Total
+                - generic [ref=f39e201]: R 4 025,00
+          - generic [ref=f39e202]:
+            - heading "No custom fields configured" [level=2] [ref=f39e206]
+            - paragraph [ref=f39e207]: Custom fields let you track additional information specific to your workflow.
+            - link "Configure Fields" [ref=f39e208] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings/matters?tab=custom-fields
+          - generic [ref=f39e209]:
+            - heading "Generated Documents" [level=2] [ref=f39e210]
+            - paragraph [ref=f39e212]: Loading generated documents...
+          - generic [ref=f39e213]:
+            - heading "Collection activity" [level=2] [ref=f39e214]
+            - paragraph [ref=f39e216]: No collection activity for this invoice yet.
+          - generic [ref=f39e217]:
+            - heading "Audit trail" [level=2] [ref=f39e218]
+            - generic [ref=f39e219]: Loading audit events…
+  - region "Notifications alt+T"
+  - alert [ref=f39e220]

@@ -1,0 +1,201 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+          - generic: Matter
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 11 unread notifications
+              - generic [aria-hidden]: "11"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/matters
+                  - text: Back to Matters
+                - generic:
+                  - button [expanded]: Generate Document
+                  - button: Generate Statement of Account
+                  - button:
+                    - generic: More actions
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: 626E draft fee note repro
+                    - generic:
+                      - generic: Active
+                      - code: 626E-draft-f
+                    - generic:
+                      - link:
+                        - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4
+                        - text: Sipho Ndlovu mvr15e76ef9a
+                  - generic:
+                    - button: Close Matter
+                    - button: Complete Matter
+                    - button
+              - generic:
+                - tablist:
+                  - tab: Details
+                  - tab [selected]: Overview
+                  - tab: Work
+                  - tab: Fees
+                  - tab: Client
+                  - tab: Diary
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Healthy
+                        - paragraph: "Customer: Sipho Ndlovu mvr15e76ef9a"
+                    - group:
+                      - generic:
+                        - generic:
+                          - generic: 3/5 setup steps complete
+                          - generic: 60%
+                    - generic:
+                      - link:
+                        - /url: "?tab=time"
+                        - generic:
+                          - generic:
+                            - generic: 1.5h
+                            - generic: Hours logged
+                      - link:
+                        - /url: "?tab=tasks"
+                        - generic:
+                          - generic:
+                            - generic: 0%
+                            - generic: Task completion
+                      - link:
+                        - /url: "?tab=statements"
+                        - generic:
+                          - generic:
+                            - generic: "--"
+                            - generic: Outstanding fee notes
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: FICA
+                          - generic: In Progress
+                      - generic:
+                        - paragraph: Onboarding checklist in progress.
+                        - link:
+                          - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?tab=onboarding
+                          - text: View checklist
+                    - generic:
+                      - generic: Upcoming Deadlines
+                      - generic:
+                        - paragraph: No upcoming deadlines.
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - menu "Generate Document" [active] [ref=f27e298]:
+    - menuitem "626B probe — letterhead keys" [ref=f27e299]
+    - menuitem "Engagement Letter — Litigation" [ref=f27e300]
+    - menuitem "Engagement Letter — Litigation (Custom)" [ref=f27e301]
+    - menuitem "Standard Engagement Letter" [ref=f27e302]
+    - menuitem "Engagement Letter — Conveyancing" [ref=f27e303]
+    - menuitem "Project Summary Report" [ref=f27e304]
+    - menuitem "Engagement Letter — General" [ref=f27e305]
+    - menuitem "Notice of Motion" [ref=f27e306]
+    - menuitem "Founding Affidavit" [ref=f27e307]
+    - menuitem "Matter Closure Letter" [ref=f27e308]
+    - menuitem "Statement of Account" [ref=f27e309]
+    - menuitem "Offer to Purchase" [ref=f27e310]
+    - menuitem "Deed of Transfer" [ref=f27e311]
+    - menuitem "Power of Attorney to Pass Transfer" [ref=f27e312]
+    - menuitem "Bond Cancellation Instruction" [ref=f27e313]

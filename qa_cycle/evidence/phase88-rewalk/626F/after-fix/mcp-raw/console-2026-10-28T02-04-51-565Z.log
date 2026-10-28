@@ -1,0 +1,2 @@
+[     110ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/org/e2e-test-org/invoices/ed1c7f17:0
+[     178ms] [ERROR] Error: Minified React error #441; visit https://react.dev/errors/441 for the full message or use the non-minified dev environment for full errors and additional helpful warnings. @ http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:0

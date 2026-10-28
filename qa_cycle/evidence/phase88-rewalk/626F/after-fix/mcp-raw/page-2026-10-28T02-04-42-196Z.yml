@@ -1,0 +1,381 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/invoices
+              - text: Fee notes
+          - generic: Fee note
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 11 unread notifications
+              - generic [aria-hidden]: "11"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/invoices
+                  - text: Back to fee notes
+                - button: Generate Document
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading [level=1]:
+                        - text: Draft fee note
+                        - button
+                      - generic: Draft
+                    - generic:
+                      - generic: "Client: Sipho Ndlovu mvr15e76ef9a"
+                      - generic: "Currency: ZAR"
+                  - generic:
+                    - button: Preview
+                    - button: Approve
+                    - button: Delete Draft
+                - generic:
+                  - heading [level=2]: Fee note details
+                  - generic:
+                    - generic:
+                      - generic: Due Date
+                      - textbox
+                    - generic:
+                      - generic: Payment Terms
+                      - textbox:
+                        - /placeholder: e.g. Net 30
+                    - generic:
+                      - generic: PO Number
+                      - textbox:
+                        - /placeholder: e.g. PO-2026-001
+                    - generic:
+                      - generic: Tax Type
+                      - combobox
+                    - generic:
+                      - generic: Billing Period Start
+                      - textbox
+                    - generic:
+                      - generic: Billing Period End
+                      - textbox
+                    - generic:
+                      - generic: Notes
+                      - textbox:
+                        - /placeholder: Additional notes...
+                  - generic:
+                    - button: Save Changes
+                - generic:
+                  - generic:
+                    - heading [level=2]: Line Items
+                    - button: Add Line
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader: Description
+                          - columnheader: Project
+                          - columnheader: Qty
+                          - columnheader: Rate
+                          - columnheader: Amount
+                          - columnheader: Tax
+                          - columnheader: Actions
+                      - rowgroup:
+                        - row:
+                          - cell: Time Entries
+                        - row:
+                          - cell:
+                            - generic: 2026-10-28 · Alice Owner · 626E draft fee note work
+                          - cell: 626E draft fee note repro
+                          - cell: "1.5"
+                          - cell: R 2 500,00
+                          - cell: R 3 750,00
+                          - cell:
+                            - generic: VAT — Standard (15%) R 562,50
+                          - cell:
+                            - generic:
+                              - button
+                              - button
+                        - row:
+                          - cell: Disbursements
+                        - row:
+                          - cell:
+                            - generic: "Sheriff fees: 626E service of notice (Sheriff Randburg, 2026-10-27)"
+                          - cell: 626E draft fee note repro
+                          - cell: "1"
+                          - cell: R 300,00
+                          - cell: R 300,00
+                          - cell:
+                            - generic: VAT — Standard (15%) R 45,00
+                          - cell:
+                            - generic:
+                              - button
+                              - button
+                - generic:
+                  - button: Add Tariff Items
+                - generic:
+                  - button: Add Disbursements
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: Subtotal
+                      - generic: R 4 050,00
+                    - generic:
+                      - generic: VAT — Standard (15%)
+                      - generic: R 607,50
+                    - generic:
+                      - generic: Total
+                      - generic: R 4 657,50
+              - generic:
+                - heading [level=2]: No custom fields configured
+                - paragraph: Custom fields let you track additional information specific to your workflow.
+                - link:
+                  - /url: /org/e2e-test-org/settings/matters?tab=custom-fields
+                  - text: Configure Fields
+              - generic:
+                - heading [level=2]: Generated Documents
+                - generic:
+                  - paragraph: No documents generated yet
+              - generic:
+                - heading [level=2]: Collection activity
+                - generic:
+                  - paragraph: No collection activity for this invoice yet.
+              - generic:
+                - heading [level=2]: Audit trail
+                - generic:
+                  - list:
+                    - listitem:
+                      - button:
+                        - generic: INFO
+                        - generic: Fee note
+                        - generic: Alice Owner
+                        - generic: 2 hours ago
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f37e297]:
+    - generic [ref=f37e298]:
+      - heading "Add Tariff Items" [level=2] [ref=f37e300]
+      - generic [ref=f37e303]:
+        - textbox "Search items..." [ref=f37e308]
+        - generic [ref=f37e309]:
+          - generic [ref=f37e310]:
+            - button "Section 1 (3)" [ref=f37e311]:
+              - text: Section 1
+              - generic [ref=f37e314]: (3)
+            - generic [ref=f37e315]:
+              - generic [ref=f37e316] [cursor=pointer]:
+                - generic [ref=f37e317]: 1(a)
+                - generic [ref=f37e318]: Instructions to sue or defend
+                - generic [ref=f37e319]: Per Item
+                - generic [ref=f37e320]: R 780,00
+              - generic [ref=f37e321] [cursor=pointer]:
+                - generic [ref=f37e322]: 1(b)
+                - generic [ref=f37e323]: Consultation with client (per quarter-hour)
+                - generic [ref=f37e324]: Per 15 min
+                - generic [ref=f37e325]: R 780,00
+              - generic [ref=f37e326] [cursor=pointer]:
+                - generic [ref=f37e327]: 1(c)
+                - generic [ref=f37e328]: Consultation with advocate (per quarter-hour)
+                - generic [ref=f37e329]: Per 15 min
+                - generic [ref=f37e330]: R 780,00
+          - generic [ref=f37e331]:
+            - button "Section 2 (4)" [ref=f37e332]:
+              - text: Section 2
+              - generic [ref=f37e335]: (4)
+            - generic [ref=f37e336]:
+              - generic [ref=f37e337] [cursor=pointer]:
+                - generic [ref=f37e338]: 2(a)
+                - generic [ref=f37e339]: Drawing of summons
+                - generic [ref=f37e340]: Per Item
+                - generic [ref=f37e341]: R 1 250,00
+              - generic [ref=f37e342] [cursor=pointer]:
+                - generic [ref=f37e343]: 2(b)
+                - generic [ref=f37e344]: Drawing of plea or exception
+                - generic [ref=f37e345]: Per Item
+                - generic [ref=f37e346]: R 1 250,00
+              - generic [ref=f37e347] [cursor=pointer]:
+                - generic [ref=f37e348]: 2(c)
+                - generic [ref=f37e349]: Drawing of notice of motion
+                - generic [ref=f37e350]: Per Item
+                - generic [ref=f37e351]: R 1 250,00
+              - generic [ref=f37e352] [cursor=pointer]:
+                - generic [ref=f37e353]: 2(d)
+                - generic [ref=f37e354]: Drawing of affidavit (per folio)
+                - generic [ref=f37e355]: Per Folio
+                - generic [ref=f37e356]: R 195,00
+          - generic [ref=f37e357]:
+            - button "Section 3 (4)" [ref=f37e358]:
+              - text: Section 3
+              - generic [ref=f37e361]: (4)
+            - generic [ref=f37e362]:
+              - generic [ref=f37e363] [cursor=pointer]:
+                - generic [ref=f37e364]: 3(a)
+                - generic [ref=f37e365]: Letters written (per folio)
+                - generic [ref=f37e366]: Per Folio
+                - generic [ref=f37e367]: R 195,00
+              - generic [ref=f37e368] [cursor=pointer]:
+                - generic [ref=f37e369]: 3(b)
+                - generic [ref=f37e370]: Letters received and perused (per folio)
+                - generic [ref=f37e371]: Per Folio
+                - generic [ref=f37e372]: R 130,00
+              - generic [ref=f37e373] [cursor=pointer]:
+                - generic [ref=f37e374]: 3(c)
+                - generic [ref=f37e375]: Telephone calls (per call)
+                - generic [ref=f37e376]: Per Item
+                - generic [ref=f37e377]: R 195,00
+              - generic [ref=f37e378] [cursor=pointer]:
+                - generic [ref=f37e379]: 3(d)
+                - generic [ref=f37e380]: Emails sent (per email)
+                - generic [ref=f37e381]: Per Item
+                - generic [ref=f37e382]: R 130,00
+          - generic [ref=f37e383]:
+            - button "Section 4 (3)" [ref=f37e384]:
+              - text: Section 4
+              - generic [ref=f37e387]: (3)
+            - generic [ref=f37e388]:
+              - generic [ref=f37e389] [cursor=pointer]:
+                - generic [ref=f37e390]: 4(a)
+                - generic [ref=f37e391]: Attendance at court (per day)
+                - generic [ref=f37e392]: Per Day
+                - generic [ref=f37e393]: R 7 800,00
+              - generic [ref=f37e394] [cursor=pointer]:
+                - generic [ref=f37e395]: 4(b)
+                - generic [ref=f37e396]: Attendance at court (per half day)
+                - generic [ref=f37e397]: Per Item
+                - generic [ref=f37e398]: R 4 680,00
+              - generic [ref=f37e399] [cursor=pointer]:
+                - generic [ref=f37e400]: 4(c)
+                - generic [ref=f37e401]: Waiting time at court (per hour)
+                - generic [ref=f37e402]: Per Hour
+                - generic [ref=f37e403]: R 780,00
+          - generic [ref=f37e404]:
+            - button "Section 5 (2)" [ref=f37e405]:
+              - text: Section 5
+              - generic [ref=f37e408]: (2)
+            - generic [ref=f37e409]:
+              - generic [ref=f37e410] [cursor=pointer]:
+                - generic [ref=f37e411]: 5(a)
+                - generic [ref=f37e412]: Preparation of discovery affidavit
+                - generic [ref=f37e413]: Per Item
+                - generic [ref=f37e414]: R 1 250,00
+              - generic [ref=f37e415] [cursor=pointer]:
+                - generic [ref=f37e416]: 5(b)
+                - generic [ref=f37e417]: Inspection of documents (per hour)
+                - generic [ref=f37e418]: Per Hour
+                - generic [ref=f37e419]: R 780,00
+          - generic [ref=f37e420]:
+            - button "Section 6 (2)" [ref=f37e421]:
+              - text: Section 6
+              - generic [ref=f37e424]: (2)
+            - generic [ref=f37e425]:
+              - generic [ref=f37e426] [cursor=pointer]:
+                - generic [ref=f37e427]: 6(a)
+                - generic [ref=f37e428]: Preparation for trial (per day)
+                - generic [ref=f37e429]: Per Day
+                - generic [ref=f37e430]: R 7 800,00
+              - generic [ref=f37e431] [cursor=pointer]:
+                - generic [ref=f37e432]: 6(b)
+                - generic [ref=f37e433]: Preparation of heads of argument (per folio)
+                - generic [ref=f37e434]: Per Folio
+                - generic [ref=f37e435]: R 260,00
+          - generic [ref=f37e436]:
+            - button "Section 7 (1)" [ref=f37e437]:
+              - text: Section 7
+              - generic [ref=f37e440]: (1)
+            - generic [ref=f37e442] [cursor=pointer]:
+              - generic [ref=f37e443]: 7(a)
+              - generic [ref=f37e444]: Service of process (per service)
+              - generic [ref=f37e445]: Per Item
+              - generic [ref=f37e446]: R 390,00
+      - generic [ref=f37e447]:
+        - generic [ref=f37e448]: Select items to add
+        - button "Add to Invoice" [disabled]
+      - button "Close" [active] [ref=f37e449]

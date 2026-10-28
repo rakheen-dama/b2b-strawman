@@ -1,0 +1,218 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+          - generic: Matter
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 10 unread notifications
+              - generic [aria-hidden]: "10"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/matters
+                  - text: Back to Matters
+                - generic:
+                  - button: Generate Document
+                  - button: Generate Statement of Account
+                  - button:
+                    - generic: More actions
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: 626E draft fee note repro
+                    - generic:
+                      - generic: Active
+                      - code: 626E-draft-f
+                    - generic:
+                      - link:
+                        - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4
+                        - text: Sipho Ndlovu mvr15e76ef9a
+                  - generic:
+                    - button: Close Matter
+                    - button: Complete Matter
+                    - button
+              - generic:
+                - tablist:
+                  - tab: Details
+                  - tab [selected]: Overview
+                  - tab: Work
+                  - tab: Fees
+                  - tab: Client
+                  - tab: Diary
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Healthy
+                        - paragraph: "Customer: Sipho Ndlovu mvr15e76ef9a"
+                    - group:
+                      - generic:
+                        - generic:
+                          - generic: 3/5 setup steps complete
+                          - generic: 60%
+                    - generic:
+                      - link:
+                        - /url: "?tab=time"
+                        - generic:
+                          - generic:
+                            - generic: 1.5h
+                            - generic: Hours logged
+                      - link:
+                        - /url: "?tab=tasks"
+                        - generic:
+                          - generic:
+                            - generic: 0%
+                            - generic: Task completion
+                      - link:
+                        - /url: "?tab=statements"
+                        - generic:
+                          - generic:
+                            - generic: "--"
+                            - generic: Outstanding fee notes
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: FICA
+                          - generic: In Progress
+                      - generic:
+                        - paragraph: Onboarding checklist in progress.
+                        - link:
+                          - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?tab=onboarding
+                          - text: View checklist
+                    - generic:
+                      - generic: Upcoming Deadlines
+                      - generic:
+                        - paragraph: No upcoming deadlines.
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f13e257]:
+    - generic [ref=f13e258]:
+      - generic [ref=f13e259]:
+        - heading "Generate Statement of Account" [level=2] [ref=f13e260]
+        - paragraph [ref=f13e261]: Generate a statement of account for 626E draft fee note repro. The PDF will be saved to this matter's documents.
+      - generic [ref=f13e262]:
+        - generic [ref=f13e263]:
+          - generic [ref=f13e264]:
+            - generic [ref=f13e265]: Period start
+            - textbox "Period start" [active] [ref=f13e266]: 2026-10-29
+          - generic [ref=f13e267]:
+            - generic [ref=f13e268]: Period end
+            - textbox "Period end" [ref=f13e269]: 2026-10-28
+        - generic [ref=f13e270]:
+          - generic [ref=f13e271]:
+            - checkbox "Share on the client portal" [ref=f13e272]
+            - checkbox [aria-hidden]
+            - generic [ref=f13e273]:
+              - generic [ref=f13e274]: Share on the client portal
+              - paragraph [ref=f13e275]: The client can see this statement when they sign in to the portal.
+          - generic [ref=f13e276]:
+            - checkbox "Email the client now" [ref=f13e277]
+            - checkbox [aria-hidden]
+            - generic [ref=f13e278]:
+              - generic [ref=f13e279]: Email the client now
+              - paragraph [ref=f13e280]: Also shares it, and requests an email with a link to the client's portal contact.
+              - paragraph [ref=f13e281]: No email is sent if the client has no portal contact, or if they were already emailed about this kind of document on this matter in the last 5 minutes.
+          - paragraph [ref=f13e282]: Save as internal draft — the client will not see it.
+        - paragraph [ref=f13e284]: Choose a period and click Preview & Save to generate the statement. It will be saved to this matter's documents.
+        - generic [ref=f13e285]:
+          - button "Close" [ref=f13e286]
+          - button "Preview & Save" [ref=f13e287]
+      - button "Close" [ref=f13e288]

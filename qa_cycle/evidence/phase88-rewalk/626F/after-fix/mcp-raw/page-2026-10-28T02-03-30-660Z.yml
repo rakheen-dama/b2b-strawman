@@ -1,0 +1,481 @@
+- generic [active] [ref=f34e1]:
+  - link "Skip to content" [ref=f34e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f34e3]:
+    - complementary [ref=f34e4]:
+      - generic [ref=f34e5]:
+        - img "E2E Test Organization logo" [ref=f34e6]
+        - generic [ref=f34e7]: Kazi
+      - generic [ref=f34e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f34e12]:
+        - text: Search...
+        - generic [ref=f34e16]: ⌘K
+      - navigation "Main navigation" [ref=f34e17]:
+        - generic [ref=f34e18]:
+          - button "Today" [expanded] [ref=f34e19]
+          - generic [ref=f34e23]:
+            - link "Home" [ref=f34e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f34e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f34e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f34e36]:
+          - button "Matters" [expanded] [ref=f34e37]
+          - generic [ref=f34e41]:
+            - link "Matters" [ref=f34e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f34e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f34e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f34e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f34e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f34e65]:
+          - button "Clients" [expanded] [ref=f34e66]
+          - generic [ref=f34e70]:
+            - link "Clients" [ref=f34e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f34e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f34e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f34e86]
+        - button "Trust" [ref=f34e92]
+        - button "Firm" [ref=f34e98]
+      - link "Platform Admin" [ref=f34e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f34e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+    - generic [ref=f34e113]:
+      - banner [ref=f34e114]:
+        - navigation "Breadcrumb" [ref=f34e115]:
+          - link "E2E Test Organization" [ref=f34e116] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Settings" [ref=f34e120] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings
+          - generic [ref=f34e121]: Documents
+        - generic [ref=f34e125]:
+          - button "…" [ref=f34e127]
+          - button "Notifications" [ref=f34e129]
+      - main [ref=f34e131]:
+        - generic [ref=f34e134]:
+          - complementary [ref=f34e135]:
+            - navigation "Settings navigation" [ref=f34e136]:
+              - list [ref=f34e137]:
+                - listitem [ref=f34e138]:
+                  - link "Firm" [ref=f34e139] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/firm
+                - listitem [ref=f34e144]:
+                  - link "Matters" [ref=f34e145] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/matters
+                - listitem [ref=f34e150]:
+                  - link "Documents" [ref=f34e151] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/documents
+                  - list [ref=f34e155]:
+                    - listitem [ref=f34e156]:
+                      - link "Templates" [ref=f34e157] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=templates
+                    - listitem [ref=f34e158]:
+                      - link "Clauses" [ref=f34e159] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=clauses
+                    - listitem [ref=f34e160]:
+                      - link "Acceptance" [ref=f34e161] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=acceptance
+                    - listitem [ref=f34e162]:
+                      - link "Email" [ref=f34e163] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=email
+                - listitem [ref=f34e164]:
+                  - link "Fees & Trust" [ref=f34e165] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/fees
+                - listitem [ref=f34e169]:
+                  - link "Connections" [ref=f34e170] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/connections
+          - generic [ref=f34e174]:
+            - tablist "Documents settings" [ref=f34e176]:
+              - tab "Templates" [ref=f34e177]
+              - tab "Clauses" [selected] [ref=f34e178]
+              - tab "Acceptance" [ref=f34e179]
+              - tab "Email" [ref=f34e180]
+            - tabpanel "Clauses" [ref=f34e181]:
+              - generic [ref=f34e182]:
+                - generic [ref=f34e183]:
+                  - heading "Clause Library" [level=1] [ref=f34e184]
+                  - paragraph [ref=f34e185]: Manage reusable clauses for document generation. System clauses can be cloned and customized.
+                - generic [ref=f34e186]:
+                  - generic [ref=f34e187]:
+                    - generic [ref=f34e188]:
+                      - textbox "Search clauses..." [ref=f34e193]
+                      - combobox "Filter by category" [ref=f34e194]
+                      - combobox [aria-hidden] [ref=f34e195]
+                    - button "New Clause" [ref=f34e196]
+                  - generic [ref=f34e197]:
+                    - button "Commercial 2" [ref=f34e198]:
+                      - heading "Commercial" [level=2] [ref=f34e201]
+                      - generic [ref=f34e202]: "2"
+                    - generic [ref=f34e203]:
+                      - generic [ref=f34e205]:
+                        - generic [ref=f34e206]:
+                          - button "Expand clause" [ref=f34e207]
+                          - generic [ref=f34e210]:
+                            - generic [ref=f34e211]:
+                              - paragraph [ref=f34e212]: Payment Terms
+                              - generic [ref=f34e213]: System
+                              - generic [ref=f34e214]: Active
+                            - paragraph [ref=f34e215]: Standard 30-day payment terms
+                        - button "Clause actions" [ref=f34e217]
+                      - generic [ref=f34e219]:
+                        - generic [ref=f34e220]:
+                          - button "Expand clause" [ref=f34e221]
+                          - generic [ref=f34e224]:
+                            - generic [ref=f34e225]:
+                              - paragraph [ref=f34e226]: Fee Schedule
+                              - generic [ref=f34e227]: System
+                              - generic [ref=f34e228]: Active
+                            - paragraph [ref=f34e229]: Professional fees and billing arrangements
+                        - button "Clause actions" [ref=f34e231]
+                  - generic [ref=f34e232]:
+                    - button "Compliance 1" [ref=f34e233]:
+                      - heading "Compliance" [level=2] [ref=f34e236]
+                      - generic [ref=f34e237]: "1"
+                    - generic [ref=f34e240]:
+                      - generic [ref=f34e241]:
+                        - button "Expand clause" [ref=f34e242]
+                        - generic [ref=f34e245]:
+                          - generic [ref=f34e246]:
+                            - paragraph [ref=f34e247]: Document Retention
+                            - generic [ref=f34e248]: System
+                            - generic [ref=f34e249]: Active
+                          - paragraph [ref=f34e250]: Records retention and disposal policy
+                      - button "Clause actions" [ref=f34e252]
+                  - generic [ref=f34e253]:
+                    - button "Engagement 3" [ref=f34e254]:
+                      - heading "Engagement" [level=2] [ref=f34e257]
+                      - generic [ref=f34e258]: "3"
+                    - generic [ref=f34e259]:
+                      - generic [ref=f34e261]:
+                        - generic [ref=f34e262]:
+                          - button "Expand clause" [ref=f34e263]
+                          - generic [ref=f34e266]:
+                            - generic [ref=f34e267]:
+                              - paragraph [ref=f34e268]: Engagement Acceptance
+                              - generic [ref=f34e269]: System
+                              - generic [ref=f34e270]: Active
+                            - paragraph [ref=f34e271]: Client acceptance of engagement terms
+                        - button "Clause actions" [ref=f34e273]
+                      - generic [ref=f34e275]:
+                        - generic [ref=f34e276]:
+                          - button "Expand clause" [ref=f34e277]
+                          - generic [ref=f34e280]:
+                            - generic [ref=f34e281]:
+                              - paragraph [ref=f34e282]: Scope of Work
+                              - generic [ref=f34e283]: System
+                              - generic [ref=f34e284]: Active
+                            - paragraph [ref=f34e285]: Description of services to be provided
+                        - button "Clause actions" [ref=f34e287]
+                      - generic [ref=f34e289]:
+                        - generic [ref=f34e290]:
+                          - button "Expand clause" [ref=f34e291]
+                          - generic [ref=f34e294]:
+                            - generic [ref=f34e295]:
+                              - paragraph [ref=f34e296]: Client Responsibilities
+                              - generic [ref=f34e297]: System
+                              - generic [ref=f34e298]: Active
+                            - paragraph [ref=f34e299]: Obligations and duties of the client
+                        - button "Clause actions" [ref=f34e301]
+                  - generic [ref=f34e302]:
+                    - button "Legal 6" [ref=f34e303]:
+                      - heading "Legal" [level=2] [ref=f34e306]
+                      - generic [ref=f34e307]: "6"
+                    - generic [ref=f34e308]:
+                      - generic [ref=f34e310]:
+                        - generic [ref=f34e311]:
+                          - button "Expand clause" [ref=f34e312]
+                          - generic [ref=f34e315]:
+                            - generic [ref=f34e316]:
+                              - paragraph [ref=f34e317]: Limitation of Liability
+                              - generic [ref=f34e318]: System
+                              - generic [ref=f34e319]: Active
+                            - paragraph [ref=f34e320]: Caps and exclusions on liability
+                        - button "Clause actions" [ref=f34e322]
+                      - generic [ref=f34e324]:
+                        - generic [ref=f34e325]:
+                          - button "Expand clause" [ref=f34e326]
+                          - generic [ref=f34e329]:
+                            - generic [ref=f34e330]:
+                              - paragraph [ref=f34e331]: Professional Indemnity
+                              - generic [ref=f34e332]: System
+                              - generic [ref=f34e333]: Active
+                            - paragraph [ref=f34e334]: Professional indemnity insurance disclosure
+                        - button "Clause actions" [ref=f34e336]
+                      - generic [ref=f34e338]:
+                        - generic [ref=f34e339]:
+                          - button "Expand clause" [ref=f34e340]
+                          - generic [ref=f34e343]:
+                            - generic [ref=f34e344]:
+                              - paragraph [ref=f34e345]: Confidentiality
+                              - generic [ref=f34e346]: System
+                              - generic [ref=f34e347]: Active
+                            - paragraph [ref=f34e348]: Mutual confidentiality obligations
+                        - button "Clause actions" [ref=f34e350]
+                      - generic [ref=f34e352]:
+                        - generic [ref=f34e353]:
+                          - button "Expand clause" [ref=f34e354]
+                          - generic [ref=f34e357]:
+                            - generic [ref=f34e358]:
+                              - paragraph [ref=f34e359]: Termination
+                              - generic [ref=f34e360]: System
+                              - generic [ref=f34e361]: Active
+                            - paragraph [ref=f34e362]: Terms for ending the engagement
+                        - button "Clause actions" [ref=f34e364]
+                      - generic [ref=f34e366]:
+                        - generic [ref=f34e367]:
+                          - button "Expand clause" [ref=f34e368]
+                          - generic [ref=f34e371]:
+                            - generic [ref=f34e372]:
+                              - paragraph [ref=f34e373]: Force Majeure
+                              - generic [ref=f34e374]: System
+                              - generic [ref=f34e375]: Active
+                            - paragraph [ref=f34e376]: Provisions for events beyond control
+                        - button "Clause actions" [ref=f34e378]
+                      - generic [ref=f34e380]:
+                        - generic [ref=f34e381]:
+                          - button "Expand clause" [ref=f34e382]
+                          - generic [ref=f34e385]:
+                            - generic [ref=f34e386]:
+                              - paragraph [ref=f34e387]: Dispute Resolution
+                              - generic [ref=f34e388]: System
+                              - generic [ref=f34e389]: Active
+                            - paragraph [ref=f34e390]: Process for resolving disagreements
+                        - button "Clause actions" [ref=f34e392]
+                  - generic [ref=f34e393]:
+                    - button "compliance 6" [ref=f34e394]:
+                      - heading "compliance" [level=2] [ref=f34e397]
+                      - generic [ref=f34e398]: "6"
+                    - generic [ref=f34e399]:
+                      - generic [ref=f34e401]:
+                        - generic [ref=f34e402]:
+                          - button "Expand clause" [ref=f34e403]
+                          - generic [ref=f34e406]:
+                            - generic [ref=f34e407]:
+                              - paragraph [ref=f34e408]: FICA Compliance
+                              - generic [ref=f34e409]: System
+                              - generic [ref=f34e410]: Active
+                            - paragraph [ref=f34e411]: Both parties to provide FICA documentation per Financial Intelligence Centre Act 38 of 2001
+                        - button "Clause actions" [ref=f34e413]
+                      - generic [ref=f34e415]:
+                        - generic [ref=f34e416]:
+                          - button "Expand clause" [ref=f34e417]
+                          - generic [ref=f34e420]:
+                            - generic [ref=f34e421]:
+                              - paragraph [ref=f34e422]: Body Corporate Clearance
+                              - generic [ref=f34e423]: System
+                              - generic [ref=f34e424]: Active
+                            - paragraph [ref=f34e425]: Seller to obtain levy clearance certificate from the body corporate per Sectional Titles Schemes Management Act 8 of 2011
+                        - button "Clause actions" [ref=f34e427]
+                      - generic [ref=f34e429]:
+                        - generic [ref=f34e430]:
+                          - button "Expand clause" [ref=f34e431]
+                          - generic [ref=f34e434]:
+                            - generic [ref=f34e435]:
+                              - paragraph [ref=f34e436]: FICA Consent
+                              - generic [ref=f34e437]: System
+                              - generic [ref=f34e438]: Active
+                            - paragraph [ref=f34e439]: Client consent for FICA/KYC verification under FIC Act
+                        - button "Clause actions" [ref=f34e441]
+                      - generic [ref=f34e443]:
+                        - generic [ref=f34e444]:
+                          - button "Expand clause" [ref=f34e445]
+                          - generic [ref=f34e448]:
+                            - generic [ref=f34e449]:
+                              - paragraph [ref=f34e450]: Municipal Rates Clearance
+                              - generic [ref=f34e451]: System
+                              - generic [ref=f34e452]: Active
+                            - paragraph [ref=f34e453]: "Seller to obtain municipal rates clearance certificate per Local Government: Municipal Systems Act 32 of 2000 section 118"
+                        - button "Clause actions" [ref=f34e455]
+                      - generic [ref=f34e457]:
+                        - generic [ref=f34e458]:
+                          - button "Expand clause" [ref=f34e459]
+                          - generic [ref=f34e462]:
+                            - generic [ref=f34e463]:
+                              - paragraph [ref=f34e464]: Data Protection (POPIA)
+                              - generic [ref=f34e465]: System
+                              - generic [ref=f34e466]: Active
+                            - paragraph [ref=f34e467]: Data protection and POPIA compliance provisions
+                        - button "Clause actions" [ref=f34e469]
+                      - generic [ref=f34e471]:
+                        - generic [ref=f34e472]:
+                          - button "Expand clause" [ref=f34e473]
+                          - generic [ref=f34e476]:
+                            - generic [ref=f34e477]:
+                              - paragraph [ref=f34e478]: Conflict of Interest Waiver
+                              - generic [ref=f34e479]: System
+                              - generic [ref=f34e480]: Active
+                            - paragraph [ref=f34e481]: Conflict of interest disclosure and waiver provisions
+                        - button "Clause actions" [ref=f34e483]
+                  - generic [ref=f34e484]:
+                    - button "conveyancing 4" [ref=f34e485]:
+                      - heading "conveyancing" [level=2] [ref=f34e488]
+                      - generic [ref=f34e489]: "4"
+                    - generic [ref=f34e490]:
+                      - generic [ref=f34e492]:
+                        - generic [ref=f34e493]:
+                          - button "Expand clause" [ref=f34e494]
+                          - generic [ref=f34e497]:
+                            - generic [ref=f34e498]:
+                              - paragraph [ref=f34e499]: Voetstoots (As Is)
+                              - generic [ref=f34e500]: System
+                              - generic [ref=f34e501]: Active
+                            - paragraph [ref=f34e502]: Seller sells in current condition; buyer accepts latent defects subject to CPA consumer-buyer carve-outs
+                        - button "Clause actions" [ref=f34e504]
+                      - generic [ref=f34e506]:
+                        - generic [ref=f34e507]:
+                          - button "Expand clause" [ref=f34e508]
+                          - generic [ref=f34e511]:
+                            - generic [ref=f34e512]:
+                              - paragraph [ref=f34e513]: Occupation Date & Occupational Rent
+                              - generic [ref=f34e514]: System
+                              - generic [ref=f34e515]: Active
+                            - paragraph [ref=f34e516]: Date buyer takes occupation; occupational rent per month if occupation does not coincide with registration date
+                        - button "Clause actions" [ref=f34e518]
+                      - generic [ref=f34e520]:
+                        - generic [ref=f34e521]:
+                          - button "Expand clause" [ref=f34e522]
+                          - generic [ref=f34e525]:
+                            - generic [ref=f34e526]:
+                              - paragraph [ref=f34e527]: Suspensive Condition -- Bond Approval
+                              - generic [ref=f34e528]: System
+                              - generic [ref=f34e529]: Active
+                            - paragraph [ref=f34e530]: Sale subject to buyer obtaining mortgage bond approval within N business days; failure voids the sale
+                        - button "Clause actions" [ref=f34e532]
+                      - generic [ref=f34e534]:
+                        - generic [ref=f34e535]:
+                          - button "Expand clause" [ref=f34e536]
+                          - generic [ref=f34e539]:
+                            - generic [ref=f34e540]:
+                              - paragraph [ref=f34e541]: Sectional Title Levies
+                              - generic [ref=f34e542]: System
+                              - generic [ref=f34e543]: Active
+                            - paragraph [ref=f34e544]: Monthly levies apportioned pro-rata to occupation date; special levies allocated to seller if raised pre-transfer
+                        - button "Clause actions" [ref=f34e546]
+                  - generic [ref=f34e547]:
+                    - button "engagement 1" [ref=f34e548]:
+                      - heading "engagement" [level=2] [ref=f34e551]
+                      - generic [ref=f34e552]: "1"
+                    - generic [ref=f34e555]:
+                      - generic [ref=f34e556]:
+                        - button "Expand clause" [ref=f34e557]
+                        - generic [ref=f34e560]:
+                          - generic [ref=f34e561]:
+                            - paragraph [ref=f34e562]: Scope of Mandate
+                            - generic [ref=f34e563]: System
+                            - generic [ref=f34e564]: Active
+                          - paragraph [ref=f34e565]: Defines the scope and limits of the attorney's mandate
+                      - button "Clause actions" [ref=f34e567]
+                  - generic [ref=f34e568]:
+                    - button "fees 4" [ref=f34e569]:
+                      - heading "fees" [level=2] [ref=f34e572]
+                      - generic [ref=f34e573]: "4"
+                    - generic [ref=f34e574]:
+                      - generic [ref=f34e576]:
+                        - generic [ref=f34e577]:
+                          - button "Expand clause" [ref=f34e578]
+                          - generic [ref=f34e581]:
+                            - generic [ref=f34e582]:
+                              - paragraph [ref=f34e583]: Fees — Hourly Basis
+                              - generic [ref=f34e584]: System
+                              - generic [ref=f34e585]: Active
+                            - paragraph [ref=f34e586]: Hourly fee structure for legal services
+                        - button "Clause actions" [ref=f34e588]
+                      - generic [ref=f34e590]:
+                        - generic [ref=f34e591]:
+                          - button "Expand clause" [ref=f34e592]
+                          - generic [ref=f34e595]:
+                            - generic [ref=f34e596]:
+                              - paragraph [ref=f34e597]: Fees — Tariff Basis
+                              - generic [ref=f34e598]: System
+                              - generic [ref=f34e599]: Active
+                            - paragraph [ref=f34e600]: Tariff-based fee structure per LSSA guidelines
+                        - button "Clause actions" [ref=f34e602]
+                      - generic [ref=f34e604]:
+                        - generic [ref=f34e605]:
+                          - button "Expand clause" [ref=f34e606]
+                          - generic [ref=f34e609]:
+                            - generic [ref=f34e610]:
+                              - paragraph [ref=f34e611]: Fees — Contingency
+                              - generic [ref=f34e612]: System
+                              - generic [ref=f34e613]: Active
+                            - paragraph [ref=f34e614]: Contingency fee arrangement per Contingency Fees Act
+                        - button "Clause actions" [ref=f34e616]
+                      - generic [ref=f34e618]:
+                        - generic [ref=f34e619]:
+                          - button "Expand clause" [ref=f34e620]
+                          - generic [ref=f34e623]:
+                            - generic [ref=f34e624]:
+                              - paragraph [ref=f34e625]: Transfer Duty Liability
+                              - generic [ref=f34e626]: System
+                              - generic [ref=f34e627]: Active
+                            - paragraph [ref=f34e628]: Purchaser liable for transfer duty per Transfer Duty Act 40 of 1949 unless the transaction is subject to VAT
+                        - button "Clause actions" [ref=f34e630]
+                  - generic [ref=f34e631]:
+                    - button "general 4" [ref=f34e632]:
+                      - heading "general" [level=2] [ref=f34e635]
+                      - generic [ref=f34e636]: "4"
+                    - generic [ref=f34e637]:
+                      - generic [ref=f34e639]:
+                        - generic [ref=f34e640]:
+                          - button "Expand clause" [ref=f34e641]
+                          - generic [ref=f34e644]:
+                            - generic [ref=f34e645]:
+                              - paragraph [ref=f34e646]: Jurisdiction & Domicilium
+                              - generic [ref=f34e647]: System
+                              - generic [ref=f34e648]: Active
+                            - paragraph [ref=f34e649]: Jurisdiction and domicilium citandi et executandi provisions
+                        - button "Clause actions" [ref=f34e651]
+                      - generic [ref=f34e653]:
+                        - generic [ref=f34e654]:
+                          - button "Expand clause" [ref=f34e655]
+                          - generic [ref=f34e658]:
+                            - generic [ref=f34e659]:
+                              - paragraph [ref=f34e660]: Termination of Mandate
+                              - generic [ref=f34e661]: System
+                              - generic [ref=f34e662]: Active
+                            - paragraph [ref=f34e663]: Provisions for termination of the attorney-client relationship
+                        - button "Clause actions" [ref=f34e665]
+                      - generic [ref=f34e667]:
+                        - generic [ref=f34e668]:
+                          - button "Expand clause" [ref=f34e669]
+                          - generic [ref=f34e672]:
+                            - generic [ref=f34e673]:
+                              - paragraph [ref=f34e674]: Breach & Cost of Cancellation
+                              - generic [ref=f34e675]: System
+                              - generic [ref=f34e676]: Active
+                            - paragraph [ref=f34e677]: Breach remedies; defaulting party liable for cancellation costs, agent commission, and reinstatement charges
+                        - button "Clause actions" [ref=f34e679]
+                      - generic [ref=f34e681]:
+                        - generic [ref=f34e682]:
+                          - button "Expand clause" [ref=f34e683]
+                          - generic [ref=f34e686]:
+                            - generic [ref=f34e687]:
+                              - paragraph [ref=f34e688]: SA Law & Jurisdiction
+                              - generic [ref=f34e689]: System
+                              - generic [ref=f34e690]: Active
+                            - paragraph [ref=f34e691]: Agreement governed by South African law; parties submit to jurisdiction of Magistrate's Court per section 45 of the Magistrates' Courts Act 32 of 1944
+                        - button "Clause actions" [ref=f34e693]
+                  - generic [ref=f34e694]:
+                    - button "trust 1" [ref=f34e695]:
+                      - heading "trust" [level=2] [ref=f34e698]
+                      - generic [ref=f34e699]: "1"
+                    - generic [ref=f34e702]:
+                      - generic [ref=f34e703]:
+                        - button "Expand clause" [ref=f34e704]
+                        - generic [ref=f34e707]:
+                          - generic [ref=f34e708]:
+                            - paragraph [ref=f34e709]: Trust Account Deposits
+                            - generic [ref=f34e710]: System
+                            - generic [ref=f34e711]: Active
+                          - paragraph [ref=f34e712]: Trust account deposit requirements per Section 86 of the Attorneys Act
+                      - button "Clause actions" [ref=f34e714]
+  - region "Notifications alt+T"

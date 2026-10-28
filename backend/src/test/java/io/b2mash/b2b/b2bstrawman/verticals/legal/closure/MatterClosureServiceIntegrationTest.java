@@ -15,6 +15,11 @@ import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -24,6 +29,8 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
@@ -33,6 +40,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterClosedEvent
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterReopenedEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -93,6 +101,9 @@ class MatterClosureServiceIntegrationTest {
   @Autowired private AuditService auditService;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private StorageService storageService;
+  @Autowired private InvoiceRepository invoiceRepository;
+  @Autowired private InvoiceLineRepository invoiceLineRepository;
+  @Autowired private TaxRateRepository taxRateRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -684,15 +695,144 @@ class MatterClosureServiceIntegrationTest {
     assertThat(pdfText)
         .as("closure.notes must render the operator notes")
         .contains("LZKC-018 marker note");
-    assertThat(pdfText)
-        .as("matter.total_fees_billed must render a value (0 — no billed invoices seeded)")
-        .containsPattern("Total fees billed:\\s*0");
-    assertThat(pdfText)
-        .as("matter.total_disbursements must render a value (0 — no billed disbursements seeded)")
-        .containsPattern("Total disbursements:\\s*0");
+    // 626E: totals are BigDecimals rendered through currency hints (JDK en-ZA, U+00A0 grouping).
+    String text = pdfText.replace('\u00a0', ' ');
+    assertThat(text)
+        .as("matter.total_fees_billed renders as currency (R0,00 — no issued fee notes seeded)")
+        .containsPattern("Total fees billed:\\s*R0,00");
+    assertThat(text)
+        .as("matter.total_vat renders as currency (R0,00 — no issued fee notes seeded)")
+        .containsPattern("VAT:\\s*R0,00");
+    assertThat(text)
+        .as("matter.total_disbursements renders as currency (R0,00 — no issued fee notes seeded)")
+        .containsPattern("Total disbursements:\\s*R0,00");
     assertThat(pdfText)
         .as("matter.duration_months must render a value (0 — matter created today)")
         .containsPattern("Duration \\(months\\):\\s*0");
+  }
+
+  // ==========================================================================
+  // 626E (N-4 / G-D14) — closure-letter totals add up: fees and disbursements
+  // excl. VAT from the lines of the matter's ISSUED fee notes, VAT once, a
+  // DRAFT note on the same matter ignored. Proven through the real PDF.
+  // ==========================================================================
+
+  @Test
+  void close_withIssuedFeeNotes_closureLetterTotalsAddUp() {
+    UUID projectId = createProject("626E Closure Arithmetic Matter");
+
+    runInTenantAsOwner(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  TaxRate vatRate =
+                      taxRateRepository.findAllByOrderBySortOrder().stream()
+                          .filter(r -> !r.isExempt() && r.getRate().signum() > 0)
+                          .findFirst()
+                          .orElseThrow();
+
+                  // SENT: fee line R1 800 + VAT R270, zero-rated disbursement line R750 → R2 820.
+                  var sent =
+                      invoiceRepository.saveAndFlush(
+                          new Invoice(
+                              customerId,
+                              "ZAR",
+                              "Closure Svc Client",
+                              null,
+                              null,
+                              "Matter Closure Svc Firm",
+                              memberId));
+                  var feeLine =
+                      new InvoiceLine(
+                          sent.getId(),
+                          projectId,
+                          null,
+                          "Consultation",
+                          BigDecimal.ONE,
+                          new BigDecimal("1800.00"),
+                          0);
+                  feeLine.applyTaxRate(vatRate, new BigDecimal("270.00"));
+                  invoiceLineRepository.save(feeLine);
+                  var disbursementLine =
+                      new InvoiceLine(
+                          sent.getId(),
+                          projectId,
+                          null,
+                          "Sheriff fees: service",
+                          BigDecimal.ONE,
+                          new BigDecimal("750.00"),
+                          1);
+                  disbursementLine.setLineType(InvoiceLineType.DISBURSEMENT);
+                  invoiceLineRepository.save(disbursementLine);
+                  sent.recalculateTotals(
+                      new BigDecimal("2550.00"), true, new BigDecimal("270.00"), false);
+                  sent.approve("INV-626E-1", memberId, 30);
+                  sent.markSent();
+                  invoiceRepository.saveAndFlush(sent);
+
+                  // DRAFT on the same matter → never counted.
+                  var draft =
+                      invoiceRepository.saveAndFlush(
+                          new Invoice(
+                              customerId,
+                              "ZAR",
+                              "Closure Svc Client",
+                              null,
+                              null,
+                              "Matter Closure Svc Firm",
+                              memberId));
+                  invoiceLineRepository.save(
+                      new InvoiceLine(
+                          draft.getId(),
+                          projectId,
+                          null,
+                          "Unbilled draft work",
+                          BigDecimal.ONE,
+                          new BigDecimal("9999.00"),
+                          0));
+                  draft.recalculateTotals(new BigDecimal("9999.00"), false, BigDecimal.ZERO, false);
+                  invoiceRepository.saveAndFlush(draft);
+                }));
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED,
+                        null,
+                        /* generateClosureLetter */ true,
+                        /* generateStatementOfAccount */ false,
+                        /* override */ true,
+                        VALID_JUSTIFICATION,
+                        null,
+                        null),
+                    memberId));
+
+    String pdfText =
+        runInTenantReturning(
+            () -> {
+              var generated =
+                  generatedDocumentRepository
+                      .findById(response.closureLetterDocumentId())
+                      .orElseThrow();
+              byte[] pdfBytes = storageService.download(generated.getS3Key());
+              try (var doc = Loader.loadPDF(pdfBytes)) {
+                return new PDFTextStripper().getText(doc);
+              } catch (IOException e) {
+                throw new UncheckedIOException("Failed to extract closure letter PDF text", e);
+              }
+            });
+
+    String text = pdfText.replaceAll("[\\s\\u00a0]+", " ");
+    // 1 800 + 270 + 750 = 2 820 = the SENT note total; the DRAFT note's 9 999 is not counted.
+    assertThat(text)
+        .contains("Total fees billed: R1 800,00")
+        .contains("VAT: R270,00")
+        .contains("Total disbursements: R750,00")
+        .doesNotContain("9 999")
+        .doesNotContain("2550");
   }
 
   // ==========================================================================

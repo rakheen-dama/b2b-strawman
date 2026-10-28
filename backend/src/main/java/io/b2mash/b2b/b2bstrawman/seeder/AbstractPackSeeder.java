@@ -278,9 +278,6 @@ public abstract class AbstractPackSeeder<D> {
     if (packVersionGate.backfillAndTryOpen(
         type, packId, appliedVersion, getPackVersion(pack), getPackName(pack), tenantId)) {
       reconcileExistingPack(pack, loaded.resource(), tenantId);
-      // Re-record the reconciled version in the OrgSettings pack-status list (the ADR-356 backfill
-      // source), as PackInstallService does for installer-managed types after a reconcile.
-      recordPackApplication(settings, pack);
     }
   }
 

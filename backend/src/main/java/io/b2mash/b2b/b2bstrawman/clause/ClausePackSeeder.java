@@ -204,8 +204,10 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
    * declaration covers (or more than one does) is a malformed pack and throws {@link
    * IllegalStateException}, like {@link PackReconcileEntry#parse}; an unsupported entity / field /
    * value type is logged at WARN and skipped (resolver convention); a missing template or clause
-   * row is logged at INFO as "Reconcile skipped (no pack-seeded row)", like {@link
-   * PackReconcileEntry#applyAndLog}.
+   * row is logged at INFO as "Reconcile skipped (no pack-seeded row)", and an existing row whose
+   * {@code required} / sort order differ from the declaration as "Reconcile skipped (edited)", in
+   * {@link PackReconcileEntry#applyAndLog}'s wording. Every association log line names the pair as
+   * {@code '<slug>' -> '<templateKey>'}.
    */
   @Override
   protected void applyReconcileEntry(
@@ -248,36 +250,54 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
             .filter(c -> c.getSource() == ClauseSource.SYSTEM && c.isActive());
     if (templates.isEmpty() || clause.isEmpty()) {
       log.info(
-          "Reconcile skipped (no pack-seeded row): tenant={} pack={} {} '{}' field {}",
+          "Reconcile skipped (no pack-seeded row): tenant={} pack={} {} '{}' -> '{}' field {}",
           tenantId,
           pack.packId(),
           ASSOCIATION_ENTITY,
           slug,
+          templateKey,
           ASSOCIATION_FIELD);
       return;
     }
 
     var templateId = templates.getFirst().getId();
-    if (templateClauseRepository.existsByTemplateIdAndClauseId(templateId, clause.get().getId())) {
-      log.debug(
-          "Reconcile no-op: tenant={} pack={} {} '{}' field {} already current",
-          tenantId,
-          pack.packId(),
-          ASSOCIATION_ENTITY,
-          slug,
-          ASSOCIATION_FIELD);
+    boolean required = assoc.requiredSlugs() != null && assoc.requiredSlugs().contains(slug);
+    int sortOrder = assoc.clauseSlugs().indexOf(slug);
+    var existing =
+        templateClauseRepository.findByTemplateIdAndClauseId(templateId, clause.get().getId());
+    if (existing.isPresent()) {
+      // Skip-existing: the row is never written, whether it matches the declaration or not.
+      if (existing.get().isRequired() == required && existing.get().getSortOrder() == sortOrder) {
+        log.debug(
+            "Reconcile no-op: tenant={} pack={} {} '{}' -> '{}' field {} already current",
+            tenantId,
+            pack.packId(),
+            ASSOCIATION_ENTITY,
+            slug,
+            templateKey,
+            ASSOCIATION_FIELD);
+      } else {
+        log.info(
+            "Reconcile skipped (edited): tenant={} pack={} {} '{}' -> '{}' field {} differs from"
+                + " the shipped value — left alone",
+            tenantId,
+            pack.packId(),
+            ASSOCIATION_ENTITY,
+            slug,
+            templateKey,
+            ASSOCIATION_FIELD);
+      }
       return;
     }
-    boolean required = assoc.requiredSlugs() != null && assoc.requiredSlugs().contains(slug);
     templateClauseRepository.save(
-        new TemplateClause(
-            templateId, clause.get().getId(), assoc.clauseSlugs().indexOf(slug), required));
+        new TemplateClause(templateId, clause.get().getId(), sortOrder, required));
     log.info(
-        "Reconcile applied: tenant={} pack={} {} '{}' field {} updated",
+        "Reconcile applied: tenant={} pack={} {} '{}' -> '{}' field {} updated",
         tenantId,
         pack.packId(),
         ASSOCIATION_ENTITY,
         slug,
+        templateKey,
         ASSOCIATION_FIELD);
   }
 

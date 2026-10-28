@@ -335,17 +335,26 @@ class ClausePackSeederIntegrationTest {
       assertThat(ledgerVersion()).isEqualTo("2");
       assertThat(logs)
           .anyMatch(m -> m.startsWith("Reconciling CLAUSE pack conveyancing-za-clauses v1 -> v2"));
-      assertThat(
-              logs.stream()
-                  .filter(m -> m.startsWith("Reconcile applied:"))
-                  .filter(m -> m.contains("pack=" + CONVEYANCING_PACK))
-                  .filter(m -> m.contains("clause_template_association"))
-                  .count())
-          .isEqualTo(DECLARED_PAIRS);
-      assertThat(logs).noneMatch(m -> m.startsWith("Reconcile entry ignored"));
-      // R-11: like the installer-managed types, the OrgSettings pack-status list re-records the
-      // reconciled version (the ADR-356 backfill source agrees with the ledger).
-      assertThat(orgSettingsClauseEntries("2") - v2EntriesBefore).isEqualTo(1);
+      List<String> applied =
+          logs.stream()
+              .filter(m -> m.startsWith("Reconcile applied:"))
+              .filter(m -> m.contains("pack=" + CONVEYANCING_PACK))
+              .filter(m -> m.contains("clause_template_association"))
+              .toList();
+      assertThat(applied).hasSize(DECLARED_PAIRS);
+      // Each applied line names its pair ('<slug>' -> '<templateKey>'), once.
+      for (var declared : DECLARED.entrySet()) {
+        for (String slug : declared.getValue().slugs()) {
+          String pair = "'" + slug + "' -> '" + declared.getKey() + "'";
+          assertThat(applied.stream().filter(m -> m.contains(pair))).as(pair).hasSize(1);
+        }
+      }
+      assertThat(logs)
+          .noneMatch(m -> m.startsWith("Reconcile entry ignored"))
+          .noneMatch(m -> m.startsWith("Reconcile skipped"));
+      // R-11 (fix cycle 1): the reconcile does not re-record the version in the OrgSettings
+      // pack-status list; the pack_install ledger is the gate.
+      assertThat(orgSettingsClauseEntries("2")).isEqualTo(v2EntriesBefore);
     } finally {
       restoreV2();
     }
@@ -357,13 +366,26 @@ class ClausePackSeederIntegrationTest {
       simulateV1Tenant(true);
       assertThat(associations(OTP)).containsExactly(new Row("voetstoots", 42, false));
 
-      seedLegalTenant();
+      List<String> logs = captureLogs(this::seedLegalTenant, ClausePackSeeder.class);
 
       List<Row> expected = new ArrayList<>(expectedRows(DECLARED.get(OTP)));
       expected.removeIf(r -> r.slug().equals("voetstoots"));
       expected.add(new Row("voetstoots", 42, false));
       assertThat(associations(OTP)).containsExactlyInAnyOrderElementsOf(expected);
       assertThat(ledgerVersion()).isEqualTo("2");
+      // The firm edit is reported, not silently treated as current.
+      assertThat(logs)
+          .filteredOn(m -> m.startsWith("Reconcile skipped (edited):"))
+          .singleElement()
+          .satisfies(
+              m ->
+                  assertThat(m)
+                      .contains("tenant=" + legalSchema)
+                      .contains("pack=" + CONVEYANCING_PACK)
+                      .contains("clause_template_association 'voetstoots' -> '" + OTP + "'")
+                      .contains("left alone"));
+      assertThat(logs.stream().filter(m -> m.startsWith("Reconcile applied:")))
+          .hasSize(DECLARED_PAIRS - 1);
     } finally {
       restoreV2();
       inLegalTenant(

@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,6 +25,9 @@ public interface TemplateClauseRepository extends JpaRepository<TemplateClause, 
   void deleteAllByTemplateId(UUID templateId);
 
   boolean existsByTemplateIdAndClauseId(UUID templateId, UUID clauseId);
+
+  /** At most one row: {@code template_clauses_unique (template_id, clause_id)}. */
+  Optional<TemplateClause> findByTemplateIdAndClauseId(UUID templateId, UUID clauseId);
 
   @Query(
       "SELECT COALESCE(MAX(tc.sortOrder), -1) FROM TemplateClause tc WHERE tc.templateId = :templateId")

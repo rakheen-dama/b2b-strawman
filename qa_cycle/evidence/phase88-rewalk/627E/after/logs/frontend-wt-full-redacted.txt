@@ -1,5 +1,5 @@
 
-> frontend@0.1.0 dev /Users/rakheendama/Projects/2026/worktree-epic-627E/frontend
+> frontend@0.1.0 dev $WT/frontend
 > next dev
 
 ▲ Next.js 16.3.8 (Turbopack)

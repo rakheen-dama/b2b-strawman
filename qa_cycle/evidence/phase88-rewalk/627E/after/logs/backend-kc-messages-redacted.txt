@@ -28,7 +28,7 @@
 [non-json] [INFO] 
 [non-json] [INFO] --- spring-boot:4.0.2:run (default-cli) @ b2b-strawman-backend ---
 [non-json] [INFO] Attaching agents: []
-2026-10-28T10:24:56.842041Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | Starting BackendApplication using Java 25.0.1 with PID 5527 (/Users/rakheendama/Projects/2026/b2b-strawman/backend/target/classes started by rakheendama in /Users/rakheendama/Projects/2026/b2b-strawman/backend)
+2026-10-28T10:24:56.842041Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | Starting BackendApplication using Java 25.0.1 with PID 5527 ($MAIN/backend/target/classes started by rakheendama in $MAIN/backend)
 2026-10-28T10:24:56.845910Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | The following 2 profiles are active: "local", "keycloak"
 2026-10-28T10:24:58.013689Z INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode.
 2026-10-28T10:24:58.283432Z INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 263 ms. Found 105 JPA repository interfaces.

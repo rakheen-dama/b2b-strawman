@@ -23,17 +23,17 @@
 [non-json] [INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ b2b-strawman-backend ---
 [non-json] [INFO] Recompiling the module because of changed source code.
 [non-json] [INFO] Compiling 760 source files with javac [debug parameters release 25] to target/test-classes
-[non-json] [INFO] /Users/rakheendama/Projects/2026/b2b-strawman/backend/src/test/java/io/b2mash/b2b/b2bstrawman/audit/export/AuditPdfExporterIntegrationTest.java: Some input files use or override a deprecated API.
-[non-json] [INFO] /Users/rakheendama/Projects/2026/b2b-strawman/backend/src/test/java/io/b2mash/b2b/b2bstrawman/audit/export/AuditPdfExporterIntegrationTest.java: Recompile with -Xlint:deprecation for details.
-[non-json] [INFO] /Users/rakheendama/Projects/2026/b2b-strawman/backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Some input files use unchecked or unsafe operations.
-[non-json] [INFO] /Users/rakheendama/Projects/2026/b2b-strawman/backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Recompile with -Xlint:unchecked for details.
+[non-json] [INFO] $MAIN/backend/src/test/java/io/b2mash/b2b/b2bstrawman/audit/export/AuditPdfExporterIntegrationTest.java: Some input files use or override a deprecated API.
+[non-json] [INFO] $MAIN/backend/src/test/java/io/b2mash/b2b/b2bstrawman/audit/export/AuditPdfExporterIntegrationTest.java: Recompile with -Xlint:deprecation for details.
+[non-json] [INFO] $MAIN/backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Some input files use unchecked or unsafe operations.
+[non-json] [INFO] $MAIN/backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanIdempotencyTest.java: Recompile with -Xlint:unchecked for details.
 [non-json] [INFO] 
 [non-json] [INFO] <<< spring-boot:4.0.2:run (default-cli) < test-compile @ b2b-strawman-backend <<<
 [non-json] [INFO] 
 [non-json] [INFO] 
 [non-json] [INFO] --- spring-boot:4.0.2:run (default-cli) @ b2b-strawman-backend ---
 [non-json] [INFO] Attaching agents: []
-2026-10-28T10:22:56.415014Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | Starting BackendApplication using Java 25.0.1 with PID 4150 (/Users/rakheendama/Projects/2026/b2b-strawman/backend/target/classes started by rakheendama in /Users/rakheendama/Projects/2026/b2b-strawman/backend)
+2026-10-28T10:22:56.415014Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | Starting BackendApplication using Java 25.0.1 with PID 4150 ($MAIN/backend/target/classes started by rakheendama in $MAIN/backend)
 2026-10-28T10:22:56.418894Z INFO io.b2mash.b2b.b2bstrawman.BackendApplication | The following 2 profiles are active: "local", "keycloak"
 2026-10-28T10:22:57.649369Z INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode.
 2026-10-28T10:22:57.919680Z INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 263 ms. Found 105 JPA repository interfaces.

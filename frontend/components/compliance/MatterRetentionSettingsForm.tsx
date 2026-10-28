@@ -5,7 +5,7 @@ import { Button } from "@b2mash/ui/button";
 import { Input } from "@b2mash/ui/input";
 import { Loader2 } from "lucide-react";
 import { updateMatterRetentionYears } from "@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions";
-import { matterRetentionYearsSchema } from "@/lib/schemas";
+import { matterRetentionYearsSchema, MATTER_RETENTION_OWNER_ONLY_MESSAGE } from "@/lib/schemas";
 
 interface MatterRetentionSettingsFormProps {
   slug: string;
@@ -89,7 +89,11 @@ export function MatterRetentionSettingsForm({
             step={1}
             value={years}
             disabled={!canEdit}
-            onChange={(e) => setYears(e.target.value)}
+            onChange={(e) => {
+              setYears(e.target.value);
+              // The error described the value that was saved; once it is edited, it no longer applies.
+              setYearsError(null);
+            }}
             aria-invalid={yearsError ? true : undefined}
             aria-describedby={yearsError ? "matter-retention-years-error" : undefined}
             className="mt-1 w-full"
@@ -118,7 +122,7 @@ export function MatterRetentionSettingsForm({
         </Button>
         {!canEdit && (
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Only the firm owner can change the matter retention period.
+            {MATTER_RETENTION_OWNER_ONLY_MESSAGE}
           </p>
         )}
         {message && (

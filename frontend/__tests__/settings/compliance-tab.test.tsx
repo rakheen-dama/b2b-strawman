@@ -114,12 +114,31 @@ describe("renderComplianceTab — matter retention period (Phase 88 U17)", () =>
     expect(mockApiGet).not.toHaveBeenCalledWith("/api/settings");
   });
 
-  it("settings read failed: falls back to the 5-year default", async () => {
+  it("settings read omits the period: falls back to the 5-year default", async () => {
+    mockCaps.mockResolvedValue(OWNER);
+    const withoutYears: Record<string, unknown> = { ...SETTINGS };
+    delete withoutYears.legalMatterRetentionYears;
+    routeGets(withoutYears);
+
+    render(await renderComplianceTab({ slug: "acme", searchParams: {} }));
+
+    expect(screen.getByTestId("matter-retention-form-mount")).toHaveTextContent("acme|5|true");
+  });
+
+  it("settings read failed: load error instead of the form, nothing to save", async () => {
     mockCaps.mockResolvedValue(OWNER);
     routeGets(new Error("settings down"));
 
     render(await renderComplianceTab({ slug: "acme", searchParams: {} }));
 
-    expect(screen.getByTestId("matter-retention-form-mount")).toHaveTextContent("acme|5|true");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Couldn't load the current matter retention period. Reload the page to change it."
+    );
+    expect(screen.getByRole("heading", { name: "Matter retention" })).toBeInTheDocument();
+    expect(screen.queryByTestId("matter-retention-form-mount")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save retention period" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+    // The sibling sections keep their existing fallback behaviour.
+    expect(screen.getByTestId("compliance-settings-form-mount")).toBeInTheDocument();
   });
 });

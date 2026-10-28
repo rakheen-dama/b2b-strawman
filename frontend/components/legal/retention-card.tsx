@@ -5,9 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatLocalDate } from "@/lib/format";
 import { daysUntil } from "@/lib/date-utils";
 import { settingsHref } from "@/lib/settings-nav";
-
-/** The seeded firm matter retention period (backend `DEFAULT_LEGAL_MATTER_RETENTION_YEARS`). */
-const DEFAULT_RETENTION_YEARS = 5;
+import { DEFAULT_MATTER_RETENTION_YEARS } from "@/lib/schemas";
 
 export interface RetentionCardProps {
   /** Matter status — the card renders for COMPLETED and CLOSED matters only. */
@@ -68,8 +66,11 @@ export function deriveRetentionYears(
 /** "(firm default 5 years)" only when both the matter's period and the firm setting are 5. */
 function periodNote(matterYears: number | null, firmRetentionYears: number | null): string | null {
   if (matterYears == null) return null;
-  if (matterYears === DEFAULT_RETENTION_YEARS && firmRetentionYears === DEFAULT_RETENTION_YEARS) {
-    return `(firm default ${DEFAULT_RETENTION_YEARS} years)`;
+  if (
+    matterYears === DEFAULT_MATTER_RETENTION_YEARS &&
+    firmRetentionYears === DEFAULT_MATTER_RETENTION_YEARS
+  ) {
+    return `(firm default ${DEFAULT_MATTER_RETENTION_YEARS} years)`;
   }
   return `(${matterYears}-year retention period)`;
 }
@@ -132,7 +133,7 @@ export function RetentionCard({
           <strong className={STRONG}>
             {firmRetentionYears} {firmRetentionYears === 1 ? "year" : "years"}
           </strong>
-          {firmRetentionYears === DEFAULT_RETENTION_YEARS ? " (firm default)" : ""}
+          {firmRetentionYears === DEFAULT_MATTER_RETENTION_YEARS ? " (firm default)" : ""}
         </>
       );
     return (

@@ -80,7 +80,12 @@ export type { XeroSettingsFormData } from "./xero-settings";
 export { confidenceEnum, variableFillSchema, draftingVariableFillsSchema } from "./drafting";
 export type { VariableFillFormData, DraftingVariableFillsFormData } from "./drafting";
 
-export { paymentTermsDaysSchema, matterRetentionYearsSchema } from "./settings";
+export {
+  paymentTermsDaysSchema,
+  matterRetentionYearsSchema,
+  DEFAULT_MATTER_RETENTION_YEARS,
+  MATTER_RETENTION_OWNER_ONLY_MESSAGE,
+} from "./settings";
 
 export { recordInvoicePaymentSchema } from "./invoice";
 export type { RecordInvoicePaymentFormData } from "./invoice";

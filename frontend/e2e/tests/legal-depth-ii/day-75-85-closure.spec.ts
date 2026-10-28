@@ -314,6 +314,20 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     const scheduledDeletion = retention.getByTestId("retention-card-scheduled-deletion");
     await expect(scheduledDeletion).toContainText(String(new Date().getFullYear() + 5));
     await expect(scheduledDeletion).toContainText("firm default 5 years");
+
+    // Full date: the deletion date is the UTC calendar date of the close + 5 years, and the card
+    // renders "Clock started on" from that same UTC date, so derive the expected date from the
+    // card itself (no dependence on when the run happens relative to UTC midnight). A 29 Feb
+    // close lands on 28 Feb — close year + 5 is never a leap year.
+    const clock = /Clock started on\s+(\d{1,2})\s+(\S+)\s+(\d{4})/.exec(
+      (await retention.textContent()) ?? ""
+    );
+    expect(clock, "retention card renders the clock start date").not.toBeNull();
+    const [, clockDay, clockMonth, clockYear] = clock!;
+    const leapDay = clockDay === "29" && clockMonth.startsWith("Feb");
+    const expectedDeletion = `${leapDay ? "28" : clockDay} ${clockMonth} ${Number(clockYear) + 5}`;
+    await expect(scheduledDeletion).toContainText(`Scheduled deletion: ${expectedDeletion}`);
+    await expect(retention).toContainText(`permanently deleted on ${expectedDeletion}`);
   });
 
   // ── 85.5-85.9: Admin (Bob) — override not available, step 3 ───────

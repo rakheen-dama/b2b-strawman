@@ -14,7 +14,7 @@ import type {
   UpdateDataProtectionSettingsRequest,
   CompliancePackDetail,
 } from "@/lib/types";
-import { matterRetentionYearsSchema } from "@/lib/schemas";
+import { matterRetentionYearsSchema, MATTER_RETENTION_OWNER_ONLY_MESSAGE } from "@/lib/schemas";
 
 interface ActionResult {
   success: boolean;
@@ -51,8 +51,6 @@ export async function updateComplianceSettings(
   return { success: true };
 }
 
-const OWNER_ONLY_RETENTION_YEARS = "Only the firm owner can change the matter retention period.";
-
 /**
  * Firm matter retention period (Phase 88 U17, ADR-354). Rides the data-protection settings PATCH,
  * which is owner-only on the backend, and sends only `legalMatterRetentionYears` — every other
@@ -70,7 +68,7 @@ export async function updateMatterRetentionYears(
 
   const caps = await fetchMyCapabilities();
   if (!caps.isOwner) {
-    return { success: false, error: OWNER_ONLY_RETENTION_YEARS };
+    return { success: false, error: MATTER_RETENTION_OWNER_ONLY_MESSAGE };
   }
 
   // Same 1–30 whole-years rule as the form; the backend's 400 only says "1 field(s) have
@@ -89,7 +87,7 @@ export async function updateMatterRetentionYears(
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
-        return { success: false, error: OWNER_ONLY_RETENTION_YEARS };
+        return { success: false, error: MATTER_RETENTION_OWNER_ONLY_MESSAGE };
       }
       return { success: false, error: error.message };
     }

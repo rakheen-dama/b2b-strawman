@@ -106,6 +106,21 @@ describe("MatterRetentionSettingsForm", () => {
     expect(screen.getByLabelText(LABEL)).not.toHaveAttribute("aria-invalid");
   });
 
+  it("clears the field error as soon as the value is edited", async () => {
+    renderForm();
+
+    save("31");
+    await screen.findByRole("alert");
+    expect(screen.getByLabelText(LABEL)).toHaveAttribute("aria-invalid", "true");
+
+    fireEvent.change(screen.getByLabelText(LABEL), { target: { value: "3" } });
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByLabelText(LABEL)).not.toHaveAttribute("aria-invalid");
+    expect(screen.getByLabelText(LABEL)).not.toHaveAttribute("aria-describedby");
+    expect(mockUpdateMatterRetentionYears).not.toHaveBeenCalled();
+  });
+
   it("renders the action's error", async () => {
     mockUpdateMatterRetentionYears.mockResolvedValue({
       success: false,

@@ -110,6 +110,9 @@ export interface DiaryFilters {
 /** §12.6.2: fee earner is filtered client-side unless the window exceeds 31 days. */
 export const FEE_EARNER_CLIENT_FILTER_MAX_DAYS = 31;
 
+/** My work's "Upcoming" window (Phase 88 G-D5): tomorrow through today + 14. */
+export const UPCOMING_DIARY_DAYS = 14;
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Strict yyyy-MM-dd (UTC round-trip rejects 2026-02-31) — same idiom as invoices/unbilled/page.tsx. */

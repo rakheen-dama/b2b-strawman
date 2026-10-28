@@ -2,38 +2,31 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@b2mash/ui/badge";
 import { formatDuration } from "@/lib/format";
-import { DiaryEventRow } from "@/components/diary/diary-event-row";
-import type { DiaryEventResponse } from "@/app/(app)/org/[slug]/diary/diary-types";
+import { DIARY_KIND_SINGULAR, DiaryEventRow } from "@/components/diary/diary-event-row";
+import { daysBetween, formatDiaryDay } from "@/app/(app)/org/[slug]/diary/diary-types";
+import type { DiaryEventsResult } from "@/app/(app)/org/[slug]/my-work/todays-diary";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
-import type { PersonalDeadline } from "@/lib/dashboard-types";
+import {
+  UPCOMING_LOAD_FAILED_COPY,
+  UPCOMING_UNIDENTIFIED_COPY,
+  UpcomingDiaryList,
+} from "./upcoming-diary-list";
 
 /** Rows shown before "+n more" — the Diary owns the full day. */
 const MAX_DIARY_ROWS = 5;
 
-/**
- * GET /api/diary?from=today&to=today for the current user (Phase 87 613D): today's rows plus the
- * open-overdue band (rows dated before today). `"unidentified"` = the signed-in user couldn't be
- * matched to a member, so there is no personal diary to show; `null` = the diary could not be
- * loaded.
- */
-export type TodaysDiaryEvents = DiaryEventResponse[] | "unidentified" | null;
+/** Today's diary (today's rows plus the open-overdue band, Phase 87 613D) — used by Home too. */
+export type TodaysDiaryEvents = DiaryEventsResult;
 
 interface TodaysAgendaProps {
   slug: string;
   /** Server "today" (yyyy-MM-dd) — the date the diary was fetched for. */
   today: string;
   diaryEvents: TodaysDiaryEvents;
+  /** GET /api/diary from tomorrow through today + 14 for the current user — Upcoming + Next deadline. */
+  upcomingEvents: DiaryEventsResult;
   todayEntries: MyWorkTimeEntryItem[];
-  upcomingDeadlines: PersonalDeadline[];
   weeklyCapacityHours?: number;
-}
-
-function getDaysRemaining(dueDate: string): number {
-  const now = new Date();
-  const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const [year, month, day] = dueDate.split("-").map(Number);
-  const due = new Date(year, month - 1, day);
-  return Math.ceil((due.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 interface TodaysDiaryProps {
@@ -137,8 +130,8 @@ export function TodaysAgenda({
   slug,
   today,
   diaryEvents,
+  upcomingEvents,
   todayEntries,
-  upcomingDeadlines,
   weeklyCapacityHours = 40,
 }: TodaysAgendaProps) {
   const dailyTargetMinutes = (weeklyCapacityHours / 5) * 60; // e.g. 480 min = 8h
@@ -147,8 +140,10 @@ export function TodaysAgenda({
   const loggedMinutes = todayEntries.reduce((sum, e) => sum + e.durationMinutes, 0);
   const progressPct = Math.min(100, (loggedMinutes / dailyTargetMinutes) * 100);
 
-  // Next deadline — first entry (already sorted by backend)
-  const nextDeadline = upcomingDeadlines[0] ?? null;
+  // Next deadline — the first upcoming row. The server orders by date, then court dates first
+  // within a day (DiaryService.ORDER), so a court date wins its day without a client re-sort.
+  const upcoming = Array.isArray(upcomingEvents) ? upcomingEvents : [];
+  const nextDeadline = upcoming[0] ?? null;
 
   return (
     <div className="bg-card rounded-lg border p-4">
@@ -184,29 +179,47 @@ export function TodaysAgenda({
           <p className="mb-2 text-[11px] font-medium tracking-wider text-slate-500 uppercase">
             Next Deadline
           </p>
-          {!nextDeadline ? (
+          {/* Same copy as the Upcoming list: both read the same result. */}
+          {upcomingEvents === "unidentified" ? (
+            <p className="text-sm text-slate-400">{UPCOMING_UNIDENTIFIED_COPY}</p>
+          ) : upcomingEvents === null ? (
+            <p className="text-sm text-slate-400">{UPCOMING_LOAD_FAILED_COPY}</p>
+          ) : !nextDeadline ? (
             <p className="text-sm text-slate-400">No upcoming deadlines</p>
           ) : (
             <div>
-              <p className="truncate text-sm font-medium text-slate-900">{nextDeadline.taskName}</p>
+              <p className="text-xs text-slate-500">
+                {DIARY_KIND_SINGULAR[nextDeadline.kind]} · {formatDiaryDay(nextDeadline.date)}
+              </p>
+              <Link
+                href={`/org/${slug}${nextDeadline.href}`}
+                className="block truncate text-sm font-medium text-slate-900 hover:underline dark:text-slate-100"
+              >
+                {nextDeadline.title}
+              </Link>
               <p className="truncate text-xs text-slate-500">{nextDeadline.matterName}</p>
               {(() => {
-                const days = getDaysRemaining(nextDeadline.dueDate);
-                const colorClass =
-                  days < 0 ? "text-red-600" : days <= 2 ? "text-amber-600" : "text-slate-600";
+                // The window starts tomorrow, so this is always at least 1 day.
+                const days = daysBetween(today, nextDeadline.date);
                 return (
-                  <span className={cn("text-xs font-medium", colorClass)}>
-                    {days < 0
-                      ? `${Math.abs(days)}d overdue`
-                      : days === 0
-                        ? "Due today"
-                        : `${days}d remaining`}
+                  <span
+                    className={cn(
+                      "text-xs font-medium",
+                      days <= 2 ? "text-amber-600" : "text-slate-600"
+                    )}
+                  >
+                    {days}d remaining
                   </span>
                 );
               })()}
             </div>
           )}
         </div>
+      </div>
+
+      {/* Upcoming — full width below the grid; quarter-width cells are too narrow for diary rows */}
+      <div className="mt-4 border-t pt-4">
+        <UpcomingDiaryList slug={slug} today={today} events={upcomingEvents} />
       </div>
     </div>
   );

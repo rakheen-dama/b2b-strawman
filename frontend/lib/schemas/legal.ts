@@ -130,7 +130,15 @@ export const createAdversePartySchema = z.object({
   idNumber: z.string().max(20).optional().or(z.literal("")),
   registrationNumber: z.string().max(30).optional().or(z.literal("")),
   partyType: z.enum(
-    ["NATURAL_PERSON", "COMPANY", "TRUST", "CLOSE_CORPORATION", "PARTNERSHIP", "OTHER"],
+    [
+      "NATURAL_PERSON",
+      "COMPANY",
+      "TRUST",
+      "CLOSE_CORPORATION",
+      "PARTNERSHIP",
+      "GOVERNMENT",
+      "OTHER",
+    ],
     { message: "Party type is required" }
   ),
   aliases: z.string().max(1000).optional().or(z.literal("")),

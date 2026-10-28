@@ -1,0 +1,10 @@
+Console (level=error) after clicking Actions > Link to Matter on "Road Accident Fund", http://localhost:3001/org/e2e-test-org/legal/adverse-parties, Alice (owner), 2026-10-28 11:07 UTC:
+
+[ERROR] TypeError: Cannot read properties of undefined (reading 'map')
+    at Object.render (http://localhost:3001/_next/static/chunks/0yfpf-xi1omc7.js:1:7391)
+    at P (http://localhost:3001/_next/static/chunks/37iq4naqfp3_t.js:1:3569)
+    at aS (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:79425)
+    ...
+Network: two server-action POSTs to /org/e2e-test-org/legal/adverse-parties (next-action 005869bb…), both 200 text/x-component
+(fetchProjects + fetchCustomers via Promise.all). Response bodies were not retrievable through the Playwright MCP.
+Page then renders the route error boundary: "Something went wrong / An unexpected error occurred while loading this page."

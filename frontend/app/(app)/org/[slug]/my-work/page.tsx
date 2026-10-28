@@ -28,7 +28,7 @@ import { WeeklyRhythmStripClient } from "./weekly-rhythm-strip-client";
 import { MyWorkHeader } from "./my-work-header";
 import { MyWorkTasksClient } from "./my-work-tasks-client";
 import { createMyWorkViewAction } from "./view-actions";
-import { loadTodaysDiary } from "./todays-diary";
+import { loadTodaysDiary, loadUpcomingDiary } from "./todays-diary";
 import { fetchPersonalDashboard } from "@/lib/actions/dashboard";
 import { ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
@@ -145,10 +145,12 @@ export default async function MyWorkPage({
     console.error("Failed to resolve current member:", e);
   }
 
-  // Today's diary (Phase 87 613D): the current user's day + overdue band; fails soft. Fetched
-  // alongside the TASK saved views (non-fatal).
-  const [diaryEvents, savedViews] = await Promise.all([
+  // Today's diary (Phase 87 613D): the current user's day + overdue band. Upcoming (Phase 88
+  // G-D5): the current user's diary from tomorrow through today + 14, which also feeds Next
+  // deadline. Both fail soft. Fetched alongside the TASK saved views (non-fatal).
+  const [diaryEvents, upcomingEvents, savedViews] = await Promise.all([
     loadTodaysDiary(today, currentMemberId),
+    loadUpcomingDiary(today, currentMemberId),
     getViews("TASK").catch((): SavedViewResponse[] => []),
   ]);
 
@@ -213,8 +215,8 @@ export default async function MyWorkPage({
         slug={slug}
         today={today}
         diaryEvents={diaryEvents}
+        upcomingEvents={upcomingEvents}
         todayEntries={todayEntries}
-        upcomingDeadlines={personalDashboard?.upcomingDeadlines ?? []}
         weeklyCapacityHours={40}
       />
 

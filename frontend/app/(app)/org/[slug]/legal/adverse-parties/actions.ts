@@ -131,15 +131,17 @@ export async function fetchProjectAdverseParties(projectId: string): Promise<Adv
   return listMatterAdverseParties(projectId);
 }
 
-// -- Projects & Customers (for form selectors) --
+// -- Matters & Clients (for form selectors) --
+// GET /api/matters and GET /api/clients both return a flat List<...> (ProjectController.listMatters,
+// CustomerController.listCustomers) — no pagination envelope. Accept both shapes defensively, the
+// same way conflict-check/actions.ts does.
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
-  // FIXME(607D follow-up): /api/matters is a flat list; .content is undefined (pre-existing bug, not fixed in 610B).
-  const result = (await listMatters({ size: 200 })) as unknown as PaginatedResponse<{
-    id: string;
-    name: string;
-  }>;
-  return result.content;
+  const result = (await listMatters({ size: 200 })) as
+    | { id: string; name: string }[]
+    | PaginatedResponse<{ id: string; name: string }>
+    | null;
+  return Array.isArray(result) ? result : (result?.content ?? []);
 }
 
 export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {

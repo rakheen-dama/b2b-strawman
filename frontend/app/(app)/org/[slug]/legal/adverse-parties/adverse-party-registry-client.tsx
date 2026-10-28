@@ -54,6 +54,12 @@ function partyTypeBadge(partyType: AdversePartyType) {
           Partnership
         </Badge>
       );
+    case "GOVERNMENT":
+      return (
+        <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300">
+          Government
+        </Badge>
+      );
     default:
       return <Badge variant="neutral">{partyType}</Badge>;
   }
@@ -159,6 +165,7 @@ export function AdversePartyRegistryClient({
           <option value="TRUST">Trust</option>
           <option value="CLOSE_CORPORATION">Close Corporation</option>
           <option value="PARTNERSHIP">Partnership</option>
+          <option value="GOVERNMENT">Government / organ of state</option>
           <option value="OTHER">Other</option>
         </select>
 

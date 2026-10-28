@@ -280,12 +280,16 @@ describe("CommentSection attachment chips", () => {
     const chip = within(list).getByRole("button", {
       name: "Download masters-letter.pdf",
     });
-    await userEvent.setup().click(chip);
+    const user = userEvent.setup();
+    await user.click(chip);
 
     await waitFor(() => {
       expect(chip).toBeDisabled();
     });
     expect(chip).toHaveAttribute("aria-busy", "true");
+
+    // A second click while in flight must not start another presign request.
+    await user.click(chip);
     expect(mockPortalGet).toHaveBeenCalledTimes(1);
 
     resolvePresign({

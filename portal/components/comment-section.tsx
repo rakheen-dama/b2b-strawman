@@ -157,18 +157,18 @@ export function CommentSection({
               <p className="whitespace-pre-wrap text-sm text-slate-700">
                 {comment.content}
               </p>
-              {(comment.attachments ?? []).length > 0 && (
+              {comment.attachments?.length ? (
                 <ul
                   aria-label="Attachments"
                   className="mt-3 flex flex-wrap gap-2"
                 >
-                  {(comment.attachments ?? []).map((attachment) => (
+                  {comment.attachments.map((attachment) => (
                     <li key={attachment.documentId} className="max-w-full">
                       <AttachmentChip attachment={attachment} />
                     </li>
                   ))}
                 </ul>
-              )}
+              ) : null}
             </div>
           ))}
         </div>

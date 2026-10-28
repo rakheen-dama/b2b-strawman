@@ -142,7 +142,7 @@ export function CustomerSelectionStep({
                     Unbilled Time
                   </th>
                   <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                    Unbilled Expenses
+                    Unbilled Disbursements
                   </th>
                   <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                     Total

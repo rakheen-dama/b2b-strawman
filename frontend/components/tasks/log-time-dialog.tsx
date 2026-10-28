@@ -29,9 +29,9 @@ function formatRateSource(source: string | null | undefined): string {
     case "MEMBER_DEFAULT":
       return "member default";
     case "PROJECT_OVERRIDE":
-      return "project override";
+      return "matter override";
     case "CUSTOMER_OVERRIDE":
-      return "customer override";
+      return "client override";
     default:
       return source.toLowerCase().replace(/_/g, " ");
   }
@@ -287,8 +287,8 @@ export function LogTimeDialog({ slug, projectId, taskId, memberId, children }: L
                   data-testid="rate-warning-banner"
                 >
                   <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                    No rate card found for this combination. This time entry will have no billable
-                    rate. Set up rates in Project Settings &gt; Rates.
+                    No billing rate found for this combination. This time entry will have no
+                    billable rate. Set up rates in Settings › Fees &amp; Trust.
                   </p>
                 </div>
               ) : null}

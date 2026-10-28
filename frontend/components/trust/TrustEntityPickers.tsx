@@ -136,7 +136,7 @@ export function TrustMatterPicker<TFieldValues extends FieldValues>({
   const locked = Boolean(defaultProjectId);
 
   // Fetch the customer's matters once a customer is picked. The server
-  // action returns `Project[]`; we narrow to the fields the picker needs.
+  // action returns `Matter[]`; we narrow to the fields the picker needs.
   const swrKey = customerId ? `trust-matters-for-customer-${customerId}` : null;
   const { data: matters, isLoading } = useSWR(swrKey, () => fetchCustomerProjects(customerId));
 

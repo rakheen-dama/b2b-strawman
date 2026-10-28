@@ -48,38 +48,40 @@ describe("ProjectCommentsSection", () => {
   it("renders empty state when no comments", async () => {
     mockFetchProjectComments.mockResolvedValue([]);
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
-    expect(await screen.findByText(/no customer comments yet/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no client comments yet/i)).toBeInTheDocument();
   });
 
-  it("renders portal comments with Customer badge", async () => {
+  it("renders portal comments with Client badge", async () => {
     mockFetchProjectComments.mockResolvedValue([makeComment()]);
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
     expect(await screen.findByText("Jane Customer")).toBeInTheDocument();
-    expect(screen.getByText("Customer")).toBeInTheDocument();
+    // Phase 88 628A (ADR-357): portal-comment badge reads "Client"
+    expect(screen.getByText("Client")).toBeInTheDocument();
+    expect(screen.queryByText("Customer")).not.toBeInTheDocument();
     expect(screen.getByText("Hello from the portal")).toBeInTheDocument();
   });
 
-  it("renders internal comments without Customer badge", async () => {
+  it("renders internal comments without Client badge", async () => {
     mockFetchProjectComments.mockResolvedValue([
       makeComment({ source: "INTERNAL", authorName: "Alice Staff" }),
     ]);
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
     expect(await screen.findByText("Alice Staff")).toBeInTheDocument();
-    expect(screen.queryByText("Customer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Client")).not.toBeInTheDocument();
   });
 
   it("renders reply textarea and Post Reply button", async () => {
     mockFetchProjectComments.mockResolvedValue([]);
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
-    await screen.findByText(/no customer comments yet/i);
-    expect(screen.getByPlaceholderText(/reply to the customer thread/i)).toBeInTheDocument();
+    await screen.findByText(/no client comments yet/i);
+    expect(screen.getByPlaceholderText(/reply to the client thread/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /post reply/i })).toBeInTheDocument();
   });
 
   it("disables Post Reply button when textarea is empty", async () => {
     mockFetchProjectComments.mockResolvedValue([]);
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
-    await screen.findByText(/no customer comments yet/i);
+    await screen.findByText(/no client comments yet/i);
     expect(screen.getByRole("button", { name: /post reply/i })).toBeDisabled();
   });
 
@@ -87,9 +89,9 @@ describe("ProjectCommentsSection", () => {
     mockFetchProjectComments.mockResolvedValue([]);
     const user = userEvent.setup();
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
-    await screen.findByText(/no customer comments yet/i);
+    await screen.findByText(/no client comments yet/i);
 
-    await user.type(screen.getByPlaceholderText(/reply to the customer thread/i), "A reply");
+    await user.type(screen.getByPlaceholderText(/reply to the client thread/i), "A reply");
     expect(screen.getByRole("button", { name: /post reply/i })).not.toBeDisabled();
   });
 
@@ -101,9 +103,9 @@ describe("ProjectCommentsSection", () => {
     const user = userEvent.setup();
 
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
-    await screen.findByText(/no customer comments yet/i);
+    await screen.findByText(/no client comments yet/i);
 
-    await user.type(screen.getByPlaceholderText(/reply to the customer thread/i), "New reply");
+    await user.type(screen.getByPlaceholderText(/reply to the client thread/i), "New reply");
     await user.click(screen.getByRole("button", { name: /post reply/i }));
 
     await waitFor(() => {

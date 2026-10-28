@@ -140,11 +140,11 @@ export function WeeklyTimeSummary({ initialSummary, initialFrom }: WeeklyTimeSum
             </div>
           </div>
 
-          {/* By Project Breakdown */}
+          {/* By Matter Breakdown */}
           {summary!.byMatter.length > 0 && (
             <div className="border-t border-slate-200 pt-4 dark:border-slate-800">
               <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">
-                By Project
+                By Matter
               </h3>
               <div className="space-y-2">
                 {summary!.byMatter.map((project) => (

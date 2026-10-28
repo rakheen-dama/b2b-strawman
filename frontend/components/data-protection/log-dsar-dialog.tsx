@@ -113,7 +113,7 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
         <DialogHeader>
           <DialogTitle>Log DSAR Request</DialogTitle>
           <DialogDescription>
-            Record a new data subject access request received from a customer.
+            Record a new data subject access request received from a client.
           </DialogDescription>
         </DialogHeader>
 
@@ -188,17 +188,17 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
               name="customerId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer ID</FormLabel>
+                  <FormLabel>Client ID</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Customer UUID (required by backend)"
+                      placeholder="Client UUID (required by backend)"
                       maxLength={36}
                       {...field}
                     />
                   </FormControl>
                   <FormMessage />
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Enter the UUID of the linked customer record.
+                    Enter the UUID of the linked client record.
                   </p>
                 </FormItem>
               )}

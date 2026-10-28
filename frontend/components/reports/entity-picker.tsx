@@ -18,6 +18,21 @@ import {
   type EntityOption,
 } from "@/app/(app)/org/[slug]/reports/[reportSlug]/actions";
 
+/**
+ * Display nouns for the backend report parameter `entityType` (`project` / `customer` / …). The
+ * wire value is passed to the server action unchanged; only the copy uses the legal noun.
+ */
+const ENTITY_DISPLAY_NOUNS: Readonly<Record<string, string>> = {
+  project: "matter",
+  customer: "client",
+  invoice: "fee note",
+};
+
+function entityDisplayNoun(entityType: string): string {
+  const key = entityType.toLowerCase();
+  return Object.hasOwn(ENTITY_DISPLAY_NOUNS, key) ? ENTITY_DISPLAY_NOUNS[key] : key;
+}
+
 interface EntityPickerProps {
   entityType: string;
   value: string;
@@ -61,7 +76,7 @@ export function EntityPicker({
   }
 
   const selectedOption = options.find((o) => o.id === value);
-  const entityLabel = entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase();
+  const entityNoun = entityDisplayNoun(entityType);
 
   return (
     <div className="flex items-center gap-1.5">
@@ -79,13 +94,13 @@ export function EntityPicker({
               hasError && "border-red-500"
             )}
           >
-            {selectedOption ? selectedOption.label : `Select a ${entityLabel.toLowerCase()}...`}
+            {selectedOption ? selectedOption.label : `Select a ${entityNoun}...`}
             <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
           <Command>
-            <CommandInput placeholder={`Search ${entityLabel.toLowerCase()}s...`} />
+            <CommandInput placeholder={`Search ${entityNoun}s...`} />
             <CommandList>
               {isLoading && (
                 <div className="flex items-center justify-center py-6">
@@ -97,7 +112,7 @@ export function EntityPicker({
               )}
               {!isLoading && !fetchError && (
                 <>
-                  <CommandEmpty>No {entityLabel.toLowerCase()}s found.</CommandEmpty>
+                  <CommandEmpty>No {entityNoun}s found.</CommandEmpty>
                   <CommandGroup>
                     {options.map((option) => (
                       <CommandItem

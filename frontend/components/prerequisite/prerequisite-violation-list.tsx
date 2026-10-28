@@ -30,9 +30,9 @@ function groupByEntityType(violations: PrerequisiteViolation[]) {
 }
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {
-  CUSTOMER: "Customer",
-  PROJECT: "Project",
-  INVOICE: "Invoice",
+  CUSTOMER: "Client",
+  PROJECT: "Matter",
+  INVOICE: "Fee note",
   TASK: "Task",
 };
 

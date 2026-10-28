@@ -80,7 +80,7 @@ export function XeroSettingsForm({ settings, slug }: XeroSettingsFormProps) {
           </div>
           <div>
             <CardTitle className="font-display text-lg">Sync Settings</CardTitle>
-            <CardDescription>Configure how invoices and payments sync with Xero.</CardDescription>
+            <CardDescription>Configure how fee notes and payments sync with Xero.</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -131,13 +131,13 @@ export function XeroSettingsForm({ settings, slug }: XeroSettingsFormProps) {
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="APPROVED" id="push-approved" />
                         <Label htmlFor="push-approved" className="font-normal">
-                          On approval — push to Xero when invoice is approved
+                          On approval — push to Xero when fee note is approved
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="SENT" id="push-sent" />
                         <Label htmlFor="push-sent" className="font-normal">
-                          On send — push to Xero when invoice is sent to customer
+                          On send — push to Xero when fee note is sent to client
                         </Label>
                       </div>
                     </RadioGroup>
@@ -155,7 +155,7 @@ export function XeroSettingsForm({ settings, slug }: XeroSettingsFormProps) {
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Auto-sync</FormLabel>
                     <FormDescription>
-                      Automatically sync invoices and payments with Xero.
+                      Automatically sync fee notes and payments with Xero.
                     </FormDescription>
                   </div>
                   <FormControl>

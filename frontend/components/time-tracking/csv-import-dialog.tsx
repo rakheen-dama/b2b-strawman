@@ -42,8 +42,8 @@ export interface ParsedCsvRow {
 // --- CSV Parser ---
 
 const CSV_TEMPLATE = `date,task_name,project_name,hours,description,billable
-2026-03-09,Design wireframes,Project Alpha,2,Worked on mockups,true
-2026-03-10,Write API docs,Project Beta,3,,true`;
+2026-03-09,Design wireframes,Matter Alpha,2,Worked on mockups,true
+2026-03-10,Write API docs,Matter Beta,3,,true`;
 
 function parseCsvLine(line: string): string[] {
   const fields: string[] = [];

@@ -69,7 +69,7 @@ describe("WeeklyTimeSummary", () => {
   it("renders by-project breakdown with project names", () => {
     render(<WeeklyTimeSummary initialSummary={populatedSummary} initialFrom="2026-02-09" />);
 
-    expect(screen.getByText("By Project")).toBeInTheDocument();
+    expect(screen.getByText("By Matter")).toBeInTheDocument();
     expect(screen.getByText("Project Alpha")).toBeInTheDocument();
     expect(screen.getByText("Project Beta")).toBeInTheDocument();
     // Alpha total: 360 min = 6h
@@ -111,7 +111,7 @@ describe("WeeklyTimeSummary", () => {
     render(<WeeklyTimeSummary initialSummary={null} initialFrom="2026-02-09" />);
 
     expect(screen.getByText("No time tracked this week")).toBeInTheDocument();
-    expect(screen.queryByText("By Project")).not.toBeInTheDocument();
+    expect(screen.queryByText("By Matter")).not.toBeInTheDocument();
     expect(screen.queryByText("Total")).not.toBeInTheDocument();
   });
 });

@@ -47,7 +47,7 @@ export function DeleteProjectDialog({
     try {
       const result = await deleteProject(slug, projectId);
       if (!result.success) {
-        setError(result.error ?? "Failed to delete project.");
+        setError(result.error ?? "Failed to delete matter.");
         setIsDeleting(false);
       }
       // On success, server action redirects — no client-side handling needed
@@ -76,7 +76,7 @@ export function DeleteProjectDialog({
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">Delete Project</AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Delete Matter</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             This action cannot be undone. This will permanently delete{" "}
             <span className="text-foreground font-semibold">{projectName}</span> and all associated

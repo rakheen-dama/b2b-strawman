@@ -53,7 +53,7 @@ export function DeleteTagDialog({ slug, tagId, tagName, children }: DeleteTagDia
           <AlertDialogTitle>Delete Tag</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete the tag &quot;{tagName}&quot;? This will remove the tag
-            from all projects, tasks, and customers that use it.
+            from all matters, tasks, and clients that use it.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}

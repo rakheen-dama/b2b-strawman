@@ -280,9 +280,9 @@ export function CustomerDocumentUpload({ slug, customerId }: CustomerDocumentUpl
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Upload Customer Document</DialogTitle>
+          <DialogTitle>Upload Client Document</DialogTitle>
           <DialogDescription>
-            Upload files associated with this customer. Documents default to internal visibility.
+            Upload files associated with this client. Documents default to internal visibility.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

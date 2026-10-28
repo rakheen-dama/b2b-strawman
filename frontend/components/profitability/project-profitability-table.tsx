@@ -183,7 +183,7 @@ export function ProjectProfitabilityTable({
         )}
         {sorted.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">
-            No project profitability data for this period
+            No matter profitability data for this period
           </p>
         ) : (
           <Table>

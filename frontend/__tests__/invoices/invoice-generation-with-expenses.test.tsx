@@ -295,7 +295,7 @@ describe("Invoice Line Table — lineType grouping", () => {
     render(<InvoiceLineTable lines={mixedLines} currency="USD" editable={false} />);
 
     expect(screen.getByTestId("section-header-Time Entries")).toBeInTheDocument();
-    expect(screen.getByTestId("section-header-Expenses")).toBeInTheDocument();
+    expect(screen.getByTestId("section-header-Disbursements")).toBeInTheDocument();
     expect(screen.getByTestId("section-header-Other")).toBeInTheDocument();
 
     expect(screen.getByText("Development work")).toBeInTheDocument();

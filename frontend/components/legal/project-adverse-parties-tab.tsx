@@ -65,7 +65,7 @@ export function ProjectAdversePartiesTab({ projectId, slug }: ProjectAdversePart
     try {
       const result = await unlinkAdverseParty(slug, linkId);
       if (result.success) {
-        toast.success("Party unlinked from project");
+        toast.success("Party unlinked from matter");
         await mutate();
       } else {
         toast.error(result.error ?? "Failed to unlink party");
@@ -97,7 +97,7 @@ export function ProjectAdversePartiesTab({ projectId, slug }: ProjectAdversePart
         </div>
         <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            No adverse parties linked to this project.
+            No adverse parties linked to this matter.
           </p>
         </div>
       </div>

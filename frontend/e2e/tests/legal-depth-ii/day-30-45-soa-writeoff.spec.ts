@@ -148,7 +148,8 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     // A retried group keeps the first attempt's override (a second one would overlap it)
     if (test.info().retry > 0 && (await aliceRate.count()) > 0) return;
     await page.getByRole("tabpanel").getByRole("button", { name: "Add Override" }).first().click();
-    const dialog = page.getByRole("dialog", { name: "Add Customer Rate Override" });
+    // Phase 88 628A (ADR-357): label → "Add Client Rate Override"
+    const dialog = page.getByRole("dialog", { name: "Add Client Rate Override" });
     await expect(dialog).toBeVisible();
     await selectNativeOption(dialog.getByLabel("Member"), "Alice Owner");
     await dialog.getByLabel("Hourly Rate").fill("2500");

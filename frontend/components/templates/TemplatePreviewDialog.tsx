@@ -79,7 +79,7 @@ export function TemplatePreviewDialog({ templateId, entityType }: TemplatePrevie
   const [error, setError] = useState<string | null>(null);
 
   const entityLabel =
-    entityType === "PROJECT" ? "Project" : entityType === "CUSTOMER" ? "Customer" : "Invoice";
+    entityType === "PROJECT" ? "Matter" : entityType === "CUSTOMER" ? "Client" : "Fee note";
 
   const selectedLabel =
     entities.find((e) => e.id === entityId)?.label ?? `Select a ${entityLabel.toLowerCase()}`;
@@ -217,7 +217,7 @@ export function TemplatePreviewDialog({ templateId, entityType }: TemplatePrevie
           </div>
 
           <p className="text-xs text-slate-500">
-            Preview includes all related data (customer, members, org settings, etc.)
+            Preview includes all related data (client, members, org settings, etc.)
           </p>
 
           {error && <p className="text-destructive text-sm">{error}</p>}

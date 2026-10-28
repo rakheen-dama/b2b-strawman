@@ -103,7 +103,7 @@ describe("MatterHealthWidget", () => {
   it("filters to over-budget projects when Over Budget tab clicked", () => {
     render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
+    fireEvent.click(screen.getByRole("button", { name: "Over estimate" }));
 
     // Only proj-3 has budgetConsumedPercent > 100
     expect(screen.getByText("API Migration")).toBeInTheDocument();
@@ -132,7 +132,7 @@ describe("MatterHealthWidget", () => {
 
     expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "At Risk" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Over Budget" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Over estimate" })).toBeInTheDocument();
   });
 
   it("shows empty filter message when no projects match filter", () => {
@@ -153,7 +153,7 @@ describe("MatterHealthWidget", () => {
 
     render(<MatterHealthWidget matters={healthyOnly} orgSlug="acme" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
+    fireEvent.click(screen.getByRole("button", { name: "Over estimate" }));
 
     expect(screen.getByText("No matching matters")).toBeInTheDocument();
   });

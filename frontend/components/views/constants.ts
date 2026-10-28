@@ -17,8 +17,8 @@ export const STANDARD_COLUMNS: Record<EntityType, { value: string; label: string
     { value: "createdAt", label: "Created At" },
   ],
   INVOICE: [
-    { value: "invoiceNumber", label: "Invoice Number" },
-    { value: "customerName", label: "Customer" },
+    { value: "invoiceNumber", label: "Fee note number" },
+    { value: "customerName", label: "Client" },
     { value: "status", label: "Status" },
     { value: "total", label: "Total" },
     { value: "issueDate", label: "Issue Date" },

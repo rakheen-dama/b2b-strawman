@@ -204,7 +204,7 @@ export function NewFromTemplateDialog({
           }
           setFieldErrors(map);
         }
-        setError(result.error ?? "Failed to create project.");
+        setError(result.error ?? "Failed to create matter.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -300,7 +300,7 @@ export function NewFromTemplateDialog({
           ) : (
             <>
               <div className="space-y-4 py-2">
-                {/* Project Name */}
+                {/* Matter Name */}
                 <div className="space-y-2">
                   <Label htmlFor="new-proj-name">Matter name</Label>
                   <Input
@@ -342,7 +342,7 @@ export function NewFromTemplateDialog({
                   )}
                 </div>
 
-                {/* Customer */}
+                {/* Client */}
                 {customers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-customer">
@@ -364,7 +364,7 @@ export function NewFromTemplateDialog({
                   </div>
                 )}
 
-                {/* Project Lead */}
+                {/* Matter Lead */}
                 {orgMembers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-lead">

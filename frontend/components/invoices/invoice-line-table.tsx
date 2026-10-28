@@ -8,7 +8,7 @@ import type { InvoiceLineResponse } from "@/lib/types";
 
 const SECTION_LABELS: Record<string, string> = {
   TIME: "Time Entries",
-  EXPENSE: "Expenses",
+  EXPENSE: "Disbursements",
   DISBURSEMENT: "Disbursements",
   TARIFF: "Tariff Items",
   OTHER: "Other",
@@ -221,7 +221,7 @@ export function InvoiceLineTable({
                   Description
                 </th>
                 <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
-                  Project
+                  Matter
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Qty

@@ -73,7 +73,8 @@ test.describe("CF-01: Custom Fields", () => {
       // Select entity = customer if there's an entity selector
       const entitySelect = dialog.locator('select[name*="entity"]').first();
       if (await entitySelect.isVisible().catch(() => false)) {
-        await entitySelect.selectOption({ label: /customer/i });
+        // Phase 88 628A (ADR-357): label — entity option "Customers" → "Clients"
+        await entitySelect.selectOption({ label: /client/i });
       }
 
       // Submit

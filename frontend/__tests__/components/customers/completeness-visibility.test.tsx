@@ -107,9 +107,9 @@ describe("Completeness Visibility (Epic 251B)", () => {
 
     expect(screen.getByText("5")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
-    expect(screen.getByText(/customers have incomplete profiles/)).toBeInTheDocument();
+    expect(screen.getByText(/clients have incomplete profiles/)).toBeInTheDocument();
     expect(screen.getByText("Billing Address")).toBeInTheDocument();
-    expect(screen.getByText(/5 customers/)).toBeInTheDocument();
+    expect(screen.getByText(/5 clients/)).toBeInTheDocument();
   });
 
   it("dashboard widget click navigates to filtered customer list", async () => {

@@ -207,7 +207,7 @@ describe("Profitability Page", () => {
         />
       );
 
-      expect(screen.getByText("No project profitability data for this period")).toBeInTheDocument();
+      expect(screen.getByText("No matter profitability data for this period")).toBeInTheDocument();
     });
 
     it("shows dash for projects without a customer", () => {

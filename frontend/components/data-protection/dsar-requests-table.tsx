@@ -300,7 +300,7 @@ export function DsarRequestsTable({ requests, slug }: DsarRequestsTableProps) {
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Subject / Customer
+                Subject / Client
               </th>
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
                 Type

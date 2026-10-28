@@ -144,7 +144,7 @@ export function MemberRatesTable({
       <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
         <HelpTip code="rates.snapshots" />
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Rate changes only affect new time entries. Existing entries and invoices retain their
+          Rate changes only affect new time entries. Existing entries and fee notes retain their
           original snapshotted rate.
         </p>
       </div>

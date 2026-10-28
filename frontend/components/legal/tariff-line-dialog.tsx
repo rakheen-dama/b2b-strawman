@@ -131,7 +131,7 @@ export function TariffLineDialog({
         }
       }
       toast.success(
-        `Added ${entries.length} tariff line${entries.length !== 1 ? "s" : ""} to invoice`
+        `Added ${entries.length} tariff line${entries.length !== 1 ? "s" : ""} to fee note`
       );
       onSuccess();
     } catch {
@@ -256,7 +256,7 @@ export function TariffLineDialog({
             disabled={selectedEntries.length === 0 || isSubmitting}
             data-testid="add-to-invoice-btn"
           >
-            {isSubmitting ? "Adding..." : "Add to Invoice"}
+            {isSubmitting ? "Adding..." : "Add to fee note"}
           </Button>
         </div>
       </DialogContent>

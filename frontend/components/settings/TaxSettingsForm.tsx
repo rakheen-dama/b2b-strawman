@@ -108,7 +108,7 @@ export function TaxSettingsForm({
             className="mt-1 w-full"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Label shown on invoices and documents (e.g. &quot;VAT&quot;, &quot;GST&quot;).
+            Label shown on fee notes and documents (e.g. &quot;VAT&quot;, &quot;GST&quot;).
           </p>
         </div>
         <div className="flex items-center gap-3 self-center">

@@ -45,7 +45,7 @@ export function AccountingIntegrationCard({
         <CardDescription>
           {xeroStatus === "CONNECTED" && xeroOrgName
             ? `Connected to ${xeroOrgName} via Xero`
-            : "Connect your accounting software for invoice sync"}
+            : "Connect your accounting software for fee note sync"}
         </CardDescription>
       </CardHeader>
       <CardContent>

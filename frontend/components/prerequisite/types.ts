@@ -8,10 +8,10 @@ export type PrerequisiteContext =
   | "PROJECT_CREATION";
 
 export const PREREQUISITE_CONTEXT_LABELS: Record<PrerequisiteContext, string> = {
-  LIFECYCLE_ACTIVATION: "Customer Activation",
-  INVOICE_GENERATION: "Invoice Generation",
+  LIFECYCLE_ACTIVATION: "Client Activation",
+  INVOICE_GENERATION: "Fee note generation",
   DOCUMENT_GENERATION: "Document Generation",
-  PROJECT_CREATION: "Project Creation",
+  PROJECT_CREATION: "Matter Creation",
 };
 
 export interface PrerequisiteViolation {

@@ -166,7 +166,7 @@ export function BatchBillingSettings({
               }}
             />
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Customer count above which batch generation runs asynchronously
+              Client count above which batch generation runs asynchronously
             </p>
           </div>
 

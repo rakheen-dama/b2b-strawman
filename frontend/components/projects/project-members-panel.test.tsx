@@ -92,7 +92,7 @@ describe("ProjectMembersPanel", () => {
 
       expect(screen.getByText("No members yet")).toBeInTheDocument();
       expect(
-        screen.getByText("Add team members to collaborate on this project")
+        screen.getByText("Add team members to collaborate on this matter")
       ).toBeInTheDocument();
     });
 

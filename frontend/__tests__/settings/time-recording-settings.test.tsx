@@ -54,7 +54,7 @@ describe("TimeTrackingSettingsForm", () => {
     expect(screen.getByText(/Time is interpreted as UTC/)).toBeInTheDocument();
 
     // Expense markup
-    expect(screen.getByLabelText("Default Expense Markup (%)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Default Disbursement Markup (%)")).toBeInTheDocument();
   });
 
   it("working day checkboxes default to weekdays (Mon-Fri checked, Sat-Sun unchecked)", () => {

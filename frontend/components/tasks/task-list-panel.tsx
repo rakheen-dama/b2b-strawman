@@ -309,7 +309,7 @@ export function TaskListPanel({
         <EmptyState
           icon={ClipboardList}
           title="No tasks yet"
-          description="Create a task to start tracking work on this project"
+          description="Create a task to start tracking work on this matter"
         />
       </div>
     );

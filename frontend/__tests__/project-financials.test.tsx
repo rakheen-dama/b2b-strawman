@@ -74,7 +74,7 @@ describe("ProjectFinancialsTab", () => {
     expect(screen.getByText("No financial data yet")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Track billable time and set up billing rates to see project profitability here."
+        "Track billable time and set up billing rates to see matter profitability here."
       )
     ).toBeInTheDocument();
   });

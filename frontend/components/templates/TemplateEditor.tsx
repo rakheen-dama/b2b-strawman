@@ -408,8 +408,8 @@ export function TemplateEditor({
               </SelectContent>
             </Select>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              When a project is created from this template, a draft information request will be
-              created for the linked customer.
+              When a matter is created from this template, a draft information request will be
+              created for the linked client.
             </p>
           </div>
         )}
@@ -427,7 +427,7 @@ export function TemplateEditor({
 
         {tasks.length === 0 ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            No tasks yet. Add a task to define the project structure.
+            No tasks yet. Add a task to define the matter structure.
           </p>
         ) : (
           <div className="space-y-3">
@@ -503,7 +503,7 @@ export function TemplateEditor({
                       className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
                     >
                       <option value="UNASSIGNED">Unassigned</option>
-                      <option value="PROJECT_LEAD">Project Lead</option>
+                      <option value="PROJECT_LEAD">Matter Lead</option>
                       <option value="ANY_MEMBER">Any Member</option>
                     </select>
                   </div>
@@ -630,16 +630,16 @@ export function TemplateEditor({
         )}
       </div>
 
-      {/* Section 4 — Required Customer Fields (edit mode only) */}
+      {/* Section 4 — Required Client Fields (edit mode only) */}
       {template && availableCustomerFields.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-                Required Customer Fields
+                Required Client Fields
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Fields the customer must fill before a project can be created from this template.
+                Fields the client must fill before a matter can be created from this template.
               </p>
             </div>
             <Button

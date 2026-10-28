@@ -1,9 +1,9 @@
 import type { EntityType, FieldType } from "@/lib/types";
 
 export const ENTITY_TYPES: { value: EntityType; label: string }[] = [
-  { value: "PROJECT", label: "Projects" },
+  { value: "PROJECT", label: "Matters" },
   { value: "TASK", label: "Tasks" },
-  { value: "CUSTOMER", label: "Customers" },
+  { value: "CUSTOMER", label: "Clients" },
 ];
 
 export const FIELD_TYPES: { value: FieldType; label: string }[] = [

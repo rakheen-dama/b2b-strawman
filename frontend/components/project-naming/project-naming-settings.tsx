@@ -37,7 +37,7 @@ export function ProjectNamingSettings({
       const result = await updateProjectNamingPattern(slug, pattern || null);
 
       if (result.success) {
-        setMessage("Project naming pattern updated.");
+        setMessage("Matter naming pattern updated.");
         setIsError(false);
       } else {
         setMessage(result.error ?? "Failed to update settings.");
@@ -56,8 +56,8 @@ export function ProjectNamingSettings({
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Naming Pattern</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          When set, new projects will be automatically named using this pattern. Leave empty to use
-          freeform project names.
+          When set, new matters will be automatically named using this pattern. Leave empty to use
+          freeform matter names.
         </p>
         <div className="mt-4 max-w-lg space-y-2">
           <Label htmlFor="project-naming-pattern">Pattern</Label>
@@ -79,13 +79,13 @@ export function ProjectNamingSettings({
               <code className="rounded bg-slate-200 px-1 py-0.5 font-mono text-xs dark:bg-slate-800">
                 {"{name}"}
               </code>{" "}
-              — The project name entered at creation
+              — The matter name entered at creation
             </li>
             <li>
               <code className="rounded bg-slate-200 px-1 py-0.5 font-mono text-xs dark:bg-slate-800">
                 {"{customer.name}"}
               </code>{" "}
-              — The linked customer&apos;s name
+              — The linked client&apos;s name
             </li>
             <li>
               <code className="rounded bg-slate-200 px-1 py-0.5 font-mono text-xs dark:bg-slate-800">

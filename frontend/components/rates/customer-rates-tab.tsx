@@ -71,8 +71,8 @@ export function CustomerRatesTab({
       <div className="space-y-4">
         <EmptyState
           icon={DollarSign}
-          title="No customer rate overrides"
-          description="Add billing rate overrides for team members when working for this customer."
+          title="No client rate overrides"
+          description="Add billing rate overrides for team members when working for this client."
           action={
             <AddCustomerRateDialog
               slug={slug}
@@ -93,10 +93,10 @@ export function CustomerRatesTab({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
-            Customer Rate Overrides
+            Client Rate Overrides
           </h3>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            These rates override member defaults when working for this customer.
+            These rates override member defaults when working for this client.
           </p>
         </div>
         <AddCustomerRateDialog
@@ -156,7 +156,7 @@ export function CustomerRatesTab({
                       triggerLabel={<Pencil className="size-4" />}
                       triggerVariant="plain"
                       triggerSize="sm"
-                      triggerAriaLabel={`Edit customer rate for ${rate.memberName}`}
+                      triggerAriaLabel={`Edit client rate for ${rate.memberName}`}
                     />
                     <DeleteCustomerRateDialog
                       slug={slug}
@@ -166,7 +166,7 @@ export function CustomerRatesTab({
                       triggerLabel={<Trash2 className="size-4 text-red-500" />}
                       triggerVariant="plain"
                       triggerSize="sm"
-                      triggerAriaLabel={`Delete customer rate for ${rate.memberName}`}
+                      triggerAriaLabel={`Delete client rate for ${rate.memberName}`}
                     />
                   </div>
                 </TableCell>
@@ -179,7 +179,7 @@ export function CustomerRatesTab({
   );
 }
 
-// --- Add Customer Rate Dialog ---
+// --- Add Client Rate Dialog ---
 
 interface AddCustomerRateDialogProps {
   slug: string;
@@ -293,9 +293,9 @@ function AddCustomerRateDialog({
       </Button>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Customer Rate Override</DialogTitle>
+          <DialogTitle>Add Client Rate Override</DialogTitle>
           <DialogDescription>
-            Create a customer-specific billing rate override for a team member.
+            Create a client-specific billing rate override for a team member.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -380,7 +380,7 @@ function AddCustomerRateDialog({
   );
 }
 
-// --- Edit Customer Rate Dialog ---
+// --- Edit Client Rate Dialog ---
 
 interface EditCustomerRateDialogProps {
   slug: string;
@@ -479,9 +479,9 @@ function EditCustomerRateDialog({
       </Button>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Customer Rate Override</DialogTitle>
+          <DialogTitle>Edit Client Rate Override</DialogTitle>
           <DialogDescription>
-            Update the customer billing rate for {rate.memberName}.
+            Update the client billing rate for {rate.memberName}.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -548,7 +548,7 @@ function EditCustomerRateDialog({
   );
 }
 
-// --- Delete Customer Rate Dialog ---
+// --- Delete Client Rate Dialog ---
 
 interface DeleteCustomerRateDialogProps {
   slug: string;
@@ -625,10 +625,9 @@ function DeleteCustomerRateDialog({
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">Delete Customer Rate Override</AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Delete Client Rate Override</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Delete the customer billing rate override for {memberName}? This action cannot be
-            undone.
+            Delete the client billing rate override for {memberName}? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}

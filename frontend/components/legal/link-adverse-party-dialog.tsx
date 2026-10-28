@@ -159,7 +159,7 @@ export function LinkAdversePartyDialog({
                       onChange={field.onChange}
                       className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
-                      <option value="">-- Select customer --</option>
+                      <option value="">-- Select client --</option>
                       {customers.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}

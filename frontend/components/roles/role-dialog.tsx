@@ -120,7 +120,7 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
                 id="role-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Bookkeeper, Project Lead"
+                placeholder="e.g. Bookkeeper, Matter Lead"
                 maxLength={50}
                 required
               />

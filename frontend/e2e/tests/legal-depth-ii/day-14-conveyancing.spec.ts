@@ -106,7 +106,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
       .getByRole("button", { name: "Upload Document" })
       .first()
       .click();
-    const upload = page.getByRole("dialog", { name: "Upload Customer Document" });
+    // Phase 88 628A (ADR-357): label → "Upload Client Document"
+    const upload = page.getByRole("dialog", { name: "Upload Client Document" });
     await upload.locator('input[type="file"]').setInputFiles({
       name: ficaPack(),
       mimeType: "application/pdf",
@@ -169,7 +170,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     // Completing FICA auto-transitions the client to ACTIVE (address + country are on file)
     await page.reload();
     await expect(page.getByTestId("lifecycle-badge")).toHaveText("Active", { timeout: 15_000 });
-    await expect(page.getByRole("button", { name: "Activate Customer" })).toHaveCount(0);
+    // Phase 88 628A (ADR-357): label → "Activate Client" (the negative count tracks the current label)
+    await expect(page.getByRole("button", { name: "Activate Client" })).toHaveCount(0);
   });
 
   // ── 14.2-14.3: Create conveyancing matter from Property Transfer template ──

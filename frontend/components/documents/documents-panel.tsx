@@ -126,8 +126,8 @@ const SCOPE_BADGE: Record<
   { label: string; variant: "neutral" | "default" | "lead" }
 > = {
   ORG: { label: "Org", variant: "neutral" },
-  PROJECT: { label: "Project", variant: "default" },
-  CUSTOMER: { label: "Customer", variant: "lead" },
+  PROJECT: { label: "Matter", variant: "default" },
+  CUSTOMER: { label: "Client", variant: "lead" },
 };
 
 // Provenance label next to the file name. Only documents attached through a comment are labelled.

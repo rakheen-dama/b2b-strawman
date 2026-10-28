@@ -94,7 +94,7 @@ export function EditProjectDialog({
       if (result.success) {
         setOpen(false);
       } else {
-        setError(result.error ?? "Failed to update project.");
+        setError(result.error ?? "Failed to update matter.");
       }
     } catch {
       setError("An unexpected error occurred.");

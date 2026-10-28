@@ -260,7 +260,7 @@ export function useInvoiceGeneration({
           setDraftWarnings(result.invoice?.warnings ?? []);
           setOpen(false);
         } else {
-          setError(result.error ?? "Failed to create invoice draft.");
+          setError(result.error ?? "Failed to create fee note draft.");
         }
       } catch {
         setError("An unexpected error occurred.");

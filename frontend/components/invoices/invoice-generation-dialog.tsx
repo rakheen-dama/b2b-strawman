@@ -89,7 +89,7 @@ export function InvoiceGenerationDialog({
             </DialogTitle>
             <DialogDescription>
               {h.step === 1
-                ? `Create a new fee note for ${customerName} from unbilled time entries and expenses.`
+                ? `Create a new fee note for ${customerName} from unbilled time entries and disbursements.`
                 : `${h.totalItemCount} items selected for ${customerName}`}
             </DialogDescription>
           </DialogHeader>
@@ -172,7 +172,7 @@ export function InvoiceGenerationDialog({
                 >
                   <p className="mb-1.5 text-sm font-medium text-amber-800 dark:text-amber-200">
                     {h.nullRateEntries.length} time{" "}
-                    {h.nullRateEntries.length === 1 ? "entry has" : "entries have"} no rate card
+                    {h.nullRateEntries.length === 1 ? "entry has" : "entries have"} no billing rate
                   </p>
                   <ul className="space-y-0.5">
                     {h.nullRateEntries.map((e) => (
@@ -428,14 +428,14 @@ function ExpenseSelectionSection({
   return (
     <div data-testid="expense-selection-section">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Expenses</h3>
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Disbursements</h3>
         <button
           type="button"
           onClick={onToggleAll}
           className="text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400"
           disabled={selectableExpenses.length === 0}
         >
-          {allSelected ? "Deselect All" : "Select All Expenses"}
+          {allSelected ? "Deselect All" : "Select All Disbursements"}
         </button>
       </div>
       <div className="max-h-60 space-y-3 overflow-y-auto">
@@ -628,9 +628,9 @@ function EntryRow({
           {entry.rateSource === "RESOLVED" && (
             <span
               className="rounded bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-300"
-              title="Rate resolved from current rate card (not snapshotted at log time)"
+              title="Rate resolved from current billing rate (not snapshotted at log time)"
             >
-              Rate card
+              Billing rate
             </span>
           )}
         </div>

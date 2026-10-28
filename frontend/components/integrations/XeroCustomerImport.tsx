@@ -24,9 +24,9 @@ export function XeroCustomerImport({ slug }: XeroCustomerImportProps) {
       const result = await importXeroCustomersAction(slug);
       if (result.success && result.data) {
         setImportResult(result.data);
-        toast.success(`Imported ${result.data.created} customers from Xero.`);
+        toast.success(`Imported ${result.data.created} clients from Xero.`);
       } else {
-        setError(result.error ?? "Failed to import customers.");
+        setError(result.error ?? "Failed to import clients.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -43,8 +43,8 @@ export function XeroCustomerImport({ slug }: XeroCustomerImportProps) {
             <Upload className="size-5 text-slate-600 dark:text-slate-400" />
           </div>
           <div>
-            <CardTitle className="font-display text-lg">Customer Import</CardTitle>
-            <CardDescription>Import your existing Xero contacts as Kazi customers.</CardDescription>
+            <CardTitle className="font-display text-lg">Client Import</CardTitle>
+            <CardDescription>Import your existing Xero contacts as Kazi clients.</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -83,7 +83,7 @@ export function XeroCustomerImport({ slug }: XeroCustomerImportProps) {
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              This will import all contacts from your connected Xero organization as customers in
+              This will import all contacts from your connected Xero organization as clients in
               Kazi. Duplicates will be skipped automatically.
             </p>
             <Button onClick={handleImport} disabled={isImporting}>
@@ -95,7 +95,7 @@ export function XeroCustomerImport({ slug }: XeroCustomerImportProps) {
               ) : (
                 <>
                   <Upload className="mr-2 size-4" />
-                  Import Customers from Xero
+                  Import Clients from Xero
                 </>
               )}
             </Button>

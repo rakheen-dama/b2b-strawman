@@ -101,10 +101,10 @@ describe("FieldDefinitionDialog", () => {
 
     await user.click(screen.getByText("Open Required For Dialog"));
 
-    expect(screen.getByLabelText("Customer Activation")).toBeInTheDocument();
-    expect(screen.getByLabelText("Invoice Generation")).toBeInTheDocument();
+    expect(screen.getByLabelText("Client Activation")).toBeInTheDocument();
+    expect(screen.getByLabelText("Fee note generation")).toBeInTheDocument();
     expect(screen.getByLabelText("Document Generation")).toBeInTheDocument();
-    expect(screen.getByLabelText("Project Creation")).toBeInTheDocument();
+    expect(screen.getByLabelText("Matter Creation")).toBeInTheDocument();
 
     // Pack default note should NOT be shown for non-pack fields
     expect(screen.queryByText(/Set by field pack/)).not.toBeInTheDocument();
@@ -122,8 +122,8 @@ describe("FieldDefinitionDialog", () => {
 
     await user.click(screen.getByText("Open Contexts Create Dialog"));
     await user.type(screen.getByLabelText("Name"), "Tax Number");
-    await user.click(screen.getByLabelText("Invoice Generation"));
-    await user.click(screen.getByLabelText("Customer Activation"));
+    await user.click(screen.getByLabelText("Fee note generation"));
+    await user.click(screen.getByLabelText("Client Activation"));
     await user.click(screen.getByRole("button", { name: "Create Field" }));
 
     await waitFor(() => {

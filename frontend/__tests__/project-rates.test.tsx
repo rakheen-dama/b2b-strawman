@@ -78,9 +78,9 @@ describe("ProjectRatesTab", () => {
       />
     );
 
-    expect(screen.getByText("No project rate overrides")).toBeInTheDocument();
+    expect(screen.getByText("No matter rate overrides")).toBeInTheDocument();
     expect(
-      screen.getByText("Add billing rate overrides for specific team members on this project.")
+      screen.getByText("Add billing rate overrides for specific team members on this matter.")
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Add Override/ })).toBeInTheDocument();
   });
@@ -96,7 +96,7 @@ describe("ProjectRatesTab", () => {
       />
     );
 
-    expect(screen.getByText("Project Rate Overrides")).toBeInTheDocument();
+    expect(screen.getByText("Matter Rate Overrides")).toBeInTheDocument();
     expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
     expect(screen.getByText("US$200,00")).toBeInTheDocument();
     expect(screen.getByText("USD")).toBeInTheDocument();
@@ -119,9 +119,7 @@ describe("ProjectRatesTab", () => {
     await user.click(screen.getByRole("button", { name: /Add Override/ }));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Add Project Rate Override" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Add Matter Rate Override" })).toBeInTheDocument();
     });
 
     expect(screen.getByLabelText("Member")).toBeInTheDocument();
@@ -144,11 +142,11 @@ describe("ProjectRatesTab", () => {
       />
     );
 
-    const deleteButton = screen.getByLabelText("Delete project rate for Alice Johnson");
+    const deleteButton = screen.getByLabelText("Delete matter rate for Alice Johnson");
     await user.click(deleteButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Delete Project Rate Override")).toBeInTheDocument();
+      expect(screen.getByText("Delete Matter Rate Override")).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Delete" }));

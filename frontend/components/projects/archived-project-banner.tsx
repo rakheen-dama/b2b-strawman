@@ -24,7 +24,7 @@ export function ArchivedProjectBanner({
     startTransition(async () => {
       const result = await reopenProject(slug, projectId);
       if (!result.success) {
-        setError(result.error ?? "Failed to restore project.");
+        setError(result.error ?? "Failed to restore matter.");
       }
     });
   }
@@ -35,7 +35,7 @@ export function ArchivedProjectBanner({
         <div className="flex items-center gap-2">
           <Archive className="size-4 text-slate-500 dark:text-slate-400" />
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            This project is archived. It is read-only.
+            This matter is archived. It is read-only.
           </p>
         </div>
         {canRestore && (

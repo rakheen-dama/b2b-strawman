@@ -81,7 +81,7 @@ describe("UnbilledSummary — expense section", () => {
   it("renders expense entries with category badges and amounts", () => {
     render(<UnbilledSummary data={sampleDataWithExpenses} />);
 
-    expect(screen.getByText("Expenses")).toBeInTheDocument();
+    expect(screen.getByText("Disbursements")).toBeInTheDocument();
     expect(screen.getByText("Court filing fee")).toBeInTheDocument();
     expect(screen.getByText("Courier delivery")).toBeInTheDocument();
     expect(screen.getByText("Filing Fee")).toBeInTheDocument();
@@ -93,10 +93,10 @@ describe("UnbilledSummary — expense section", () => {
   it("shows expense subtotal per currency", () => {
     render(<UnbilledSummary data={sampleDataWithExpenses} />);
 
-    expect(screen.getByText("Expense Subtotal")).toBeInTheDocument();
+    expect(screen.getByText("Disbursement Subtotal")).toBeInTheDocument();
     // The expense subtotal section should contain ZAR 450
     // locale-agnostic: normalize separators before asserting
-    const subtotalSection = screen.getByText("Expense Subtotal").closest("div");
+    const subtotalSection = screen.getByText("Disbursement Subtotal").closest("div");
     const subtotalText = subtotalSection?.textContent?.replace(/[\s\u00a0]/g, " ") ?? "";
     expect(subtotalText.replace(/,/g, ".")).toContain("450.00");
   });

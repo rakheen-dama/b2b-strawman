@@ -97,7 +97,7 @@ export function TimeSummaryPanel({
         <EmptyState
           icon={Clock}
           title="No time tracked yet"
-          description="Log time on tasks to see project time summaries here"
+          description="Log time on tasks to see matter time summaries here"
         />
       ) : (
         <>

@@ -324,7 +324,7 @@ describe("InvoiceDetailClient", () => {
     render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Void")).toBeInTheDocument(); // StatusBadge
-    expect(screen.getByText("This invoice has been voided.")).toBeInTheDocument();
+    expect(screen.getByText("This fee note has been voided.")).toBeInTheDocument();
 
     // No action buttons for VOID
     expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();

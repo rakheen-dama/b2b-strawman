@@ -288,7 +288,7 @@ export function PaymentLinkSection({
 export function VoidIndicator() {
   return (
     <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-      <p className="font-medium text-red-700 dark:text-red-300">This invoice has been voided.</p>
+      <p className="font-medium text-red-700 dark:text-red-300">This fee note has been voided.</p>
     </div>
   );
 }

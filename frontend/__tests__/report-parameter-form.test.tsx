@@ -80,7 +80,7 @@ describe("ReportParameterForm", () => {
     const pickerButton = document.getElementById("param-projectId");
     expect(pickerButton).not.toBeNull();
     expect(pickerButton!.tagName).toBe("BUTTON");
-    expect(pickerButton!.textContent).toMatch(/select a project/i);
+    expect(pickerButton!.textContent).toMatch(/select a matter/i);
     // Should NOT have a text input with UUID placeholder
     expect(screen.queryByPlaceholderText(/project id \(uuid\)/i)).not.toBeInTheDocument();
   });
@@ -200,7 +200,7 @@ describe("ReportParameterForm", () => {
     const customerPicker = document.getElementById("param-customerId");
     expect(customerPicker).not.toBeNull();
     expect(customerPicker!.tagName).toBe("BUTTON");
-    expect(customerPicker!.textContent).toMatch(/select a customer/i);
+    expect(customerPicker!.textContent).toMatch(/select a client/i);
 
     // UUID without entityType renders as text input
     const rawInput = screen.getByPlaceholderText(/entity id \(uuid\)/i);

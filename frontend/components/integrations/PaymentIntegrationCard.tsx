@@ -232,8 +232,8 @@ export function PaymentIntegrationCard({
         </div>
         <CardDescription>
           {hasProvider
-            ? "Accept online payments from customers"
-            : "Connect a payment provider to enable online invoice payments for your clients."}
+            ? "Accept online payments from clients"
+            : "Connect a payment provider to enable online fee note payments for your clients."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

@@ -130,7 +130,7 @@ export function ProjectMembersPanel({
         <EmptyState
           icon={Users}
           title="No members yet"
-          description="Add team members to collaborate on this project"
+          description="Add team members to collaborate on this matter"
         />
       </div>
     );

@@ -100,8 +100,8 @@ describe("CustomerDocumentsPanel", () => {
   it("shows empty state when no documents exist", () => {
     render(<CustomerDocumentsPanel documents={[]} slug="acme" customerId="c1" canManage={true} />);
 
-    expect(screen.getByText("No customer documents yet")).toBeInTheDocument();
-    expect(screen.getByText("Upload your first document for this customer.")).toBeInTheDocument();
+    expect(screen.getByText("No client documents yet")).toBeInTheDocument();
+    expect(screen.getByText("Upload your first document for this client.")).toBeInTheDocument();
   });
 
   // 42.10: Empty state message differs for non-admin
@@ -109,7 +109,7 @@ describe("CustomerDocumentsPanel", () => {
     render(<CustomerDocumentsPanel documents={[]} slug="acme" customerId="c1" canManage={false} />);
 
     expect(
-      screen.getByText("No documents have been uploaded for this customer.")
+      screen.getByText("No documents have been uploaded for this client.")
     ).toBeInTheDocument();
   });
 

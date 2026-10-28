@@ -84,7 +84,7 @@ describe("CustomerFinancialsTab", () => {
     const breakdown = makeProjectBreakdown();
     render(<CustomerFinancialsTab profitability={profitability} projectBreakdown={breakdown} />);
 
-    expect(screen.getByText("Per-Project Breakdown")).toBeInTheDocument();
+    expect(screen.getByText("Per-Matter Breakdown")).toBeInTheDocument();
     expect(screen.getByText("Alpha Project")).toBeInTheDocument();
     expect(screen.getByText("Beta Project")).toBeInTheDocument();
     expect(screen.getByText("120.0h")).toBeInTheDocument();
@@ -118,7 +118,7 @@ describe("CustomerFinancialsTab", () => {
     expect(screen.getByText("No financial data yet")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Track billable time and set up billing rates to see customer profitability here."
+        "Track billable time and set up billing rates to see client profitability here."
       )
     ).toBeInTheDocument();
   });

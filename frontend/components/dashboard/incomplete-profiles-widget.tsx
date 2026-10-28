@@ -43,7 +43,7 @@ export function IncompleteProfilesWidget({ data, orgSlug }: IncompleteProfilesWi
         </CardHeader>
         <CardContent>
           <p className="text-sm text-green-600 dark:text-green-400">
-            All customer profiles are complete.
+            All client profiles are complete.
           </p>
         </CardContent>
       </Card>
@@ -63,7 +63,7 @@ export function IncompleteProfilesWidget({ data, orgSlug }: IncompleteProfilesWi
           <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
           <p className="text-sm">
             <span className="font-mono font-semibold tabular-nums">{data.incompleteCount}</span> of{" "}
-            <span className="font-mono tabular-nums">{data.totalCount}</span> customers have
+            <span className="font-mono tabular-nums">{data.totalCount}</span> clients have
             incomplete profiles
           </p>
         </div>
@@ -85,7 +85,7 @@ export function IncompleteProfilesWidget({ data, orgSlug }: IncompleteProfilesWi
                       {field.fieldName}
                     </span>
                     <span className="ml-2 shrink-0 font-mono text-xs text-slate-500 tabular-nums">
-                      {field.clientCount} {field.clientCount === 1 ? "customer" : "customers"}
+                      {field.clientCount} {field.clientCount === 1 ? "client" : "clients"}
                     </span>
                   </button>
                 </li>
@@ -101,7 +101,7 @@ export function IncompleteProfilesWidget({ data, orgSlug }: IncompleteProfilesWi
           className="text-muted-foreground"
           onClick={() => router.push(`/org/${orgSlug}/clients`)}
         >
-          View all customers &rarr;
+          View all clients &rarr;
         </Button>
       </CardFooter>
     </Card>

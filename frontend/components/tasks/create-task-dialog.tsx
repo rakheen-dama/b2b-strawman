@@ -99,7 +99,7 @@ export function CreateTaskDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Task</DialogTitle>
-          <DialogDescription>Add a new task to this project.</DialogDescription>
+          <DialogDescription>Add a new task to this matter.</DialogDescription>
         </DialogHeader>
         <form ref={formRef} action={handleSubmit} className="space-y-4">
           <div className="space-y-2">

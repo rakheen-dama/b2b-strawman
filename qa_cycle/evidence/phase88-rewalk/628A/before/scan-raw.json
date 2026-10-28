@@ -1,0 +1,2426 @@
+[
+ {
+  "n": 1,
+  "name": "dashboard",
+  "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 2,
+  "name": "my-work",
+  "url": "http://localhost:3001/org/e2e-test-org/my-work",
+  "tab": null,
+  "shot": "02-my-work.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "By Project",
+    "block": "By Project",
+    "kind": "h3"
+   }
+  ]
+ },
+ {
+  "n": 2,
+  "name": "my-work",
+  "url": "http://localhost:3001/org/e2e-test-org/my-work",
+  "tab": "All",
+  "shot": "02-my-work-tab1-all.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "By Project",
+    "block": "By Project",
+    "kind": "h3"
+   }
+  ]
+ },
+ {
+  "n": 3,
+  "name": "timesheet",
+  "url": "http://localhost:3001/org/e2e-test-org/my-work/timesheet",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-28&view=day",
+  "tab": "Day",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-26",
+  "tab": "Week",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-01&view=month",
+  "tab": "Month",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-01&view=list",
+  "tab": "List",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 5,
+  "name": "matters-list",
+  "url": "http://localhost:3001/org/e2e-test-org/matters",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 6,
+  "name": "matter-new",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/new",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 7,
+  "name": "clients-list",
+  "url": "http://localhost:3001/org/e2e-test-org/clients",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 8,
+  "name": "conflict-check",
+  "url": "http://localhost:3001/org/e2e-test-org/conflict-check",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 9,
+  "name": "adverse-parties",
+  "url": "http://localhost:3001/org/e2e-test-org/legal/adverse-parties",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 10,
+  "name": "ai-reviews",
+  "url": "http://localhost:3001/org/e2e-test-org/ai/reviews",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 11,
+  "name": "compliance",
+  "url": "http://localhost:3001/org/e2e-test-org/compliance",
+  "tab": null,
+  "shot": "11-compliance.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer",
+    "block": "Customer",
+    "kind": "th"
+   }
+  ]
+ },
+ {
+  "n": 12,
+  "name": "compliance-requests",
+  "url": "http://localhost:3001/org/e2e-test-org/compliance/requests",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 13,
+  "name": "notifications",
+  "url": "http://localhost:3001/org/e2e-test-org/notifications",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 14,
+  "name": "team",
+  "url": "http://localhost:3001/org/e2e-test-org/team",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 14,
+  "name": "team",
+  "url": "http://localhost:3001/org/e2e-test-org/team",
+  "tab": "Members",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 14,
+  "name": "team",
+  "url": "http://localhost:3001/org/e2e-test-org/team",
+  "tab": "Pending Invitations",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 15,
+  "name": "matter-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 15,
+  "name": "matter-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139",
+  "tab": "Details",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 16,
+  "name": "client-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65",
+  "tab": null,
+  "shot": "16-client-detail.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   },
+   {
+    "src": "text",
+    "word": "Projects",
+    "ctx": "Projects linked",
+    "block": "Projects linked View",
+    "kind": "span"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Create Invoice",
+    "block": "Create Invoice",
+    "kind": "a"
+   }
+  ]
+ },
+ {
+  "n": 16,
+  "name": "client-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65",
+  "tab": "Details",
+  "shot": "16-client-detail-tab1-details.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   },
+   {
+    "src": "text",
+    "word": "Projects",
+    "ctx": "Projects linked",
+    "block": "Projects linked View",
+    "kind": "span"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Create Invoice",
+    "block": "Create Invoice",
+    "kind": "a"
+   }
+  ]
+ },
+ {
+  "n": 17,
+  "name": "feenotes-list",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 18,
+  "name": "feenote-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/09486b5c-5684-4f36-947f-adffec674dbd",
+  "tab": null,
+  "shot": "18-feenote-detail.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project",
+    "block": "PROJECT",
+    "kind": "th"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "No collection activity for this invoice yet.",
+    "block": "No collection activity for this invoice yet.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 19,
+  "name": "unbilled",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/unbilled",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 20,
+  "name": "collections",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/collections",
+  "tab": null,
+  "shot": "20-collections.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice",
+    "block": "1 invoice \u00b7 ZAR",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 21,
+  "name": "billing-runs",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/billing-runs",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 22,
+  "name": "billing-run-new",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/billing-runs/new",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 23,
+  "name": "disbursements",
+  "url": "http://localhost:3001/org/e2e-test-org/legal/disbursements",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 24,
+  "name": "tariffs",
+  "url": "http://localhost:3001/org/e2e-test-org/legal/tariffs",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 25,
+  "name": "reports",
+  "url": "http://localhost:3001/org/e2e-test-org/reports",
+  "tab": null,
+  "shot": "25-reports.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Aging Report",
+    "block": "Invoice Aging Report",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Outstanding invoices grouped by age bucket.",
+    "block": "Outstanding invoices grouped by age bucket.",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project",
+    "block": "Project",
+    "kind": "h2"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Profitability Report",
+    "block": "Project Profitability Report",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Revenue vs. cost per project for a date range.",
+    "block": "Revenue vs. cost per project for a date range.",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Time entries grouped by member, project, or date for a given period.",
+    "block": "Time entries grouped by member, project, or date for a given period.",
+    "kind": "div"
+   }
+  ]
+ },
+ {
+  "n": 26,
+  "name": "report-profitability",
+  "url": "http://localhost:3001/org/e2e-test-org/reports/profitability",
+  "tab": null,
+  "shot": "26-report-profitability.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer",
+    "block": "Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 27,
+  "name": "report-invoice-aging",
+  "url": "http://localhost:3001/org/e2e-test-org/reports/invoice-aging",
+  "tab": null,
+  "shot": "27-report-invoice-aging.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice-aging",
+    "block": "E2E Test Organization Reports invoice-aging e2e-test-org AO 7 unread notifications 7 Back to Reports Invoice Aging Report Outstanding invoices grouped by age bu",
+    "kind": "breadcrumb:nav:span"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Aging Report",
+    "block": "Invoice Aging Report",
+    "kind": "h1"
+   },
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Outstanding invoices grouped by age bucket.",
+    "block": "Outstanding invoices grouped by age bucket.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer",
+    "block": "Customer",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Select a customer...",
+    "block": "Select a customer...",
+    "kind": "combobox"
+   }
+  ]
+ },
+ {
+  "n": 28,
+  "name": "report-project-profitability",
+  "url": "http://localhost:3001/org/e2e-test-org/reports/project-profitability",
+  "tab": null,
+  "shot": "28-report-project-profitability.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project-profitability",
+    "block": "E2E Test Organization Reports project-profitability e2e-test-org AO 7 unread notifications 7 Back to Reports Project Profitability Report Revenue vs. cost per p",
+    "kind": "breadcrumb:nav:span"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Profitability Report",
+    "block": "Project Profitability Report",
+    "kind": "h1"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Revenue vs. cost per project for a date range.",
+    "block": "Revenue vs. cost per project for a date range.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project",
+    "block": "Project",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Select a project...",
+    "block": "Select a project...",
+    "kind": "combobox"
+   },
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer",
+    "block": "Customer",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Select a customer...",
+    "block": "Select a customer...",
+    "kind": "combobox"
+   }
+  ]
+ },
+ {
+  "n": 29,
+  "name": "report-timesheet",
+  "url": "http://localhost:3001/org/e2e-test-org/reports/timesheet",
+  "tab": null,
+  "shot": "29-report-timesheet.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Time entries grouped by member, project, or date for a given period.",
+    "block": "Time entries grouped by member, project, or date for a given period.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project",
+    "block": "Project",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Select a project...",
+    "block": "Select a project...",
+    "kind": "combobox"
+   }
+  ]
+ },
+ {
+  "n": 30,
+  "name": "matter-details",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=details",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 31,
+  "name": "matter-fields",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=fields",
+  "tab": null,
+  "shot": "31-matter-fields.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Info",
+    "block": "SA Legal \u2014 Matter Details Project Info Add Group",
+    "kind": "badge:span"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Info",
+    "block": "Project Info",
+    "kind": "div"
+   },
+   {
+    "src": "aria-label",
+    "word": "Project",
+    "ctx": "Remove Project Info",
+    "block": "",
+    "kind": "button"
+   },
+   {
+    "src": "placeholder",
+    "word": "Project",
+    "ctx": "Project category or type",
+    "block": "",
+    "kind": "input"
+   }
+  ]
+ },
+ {
+  "n": 32,
+  "name": "matter-team",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=team",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 33,
+  "name": "matter-overview",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=overview",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 34,
+  "name": "matter-tasks",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=tasks",
+  "tab": null,
+  "shot": "34-matter-tasks.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "e a task to start tracking work on this project",
+    "block": "Create a task to start tracking work on this project",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 35,
+  "name": "matter-documents",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=documents",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 36,
+  "name": "matter-correspondence",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=correspondence",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 37,
+  "name": "matter-generated",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=generated",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 38,
+  "name": "matter-time",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=time",
+  "tab": null,
+  "shot": "38-matter-time.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Log time on tasks to see project time summaries here",
+    "block": "Log time on tasks to see project time summaries here",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 39,
+  "name": "matter-disbursements",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=disbursements",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 40,
+  "name": "matter-budget",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=budget",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 41,
+  "name": "matter-rates",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=rates",
+  "tab": null,
+  "shot": "41-matter-rates.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "No project rate overrides",
+    "block": "No project rate overrides",
+    "kind": "h2"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "rides for specific team members on this project.",
+    "block": "Add billing rate overrides for specific team members on this project.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 42,
+  "name": "matter-financials",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=financials",
+  "tab": null,
+  "shot": "42-matter-financials.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "le time and set up billing rates to see project profitability here.",
+    "block": "Track billable time and set up billing rates to see project profitability here.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 43,
+  "name": "matter-statements",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=statements",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 44,
+  "name": "matter-trust",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=trust",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 45,
+  "name": "matter-clients",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=clients",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 46,
+  "name": "matter-requests",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=requests",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 47,
+  "name": "matter-customer-comments",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=customer-comments",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 48,
+  "name": "matter-adverse-parties",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=adverse-parties",
+  "tab": null,
+  "shot": "48-matter-adverse-parties.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "No adverse parties linked to this project.",
+    "block": "No adverse parties linked to this project.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 49,
+  "name": "matter-court-dates",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=court-dates",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 50,
+  "name": "matter-activity",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=activity",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 51,
+  "name": "matter-audit",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=audit",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 52,
+  "name": "client-details",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=details",
+  "tab": null,
+  "shot": "52-client-details.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   },
+   {
+    "src": "text",
+    "word": "customers",
+    "ctx": "Exempt customers never receive automated payment reminde",
+    "block": "Exempt customers never receive automated payment reminders.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "No chase history for this customer yet.",
+    "block": "No chase history for this customer yet.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 53,
+  "name": "client-fields",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=fields",
+  "tab": null,
+  "shot": "53-client-fields.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 54,
+  "name": "client-tags",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=tags",
+  "tab": null,
+  "shot": "54-client-tags.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 55,
+  "name": "client-overview",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=overview",
+  "tab": null,
+  "shot": "55-client-overview.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   },
+   {
+    "src": "text",
+    "word": "Projects",
+    "ctx": "Projects linked",
+    "block": "Projects linked View",
+    "kind": "span"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Create Invoice",
+    "block": "Create Invoice",
+    "kind": "a"
+   }
+  ]
+ },
+ {
+  "n": 56,
+  "name": "client-matters",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=matters",
+  "tab": null,
+  "shot": "56-client-matters.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 57,
+  "name": "client-documents",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=documents",
+  "tab": null,
+  "shot": "57-client-documents.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "No customer documents yet",
+    "block": "No customer documents yet",
+    "kind": "h2"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Upload your first document for this customer.",
+    "block": "Upload your first document for this customer.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 58,
+  "name": "client-generated",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=generated",
+  "tab": null,
+  "shot": "58-client-generated.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 59,
+  "name": "client-invoices",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=invoices",
+  "tab": null,
+  "shot": "59-client-invoices.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 60,
+  "name": "client-rates",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=rates",
+  "tab": null,
+  "shot": "60-client-rates.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   },
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer Rate Overrides",
+    "block": "Customer Rate Overrides",
+    "kind": "h3"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "e member defaults when working for this customer.",
+    "block": "These rates override member defaults when working for this customer.",
+    "kind": "p"
+   },
+   {
+    "src": "aria-label",
+    "word": "customer",
+    "ctx": "Edit customer rate for Alice Owner",
+    "block": "",
+    "kind": "button"
+   },
+   {
+    "src": "aria-label",
+    "word": "customer",
+    "ctx": "Delete customer rate for Alice Owner",
+    "block": "",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 61,
+  "name": "client-financials",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=financials",
+  "tab": null,
+  "shot": "61-client-financials.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Per-Project Breakdown",
+    "block": "Per-Project Breakdown",
+    "kind": "h4"
+   }
+  ]
+ },
+ {
+  "n": 62,
+  "name": "client-trust",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=trust",
+  "tab": null,
+  "shot": "62-client-trust.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 63,
+  "name": "client-onboarding",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=onboarding",
+  "tab": null,
+  "shot": "63-client-onboarding.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 64,
+  "name": "client-requests",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=requests",
+  "tab": null,
+  "shot": "64-client-requests.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 65,
+  "name": "client-audit",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=audit",
+  "tab": null,
+  "shot": "65-client-audit.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 66,
+  "name": "settings-firm-general",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=general",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 67,
+  "name": "settings-firm-roles",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=roles",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 68,
+  "name": "settings-firm-audit-trail",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=audit-trail",
+  "tab": null,
+  "shot": "68-settings-firm-audit-trail.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.sent",
+    "block": "invoice.sent",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.approved",
+    "block": "invoice.approved",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.created",
+    "block": "invoice.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.created",
+    "block": "project.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.lifecycle.transitioned",
+    "block": "customer.lifecycle.transitioned",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.created",
+    "block": "customer.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.updated",
+    "block": "project.updated",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.created_from_template",
+    "block": "project.created_from_template",
+    "kind": "div"
+   }
+  ]
+ },
+ {
+  "n": 69,
+  "name": "settings-firm-data-protection",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=data-protection",
+  "tab": null,
+  "shot": "69-settings-firm-data-protection.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "CUSTOMER",
+    "ctx": "CUSTOMER",
+    "block": "CUSTOMER",
+    "kind": "td"
+   },
+   {
+    "src": "aria-label",
+    "word": "CUSTOMER",
+    "ctx": "Retention days for CUSTOMER",
+    "block": "",
+    "kind": "input"
+   },
+   {
+    "src": "aria-label",
+    "word": "CUSTOMER",
+    "ctx": "Action for CUSTOMER",
+    "block": "Anonymize Flag",
+    "kind": "select"
+   },
+   {
+    "src": "aria-label",
+    "word": "CUSTOMER",
+    "ctx": "Toggle CUSTOMER policy",
+    "block": "",
+    "kind": "button[switch]"
+   },
+   {
+    "src": "aria-label",
+    "word": "CUSTOMER",
+    "ctx": "Save CUSTOMER policy",
+    "block": "Save",
+    "kind": "button"
+   }
+  ]
+ },
+ {
+  "n": 70,
+  "name": "settings-firm-data-requests",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=data-requests",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 71,
+  "name": "settings-firm-compliance",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=compliance",
+  "tab": null,
+  "shot": "71-settings-firm-compliance.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customers",
+    "ctx": "Customers inactive for this many days will be fla",
+    "block": "Customers inactive for this many days will be flagged as dormant.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 72,
+  "name": "settings-firm-features",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=features",
+  "tab": null,
+  "shot": "72-settings-firm-features.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer document-request workflows with portal",
+    "block": "Customer document-request workflows with portal pickup and acceptance",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "Batch invoice generation across multiple customers in",
+    "block": "Batch invoice generation across multiple customers in a single run. Best for firms billing 10+ clients per cycle.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "customers",
+    "ctx": "atch invoice generation across multiple customers in a single run. Best for firms billing",
+    "block": "Batch invoice generation across multiple customers in a single run. Best for firms billing 10+ clients per cycle.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 73,
+  "name": "settings-firm-subscription",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=subscription",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 74,
+  "name": "settings-matters-templates",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=templates",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 75,
+  "name": "settings-matters-naming",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=naming",
+  "tab": null,
+  "shot": "75-settings-matters-naming.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "projects",
+    "ctx": "When set, new projects will be automatically named using this",
+    "block": "When set, new projects will be automatically named using this pattern. Leave empty to use freeform project names.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "is pattern. Leave empty to use freeform project names.",
+    "block": "When set, new projects will be automatically named using this pattern. Leave empty to use freeform project names.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "\u2014 The project name entered at creation",
+    "block": "{name} \u2014 The project name entered at creation",
+    "kind": "li"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "{customer.name}",
+    "block": "{customer.name} \u2014 The linked customer's name",
+    "kind": "li"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "\u2014 The linked customer's name",
+    "block": "{customer.name} \u2014 The linked customer's name",
+    "kind": "li"
+   },
+   {
+    "src": "placeholder",
+    "word": "customer",
+    "ctx": "{reference_number} - {customer.name} - {name}",
+    "block": "",
+    "kind": "input"
+   }
+  ]
+ },
+ {
+  "n": 76,
+  "name": "settings-matters-custom-fields",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=custom-fields",
+  "tab": null,
+  "shot": "76-settings-matters-custom-fields.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project category or type",
+    "block": "Project category or type",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "projects",
+    "ctx": "c fields for property transfer matters (projects with matter_type = CONVEYANCING)",
+    "block": "South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "rican legal-specific fields for matter (project) entities",
+    "block": "South African legal-specific fields for matter (project) entities",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Info",
+    "block": "Project Info",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Common project metadata fields",
+    "block": "Common project metadata fields",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 77,
+  "name": "settings-matters-tags",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=tags",
+  "tab": null,
+  "shot": "77-settings-matters-tags.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "projects",
+    "ctx": "Manage tags for projects, tasks, and customers.",
+    "block": "Manage tags for projects, tasks, and customers.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 78,
+  "name": "settings-matters-checklists",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=checklists",
+  "tab": null,
+  "shot": "78-settings-matters-checklists.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Manage checklist templates used during customer onboarding.",
+    "block": "Manage checklist templates used during customer onboarding.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 79,
+  "name": "settings-matters-request-templates",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=request-templates",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 80,
+  "name": "settings-matters-request-settings",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=request-settings",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 81,
+  "name": "settings-documents-templates",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=templates",
+  "tab": null,
+  "shot": "81-settings-documents-templates.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "PROJECT",
+    "ctx": "PROJECT",
+    "block": "PROJECT",
+    "kind": "badge:span"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Cover Letter",
+    "block": "Invoice Cover Letter",
+    "kind": "a"
+   },
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Cover letter for invoices",
+    "block": "Cover letter for invoices",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "INVOICE",
+    "ctx": "INVOICE",
+    "block": "INVOICE",
+    "kind": "badge:span"
+   },
+   {
+    "src": "text",
+    "word": "CUSTOMER",
+    "ctx": "CUSTOMER",
+    "block": "CUSTOMER",
+    "kind": "badge:span"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Summary",
+    "block": "Project Summary",
+    "kind": "h2"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Summary Report",
+    "block": "Project Summary Report",
+    "kind": "a"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project summary report template",
+    "block": "Project summary report template",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 82,
+  "name": "settings-documents-clauses",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=clauses",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 83,
+  "name": "settings-documents-acceptance",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=acceptance",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 84,
+  "name": "settings-documents-email",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=email",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 85,
+  "name": "settings-fees-tariffs",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=tariffs",
+  "tab": null,
+  "shot": "85-settings-fees-tariffs.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "new time entries. Existing entries and invoices retain their original snapshotted rate.",
+    "block": "Rate changes only affect new time entries. Existing entries and invoices retain their original snapshotted rate.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 86,
+  "name": "settings-fees-tax",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=tax",
+  "tab": null,
+  "shot": "86-settings-fees-tax.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Label shown on invoices and documents (e.g. \"VAT\", \"GST\").",
+    "block": "Label shown on invoices and documents (e.g. \"VAT\", \"GST\").",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "Manage the tax rates applied to invoice line items.",
+    "block": "Manage the tax rates applied to invoice line items.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 87,
+  "name": "settings-fees-time-recording",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=time-recording",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 88,
+  "name": "settings-fees-fee-runs",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=fee-runs",
+  "tab": null,
+  "shot": "88-settings-fees-fee-runs.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer count above which batch generation runs",
+    "block": "Customer count above which batch generation runs asynchronously",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 89,
+  "name": "settings-fees-collections",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=collections",
+  "tab": null,
+  "shot": "89-settings-fees-collections.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "Configure overdue-invoice reminder stages and escalation for your",
+    "block": "Configure overdue-invoice reminder stages and escalation for your organization.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Overdue-Invoice Reminders",
+    "block": "Overdue-Invoice Reminders",
+    "kind": "h2"
+   },
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Configure when overdue invoices move through reminder stages and escala",
+    "block": "Configure when overdue invoices move through reminder stages and escalate for collections.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 90,
+  "name": "settings-fees-trust-accounting",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 91,
+  "name": "settings-connections-xero",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=xero",
+  "tab": null,
+  "shot": "91-settings-connections-xero.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "Connect your accounting software for invoice sync",
+    "block": "Connect your accounting software for invoice sync",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "ect a payment provider to enable online invoice payments for your clients.",
+    "block": "Connect a payment provider to enable online invoice payments for your clients.",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Connect your Xero account to sync invoices and contacts.",
+    "block": "Connect your Xero account to sync invoices and contacts.",
+    "kind": "div"
+   }
+  ]
+ },
+ {
+  "n": 92,
+  "name": "settings-connections-mcp",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=mcp",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 93,
+  "name": "settings-connections-ai",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=ai",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 94,
+  "name": "settings-connections-notifications",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=notifications",
+  "tab": null,
+  "shot": "94-settings-connections-notifications.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Projects",
+    "ctx": "Projects",
+    "block": "PROJECTS",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Completed",
+    "block": "Project Completed",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Archived",
+    "block": "Project Archived",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "Invoicing",
+    "ctx": "Billing & Invoicing",
+    "block": "BILLING & INVOICING",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Approved",
+    "block": "Invoice Approved",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Sent",
+    "block": "Invoice Sent",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Paid",
+    "block": "Invoice Paid",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Voided",
+    "block": "Invoice Voided",
+    "kind": "label"
+   }
+  ]
+ },
+ {
+  "n": 95,
+  "name": "settings-connections-packs",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=packs",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 96,
+  "name": "settings-connections-automations",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=automations",
+  "tab": null,
+  "shot": "96-settings-connections-automations.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer Status",
+    "block": "Customer Status",
+    "kind": "badge:span"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Status",
+    "block": "Project Status",
+    "kind": "badge:span"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Notifies admins when a project budget threshold is reached",
+    "block": "Notifies admins when a project budget threshold is reached",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Overdue Invoice Reminder",
+    "block": "Overdue Invoice Reminder",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Sends email to customer when invoice becomes overdue, then noti",
+    "block": "Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "Sends email to customer when invoice becomes overdue, then notifies project",
+    "block": "Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "invoice becomes overdue, then notifies project owner after 7 days",
+    "block": "Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Status",
+    "block": "Invoice Status",
+    "kind": "badge:span"
+   },
+   {
+    "src": "aria-label",
+    "word": "Invoice",
+    "ctx": "Toggle Overdue Invoice Reminder",
+    "block": "",
+    "kind": "button[switch]"
+   }
+  ]
+ },
+ {
+  "n": 97,
+  "name": "trust-dashboard",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 98,
+  "name": "trust-client-ledgers",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 99,
+  "name": "trust-client-ledger-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/b8fa0d8d-e5eb-4591-a751-fde566340d65",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 100,
+  "name": "trust-interest",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 101,
+  "name": "trust-investments",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 102,
+  "name": "trust-reconciliation",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 103,
+  "name": "trust-reconciliation-new",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 104,
+  "name": "trust-reports",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reports",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 105,
+  "name": "trust-transactions",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 106,
+  "name": "settings-root",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 107,
+  "name": "settings-audit-log-legacy",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=audit-trail",
+  "tab": null,
+  "shot": "107-settings-audit-log-legacy.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.sent",
+    "block": "invoice.sent",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.approved",
+    "block": "invoice.approved",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.created",
+    "block": "invoice.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.created",
+    "block": "project.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.lifecycle.transitioned",
+    "block": "customer.lifecycle.transitioned",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.created",
+    "block": "customer.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.updated",
+    "block": "project.updated",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.created_from_template",
+    "block": "project.created_from_template",
+    "kind": "div"
+   }
+  ]
+ },
+ {
+  "n": 108,
+  "name": "doc-template-edit",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents/templates/a00ea3e4-c7a8-4c51-9f4f-7b921351561d/edit",
+  "tab": null,
+  "shot": "108-doc-template-edit.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.name",
+    "block": "Client: {customer.name}",
+    "kind": "span"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.name",
+    "block": "Matter: {project.name}",
+    "kind": "span"
+   }
+  ]
+ },
+ {
+  "n": 109,
+  "name": "doc-template-new",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents/templates/new",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 110,
+  "name": "matter-template-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/templates/52fe60b4-fedb-47cb-aed3-3059fc7636fe",
+  "tab": null,
+  "shot": "110-matter-template-detail.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "{customer}",
+    "block": "Tokens: {customer}, {month}, {year}, {month_short}, {period_start}, {period_end}",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "When a project is created from this template, a draft",
+    "block": "When a project is created from this template, a draft information request will be created for the linked customer.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "request will be created for the linked customer.",
+    "block": "When a project is created from this template, a draft information request will be created for the linked customer.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Required Customer Fields",
+    "block": "Required Customer Fields",
+    "kind": "h2"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Fields the customer must fill before a project can be creat",
+    "block": "Fields the customer must fill before a project can be created from this template.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Fields the customer must fill before a project can be created from this template.",
+    "block": "Fields the customer must fill before a project can be created from this template.",
+    "kind": "p"
+   },
+   {
+    "src": "placeholder",
+    "word": "customer",
+    "ctx": "e.g. {customer} \u2014 {month} {year}",
+    "block": "",
+    "kind": "input"
+   }
+  ]
+ },
+ {
+  "n": 111,
+  "name": "checklist-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/checklists/e9397777-0c0a-4160-85bd-dd630a5ee2c3",
+  "tab": null,
+  "shot": "111-checklist-detail.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoicing",
+    "ctx": "agreed billing rate, payment terms, and invoicing details.",
+    "block": "Confirm the agreed billing rate, payment terms, and invoicing details.",
+    "kind": "td"
+   }
+  ]
+ },
+ {
+  "n": 112,
+  "name": "checklist-new",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/checklists/new",
+  "tab": null,
+  "shot": "112-checklist-new.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Create a checklist template for customer onboarding.",
+    "block": "Create a checklist template for customer onboarding.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer Type",
+    "block": "Customer Type",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Auto-instantiate when a matching customer is created",
+    "block": "Auto-instantiate when a matching customer is created",
+    "kind": "label"
+   }
+  ]
+ },
+ {
+  "n": 113,
+  "name": "request-template-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/request-templates/384eaa2f-edc4-42ff-9050-b023d36282bd",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 114,
+  "name": "request-template-new",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/request-templates/new",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 115,
+  "name": "xero-sync-log",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections/xero/sync-log",
+  "tab": null,
+  "shot": "115-xero-sync-log.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "Sync entries will appear here once invoice or customer syncing begins.",
+    "block": "Sync entries will appear here once invoice or customer syncing begins.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "ntries will appear here once invoice or customer syncing begins.",
+    "block": "Sync entries will appear here once invoice or customer syncing begins.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 116,
+  "name": "ai-history",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections/ai/history",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 117,
+  "name": "automation-executions",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections/automations/executions",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 118,
+  "name": "client-other-1",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/454183d8-e8a8-4c74-a11b-5ea3eae17109?tab=overview",
+  "tab": null,
+  "shot": "118-client-other-1.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Activate Customer",
+    "block": "Activate Customer",
+    "kind": "button"
+   },
+   {
+    "src": "text",
+    "word": "Projects",
+    "ctx": "Projects linked",
+    "block": "Projects linked View",
+    "kind": "span"
+   }
+  ]
+ },
+ {
+  "n": 119,
+  "name": "matter-other-1",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=overview",
+  "tab": null,
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 120,
+  "name": "matter-other-1-time",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=time",
+  "tab": null,
+  "shot": "120-matter-other-1-time.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Log time on tasks to see project time summaries here",
+    "block": "Log time on tasks to see project time summaries here",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 121,
+  "name": "matter-other-1-financials",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=financials",
+  "tab": null,
+  "shot": "121-matter-other-1-financials.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "le time and set up billing rates to see project profitability here.",
+    "block": "Track billable time and set up billing rates to see project profitability here.",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 122,
+  "name": "matter-other-1-tasks",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=tasks",
+  "tab": null,
+  "shot": "122-matter-other-1-tasks.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "e a task to start tracking work on this project",
+    "block": "Create a task to start tracking work on this project",
+    "kind": "p"
+   }
+  ]
+ },
+ {
+  "n": 123,
+  "name": "new-client",
+  "url": "http://localhost:3001/org/e2e-test-org/clients",
+  "tab": "dialog:New Client",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 124,
+  "name": "new-feenote",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices",
+  "tab": "dialog:New fee note",
+  "shot": "124-dlg-new-feenote.png",
+  "hits": [
+   {
+    "src": "placeholder",
+    "word": "customers",
+    "ctx": "Search customers...",
+    "block": "",
+    "kind": "input[combobox]"
+   }
+  ]
+ },
+ {
+  "n": 125,
+  "name": "feenote-lifecycle-help",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices",
+  "tab": "dialog:Help: Fee note lifecycle",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 126,
+  "name": "record-payment",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/09486b5c-5684-4f36-947f-adffec674dbd",
+  "tab": "dialog:Record Payment",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 127,
+  "name": "feenote-generate-doc",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/09486b5c-5684-4f36-947f-adffec674dbd",
+  "tab": "dialog:Generate Document",
+  "shot": "127-dlg-feenote-generate-doc.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Cover Letter",
+    "block": "Invoice Cover Letter",
+    "kind": "menuitem"
+   }
+  ]
+ },
+ {
+  "n": 128,
+  "name": "feenote-numbering-help",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/09486b5c-5684-4f36-947f-adffec674dbd",
+  "tab": "dialog:Help: Fee note numbering",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 129,
+  "name": "new-task",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=tasks",
+  "tab": "dialog:New Task",
+  "shot": "129-dlg-new-task.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Add a new task to this project.",
+    "block": "Add a new task to this project.",
+    "kind": "dialog:p"
+   }
+  ]
+ },
+ {
+  "n": 130,
+  "name": "matter-generate-doc",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=overview",
+  "tab": "dialog:Generate Document",
+  "shot": "130-dlg-matter-generate-doc.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Summary Report",
+    "block": "Project Summary Report",
+    "kind": "menuitem"
+   }
+  ]
+ },
+ {
+  "n": 131,
+  "name": "matter-soa",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=overview",
+  "tab": "dialog:Generate Statement of Account",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 132,
+  "name": "matter-more-actions",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=overview",
+  "tab": "dialog:More actions",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 133,
+  "name": "close-matter",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=overview",
+  "tab": "dialog:Close Matter",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 134,
+  "name": "complete-matter",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=overview",
+  "tab": "dialog:Complete Matter",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 135,
+  "name": "activate-customer",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=overview",
+  "tab": "dialog:Activate Customer",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 136,
+  "name": "client-more-actions",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=overview",
+  "tab": "dialog:More actions",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 137,
+  "name": "client-actions-list",
+  "url": "http://localhost:3001/org/e2e-test-org/clients",
+  "tab": "dialog:Client actions",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 138,
+  "name": "command-palette",
+  "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+  "tab": "dialog:Meta+k",
+  "shot": null,
+  "hits": []
+ },
+ {
+  "n": 139,
+  "name": "task-detail-and-log-time",
+  "url": "http://localhost:3001/org/e2e-test-org/my-work?taskId=0c079818-8b87-4423-b8ea-e459a65b4816",
+  "tab": "dialog:task sheet + Log Time",
+  "shot": "139-task-detail-sheet.png / 140-dlg-log-time.png",
+  "hits": []
+ },
+ {
+  "n": 141,
+  "name": "feenote-preview-render",
+  "url": "http://localhost:3001/api/invoices/09486b5c-5684-4f36-947f-adffec674dbd/preview",
+  "tab": null,
+  "shot": "141-feenote-preview-render.png",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "or VAT, this fee note constitutes a tax invoice as defined in section 20 of the Value-A",
+    "block": "Where the practice is registered for VAT, this fee note constitutes a tax invoice as defined in section 20 of the Value-Added Tax Act 89 of 1991.",
+    "kind": "p"
+   }
+  ]
+ }
+]

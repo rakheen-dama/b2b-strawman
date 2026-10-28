@@ -45,9 +45,9 @@ export function CreateInvoiceButton({ customers, slug }: CreateInvoiceButtonProp
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0" align="end">
         <Command>
-          <CommandInput placeholder="Search customers..." />
+          <CommandInput placeholder="Search clients..." />
           <CommandList>
-            <CommandEmpty>No customers found.</CommandEmpty>
+            <CommandEmpty>No clients found.</CommandEmpty>
             <CommandGroup>
               {customers.map((customer) => (
                 <CommandItem

@@ -378,7 +378,7 @@ export function CreateDisbursementDialog({
                         className={selectClass}
                       >
                         <option value="">
-                          {projectsLoading ? "Loading customers..." : "-- Select customer --"}
+                          {projectsLoading ? "Loading clients..." : "-- Select client --"}
                         </option>
                         {customers.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -626,7 +626,7 @@ export function CreateDisbursementDialog({
                     <span className="font-normal text-slate-500">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="Invoice or reference number" maxLength={100} {...field} />
+                    <Input placeholder="Fee note or reference number" maxLength={100} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

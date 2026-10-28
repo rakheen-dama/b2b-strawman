@@ -14,10 +14,10 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   TASK_UPDATED: { label: "Task Updated", category: "Tasks" },
   TASK_CANCELLED: { label: "Task Cancelled", category: "Tasks" },
   TASK_RECURRENCE_CREATED: { label: "Task Recurrence Created", category: "Tasks" },
-  // Projects
-  PROJECT_COMPLETED: { label: "Project Completed", category: "Projects" },
-  PROJECT_ARCHIVED: { label: "Project Archived", category: "Projects" },
-  PREREQUISITE_BLOCKED_ACTIVATION: { label: "Prerequisite Blocked", category: "Projects" },
+  // Matters
+  PROJECT_COMPLETED: { label: "Matter Completed", category: "Matters" },
+  PROJECT_ARCHIVED: { label: "Matter Archived", category: "Matters" },
+  PREREQUISITE_BLOCKED_ACTIVATION: { label: "Prerequisite Blocked", category: "Matters" },
   // Collaboration
   COMMENT_ADDED: { label: "Comment Added", category: "Collaboration" },
   DOCUMENT_SHARED: { label: "Document Shared", category: "Collaboration" },
@@ -25,17 +25,17 @@ const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string
   DOCUMENT_GENERATED: { label: "Document Generated", category: "Collaboration" },
   ACCEPTANCE_COMPLETED: { label: "Acceptance Completed", category: "Collaboration" },
   ACCEPTANCE_DECLINED: { label: "Acceptance Declined", category: "Collaboration" },
-  // Billing & Invoicing
-  BUDGET_ALERT: { label: "Budget Alert", category: "Billing & Invoicing" },
-  INVOICE_APPROVED: { label: "Invoice Approved", category: "Billing & Invoicing" },
-  INVOICE_SENT: { label: "Invoice Sent", category: "Billing & Invoicing" },
-  INVOICE_PAID: { label: "Invoice Paid", category: "Billing & Invoicing" },
-  INVOICE_VOIDED: { label: "Invoice Voided", category: "Billing & Invoicing" },
-  PAYMENT_FAILED: { label: "Payment Failed", category: "Billing & Invoicing" },
-  PAYMENT_LINK_EXPIRED: { label: "Payment Link Expired", category: "Billing & Invoicing" },
-  BILLING_RUN_COMPLETED: { label: "Billing Run Completed", category: "Billing & Invoicing" },
-  BILLING_RUN_SENT: { label: "Billing Run Sent", category: "Billing & Invoicing" },
-  BILLING_RUN_FAILURES: { label: "Billing Run Failures", category: "Billing & Invoicing" },
+  // Billing
+  BUDGET_ALERT: { label: "Fee estimate alert", category: "Billing" },
+  INVOICE_APPROVED: { label: "Fee note approved", category: "Billing" },
+  INVOICE_SENT: { label: "Fee note sent", category: "Billing" },
+  INVOICE_PAID: { label: "Fee note paid", category: "Billing" },
+  INVOICE_VOIDED: { label: "Fee note voided", category: "Billing" },
+  PAYMENT_FAILED: { label: "Payment Failed", category: "Billing" },
+  PAYMENT_LINK_EXPIRED: { label: "Payment Link Expired", category: "Billing" },
+  BILLING_RUN_COMPLETED: { label: "Billing Run Completed", category: "Billing" },
+  BILLING_RUN_SENT: { label: "Billing Run Sent", category: "Billing" },
+  BILLING_RUN_FAILURES: { label: "Billing Run Failures", category: "Billing" },
   // Client Requests
   INFORMATION_REQUEST_ITEM_SUBMITTED: {
     label: "Request Item Submitted",
@@ -102,9 +102,9 @@ export function NotificationPreferencesForm({
   // Maintain stable category order
   const categoryOrder = [
     "Tasks",
-    "Projects",
+    "Matters",
     "Collaboration",
-    "Billing & Invoicing",
+    "Billing",
     "Client Requests",
     "Time Tracking",
     "Security",

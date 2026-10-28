@@ -20,7 +20,7 @@ interface TransactionActionsProps {
   accountId: string;
   slug: string;
   /**
-   * Customer roster for the embedded picker dialogs (Deposit / Payment /
+   * Client roster for the embedded picker dialogs (Deposit / Payment /
    * Refund). Server-fetched by the parent page.
    */
   customers: TrustPickerCustomer[];

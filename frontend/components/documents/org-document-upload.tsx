@@ -275,7 +275,7 @@ export function OrgDocumentUpload({ slug }: OrgDocumentUploadProps) {
         <DialogHeader>
           <DialogTitle>Upload Organization Document</DialogTitle>
           <DialogDescription>
-            Upload files that belong to the entire organization, not tied to a specific project.
+            Upload files that belong to the entire organization, not tied to a specific matter.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

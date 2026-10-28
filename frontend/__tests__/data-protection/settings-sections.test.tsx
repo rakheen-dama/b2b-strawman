@@ -109,8 +109,10 @@ describe("RetentionPoliciesTable", () => {
     expect(screen.getByText("Last Evaluated")).toBeInTheDocument();
 
     // Check row data
-    expect(screen.getByText("CUSTOMER")).toBeInTheDocument();
-    expect(screen.getByText("DOCUMENT")).toBeInTheDocument();
+    // Phase 88 628A (R-13): record types render through the display-label map (wire value "CUSTOMER")
+    expect(screen.getByText("Client")).toBeInTheDocument();
+    expect(screen.queryByText("CUSTOMER")).not.toBeInTheDocument();
+    expect(screen.getByText("Document")).toBeInTheDocument();
   });
 
   it("calls updateRetentionPolicy on save", async () => {
@@ -120,11 +122,11 @@ describe("RetentionPoliciesTable", () => {
     render(<RetentionPoliciesTable policies={[basePolicy]} slug="acme" />);
 
     // Change retention days using fireEvent for reliable number input updates
-    const input = screen.getByLabelText(/retention days for CUSTOMER/i);
+    const input = screen.getByLabelText(/^retention days for Client$/i);
     fireEvent.change(input, { target: { value: "730" } });
 
     // Click save
-    await user.click(screen.getByRole("button", { name: /save CUSTOMER policy/i }));
+    await user.click(screen.getByRole("button", { name: /^save Client policy$/i }));
 
     await waitFor(() => {
       expect(mockUpdateRetentionPolicy).toHaveBeenCalledWith(
@@ -150,11 +152,11 @@ describe("RetentionPoliciesTable", () => {
     );
 
     // Set retention days below 60 months * 30 = 1800 days
-    const input = screen.getByLabelText(/retention days for DOCUMENT/i);
+    const input = screen.getByLabelText(/^retention days for Document$/i);
     fireEvent.change(input, { target: { value: "100" } });
 
     // Click save
-    await user.click(screen.getByRole("button", { name: /save DOCUMENT policy/i }));
+    await user.click(screen.getByRole("button", { name: /^save Document policy$/i }));
 
     // Should show validation error, not call the server action
     await waitFor(() => {

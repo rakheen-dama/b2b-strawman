@@ -1,7 +1,7 @@
 {
-  "commit": "eab2ca2703533edfe0f569f5842c40b6f0a7cbd4",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (detached worktree-627E-gate, NODE_OPTIONS=\"\")",
+  "commit": "37e4ae3757d60fd1c6c6bce4b2d758425e9bd626",
+  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm format:check && pnpm test && pnpm build (detached worktree-627F-gate at the PR head, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-10-28T10:37:29Z",
-  "summary": "Slice 627E FE-GATE on eab2ca270 (PR #1697; final head 06f0337bd differs only in docs/evidence — frontend/packages/lockfile diff empty): lint 0 errors; format clean; vitest 428 files / 3356 passed / 2 skipped; build OK; CI Frontend pass (06f0337bd: first run Turbopack next/font/google resolve failure, re-run pass). E2E-LEGAL fresh stack on eab2ca270: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179), depth-ii 38/0/5 (= baseline). KC-observed O1/O4/O5/O6/O8 PASS, O2/O3 PARTIAL (pre-existing backend causes)."
+  "ts": "2026-10-28T12:07:46Z",
+  "summary": "Slice 627F FE-GATE on 37e4ae375 (PR #1698 final head): lint 0 errors (91 warnings, unchanged); format clean; vitest 430 files / 3378 passed / 2 skipped (was 428/3356/2); build OK; CI Frontend pass. E2E-LEGAL fresh stack on 37e4ae375: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179); depth-ii 36/1/5/1 — day-14:335 networkidle@:353 timeout, the known flake (fails identically on main per 627A; passed 38/0/5 on b44f0e47f in this slice; neither head delta touches the conveyancing/document path). Observed O1–O7 PASS (:3001 + Keycloak :3000 for G-D12) on ca82fc0cc and F1–F3 PASS (Upcoming links) on b44f0e47f."
 }

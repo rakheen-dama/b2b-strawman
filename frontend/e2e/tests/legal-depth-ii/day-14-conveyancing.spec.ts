@@ -303,6 +303,10 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
 
     const dialog = page.getByRole("dialog", { name: /Generate: Offer to Purchase/ });
     await expect(dialog).toBeVisible({ timeout: 15_000 });
+    // Phase 88 626H (B-7): since 626G (conveyancing-za-clauses v2) the OTP has clause
+    // associations, so the dialog opens on the clause step (Step 1 of 2); the preview renders
+    // after "Next: Preview". Clause assertions live in the 14.8 test below.
+    await dialog.getByRole("button", { name: /Next/ }).click();
     const preview = dialog.frameLocator('iframe[title="Document Preview"]').locator("body");
     // The preview merges the client, matter and the Day 14 conveyancing fields
     await expect(preview).toContainText("Offer to Purchase", { timeout: 15_000 });
@@ -325,16 +329,10 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   });
 
   // ── 14.8: OTP carries the conveyancing clause pack ────────────────
-  // FIXME(depth-ii:otp-clause-associations) PRODUCT BUG (reproduced): the generated Offer
-  // to Purchase has an empty "Conditions of Sale" section. The OTP template content (template-packs/legal-za/offer-to-purchase.json)
-  // embeds 7 clauseBlock nodes (voetstoots, occupation-date, suspensive-bond,
-  // transfer-duty-liability, fica-compliance, rates-clearance, jurisdiction-za), and those
-  // 10 clauses are seeded in the clause library, but `conveyancing-za-clauses/pack.json` has
-  // `"templateAssociations": []` — GET /api/templates/{otpId}/clauses returns [] — so the
-  // generate dialog offers no clause step and every clauseBlock renders nothing.
-  test.fixme("Alice: Generate Offer to Purchase document with conveyancing clauses", async ({
-    page,
-  }) => {
+  // Regression (was FIXME depth-ii:otp-clause-associations, G-B18): conveyancing-za-clauses v2
+  // associates the OTP's 7 embedded clauses (626G), so the dialog offers the clause step and
+  // Conditions of Sale is filled.
+  test("Alice: Generate Offer to Purchase document with conveyancing clauses", async ({ page }) => {
     await loginAs(page, "alice");
     await openMatter(page, matterName());
     await page.getByRole("button", { name: /Generate Document/ }).click();

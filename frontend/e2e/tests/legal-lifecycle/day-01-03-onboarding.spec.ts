@@ -3,7 +3,8 @@
  *
  * Create 4 clients (Sipho Ndlovu, Apex Holdings, Moroka Family Trust,
  * QuickCollect Services), run conflict checks, create initial matters from
- * templates, set custom fields, and transition through FICA onboarding.
+ * templates, transition through FICA onboarding, and (Day 5) fill the matter
+ * header custom fields and check the header facts strip.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
@@ -354,6 +355,60 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
     await expect(panel.getByRole("row", { name: /Carol Member/ }).first()).toBeVisible({
       timeout: 15_000,
     });
+  });
+
+  // ── Day 5 (scenario 5.1–5.2): matter header facts strip (Phase 88 627K; §13.3.17 D9, G-B9) ──
+  // Sits in the Day 1 group because it needs this file's run-scoped matter: a failure earlier in
+  // the file restarts the worker with a new RUN_ID. The strip (627A) renders the legal-za header
+  // slugs (HEADER_FIELD_SLUGS.PROJECT) only once they hold a value, and no seed or create path
+  // sets them, so the test fills them on the Custom fields tab first (the only UI write path).
+  test("Day 5 — Alice: Matter header shows case number, court and opposing party", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    const caseNumber = "2026/12345";
+    const court = "Gauteng Division, Pretoria";
+    const opposingParty = "Road Accident Fund";
+
+    await loginAs(page, "alice");
+    await openMatter(page, `Ndlovu v RAF ${RUN_ID}`);
+
+    const strip = page.getByTestId("matter-header-card").getByTestId("matter-header-fields");
+    // A new matter has none of the three values, so the strip is not rendered at all
+    await expect(strip).toHaveCount(0);
+
+    await openGroupedTab(page, "details", "fields");
+    const fieldsTab = page.getByTestId("matter-fields-tab");
+    await expect(fieldsTab.getByText("SA Legal — Matter Details").first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await fieldsTab.getByLabel("Case Number", { exact: true }).fill(caseNumber);
+    await fieldsTab.getByLabel("Court", { exact: true }).fill(court);
+    await fieldsTab.getByLabel("Opposing Party", { exact: true }).fill(opposingParty);
+    await fieldsTab.getByRole("button", { name: "Save Custom Fields" }).click();
+    await expect(fieldsTab.getByText("Saved successfully")).toBeVisible({ timeout: 15_000 });
+
+    // The save revalidates the matter page, so the header updates in place. 15 s stays below
+    // the 30 s bell poll: a stall means the lost-ping regression is back (next 16.3.8, #1651).
+    // Per-value assertions: the dt/dd text nodes have no whitespace between them, so the
+    // strip's textContent is "Case no.2026/12345·Court…", not the visual "Case no. 2026/12345 · …".
+    // toHaveText does not check visibility, so each value is also asserted visible
+    const headerValues = strip.locator("dd");
+    await expect(headerValues).toHaveText([caseNumber, court, opposingParty], {
+      timeout: 15_000,
+    });
+    for (let i = 0; i < 3; i++) await expect(headerValues.nth(i)).toBeVisible();
+    await expect(strip.getByTestId("matter-header-field-case_number").locator("dt")).toHaveText(
+      "Case no."
+    );
+
+    // 5.1–5.2: a fresh load of the matter shows the persisted facts under the title
+    await page.reload();
+    await expect(
+      page.getByRole("heading", { level: 1, name: `Ndlovu v RAF ${RUN_ID}` })
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(headerValues).toHaveText([caseNumber, court, opposingParty]);
+    for (let i = 0; i < 3; i++) await expect(headerValues.nth(i)).toBeVisible();
   });
 });
 

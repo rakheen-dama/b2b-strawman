@@ -1,0 +1,63 @@
+== snapshot BEFORE backend swap 2026-10-28T00:26:37Z
+automation-common|AUTOMATION_TEMPLATE|3|2026-10-27 18:22:45.800122+00
+automation-legal-za|AUTOMATION_TEMPLATE|2|2026-10-27 18:22:45.849175+00
+common|DOCUMENT_TEMPLATE|3|2026-10-27 18:22:45.39419+00
+common-project|FIELD|2|2026-10-27 18:22:45.292471+00
+common-task|FIELD|2|2026-10-27 18:22:45.292471+00
+compliance-za|DOCUMENT_TEMPLATE|1|2026-10-27 18:22:45.439972+00
+conveyancing-intake-za|REQUEST|1|2026-10-27 18:22:45.768442+00
+conveyancing-za-clauses|CLAUSE|1|2026-10-27 18:22:45.523032+00
+conveyancing-za-project|FIELD|1|2026-10-27 18:22:45.292471+00
+fica-onboarding-pack|REQUEST|1|2026-10-27 18:22:45.768442+00
+legal-za|DOCUMENT_TEMPLATE|8|2026-10-27 18:22:45.461527+00
+legal-za-clauses|CLAUSE|1|2026-10-27 18:22:45.523032+00
+legal-za-customer|FIELD|2|2026-10-27 18:22:45.292471+00
+legal-za-liquidation-distribution|REQUEST|1|2026-10-27 18:22:45.768442+00
+legal-za-project|FIELD|2|2026-10-27 18:22:45.292471+00
+standard-clauses|CLAUSE|1|2026-10-27 18:22:45.523032+00
+standard-reports|REPORT|1|2026-10-27 18:22:45.741001+00
+id|uuid||not null|gen_random_uuid()
+name|character varying(200)||not null|
+slug|character varying(200)||not null|
+description|text|||
+category|character varying(30)||not null|
+primary_entity_type|character varying(20)||not null|
+css|text|||
+source|character varying(20)||not null|'ORG_CUSTOM'::character varying
+source_template_id|uuid|||
+pack_id|character varying(100)|||
+pack_template_key|character varying(100)|||
+active|boolean||not null|true
+sort_order|integer||not null|0
+created_at|timestamp with time zone||not null|now()
+updated_at|timestamp with time zone||not null|now()
+required_context_fields|jsonb|||
+content|jsonb|||
+legacy_content|text|||
+format|character varying(20)||not null|'TIPTAP'::character varying
+docx_s3_key|character varying(500)|||
+docx_file_name|character varying(255)|||
+docx_file_size|bigint|||
+discovered_fields|jsonb|||
+source_pack_install_id|uuid|||
+content_hash|character varying(64)|||
+acceptance_eligible|boolean||not null|false
+80791878-6e4d-47fc-acbc-9ec04a2a1c54|engagement-letter-litigation-custom|ORG_CUSTOM|engagement-letter-litigation|3186|87c8f26bb643fd0324a23ec680c3bce7|d41d8cd98f00b204e9800998ecf8427e||2026-10-27 22:33:02.692423+00
+6ce14be3-8750-45a5-a44b-d33295e832d1|probe-626b-letterhead-keys|ORG_CUSTOM||3358|47039592d9f4e72399902eecac45bb3f|d41d8cd98f00b204e9800998ecf8427e||2026-10-27 19:51:51.776306+00
+629a7ecc-763c-4c82-b426-0d1dd98e207b|bond-cancellation-instruction|PLATFORM|bond-cancellation-instruction|4089|f8592e8bf28b2f74027f49b30c4e8972|d41d8cd98f00b204e9800998ecf8427e|fcc198fa2a0b3c2ca761216bee16d7c9425e92d6f7f929c3154b05c372641144|2026-10-27 23:11:08.657947+00
+5bbefa2c-d982-4577-87d3-cbbb694283a8|client-trust-statement|PLATFORM|client-trust-statement|2027|d5c2fb09f0d07c2b60f8ccfd1582ef75|d41d8cd98f00b204e9800998ecf8427e|013aadbd7efd769b062608557acf794fca1cc599a8f6284a7ac7b823edbb1b42|2026-10-27 18:22:45.469691+00
+c47c8399-ba10-4f3f-8ca4-7c44a51ff8c1|deed-of-transfer|PLATFORM|deed-of-transfer|4162|bab9601ff02319b5d1c8d425f93d5944|d41d8cd98f00b204e9800998ecf8427e|999359e421a72df56dc6e0beb76443d538d5d7f2deeaf4e53aee7cf34ab01897|2026-10-27 23:11:08.649543+00
+4ee6eab3-0ac6-4930-b644-b1a67a5919f7|engagement-letter-conveyancing|PLATFORM|engagement-letter-conveyancing|5453|d33718dc8105bd3d8a66ded26365e16c|d41d8cd98f00b204e9800998ecf8427e|6fcaf4cf5004a564ad121c1dab0f22ba246cfd210a00da38e6c736ad57311e76|2026-10-27 23:11:08.597913+00
+4aa035e5-dcd4-4c4e-9146-c2dcee848e8c|engagement-letter-general|PLATFORM|engagement-letter-general|4746|caac0b9caca2a30909617cfbaf455666|d41d8cd98f00b204e9800998ecf8427e|5fe73b2ed535904c61d7f2b0dbfe4d66b4536d86e590626062772011e629dd08|2026-10-27 23:11:08.606376+00
+bc89ee05-e496-43b0-ae7e-cecdde3df78b|engagement-letter-litigation|PLATFORM|engagement-letter-litigation|6073|2bc18ddbe2262243ec1d17e57928c91a|d41d8cd98f00b204e9800998ecf8427e|516f7f6ec3e43a1f5b7a4aa888af2e8241e568597b3d6d4292e1fe1321085c44|2026-10-27 23:11:08.582667+00
+c543e678-a7e0-4db8-963d-4b9c18d31e1f|fee-note|PLATFORM|fee-note-za|8845|fffbae0ac531f663a2d44bf2b5a02665|d41d8cd98f00b204e9800998ecf8427e|d1d1733ac7268debeeffd3e07d350fd1daaebe563a4c0c50ea73cb56dad70d79|2026-10-27 23:11:08.683354+00
+172d4dea-bc5f-44b8-a619-e243543c78ea|founding-affidavit|PLATFORM|founding-affidavit|3681|eb877d2eb273b91662894144c7530c16|d41d8cd98f00b204e9800998ecf8427e|bdca1f65730dee32df7d3754557839d8b50a0b7166d890c663f528f2a728976d|2026-10-27 18:22:45.468389+00
+fa103980-aae2-44ce-9a99-c08c0b719532|letter-of-demand|PLATFORM|letter-of-demand|2444|49b5924e094aceee4710c3ea746ac02c|d41d8cd98f00b204e9800998ecf8427e|34e69080b1112ad593cb50a37e3e9b0290dcadb508a9049847eec7a52a335d1e|2026-10-27 18:22:45.469139+00
+30854651-553f-4eb1-88af-8a87e5706dd7|matter-closure-letter|PLATFORM|matter-closure-letter|2799|d388a73a6c74145286904d66438fa9c0|d41d8cd98f00b204e9800998ecf8427e|a84407041993f28fea39db5d3afe431ddfa57e2e8619d2ee7397987cd5f36508|2026-10-27 23:11:08.634994+00
+3e376975-c3a3-466d-a22a-23784551dcd6|notice-of-motion|PLATFORM|notice-of-motion|2908|fdde9afce5c92301f4f8593ff98b5e70|d41d8cd98f00b204e9800998ecf8427e|d7f1e02bd30324f650f92909f3516ec32f7fbe0da0f6484b36103937236ed331|2026-10-27 18:22:45.467465+00
+880f4fd6-649c-416a-89ca-b9b9875cd4ed|offer-to-purchase|PLATFORM|offer-to-purchase|4506|6cd1167206b8b2534ba89f20e82c802d|d41d8cd98f00b204e9800998ecf8427e|28529ecd0118efeb72510c41ba2bb08b10dbd550dc3db97777cd6d30137382ee|2026-10-27 18:22:45.474254+00
+62102f39-d714-43ad-9de5-71852ed08d93|power-of-attorney|PLATFORM|power-of-attorney|2937|3280395cf66f449633ba7b007c62a5c2|d41d8cd98f00b204e9800998ecf8427e|24652e88b31aa294e87e089f3296905407d78700b10f64d5089ec028c792b053|2026-10-27 18:22:45.46675+00
+71d50aaf-b928-4296-be84-5545f944dfc6|power-of-attorney-to-pass-transfer|PLATFORM|power-of-attorney-transfer|3600|a8e31c01910983dab80be2d8bfcb3ec0|d41d8cd98f00b204e9800998ecf8427e|c45382f83b9af9de65c9565fa2f8650fbdcf80991d9baeb9617acbc26da3b095|2026-10-27 18:22:45.476129+00
+fc5db0c9-1f53-465c-9301-ebfbb6913392|section-35-cover-letter|PLATFORM|section-35-cover-letter|2523|7cf912d6a732c206d940c14b4569f85e|d41d8cd98f00b204e9800998ecf8427e|71fd1df04eecee1f37cad0538ab1aa3404aaca52496a1280c58774182648752b|2026-10-27 18:22:45.470734+00
+e30f171e-2468-4ee6-b1ff-1b52af046bcc|statement-of-account|PLATFORM|statement-of-account|8771|5f64c19ee173d82742d68095355d3f5c|d41d8cd98f00b204e9800998ecf8427e|868b239893d17622a7384c4a05e4befce7e33a43f972466ccb0173ffd1a230ca|2026-10-27 22:34:31.528237+00
+5a723620-4ea5-43af-ad61-d7d3240ea684|trust-receipt|PLATFORM|trust-receipt|2280|6e17ce12cd7abbb79125b477264492d1|d41d8cd98f00b204e9800998ecf8427e|c9a6235a9040e9e25f9d4a3159f9a51957ffbeeb8567a0469f3266ef8ada21e4|2026-10-27 18:22:45.470254+00

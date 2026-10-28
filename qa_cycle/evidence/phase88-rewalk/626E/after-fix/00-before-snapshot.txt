@@ -1,0 +1,76 @@
+-- BEFORE snapshot 2026-10-28T00:47:47Z
+                           Table "tenant_7d218705360b.pack_install"
+         Column         |           Type           | Collation | Nullable |      Default      
+------------------------+--------------------------+-----------+----------+-------------------
+ id                     | uuid                     |           | not null | gen_random_uuid()
+ pack_id                | character varying(128)   |           | not null | 
+ pack_type              | character varying(64)    |           | not null | 
+ pack_version           | character varying(32)    |           | not null | 
+ pack_name              | character varying(256)   |           | not null | 
+ installed_at           | timestamp with time zone |           | not null | now()
+ installed_by_member_id | uuid                     |           |          | 
+ item_count             | integer                  |           | not null | 0
+Indexes:
+    "pack_install_pkey" PRIMARY KEY, btree (id)
+    "uq_pack_install_pack_id" UNIQUE CONSTRAINT, btree (pack_id)
+Referenced by:
+    TABLE "tenant_7d218705360b.automation_rules" CONSTRAINT "automation_rules_source_pack_install_id_fkey" FOREIGN KEY (source_pack_install_id) REFERENCES tenant_7d218705360b.pack_install(id) ON DELETE SET NULL
+    TABLE "tenant_7d218705360b.document_templates" CONSTRAINT "document_templates_source_pack_install_id_fkey" FOREIGN KEY (source_pack_install_id) REFERENCES tenant_7d218705360b.pack_install(id) ON DELETE SET NULL
+
+              pack_id              |      pack_type      | pack_version |         installed_at          
+-----------------------------------+---------------------+--------------+-------------------------------
+ common-project                    | FIELD               | 2            | 2026-10-27 18:22:45.292471+00
+ common-task                       | FIELD               | 2            | 2026-10-27 18:22:45.292471+00
+ conveyancing-za-project           | FIELD               | 1            | 2026-10-27 18:22:45.292471+00
+ legal-za-customer                 | FIELD               | 2            | 2026-10-27 18:22:45.292471+00
+ legal-za-project                  | FIELD               | 2            | 2026-10-27 18:22:45.292471+00
+ common                            | DOCUMENT_TEMPLATE   | 3            | 2026-10-27 18:22:45.39419+00
+ compliance-za                     | DOCUMENT_TEMPLATE   | 1            | 2026-10-27 18:22:45.439972+00
+ conveyancing-za-clauses           | CLAUSE              | 1            | 2026-10-27 18:22:45.523032+00
+ legal-za-clauses                  | CLAUSE              | 1            | 2026-10-27 18:22:45.523032+00
+ standard-clauses                  | CLAUSE              | 1            | 2026-10-27 18:22:45.523032+00
+ standard-reports                  | REPORT              | 1            | 2026-10-27 18:22:45.741001+00
+ conveyancing-intake-za            | REQUEST             | 1            | 2026-10-27 18:22:45.768442+00
+ fica-onboarding-pack              | REQUEST             | 1            | 2026-10-27 18:22:45.768442+00
+ legal-za-liquidation-distribution | REQUEST             | 1            | 2026-10-27 18:22:45.768442+00
+ automation-common                 | AUTOMATION_TEMPLATE | 3            | 2026-10-27 18:22:45.800122+00
+ automation-legal-za               | AUTOMATION_TEMPLATE | 2            | 2026-10-27 18:22:45.849175+00
+ legal-za                          | DOCUMENT_TEMPLATE   | 9            | 2026-10-27 18:22:45.461527+00
+(17 rows)
+
+                  id                  |                slug                 |   source   |      pack_template_key       | length |               md5                | content_hash |          updated_at           
+--------------------------------------+-------------------------------------+------------+------------------------------+--------+----------------------------------+--------------+-------------------------------
+ 80791878-6e4d-47fc-acbc-9ec04a2a1c54 | engagement-letter-litigation-custom | ORG_CUSTOM | engagement-letter-litigation |   3186 | 87c8f26bb643fd0324a23ec680c3bce7 |              | 2026-10-27 22:33:02.692423+00
+(1 row)
+
+ ref_pos | num_pos 
+---------+---------
+(0 rows)
+
+                  id                  |                slug                 |   source   |       pack_template_key        | length |               md5                |                           content_hash                           |          updated_at           
+--------------------------------------+-------------------------------------+------------+--------------------------------+--------+----------------------------------+------------------------------------------------------------------+-------------------------------
+ 629a7ecc-763c-4c82-b426-0d1dd98e207b | bond-cancellation-instruction       | PLATFORM   | bond-cancellation-instruction  |   4089 | f8592e8bf28b2f74027f49b30c4e8972 | fcc198fa2a0b3c2ca761216bee16d7c9425e92d6f7f929c3154b05c372641144 | 2026-10-27 23:11:08.657947+00
+ 5bbefa2c-d982-4577-87d3-cbbb694283a8 | client-trust-statement              | PLATFORM   | client-trust-statement         |   2027 | d5c2fb09f0d07c2b60f8ccfd1582ef75 | 013aadbd7efd769b062608557acf794fca1cc599a8f6284a7ac7b823edbb1b42 | 2026-10-27 18:22:45.469691+00
+ c47c8399-ba10-4f3f-8ca4-7c44a51ff8c1 | deed-of-transfer                    | PLATFORM   | deed-of-transfer               |   4162 | bab9601ff02319b5d1c8d425f93d5944 | 999359e421a72df56dc6e0beb76443d538d5d7f2deeaf4e53aee7cf34ab01897 | 2026-10-27 23:11:08.649543+00
+ 4ee6eab3-0ac6-4930-b644-b1a67a5919f7 | engagement-letter-conveyancing      | PLATFORM   | engagement-letter-conveyancing |   5453 | d33718dc8105bd3d8a66ded26365e16c | 6fcaf4cf5004a564ad121c1dab0f22ba246cfd210a00da38e6c736ad57311e76 | 2026-10-27 23:11:08.597913+00
+ 4aa035e5-dcd4-4c4e-9146-c2dcee848e8c | engagement-letter-general           | PLATFORM   | engagement-letter-general      |   4746 | caac0b9caca2a30909617cfbaf455666 | 5fe73b2ed535904c61d7f2b0dbfe4d66b4536d86e590626062772011e629dd08 | 2026-10-27 23:11:08.606376+00
+ 80791878-6e4d-47fc-acbc-9ec04a2a1c54 | engagement-letter-litigation-custom | ORG_CUSTOM | engagement-letter-litigation   |   3186 | 87c8f26bb643fd0324a23ec680c3bce7 |                                                                  | 2026-10-27 22:33:02.692423+00
+ bc89ee05-e496-43b0-ae7e-cecdde3df78b | engagement-letter-litigation        | PLATFORM   | engagement-letter-litigation   |   6073 | 2bc18ddbe2262243ec1d17e57928c91a | 516f7f6ec3e43a1f5b7a4aa888af2e8241e568597b3d6d4292e1fe1321085c44 | 2026-10-27 23:11:08.582667+00
+ c543e678-a7e0-4db8-963d-4b9c18d31e1f | fee-note                            | PLATFORM   | fee-note-za                    |   9429 | f58d7d92f14ccf4cc9db31e1bfa59f22 | 08f9cb2da4e222cb513bf7ab98c327bd4ab24658e543b0287530ef77df3c18fc | 2026-10-28 00:27:48.459364+00
+ 172d4dea-bc5f-44b8-a619-e243543c78ea | founding-affidavit                  | PLATFORM   | founding-affidavit             |   3681 | eb877d2eb273b91662894144c7530c16 | bdca1f65730dee32df7d3754557839d8b50a0b7166d890c663f528f2a728976d | 2026-10-27 18:22:45.468389+00
+ fa103980-aae2-44ce-9a99-c08c0b719532 | letter-of-demand                    | PLATFORM   | letter-of-demand               |   2444 | 49b5924e094aceee4710c3ea746ac02c | 34e69080b1112ad593cb50a37e3e9b0290dcadb508a9049847eec7a52a335d1e | 2026-10-27 18:22:45.469139+00
+ 30854651-553f-4eb1-88af-8a87e5706dd7 | matter-closure-letter               | PLATFORM   | matter-closure-letter          |   2959 | 807ebaffdcaef63f08a5ee2c2c69c42f | a75732a4d783a9dba3a0f5eb420e766eadd57b686c9fb4bb9b1f16ba1a37d1ef | 2026-10-28 00:27:48.426157+00
+ 3e376975-c3a3-466d-a22a-23784551dcd6 | notice-of-motion                    | PLATFORM   | notice-of-motion               |   2908 | fdde9afce5c92301f4f8593ff98b5e70 | d7f1e02bd30324f650f92909f3516ec32f7fbe0da0f6484b36103937236ed331 | 2026-10-27 18:22:45.467465+00
+ 880f4fd6-649c-416a-89ca-b9b9875cd4ed | offer-to-purchase                   | PLATFORM   | offer-to-purchase              |   4506 | 6cd1167206b8b2534ba89f20e82c802d | 28529ecd0118efeb72510c41ba2bb08b10dbd550dc3db97777cd6d30137382ee | 2026-10-27 18:22:45.474254+00
+ 62102f39-d714-43ad-9de5-71852ed08d93 | power-of-attorney                   | PLATFORM   | power-of-attorney              |   2937 | 3280395cf66f449633ba7b007c62a5c2 | 24652e88b31aa294e87e089f3296905407d78700b10f64d5089ec028c792b053 | 2026-10-27 18:22:45.46675+00
+ 71d50aaf-b928-4296-be84-5545f944dfc6 | power-of-attorney-to-pass-transfer  | PLATFORM   | power-of-attorney-transfer     |   3600 | a8e31c01910983dab80be2d8bfcb3ec0 | c45382f83b9af9de65c9565fa2f8650fbdcf80991d9baeb9617acbc26da3b095 | 2026-10-27 18:22:45.476129+00
+ fc5db0c9-1f53-465c-9301-ebfbb6913392 | section-35-cover-letter             | PLATFORM   | section-35-cover-letter        |   2523 | 7cf912d6a732c206d940c14b4569f85e | 71fd1df04eecee1f37cad0538ab1aa3404aaca52496a1280c58774182648752b | 2026-10-27 18:22:45.470734+00
+ e30f171e-2468-4ee6-b1ff-1b52af046bcc | statement-of-account                | PLATFORM   | statement-of-account           |   8776 | a188348b1a1acaa0b79f6c1d14d8686e | 989826597a5b653153fc8ed36843cc011696a1b0958271ec5671a69dcefab5bd | 2026-10-28 00:27:48.438602+00
+ 5a723620-4ea5-43af-ad61-d7d3240ea684 | trust-receipt                       | PLATFORM   | trust-receipt                  |   2280 | 6e17ce12cd7abbb79125b477264492d1 | c9a6235a9040e9e25f9d4a3159f9a51957ffbeeb8567a0469f3266ef8ada21e4 | 2026-10-27 18:22:45.470254+00
+(18 rows)
+
+                  id                  | ref_pos 
+--------------------------------------+---------
+ c543e678-a7e0-4db8-963d-4b9c18d31e1f |    8887
+(1 row)
+

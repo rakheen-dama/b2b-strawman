@@ -1,0 +1,18 @@
+       E2E Test Organization
+       Matter Closure Letter
+       Date: 2026-10-28
+       Client: Sipho Ndlovu mvr15e76ef9a
+       Matter: 626E closure arithmetic repro
+       We confirm that this matter has been concluded on the following basis:
+       Reason for closure: Matter concluded
+       Summary of Account
+       Total fees billed: R10 000,00
+       VAT: R1 567,50
+       Total disbursements: R1 700,00
+       Duration (months): 0
+       The file will be retained in accordance with our retention policy and the Legal Practice Act. 
+       Thank you for entrusting us with your matter.
+       Yours faithfully,
+       Sipho Ndlovu
+       Managing Partner
+       E2E Test Organization

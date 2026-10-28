@@ -1,0 +1,39 @@
+           E2E Test Organization
+           88 Fredman Drive, Illovo Point, 3rd Floor, Sandown 2196, South Africa
+           Tel: +27 11 555 0199
+           Email: accounts@ndlovu-attorneys.co.za
+           Web: https://www.ndlovu-attorneys.co.za
+           VAT Registration No: 4123456789
+           FEE NOTE
+           To: Sipho Ndlovu mvr15e76ef9a
+           12 Rivonia Road
+           Sandton 2196
+           ZA
+           Matter: 626E closure arithmetic repro
+           Matter Reference: 626E-closure
+           Fee Note Number: INV-0004
+           Issue Date: 27 October 2026
+           Due Date: 27 November 2026
+           Currency: ZAR
+           Fees and Disbursements
+                                                             Unit Price            Total 
+            Description                                Qty (excl. VAT)    VAT      (incl. 
+                                                                                   VAT)
+              2026-10-28 · Alice Owner · 626E settlement        1     R2 500,00      R375,00    R2 875,00
+              negotiations
+              Deeds office fees: 626E deeds office search       1     R1 250,00      R0,00      R1 250,00
+              (Deeds Office Pretoria, 2026-10-27)
+             Amount Summary
+             Subtotal (excl. VAT): R3 750,00
+             VAT: R375,00
+             Total Due: R4 125,00
+             Banking details
+             Bank: Standard Bank
+             Branch code: 051001
+             Account number: 0012345678
+             Account type: Cheque
+             Payment reference: INV-0004
+             Please use your fee note number as the payment reference.
+             Where the practice is registered for VAT, this fee note constitutes a tax invoice as defined in 
+             section 20 of the Value-Added Tax Act 89 of 1991.
+             Test Footer 1793137061590

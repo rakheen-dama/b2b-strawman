@@ -1,7 +1,7 @@
 {
-  "commit": "2afd0e605",
-  "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-626D @2afd0e60531d58b97fbd003c4120e425019d1ca0)",
+  "commit": "1070711c7",
+  "command": "cd backend && bash scripts/verify.sh (./mvnw verify, worktree-epic-626E @1070711c784b8a36146c4dcdb77605614feb8e14)",
   "exit": 0,
-  "ts": "2026-10-27T23:26:09Z",
-  "summary": "6117 tests / 0 failures / 0 errors / 26 skipped (18:25) — PR #1688 (626D) final head; Backend CI run 40599584436 pass; pre-fix head 837e2dcdd also 6100/0/0"
+  "ts": "2026-10-28T01:08:37Z",
+  "summary": "6140 tests / 0 failures / 0 errors / 26 skipped — PR #1689 (626E) final head; 626.11 BE-VERIFY gate for 626A–626E; Backend CI pass (21m51s); pre-fix head c46eb4203 also 6139/0/0/26"
 }

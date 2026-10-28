@@ -1,0 +1,11 @@
+{
+  "url": "http://localhost:3001/api/invoices/852969e7-8cc1-4bca-83dd-7de636e74d8d/preview",
+  "len": 1039,
+  "hasDraftBanner": true,
+  "hasRefNote": false,
+  "hasPaymentRef": false,
+  "hasFeeNoteNumber": false,
+  "hasBank": true,
+  "hasBankingHeading": true,
+  "tail": "Banking details\n\nBank: Standard Bank\n\nBranch code: 051001\n\nAccount number: 0012345678\n\nAccount type: Cheque\n\nWhere the practice is registered for VAT, this fee note constitutes a tax invoice as defined in section 20 of the Value-Added Tax Act 89 of 1991.\n\nTest Footer 1793137061590"
+}

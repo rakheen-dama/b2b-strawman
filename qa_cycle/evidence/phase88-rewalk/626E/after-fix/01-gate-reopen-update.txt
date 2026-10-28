@@ -1,0 +1,8 @@
+-- THE ONLY WRITE (test infrastructure, disposable e2e stack) 2026-10-28T00:48:08Z
+UPDATE tenant_7d218705360b.pack_install SET pack_version = '8' WHERE pack_id = 'legal-za';
+UPDATE 1
+ pack_id  | pack_version 
+----------+--------------
+ legal-za | 8
+(1 row)
+

@@ -1,0 +1,61 @@
+               E2E Test Organization
+               VAT Reg: 4123456789
+               Statement of Account
+               Reference: SOA-b9174723-20261028
+               Period: 1 October 2026 — 28 October 2026
+               Generated: 28 October 2026
+               To
+               Sipho Ndlovu mvr15e76ef9a
+               12 Rivonia Road Sandton 2196 ZA
+               Matter
+               Matter: 626E closure arithmetic repro
+               File reference: 626E-closure
+               Opened: 27 October 2026
+               Professional Fees
+                Date           Fee         Description                             Hours Rate              Amount
+                               Earner
+                27             Alice       626E consultation and drafting of 
+                October        Owner       particulars of claim                    3         R2 500,00     R7 500,00
+                2026
+                28             Alice 
+                October        Owner       626E settlement negotiations            1         R2 500,00     R2 500,00
+                2026
+              Total fees (excl. VAT): R10 000,00
+              VAT: R1 500,00
+              Total fees (incl. VAT): R11 500,00
+              Disbursements
+               Date           Category       Description           Supplier                Amount       VAT
+               27 October     Deeds          626E deeds office     Deeds Office            R1 250,00    R0,00
+               2026           office fees    search                Pretoria
+               27 October                    626E service of       Sheriff 
+               2026           Sheriff fees   summons               Johannesburg            R450,00      R67,50
+                                                                   North
+              Total disbursements: R1 767,50
+              Trust Activity
+              Opening balance: R0,00
+              Deposits
+               Date               Reference            Description                                 Amount
+               27 October         DEP                  Client deposit — RAF claim                  R5 000,00
+               2026               /mvr15e76ef9a        disbursements
+               27 October         626E-DEP-001         626E trust deposit for closure gate repro   R38 000,00
+               2026
+              Payments
+               Date          Type          Reference             Description                        Amount
+               27                          PAY/DEEDS             Deeds office search fee — 
+               October       PAYMENT /mvr15e76ef9a               Deeds Office Pretoria              R1 250,00
+               2026
+              Closing balance: R41 750,00
+      Summary
+      Total fees: R11 500,00
+      Total disbursements: R1 767,50
+      Previous balance owing: R0,00
+      Payments received: R9 142,50
+      Closing balance owing: R4 125,00
+      Trust balance held: R41 750,00
+      Payment Instructions
+      Bank: Standard Bank
+      Branch code: 051001
+      Account number: 0012345678
+      Account type: Cheque
+      Please use your fee note number as the payment reference.
+      Test Footer 1793137061590

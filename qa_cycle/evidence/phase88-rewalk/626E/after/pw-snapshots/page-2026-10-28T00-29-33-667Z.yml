@@ -1,0 +1,151 @@
+- generic [active] [ref=f3e1]:
+  - link "Skip to content" [ref=f3e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f3e3]:
+    - complementary [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - img "E2E Test Organization logo" [ref=f3e6]
+        - generic [ref=f3e7]: Kazi
+      - generic [ref=f3e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f3e12]:
+        - text: Search...
+        - generic [ref=f3e16]: ⌘K
+      - navigation "Main navigation" [ref=f3e17]:
+        - generic [ref=f3e18]:
+          - button "Today" [expanded] [ref=f3e19]
+          - generic [ref=f3e23]:
+            - link "Home" [ref=f3e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f3e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f3e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f3e36]:
+          - button "Matters" [expanded] [ref=f3e37]
+          - generic [ref=f3e41]:
+            - link "Matters" [ref=f3e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f3e48] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f3e50] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f3e55] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f3e61] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f3e66]:
+          - button "Clients" [expanded] [ref=f3e67]
+          - generic [ref=f3e71]:
+            - link "Clients" [ref=f3e72] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f3e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f3e81] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f3e87]
+        - button "Trust" [ref=f3e93]
+        - button "Firm" [ref=f3e99]
+      - link "Platform Admin" [ref=f3e105] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f3e110] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f3e115]:
+        - generic [ref=f3e116]: AO
+        - generic [ref=f3e117]:
+          - paragraph [ref=f3e118]: Alice Owner
+          - paragraph [ref=f3e119]: alice@e2e-test.local
+    - generic [ref=f3e120]:
+      - banner [ref=f3e121]:
+        - navigation "Breadcrumb" [ref=f3e122]:
+          - link "E2E Test Organization" [ref=f3e123] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Matters" [ref=f3e127] [cursor=pointer]:
+            - /url: /org/e2e-test-org/matters
+          - generic [ref=f3e128]: Matter
+        - generic [ref=f3e132]:
+          - generic [ref=f3e133]: e2e-test-org
+          - button "AO" [ref=f3e136]
+          - button "Notifications" [ref=f3e138]:
+            - generic [ref=f3e139]: 8 unread notifications
+            - generic [aria-hidden] [ref=f3e140]: "8"
+      - main [ref=f3e141]:
+        - generic [ref=f3e144]:
+          - generic [ref=f3e145]:
+            - link "Back to Matters" [ref=f3e146] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - generic [ref=f3e149]:
+              - button "Generate Document" [ref=f3e150]
+              - button "Generate Statement of Account" [ref=f3e151]
+              - button "More actions" [ref=f3e152]
+          - generic [ref=f3e155]:
+            - generic [ref=f3e156]:
+              - heading "626E closure arithmetic repro" [level=1] [ref=f3e157]
+              - generic [ref=f3e158]:
+                - generic [ref=f3e159]: Closed
+                - code [ref=f3e160]: 626E-closure
+              - link "Sipho Ndlovu mvr15e76ef9a" [ref=f3e162] [cursor=pointer]:
+                - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4
+            - button "Reopen Matter" [ref=f3e164]
+          - generic [ref=f3e165]:
+            - tablist [ref=f3e166]:
+              - tab "Details" [ref=f3e167] [cursor=pointer]
+              - tab "Overview" [selected] [ref=f3e170] [cursor=pointer]
+              - tab "Work" [ref=f3e172] [cursor=pointer]
+              - tab "Fees" [ref=f3e175] [cursor=pointer]
+              - tab "Client" [ref=f3e178] [cursor=pointer]
+              - tab "Diary" [ref=f3e181] [cursor=pointer]
+              - tab "Activity" [ref=f3e182] [cursor=pointer]
+            - tabpanel [ref=f3e185]:
+              - generic [ref=f3e186]:
+                - generic [ref=f3e188]:
+                  - generic [ref=f3e189]: Healthy
+                  - paragraph [ref=f3e193]: "Customer: Sipho Ndlovu mvr15e76ef9a"
+                - group [ref=f3e194]:
+                  - generic "3/5 setup steps complete 60%" [ref=f3e195] [cursor=pointer]:
+                    - generic [ref=f3e196]:
+                      - generic [ref=f3e197]: 3/5 setup steps complete
+                      - generic [ref=f3e199]: 60%
+                - generic [ref=f3e206]:
+                  - link "4.0h Hours logged" [ref=f3e207] [cursor=pointer]:
+                    - /url: "?tab=time"
+                    - generic [ref=f3e209]:
+                      - generic [ref=f3e214]: 4.0h
+                      - generic [ref=f3e215]: Hours logged
+                  - link "0% Task completion" [ref=f3e216] [cursor=pointer]:
+                    - /url: "?tab=tasks"
+                    - generic [ref=f3e218]:
+                      - generic [ref=f3e223]: 0%
+                      - generic [ref=f3e224]: Task completion
+                  - link "-- Outstanding fee notes" [ref=f3e225] [cursor=pointer]:
+                    - /url: "?tab=statements"
+                    - generic [ref=f3e227]:
+                      - generic [ref=f3e232]: "--"
+                      - generic [ref=f3e233]: Outstanding fee notes
+                - generic [ref=f3e234]:
+                  - generic [ref=f3e236]:
+                    - generic [ref=f3e237]: FICA
+                    - generic [ref=f3e241]: In Progress
+                  - generic [ref=f3e242]:
+                    - paragraph [ref=f3e243]: Onboarding checklist in progress.
+                    - link "View checklist" [ref=f3e244] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?tab=onboarding
+                - generic [ref=f3e245]:
+                  - generic [ref=f3e246]: Retention period
+                  - generic [ref=f3e250]:
+                    - paragraph [ref=f3e251]:
+                      - text: Retention clock started on
+                      - strong [ref=f3e252]: 27 Oct 2026
+                      - text: . Your firm's matter-retention period isn't configured yet, so the scheduled deletion date can't be computed.
+                    - link "Configure retention period →" [ref=f3e253] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/settings/data-protection
+                - generic [ref=f3e254]:
+                  - generic [ref=f3e255]: Upcoming Deadlines
+                  - paragraph [ref=f3e258]: No upcoming deadlines.
+          - generic [ref=f3e259]:
+            - generic [ref=f3e260]: Closure history
+            - paragraph [ref=f3e263]: Loading closure history…
+  - generic [ref=f3e264]:
+    - heading "Command Palette" [level=2] [ref=f3e265]
+    - paragraph [ref=f3e266]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f3e267]

@@ -1,0 +1,220 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+          - generic: Matter
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 8 unread notifications
+              - generic [aria-hidden]: "8"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/matters
+                  - text: Back to Matters
+                - generic:
+                  - button: Generate Document
+                  - button: Generate Statement of Account
+                  - button:
+                    - generic: More actions
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: 626E closure arithmetic repro
+                    - generic:
+                      - generic: Active
+                      - code: 626E-closure
+                    - generic:
+                      - link:
+                        - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4
+                        - text: Sipho Ndlovu mvr15e76ef9a
+                  - generic:
+                    - button: Close Matter
+                    - button: Complete Matter
+                    - button
+              - generic:
+                - tablist:
+                  - tab: Details
+                  - tab [selected]: Overview
+                  - tab: Work
+                  - tab: Fees
+                  - tab: Client
+                  - tab: Diary
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Healthy
+                        - paragraph: "Customer: Sipho Ndlovu mvr15e76ef9a"
+                    - group:
+                      - generic:
+                        - generic:
+                          - generic: 3/5 setup steps complete
+                          - generic: 60%
+                    - generic:
+                      - link:
+                        - /url: "?tab=time"
+                        - generic:
+                          - generic:
+                            - generic: 4.0h
+                            - generic: Hours logged
+                      - link:
+                        - /url: "?tab=tasks"
+                        - generic:
+                          - generic:
+                            - generic: 0%
+                            - generic: Task completion
+                      - link:
+                        - /url: "?tab=statements"
+                        - generic:
+                          - generic:
+                            - generic: "--"
+                            - generic: Outstanding fee notes
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: FICA
+                          - generic: In Progress
+                      - generic:
+                        - paragraph: Onboarding checklist in progress.
+                        - link:
+                          - /url: /org/e2e-test-org/clients/513b4d65-951b-466d-9994-06ac6a721ff4?tab=onboarding
+                          - text: View checklist
+                    - generic:
+                      - generic: Upcoming Deadlines
+                      - generic:
+                        - paragraph: No upcoming deadlines.
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f5e288]:
+    - generic [ref=f5e289]:
+      - generic [ref=f5e290]:
+        - heading "Close matter" [level=2] [ref=f5e291]
+        - paragraph [ref=f5e292]: Review closure gates and confirm closure of 626E closure arithmetic repro.
+      - generic [ref=f5e293]:
+        - list "Matter closure gate report" [ref=f5e294]:
+          - listitem [ref=f5e295]:
+            - generic [ref=f5e301]:
+              - paragraph [ref=f5e302]: Matter trust balance is R38 000,00. Transfer to client or office before closure.
+              - link "Fix this" [ref=f5e303] [cursor=pointer]:
+                - /url: /org/e2e-test-org/matters/b9174723-4c60-402d-9055-301221368b32?tab=trust
+          - listitem [ref=f5e304]:
+            - paragraph [ref=f5e310]: All disbursements approved.
+          - listitem [ref=f5e311]:
+            - paragraph [ref=f5e317]: All approved disbursements are settled.
+          - listitem [ref=f5e318]:
+            - paragraph [ref=f5e324]: Final bill issued with no unbilled items.
+          - listitem [ref=f5e325]:
+            - paragraph [ref=f5e331]: No court dates scheduled for today or later.
+          - listitem [ref=f5e332]:
+            - paragraph [ref=f5e338]: No prescription timers still running.
+          - listitem [ref=f5e339]:
+            - generic [ref=f5e345]:
+              - paragraph [ref=f5e346]: 1 tasks remain open.
+              - link "Fix this" [ref=f5e347] [cursor=pointer]:
+                - /url: /org/e2e-test-org/matters/b9174723-4c60-402d-9055-301221368b32?tab=tasks
+          - listitem [ref=f5e348]:
+            - paragraph [ref=f5e354]: All client information requests closed.
+          - listitem [ref=f5e355]:
+            - paragraph [ref=f5e361]: No document acceptances pending.
+        - generic [ref=f5e362]:
+          - button "Cancel" [active] [ref=f5e363]
+          - button "Continue" [ref=f5e364]
+      - button "Close" [ref=f5e365]

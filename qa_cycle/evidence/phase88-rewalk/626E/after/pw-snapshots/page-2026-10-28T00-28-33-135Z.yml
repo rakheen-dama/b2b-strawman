@@ -1,0 +1,202 @@
+- generic [ref=f8e1]:
+  - link "Skip to content" [ref=f8e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f8e3]:
+    - complementary [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - img "E2E Test Organization logo" [ref=f8e6]
+        - generic [ref=f8e7]: Kazi
+      - generic [ref=f8e9]: E2E Test Organization
+      - button "Search, Command K" [ref=f8e12]:
+        - text: Search...
+        - generic [ref=f8e16]: ⌘K
+      - navigation "Main navigation" [ref=f8e17]:
+        - generic [ref=f8e18]:
+          - button "Today" [expanded] [ref=f8e19]
+          - generic [ref=f8e23]:
+            - link "Home" [ref=f8e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f8e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f8e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f8e36]:
+          - button "Matters" [expanded] [ref=f8e37]
+          - generic [ref=f8e41]:
+            - link "Matters" [ref=f8e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f8e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f8e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f8e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f8e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f8e65]:
+          - button "Clients" [expanded] [ref=f8e66]
+          - generic [ref=f8e70]:
+            - link "Clients" [ref=f8e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f8e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f8e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f8e86]
+        - button "Trust" [ref=f8e92]
+        - button "Firm" [ref=f8e98]
+      - link "Platform Admin" [ref=f8e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f8e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f8e114]:
+        - generic [ref=f8e115]: AO
+        - generic [ref=f8e116]:
+          - paragraph [ref=f8e117]: Alice Owner
+          - paragraph [ref=f8e118]: alice@e2e-test.local
+    - generic [ref=f8e119]:
+      - banner [ref=f8e120]:
+        - navigation "Breadcrumb" [ref=f8e121]:
+          - link "E2E Test Organization" [ref=f8e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Fee notes" [ref=f8e126] [cursor=pointer]:
+            - /url: /org/e2e-test-org/invoices
+          - generic [ref=f8e127]: Fee note
+        - generic [ref=f8e131]:
+          - generic [ref=f8e132]: e2e-test-org
+          - button "AO" [ref=f8e135]
+          - button "Notifications" [ref=f8e137]:
+            - generic [ref=f8e138]: 8 unread notifications
+            - generic [aria-hidden] [ref=f8e286]: "8"
+      - main [ref=f8e139]:
+        - generic [ref=f8e142]:
+          - generic [ref=f8e143]:
+            - link "Back to fee notes" [ref=f8e144] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices
+            - button "Generate Document" [ref=f8e147]
+          - generic [ref=f8e148]:
+            - generic [ref=f8e149]:
+              - generic [ref=f8e150]:
+                - generic [ref=f8e151]:
+                  - heading [level=1] [ref=f8e152]:
+                    - text: Draft fee note
+                    - 'button "Help: Fee note numbering" [ref=f8e153] [cursor=pointer]'
+                  - generic [ref=f8e157]: Draft
+                - generic [ref=f8e158]:
+                  - generic [ref=f8e159]: "Client: Sipho Ndlovu mvr15e76ef9a"
+                  - generic [ref=f8e160]: "Currency: ZAR"
+              - generic [ref=f8e161]:
+                - button "Preview" [active] [ref=f8e162]
+                - button "Approve" [ref=f8e163]
+                - button "Delete Draft" [ref=f8e164]
+            - generic [ref=f8e165]:
+              - heading "Fee note details" [level=2] [ref=f8e166]
+              - generic [ref=f8e167]:
+                - generic [ref=f8e168]:
+                  - generic [ref=f8e169]: Due Date
+                  - textbox "Due Date" [ref=f8e170]
+                - generic [ref=f8e171]:
+                  - generic [ref=f8e172]: Payment Terms
+                  - textbox "Payment Terms" [ref=f8e173]:
+                    - /placeholder: e.g. Net 30
+                - generic [ref=f8e174]:
+                  - generic [ref=f8e175]: PO Number
+                  - textbox "PO Number" [ref=f8e176]:
+                    - /placeholder: e.g. PO-2026-001
+                - generic [ref=f8e177]:
+                  - generic [ref=f8e178]: Tax Type
+                  - combobox "Tax Type" [ref=f8e179]:
+                    - option "Select tax type…" [selected]
+                    - option "VAT"
+                    - option "GST"
+                    - option "Sales Tax"
+                    - option "None"
+                - generic [ref=f8e180]:
+                  - generic [ref=f8e181]: Billing Period Start
+                  - textbox "Billing Period Start" [ref=f8e182]
+                - generic [ref=f8e183]:
+                  - generic [ref=f8e184]: Billing Period End
+                  - textbox "Billing Period End" [ref=f8e185]
+                - generic [ref=f8e186]:
+                  - generic [ref=f8e187]: Notes
+                  - textbox "Notes" [ref=f8e188]:
+                    - /placeholder: Additional notes...
+              - button "Save Changes" [ref=f8e190]
+            - generic [ref=f8e191]:
+              - generic [ref=f8e192]:
+                - heading "Line Items" [level=2] [ref=f8e193]
+                - button "Add Line" [ref=f8e194]
+              - table [ref=f8e196]:
+                - rowgroup [ref=f8e197]:
+                  - row [ref=f8e198]:
+                    - columnheader "Description" [ref=f8e199]
+                    - columnheader "Project" [ref=f8e200]
+                    - columnheader "Qty" [ref=f8e201]
+                    - columnheader "Rate" [ref=f8e202]
+                    - columnheader "Amount" [ref=f8e203]
+                    - columnheader "Tax" [ref=f8e204]
+                    - columnheader "Actions" [ref=f8e205]
+                - rowgroup [ref=f8e206]:
+                  - row [ref=f8e207]:
+                    - cell "Time Entries" [ref=f8e208]
+                  - row [ref=f8e209]:
+                    - cell "2026-10-28 · Alice Owner · 626E draft fee note work" [ref=f8e210]
+                    - cell "626E draft fee note repro" [ref=f8e212]
+                    - cell "1.5" [ref=f8e213]
+                    - cell "R 2 500,00" [ref=f8e214]
+                    - cell "R 3 750,00" [ref=f8e215]
+                    - cell "VAT — Standard (15%) R 562,50" [ref=f8e216]
+                    - cell [ref=f8e218]:
+                      - generic [ref=f8e219]:
+                        - button "Edit 2026-10-28 · Alice Owner · 626E draft fee note work" [ref=f8e220]
+                        - button "Delete 2026-10-28 · Alice Owner · 626E draft fee note work" [ref=f8e224]
+                  - row [ref=f8e228]:
+                    - cell "Disbursements" [ref=f8e229]
+                  - row [ref=f8e230]:
+                    - 'cell "Sheriff fees: 626E service of notice (Sheriff Randburg, 2026-10-27)" [ref=f8e231]'
+                    - cell "626E draft fee note repro" [ref=f8e233]
+                    - cell "1" [ref=f8e234]
+                    - cell "R 300,00" [ref=f8e235]
+                    - cell "R 300,00" [ref=f8e236]
+                    - cell "VAT — Standard (15%) R 45,00" [ref=f8e237]
+                    - cell [ref=f8e239]:
+                      - generic [ref=f8e240]:
+                        - 'button "Edit Sheriff fees: 626E service of notice (Sheriff Randburg, 2026-10-27)" [ref=f8e241]'
+                        - 'button "Delete Sheriff fees: 626E service of notice (Sheriff Randburg, 2026-10-27)" [ref=f8e245]'
+            - button "Add Tariff Items" [ref=f8e250]
+            - button "Add Disbursements" [ref=f8e252]
+            - generic [ref=f8e254]:
+              - generic [ref=f8e255]:
+                - generic [ref=f8e256]: Subtotal
+                - generic [ref=f8e257]: R 4 050,00
+              - generic [ref=f8e258]:
+                - generic [ref=f8e259]: VAT — Standard (15%)
+                - generic [ref=f8e260]: R 607,50
+              - generic [ref=f8e261]:
+                - generic [ref=f8e262]: Total
+                - generic [ref=f8e263]: R 4 657,50
+          - generic [ref=f8e264]:
+            - heading "No custom fields configured" [level=2] [ref=f8e268]
+            - paragraph [ref=f8e269]: Custom fields let you track additional information specific to your workflow.
+            - link "Configure Fields" [ref=f8e270] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings/matters?tab=custom-fields
+          - generic [ref=f8e271]:
+            - heading "Generated Documents" [level=2] [ref=f8e272]
+            - paragraph [ref=f8e274]: No documents generated yet
+          - generic [ref=f8e275]:
+            - heading "Collection activity" [level=2] [ref=f8e276]
+            - paragraph [ref=f8e278]: No collection activity for this invoice yet.
+          - generic [ref=f8e279]:
+            - heading "Audit trail" [level=2] [ref=f8e280]
+            - list [ref=f8e287]:
+              - listitem [ref=f8e288]:
+                - button "INFO Fee note Alice Owner 42 minutes ago" [ref=f8e289]:
+                  - generic [ref=f8e290]: INFO
+                  - generic [ref=f8e291]: Fee note
+                  - generic [ref=f8e292]: Alice Owner
+                  - generic [ref=f8e294]: 42 minutes ago
+  - generic [ref=f8e282]:
+    - heading "Command Palette" [level=2] [ref=f8e283]
+    - paragraph [ref=f8e284]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f8e285]

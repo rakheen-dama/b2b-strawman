@@ -1,0 +1,372 @@
+- generic [active]:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/invoices
+              - text: Fee notes
+          - generic: Fee note
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 8 unread notifications
+              - generic [aria-hidden]: "8"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/invoices
+                  - text: Back to fee notes
+                - button: Generate Document
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading [level=1]:
+                        - text: INV-0004
+                        - button
+                      - generic: Sent
+                    - generic:
+                      - generic: "Client: Sipho Ndlovu mvr15e76ef9a"
+                      - generic: "Issued: 27 Oct 2026"
+                      - generic: "Due: 27 Nov 2026"
+                      - generic: "Currency: ZAR"
+                  - generic:
+                    - button: Preview
+                    - button: Record Payment
+                    - button: Void
+                - generic:
+                  - heading [level=3]: Payment History
+                  - paragraph: No payment events yet.
+                - generic:
+                  - heading [level=2]: Fee note details
+                  - generic:
+                    - generic:
+                      - term: Due Date
+                      - definition: 27 Nov 2026
+                - generic:
+                  - generic:
+                    - heading [level=2]: Line Items
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader: Description
+                          - columnheader: Project
+                          - columnheader: Qty
+                          - columnheader: Rate
+                          - columnheader: Amount
+                          - columnheader: Tax
+                      - rowgroup:
+                        - row:
+                          - cell: Time Entries
+                        - row:
+                          - cell:
+                            - generic: 2026-10-28 · Alice Owner · 626E settlement negotiations
+                          - cell: 626E closure arithmetic repro
+                          - cell: "1"
+                          - cell: R 2 500,00
+                          - cell: R 2 500,00
+                          - cell:
+                            - generic: VAT — Standard (15%) R 375,00
+                        - row:
+                          - cell: Disbursements
+                        - row:
+                          - cell:
+                            - generic: "Deeds office fees: 626E deeds office search (Deeds Office Pretoria, 2026-10-27)"
+                          - cell: 626E closure arithmetic repro
+                          - cell: "1"
+                          - cell: R 1 250,00
+                          - cell: R 1 250,00
+                          - cell:
+                            - generic: Zero-rated (0%) R 0,00
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: Subtotal
+                      - generic: R 3 750,00
+                    - generic:
+                      - generic: VAT — Standard (15%)
+                      - generic: R 375,00
+                    - generic:
+                      - generic: Zero-rated (0%)
+                      - generic: R 0,00
+                    - generic:
+                      - generic: Total
+                      - generic: R 4 125,00
+              - generic:
+                - heading [level=2]: No custom fields configured
+                - paragraph: Custom fields let you track additional information specific to your workflow.
+                - link:
+                  - /url: /org/e2e-test-org/settings/matters?tab=custom-fields
+                  - text: Configure Fields
+              - generic:
+                - heading [level=2]: Generated Documents
+                - generic:
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader: Template Name
+                          - columnheader: Generated By
+                          - columnheader: Date
+                          - columnheader: File Size
+                          - columnheader: Format
+                          - columnheader: Acceptance
+                          - columnheader: Actions
+                      - rowgroup:
+                        - row:
+                          - cell:
+                            - generic: Fee Note
+                          - cell: Alice Owner
+                          - cell: 28 Oct 2026
+                          - cell: 4.1 KB
+                          - cell:
+                            - generic: PDF
+                          - cell
+                          - cell:
+                            - generic:
+                              - button
+                              - button
+                              - button
+                        - row:
+                          - cell:
+                            - generic: Fee Note
+                          - cell: Alice Owner
+                          - cell: 28 Oct 2026
+                          - cell: 4.1 KB
+                          - cell:
+                            - generic: PDF
+                          - cell
+                          - cell:
+                            - generic:
+                              - button
+                              - button
+                              - button
+              - generic:
+                - heading [level=2]: Collection activity
+                - generic:
+                  - paragraph: No collection activity for this invoice yet.
+              - generic:
+                - heading [level=2]: Audit trail
+                - generic:
+                  - list:
+                    - listitem:
+                      - button:
+                        - generic: INFO
+                        - generic: Fee note
+                        - generic: Alice Owner
+                        - generic: 44 minutes ago
+                    - listitem:
+                      - button:
+                        - generic: INFO
+                        - generic: Fee note
+                        - generic: Alice Owner
+                        - generic: 44 minutes ago
+                    - listitem:
+                      - button:
+                        - generic: INFO
+                        - generic: Fee note
+                        - generic: Alice Owner
+                        - generic: 44 minutes ago
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f1e241]:
+    - generic [ref=f1e242]:
+      - 'heading "Generate: Fee Note" [level=2] [ref=f1e244]'
+      - iframe [ref=f1e250]:
+        - generic [ref=f2e1]:
+          - paragraph [ref=f2e2]:
+            - img "Logo" [ref=f2e3]
+          - heading "E2E Test Organization" [level=1] [ref=f2e4]
+          - paragraph [ref=f2e5]: 88 Fredman Drive, Illovo Point, 3rd Floor, Sandown 2196, South Africa
+          - paragraph [ref=f2e6]:
+            - strong [ref=f2e7]: "Tel:"
+            - text: +27 11 555 0199
+          - paragraph [ref=f2e8]:
+            - strong [ref=f2e9]: "Email:"
+            - text: accounts@ndlovu-attorneys.co.za
+          - paragraph [ref=f2e10]:
+            - strong [ref=f2e11]: "Web:"
+            - text: https://www.ndlovu-attorneys.co.za
+          - paragraph [ref=f2e12]:
+            - strong [ref=f2e13]: "VAT Registration No:"
+            - text: "4123456789"
+          - separator [ref=f2e14]
+          - heading "FEE NOTE" [level=2] [ref=f2e15]
+          - paragraph [ref=f2e16]:
+            - strong [ref=f2e17]: "To:"
+            - text: Sipho Ndlovu mvr15e76ef9a
+          - paragraph [ref=f2e18]: 12 Rivonia Road
+          - paragraph [ref=f2e19]: Sandton 2196
+          - paragraph [ref=f2e20]: ZA
+          - paragraph [ref=f2e21]:
+            - strong [ref=f2e22]: "Matter:"
+            - text: 626E closure arithmetic repro
+          - paragraph [ref=f2e23]:
+            - strong [ref=f2e24]: "Matter Reference:"
+            - text: 626E-closure
+          - separator [ref=f2e25]
+          - paragraph [ref=f2e26]:
+            - strong [ref=f2e27]: "Fee Note Number:"
+            - text: INV-0004
+          - paragraph [ref=f2e28]:
+            - strong [ref=f2e29]: "Issue Date:"
+            - text: 27 October 2026
+          - paragraph [ref=f2e30]:
+            - strong [ref=f2e31]: "Due Date:"
+            - text: 27 November 2026
+          - paragraph [ref=f2e32]:
+            - strong [ref=f2e33]: "Currency:"
+            - text: ZAR
+          - separator [ref=f2e34]
+          - heading "Fees and Disbursements" [level=3] [ref=f2e35]
+          - table [ref=f2e36]:
+            - rowgroup [ref=f2e37]:
+              - row [ref=f2e38]:
+                - columnheader "Description" [ref=f2e39]
+                - columnheader "Qty" [ref=f2e40]
+                - columnheader "Unit Price (excl. VAT)" [ref=f2e41]
+                - columnheader "VAT" [ref=f2e42]
+                - columnheader "Total (incl. VAT)" [ref=f2e43]
+            - rowgroup [ref=f2e44]:
+              - row [ref=f2e45]:
+                - cell "2026-10-28 · Alice Owner · 626E settlement negotiations" [ref=f2e46]
+                - cell "1" [ref=f2e47]
+                - cell "R2 500,00" [ref=f2e48]
+                - cell "R375,00" [ref=f2e49]
+                - cell "R2 875,00" [ref=f2e50]
+              - row [ref=f2e51]:
+                - 'cell "Deeds office fees: 626E deeds office search (Deeds Office Pretoria, 2026-10-27)" [ref=f2e52]'
+                - cell "1" [ref=f2e53]
+                - cell "R1 250,00" [ref=f2e54]
+                - cell "R0,00" [ref=f2e55]
+                - cell "R1 250,00" [ref=f2e56]
+          - separator [ref=f2e57]
+          - heading "Amount Summary" [level=3] [ref=f2e58]
+          - paragraph [ref=f2e59]:
+            - strong [ref=f2e60]: "Subtotal (excl. VAT):"
+            - text: R3 750,00
+          - paragraph [ref=f2e61]:
+            - strong [ref=f2e62]: "VAT:"
+            - text: R375,00
+          - paragraph [ref=f2e63]:
+            - strong [ref=f2e64]: "Total Due:"
+            - text: R4 125,00
+          - separator [ref=f2e65]
+          - heading "Banking details" [level=3] [ref=f2e66]
+          - paragraph [ref=f2e67]:
+            - strong [ref=f2e68]: "Bank:"
+            - text: Standard Bank
+          - paragraph [ref=f2e69]:
+            - strong [ref=f2e70]: "Branch code:"
+            - text: "051001"
+          - paragraph [ref=f2e71]:
+            - strong [ref=f2e72]: "Account number:"
+            - text: "0012345678"
+          - paragraph [ref=f2e73]:
+            - strong [ref=f2e74]: "Account type:"
+            - text: Cheque
+          - paragraph [ref=f2e75]:
+            - strong [ref=f2e76]: "Payment reference:"
+            - text: INV-0004
+          - paragraph [ref=f2e77]: Please use your fee note number as the payment reference.
+          - paragraph [ref=f2e78]:
+            - emphasis [ref=f2e79]: Where the practice is registered for VAT, this fee note constitutes a tax invoice as defined in section 20 of the Value-Added Tax Act 89 of 1991.
+          - separator [ref=f2e80]
+          - paragraph [ref=f2e81]: Test Footer 1793137061590
+      - generic [ref=f1e251]:
+        - button "Download PDF" [ref=f1e252]
+        - button "Save to Documents" [ref=f1e253]
+      - button "Close" [ref=f1e254]

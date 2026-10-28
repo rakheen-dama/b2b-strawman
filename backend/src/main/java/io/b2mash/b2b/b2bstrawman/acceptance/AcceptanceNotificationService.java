@@ -15,10 +15,14 @@ import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
+import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -41,6 +45,12 @@ class AcceptanceNotificationService {
   private static final DateTimeFormatter EMAIL_DATE_FORMAT =
       DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneOffset.UTC);
 
+  /** GAP-L-51: engagement letters keep their legal-firm wording (scenario 4.3b pins it). */
+  static final String ENGAGEMENT_LETTER_LABEL = "engagement letter";
+
+  /** Defensive only: generated_documents.template_id is a NOT NULL foreign key. */
+  static final String FALLBACK_LABEL = "document";
+
   private final EmailTemplateRenderer emailTemplateRenderer;
   private final EmailContextBuilder emailContextBuilder;
   private final IntegrationRegistry integrationRegistry;
@@ -49,6 +59,7 @@ class AcceptanceNotificationService {
   private final ApplicationEventPublisher eventPublisher;
   private final AuditService auditService;
   private final PortalLinkBuilder portalLinkBuilder;
+  private final DocumentTemplateRepository documentTemplateRepository;
 
   AcceptanceNotificationService(
       EmailTemplateRenderer emailTemplateRenderer,
@@ -58,7 +69,8 @@ class AcceptanceNotificationService {
       EmailRateLimiter emailRateLimiter,
       ApplicationEventPublisher eventPublisher,
       AuditService auditService,
-      PortalLinkBuilder portalLinkBuilder) {
+      PortalLinkBuilder portalLinkBuilder,
+      DocumentTemplateRepository documentTemplateRepository) {
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.integrationRegistry = integrationRegistry;
@@ -67,6 +79,31 @@ class AcceptanceNotificationService {
     this.eventPublisher = eventPublisher;
     this.auditService = auditService;
     this.portalLinkBuilder = portalLinkBuilder;
+    this.documentTemplateRepository = documentTemplateRepository;
+  }
+
+  /**
+   * G-B16 (Phase 88 626G): what the acceptance subject calls the document, from the generated
+   * document's template: {@value #ENGAGEMENT_LETTER_LABEL} for an {@code ENGAGEMENT_LETTER}
+   * template (GAP-L-51), otherwise the template's name in lower case ("offer to purchase"), and
+   * {@value #FALLBACK_LABEL} when no template resolves or its name is blank.
+   */
+  String documentLabel(GeneratedDocument doc) {
+    if (doc.getTemplateId() == null) {
+      return FALLBACK_LABEL;
+    }
+    return documentTemplateRepository
+        .findById(doc.getTemplateId())
+        .map(AcceptanceNotificationService::labelOf)
+        .orElse(FALLBACK_LABEL);
+  }
+
+  private static String labelOf(DocumentTemplate template) {
+    if (template.getCategory() == TemplateCategory.ENGAGEMENT_LETTER) {
+      return ENGAGEMENT_LETTER_LABEL;
+    }
+    String name = template.getName() == null ? "" : template.getName().trim();
+    return name.isEmpty() ? FALLBACK_LABEL : name.toLowerCase(Locale.ROOT);
   }
 
   void sendAcceptanceEmail(
@@ -99,16 +136,17 @@ class AcceptanceNotificationService {
       context.put("expiresAtFormatted", EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
 
       String orgName = (String) context.get("orgName");
+      String docLabel = documentLabel(doc);
 
       if (TEMPLATE_REMINDER.equals(templateName) && request.getSentAt() != null) {
         context.put("sentAtFormatted", EMAIL_DATE_FORMAT.format(request.getSentAt()));
         context.put(
             "subject",
-            "Reminder: " + orgName + " -- Please review engagement letter for acceptance");
+            "Reminder: " + orgName + " -- Please review " + docLabel + " for acceptance");
       } else {
         context.put(
             "subject",
-            orgName + " -- Please review engagement letter for acceptance: " + doc.getFileName());
+            orgName + " -- Please review " + docLabel + " for acceptance: " + doc.getFileName());
       }
 
       // 3. Render template

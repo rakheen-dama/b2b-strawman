@@ -1,0 +1,21 @@
+       E2E Test Organization
+       Offer to Purchase
+       Matter: Khumalo Property Holdings — Erf 1234 Sandton Transfer mvr15e76ef9a
+       Parties
+       Purchaser: Khumalo Property Holdings mvr15e76ef9a
+       Purchaser ID / Passport: 7605125009081
+       Seller:
+       Property
+       Property Address: 12 Rivonia Road, Sandton, 2196
+       Erf Number: 1234
+       Deeds Office: Johannesburg
+       Purchase Price & Occupation
+       Purchase Price (ZAR):
+       Occupation Date:
+       Conditions of Sale
+       Signed at _________________ on this _____ day of ______________ 20___.
+       ____________________________
+       Purchaser: Khumalo Property Holdings mvr15e76ef9a
+       ____________________________
+       Seller:
+       Test Footer 1793137061590

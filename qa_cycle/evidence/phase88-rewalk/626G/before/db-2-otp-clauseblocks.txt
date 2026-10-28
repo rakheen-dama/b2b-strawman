@@ -1,0 +1,13 @@
+heading 
+heading Offer to Purchase
+heading Parties
+heading Property
+heading Purchase Price & Occupation
+heading Conditions of Sale
+clauseBlock {"slug": "voetstoots"}
+clauseBlock {"slug": "occupation-date"}
+clauseBlock {"slug": "suspensive-bond"}
+clauseBlock {"slug": "transfer-duty-liability"}
+clauseBlock {"slug": "fica-compliance"}
+clauseBlock {"slug": "rates-clearance"}
+clauseBlock {"slug": "jurisdiction-za"}

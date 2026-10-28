@@ -1,0 +1,6 @@
+                ar_id                 |                gd_id                 |             document_id              |              slug              |     category      | status 
+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------+-------------------+--------
+ 7944c9af-ff8b-4eb5-9305-96c17461a30d | 99eaa3f5-3ad7-4352-9317-8d5fe02db25c | 653a2ac0-c3cf-41a2-9a8f-0002a041d8ae | engagement-letter-conveyancing | ENGAGEMENT_LETTER | SENT
+ ece2aefd-ff63-4ff4-a16a-754fabd45844 | 8af7c134-c104-436e-980c-875a81c16bdf | f86a96e2-df59-46a4-85d1-792179f52574 | offer-to-purchase              | OTHER             | SENT
+(2 rows)
+

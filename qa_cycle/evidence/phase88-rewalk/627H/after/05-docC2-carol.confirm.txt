@@ -1,0 +1,2 @@
+{"id":"1b1abb3f-8b65-4944-a0db-798cc026687f","matterId":"a0f5fc91-7bb3-4c46-b89d-e95813ae0f33","fileName":"o5-carol-upload2-627H.pdf","contentType":"application/pdf","size":83,"status":"UPLOADED","scope":"PROJECT","clientId":null,"visibility":"INTERNAL","source":"MANUAL","uploadedBy":"8792c48d-5866-4394-a1e2-38ae0cbaa016","uploadedByName":"Carol Member","uploadedAt":"2026-10-28T13:09:40.934484671Z","createdAt":"2026-10-28T13:09:40.357813Z"}
+HTTP 200

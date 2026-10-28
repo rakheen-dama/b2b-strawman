@@ -1,0 +1,46 @@
+Did not find any relation named "tenant_7d218705360b.comment_attachments".
+select to_regclass('tenant_7d218705360b.comment_attachments') as comment_attachments
+ comment_attachments 
+---------------------
+ 
+(1 row)
+
+select table_schema, table_name from information_schema.tables where table_name like '%attachment%' order by 1,2
+ table_schema | table_name 
+--------------+------------
+(0 rows)
+
+select source, count(*) from tenant_7d218705360b.documents group by source order by 1
+ source | count 
+--------+-------
+ MANUAL |     9
+(1 row)
+
+select conname, pg_get_constraintdef(oid) from pg_constraint where conrelid='tenant_7d218705360b.documents'::regclass and contype='c' order by 1
+         conname          |                                                                                                          pg_get_constraintdef                                                                                                          
+--------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ chk_documents_provenance | CHECK (((((source)::text = 'AI_GENERATED'::text) AND (ai_execution_id IS NOT NULL)) OR (((source)::text <> 'AI_GENERATED'::text) AND (ai_execution_id IS NULL))))
+ chk_documents_scope_fks  | CHECK (((((scope)::text = 'PROJECT'::text) AND (project_id IS NOT NULL)) OR (((scope)::text = 'ORG'::text) AND (project_id IS NULL) AND (customer_id IS NULL)) OR (((scope)::text = 'CUSTOMER'::text) AND (customer_id IS NOT NULL))))
+(2 rows)
+
+select column_name, data_type, character_maximum_length, column_default from information_schema.columns where table_schema='tenant_7d218705360b' and table_name='documents' and column_name='source'
+ column_name |     data_type     | character_maximum_length |       column_default        
+-------------+-------------------+--------------------------+-----------------------------
+ source      | character varying |                       30 | 'MANUAL'::character varying
+(1 row)
+
+select version, description, installed_on, success from tenant_7d218705360b.flyway_schema_history order by installed_rank desc limit 3
+ version |              description              |        installed_on        | success 
+---------+---------------------------------------+----------------------------+---------
+ 8       | phase88 retention comment attachments | 2026-10-28 12:09:11.273442 | t
+ 7       | phase88 letterhead                    | 2026-10-28 12:09:11.264813 | t
+ 6       | phase88 audit customer index          | 2026-10-28 12:09:11.254857 | t
+(3 rows)
+
+select version, description, installed_on from public.flyway_schema_history order by installed_rank desc limit 3
+ version |       description        |        installed_on        
+---------+--------------------------+----------------------------
+ 2       | portal contact directory | 2026-10-28 12:08:52.502861
+ 1       | baseline                 | 2026-10-28 12:08:52.347815
+(2 rows)
+

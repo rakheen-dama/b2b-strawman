@@ -1,0 +1,25 @@
+SET
+ comments_on_task 
+------------------
+                2
+(1 row)
+
+# after
+SET
+ comments_on_task 
+------------------
+                2
+(1 row)
+
+SET
+                  id                  |                        body                        
+--------------------------------------+----------------------------------------------------
+ 65ccf1a8-8195-46b3-8700-43454165e3da | 627H after-fix F5: second comment (no attachments)
+(1 row)
+
+SET
+              comment_id              |             document_id              
+--------------------------------------+--------------------------------------
+ dac70b66-b73d-4426-bb37-60d7e3fe45ac | 0a1da2a2-eaca-40da-8992-e3898aaf14f8
+(1 row)
+

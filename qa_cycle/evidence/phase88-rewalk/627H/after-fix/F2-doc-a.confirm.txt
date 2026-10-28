@@ -1,0 +1,3 @@
+PUT 200
+{"id":"0a1da2a2-eaca-40da-8992-e3898aaf14f8","matterId":"e120be4a-1c8b-4ed8-b993-74f1ee5de29a","fileName":"f-a-627H.pdf","contentType":"application/pdf","size":45,"status":"UPLOADED","scope":"PROJECT","clientId":null,"visibility":"INTERNAL","source":"MANUAL","uploadedBy":"74da3d4a-86cb-4e32-beb4-3216aa14eced","uploadedByName":"Alice Owner","uploadedAt":"2026-10-28T13:28:35.965327419Z","createdAt":"2026-10-28T13:28:35.699842Z"}
+HTTP 200

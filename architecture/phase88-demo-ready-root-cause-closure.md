@@ -32,7 +32,7 @@ The design principle throughout is the one the capstone taught: **a test that ne
 | Owner-only capabilities | `hasCapability` short-circuits admin/owner and ignores `Capability.OWNER_ONLY`; `matter-closure-actions.ts` same | `OWNER_ONLY_CAPABILITIES` mirrored in `lib/capabilities.tsx`; admins denied the three; server action fixed ([ADR-355](../adr/ADR-355-owner-only-capabilities-client-side.md)) |
 | Pack content for existing tenants | packs seed once per tenant; JSON edits reach fresh tenants only | pack `version` bump + idempotent `reconcileExistingPack` re-applying names, descriptions, associations, rule flags ([ADR-356](../adr/ADR-356-pack-content-reconciliation.md)) |
 | Terminology | ≈589 user-visible `Project`/`Customer`/`Invoice` sites (261 FE/portal, 24 pack, 26 registry, 278 backend messages); breadcrumb map incomplete; shell column lacks `min-w-0` | census rewritten; remnant guard extended to JSX literals, pack JSON and backend messages with an allow-list; `min-w-0` on the shell column and `<main>` ([ADR-357](../adr/ADR-357-terminology-guard-extension.md)) |
-| Comments | body + visibility only | `comment_attachments(comment_id, document_id)` (V4); files uploaded through the presign flow with the comment's scope and visibility |
+| Comments | body + visibility only | `comment_attachments(comment_id, document_id)` (V9 — shipped 627H); files uploaded through the presign flow with the comment's scope and visibility |
 | Migrations | tenant V1–V3, global V1 | tenant **V4** (sections per unit; V5+ once V4 has been applied to a persistent stack, §13.7), global **V2** (`portal_contact_directory` + backfill marker + `portal_invoices.amount_paid`; `BaselineSchemaParityTest` global comparison re-pinned to target `"1"` first) |
 
 ### The 24 units
@@ -62,7 +62,7 @@ Severity is the highest of the gaps the unit closes. Order is the build order (�
 | U19 | Export helper (BFF) — *KC-only* | MED | G-D4, N-2 | FE (+BE CSV) | — | — |
 | U20 | Small behaviour fixes | MED | G-C2, G-D5, G-D12, G-C1 | FE | — | — |
 | U23 | Decline on acceptance | feature | G-B19 | BE+portal+FE | V4 §6 | 349 (event) |
-| U24 | Comment attachments | feature | G-B15 | BE+FE+portal | V4 §7 | — |
+| U24 | Comment attachments | feature | G-B15 | BE+FE+portal | V9 §7 (shipped 627H; planned V4) | — |
 | U21 | Terminology census + shell | LOW | G-A2/A3/A4/A5/A7, B1, B4, C3, C12, D10, D15–D18, D20, E.8 | FE+BE+packs | reconcile | 357, 356 |
 | U22 | Playwright suites + seed | — | carried six, PACK-01, PROJ-02/03, CUST-01/02, portal seed ×3, P-1 | e2e | — | — |
 
@@ -182,8 +182,9 @@ Gate semantics: `AllAcceptanceRequestsFinalGate` treats DECLINED as final (the m
 | `sort_order` | integer | NOT NULL DEFAULT 0 | |
 | `created_at` | timestamptz | NOT NULL DEFAULT now() | |
 | PK | `(comment_id, document_id)` | | |
+| `idx_comment_attachments_document` | UNIQUE `(document_id)` | | a document is attached to at most one comment (shipped 627H) |
 
-Modelled as a child table rather than a `document.comment_id` column because a document already carries `project_id`/`customer_id`/`scope`/`visibility`/`source` and must remain a first-class row in the matter's Documents list; the link is many-to-one in practice but the table keeps the document's lifecycle independent. `Comment.entityType` CHECK (`TASK|DOCUMENT|PROJECT`) is **not** changed — attachments do not widen what can be commented on. Visibility rule: an attachment uploaded through a comment is created with `visibility = comment.visibility == SHARED ? SHARED : INTERNAL` and `source = COMMENT`; at most 5 attachments per comment (request validation).
+Modelled as a child table rather than a `document.comment_id` column because a document already carries `project_id`/`customer_id`/`scope`/`visibility`/`source` and must remain a first-class row in the matter's Documents list; the link is many-to-one in practice but the table keeps the document's lifecycle independent. `Comment.entityType` CHECK (`TASK|DOCUMENT|PROJECT`) is **not** changed — attachments do not widen what can be commented on. Visibility rule: an attachment uploaded through a comment is created with `visibility = comment.visibility == SHARED ? SHARED : INTERNAL` and `source = COMMENT`; at most 5 attachments per comment (request validation). As shipped (627H): PORTAL documents are never rewritten, `source` becomes COMMENT only over MANUAL, and the 5-attachment limit is a service-level 422 — see §13.3.22 As shipped.
 
 ### 13.2.9 Global `portal.portal_contact_directory` (U11, D6)
 
@@ -775,7 +776,9 @@ The `var(--brand-color)` line in `document-default.css` is deleted. Headings and
 
 **Acceptance (observed).** Thandi comments "Master's appointment received" with the PDF attached; the comment shows the chip; the document appears in the matter's Documents list with source "Comment"; deleting the comment keeps the document.
 
-**Tests.** `CommentAttachmentIntegrationTest` (link, visibility inheritance, cross-matter document rejected, cascade on delete keeps the document, portal visibility); `comment-form.test.tsx`; portal `comments` test; `V4CommentAttachmentsTest`.
+**Tests.** `CommentAttachmentIntegrationTest` (link, visibility inheritance, cross-matter document rejected, cascade on delete keeps the document, portal visibility); `comment-form.test.tsx`; portal `comments` test; `V9CommentAttachmentsTest` (shipped 627H).
+
+**As shipped (627H, tenant V9).** The backend tightened the rule above: (1) a document is attached to at most one comment — on the normal path the service check returns the 422; a racing duplicate attach is rejected by the UNIQUE `idx_comment_attachments_document` (the losing request fails as a server error, integrity is preserved); (2) `PORTAL` documents are never written by the comment rule — neither visibility (in either direction) nor source; (3) a document that is already client-visible (`SHARED`/`PORTAL`) cannot be attached to an INTERNAL comment (422 — attaching never silently unshares); (4) `source` becomes `COMMENT` only over `MANUAL` and never on a `PORTAL` document (other provenance, e.g. `AI_GENERATED` with its `ai_execution_id` CHECK, is kept); (5) "CONFIRMED" is `Document.Status.UPLOADED`; (6) every failure is a 422 ProblemDetail titled "Attachment not allowed" (missing and other-matter ids share one detail); (7) on update `attachmentDocumentIds` null = unchanged, a list replaces the set, `[]` clears; a comment visibility change re-applies the rule to every document in the final set, while a set-only edit applies it only to newly added documents (kept documents keep their current visibility, so one a lead unshared directly stays unshared); detaching or deleting the comment leaves the document's visibility and source as they are; (8) the request/response records stay nested in `CommentController` (no `comment/dto/` package); `DocumentResponse` gains `source`; (9) the portal chips are read at request time from the tenant tables, batched per page, with the portal's existing document-visibility rule.
 
 ### 13.3.23 U21 — Terminology census and shell layout
 
@@ -1334,6 +1337,9 @@ END $$;
 -- DECLINED falls outside them by construction, so a declined document can be re-sent.
 
 -- ---------- §7 U24: comment attachments ------------------------------------------------
+-- Shipped as tenant V9__phase88_comment_attachments.sql §7 (627H) — V8 was applied to the
+-- Keycloak dev DB on 2026-10-28, so §7 took the next free file. That file is authoritative;
+-- the SQL below matches it.
 CREATE TABLE IF NOT EXISTS comment_attachments (
     comment_id  uuid NOT NULL,
     document_id uuid NOT NULL,
@@ -1344,7 +1350,9 @@ CREATE TABLE IF NOT EXISTS comment_attachments (
     CONSTRAINT comment_attachments_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
 );
 -- Reverse lookup: "which comment is this document attached to" (Documents list chip, delete guard).
-CREATE INDEX IF NOT EXISTS idx_comment_attachments_document ON comment_attachments (document_id);
+-- UNIQUE: a document is attached to at most one comment, enforced by the database so two
+-- concurrent attaches of the same document cannot both succeed.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comment_attachments_document ON comment_attachments (document_id);
 ```
 
 **Index rationale.** U1 relies on the existing partial unique lead index (now valid for every row). U3/U15 reads predicate on `(status, due_date)` and `customer_id`, which `idx_invoices_status`, `idx_invoices_customer_status` already serve; `amount_paid` is only summed, never filtered. U5's entity branch uses `idx_audit_entity (entity_type, entity_id)` next to `idx_audit_project`. U17's partial index keeps the evaluator's "due before date" scan off the whole `projects` table. U24's reverse index is the only new one a UI path needs; the PK covers the forward lookup.
@@ -1417,7 +1425,7 @@ Read `backend/CLAUDE.md` and `frontend/CLAUDE.md` before touching either tree. E
 | U19 | `report/ReportController.java`, `report/ProfitabilityCsvExporter.java` (new) | CSV endpoint |
 | U20 | `invitation/InvitationService.java` (only if the repro shows PENDING) | reconcile by email (not built, 627F: the walked rows were ACCEPTED) |
 | U23 | `acceptance/AcceptanceStatus.java`, `AcceptanceRequest.java`, `AcceptanceService.java`, `PortalAcceptanceController.java`, `event/AcceptanceDeclinedEvent.java` (new), `customerbackend/AcceptanceReadModelSync*`, `closure/gates/AllAcceptanceRequestsFinalGate.java`, `notification/NotificationService.java` | decline flow |
-| U24 | `comment/CommentAttachment.java` (new), `CommentAttachmentRepository.java` (new), `CommentService.java`, `comment/dto/*`, `document/Document.java` (`Source.COMMENT`), `customerbackend/PortalCommentService` | attachments |
+| U24 | `comment/CommentAttachment.java` (new), `CommentAttachmentRepository.java` (new), `CommentService.java`, `CommentController.java` (nested DTOs), `document/Document.java` (`Source.COMMENT`), `customerbackend/PortalCommentService` | attachments |
 | U21 | `audit/AuditEventTypeRegistry.java`, `verticals/VerticalModuleRegistry.java`, `reporting/StandardReportPackSeeder.java`, `template/VariableMetadataRegistry.java`, `exception/ResourceNotFoundException.java` (+ `EntityNoun` resolver), the 146 message sites (R8 §1.5), `resources/field-packs/*`, `template-packs/*`, `request-packs/*`, `automation-templates/*`, `templates/email/*`, every pack seeder's `reconcileExistingPack` | census rewrite + reconcile |
 
 ### 13.8.2 Frontend / portal changes (file → change)
@@ -1521,7 +1529,8 @@ Rules: never `toFixed(2)` / `toPlainString()` / `"R%s"` for money — backend `V
 | Test | Scope | Unit |
 |---|---|---|
 | `TemplateCreatedMatterReadPathIntegrationTest` | instantiate through `ProjectTemplateService`; assert `MatterListRow`, `canEdit`, lead recipients, `PROJECT_OWNER` — **real write path** | U1 |
-| `V4ProjectRoleMigrationTest`, `V4InvoiceDueDateBackfillTest`, `V4InvoiceStatusCheckTest`, `V4AcceptanceStatusCheckTest`, `V4CommentAttachmentsTest` | scratch schema at target `"3"` → seed → migrate `"4"` → assert | V4 |
+| `V4ProjectRoleMigrationTest`, `V4InvoiceDueDateBackfillTest`, `V4InvoiceStatusCheckTest`, `V4AcceptanceStatusCheckTest` | scratch schema at target `"3"` → seed → migrate `"4"` → assert | V4 |
+| `V9CommentAttachmentsTest` (shipped 627H) | scratch schema at target `"8"` → seed → migrate `"9"` → assert | V9 |
 | `ProjectMemberIntegrationTest` gate cases; `InstantiateTemplateIntegrationTest` creator auto-add | API-level | U2 |
 | `InvoiceLifecycleIntegrationTest` due-date + part-payment cases; `CollectionsReadApiTest` fee note created through `InvoiceCreationService` + `approve` + `send` | real write path into the debtor book | U3, U15 |
 | `FicaStatusProjectorTest` (+ checklist), `FicaOutstandingIntegrationTest` / `CustomerFicaStatusIntegrationTest` with `TestChecklistHelper.completeChecklistItems` | real onboarding path | U4 |

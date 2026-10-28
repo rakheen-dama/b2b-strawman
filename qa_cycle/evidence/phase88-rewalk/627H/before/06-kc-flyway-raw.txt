@@ -1,0 +1,18 @@
+### tenant_5039f2d497cf
+ version |              description              |        installed_on        | success 
+---------+---------------------------------------+----------------------------+---------
+ 8       | phase88 retention comment attachments | 2026-10-28 12:23:09.387785 | t
+ 7       | phase88 letterhead                    | 2026-10-28 12:23:09.376617 | t
+ 6       | phase88 audit customer index          | 2026-10-28 12:23:09.365183 | t
+(3 rows)
+
+comment_attachments exists: no
+### tenant_56399d06a773
+ version |              description              |        installed_on        | success 
+---------+---------------------------------------+----------------------------+---------
+ 8       | phase88 retention comment attachments | 2026-10-28 12:23:09.308036 | t
+ 7       | phase88 letterhead                    | 2026-10-28 12:23:09.28625  | t
+ 6       | phase88 audit customer index          | 2026-10-28 12:23:09.248465 | t
+(3 rows)
+
+comment_attachments exists: no

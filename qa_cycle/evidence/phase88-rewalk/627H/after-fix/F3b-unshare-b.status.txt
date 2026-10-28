@@ -1,0 +1,2 @@
+PATCH /api/documents/12597af6-92a0-4a95-b247-5080b0975148/visibility
+HTTP 200 application/json

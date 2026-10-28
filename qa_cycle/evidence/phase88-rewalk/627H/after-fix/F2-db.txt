@@ -1,0 +1,21 @@
+SET
+                  id                  |  file_name   |  status  | visibility | source  
+--------------------------------------+--------------+----------+------------+---------
+ 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | f-a-627H.pdf | UPLOADED | SHARED     | COMMENT
+(1 row)
+
+SET
+              comment_id              |             document_id              | sort_order |          created_at           
+--------------------------------------+--------------------------------------+------------+-------------------------------
+ dac70b66-b73d-4426-bb37-60d7e3fe45ac | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 |          0 | 2026-10-28 13:28:36.056926+00
+(1 row)
+
+SET
+          occurred_at          |         event_type          |              entity_id               |                                                                                                                                                                  details                                                                                                                                                                   
+-------------------------------+-----------------------------+--------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-10-28 13:28:35.795443+00 | document.created            | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | {"scope": "PROJECT", "file_name": "f-a-627H.pdf", "actor_name": "Alice Owner", "project_id": "e120be4a-1c8b-4ed8-b993-74f1ee5de29a"}
+ 2026-10-28 13:28:35.966661+00 | document.uploaded           | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | {"file_name": "f-a-627H.pdf", "actor_name": "Alice Owner", "project_id": "e120be4a-1c8b-4ed8-b993-74f1ee5de29a"}
+ 2026-10-28 13:28:36.084331+00 | document.visibility_changed | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}
+ 2026-10-28 13:28:36.086468+00 | comment.created             | dac70b66-b73d-4426-bb37-60d7e3fe45ac | {"body": "627H after-fix F2: shared comment with a", "source": "INTERNAL", "entity_id": "56344385-8956-4eeb-99f5-35b52e80c377", "actor_name": "Alice Owner", "project_id": "e120be4a-1c8b-4ed8-b993-74f1ee5de29a", "visibility": "SHARED", "entity_name": "627H after-fix observation task", "entity_type": "TASK", "attachment_count": 1}
+(4 rows)
+

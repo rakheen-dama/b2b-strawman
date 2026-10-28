@@ -2,7 +2,11 @@ package io.b2mash.b2b.b2bstrawman.comment;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.comment.CommentController.CommentAttachmentResponse;
+import io.b2mash.b2b.b2bstrawman.comment.CommentController.CommentResponse;
+import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.CommentUpdatedEvent;
@@ -11,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -19,8 +24,16 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,6 +47,9 @@ public class CommentService {
 
   private static final Logger log = LoggerFactory.getLogger(CommentService.class);
 
+  /** At most this many documents may be attached to one comment (Phase 88 U24, A13). */
+  static final int MAX_ATTACHMENTS = 5;
+
   private final CommentRepository commentRepository;
   private final ProjectAccessService projectAccessService;
   private final TaskRepository taskRepository;
@@ -44,6 +60,8 @@ public class CommentService {
   private final MemberNameResolver memberNameResolver;
   private final io.b2mash.b2b.b2bstrawman.member.MemberRepository memberRepository;
   private final ProjectLifecycleGuard projectLifecycleGuard;
+  private final CommentAttachmentRepository commentAttachmentRepository;
+  private final DocumentService documentService;
 
   public CommentService(
       CommentRepository commentRepository,
@@ -55,7 +73,9 @@ public class CommentService {
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
       io.b2mash.b2b.b2bstrawman.member.MemberRepository memberRepository,
-      ProjectLifecycleGuard projectLifecycleGuard) {
+      ProjectLifecycleGuard projectLifecycleGuard,
+      CommentAttachmentRepository commentAttachmentRepository,
+      DocumentService documentService) {
     this.commentRepository = commentRepository;
     this.projectAccessService = projectAccessService;
     this.taskRepository = taskRepository;
@@ -66,6 +86,58 @@ public class CommentService {
     this.memberNameResolver = memberNameResolver;
     this.memberRepository = memberRepository;
     this.projectLifecycleGuard = projectLifecycleGuard;
+    this.commentAttachmentRepository = commentAttachmentRepository;
+    this.documentService = documentService;
+  }
+
+  /**
+   * Creates a comment with its attachments and returns the response DTO. Thin-controller delegation
+   * wrapper.
+   */
+  @Transactional
+  public CommentResponse createCommentResponse(
+      UUID projectId,
+      String entityType,
+      UUID entityId,
+      String body,
+      String visibility,
+      List<UUID> attachmentDocumentIds,
+      ActorContext actor) {
+    var comment =
+        createComment(
+            projectId,
+            entityType,
+            entityId,
+            body,
+            visibility,
+            "INTERNAL",
+            attachmentDocumentIds,
+            actor);
+    return toResponses(List.of(comment)).getFirst();
+  }
+
+  /**
+   * Updates a comment (and, when {@code attachmentDocumentIds} is non-null, replaces its
+   * attachments) and returns the response DTO. Thin-controller delegation wrapper.
+   */
+  @Transactional
+  public CommentResponse updateCommentResponse(
+      UUID projectId,
+      UUID commentId,
+      String body,
+      String visibility,
+      List<UUID> attachmentDocumentIds,
+      ActorContext actor) {
+    var comment =
+        updateComment(projectId, commentId, body, visibility, attachmentDocumentIds, actor);
+    return toResponses(List.of(comment)).getFirst();
+  }
+
+  /** Lists comments with authors and attachments resolved. Thin-controller delegation wrapper. */
+  @Transactional(readOnly = true)
+  public List<CommentResponse> listCommentResponses(
+      UUID projectId, String entityType, UUID entityId, Pageable pageable, ActorContext actor) {
+    return toResponses(listComments(projectId, entityType, entityId, pageable, actor).getContent());
   }
 
   /** Creates a comment with the default source ("INTERNAL"). Delegates to the 7-arg overload. */
@@ -93,6 +165,18 @@ public class CommentService {
       String body,
       String visibility,
       String source,
+      ActorContext actor) {
+    return createComment(projectId, entityType, entityId, body, visibility, source, null, actor);
+  }
+
+  private Comment createComment(
+      UUID projectId,
+      String entityType,
+      UUID entityId,
+      String body,
+      String visibility,
+      String source,
+      List<UUID> attachmentDocumentIds,
       ActorContext actor) {
     var access = projectAccessService.requireViewAccess(projectId, actor);
 
@@ -126,10 +210,19 @@ public class CommentService {
           "Only leads, admins, and owners can create SHARED comments");
     }
 
+    var attachments =
+        validateAttachments(
+            attachmentDocumentIds, projectId, Set.of(), resolvedVisibility, access, actor);
+
     var comment =
         new Comment(
             entityType, entityId, projectId, actor.memberId(), body, resolvedVisibility, source);
     comment = commentRepository.save(comment);
+    for (int i = 0; i < attachments.size(); i++) {
+      commentAttachmentRepository.save(
+          new CommentAttachment(comment.getId(), attachments.get(i).getId(), i));
+    }
+    applyAttachmentRule(attachments, resolvedVisibility);
     log.info(
         "Created comment {} (source={}) on {} {} in project {}",
         comment.getId(),
@@ -150,7 +243,8 @@ public class CommentService {
                     "entity_id", entityId.toString(),
                     "entity_name", entityName,
                     "visibility", resolvedVisibility,
-                    "source", source))
+                    "source", source,
+                    "attachment_count", attachments.size()))
             .build());
 
     String actorName = resolveActorName(actor.memberId());
@@ -178,6 +272,23 @@ public class CommentService {
   @Transactional
   public Comment updateComment(
       UUID projectId, UUID commentId, String body, String visibility, ActorContext actor) {
+    return updateComment(projectId, commentId, body, visibility, null, actor);
+  }
+
+  /**
+   * Updates a comment. {@code attachmentDocumentIds}: {@code null} leaves the attachments as they
+   * are; a list replaces them in that order ({@code []} clears). Removed documents are left as they
+   * were. A change of the comment's visibility re-applies the visibility rule to every document in
+   * the final set; an edit that only changes the attachments applies it to newly added documents
+   * only, so a kept document that was unshared directly stays unshared.
+   */
+  private Comment updateComment(
+      UUID projectId,
+      UUID commentId,
+      String body,
+      String visibility,
+      List<UUID> attachmentDocumentIds,
+      ActorContext actor) {
     var comment =
         commentRepository
             .findById(commentId)
@@ -218,6 +329,20 @@ public class CommentService {
           "Only leads, admins, and owners can change comment visibility");
     }
 
+    String finalVisibility = visibilityChanging ? visibility : oldVisibility;
+    var existingLinks = commentAttachmentRepository.findByCommentIdOrderBySortOrderAsc(commentId);
+    var existingIds = existingLinks.stream().map(CommentAttachment::getDocumentId).toList();
+    List<Document> requested =
+        attachmentDocumentIds == null
+            ? null
+            : validateAttachments(
+                attachmentDocumentIds,
+                projectId,
+                Set.copyOf(existingIds),
+                finalVisibility,
+                access,
+                actor);
+
     // Update fields
     String oldBody = comment.getBody();
     if (body != null) {
@@ -228,19 +353,39 @@ public class CommentService {
     }
     comment = commentRepository.save(comment);
 
+    boolean attachmentsChanged =
+        requested != null && replaceAttachments(commentId, existingLinks, requested);
+    if (visibilityChanging) {
+      // A comment visibility change re-applies the rule to every document in the final set.
+      if (attachmentsChanged) {
+        applyAttachmentRule(requested, finalVisibility);
+      } else if (!existingIds.isEmpty()) {
+        applyAttachmentRule(documentRepository.findAllById(existingIds), finalVisibility);
+      }
+    } else if (attachmentsChanged) {
+      // Set-only edit: only newly added documents take the comment's visibility. A kept document
+      // keeps its current visibility — a lead may have unshared it directly, and a comment edit
+      // must not re-share it behind the document visibility gate.
+      var alreadyLinked = Set.copyOf(existingIds);
+      applyAttachmentRule(
+          requested.stream().filter(d -> !alreadyLinked.contains(d.getId())).toList(),
+          finalVisibility);
+    }
+
+    var updateDetails = new HashMap<String, Object>();
+    updateDetails.put("old_body", oldBody);
+    updateDetails.put("new_body", body != null ? body : oldBody);
+    updateDetails.put("project_id", projectId.toString());
+    if (attachmentsChanged) {
+      updateDetails.put(
+          "attachment_document_ids", requested.stream().map(d -> d.getId().toString()).toList());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("comment.updated")
             .entityType("comment")
             .entityId(comment.getId())
-            .details(
-                Map.of(
-                    "old_body",
-                    oldBody,
-                    "new_body",
-                    body != null ? body : oldBody,
-                    "project_id",
-                    projectId.toString()))
+            .details(updateDetails)
             .build());
 
     String actorName = resolveActorName(actor.memberId());
@@ -382,6 +527,150 @@ public class CommentService {
           "entityId is required", "entityId is required for " + entityType + " comments");
     }
     return commentRepository.findByTargetAndProject(entityType, entityId, projectId, pageable);
+  }
+
+  // --- Attachments (Phase 88 U24, A13) ---
+
+  /**
+   * Validates the requested attachment ids and returns their documents in request order. Duplicate
+   * ids are dropped silently (first position wins). Documents already attached to this comment
+   * ({@code alreadyAttached}) skip the attach-time checks so an edit can resend the full list.
+   */
+  private List<Document> validateAttachments(
+      List<UUID> requestedIds,
+      UUID projectId,
+      Set<UUID> alreadyAttached,
+      String commentVisibility,
+      ProjectAccess access,
+      ActorContext actor) {
+    if (requestedIds == null || requestedIds.isEmpty()) {
+      return List.of();
+    }
+    if (requestedIds.contains(null)) {
+      throw new CommentAttachmentNotAllowedException("attachmentDocumentIds must not contain null");
+    }
+    var ids = List.copyOf(new LinkedHashSet<>(requestedIds));
+    if (ids.size() > MAX_ATTACHMENTS) {
+      throw new CommentAttachmentNotAllowedException(
+          "A comment can have at most %d attachments (got %d)"
+              .formatted(MAX_ATTACHMENTS, ids.size()));
+    }
+    Map<UUID, Document> found =
+        documentRepository.findAllById(ids).stream()
+            .collect(Collectors.toMap(Document::getId, Function.identity()));
+    var documents = new ArrayList<Document>(ids.size());
+    for (UUID id : ids) {
+      var document = found.get(id);
+      // Missing, other-matter and non-matter documents share one detail: no existence oracle.
+      if (document == null
+          || !document.isProjectScoped()
+          || !projectId.equals(document.getProjectId())) {
+        throw new CommentAttachmentNotAllowedException(
+            "Document %s is not a document on this matter".formatted(id), id);
+      }
+      if (document.getStatus() != Document.Status.UPLOADED) {
+        throw new CommentAttachmentNotAllowedException(
+            "Document %s has not finished uploading".formatted(id), id);
+      }
+      if (!alreadyAttached.contains(id)) {
+        requireAttachable(document, commentVisibility, access, actor);
+      }
+      documents.add(document);
+    }
+    return documents;
+  }
+
+  /** Attach-time checks for a document not yet on this comment. */
+  private void requireAttachable(
+      Document document, String commentVisibility, ProjectAccess access, ActorContext actor) {
+    UUID id = document.getId();
+    if (!actor.memberId().equals(document.getUploadedBy()) && !access.canEdit()) {
+      throw new CommentAttachmentNotAllowedException(
+          "Only the uploader or a matter lead can attach document %s".formatted(id), id);
+    }
+    // A document belongs to one comment, so a later comment visibility change is unambiguous.
+    if (commentAttachmentRepository.existsByDocumentId(id)) {
+      throw new CommentAttachmentNotAllowedException(
+          "Document %s is already attached to another comment".formatted(id), id);
+    }
+    // Attaching never silently unshares something the client can already see.
+    if (!"SHARED".equals(commentVisibility)
+        && Document.Visibility.isPortalVisible(document.getVisibility())) {
+      throw new CommentAttachmentNotAllowedException(
+          "Document %s is shared with the client; attach it to a shared comment or unshare it first"
+              .formatted(id),
+          id);
+    }
+  }
+
+  /**
+   * Replaces the comment's links with {@code documents} in that order: removes dropped links,
+   * renumbers kept ones and inserts new ones. Returns whether the ordered set changed.
+   */
+  private boolean replaceAttachments(
+      UUID commentId, List<CommentAttachment> existingLinks, List<Document> documents) {
+    var newIds = documents.stream().map(Document::getId).toList();
+    var existingIds = existingLinks.stream().map(CommentAttachment::getDocumentId).toList();
+    if (newIds.equals(existingIds)) {
+      return false;
+    }
+    var existingById =
+        existingLinks.stream()
+            .collect(Collectors.toMap(CommentAttachment::getDocumentId, Function.identity()));
+    commentAttachmentRepository.deleteAll(
+        existingLinks.stream().filter(l -> !newIds.contains(l.getDocumentId())).toList());
+    for (int i = 0; i < newIds.size(); i++) {
+      var kept = existingById.get(newIds.get(i));
+      if (kept != null) {
+        kept.setSortOrder(i);
+      } else {
+        commentAttachmentRepository.save(new CommentAttachment(commentId, newIds.get(i), i));
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The comment-attachment visibility rule, in one place. A PORTAL document (a generated artefact
+   * shared through its own flow) is never written — neither its visibility nor its source;
+   * otherwise the document follows the comment: SHARED comment → SHARED, INTERNAL comment →
+   * INTERNAL, and it is stamped source COMMENT when it is a plain MANUAL upload.
+   */
+  private void applyAttachmentRule(List<Document> documents, String commentVisibility) {
+    for (var document : documents) {
+      if (Document.Visibility.PORTAL.equals(document.getVisibility())) {
+        continue;
+      }
+      String target =
+          "SHARED".equals(commentVisibility)
+              ? Document.Visibility.SHARED
+              : Document.Visibility.INTERNAL;
+      documentService.applyCommentAttachment(document.getId(), target);
+    }
+  }
+
+  /** Maps comments to responses with authors and attachment chips resolved in batch. */
+  private List<CommentResponse> toResponses(List<Comment> comments) {
+    if (comments.isEmpty()) {
+      return List.of();
+    }
+    var authors = resolveAuthors(comments);
+    var chips = new LinkedHashMap<UUID, List<CommentAttachmentResponse>>();
+    for (var chip :
+        commentAttachmentRepository.findChipsByCommentIds(
+            comments.stream().map(Comment::getId).toList())) {
+      chips
+          .computeIfAbsent(chip.getCommentId(), k -> new ArrayList<>())
+          .add(
+              new CommentAttachmentResponse(
+                  chip.getDocumentId(),
+                  chip.getFileName(),
+                  chip.getContentType(),
+                  chip.getFileSize()));
+    }
+    return comments.stream()
+        .map(c -> CommentResponse.from(c, authors, chips.getOrDefault(c.getId(), List.of())))
+        .toList();
   }
 
   /**

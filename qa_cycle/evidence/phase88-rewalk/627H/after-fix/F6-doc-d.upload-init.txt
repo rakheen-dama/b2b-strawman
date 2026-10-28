@@ -1,0 +1,2 @@
+{"documentId":"e1db1bb6-5d74-460e-b63b-fabd95a5f255","presignedUrl":"http://localhost:4567/docteams-dev/org/e2e-test-org/project/e120be4a-1c8b-4ed8-b993-74f1ee5de29a/e1db1bb6-5d74-460e-b63b-fabd95a5f255?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261028T132930Z&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Credential=<redacted>&X-Amz-Expires=3600&X-Amz-Signature=<redacted>","expiresInSeconds":3600}
+HTTP 201

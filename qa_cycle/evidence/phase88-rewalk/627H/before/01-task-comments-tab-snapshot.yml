@@ -1,0 +1,21 @@
+- generic [ref=f2e64]:
+  - tablist [ref=f2e65]:
+    - tab "Time Entries" [ref=f2e66]
+    - tab "Comments" [active] [selected] [ref=f2e67]
+  - tabpanel "Comments" [ref=f2e75]:
+    - generic [ref=f2e76]:
+      - heading "Comments" [level=4] [ref=f2e77]
+      - generic [ref=f2e78]:
+        - heading "No comments yet" [level=2] [ref=f2e81]
+        - paragraph [ref=f2e82]: Start a conversation about this item. Comments are visible to all matter members.
+      - generic [ref=f2e83]:
+        - generic [ref=f2e84]:
+          - generic [ref=f2e85]: Add a comment
+          - textbox "Add a comment" [ref=f2e86]:
+            - /placeholder: Write a comment...
+        - generic [ref=f2e87]:
+          - generic [ref=f2e88]: Visibility
+          - combobox "Visibility" [ref=f2e89]:
+            - option "Internal only" [selected]
+            - option "Customer visible"
+        - button "Post Comment" [ref=f2e91]

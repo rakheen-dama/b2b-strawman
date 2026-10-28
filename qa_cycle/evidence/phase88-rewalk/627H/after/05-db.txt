@@ -1,0 +1,15 @@
+SET
+                  id                  |         file_name         | visibility | source  |             uploaded_by              
+--------------------------------------+---------------------------+------------+---------+--------------------------------------
+ 14dadb73-386e-46d6-8b35-842c2f13b450 | o5-alice-upload-627H.pdf  | INTERNAL   | MANUAL  | 8247b143-925f-4663-ad43-4d4cf3f6983b
+ 1c47b8c4-649b-436b-8ec4-b03a8e941270 | o5-carol-upload-627H.pdf  | INTERNAL   | COMMENT | 8792c48d-5866-4394-a1e2-38ae0cbaa016
+ 1b1abb3f-8b65-4944-a0db-798cc026687f | o5-carol-upload2-627H.pdf | SHARED     | COMMENT | 8792c48d-5866-4394-a1e2-38ae0cbaa016
+(3 rows)
+
+SET
+              comment_id              |             document_id              | sort_order |          created_at           
+--------------------------------------+--------------------------------------+------------+-------------------------------
+ b8901fcc-c9aa-4299-8951-1716ff576a39 | 1c47b8c4-649b-436b-8ec4-b03a8e941270 |          0 | 2026-10-28 13:09:41.650984+00
+ 0cfa753d-ec0b-4b7a-abaf-19f098e194fd | 1b1abb3f-8b65-4944-a0db-798cc026687f |          0 | 2026-10-28 13:09:41.96856+00
+(2 rows)
+

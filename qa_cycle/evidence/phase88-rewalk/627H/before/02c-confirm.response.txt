@@ -1,0 +1,2 @@
+{"id":"ad27ffcc-b334-4e6c-97ac-46397e0fcc21","matterId":"9cf2159e-213a-44d7-b7c8-ef184544ddac","fileName":"masters-letter-627H.pdf","contentType":"application/pdf","size":107,"status":"UPLOADED","scope":"PROJECT","clientId":null,"visibility":"INTERNAL","uploadedBy":"8247b143-925f-4663-ad43-4d4cf3f6983b","uploadedByName":"Alice Owner","uploadedAt":"2026-10-28T12:23:16.481207966Z","createdAt":"2026-10-28T12:23:10.708190Z"}
+HTTP 200

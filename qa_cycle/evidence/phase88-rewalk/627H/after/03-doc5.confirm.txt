@@ -1,0 +1,2 @@
+{"id":"9a84d270-5bc7-495d-8ce7-fb888834a35f","matterId":"9cf2159e-213a-44d7-b7c8-ef184544ddac","fileName":"o3-doc5-627H.pdf","contentType":"application/pdf","size":74,"status":"UPLOADED","scope":"PROJECT","clientId":null,"visibility":"INTERNAL","source":"MANUAL","uploadedBy":"8247b143-925f-4663-ad43-4d4cf3f6983b","uploadedByName":"Alice Owner","uploadedAt":"2026-10-28T13:08:28.964891096Z","createdAt":"2026-10-28T13:08:28.190822Z"}
+HTTP 200

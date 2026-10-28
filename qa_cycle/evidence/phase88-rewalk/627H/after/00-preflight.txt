@@ -1,0 +1,28 @@
+# e2e-backend container
+image=sha256:c9f2ebb22c9380927ded7a499d6ea135ba8523c77c74d73bf1b75ae1746b15d8 created=2026-10-28T13:06:05.217450918Z started=2026-10-28T13:06:11.828207088Z
+# built from $WT @ 3f5380e8e via compose/scripts/e2e-rebuild.sh backend (Maven runs inside the Docker builder stage; backend/target is .dockerignored)
+# health
+{"groups":["liveness","readiness"],"status":"UP"}
+SET
+ version |              description              | success |        installed_on        
+---------+---------------------------------------+---------+----------------------------
+ 9       | phase88 comment attachments           | t       | 2026-10-28 13:06:25.973805
+ 8       | phase88 retention comment attachments | t       | 2026-10-28 12:09:11.273442
+ 7       | phase88 letterhead                    | t       | 2026-10-28 12:09:11.264813
+(3 rows)
+
+SET
+             Table "tenant_7d218705360b.comment_attachments"
+   Column    |           Type           | Collation | Nullable | Default 
+-------------+--------------------------+-----------+----------+---------
+ comment_id  | uuid                     |           | not null | 
+ document_id | uuid                     |           | not null | 
+ sort_order  | integer                  |           | not null | 0
+ created_at  | timestamp with time zone |           | not null | now()
+Indexes:
+    "comment_attachments_pkey" PRIMARY KEY, btree (comment_id, document_id)
+    "idx_comment_attachments_document" btree (document_id)
+Foreign-key constraints:
+    "comment_attachments_comment_id_fkey" FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE
+    "comment_attachments_document_id_fkey" FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+

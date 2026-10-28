@@ -1,0 +1,21 @@
+SET
+              comment_id              |             document_id              | sort_order |          created_at           
+--------------------------------------+--------------------------------------+------------+-------------------------------
+ 303b7d5a-3da8-46a0-9fea-a30d93bcb0b1 | 01e3174c-cb62-47fe-82b4-34800153b44c |          0 | 2026-10-28 13:07:59.898481+00
+(1 row)
+
+SET
+                  id                  |         file_name         |  status  | visibility | source  |  scope  |              project_id              
+--------------------------------------+---------------------------+----------+------------+---------+---------+--------------------------------------
+ 01e3174c-cb62-47fe-82b4-34800153b44c | o1-shared-attach-627H.pdf | UPLOADED | SHARED     | COMMENT | PROJECT | 9cf2159e-213a-44d7-b7c8-ef184544ddac
+(1 row)
+
+SET
+         event_type          |              entity_id               |                                                                                                                                                           details                                                                                                                                                            |          occurred_at          
+-----------------------------+--------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ document.created            | 01e3174c-cb62-47fe-82b4-34800153b44c | {"scope": "PROJECT", "file_name": "o1-shared-attach-627H.pdf", "actor_name": "Alice Owner", "project_id": "9cf2159e-213a-44d7-b7c8-ef184544ddac"}                                                                                                                                                                            | 2026-10-28 13:07:42.378721+00
+ document.uploaded           | 01e3174c-cb62-47fe-82b4-34800153b44c | {"file_name": "o1-shared-attach-627H.pdf", "actor_name": "Alice Owner", "project_id": "9cf2159e-213a-44d7-b7c8-ef184544ddac"}                                                                                                                                                                                                | 2026-10-28 13:07:43.579237+00
+ document.visibility_changed | 01e3174c-cb62-47fe-82b4-34800153b44c | {"actor_name": "Alice Owner", "visibility": {"to": "SHARED", "from": "INTERNAL"}}                                                                                                                                                                                                                                            | 2026-10-28 13:07:59.956394+00
+ comment.created             | 303b7d5a-3da8-46a0-9fea-a30d93bcb0b1 | {"body": "627H after O1: shared comment with attachment", "source": "INTERNAL", "entity_id": "f153f432-4a0b-4098-bbc8-f44b49cd0738", "actor_name": "Alice Owner", "project_id": "9cf2159e-213a-44d7-b7c8-ef184544ddac", "visibility": "SHARED", "entity_name": "Close matter", "entity_type": "TASK", "attachment_count": 1} | 2026-10-28 13:07:59.966296+00
+(4 rows)
+

@@ -1,0 +1,5 @@
+                  id                  | entity_type |              entity_id               |              project_id              | visibility |  source  |                           body                           
+--------------------------------------+-------------+--------------------------------------+--------------------------------------+------------+----------+----------------------------------------------------------
+ 870fba72-a20d-49ea-9311-0a3e1a977361 | TASK        | f153f432-4a0b-4098-bbc8-f44b49cd0738 | 9cf2159e-213a-44d7-b7c8-ef184544ddac | INTERNAL   | INTERNAL | 627H before: edited, still attaching the Master's letter
+(1 row)
+

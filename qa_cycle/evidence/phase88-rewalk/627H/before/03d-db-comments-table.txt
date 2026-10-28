@@ -1,0 +1,27 @@
+                                Table "tenant_7d218705360b.comments"
+      Column      |           Type           | Collation | Nullable |            Default            
+------------------+--------------------------+-----------+----------+-------------------------------
+ id               | uuid                     |           | not null | gen_random_uuid()
+ entity_type      | character varying(20)    |           | not null | 
+ entity_id        | uuid                     |           | not null | 
+ project_id       | uuid                     |           | not null | 
+ author_member_id | uuid                     |           | not null | 
+ body             | text                     |           | not null | 
+ visibility       | character varying(20)    |           | not null | 'INTERNAL'::character varying
+ parent_id        | uuid                     |           |          | 
+ created_at       | timestamp with time zone |           | not null | now()
+ updated_at       | timestamp with time zone |           | not null | now()
+ source           | character varying(20)    |           | not null | 'INTERNAL'::character varying
+Indexes:
+    "comments_pkey" PRIMARY KEY, btree (id)
+    "idx_comments_entity" btree (entity_type, entity_id, created_at)
+    "idx_comments_project" btree (project_id, created_at)
+Check constraints:
+    "chk_comment_entity_type" CHECK (entity_type::text = ANY (ARRAY['TASK'::character varying, 'DOCUMENT'::character varying, 'PROJECT'::character varying]::text[]))
+    "chk_comment_visibility" CHECK (visibility::text = ANY (ARRAY['INTERNAL'::character varying, 'SHARED'::character varying]::text[]))
+Foreign-key constraints:
+    "comments_parent_id_fkey" FOREIGN KEY (parent_id) REFERENCES tenant_7d218705360b.comments(id) ON DELETE CASCADE
+    "comments_project_id_fkey" FOREIGN KEY (project_id) REFERENCES tenant_7d218705360b.projects(id) ON DELETE CASCADE
+Referenced by:
+    TABLE "tenant_7d218705360b.comments" CONSTRAINT "comments_parent_id_fkey" FOREIGN KEY (parent_id) REFERENCES tenant_7d218705360b.comments(id) ON DELETE CASCADE
+

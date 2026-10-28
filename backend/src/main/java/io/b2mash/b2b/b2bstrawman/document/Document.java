@@ -270,6 +270,12 @@ public class Document {
     public static final String TEMPLATE_GENERATED = "TEMPLATE_GENERATED";
     public static final String EMAIL_INGEST = "EMAIL_INGEST";
 
+    /**
+     * Attached to a comment and linked through {@code comment_attachments} (Phase 88 U24, A13).
+     * Stamped only over {@link #MANUAL}; other sources keep their provenance.
+     */
+    public static final String COMMENT = "COMMENT";
+
     private Source() {}
   }
 }

@@ -1,0 +1,14 @@
+{
+  "page": "http://localhost:3001/org/e2e-test-org/matters/9cf2159e-213a-44d7-b7c8-ef184544ddac?tab=tasks&taskId=f153f432-4a0b-4098-bbc8-f44b49cd0738 (Task detail sheet -> Comments tab), user Alice (owner)",
+  "probe": "document.querySelector('[role=dialog]') -> count input[type=file]; list form.elements; buttons matching /attach|file|upload/i",
+  "result": {
+    "fileInputsInDialog": 0,
+    "fileInputsOnPage": 0,
+    "formControls": [
+      "textarea[type=textarea][name=body] ",
+      "select[type=select-one][name=visibility] Internal onlyCustomer visible",
+      "button[type=submit][name=] Post Comment"
+    ],
+    "attachButtons": []
+  }
+}

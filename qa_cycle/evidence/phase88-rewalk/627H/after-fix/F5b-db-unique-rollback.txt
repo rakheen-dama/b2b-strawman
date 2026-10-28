@@ -1,0 +1,13 @@
+# rolled-back attempt: second comment_attachments row for doc a on comment C2
+SET
+BEGIN
+ERROR:  duplicate key value violates unique constraint "idx_comment_attachments_document"
+DETAIL:  Key (document_id)=(0a1da2a2-eaca-40da-8992-e3898aaf14f8) already exists.
+ROLLBACK
+# after rollback: link rows for doc a
+SET
+              comment_id              |             document_id              | sort_order 
+--------------------------------------+--------------------------------------+------------
+ dac70b66-b73d-4426-bb37-60d7e3fe45ac | 0a1da2a2-eaca-40da-8992-e3898aaf14f8 |          0
+(1 row)
+

@@ -1,5 +1,4 @@
 import { HelpTip } from "@/components/help-tip";
-import { api } from "@/lib/api";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
   listIntegrations,
@@ -27,7 +26,6 @@ import type {
   XeroTaxMapping,
   XeroSettingsResponse,
 } from "@/lib/types";
-import type { BillingResponse } from "@/lib/internal-api";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
 
 const DOMAIN_CONFIG: {
@@ -38,7 +36,7 @@ const DOMAIN_CONFIG: {
   {
     domain: "ACCOUNTING",
     label: "Accounting",
-    description: "Connect your accounting software for invoice sync",
+    description: "Connect your accounting software for fee note sync",
   },
   {
     domain: "AI",
@@ -58,7 +56,7 @@ const DOMAIN_CONFIG: {
   {
     domain: "PAYMENT",
     label: "Payment Gateway",
-    description: "Accept online payments from customers",
+    description: "Accept online payments from clients",
   },
   {
     domain: "KYC_VERIFICATION",
@@ -80,7 +78,6 @@ export async function renderXeroTab({ slug }: SettingsTabProps) {
 
   let integrations: OrgIntegration[] = [];
   let providers: Partial<Record<IntegrationDomain, string[]>> = {};
-  let tier = "STARTER";
   let xeroConnection: XeroConnectionResponse | null = null;
 
   try {
@@ -103,15 +100,6 @@ export async function renderXeroTab({ slug }: SettingsTabProps) {
 
   // getMcpStatusAction swallows errors and returns null — no try/catch needed.
   const mcpStatus = await getMcpStatusAction();
-
-  try {
-    const billing = await api.get<BillingResponse>("/api/billing/subscription");
-    tier = ["ACTIVE", "TRIALING", "PENDING_CANCELLATION"].includes(billing.status)
-      ? "DEDICATED"
-      : "STARTER";
-  } catch {
-    // Non-fatal: default to STARTER
-  }
 
   // Former Xero page: tax mappings + settings only when connected, and only for managers (the
   // section below renders the denial otherwise, so members don't fetch them).
@@ -187,7 +175,6 @@ export async function renderXeroTab({ slug }: SettingsTabProps) {
               integration={integration}
               providers={domainProviders}
               slug={slug}
-              {...(config.domain === "AI" ? { tier } : {})}
             />
           );
         })}

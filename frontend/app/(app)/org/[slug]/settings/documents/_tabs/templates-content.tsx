@@ -28,6 +28,7 @@ import { UploadDocxDialog } from "./UploadDocxDialog";
 import { BrandingSection } from "./branding-section";
 import { uploadLogoAction, deleteLogoAction, saveBrandingAction } from "./template-support-actions";
 import { formatFileSize } from "@/lib/format";
+import { entityNounLabel } from "@/components/audit/entity-type-labels";
 import type {
   TemplateListResponse,
   TemplateCategory,
@@ -39,7 +40,7 @@ const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   ENGAGEMENT_LETTER: "Engagement Letter",
   STATEMENT_OF_WORK: "Statement of Work",
   COVER_LETTER: "Cover Letter",
-  PROJECT_SUMMARY: "Project Summary",
+  PROJECT_SUMMARY: "Matter Summary",
   NDA: "NDA",
 };
 
@@ -171,11 +172,14 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
                         )}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <Badge variant="neutral">{template.primaryEntityType}</Badge>
+                        <Badge variant="neutral">
+                          {entityNounLabel(template.primaryEntityType) ??
+                            template.primaryEntityType}
+                        </Badge>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         {template.source === "PLATFORM" ? (
-                          <Badge variant="pro">Platform</Badge>
+                          <Badge variant="neutral">Platform</Badge>
                         ) : (
                           <Badge variant="lead">Custom</Badge>
                         )}

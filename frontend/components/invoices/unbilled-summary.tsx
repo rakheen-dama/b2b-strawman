@@ -128,7 +128,7 @@ export function UnbilledSummary({
                       </div>
                     ))}
                   </div>
-                  {/* Project subtotals */}
+                  {/* Matter subtotals */}
                   <div className="border-t border-slate-200 px-4 py-2 dark:border-slate-800">
                     <div className="flex flex-wrap gap-4">
                       {Object.entries(project.totals).map(([curr, total]) => (
@@ -163,11 +163,11 @@ export function UnbilledSummary({
         </div>
       )}
 
-      {/* Expenses Section */}
+      {/* Legacy expenses section ("Other Disbursements") */}
       {hasExpenses && (
         <div>
           <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
-            Expenses
+            Other Disbursements
           </h3>
           <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
             <table className="w-full">
@@ -177,7 +177,7 @@ export function UnbilledSummary({
                     Date
                   </th>
                   <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                    Project
+                    Matter
                   </th>
                   <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Description
@@ -233,7 +233,7 @@ export function UnbilledSummary({
           {/* Expense totals */}
           <div className="mt-3 flex items-center justify-between">
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-              Expense Subtotal
+              Other Disbursement Subtotal
             </span>
             <div className="flex gap-3">
               {Object.entries(data.unbilledExpenseTotals).map(([curr, amount]) => (

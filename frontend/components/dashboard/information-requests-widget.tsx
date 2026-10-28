@@ -116,7 +116,7 @@ export function InformationRequestsWidget({ data, orgSlug }: InformationRequests
           className="text-muted-foreground"
           onClick={() => router.push(`/org/${orgSlug}/clients`)}
         >
-          View customer requests &rarr;
+          View client requests &rarr;
         </Button>
       </CardFooter>
     </Card>

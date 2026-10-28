@@ -211,7 +211,7 @@ export function IntakeResultDisplay({ output, onApplyTemplate }: IntakeResultDis
                     <Badge variant="neutral">{match.matchType.replaceAll("_", " ")}</Badge>
                   </div>
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Customer: {match.customerName}
+                    Client: {match.customerName}
                   </p>
                   <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                     {match.reasoning}

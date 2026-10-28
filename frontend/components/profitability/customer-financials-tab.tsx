@@ -53,7 +53,7 @@ function ProjectBreakdownTable({ projects }: { projects: MatterProfitabilitySumm
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-        Per-Project Breakdown
+        Per-Matter Breakdown
       </h4>
       <Table>
         <TableHeader>
@@ -118,7 +118,7 @@ export function CustomerFinancialsTab({
       <EmptyState
         icon={TrendingUp}
         title="No financial data yet"
-        description="Track billable time and set up billing rates to see customer profitability here."
+        description="Track billable time and set up billing rates to see client profitability here."
       />
     );
   }

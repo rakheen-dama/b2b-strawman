@@ -166,9 +166,9 @@ describe("LogDsarRequestDialog", () => {
     await user.selectOptions(screen.getByRole("combobox"), "Deletion");
 
     // Enter customer ID
-    await user.clear(screen.getByPlaceholderText(/customer uuid/i));
+    await user.clear(screen.getByPlaceholderText(/client uuid/i));
     await user.type(
-      screen.getByPlaceholderText(/customer uuid/i),
+      screen.getByPlaceholderText(/client uuid/i),
       "550e8400-e29b-41d4-a716-446655440000"
     );
 

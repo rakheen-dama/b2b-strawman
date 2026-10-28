@@ -49,8 +49,11 @@ import { ClauseEditorSheet } from "@/components/clauses/clause-editor-sheet";
 import { cloneClause, deactivateClause } from "@/lib/actions/clause-actions";
 import type { Clause, ClauseSource } from "@/lib/actions/clause-actions";
 
-const SOURCE_BADGE: Record<ClauseSource, { label: string; variant: "pro" | "lead" | "neutral" }> = {
-  SYSTEM: { label: "System", variant: "pro" },
+const SOURCE_BADGE: Record<
+  ClauseSource,
+  { label: string; variant: "lead" | "neutral" | "default" }
+> = {
+  SYSTEM: { label: "System", variant: "default" },
   CLONED: { label: "Cloned", variant: "lead" },
   CUSTOM: { label: "Custom", variant: "neutral" },
 };

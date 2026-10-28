@@ -68,7 +68,7 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
             <EmptyState
               icon={Inbox}
               title="No available tasks"
-              description="Unassigned tasks in your projects will appear here"
+              description="Unassigned tasks in your matters will appear here"
             />
           ) : (
             <div className="rounded-lg border border-slate-200 dark:border-slate-800">

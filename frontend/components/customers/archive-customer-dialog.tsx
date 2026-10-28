@@ -72,7 +72,7 @@ export function ArchiveCustomerDialog({
         setOpen(false);
         router.push(`/org/${slug}/clients`);
       } else {
-        setError(result.error ?? "Failed to archive customer.");
+        setError(result.error ?? "Failed to archive client.");
         setIsArchiving(false);
       }
     } catch {
@@ -104,10 +104,10 @@ export function ArchiveCustomerDialog({
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">Archive Customer</AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Archive Client</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             Archive <span className="text-foreground font-semibold">{customerName}</span>? Their
-            project links will be preserved but they will be hidden from active customer lists.
+            matter links will be preserved but they will be hidden from active client lists.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}

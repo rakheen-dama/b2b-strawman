@@ -74,11 +74,9 @@ describe("CustomerRatesTab", () => {
       />
     );
 
-    expect(screen.getByText("No customer rate overrides")).toBeInTheDocument();
+    expect(screen.getByText("No client rate overrides")).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Add billing rate overrides for team members when working for this customer."
-      )
+      screen.getByText("Add billing rate overrides for team members when working for this client.")
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Add Override/ })).toBeInTheDocument();
   });
@@ -94,7 +92,7 @@ describe("CustomerRatesTab", () => {
       />
     );
 
-    expect(screen.getByText("Customer Rate Overrides")).toBeInTheDocument();
+    expect(screen.getByText("Client Rate Overrides")).toBeInTheDocument();
     expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
     expect(screen.getByText("EUR")).toBeInTheDocument();
   });
@@ -115,9 +113,7 @@ describe("CustomerRatesTab", () => {
     await user.click(screen.getByRole("button", { name: /Add Override/ }));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Add Customer Rate Override" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Add Client Rate Override" })).toBeInTheDocument();
     });
 
     expect(screen.getByLabelText("Member")).toBeInTheDocument();
@@ -140,11 +136,11 @@ describe("CustomerRatesTab", () => {
       />
     );
 
-    const deleteButton = screen.getByLabelText("Delete customer rate for Alice Johnson");
+    const deleteButton = screen.getByLabelText("Delete client rate for Alice Johnson");
     await user.click(deleteButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Delete Customer Rate Override")).toBeInTheDocument();
+      expect(screen.getByText("Delete Client Rate Override")).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Delete" }));

@@ -50,9 +50,9 @@ import type { TemplateEntityType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const PREVIEW_ENTITY_TYPES: { value: TemplateEntityType; label: string }[] = [
-  { value: "PROJECT", label: "Project" },
-  { value: "CUSTOMER", label: "Customer" },
-  { value: "INVOICE", label: "Invoice" },
+  { value: "PROJECT", label: "Matter" },
+  { value: "CUSTOMER", label: "Client" },
+  { value: "INVOICE", label: "Fee note" },
 ];
 
 function generateSlug(title: string): string {

@@ -91,7 +91,7 @@ describe("BudgetPanel", () => {
       />
     );
 
-    expect(screen.getByText("Budget Status")).toBeInTheDocument();
+    expect(screen.getByText("Fee estimate status")).toBeInTheDocument();
     // Multiple "On Track" badges: overall, hours, and amount
     const onTrackBadges = screen.getAllByText("On Track");
     expect(onTrackBadges.length).toBeGreaterThanOrEqual(1);
@@ -164,7 +164,7 @@ describe("BudgetPanel", () => {
     );
 
     // Should show Over Budget badge
-    const overBudgetBadges = screen.getAllByText("Over Budget");
+    const overBudgetBadges = screen.getAllByText("Over estimate");
     expect(overBudgetBadges.length).toBeGreaterThanOrEqual(1);
 
     // Progress bars should clamp to 100% visually
@@ -217,7 +217,7 @@ describe("BudgetPanel", () => {
     await user.click(screen.getByRole("button", { name: /edit/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Edit Budget" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Edit fee estimate" })).toBeInTheDocument();
     });
   });
 
@@ -234,7 +234,7 @@ describe("BudgetPanel", () => {
       />
     );
 
-    expect(screen.getByText("Budget Status")).toBeInTheDocument();
+    expect(screen.getByText("Fee estimate status")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /delete/i })).not.toBeInTheDocument();
   });

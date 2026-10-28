@@ -150,7 +150,7 @@ describe("AddMemberDialog", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("All organization members are already on this project.")
+        screen.getByText("All organization members are already on this matter.")
       ).toBeInTheDocument();
     });
   });

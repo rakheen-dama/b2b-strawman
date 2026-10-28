@@ -14,9 +14,6 @@ const badgeVariants = cva(
         member: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
         owner: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
         admin: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-        // Plan variants
-        starter: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-        pro: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300",
         // Status variants
         success: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
         warning: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",

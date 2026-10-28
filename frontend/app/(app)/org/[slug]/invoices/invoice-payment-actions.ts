@@ -30,7 +30,7 @@ export async function approveInvoice(
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can approve invoices." };
+    return { success: false, error: "Only admins and owners can approve fee notes." };
   }
 
   try {
@@ -55,7 +55,7 @@ export async function sendInvoice(
   try {
     const caps = await fetchMyCapabilities();
     if (!caps.isAdmin && !caps.isOwner) {
-      return { success: false, error: "Only admins and owners can send invoices." };
+      return { success: false, error: "Only admins and owners can send fee notes." };
     }
 
     const body = overrideWarnings ? { overrideWarnings: true } : { overrideWarnings: false };
@@ -126,7 +126,7 @@ export async function voidInvoice(
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can void invoices." };
+    return { success: false, error: "Only admins and owners can void fee notes." };
   }
 
   try {

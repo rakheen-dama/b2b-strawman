@@ -116,7 +116,7 @@ describe("RuleList", () => {
   it("renders trigger type badges", () => {
     render(<RuleList slug="acme" rules={sampleRules} canManage={true} />);
     expect(screen.getByText("Task Status")).toBeInTheDocument();
-    expect(screen.getByText("Invoice Status")).toBeInTheDocument();
+    expect(screen.getByText("Fee note status")).toBeInTheDocument();
   });
 
   // Phase 86 (ADR-334): the rule editor, template gallery and delete were removed — the list is

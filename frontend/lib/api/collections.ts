@@ -39,7 +39,7 @@ export async function updateCollectionsSettings(
   return api.put<CollectionsSettingsResponse>("/api/settings/collections", dto);
 }
 
-// ---- Customer Exemption API Functions (588C) ----
+// ---- Client Exemption API Functions (588C) ----
 
 export async function setCollectionsExemption(
   customerId: string,

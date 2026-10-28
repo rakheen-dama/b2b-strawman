@@ -37,7 +37,7 @@ export async function renderChecklistsTab({ slug }: SettingsTabProps) {
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Checklists</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage checklist templates used during customer onboarding.
+          Manage checklist templates used during client onboarding.
         </p>
       </div>
 
@@ -57,7 +57,7 @@ export async function renderChecklistsTab({ slug }: SettingsTabProps) {
             No checklist templates yet
           </h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Create your first checklist template to streamline customer onboarding.
+            Create your first checklist template to streamline client onboarding.
           </p>
         </div>
       ) : (

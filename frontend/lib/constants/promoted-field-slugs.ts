@@ -1,6 +1,6 @@
 /**
  * Slugs for custom fields that have been promoted to first-class columns on
- * the Customer, Project, Task, and Invoice entities. These must be filtered
+ * the client, matter, task, and fee note entities. These must be filtered
  * out of `CustomFieldSection` rendering so they do not show up twice on
  * detail pages.
  *

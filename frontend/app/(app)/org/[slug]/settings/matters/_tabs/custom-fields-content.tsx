@@ -148,7 +148,7 @@ export function CustomFieldsContent({
                         {field.requiredForContexts && field.requiredForContexts.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {field.requiredForContexts.map((ctx) => (
-                              <Badge key={ctx} variant="pro">
+                              <Badge key={ctx} variant="lead">
                                 {PREREQUISITE_CONTEXT_LABELS[ctx as PrerequisiteContext] ?? ctx}
                               </Badge>
                             ))}
@@ -159,7 +159,7 @@ export function CustomFieldsContent({
                       </TableCell>
                       <TableCell>
                         {field.packId ? (
-                          <Badge variant="pro">Pack</Badge>
+                          <Badge variant="neutral">Pack</Badge>
                         ) : (
                           <span className="text-sm text-slate-400">Custom</span>
                         )}
@@ -261,7 +261,7 @@ export function CustomFieldsContent({
                             </p>
                           )}
                           <div className="mt-2 flex flex-wrap gap-1.5">
-                            {group.packId && <Badge variant="pro">Pack</Badge>}
+                            {group.packId && <Badge variant="neutral">Pack</Badge>}
                             {group.active ? (
                               <Badge variant="success">Active</Badge>
                             ) : (

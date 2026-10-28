@@ -112,7 +112,7 @@ describe("ClientOverviewTab", () => {
     expect(screen.getByTestId("unbilled-time-card")).toBeInTheDocument();
     expect(screen.getByText("$2,400.00")).toBeInTheDocument();
     expect(screen.getByText("16.0 hours")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Create Invoice" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Create fee note" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View Time" })).toBeInTheDocument();
   });
 
@@ -129,7 +129,7 @@ describe("ClientOverviewTab", () => {
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByTestId("lifecycle-status-badge")).toBeInTheDocument();
-    expect(screen.getByText("Everything looks good — 3 linked projects.")).toBeInTheDocument();
+    expect(screen.getByText("Everything looks good — 3 linked matters.")).toBeInTheDocument();
   });
 
   // Test 5: Renders FICA panel when provided

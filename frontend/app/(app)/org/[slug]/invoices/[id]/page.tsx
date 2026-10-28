@@ -203,7 +203,7 @@ export default async function InvoiceDetailPage({
         <CollectionsHistoryTable
           activities={collectionActivities}
           slug={slug}
-          emptyMessage="No collection activity for this invoice yet."
+          emptyMessage="No collection activity for this fee note yet."
         />
       </div>
 

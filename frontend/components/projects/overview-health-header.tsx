@@ -35,7 +35,7 @@ export function OverviewHealthHeader({
       <div className="min-w-0 flex-1">
         <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">{projectName}</h2>
         {customerName && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">Customer: {customerName}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Client: {customerName}</p>
         )}
         {reasons.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">

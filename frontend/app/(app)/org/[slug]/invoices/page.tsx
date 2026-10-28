@@ -105,7 +105,7 @@ export default async function InvoicesPage({
         return [];
       }
     })(),
-    // Active customers for the "New Invoice" button
+    // Active clients for the "New fee note" button
     (async (): Promise<{ id: string; name: string }[]> => {
       try {
         const raw = await listClients();
@@ -254,7 +254,7 @@ export default async function InvoicesPage({
         ))}
       </div>
 
-      {/* Invoice Table or Empty State */}
+      {/* Fee note table or empty state */}
       {invoices.length === 0 ? (
         <EmptyState
           icon={Receipt}

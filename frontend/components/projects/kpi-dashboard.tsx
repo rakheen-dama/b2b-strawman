@@ -173,7 +173,7 @@ export async function KPIDashboard({
   const metricCards: MetricCardProps[] = [
     {
       id: "budget",
-      label: "Budget consumed",
+      label: "Fee estimate consumed",
       value: budgetPercent != null ? `${Math.round(budgetPercent)}%` : "--",
       linkTab: "budget",
       icon: <DollarSign className="size-5" />,
@@ -235,7 +235,7 @@ export async function KPIDashboard({
         <div className="flex items-start gap-4 px-4 py-3">
           <HealthBadge status={healthStatus} size="lg" />
           {customerName && (
-            <p className="text-sm text-slate-500 dark:text-slate-400">Customer: {customerName}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Client: {customerName}</p>
           )}
         </div>
 

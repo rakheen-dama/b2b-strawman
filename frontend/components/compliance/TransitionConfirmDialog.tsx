@@ -40,7 +40,7 @@ const TRANSITION_META: Partial<Record<LifecycleStatus, TransitionMeta>> = {
   ONBOARDING: {
     title: "Start Onboarding",
     description:
-      "This will move the customer to Onboarding status and automatically create compliance checklists.",
+      "This will move the client to Onboarding status and automatically create compliance checklists.",
     confirmLabel: "Start Onboarding",
     isDestructive: false,
     requiresNotes: false,
@@ -48,15 +48,14 @@ const TRANSITION_META: Partial<Record<LifecycleStatus, TransitionMeta>> = {
   ACTIVE: {
     title: "Activate Client",
     description:
-      "This will mark the customer as Active. All onboarding checklists must be completed before activation.",
+      "This will mark the client as Active. All onboarding checklists must be completed before activation.",
     confirmLabel: "Activate",
     isDestructive: false,
     requiresNotes: false,
   },
   DORMANT: {
     title: "Mark as Dormant",
-    description:
-      "This will mark the customer as Dormant. They will be flagged for dormancy review.",
+    description: "This will mark the client as Dormant. They will be flagged for dormancy review.",
     confirmLabel: "Mark as Dormant",
     isDestructive: false,
     requiresNotes: false,
@@ -64,7 +63,7 @@ const TRANSITION_META: Partial<Record<LifecycleStatus, TransitionMeta>> = {
   OFFBOARDING: {
     title: "Offboard Client",
     description:
-      "This will begin the offboarding process. The customer will become read-only and no new work can be created.",
+      "This will begin the offboarding process. The client will become read-only and no new work can be created.",
     confirmLabel: "Begin Offboarding",
     isDestructive: true,
     requiresNotes: false,
@@ -72,7 +71,7 @@ const TRANSITION_META: Partial<Record<LifecycleStatus, TransitionMeta>> = {
   OFFBOARDED: {
     title: "Complete Offboarding",
     description:
-      "This will mark the customer as fully Offboarded. This is a permanent status change.",
+      "This will mark the client as fully Offboarded. This is a permanent status change.",
     confirmLabel: "Complete Offboarding",
     isDestructive: true,
     requiresNotes: false,

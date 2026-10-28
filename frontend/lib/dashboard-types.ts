@@ -56,7 +56,7 @@ export interface PersonalDashboardResponse {
   trend: TrendPoint[];
 }
 
-// Project health detail (from GET /api/matters/{id}/health)
+// Matter health detail (from GET /api/matters/{id}/health)
 export interface MatterHealthDetail {
   healthStatus: "HEALTHY" | "AT_RISK" | "CRITICAL" | "UNKNOWN";
   healthReasons: string[];

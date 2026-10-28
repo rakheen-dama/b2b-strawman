@@ -23,7 +23,7 @@ export async function updateProjectNamingPattern(
   }
 
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can update project naming settings." };
+    return { success: false, error: "Only admins and owners can update matter naming settings." };
   }
 
   try {
@@ -43,7 +43,7 @@ export async function updateProjectNamingPattern(
       if (error.status === 403) {
         return {
           success: false,
-          error: "Only admins and owners can update project naming settings.",
+          error: "Only admins and owners can update matter naming settings.",
         };
       }
       return { success: false, error: error.message };

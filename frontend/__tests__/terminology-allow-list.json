@@ -1,0 +1,47 @@
+[
+  {
+    "file": "components/marketing/ai-section.tsx",
+    "text": "AI rewrites time entry descriptions into professional, invoice-ready language while preserving the substance of the work recorded.",
+    "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/marketing/features-section.tsx",
+    "text": "Track billable and non-billable hours across projects, see who's working on what, and spot utilisation gaps before they become profitability problems.",
+    "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/marketing/features-section.tsx",
+    "text": "Turn tracked time into invoices with a few clicks. Rate cards, bulk billing runs, and a client portal where customers can view and pay — no more chasing.",
+    "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/marketing/features-section.tsx",
+    "text": "Fee notes page showing paid invoice in ZAR with status filters",
+    "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/marketing/features-section.tsx",
+    "text": "Profitability by project, customer, and team member. Budget tracking with overspend alerts. Resource planning so you never over- or under-commit.",
+    "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/marketing/integrations-section.tsx",
+    "text": "Sync invoices, import customers, and map tax codes. Two-way connection keeps your books and your practice in lockstep.",
+    "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/marketing/integrations-section.tsx",
+    "text": "Accept online payments on invoices. PayFast for local ZAR transactions, Stripe for international clients.",
+    "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/marketing/integrations-section.tsx",
+    "text": "Transactional email for invoices, information requests, and portal invitations. Delivery tracking and bounce monitoring.",
+    "reason": "marketing copy — public landing page outside the app shell (R8 §1.6)"
+  },
+  {
+    "file": "components/legal/create-disbursement-dialog.tsx",
+    "text": "Supplier invoice or reference number",
+    "reason": "third-party object name — supplier's own invoice number on a disbursement"
+  }
+]

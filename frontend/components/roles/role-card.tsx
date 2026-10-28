@@ -4,11 +4,17 @@ import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import type { OrgRole } from "@/lib/api/org-roles";
+import { capabilityLabel } from "@/lib/capabilities";
 
 interface RoleCardProps {
   role: OrgRole;
   onEdit?: (role: OrgRole) => void;
   onDelete?: (role: OrgRole) => void;
+}
+
+/** Capability pill showing the capability's label ("INVOICING" → "Billing"). */
+export function CapabilityBadge({ cap }: { cap: string }) {
+  return <Badge variant="secondary">{capabilityLabel(cap)}</Badge>;
 }
 
 export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
@@ -47,9 +53,7 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
       {role.capabilities.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {role.capabilities.map((cap) => (
-            <Badge key={cap} variant="secondary">
-              {cap.replace(/_/g, " ")}
-            </Badge>
+            <CapabilityBadge key={cap} cap={cap} />
           ))}
         </div>
       )}

@@ -185,6 +185,6 @@ describe("CustomerSelectionStep", () => {
 
     // 2 customers selected with total shown in summary bar
     expect(screen.getByText("2")).toBeInTheDocument();
-    expect(screen.getByText(/customers selected/)).toBeInTheDocument();
+    expect(screen.getByText(/clients selected/)).toBeInTheDocument();
   });
 });

@@ -50,13 +50,13 @@ describe("LifecycleTransitionDropdown", () => {
     expect(screen.getByText("Reactivate")).toBeInTheDocument();
   });
 
-  it("shows 'Offboard Customer' transition for ACTIVE status", async () => {
+  it("shows 'Offboard Client' transition for ACTIVE status", async () => {
     const user = userEvent.setup();
 
     render(<LifecycleTransitionDropdown currentStatus="ACTIVE" customerId="c1" slug="acme" />);
 
     await user.click(screen.getByText("Change Status"));
-    expect(screen.getByText("Offboard Customer")).toBeInTheDocument();
+    expect(screen.getByText("Offboard Client")).toBeInTheDocument();
   });
 
   it("shows 'Reactivate' transition for OFFBOARDED status", async () => {

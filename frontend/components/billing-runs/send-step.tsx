@@ -59,7 +59,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
             )
           );
         } else {
-          setError(result.error ?? "Failed to load approved invoices.");
+          setError(result.error ?? "Failed to load approved fee notes.");
         }
       } catch {
         if (!cancelled) {
@@ -91,7 +91,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
         // Also refresh the billing run to get final stats
         await getBillingRunAction(billingRunId);
       } else {
-        setError(result.error ?? "Failed to send invoices.");
+        setError(result.error ?? "Failed to send fee notes.");
       }
     } catch {
       setError("An unexpected error occurred while sending.");
@@ -107,7 +107,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
   if (isLoading) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
-        <p className="text-slate-500 dark:text-slate-400">Loading approved invoices...</p>
+        <p className="text-slate-500 dark:text-slate-400">Loading approved fee notes...</p>
       </div>
     );
   }
@@ -156,7 +156,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
               <ul className="space-y-1 text-sm text-red-600 dark:text-red-400">
                 {sendResult.failures.map((failure) => (
                   <li key={failure.invoiceId}>
-                    Invoice {failure.invoiceId.slice(0, 8)}: {failure.reason}
+                    Fee note {failure.invoiceId.slice(0, 8)}: {failure.reason}
                   </li>
                 ))}
               </ul>
@@ -181,7 +181,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
               Sending fee notes...
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Please wait while invoices are being sent.
+              Please wait while fee notes are being sent.
             </p>
           </div>
           <div className="mt-6">
@@ -196,7 +196,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
     <div className="space-y-6">
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-      {/* Approved Invoices Table */}
+      {/* Approved fee notes table */}
       <div className="rounded-lg border border-slate-200 dark:border-slate-800">
         <table className="w-full text-sm">
           <thead>
@@ -239,7 +239,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
                   colSpan={4}
                   className="px-4 py-8 text-center text-slate-500 dark:text-slate-400"
                 >
-                  No approved invoices to send.
+                  No approved fee notes to send.
                 </td>
               </tr>
             )}
@@ -252,7 +252,7 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
         <span className="text-sm text-slate-600 dark:text-slate-400">
           Ready to send:{" "}
           <span className="font-medium text-slate-900 dark:text-slate-100">
-            {items.length} invoices
+            {items.length} fee notes
           </span>{" "}
           totaling{" "}
           <span className="font-medium text-slate-900 dark:text-slate-100">
@@ -274,14 +274,14 @@ export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Send</AlertDialogTitle>
               <AlertDialogDescription>
-                Send {items.length} invoices totaling {formatCurrency(totalAmount, currency)}? This
+                Send {items.length} fee notes totaling {formatCurrency(totalAmount, currency)}? This
                 action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleSendAll}>
-                Send {items.length} Invoices
+                Send {items.length} fee notes
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

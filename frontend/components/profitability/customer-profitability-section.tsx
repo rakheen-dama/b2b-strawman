@@ -145,7 +145,7 @@ export function CustomerProfitabilitySection({
         setData(result.data);
         setError(null);
       } else {
-        setError(result.error ?? "Failed to load customer profitability data.");
+        setError(result.error ?? "Failed to load client profitability data.");
       }
     });
   }
@@ -190,7 +190,7 @@ export function CustomerProfitabilitySection({
         {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
         {sorted.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">
-            No customer profitability data for this period
+            No client profitability data for this period
           </p>
         ) : (
           <Table>
@@ -202,7 +202,7 @@ export function CustomerProfitabilitySection({
                     onClick={() => toggleSort("customerName")}
                     className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
-                    Customer
+                    Client
                     <ArrowUpDown className="size-3" />
                   </button>
                 </TableHead>

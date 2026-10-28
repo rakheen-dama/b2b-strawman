@@ -89,7 +89,7 @@ export function AnonymizeCustomerDialog({
         setResult(res.data);
         setStep("result");
       } else {
-        setError(res.error ?? "Failed to anonymize customer.");
+        setError(res.error ?? "Failed to anonymize client.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -117,7 +117,7 @@ export function AnonymizeCustomerDialog({
                   <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
-              <AlertDialogTitle className="text-center">Anonymize Customer</AlertDialogTitle>
+              <AlertDialogTitle className="text-center">Anonymize Client</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
                 Review the data that will be affected by anonymizing{" "}
                 <span className="text-foreground font-semibold">{customerName}</span>.
@@ -146,10 +146,10 @@ export function AnonymizeCustomerDialog({
                   <p className="font-medium">Affected entities:</p>
                   <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
                     <li>Portal contacts: {preview.affectedEntities.portalContacts}</li>
-                    <li>Projects: {preview.affectedEntities.projects}</li>
+                    <li>Matters: {preview.affectedEntities.projects}</li>
                     <li>Documents: {preview.affectedEntities.documents}</li>
                     <li>Time entries: {preview.affectedEntities.timeEntries}</li>
-                    <li>Invoices: {preview.affectedEntities.invoices}</li>
+                    <li>Fee notes: {preview.affectedEntities.invoices}</li>
                     <li>Comments: {preview.affectedEntities.comments}</li>
                     <li>Custom field values: {preview.affectedEntities.customFieldValues}</li>
                   </ul>
@@ -160,7 +160,7 @@ export function AnonymizeCustomerDialog({
                     <p className="font-medium">Financial records retained</p>
                     <p className="mt-1">
                       {preview.financialRecordsRetained}{" "}
-                      {preview.financialRecordsRetained === 1 ? "invoice" : "invoices"} will be
+                      {preview.financialRecordsRetained === 1 ? "fee note" : "fee notes"} will be
                       preserved for financial compliance
                       {preview.financialRetentionExpiresAt &&
                         ` until ${preview.financialRetentionExpiresAt}`}
@@ -205,12 +205,12 @@ export function AnonymizeCustomerDialog({
             <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
               <p className="font-medium">The following will happen:</p>
               <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
-                <li>Customer PII will be anonymized</li>
+                <li>Client PII will be anonymized</li>
                 <li>Documents will be permanently deleted</li>
                 <li>Comments will be redacted</li>
                 <li>Portal contacts will be anonymized</li>
-                <li>Financial records (invoices) will be preserved</li>
-                <li>Customer will be marked as Anonymized</li>
+                <li>Financial records (fee notes) will be preserved</li>
+                <li>Client will be marked as Anonymized</li>
               </ul>
             </div>
 
@@ -226,7 +226,7 @@ export function AnonymizeCustomerDialog({
                 <option value="Data subject request">Data subject request</option>
                 <option value="Regulatory compliance">Regulatory compliance</option>
                 <option value="Contract termination">Contract termination</option>
-                <option value="Customer request">Customer request</option>
+                <option value="Client request">Client request</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -274,18 +274,18 @@ export function AnonymizeCustomerDialog({
               </div>
               <AlertDialogTitle className="text-center">Anonymization Complete</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
-                Customer data has been anonymized successfully.
+                Client data has been anonymized successfully.
               </AlertDialogDescription>
             </AlertDialogHeader>
 
             <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <p>Anonymization summary:</p>
               <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
-                <li>Customer anonymized: {result.summary.customerAnonymized ? "Yes" : "No"}</li>
+                <li>Client anonymized: {result.summary.customerAnonymized ? "Yes" : "No"}</li>
                 <li>Documents deleted: {result.summary.documentsDeleted}</li>
                 <li>Comments redacted: {result.summary.commentsRedacted}</li>
                 <li>Portal contacts anonymized: {result.summary.portalContactsAnonymized}</li>
-                <li>Invoices preserved: {result.summary.invoicesPreserved}</li>
+                <li>Fee notes preserved: {result.summary.invoicesPreserved}</li>
               </ul>
             </div>
 

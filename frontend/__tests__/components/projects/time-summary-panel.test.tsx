@@ -171,7 +171,7 @@ describe("TimeSummaryPanel", () => {
 
     expect(screen.getByText("No time tracked yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Log time on tasks to see project time summaries here")
+      screen.getByText("Log time on tasks to see matter time summaries here")
     ).toBeInTheDocument();
 
     // Should not render stat cards or tables

@@ -70,8 +70,8 @@ export function ProjectRatesTab({
       <div className="space-y-4">
         <EmptyState
           icon={DollarSign}
-          title="No project rate overrides"
-          description="Add billing rate overrides for specific team members on this project."
+          title="No matter rate overrides"
+          description="Add billing rate overrides for specific team members on this matter."
           action={
             <AddProjectRateDialog
               slug={slug}
@@ -95,10 +95,10 @@ export function ProjectRatesTab({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
-            Project Rate Overrides
+            Matter Rate Overrides
           </h3>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            These rates override member defaults for this project.
+            These rates override member defaults for this matter.
           </p>
         </div>
         <AddProjectRateDialog
@@ -160,7 +160,7 @@ export function ProjectRatesTab({
                       triggerLabel={<Pencil className="size-4" />}
                       triggerVariant="plain"
                       triggerSize="sm"
-                      triggerAriaLabel={`Edit project rate for ${rate.memberName}`}
+                      triggerAriaLabel={`Edit matter rate for ${rate.memberName}`}
                     />
                     <DeleteProjectRateDialog
                       slug={slug}
@@ -170,7 +170,7 @@ export function ProjectRatesTab({
                       triggerLabel={<Trash2 className="size-4 text-red-500" />}
                       triggerVariant="plain"
                       triggerSize="sm"
-                      triggerAriaLabel={`Delete project rate for ${rate.memberName}`}
+                      triggerAriaLabel={`Delete matter rate for ${rate.memberName}`}
                     />
                   </div>
                 </TableCell>
@@ -183,7 +183,7 @@ export function ProjectRatesTab({
   );
 }
 
-// --- Edit Project Rate Dialog ---
+// --- Edit Matter Rate Dialog ---
 
 interface EditProjectRateDialogProps {
   slug: string;
@@ -282,9 +282,9 @@ function EditProjectRateDialog({
       </Button>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Project Rate Override</DialogTitle>
+          <DialogTitle>Edit Matter Rate Override</DialogTitle>
           <DialogDescription>
-            Update the project billing rate for {rate.memberName}.
+            Update the matter billing rate for {rate.memberName}.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -351,7 +351,7 @@ function EditProjectRateDialog({
   );
 }
 
-// --- Delete Project Rate Dialog ---
+// --- Delete Matter Rate Dialog ---
 
 interface DeleteProjectRateDialogProps {
   slug: string;
@@ -428,9 +428,9 @@ function DeleteProjectRateDialog({
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">Delete Project Rate Override</AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Delete Matter Rate Override</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Delete the project billing rate override for {memberName}? This action cannot be undone.
+            Delete the matter billing rate override for {memberName}? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}

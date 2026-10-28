@@ -1,4 +1,4 @@
-// ---- Customers (from CustomerController.java) ----
+// ---- Clients (from CustomerController.java) ----
 
 import type { TagResponse } from "./common";
 import type { FicaOnboardingStatus } from "./fica";

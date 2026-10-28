@@ -124,7 +124,7 @@ export function ReviewDraftsStep({
           generateRef.current = null;
         }
         if (cancelled) return;
-        setError(genResult.error ?? "Failed to generate invoices.");
+        setError(genResult.error ?? "Failed to generate fee notes.");
         setIsGenerating(false);
         setIsLoading(false);
         return;
@@ -198,13 +198,13 @@ export function ReviewDraftsStep({
         request
       );
       if (!result.success) {
-        setError(result.error ?? "Failed to update invoice.");
+        setError(result.error ?? "Failed to update fee note.");
       } else {
         setSheetOpen(false);
         await refreshItems();
       }
     } catch {
-      setError("Failed to save invoice changes.");
+      setError("Failed to save fee note changes.");
     } finally {
       setIsSaving(false);
     }
@@ -225,7 +225,7 @@ export function ReviewDraftsStep({
       );
       const failures = results.filter((r) => r.status === "rejected");
       if (failures.length > 0) {
-        setError(`Failed to set due date on ${failures.length} of ${results.length} invoices.`);
+        setError(`Failed to set due date on ${failures.length} of ${results.length} fee notes.`);
       }
       await refreshItems();
     } catch {
@@ -251,7 +251,7 @@ export function ReviewDraftsStep({
       const failures = results.filter((r) => r.status === "rejected");
       if (failures.length > 0) {
         setError(
-          `Failed to set payment terms on ${failures.length} of ${results.length} invoices.`
+          `Failed to set payment terms on ${failures.length} of ${results.length} fee notes.`
         );
       }
       await refreshItems();
@@ -270,7 +270,7 @@ export function ReviewDraftsStep({
       if (result.success) {
         onNext();
       } else {
-        setError(result.error ?? "Failed to approve invoices.");
+        setError(result.error ?? "Failed to approve fee notes.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -282,7 +282,7 @@ export function ReviewDraftsStep({
   if (isGenerating) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
-        <p className="text-slate-500 dark:text-slate-400">Generating invoices...</p>
+        <p className="text-slate-500 dark:text-slate-400">Generating fee notes...</p>
       </div>
     );
   }
@@ -290,7 +290,7 @@ export function ReviewDraftsStep({
   if (isLoading) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
-        <p className="text-slate-500 dark:text-slate-400">Loading draft invoices...</p>
+        <p className="text-slate-500 dark:text-slate-400">Loading draft fee notes...</p>
       </div>
     );
   }
@@ -375,16 +375,16 @@ export function ReviewDraftsStep({
         </Popover>
       </div>
 
-      {/* Invoice Table */}
+      {/* Fee note table */}
       <div className="rounded-lg border border-slate-200 dark:border-slate-800">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Customer
+                Client
               </th>
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Invoice #
+                Fee note #
               </th>
               <th className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
                 Items
@@ -440,7 +440,7 @@ export function ReviewDraftsStep({
                   colSpan={5}
                   className="px-4 py-8 text-center text-slate-500 dark:text-slate-400"
                 >
-                  No invoices generated.
+                  No fee notes generated.
                 </td>
               </tr>
             )}
@@ -474,7 +474,9 @@ export function ReviewDraftsStep({
       {/* Failed Items Detail */}
       {failedItems.length > 0 && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/20">
-          <p className="mb-2 text-sm font-medium text-red-700 dark:text-red-400">Failed Invoices</p>
+          <p className="mb-2 text-sm font-medium text-red-700 dark:text-red-400">
+            Failed fee notes
+          </p>
           <ul className="space-y-1 text-sm text-red-600 dark:text-red-400">
             {failedItems.map((item) => (
               <li key={item.id}>
@@ -499,8 +501,8 @@ export function ReviewDraftsStep({
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Edit Invoice</SheetTitle>
-            <SheetDescription>{selectedItem?.clientName ?? "Invoice"}</SheetDescription>
+            <SheetTitle>Edit fee note</SheetTitle>
+            <SheetDescription>{selectedItem?.clientName ?? "Fee note"}</SheetDescription>
           </SheetHeader>
           <div className="space-y-4 p-4">
             <div className="space-y-2">

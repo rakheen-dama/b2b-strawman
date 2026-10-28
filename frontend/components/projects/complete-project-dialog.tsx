@@ -51,7 +51,7 @@ export function CompleteProjectDialog({
         setShowUnbilledConfirm(false);
         router.refresh();
       } else {
-        const errorMsg = result.error ?? "Failed to complete project.";
+        const errorMsg = result.error ?? "Failed to complete matter.";
         // Check if this is an unbilled time warning (409)
         if (errorMsg.toLowerCase().includes("unbilled")) {
           setShowUnbilledConfirm(true);
@@ -98,7 +98,7 @@ export function CompleteProjectDialog({
             {showUnbilledConfirm ? (
               <>
                 <span className="text-foreground font-semibold">{projectName}</span> has unbilled
-                time entries. Completing the project will not affect these entries, but they will
+                time entries. Completing the matter will not affect these entries, but they will
                 remain unbilled.
               </>
             ) : (

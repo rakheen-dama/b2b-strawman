@@ -22,7 +22,7 @@ type FilterTab = "ALL" | "AT_RISK" | "OVER_BUDGET";
 const FILTER_TABS: { label: string; value: FilterTab }[] = [
   { label: "All", value: "ALL" },
   { label: "At Risk", value: "AT_RISK" },
-  { label: "Over Budget", value: "OVER_BUDGET" },
+  { label: "Over estimate", value: "OVER_BUDGET" },
 ];
 
 type SortField = "health" | "budget" | "name";
@@ -173,7 +173,7 @@ export function MatterHealthWidget({ matters: projects, orgSlug }: MatterHealthW
           <span className="w-12 text-right">Tasks</span>
         </div>
 
-        {/* Project Rows */}
+        {/* Matter Rows */}
         {visibleProjects.length === 0 ? (
           <p className="py-2 text-center text-xs text-slate-500 italic">No matching matters</p>
         ) : (
@@ -185,7 +185,7 @@ export function MatterHealthWidget({ matters: projects, orgSlug }: MatterHealthW
                 onClick={() => router.push(`/org/${orgSlug}/matters/${project.matterId}`)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
               >
-                {/* Name + Customer stacked */}
+                {/* Name + Client stacked */}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{project.matterName}</p>
                   {project.clientName && (

@@ -1,4 +1,4 @@
-// ---- Projects (from ProjectController.java) ----
+// ---- Matters (from ProjectController.java) ----
 
 import type { TagResponse } from "./common";
 import type { MatterRole } from "./member";

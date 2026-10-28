@@ -99,7 +99,7 @@ export async function runDormancyCheck(
 export async function markCustomerDormant(customerId: string, slug: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can mark customers as dormant." };
+    return { success: false, error: "Only admins and owners can mark clients as dormant." };
   }
 
   try {
@@ -114,7 +114,7 @@ export async function markCustomerDormant(customerId: string, slug: string): Pro
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to mark customer as dormant." };
+    return { success: false, error: "Failed to mark client as dormant." };
   }
 }
 

@@ -129,7 +129,7 @@ export default async function SyncLogPage({
           <p className="max-w-md text-sm text-slate-600 dark:text-slate-400">
             {search.state || search.entityType || search.direction
               ? "No entries match the current filters. Try adjusting your filters."
-              : "Sync entries will appear here once invoice or customer syncing begins."}
+              : "Sync entries will appear here once fee note or client syncing begins."}
           </p>
         </div>
       )}

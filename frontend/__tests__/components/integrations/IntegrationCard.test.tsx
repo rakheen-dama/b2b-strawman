@@ -15,7 +15,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/connections/_tabs/integrations-actions"
 const defaultProps = {
   domain: "ACCOUNTING" as const,
   label: "Accounting",
-  description: "Connect your accounting software for invoice sync",
+  description: "Connect your accounting software for fee note sync",
   providers: ["xero", "quickbooks"],
   slug: "acme",
 };

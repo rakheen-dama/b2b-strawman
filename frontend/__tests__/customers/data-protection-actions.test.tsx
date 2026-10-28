@@ -232,7 +232,7 @@ describe("AnonymizeCustomerDialog", () => {
 
     expect(screen.getByText(/Documents deleted: 12/)).toBeInTheDocument();
     expect(screen.getByText(/Comments redacted: 23/)).toBeInTheDocument();
-    expect(screen.getByText(/Invoices preserved: 8/)).toBeInTheDocument();
+    expect(screen.getByText(/Fee notes preserved: 8/)).toBeInTheDocument();
 
     // Verify the server action was called with correct args (including default reason)
     expect(mockExecuteAnonymization).toHaveBeenCalledWith(

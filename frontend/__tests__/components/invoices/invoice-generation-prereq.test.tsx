@@ -66,7 +66,7 @@ describe("InvoiceGenerationDialog — prerequisite gate", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Prerequisites: Invoice Generation")).toBeInTheDocument();
+      expect(screen.getByText("Prerequisites: Fee note generation")).toBeInTheDocument();
     });
   });
 
@@ -94,6 +94,6 @@ describe("InvoiceGenerationDialog — prerequisite gate", () => {
     });
 
     // PrerequisiteModal should NOT be visible
-    expect(screen.queryByText("Prerequisites: Invoice Generation")).not.toBeInTheDocument();
+    expect(screen.queryByText("Prerequisites: Fee note generation")).not.toBeInTheDocument();
   });
 });

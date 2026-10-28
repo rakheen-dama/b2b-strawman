@@ -82,11 +82,11 @@ export function CustomerDocumentsPanel({
       {documents.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="No customer documents yet"
+          title="No client documents yet"
           description={
             canManage
-              ? "Upload your first document for this customer."
-              : "No documents have been uploaded for this customer."
+              ? "Upload your first document for this client."
+              : "No documents have been uploaded for this client."
           }
           action={
             canManage ? <CustomerDocumentUpload slug={slug} customerId={customerId} /> : undefined

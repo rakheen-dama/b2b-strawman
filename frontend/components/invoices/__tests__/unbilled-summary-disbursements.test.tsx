@@ -118,4 +118,29 @@ describe("UnbilledSummary — disbursements section", () => {
     // No disbursements header because list is empty
     expect(screen.queryByText("Disbursements")).not.toBeInTheDocument();
   });
+  it("labels legacy expenses distinctly from legal disbursements when both are present", () => {
+    const withBoth: UnbilledTimeResponse = {
+      ...baseData,
+      unbilledExpenses: [
+        {
+          id: "exp1",
+          matterId: "p1",
+          matterName: "Matter 2026/001",
+          date: "2026-02-15",
+          description: "Court filing fee",
+          amount: 250,
+          currency: "ZAR",
+          category: "FILING_FEE",
+          markupPercent: null,
+          billableAmount: 250,
+          notes: null,
+        },
+      ],
+      unbilledExpenseTotals: { ZAR: 250 },
+    };
+    render(<UnbilledSummary data={withBoth} isDisbursementsModuleEnabled={true} />);
+
+    expect(screen.getAllByText("Disbursements")).toHaveLength(1);
+    expect(screen.getByText("Other Disbursements")).toBeInTheDocument();
+  });
 });

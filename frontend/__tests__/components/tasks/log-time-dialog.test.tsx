@@ -131,7 +131,7 @@ describe("LogTimeDialog", () => {
       expect(screen.getByTestId("rate-warning-banner")).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/No rate card found for this combination/)).toBeInTheDocument();
+    expect(screen.getByText(/No billing rate found for this combination/)).toBeInTheDocument();
   });
 
   it("hides rate warning banner when rate exists", async () => {

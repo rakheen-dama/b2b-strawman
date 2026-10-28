@@ -16,7 +16,7 @@ export const logDsarRequestSchema = z.object({
   subjectName: z.string().min(1, "Subject name is required").max(255),
   subjectEmail: z.string().email("Invalid email").max(255).optional().or(z.literal("")),
   requestType: z.enum(["ACCESS", "CORRECTION", "DELETION", "OBJECTION", "PORTABILITY"]),
-  customerId: z.string().uuid("Invalid customer ID"),
+  customerId: z.string().uuid("Invalid client ID"),
   receivedDate: z.string().min(1, "Received date is required"),
 });
 

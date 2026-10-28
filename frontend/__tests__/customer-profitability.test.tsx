@@ -101,7 +101,7 @@ describe("CustomerProfitabilitySection", () => {
     const data = makeData({ matters: [] });
     render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
-    expect(screen.getByText("No customer profitability data for this period")).toBeInTheDocument();
+    expect(screen.getByText("No client profitability data for this period")).toBeInTheDocument();
   });
 
   it("expand/collapse shows project breakdown rows", async () => {

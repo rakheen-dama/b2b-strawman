@@ -40,7 +40,7 @@ const SAMPLE_TEMPLATE: ProjectTemplateResponse = {
 
 const FROM_PROJECT_TEMPLATE: ProjectTemplateResponse = {
   id: "pt-2",
-  name: "From Project Template",
+  name: "Saved Matter Template",
   namePattern: "{customer} — {year}",
   description: null,
   billableDefault: false,
@@ -55,6 +55,13 @@ const FROM_PROJECT_TEMPLATE: ProjectTemplateResponse = {
   updatedAt: "2026-01-01T00:00:00Z",
 };
 
+const SEEDER_TEMPLATE: ProjectTemplateResponse = {
+  ...SAMPLE_TEMPLATE,
+  id: "pt-3",
+  name: "Conveyancing Transfer",
+  source: "SEEDER",
+};
+
 describe("TemplateList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -66,7 +73,7 @@ describe("TemplateList", () => {
 
   it("renders empty state when no templates", () => {
     render(<TemplateList slug="acme" templates={[]} canManage={true} />);
-    expect(screen.getByText("No project templates yet.")).toBeInTheDocument();
+    expect(screen.getByText("No matter templates yet.")).toBeInTheDocument();
     expect(screen.getByText(/Create your first template/)).toBeInTheDocument();
   });
 
@@ -83,7 +90,14 @@ describe("TemplateList", () => {
 
   it("shows FROM_PROJECT source badge", () => {
     render(<TemplateList slug="acme" templates={[FROM_PROJECT_TEMPLATE]} canManage={true} />);
-    expect(screen.getByText("From Project")).toBeInTheDocument();
+    expect(screen.getByText("From matter")).toBeInTheDocument();
+    expect(screen.queryByText("From Project")).not.toBeInTheDocument();
+  });
+
+  it("shows SEEDER source badge as Pack", () => {
+    render(<TemplateList slug="acme" templates={[SEEDER_TEMPLATE]} canManage={true} />);
+    expect(screen.getByText("Pack")).toBeInTheDocument();
+    expect(screen.queryByText("Manual")).not.toBeInTheDocument();
   });
 
   it("shows active/inactive badge", () => {

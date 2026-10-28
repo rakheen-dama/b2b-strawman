@@ -39,7 +39,6 @@ const defaultProps = {
   description: "Enable AI-powered document drafting and analysis",
   providers: ["anthropic", "openai"],
   slug: "acme",
-  tier: "PRO",
 };
 
 describe("AI IntegrationCard", () => {
@@ -64,32 +63,15 @@ describe("AI IntegrationCard", () => {
     expect(modelTrigger).toBeInTheDocument();
   });
 
-  it("shows PRO badge on AI integration card for non-PRO tier", () => {
-    render(<IntegrationCard {...defaultProps} tier="STARTER" integration={null} />);
-
-    expect(screen.getByText("PRO")).toBeInTheDocument();
-  });
-
-  it("hides PRO badge when org is already on PRO tier", () => {
-    render(<IntegrationCard {...defaultProps} tier="PRO" integration={null} />);
+  it("AI controls are enabled with no plan badge or upgrade prompt", () => {
+    render(<IntegrationCard {...defaultProps} integration={aiIntegration} />);
 
     expect(screen.queryByText("PRO")).not.toBeInTheDocument();
-  });
+    expect(screen.queryByText(/Upgrade/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/requires the PRO plan/)).not.toBeInTheDocument();
 
-  it("shows upgrade prompt and disables controls for STARTER tier", () => {
-    render(<IntegrationCard {...defaultProps} tier="STARTER" integration={aiIntegration} />);
-
-    // Upgrade prompt text
-    expect(screen.getByText("AI Assistant requires the PRO plan")).toBeInTheDocument();
-    expect(screen.getByText("Upgrade to Pro")).toBeInTheDocument();
-
-    // Provider selector should be disabled
-    const providerTrigger = screen.getByRole("combobox", { name: "Provider" });
-    expect(providerTrigger).toBeDisabled();
-
-    // Toggle should be disabled
-    const toggle = screen.getByRole("switch", { name: "Enabled" });
-    expect(toggle).toBeDisabled();
+    expect(screen.getByRole("combobox", { name: "Provider" })).not.toBeDisabled();
+    expect(screen.getByRole("switch", { name: "Enabled" })).not.toBeDisabled();
   });
 
   it("calls upsert action with updated configJson on model change", async () => {

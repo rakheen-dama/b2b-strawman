@@ -28,14 +28,14 @@ const CATEGORIES: { value: TemplateCategory; label: string }[] = [
   { value: "ENGAGEMENT_LETTER", label: "Engagement Letter" },
   { value: "STATEMENT_OF_WORK", label: "Statement of Work" },
   { value: "COVER_LETTER", label: "Cover Letter" },
-  { value: "PROJECT_SUMMARY", label: "Project Summary" },
+  { value: "PROJECT_SUMMARY", label: "Matter Summary" },
   { value: "NDA", label: "NDA" },
 ];
 
 const ENTITY_TYPES: { value: TemplateEntityType; label: string }[] = [
-  { value: "PROJECT", label: "Project" },
-  { value: "CUSTOMER", label: "Customer" },
-  { value: "INVOICE", label: "Invoice" },
+  { value: "PROJECT", label: "Matter" },
+  { value: "CUSTOMER", label: "Client" },
+  { value: "INVOICE", label: "Fee note" },
 ];
 
 interface UploadDocxDialogProps {

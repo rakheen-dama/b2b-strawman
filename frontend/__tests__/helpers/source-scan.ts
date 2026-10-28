@@ -3,7 +3,8 @@ import path from "node:path";
 import ts from "typescript";
 
 // Shared AST source scan for the Phase 87 literal-ban tests (`no-legacy-hrefs.test.ts`,
-// `lib/api/no-inline-matter-client-literals.test.ts`). Each test keeps its own pattern, scan
+// `lib/api/no-inline-matter-client-literals.test.ts`) and the Phase 88 terminology guard
+// (`no-terminology-remnants.test.ts`, which reuses `isModuleSpecifier`). Each test keeps its own pattern, scan
 // roots, allowlist and self-test; this module only walks the tree and finds literal chunks.
 // Not a test file (no `.test.` suffix), and the walk skips `__tests__/`, so it is never scanned.
 
@@ -33,7 +34,7 @@ export function readSourceTree(roots: readonly string[]): { rel: string; text: s
     }));
 }
 
-function isModuleSpecifier(node: ts.Node): boolean {
+export function isModuleSpecifier(node: ts.Node): boolean {
   const parent = node.parent;
   if (!parent) return false;
   if (ts.isImportDeclaration(parent) || ts.isExportDeclaration(parent)) {

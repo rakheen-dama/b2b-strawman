@@ -19,7 +19,7 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
 
   if (candidates.length === 0) {
     return (
-      <p className="text-sm text-slate-500 dark:text-slate-400">No dormant customers detected.</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400">No dormant clients detected.</p>
     );
   }
 
@@ -101,7 +101,7 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
                 />
               </th>
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Customer
+                Client
               </th>
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
                 Last Activity

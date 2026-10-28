@@ -317,7 +317,8 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     }
 
     await changeStatusBtn.click();
-    const offboardingOption = page.getByRole("menuitem", { name: /Offboard Customer/i });
+    // Phase 88 628A (ADR-357): label → "Offboard Client"
+    const offboardingOption = page.getByRole("menuitem", { name: /Offboard Client/i });
     await expect(offboardingOption).toBeVisible({ timeout: 5000 });
     await offboardingOption.click();
 

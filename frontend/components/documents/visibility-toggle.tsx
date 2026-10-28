@@ -28,7 +28,7 @@ function variantFor(visibility: DocumentVisibility): VisibilityVariant {
     case "SHARED":
       return {
         label: "Shared",
-        tooltipText: "Visible to customer portal. Click to make internal only.",
+        tooltipText: "Visible to client portal. Click to make internal only.",
         nextVisibility: "INTERNAL",
         className:
           "text-teal-600 hover:bg-teal-50 hover:text-teal-700 dark:text-teal-400 dark:hover:bg-teal-950 dark:hover:text-teal-300",
@@ -46,7 +46,7 @@ function variantFor(visibility: DocumentVisibility): VisibilityVariant {
     default:
       return {
         label: "Internal",
-        tooltipText: "Internal only. Click to share with customer.",
+        tooltipText: "Internal only. Click to share with client.",
         nextVisibility: "SHARED",
         className:
           "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300",

@@ -189,7 +189,7 @@ describe("CherryPickStep", () => {
     });
     expect(screen.getByText("Code review")).toBeInTheDocument();
     expect(screen.getByText("Time Entries")).toBeInTheDocument();
-    expect(screen.getByText("Expenses")).toBeInTheDocument();
+    expect(screen.getByText("Other Disbursements")).toBeInTheDocument();
     expect(screen.getByText("Software license")).toBeInTheDocument();
 
     // Check checkboxes are rendered
@@ -274,10 +274,10 @@ describe("CherryPickStep", () => {
     await user.click(screen.getByText("Acme Corp"));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Exclude Customer" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Exclude Client" })).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole("button", { name: "Exclude Customer" }));
+    await user.click(screen.getByRole("button", { name: "Exclude Client" }));
 
     await waitFor(() => {
       expect(screen.getByText("Excluded")).toBeInTheDocument();

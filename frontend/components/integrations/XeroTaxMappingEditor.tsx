@@ -161,7 +161,7 @@ export function XeroTaxMappingEditor({ mappings, slug }: XeroTaxMappingEditorPro
             <div>
               <CardTitle className="font-display text-lg">Tax Code Mappings</CardTitle>
               <CardDescription>
-                Map Kazi tax modes to Xero tax codes for accurate invoice syncing.
+                Map Kazi tax modes to Xero tax codes for accurate fee note syncing.
               </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowResetDialog(true)}>

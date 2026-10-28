@@ -82,7 +82,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
 
     // PrerequisiteModal should be shown with violations
     await waitFor(() => {
-      expect(screen.getByText("Prerequisites: Customer Activation")).toBeInTheDocument();
+      expect(screen.getByText("Prerequisites: Client Activation")).toBeInTheDocument();
     });
     expect(screen.getByText("VAT number is required for activation")).toBeInTheDocument();
     expect(screen.getByText("A portal contact must be assigned")).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
       expect(screen.getByText("Activate Client")).toBeInTheDocument();
     });
     // Should NOT show prerequisite modal
-    expect(screen.queryByText("Prerequisites: Customer Activation")).not.toBeInTheDocument();
+    expect(screen.queryByText("Prerequisites: Client Activation")).not.toBeInTheDocument();
   });
 
   it("opens PrerequisiteModal when backend returns 422 during transition", async () => {
@@ -140,7 +140,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
 
     // Backend returned 422 — should switch to PrerequisiteModal
     await waitFor(() => {
-      expect(screen.getByText("Prerequisites: Customer Activation")).toBeInTheDocument();
+      expect(screen.getByText("Prerequisites: Client Activation")).toBeInTheDocument();
     });
   });
 });

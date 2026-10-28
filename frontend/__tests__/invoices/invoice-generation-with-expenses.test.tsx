@@ -294,9 +294,10 @@ describe("Invoice Line Table — lineType grouping", () => {
   it("groups lines by lineType with section headers", () => {
     render(<InvoiceLineTable lines={mixedLines} currency="USD" editable={false} />);
 
-    expect(screen.getByTestId("section-header-Time Entries")).toBeInTheDocument();
-    expect(screen.getByTestId("section-header-Expenses")).toBeInTheDocument();
-    expect(screen.getByTestId("section-header-Other")).toBeInTheDocument();
+    // Test ids are keyed on the section type, not the display label (628A).
+    expect(screen.getByTestId("section-header-TIME")).toHaveTextContent("Time Entries");
+    expect(screen.getByTestId("section-header-EXPENSE")).toHaveTextContent("Other Disbursements");
+    expect(screen.getByTestId("section-header-OTHER")).toHaveTextContent("Other");
 
     expect(screen.getByText("Development work")).toBeInTheDocument();
     expect(screen.getByText("Court filing fee (20% markup)")).toBeInTheDocument();
@@ -309,7 +310,7 @@ describe("Invoice Line Table — lineType grouping", () => {
     render(<InvoiceLineTable lines={timeOnlyLines} currency="USD" editable={false} />);
 
     expect(screen.getByText("Development work")).toBeInTheDocument();
-    expect(screen.queryByTestId("section-header-Time Entries")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("section-header-TIME")).not.toBeInTheDocument();
   });
 
   it("renders expense lines with description from backend", () => {

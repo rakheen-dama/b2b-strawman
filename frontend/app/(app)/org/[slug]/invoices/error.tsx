@@ -12,7 +12,7 @@ export default function InvoiceError({ error: _error, reset }: InvoiceErrorProps
         Something went wrong
       </h2>
       <p className="text-sm text-slate-600 dark:text-slate-400">
-        Unable to load invoice data. Please try again.
+        Unable to load fee note data. Please try again.
       </p>
       <button onClick={reset} className="text-sm text-teal-600 hover:underline">
         Try again

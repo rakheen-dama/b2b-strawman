@@ -126,7 +126,7 @@ export async function importXeroCustomersAction(
         return { success: false, error: "Permission denied." };
       }
       if (error.status === 409) {
-        return { success: false, error: "Customers have already been imported from Xero." };
+        return { success: false, error: "Clients have already been imported from Xero." };
       }
       return { success: false, error: error.message };
     }

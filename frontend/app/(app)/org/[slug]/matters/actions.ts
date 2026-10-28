@@ -42,12 +42,12 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   const priorityRaw = formData.get("priority")?.toString().trim() || undefined;
   const priority = parseProjectPriority(priorityRaw);
   if (priorityRaw !== undefined && priority === undefined) {
-    return { success: false, error: "Invalid project priority." };
+    return { success: false, error: "Invalid matter priority." };
   }
   const workType = formData.get("workType")?.toString().trim() || undefined;
 
   if (!name) {
-    return { success: false, error: "Project name is required." };
+    return { success: false, error: "Matter name is required." };
   }
 
   const body: CreateMatterRequest = {
@@ -96,7 +96,7 @@ export async function updateProject(
   } else {
     const parsedPriority = parseProjectPriority(priorityRaw);
     if (!parsedPriority) {
-      return { success: false, error: "Invalid project priority." };
+      return { success: false, error: "Invalid matter priority." };
     }
     priority = parsedPriority;
   }
@@ -104,7 +104,7 @@ export async function updateProject(
   const workType = workTypeRaw === "" ? null : (workTypeRaw ?? undefined);
 
   if (!name) {
-    return { success: false, error: "Project name is required." };
+    return { success: false, error: "Matter name is required." };
   }
 
   const body: UpdateMatterRequest = {
@@ -137,7 +137,7 @@ export async function updateProject(
 export async function deleteProject(slug: string, id: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isOwner) {
-    return { success: false, error: "Only organization owners can delete projects." };
+    return { success: false, error: "Only organization owners can delete matters." };
   }
 
   try {
@@ -163,7 +163,7 @@ export async function completeProject(
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can complete projects." };
+    return { success: false, error: "Only admins and owners can complete matters." };
   }
 
   try {
@@ -186,7 +186,7 @@ export async function completeProject(
 export async function archiveProject(slug: string, projectId: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can archive projects." };
+    return { success: false, error: "Only admins and owners can archive matters." };
   }
 
   try {
@@ -209,7 +209,7 @@ export async function archiveProject(slug: string, projectId: string): Promise<A
 export async function reopenProject(slug: string, projectId: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can reopen projects." };
+    return { success: false, error: "Only admins and owners can reopen matters." };
   }
 
   try {

@@ -125,7 +125,7 @@ describe("TemplateEditor", () => {
     const nameInput = screen.getByPlaceholderText("e.g. Monthly Accounting Package");
     expect(nameInput).toHaveValue("");
     expect(
-      screen.getByText("No tasks yet. Add a task to define the project structure.")
+      screen.getByText("No tasks yet. Add a task to define the matter structure.")
     ).toBeInTheDocument();
   });
 
@@ -154,11 +154,11 @@ describe("TemplateEditor", () => {
     const user = userEvent.setup();
     render(<TemplateEditor slug="acme" availableTags={[]} />);
     expect(
-      screen.getByText("No tasks yet. Add a task to define the project structure.")
+      screen.getByText("No tasks yet. Add a task to define the matter structure.")
     ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /add task/i }));
     expect(
-      screen.queryByText("No tasks yet. Add a task to define the project structure.")
+      screen.queryByText("No tasks yet. Add a task to define the matter structure.")
     ).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText("Task name")).toBeInTheDocument();
   });
@@ -170,7 +170,7 @@ describe("TemplateEditor", () => {
     await user.click(screen.getByTitle("Remove task"));
     expect(screen.queryByDisplayValue("Prepare financials")).not.toBeInTheDocument();
     expect(
-      screen.getByText("No tasks yet. Add a task to define the project structure.")
+      screen.getByText("No tasks yet. Add a task to define the matter structure.")
     ).toBeInTheDocument();
   });
 

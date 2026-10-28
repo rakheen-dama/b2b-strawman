@@ -43,7 +43,7 @@ export function InvoiceDetailClient({
   const [showTariffDialog, setShowTariffDialog] = useState(false);
   const [showDisbursementsDialog, setShowDisbursementsDialog] = useState(false);
 
-  // Invoices are customer-scoped (no top-level projectId). Derive a project id
+  // Fee notes are client-scoped (no top-level projectId). Derive a matter id
   // from the existing invoice lines — if all lines share a single matter, use
   // that; otherwise leave null and let the picker show its "select a matter"
   // empty state.

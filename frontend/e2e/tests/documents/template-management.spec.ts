@@ -46,7 +46,8 @@ test.describe("DOC-01: Template Management", () => {
       .isVisible({ timeout: 3000 })
       .catch(() => false);
     const hasTemplateNames = await page
-      .getByText(/Engagement Letter|Statement of Work|Cover Letter|NDA|Project Summary/i)
+      // Phase 88 628A (ADR-357): label — category "Project Summary" → "Matter Summary"
+      .getByText(/Engagement Letter|Statement of Work|Cover Letter|NDA|Matter Summary/i)
       .first()
       .isVisible({ timeout: 3000 })
       .catch(() => false);

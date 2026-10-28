@@ -41,7 +41,7 @@ export function CustomerSelectionStep({
           // Select all customers by default
           setSelectedIds(new Set(result.preview.items.map((item) => item.id)));
         } else {
-          setError(result.error ?? "Failed to load customer data.");
+          setError(result.error ?? "Failed to load client data.");
         }
       } catch {
         if (!cancelled) {
@@ -116,12 +116,12 @@ export function CustomerSelectionStep({
     <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
       <div className="p-6">
         <h2 className="mb-4 text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Select Customers
+          Select Clients
         </h2>
 
         {items.length === 0 ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            No customers with unbilled work found for this period.
+            No clients with unbilled work found for this period.
           </p>
         ) : (
           <div className="overflow-x-auto">
@@ -132,17 +132,17 @@ export function CustomerSelectionStep({
                     <Checkbox
                       checked={selectedIds.size === items.length}
                       onCheckedChange={toggleAll}
-                      aria-label="Select all customers"
+                      aria-label="Select all clients"
                     />
                   </th>
                   <th className="pr-4 pb-3 font-medium text-slate-500 dark:text-slate-400">
-                    Customer
+                    Client
                   </th>
                   <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                     Unbilled Time
                   </th>
                   <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                    Unbilled Expenses
+                    Unbilled Disbursements
                   </th>
                   <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                     Total
@@ -183,7 +183,7 @@ export function CustomerSelectionStep({
       <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-900">
         <p className="text-sm text-slate-600 dark:text-slate-400">
           <span className="font-medium text-slate-950 dark:text-slate-50">{selectedIds.size}</span>{" "}
-          {selectedIds.size === 1 ? "customer" : "customers"} selected,{" "}
+          {selectedIds.size === 1 ? "client" : "clients"} selected,{" "}
           <span className="font-medium text-slate-950 dark:text-slate-50">
             {formatCurrency(selectedTotal, currency)}
           </span>{" "}

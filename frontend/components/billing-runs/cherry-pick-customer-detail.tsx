@@ -53,11 +53,11 @@ export function CherryPickCustomerDetail({
       <div className="mb-4 flex justify-end">
         {isExcluded ? (
           <Button variant="outline" size="sm" onClick={() => onInclude(itemId)}>
-            Include Customer
+            Include Client
           </Button>
         ) : (
           <Button variant="outline" size="sm" onClick={() => onExclude(itemId)}>
-            Exclude Customer
+            Exclude Client
           </Button>
         )}
       </div>
@@ -151,11 +151,12 @@ export function CherryPickCustomerDetail({
             </div>
           )}
 
-          {/* Expenses Table */}
+          {/* Expenses Table — legacy expenses, labelled "Other Disbursements" beside the legal
+              Disbursements table (matches the fee-note line table). */}
           {data.expenses.length > 0 && (
             <div>
               <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                Expenses
+                Other Disbursements
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -285,7 +286,7 @@ export function CherryPickCustomerDetail({
             data.expenses.length === 0 &&
             data.disbursements.length === 0 && (
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                No unbilled entries for this customer.
+                No unbilled entries for this client.
               </p>
             )}
 

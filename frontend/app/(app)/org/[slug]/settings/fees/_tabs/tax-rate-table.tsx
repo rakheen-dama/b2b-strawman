@@ -66,7 +66,7 @@ function DeactivateDialog({
           <AlertDialogTitle>Deactivate Tax Rate</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to deactivate &quot;{taxRate.name}&quot;? This rate will no longer
-            be available for new invoice lines.
+            be available for new fee note lines.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && <p className="text-destructive text-sm">{error}</p>}
@@ -92,7 +92,7 @@ export function TaxRateTable({ slug, taxRates }: TaxRateTableProps) {
         <div>
           <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Tax Rates</h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Manage the tax rates applied to invoice line items.
+            Manage the tax rates applied to fee note line items.
           </p>
         </div>
         <AddTaxRateDialog slug={slug}>
@@ -110,7 +110,7 @@ export function TaxRateTable({ slug, taxRates }: TaxRateTableProps) {
             No tax rates yet
           </h3>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Create your first tax rate to apply taxes to invoices.
+            Create your first tax rate to apply taxes to fee notes.
           </p>
           <div className="mt-4">
             <AddTaxRateDialog slug={slug}>

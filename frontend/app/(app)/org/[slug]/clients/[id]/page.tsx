@@ -375,7 +375,7 @@ export default async function CustomerDetailPage({
   const customerSetupSteps: SetupStep[] = customerReadiness
     ? [
         {
-          label: "Projects linked",
+          label: "Matters linked",
           complete: customerReadiness.hasLinkedMatters,
           actionHref: `?tab=matters`,
         },
@@ -443,7 +443,7 @@ export default async function CustomerDetailPage({
         ? {
             icon: ArrowRight,
             title: "Ready to start onboarding?",
-            description: "Move this customer to Onboarding to begin compliance checklists.",
+            description: "Move this client to Onboarding to begin compliance checklists.",
             actionLabel: "Start Onboarding",
             targetStatus: "ONBOARDING",
           }
@@ -458,14 +458,14 @@ export default async function CustomerDetailPage({
               title:
                 customerReadiness?.checklistProgress != null &&
                 customerReadiness.checklistProgress.total > 0
-                  ? "All items verified — Activate Customer"
+                  ? "All items verified — Activate Client"
                   : "Ready to activate",
               description:
                 customerReadiness?.checklistProgress != null &&
                 customerReadiness.checklistProgress.total > 0
-                  ? "Onboarding checklist is complete. This customer is ready to be activated."
-                  : "No onboarding checklist assigned. This customer is ready to be activated.",
-              actionLabel: "Activate Customer",
+                  ? "Onboarding checklist is complete. This client is ready to be activated."
+                  : "No onboarding checklist assigned. This client is ready to be activated.",
+              actionLabel: "Activate Client",
               targetStatus: "ACTIVE",
             }
           : null
@@ -561,7 +561,7 @@ export default async function CustomerDetailPage({
                   <CollectionsHistoryTable
                     activities={debtorDetail.activities.content}
                     slug={slug}
-                    emptyMessage="No chase history for this customer yet."
+                    emptyMessage="No chase history for this client yet."
                   />
                   <CollectionsHistoryPagination
                     slug={slug}

@@ -75,8 +75,8 @@ describe("PrerequisiteModal — display", () => {
   it("renders violations grouped by entity type", () => {
     render(<PrerequisiteModal {...defaultProps} />);
 
-    expect(screen.getByText("Prerequisites: Invoice Generation")).toBeInTheDocument();
-    expect(screen.getByText("Customer")).toBeInTheDocument();
+    expect(screen.getByText("Prerequisites: Fee note generation")).toBeInTheDocument();
+    expect(screen.getByText("Client")).toBeInTheDocument();
     expect(screen.getByText("VAT number is required")).toBeInTheDocument();
     expect(screen.getByText("Customer must have a portal contact")).toBeInTheDocument();
   });

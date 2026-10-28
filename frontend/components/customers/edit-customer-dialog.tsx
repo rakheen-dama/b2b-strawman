@@ -142,7 +142,7 @@ export function EditCustomerDialog({
       if (result.success) {
         setOpen(false);
       } else {
-        setError(result.error ?? "Failed to update customer.");
+        setError(result.error ?? "Failed to update client.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -187,8 +187,8 @@ export function EditCustomerDialog({
       )}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Customer</DialogTitle>
-          <DialogDescription>Update customer information.</DialogDescription>
+          <DialogTitle>Edit Client</DialogTitle>
+          <DialogDescription>Update client information.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

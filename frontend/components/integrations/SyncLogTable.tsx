@@ -35,8 +35,8 @@ interface SyncLogTableProps {
 }
 
 const ENTITY_TYPE_LABELS: Record<string, { label: string; variant: "neutral" | "lead" }> = {
-  INVOICE: { label: "Invoice", variant: "lead" },
-  CUSTOMER: { label: "Customer", variant: "neutral" },
+  INVOICE: { label: "Fee note", variant: "lead" },
+  CUSTOMER: { label: "Client", variant: "neutral" },
 };
 
 export function SyncLogTable({ entries, slug, canReconcile }: SyncLogTableProps) {

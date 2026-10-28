@@ -39,7 +39,7 @@ function getDisabledReason(
     return "Connect an Anthropic API key in Settings > AI to use this feature.";
   }
   if (!props.hasDocuments) {
-    return "Upload at least one document for this customer before running AI verification.";
+    return "Upload at least one document for this client before running AI verification.";
   }
   if (!props.hasPendingChecklistItems) {
     return "No pending checklist items to verify.";

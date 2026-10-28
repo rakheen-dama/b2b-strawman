@@ -17,6 +17,15 @@ import {
   fetchEntityOptionsAction,
   type EntityOption,
 } from "@/app/(app)/org/[slug]/reports/[reportSlug]/actions";
+import { entityNounLabel } from "@/components/audit/entity-type-labels";
+
+/**
+ * Lower-case display noun for the backend report parameter `entityType` (`project` → "matter").
+ * The wire value is passed to the server action unchanged; only the copy uses the legal noun.
+ */
+function entityDisplayNoun(entityType: string): string {
+  return (entityNounLabel(entityType) ?? entityType).toLowerCase();
+}
 
 interface EntityPickerProps {
   entityType: string;
@@ -61,7 +70,7 @@ export function EntityPicker({
   }
 
   const selectedOption = options.find((o) => o.id === value);
-  const entityLabel = entityType.charAt(0).toUpperCase() + entityType.slice(1).toLowerCase();
+  const entityNoun = entityDisplayNoun(entityType);
 
   return (
     <div className="flex items-center gap-1.5">
@@ -79,13 +88,13 @@ export function EntityPicker({
               hasError && "border-red-500"
             )}
           >
-            {selectedOption ? selectedOption.label : `Select a ${entityLabel.toLowerCase()}...`}
+            {selectedOption ? selectedOption.label : `Select a ${entityNoun}...`}
             <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
           <Command>
-            <CommandInput placeholder={`Search ${entityLabel.toLowerCase()}s...`} />
+            <CommandInput placeholder={`Search ${entityNoun}s...`} />
             <CommandList>
               {isLoading && (
                 <div className="flex items-center justify-center py-6">
@@ -97,7 +106,7 @@ export function EntityPicker({
               )}
               {!isLoading && !fetchError && (
                 <>
-                  <CommandEmpty>No {entityLabel.toLowerCase()}s found.</CommandEmpty>
+                  <CommandEmpty>No {entityNoun}s found.</CommandEmpty>
                   <CommandGroup>
                     {options.map((option) => (
                       <CommandItem

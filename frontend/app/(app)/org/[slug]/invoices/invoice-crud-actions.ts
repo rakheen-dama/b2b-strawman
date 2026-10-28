@@ -37,7 +37,7 @@ function revalidateInvoicePaths(slug: string, invoiceId: string, customerId?: st
 export async function fetchInvoice(invoiceId: string): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can view invoices." };
+    return { success: false, error: "Only admins and owners can view fee notes." };
   }
 
   try {
@@ -58,7 +58,7 @@ export async function fetchInvoices(
 ): Promise<{ success: boolean; error?: string; invoices?: InvoiceResponse[] }> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can view invoices." };
+    return { success: false, error: "Only admins and owners can view fee notes." };
   }
 
   try {
@@ -98,7 +98,7 @@ export async function updateInvoice(
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can update invoices." };
+    return { success: false, error: "Only admins and owners can update fee notes." };
   }
 
   try {
@@ -121,7 +121,7 @@ export async function deleteInvoice(
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can delete invoices." };
+    return { success: false, error: "Only admins and owners can delete fee notes." };
   }
 
   try {

@@ -109,9 +109,9 @@ export function AddProjectRateDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Project Rate Override</DialogTitle>
+          <DialogTitle>Add Matter Rate Override</DialogTitle>
           <DialogDescription>
-            Create a project-specific billing rate override for a team member.
+            Create a matter-specific billing rate override for a team member.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

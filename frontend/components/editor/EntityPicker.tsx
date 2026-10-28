@@ -78,7 +78,7 @@ export function EntityPicker({ entityType, open, onOpenChange, onSelect }: Entit
   const [error, setError] = useState<string | null>(null);
 
   const entityLabel =
-    entityType === "PROJECT" ? "Project" : entityType === "CUSTOMER" ? "Customer" : "Invoice";
+    entityType === "PROJECT" ? "Matter" : entityType === "CUSTOMER" ? "Client" : "Fee note";
 
   const selectedItem = entities.find((e) => e.id === entityId);
   const selectedLabel = selectedItem?.label ?? `Select a ${entityLabel.toLowerCase()}`;
@@ -123,7 +123,7 @@ export function EntityPicker({ entityType, open, onOpenChange, onSelect }: Entit
         }}
       >
         <DialogHeader>
-          <DialogTitle>Select a {entityLabel} for Preview</DialogTitle>
+          <DialogTitle>Select a {entityLabel.toLowerCase()} for preview</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">

@@ -140,7 +140,7 @@ describe("ReviewDraftsStep", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Failed Invoices")).toBeInTheDocument();
+      expect(screen.getByText("Failed fee notes")).toBeInTheDocument();
     });
     expect(screen.getByText("Widget Inc: Customer has no billing address")).toBeInTheDocument();
   });
@@ -254,7 +254,7 @@ describe("SendStep", () => {
     });
 
     const confirmBtn = screen.getByRole("button", {
-      name: /send 1 invoices/i,
+      name: /send 1 fee notes/i,
     });
     await userEvent.click(confirmBtn);
 

@@ -59,7 +59,7 @@ export function LinkCustomerDialog({
       if (result.success) {
         setOpen(false);
       } else {
-        setLinkError(result.error ?? "Failed to link customer.");
+        setLinkError(result.error ?? "Failed to link client.");
       }
     } catch {
       setLinkError("An unexpected error occurred.");

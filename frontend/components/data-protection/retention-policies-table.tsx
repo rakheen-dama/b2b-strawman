@@ -19,6 +19,7 @@ import {
   executeRetentionPurge,
 } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions";
 import type { RetentionPolicyExtended } from "@/lib/types/data-protection";
+import { entityNounLabel } from "@/components/audit/entity-type-labels";
 
 const ACTIONS = ["ANONYMIZE", "FLAG"] as const;
 const FINANCIAL_RECORD_TYPES = ["DOCUMENT", "AUDIT_EVENT"];
@@ -51,8 +52,16 @@ function toEditableRow(policy: RetentionPolicyExtended): EditableRow {
   };
 }
 
+// Display label for the backend `recordType` enum (wire values unchanged): the legal noun for
+// CUSTOMER / PROJECT / INVOICE, other types title-cased from the enum ("AUDIT_EVENT" → "Audit Event").
 function formatRecordType(type: string): string {
-  return type.replace(/_/g, " ");
+  const noun = entityNounLabel(type);
+  if (noun) return noun;
+  return type
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 }
 
 function formatDate(iso: string | null): string {
@@ -225,7 +234,7 @@ export function RetentionPoliciesTable({
                           })
                         }
                         className="w-24"
-                        aria-label={`Retention days for ${row.recordType}`}
+                        aria-label={`Retention days for ${formatRecordType(row.recordType)}`}
                       />
                       <span className="text-sm text-slate-500 dark:text-slate-400">days</span>
                     </div>
@@ -235,7 +244,7 @@ export function RetentionPoliciesTable({
                       value={row.action}
                       onChange={(e) => updateRow(index, { action: e.target.value })}
                       className={selectClasses}
-                      aria-label={`Action for ${row.recordType}`}
+                      aria-label={`Action for ${formatRecordType(row.recordType)}`}
                     >
                       {ACTIONS.map((a) => (
                         <option key={a} value={a}>
@@ -248,7 +257,7 @@ export function RetentionPoliciesTable({
                     <Switch
                       checked={row.active}
                       onCheckedChange={(checked) => updateRow(index, { active: checked })}
-                      aria-label={`Toggle ${row.recordType} policy`}
+                      aria-label={`Toggle ${formatRecordType(row.recordType)} policy`}
                     />
                   </TableCell>
                   <TableCell className="text-sm text-slate-500 dark:text-slate-400">
@@ -261,7 +270,7 @@ export function RetentionPoliciesTable({
                         size="sm"
                         disabled={row.saving}
                         onClick={() => saveRow(index)}
-                        aria-label={`Save ${row.recordType} policy`}
+                        aria-label={`Save ${formatRecordType(row.recordType)} policy`}
                       >
                         {row.saving ? (
                           <Loader2 className="size-4 animate-spin" />

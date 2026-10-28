@@ -44,7 +44,7 @@ describe("InformationRequestsWidget", () => {
     render(<InformationRequestsWidget data={baseSummary} orgSlug="acme" />);
 
     const link = screen.getByRole("button", {
-      name: /view customer requests/i,
+      name: /view client requests/i,
     });
     await user.click(link);
 

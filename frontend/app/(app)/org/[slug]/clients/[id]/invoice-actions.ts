@@ -60,7 +60,7 @@ export async function validateInvoiceGeneration(
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to validate invoice generation." };
+    return { success: false, error: "Failed to validate fee note generation." };
   }
 }
 
@@ -77,6 +77,6 @@ export async function createInvoiceDraft(
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Failed to create invoice draft." };
+    return { success: false, error: "Failed to create fee note draft." };
   }
 }

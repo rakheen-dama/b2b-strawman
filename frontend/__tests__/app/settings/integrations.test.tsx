@@ -14,14 +14,6 @@ const { mockCaps, mockGetXeroConnection, mockGetXeroTaxMappings, mockGetXeroSett
   })
 );
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    get: vi
-      .fn()
-      .mockResolvedValue({ status: "ACTIVE", limits: { maxMembers: 10, currentMembers: 1 } }),
-  },
-}));
-
 vi.mock("@/lib/api/capabilities", () => ({ fetchMyCapabilities: () => mockCaps() }));
 
 vi.mock("@/lib/api/integrations", () => ({

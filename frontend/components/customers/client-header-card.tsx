@@ -37,7 +37,7 @@ function getSmartPrimaryAction(
     case "PROSPECT":
       return { label: "Start Onboarding", variant: "accent" };
     case "ONBOARDING":
-      return { label: "Activate Customer", variant: "accent" };
+      return { label: "Activate Client", variant: "accent" };
     case "ACTIVE":
     case "DORMANT":
       return { label: "Edit", variant: "outline" };
@@ -156,7 +156,7 @@ export function ClientHeaderCard({
             {lifecycleStatusChangedAt && (
               <>Since {formatDate(lifecycleStatusChangedAt)} &middot; </>
             )}
-            {linkedProjectCount} {linkedProjectCount === 1 ? "engagement" : "engagements"}
+            {linkedProjectCount} {linkedProjectCount === 1 ? "matter" : "matters"}
           </p>
         </div>
 

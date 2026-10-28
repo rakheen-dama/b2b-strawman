@@ -106,10 +106,11 @@ export function CollectionsSettingsForm({
       {/* Collections Policy Section */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Overdue-Invoice Reminders
+          Overdue fee-note reminders
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure when overdue invoices move through reminder stages and escalate for collections.
+          Configure when overdue fee notes move through reminder stages and escalate for
+          collections.
         </p>
 
         <div className="mt-4 space-y-4">

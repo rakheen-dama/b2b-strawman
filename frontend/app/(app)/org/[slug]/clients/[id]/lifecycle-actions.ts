@@ -21,7 +21,7 @@ export async function transitionCustomerLifecycle(
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can manage customer lifecycle." };
+    return { success: false, error: "Only admins and owners can manage client lifecycle." };
   }
 
   try {

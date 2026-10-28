@@ -108,16 +108,17 @@ describe("Information Request Components", () => {
     expect(screen.getByText("John Smith")).toBeInTheDocument();
     expect(screen.getByText("In Progress")).toBeInTheDocument();
     expect(screen.getByText("2/8 accepted")).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Client" })).toBeInTheDocument();
   });
 
   // Test 7: RequestList hides customer column when showCustomer=false
   it("hides customer column when showCustomer is false", () => {
     render(<RequestList requests={[mockRequest]} slug="test-org" showCustomer={false} />);
     expect(screen.getByText("REQ-0001")).toBeInTheDocument();
-    // Customer column header should not be rendered
+    // Client column header should not be rendered (Phase 88 628A: header reads "Client")
     const headers = screen.getAllByRole("columnheader");
-    const headerTexts = headers.map((h) => h.textContent);
-    expect(headerTexts).not.toContain("Customer");
+    const headerTexts = headers.map((h) => h.textContent?.trim());
+    expect(headerTexts).not.toContain("Client");
   });
 
   // Test 8: RequestList shows project name as subtitle

@@ -22,7 +22,7 @@ export function BillingRunItemsTable({ items, currency, slug }: BillingRunItemsT
         <thead>
           <tr className="border-b border-slate-200/80 bg-slate-50/50 dark:border-slate-800/80 dark:bg-slate-900/50">
             <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-              Customer
+              Client
             </th>
             <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
               Status
@@ -31,13 +31,13 @@ export function BillingRunItemsTable({ items, currency, slug }: BillingRunItemsT
               Time Amount
             </th>
             <th className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
-              Expense Amount
+              Disbursement Amount
             </th>
             <th className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
               Total
             </th>
             <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-              Invoice
+              Fee note
             </th>
             <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
               Failure Reason
@@ -68,7 +68,7 @@ export function BillingRunItemsTable({ items, currency, slug }: BillingRunItemsT
                     href={`/org/${slug}/invoices/${item.invoiceId}`}
                     className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
                   >
-                    View Invoice
+                    View fee note
                   </Link>
                 ) : (
                   <span className="text-slate-400 dark:text-slate-500">—</span>

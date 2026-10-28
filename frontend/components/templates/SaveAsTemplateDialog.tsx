@@ -149,7 +149,7 @@ export function SaveAsTemplateDialog({
         <DialogHeader>
           <DialogTitle>Save as Template</DialogTitle>
           <DialogDescription>
-            Create a reusable project template from this project&apos;s tasks and tags.
+            Create a reusable matter template from this matter&apos;s tasks and tags.
           </DialogDescription>
         </DialogHeader>
 
@@ -267,7 +267,7 @@ export function SaveAsTemplateDialog({
                             className="flex h-7 rounded border border-slate-200 bg-transparent px-2 py-0.5 text-xs shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
                           >
                             <option value="UNASSIGNED">Unassigned</option>
-                            <option value="PROJECT_LEAD">Project Lead</option>
+                            <option value="PROJECT_LEAD">Matter Lead</option>
                             <option value="ANY_MEMBER">Any Member</option>
                           </select>
                         )}

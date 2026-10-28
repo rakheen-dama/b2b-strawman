@@ -37,7 +37,7 @@ export function ProjectFinancialsTab({ profitability }: ProjectFinancialsTabProp
       <EmptyState
         icon={TrendingUp}
         title="No financial data yet"
-        description="Track billable time and set up billing rates to see project profitability here."
+        description="Track billable time and set up billing rates to see matter profitability here."
       />
     );
   }

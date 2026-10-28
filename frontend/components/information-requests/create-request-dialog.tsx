@@ -264,7 +264,7 @@ export function CreateRequestDialog({
               <Label htmlFor="contact-select">Portal Contact</Label>
               {contacts.length === 0 ? (
                 <p className="text-sm text-slate-500">
-                  No portal contacts found for this customer. Please add a portal contact first.
+                  No portal contacts found for this client. Please add a portal contact first.
                 </p>
               ) : (
                 <Select value={portalContactId} onValueChange={setPortalContactId}>
@@ -440,11 +440,11 @@ export function CreateRequestDialog({
             {/* Info display */}
             <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-400">
               <p>
-                <span className="font-medium">Customer:</span> {customerName}
+                <span className="font-medium">Client:</span> {customerName}
               </p>
               {projectName && (
                 <p>
-                  <span className="font-medium">Project:</span> {projectName}
+                  <span className="font-medium">Matter:</span> {projectName}
                 </p>
               )}
               {templateId !== "ad-hoc" && (

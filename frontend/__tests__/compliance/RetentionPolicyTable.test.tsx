@@ -65,6 +65,26 @@ describe("RetentionPolicyTable", () => {
     expect(screen.getByRole("spinbutton")).toBeInTheDocument();
   });
 
+  it("labels record-type and trigger-event options with legal words; values stay wire enums (628A)", () => {
+    render(<RetentionPolicyTable policies={mockPolicies} slug="acme" />);
+    const [recordTypeSelect, triggerSelect] = screen.getAllByRole("combobox");
+    const options = (select: HTMLElement) =>
+      Array.from((select as HTMLSelectElement).options).map((o) => [o.value, o.textContent]);
+    expect(options(recordTypeSelect)).toEqual([
+      ["CUSTOMER", "Client"],
+      ["AUDIT_EVENT", "Audit Event"],
+      ["DOCUMENT", "Document"],
+      ["COMMENT", "Comment"],
+    ]);
+    expect(options(triggerSelect)).toEqual([
+      ["CUSTOMER_OFFBOARDED", "Client Offboarded"],
+      ["RECORD_CREATED", "Record Created"],
+    ]);
+    expect((recordTypeSelect as HTMLSelectElement).value).toBe("CUSTOMER");
+    expect((triggerSelect as HTMLSelectElement).value).toBe("CUSTOMER_OFFBOARDED");
+    expect(screen.queryByRole("option", { name: /customer/i })).not.toBeInTheDocument();
+  });
+
   it("shows Run Retention Check button", () => {
     render(<RetentionPolicyTable policies={mockPolicies} slug="acme" />);
     expect(screen.getByRole("button", { name: /Run Retention Check/i })).toBeInTheDocument();

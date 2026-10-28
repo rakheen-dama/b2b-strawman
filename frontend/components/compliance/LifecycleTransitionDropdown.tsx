@@ -34,7 +34,7 @@ function getTransitionLabel(fromStatus: LifecycleStatus, toStatus: LifecycleStat
     return "Activate";
   if (toStatus === "ACTIVE") return "Reactivate";
   if (toStatus === "DORMANT") return "Mark as Dormant";
-  if (toStatus === "OFFBOARDING") return "Offboard Customer";
+  if (toStatus === "OFFBOARDING") return "Offboard Client";
   if (toStatus === "OFFBOARDED") return "Complete Offboarding";
   return toStatus;
 }

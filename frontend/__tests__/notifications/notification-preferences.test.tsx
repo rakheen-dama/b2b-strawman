@@ -46,11 +46,11 @@ describe("NotificationPreferencesForm", () => {
     expect(screen.getByText("Document Shared")).toBeInTheDocument();
     expect(screen.getByText("Member Invited")).toBeInTheDocument();
     expect(screen.getByText("Document Generated")).toBeInTheDocument();
-    expect(screen.getByText("Budget Alert")).toBeInTheDocument();
-    expect(screen.getByText("Invoice Approved")).toBeInTheDocument();
-    expect(screen.getByText("Invoice Sent")).toBeInTheDocument();
-    expect(screen.getByText("Invoice Paid")).toBeInTheDocument();
-    expect(screen.getByText("Invoice Voided")).toBeInTheDocument();
+    expect(screen.getByText("Fee estimate alert")).toBeInTheDocument();
+    expect(screen.getByText("Fee note approved")).toBeInTheDocument();
+    expect(screen.getByText("Fee note sent")).toBeInTheDocument();
+    expect(screen.getByText("Fee note paid")).toBeInTheDocument();
+    expect(screen.getByText("Fee note voided")).toBeInTheDocument();
 
     // Should have 12 in-app switches + 12 email switches = 24 switches total
     const switches = screen.getAllByRole("switch");
@@ -62,7 +62,7 @@ describe("NotificationPreferencesForm", () => {
 
     expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("Collaboration")).toBeInTheDocument();
-    expect(screen.getByText("Billing & Invoicing")).toBeInTheDocument();
+    expect(screen.getByText("Billing")).toBeInTheDocument();
   });
 
   it("email toggles are not disabled", () => {

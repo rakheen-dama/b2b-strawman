@@ -219,13 +219,14 @@ export function TimeTrackingSettingsForm({
         </div>
       </div>
 
-      {/* Default Expense Markup Section */}
+      {/* Default Disbursement Markup Section */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Default Expense Markup
+          Default Disbursement Markup
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Set a default markup percentage applied to all expenses unless overridden per-expense.
+          Set a default markup percentage applied to all disbursements unless overridden
+          per-disbursement.
         </p>
 
         <div className="mt-4">
@@ -233,7 +234,7 @@ export function TimeTrackingSettingsForm({
             htmlFor="expense-markup"
             className="block text-sm font-medium text-slate-700 dark:text-slate-300"
           >
-            Default Expense Markup (%)
+            Default Disbursement Markup (%)
           </label>
           <Input
             id="expense-markup"
@@ -247,7 +248,8 @@ export function TimeTrackingSettingsForm({
             className="mt-1 w-40"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Applied to all expenses unless overridden per-expense. Leave blank for no markup.
+            Applied to all disbursements unless overridden per-disbursement. Leave blank for no
+            markup.
           </p>
         </div>
       </div>

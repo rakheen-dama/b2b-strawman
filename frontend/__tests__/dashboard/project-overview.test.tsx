@@ -95,7 +95,7 @@ describe("OverviewHealthHeader (legacy — still used by other pages)", () => {
 
     expect(screen.getByText("At Risk")).toBeInTheDocument();
     expect(screen.getByText("Website Redesign")).toBeInTheDocument();
-    expect(screen.getByText("Customer: Acme Corp")).toBeInTheDocument();
+    expect(screen.getByText("Client: Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Budget 85% consumed")).toBeInTheDocument();
     expect(screen.getByText("6 overdue tasks")).toBeInTheDocument();
   });
@@ -105,7 +105,7 @@ describe("OverviewHealthHeader (legacy — still used by other pages)", () => {
 
     expect(screen.getByText("Unknown")).toBeInTheDocument();
     expect(screen.getByText("Test Project")).toBeInTheDocument();
-    expect(screen.queryByText(/Customer:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Client:/)).not.toBeInTheDocument();
   });
 });
 
@@ -199,7 +199,7 @@ describe("Health Header Band (395.1)", () => {
           <HealthBadge status={status} size="lg" />
           <div>
             <h2 className="font-display text-lg">Website Redesign</h2>
-            <p className="text-sm text-slate-500">Customer: Acme Corp</p>
+            <p className="text-sm text-slate-500">Client: Acme Corp</p>
           </div>
         </div>
         {reasons.length > 0 && (

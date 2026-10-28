@@ -22,10 +22,24 @@ import {
   executePurge,
 } from "@/app/(app)/org/[slug]/settings/firm/_tabs/compliance-actions";
 import type { RetentionPolicy, RetentionCheckResult } from "@/lib/types";
+import { entityNounLabel } from "@/components/audit/entity-type-labels";
 
 const RECORD_TYPES = ["CUSTOMER", "AUDIT_EVENT", "DOCUMENT", "COMMENT"] as const;
 const TRIGGER_EVENTS = ["CUSTOMER_OFFBOARDED", "RECORD_CREATED"] as const;
 const ACTIONS = ["FLAG", "ANONYMIZE"] as const;
+
+/**
+ * Display label for a record-type / trigger-event enum (the option `value` stays the wire enum):
+ * entity nouns use the legal word (CUSTOMER → Client), other words are title-cased —
+ * "CUSTOMER_OFFBOARDED" → "Client Offboarded", "AUDIT_EVENT" → "Audit Event".
+ */
+function formatEnumLabel(value: string): string {
+  return value
+    .split("_")
+    .filter(Boolean)
+    .map((word) => entityNounLabel(word) ?? word.charAt(0) + word.slice(1).toLowerCase())
+    .join(" ");
+}
 
 interface EditableRow {
   id: string | null; // null = new row
@@ -197,7 +211,7 @@ export function RetentionPolicyTable({ policies, slug }: RetentionPolicyTablePro
                     >
                       {RECORD_TYPES.map((rt) => (
                         <option key={rt} value={rt}>
-                          {rt.replace("_", " ")}
+                          {formatEnumLabel(rt)}
                         </option>
                       ))}
                     </select>
@@ -211,7 +225,7 @@ export function RetentionPolicyTable({ policies, slug }: RetentionPolicyTablePro
                     >
                       {TRIGGER_EVENTS.map((te) => (
                         <option key={te} value={te}>
-                          {te.replace(/_/g, " ")}
+                          {formatEnumLabel(te)}
                         </option>
                       ))}
                     </select>

@@ -29,7 +29,7 @@ export async function renderCollectionsTab({ slug }: SettingsTabProps) {
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Collections</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure overdue-invoice reminder stages and escalation for your organization.
+          Configure overdue fee-note reminder stages and escalation for your organization.
         </p>
       </div>
 

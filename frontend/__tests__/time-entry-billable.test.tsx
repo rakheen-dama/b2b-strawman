@@ -160,7 +160,7 @@ describe("Time Entry Billable UI", () => {
     await waitFor(() => {
       const preview = screen.getByTestId("rate-preview");
       expect(preview).toHaveTextContent("US$200,00/hr");
-      expect(preview).toHaveTextContent("project override");
+      expect(preview).toHaveTextContent("matter override");
     });
 
     // Enter duration to see computed value

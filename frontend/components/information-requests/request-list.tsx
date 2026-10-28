@@ -31,7 +31,7 @@ export function RequestList({ requests, slug, showCustomer = true }: RequestList
             </th>
             {showCustomer && (
               <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
-                Customer
+                Client
               </th>
             )}
             <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">

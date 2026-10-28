@@ -106,7 +106,7 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
               ? `Connected to ${connection?.xeroOrgName}`
               : needsReconnect
                 ? "Your Xero connection needs to be re-established."
-                : "Connect your Xero account to sync invoices and contacts."}
+                : "Connect your Xero account to sync fee notes and contacts."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -174,7 +174,7 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
           <AlertDialogHeader>
             <AlertDialogTitle>Disconnect from Xero?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will stop all invoice syncing and remove the connection to{" "}
+              This will stop all fee note syncing and remove the connection to{" "}
               {connection?.xeroOrgName ?? "Xero"}. You can reconnect at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>

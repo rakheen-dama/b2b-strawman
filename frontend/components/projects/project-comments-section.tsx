@@ -55,8 +55,7 @@ export function ProjectCommentsSection({ projectId, orgSlug }: ProjectCommentsSe
     <div className="space-y-4">
       {comments.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          No customer comments yet. Comments shared between your team and customers will appear
-          here.
+          No client comments yet. Comments shared between your team and clients will appear here.
         </p>
       ) : (
         <div className="space-y-3">
@@ -70,7 +69,7 @@ export function ProjectCommentsSection({ projectId, orgSlug }: ProjectCommentsSe
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{comment.authorName ?? "Unknown"}</span>
-                  {comment.source === "PORTAL" && <Badge variant="outline">Customer</Badge>}
+                  {comment.source === "PORTAL" && <Badge variant="outline">Client</Badge>}
                   <span className="text-muted-foreground text-xs">
                     <RelativeDate iso={comment.createdAt} />
                   </span>
@@ -84,7 +83,7 @@ export function ProjectCommentsSection({ projectId, orgSlug }: ProjectCommentsSe
 
       <div className="space-y-2 border-t pt-4">
         <Textarea
-          placeholder="Reply to the customer thread (visible to all linked customers)..."
+          placeholder="Reply to the client thread (visible to all linked clients)..."
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={3}

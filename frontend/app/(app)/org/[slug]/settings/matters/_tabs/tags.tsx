@@ -26,7 +26,7 @@ export async function renderTagsTab({ slug }: SettingsTabProps) {
           <HelpTip code="tags.overview" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage tags for projects, tasks, and customers.
+          Manage tags for matters, tasks, and clients.
         </p>
       </div>
 

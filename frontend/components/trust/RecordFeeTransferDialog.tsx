@@ -84,7 +84,7 @@ export function RecordFeeTransferDialog({
         <DialogHeader>
           <DialogTitle>Record Fee Transfer</DialogTitle>
           <DialogDescription>
-            Transfer fees from trust to the office account against an unpaid invoice.
+            Transfer fees from trust to the office account against an unpaid fee note.
           </DialogDescription>
         </DialogHeader>
 
@@ -109,9 +109,9 @@ export function RecordFeeTransferDialog({
               name="invoiceId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Invoice ID</FormLabel>
+                  <FormLabel>Fee note ID</FormLabel>
                   <FormControl>
-                    <Input placeholder="Invoice UUID" {...field} />
+                    <Input placeholder="Fee note UUID" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -280,7 +280,7 @@ export function CherryPickStep({
           </h2>
 
           {items.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">No customers to review.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No clients to review.</p>
           ) : (
             <div className="space-y-2">
               {items.map((originalItem) => {
@@ -347,7 +347,7 @@ export function CherryPickStep({
             <span className="font-medium text-slate-950 dark:text-slate-50">
               {activeItems.length}
             </span>{" "}
-            {activeItems.length === 1 ? "customer" : "customers"} included
+            {activeItems.length === 1 ? "client" : "clients"} included
           </p>
           <div className="flex gap-3">
             <Button variant="outline" onClick={onBack}>

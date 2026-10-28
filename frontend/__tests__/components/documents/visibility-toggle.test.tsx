@@ -41,7 +41,7 @@ describe("VisibilityToggle", () => {
 
     const button = screen.getByRole("button", { name: /Internal/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute("title", "Internal only. Click to share with customer.");
+    expect(button).toHaveAttribute("title", "Internal only. Click to share with client.");
   });
 
   // Shared visibility renders Globe icon and "Shared" label
@@ -52,7 +52,7 @@ describe("VisibilityToggle", () => {
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute(
       "title",
-      "Visible to customer portal. Click to make internal only."
+      "Visible to client portal. Click to make internal only."
     );
   });
 

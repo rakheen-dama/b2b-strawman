@@ -216,8 +216,8 @@ export function TimeEntryList({
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       <p>
-                                        Time entry is part of invoice {entry.invoiceNumber}. Void
-                                        the invoice to unlock.
+                                        Time entry is part of fee note {entry.invoiceNumber}. Void
+                                        the fee note to unlock.
                                       </p>
                                     </TooltipContent>
                                   </Tooltip>
@@ -236,8 +236,8 @@ export function TimeEntryList({
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       <p>
-                                        Time entry is part of invoice {entry.invoiceNumber}. Void
-                                        the invoice to unlock.
+                                        Time entry is part of fee note {entry.invoiceNumber}. Void
+                                        the fee note to unlock.
                                       </p>
                                     </TooltipContent>
                                   </Tooltip>

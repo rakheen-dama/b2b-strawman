@@ -22,6 +22,17 @@ import {
 } from "@/app/(app)/org/[slug]/settings/matters/_tabs/templates-actions";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 
+// The backend stores `source` as a free string: ProjectTemplatePackSeeder writes "SEEDER",
+// save-as-template writes "FROM_PROJECT", everything else is "MANUAL".
+const SOURCE_BADGE: Record<
+  ProjectTemplateResponse["source"],
+  { label: string; variant: "lead" | "neutral" }
+> = {
+  SEEDER: { label: "Pack", variant: "neutral" },
+  FROM_PROJECT: { label: "From matter", variant: "lead" },
+  MANUAL: { label: "Manual", variant: "neutral" },
+};
+
 interface TemplateListProps {
   slug: string;
   templates: ProjectTemplateResponse[];
@@ -57,10 +68,10 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <LayoutTemplate className="size-12 text-slate-300 dark:text-slate-700" />
         <h2 className="font-display mt-4 text-lg text-slate-900 dark:text-slate-100">
-          No project templates yet.
+          No matter templates yet.
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Create your first template to standardize how projects are structured.
+          Create your first template to standardize how matters are structured.
         </p>
       </div>
     );
@@ -113,11 +124,7 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
                 )}
               </td>
               <td className="px-4 py-3">
-                {template.source === "FROM_PROJECT" ? (
-                  <Badge variant="lead">From Project</Badge>
-                ) : (
-                  <Badge variant="neutral">Manual</Badge>
-                )}
+                <SourceBadge source={template.source} />
               </td>
               <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                 {template.taskCount}
@@ -191,4 +198,9 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
       </table>
     </div>
   );
+}
+
+function SourceBadge({ source }: { source: ProjectTemplateResponse["source"] }) {
+  const badge = SOURCE_BADGE[source] ?? SOURCE_BADGE.MANUAL;
+  return <Badge variant={badge.variant}>{badge.label}</Badge>;
 }

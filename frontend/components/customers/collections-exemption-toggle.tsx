@@ -58,7 +58,7 @@ export function CollectionsExemptionToggle({
         </div>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {isAdmin
-            ? "Exempt customers never receive automated payment reminders."
+            ? "Exempt clients never receive automated payment reminders."
             : "Only admins and owners can change this setting."}
         </p>
         {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}

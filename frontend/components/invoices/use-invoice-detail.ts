@@ -152,7 +152,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   }
 
   function handleDelete() {
-    if (!confirm("Are you sure you want to delete this draft invoice?")) return;
+    if (!confirm("Are you sure you want to delete this draft fee note?")) return;
     setError(null);
     startTransition(async () => {
       const result = await deleteInvoice(slug, invoice.id, invoice.clientId);
@@ -223,7 +223,7 @@ export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceD
   }
 
   function handleVoid() {
-    if (!confirm("Are you sure you want to void this invoice? This cannot be undone.")) return;
+    if (!confirm("Are you sure you want to void this fee note? This cannot be undone.")) return;
     setError(null);
     startTransition(async () => {
       const result = await voidInvoice(slug, invoice.id, invoice.clientId);

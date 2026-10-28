@@ -95,7 +95,7 @@ export function AddMemberDialog({
         <DialogHeader className="px-4 pt-4">
           <DialogTitle>Add Member</DialogTitle>
           <DialogDescription>
-            Search and select an organization member to add to this project.
+            Search and select an organization member to add to this matter.
           </DialogDescription>
         </DialogHeader>
 
@@ -114,7 +114,7 @@ export function AddMemberDialog({
               <CommandEmpty>
                 {!orgMembers || orgMembers.length === 0
                   ? "No organization members found."
-                  : "All organization members are already on this project."}
+                  : "All organization members are already on this matter."}
               </CommandEmpty>
             ) : (
               <CommandGroup>

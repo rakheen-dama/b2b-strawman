@@ -8,7 +8,7 @@ export interface OrgMember {
   orgRole: string;
 }
 
-// ---- Project Members (from ProjectMemberController.java) ----
+// ---- Matter Members (from ProjectMemberController.java) ----
 
 export type MatterRole = "lead" | "member";
 

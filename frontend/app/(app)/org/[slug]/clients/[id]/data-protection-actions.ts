@@ -25,7 +25,7 @@ export async function triggerDataExport(
 ): Promise<ActionResult<StandaloneExportResult>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can export customer data." };
+    return { success: false, error: "Only admins and owners can export client data." };
   }
 
   try {
@@ -66,7 +66,7 @@ export async function executeAnonymization(
 ): Promise<ActionResult<StandaloneAnonymizationResult>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isOwner) {
-    return { success: false, error: "Only owners can anonymize customer data." };
+    return { success: false, error: "Only owners can anonymize client data." };
   }
 
   try {

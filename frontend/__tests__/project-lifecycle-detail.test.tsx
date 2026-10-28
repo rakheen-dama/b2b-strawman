@@ -201,7 +201,7 @@ describe("ArchivedProjectBanner", () => {
     render(<ArchivedProjectBanner slug="test-org" projectId="proj-1" canRestore />);
 
     expect(screen.getByTestId("archived-project-banner")).toBeInTheDocument();
-    expect(screen.getByText("This project is archived. It is read-only.")).toBeInTheDocument();
+    expect(screen.getByText("This matter is archived. It is read-only.")).toBeInTheDocument();
     expect(screen.getByText("Restore")).toBeInTheDocument();
   });
 
@@ -209,7 +209,7 @@ describe("ArchivedProjectBanner", () => {
     render(<ArchivedProjectBanner slug="test-org" projectId="proj-1" canRestore={false} />);
 
     expect(screen.getByTestId("archived-project-banner")).toBeInTheDocument();
-    expect(screen.getByText("This project is archived. It is read-only.")).toBeInTheDocument();
+    expect(screen.getByText("This matter is archived. It is read-only.")).toBeInTheDocument();
     expect(screen.queryByText("Restore")).not.toBeInTheDocument();
   });
 

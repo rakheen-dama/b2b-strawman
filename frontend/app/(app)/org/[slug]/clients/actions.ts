@@ -70,7 +70,7 @@ export async function createCustomer(
 ): Promise<CreateCustomerResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can manage customers." };
+    return { success: false, error: "Only admins and owners can manage clients." };
   }
 
   const {
@@ -97,10 +97,10 @@ export async function createCustomer(
   } = data;
 
   if (!name?.trim()) {
-    return { success: false, error: "Customer name is required." };
+    return { success: false, error: "Client name is required." };
   }
   if (!email?.trim()) {
-    return { success: false, error: "Customer email is required." };
+    return { success: false, error: "Client email is required." };
   }
 
   const body = {
@@ -150,17 +150,17 @@ export async function updateCustomer(
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can manage customers." };
+    return { success: false, error: "Only admins and owners can manage clients." };
   }
 
   const name = data.name?.trim() ?? "";
   const email = data.email?.trim() ?? "";
 
   if (!name) {
-    return { success: false, error: "Customer name is required." };
+    return { success: false, error: "Client name is required." };
   }
   if (!email) {
-    return { success: false, error: "Customer email is required." };
+    return { success: false, error: "Client email is required." };
   }
 
   const body: UpdateClientRequest = {
@@ -204,7 +204,7 @@ export async function updateCustomer(
 export async function archiveCustomer(slug: string, id: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can manage customers." };
+    return { success: false, error: "Only admins and owners can manage clients." };
   }
 
   try {

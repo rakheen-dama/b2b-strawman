@@ -34,7 +34,7 @@ export function ProjectLifecycleActions({
     startTransition(async () => {
       const result = await archiveProject(slug, projectId);
       if (!result.success) {
-        setError(result.error ?? "Failed to archive project.");
+        setError(result.error ?? "Failed to archive matter.");
       }
     });
   }
@@ -44,7 +44,7 @@ export function ProjectLifecycleActions({
     startTransition(async () => {
       const result = await reopenProject(slug, projectId);
       if (!result.success) {
-        setError(result.error ?? "Failed to reopen project.");
+        setError(result.error ?? "Failed to reopen matter.");
       }
     });
   }

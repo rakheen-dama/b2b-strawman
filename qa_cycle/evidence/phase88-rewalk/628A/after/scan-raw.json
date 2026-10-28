@@ -1,0 +1,1396 @@
+[
+ {
+  "n": 1,
+  "name": "dashboard",
+  "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/dashboard",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 2,
+  "name": "my-work",
+  "url": "http://localhost:3001/org/e2e-test-org/my-work",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/my-work",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 3,
+  "name": "timesheet",
+  "url": "http://localhost:3001/org/e2e-test-org/my-work/timesheet",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/my-work/timesheet",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/diary",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-28&view=day",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-28&view=day",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-26",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-26",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-01&view=month",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-01&view=month",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 4,
+  "name": "diary",
+  "url": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-01&view=list",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/diary?from=2026-10-01&view=list",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 5,
+  "name": "matters-list",
+  "url": "http://localhost:3001/org/e2e-test-org/matters",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 6,
+  "name": "matter-new",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/new",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/new",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 7,
+  "name": "clients-list",
+  "url": "http://localhost:3001/org/e2e-test-org/clients",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 8,
+  "name": "conflict-check",
+  "url": "http://localhost:3001/org/e2e-test-org/conflict-check",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/conflict-check",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 9,
+  "name": "adverse-parties",
+  "url": "http://localhost:3001/org/e2e-test-org/legal/adverse-parties",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/legal/adverse-parties",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 10,
+  "name": "ai-reviews",
+  "url": "http://localhost:3001/org/e2e-test-org/ai/reviews",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/ai/reviews",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 11,
+  "name": "compliance",
+  "url": "http://localhost:3001/org/e2e-test-org/compliance",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/compliance",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 12,
+  "name": "compliance-requests",
+  "url": "http://localhost:3001/org/e2e-test-org/compliance/requests",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/compliance/requests",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 13,
+  "name": "notifications",
+  "url": "http://localhost:3001/org/e2e-test-org/notifications",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/notifications",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 14,
+  "name": "team",
+  "url": "http://localhost:3001/org/e2e-test-org/team",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/team",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 15,
+  "name": "matter-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 16,
+  "name": "client-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 17,
+  "name": "feenotes-list",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/invoices",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 18,
+  "name": "feenote-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/09486b5c-5684-4f36-947f-adffec674dbd",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/invoices/09486b5c-5684-4f36-947f-adffec674dbd",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 19,
+  "name": "unbilled",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/unbilled",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/invoices/unbilled",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 20,
+  "name": "collections",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/collections",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/invoices/collections",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 21,
+  "name": "billing-runs",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/billing-runs",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/invoices/billing-runs",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 22,
+  "name": "billing-run-new",
+  "url": "http://localhost:3001/org/e2e-test-org/invoices/billing-runs/new",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/invoices/billing-runs/new",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 23,
+  "name": "disbursements",
+  "url": "http://localhost:3001/org/e2e-test-org/legal/disbursements",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/legal/disbursements",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 24,
+  "name": "tariffs",
+  "url": "http://localhost:3001/org/e2e-test-org/legal/tariffs",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/legal/tariffs",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 25,
+  "name": "reports",
+  "url": "http://localhost:3001/org/e2e-test-org/reports",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/reports",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Aging Report",
+    "block": "Invoice Aging Report",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Outstanding invoices grouped by age bucket.",
+    "block": "Outstanding invoices grouped by age bucket.",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project",
+    "block": "Project",
+    "kind": "h2"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Profitability Report",
+    "block": "Project Profitability Report",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Revenue vs. cost per project for a date range.",
+    "block": "Revenue vs. cost per project for a date range.",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Time entries grouped by member, project, or date for a given period.",
+    "block": "Time entries grouped by member, project, or date for a given period.",
+    "kind": "div"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 26,
+  "name": "report-profitability",
+  "url": "http://localhost:3001/org/e2e-test-org/reports/profitability",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/reports/profitability",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 27,
+  "name": "report-invoice-aging",
+  "url": "http://localhost:3001/org/e2e-test-org/reports/invoice-aging",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/reports/invoice-aging",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice-aging",
+    "block": "invoice-aging",
+    "kind": "span"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Aging Report",
+    "block": "Invoice Aging Report",
+    "kind": "h1"
+   },
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Outstanding invoices grouped by age bucket.",
+    "block": "Outstanding invoices grouped by age bucket.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer",
+    "block": "Customer",
+    "kind": "label"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 28,
+  "name": "report-project-profitability",
+  "url": "http://localhost:3001/org/e2e-test-org/reports/project-profitability",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/reports/project-profitability",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project-profitability",
+    "block": "project-profitability",
+    "kind": "span"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Profitability Report",
+    "block": "Project Profitability Report",
+    "kind": "h1"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Revenue vs. cost per project for a date range.",
+    "block": "Revenue vs. cost per project for a date range.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project",
+    "block": "Project",
+    "kind": "label"
+   },
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer",
+    "block": "Customer",
+    "kind": "label"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 29,
+  "name": "report-timesheet",
+  "url": "http://localhost:3001/org/e2e-test-org/reports/timesheet",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/reports/timesheet",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Time entries grouped by member, project, or date for a given period.",
+    "block": "Time entries grouped by member, project, or date for a given period.",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project",
+    "block": "Project",
+    "kind": "label"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 30,
+  "name": "matter-details",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=details",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=details",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 31,
+  "name": "matter-fields",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=fields",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=fields",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Info",
+    "block": "Project Info",
+    "kind": "span"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Info",
+    "block": "Project Info",
+    "kind": "div"
+   },
+   {
+    "src": "placeholder",
+    "word": "Project",
+    "ctx": "Project category or type",
+    "kind": "input"
+   },
+   {
+    "src": "aria-label",
+    "word": "Project",
+    "ctx": "Remove Project Info",
+    "kind": "button"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 32,
+  "name": "matter-team",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=team",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=team",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 33,
+  "name": "matter-overview",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=overview",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=overview",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 34,
+  "name": "matter-tasks",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=tasks",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=tasks",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 35,
+  "name": "matter-documents",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=documents",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=documents",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 36,
+  "name": "matter-correspondence",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=correspondence",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=correspondence",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 37,
+  "name": "matter-generated",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=generated",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=generated",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 38,
+  "name": "matter-time",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=time",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=time",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 39,
+  "name": "matter-disbursements",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=disbursements",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=disbursements",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 40,
+  "name": "matter-budget",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=budget",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=budget",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 41,
+  "name": "matter-rates",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=rates",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=rates",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 42,
+  "name": "matter-financials",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=financials",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=financials",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 43,
+  "name": "matter-statements",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=statements",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=statements",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 44,
+  "name": "matter-trust",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=trust",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=trust",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 45,
+  "name": "matter-clients",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=clients",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=clients",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 46,
+  "name": "matter-requests",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=requests",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=requests",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 47,
+  "name": "matter-customer-comments",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=customer-comments",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=customer-comments",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 48,
+  "name": "matter-adverse-parties",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=adverse-parties",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=adverse-parties",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 49,
+  "name": "matter-court-dates",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=court-dates",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=court-dates",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 50,
+  "name": "matter-activity",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=activity",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=activity",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 51,
+  "name": "matter-audit",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=audit",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/efa16531-5837-4265-9ed9-e6cbfbf1b139?tab=audit",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 52,
+  "name": "client-details",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=details",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=details",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 53,
+  "name": "client-fields",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=fields",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=fields",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 54,
+  "name": "client-tags",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=tags",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=tags",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 55,
+  "name": "client-overview",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=overview",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=overview",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 56,
+  "name": "client-matters",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=matters",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=matters",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 57,
+  "name": "client-documents",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=documents",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=documents",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 58,
+  "name": "client-generated",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=generated",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=generated",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 59,
+  "name": "client-invoices",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=invoices",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=invoices",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 60,
+  "name": "client-rates",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=rates",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=rates",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 61,
+  "name": "client-financials",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=financials",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=financials",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 62,
+  "name": "client-trust",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=trust",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=trust",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 63,
+  "name": "client-onboarding",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=onboarding",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=onboarding",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 64,
+  "name": "client-requests",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=requests",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=requests",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 65,
+  "name": "client-audit",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=audit",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/b8fa0d8d-e5eb-4591-a751-fde566340d65?tab=audit",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 66,
+  "name": "settings-firm-general",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=general",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=general",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 67,
+  "name": "settings-firm-roles",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=roles",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=roles",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 68,
+  "name": "settings-firm-audit-trail",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=audit-trail",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=audit-trail",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.sent",
+    "block": "invoice.sent",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.approved",
+    "block": "invoice.approved",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "invoice.created",
+    "block": "invoice.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.created",
+    "block": "project.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.lifecycle.transitioned",
+    "block": "customer.lifecycle.transitioned",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.created",
+    "block": "customer.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.updated",
+    "block": "project.updated",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.created_from_template",
+    "block": "project.created_from_template",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.lifecycle.transitioned",
+    "block": "customer.lifecycle.transitioned",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.created",
+    "block": "customer.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.created",
+    "block": "project.created",
+    "kind": "div"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.created_from_template",
+    "block": "project.created_from_template",
+    "kind": "div"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 69,
+  "name": "settings-firm-data-protection",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=data-protection",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=data-protection",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 70,
+  "name": "settings-firm-data-requests",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=data-requests",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=data-requests",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 71,
+  "name": "settings-firm-compliance",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=compliance",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=compliance",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 72,
+  "name": "settings-firm-features",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=features",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=features",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Customer",
+    "ctx": "Customer document-request workflows with portal pickup and acceptance",
+    "block": "Customer document-request workflows with portal pickup and acceptance",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "invoice",
+    "ctx": "Batch invoice generation across multiple customers in a single run. Best for firms billing 10+ clients per cycle.",
+    "block": "Batch invoice generation across multiple customers in a single run. Best for firms billing 10+ clients per cycle.",
+    "kind": "p"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 73,
+  "name": "settings-firm-subscription",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=subscription",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm?tab=subscription",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 74,
+  "name": "settings-matters-templates",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=templates",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=templates",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 75,
+  "name": "settings-matters-naming",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=naming",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=naming",
+  "hits": [
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "{customer.name}",
+    "block": "{customer.name} \u2014 The linked client's name",
+    "kind": "code"
+   },
+   {
+    "src": "placeholder",
+    "word": "customer",
+    "ctx": "{reference_number} - {customer.name} - {name}",
+    "kind": "input"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 76,
+  "name": "settings-matters-custom-fields",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=custom-fields",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=custom-fields",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project category or type",
+    "block": "Project category or type",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "projects",
+    "ctx": "South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)",
+    "block": "South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "South African legal-specific fields for matter (project) entities",
+    "block": "South African legal-specific fields for matter (project) entities",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Info",
+    "block": "Project Info",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Common project metadata fields",
+    "block": "Common project metadata fields",
+    "kind": "p"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 77,
+  "name": "settings-matters-tags",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=tags",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=tags",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 78,
+  "name": "settings-matters-checklists",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=checklists",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=checklists",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 79,
+  "name": "settings-matters-request-templates",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=request-templates",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=request-templates",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 80,
+  "name": "settings-matters-request-settings",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=request-settings",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=request-settings",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 81,
+  "name": "settings-documents-templates",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=templates",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=templates",
+  "hits": [
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Invoice Cover Letter",
+    "block": "Invoice Cover Letter",
+    "kind": "a"
+   },
+   {
+    "src": "text",
+    "word": "invoices",
+    "ctx": "Cover letter for invoices",
+    "block": "Cover letter for invoices",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project Summary Report",
+    "block": "Project Summary Report",
+    "kind": "a"
+   },
+   {
+    "src": "text",
+    "word": "Project",
+    "ctx": "Project summary report template",
+    "block": "Project summary report template",
+    "kind": "p"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 82,
+  "name": "settings-documents-clauses",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=clauses",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=clauses",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 83,
+  "name": "settings-documents-acceptance",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=acceptance",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=acceptance",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 84,
+  "name": "settings-documents-email",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=email",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=email",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 85,
+  "name": "settings-fees-tariffs",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=tariffs",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=tariffs",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 86,
+  "name": "settings-fees-tax",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=tax",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=tax",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 87,
+  "name": "settings-fees-time-recording",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=time-recording",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=time-recording",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 88,
+  "name": "settings-fees-fee-runs",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=fee-runs",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=fee-runs",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 89,
+  "name": "settings-fees-collections",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=collections",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=collections",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 90,
+  "name": "settings-fees-trust-accounting",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 91,
+  "name": "settings-connections-xero",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=xero",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=xero",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 92,
+  "name": "settings-connections-mcp",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=mcp",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=mcp",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 93,
+  "name": "settings-connections-ai",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=ai",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=ai",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 94,
+  "name": "settings-connections-notifications",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=notifications",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=notifications",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 95,
+  "name": "settings-connections-packs",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=packs",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=packs",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 96,
+  "name": "settings-connections-automations",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=automations",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=automations",
+  "hits": [
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "Notifies admins when a project budget threshold is reached",
+    "block": "Notifies admins when a project budget threshold is reached",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "Invoice",
+    "ctx": "Overdue Invoice Reminder",
+    "block": "Overdue Invoice Reminder",
+    "kind": "p"
+   },
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days",
+    "block": "Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days",
+    "kind": "p"
+   },
+   {
+    "src": "aria-label",
+    "word": "Invoice",
+    "ctx": "Toggle Overdue Invoice Reminder",
+    "kind": "button"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 97,
+  "name": "trust-dashboard",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 98,
+  "name": "trust-client-ledgers",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 99,
+  "name": "trust-client-ledger-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/b8fa0d8d-e5eb-4591-a751-fde566340d65",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/b8fa0d8d-e5eb-4591-a751-fde566340d65",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 100,
+  "name": "trust-interest",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 101,
+  "name": "trust-investments",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 102,
+  "name": "trust-reconciliation",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 103,
+  "name": "trust-reconciliation-new",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 104,
+  "name": "trust-reports",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reports",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/reports",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 105,
+  "name": "trust-transactions",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 106,
+  "name": "settings-root",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/firm",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/firm",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 108,
+  "name": "doc-template-edit",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents/templates/a00ea3e4-c7a8-4c51-9f4f-7b921351561d/edit",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/documents/templates/a00ea3e4-c7a8-4c51-9f4f-7b921351561d/edit",
+  "hits": [
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "customer.name",
+    "block": "{customer.name}",
+    "kind": "span"
+   },
+   {
+    "src": "text",
+    "word": "project",
+    "ctx": "project.name",
+    "block": "{project.name}",
+    "kind": "span"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 109,
+  "name": "doc-template-new",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/documents/templates/new",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/documents/templates/new",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 110,
+  "name": "matter-template-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/templates/52fe60b4-fedb-47cb-aed3-3059fc7636fe",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters/templates/52fe60b4-fedb-47cb-aed3-3059fc7636fe",
+  "hits": [
+   {
+    "src": "text",
+    "word": "customer",
+    "ctx": "{customer}",
+    "block": "Tokens: {customer}, {month}, {year}, {month_short}, {period_start}, {period_end}",
+    "kind": "code"
+   },
+   {
+    "src": "placeholder",
+    "word": "customer",
+    "ctx": "e.g. {customer} \u2014 {month} {year}",
+    "kind": "input"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 111,
+  "name": "checklist-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/checklists/e9397777-0c0a-4160-85bd-dd630a5ee2c3",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters/checklists/e9397777-0c0a-4160-85bd-dd630a5ee2c3",
+  "hits": [
+   {
+    "src": "text",
+    "word": "invoicing",
+    "ctx": "Confirm the agreed billing rate, payment terms, and invoicing details.",
+    "block": "Confirm the agreed billing rate, payment terms, and invoicing details.",
+    "kind": "td"
+   }
+  ],
+  "err": null
+ },
+ {
+  "n": 112,
+  "name": "checklist-new",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/checklists/new",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters/checklists/new",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 113,
+  "name": "request-template-detail",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/request-templates/384eaa2f-edc4-42ff-9050-b023d36282bd",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters/request-templates/384eaa2f-edc4-42ff-9050-b023d36282bd",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 114,
+  "name": "request-template-new",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/matters/request-templates/new",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/matters/request-templates/new",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 115,
+  "name": "xero-sync-log",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections/xero/sync-log",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections/xero/sync-log",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 116,
+  "name": "ai-history",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections/ai/history",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections/ai/history",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 117,
+  "name": "automation-executions",
+  "url": "http://localhost:3001/org/e2e-test-org/settings/connections/automations/executions",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/settings/connections/automations/executions",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 118,
+  "name": "client-other-1",
+  "url": "http://localhost:3001/org/e2e-test-org/clients/454183d8-e8a8-4c74-a11b-5ea3eae17109?tab=overview",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/clients/454183d8-e8a8-4c74-a11b-5ea3eae17109?tab=overview",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 119,
+  "name": "matter-other-1",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=overview",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=overview",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 120,
+  "name": "matter-other-1-time",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=time",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=time",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 121,
+  "name": "matter-other-1-financials",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=financials",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=financials",
+  "hits": [],
+  "err": null
+ },
+ {
+  "n": 122,
+  "name": "matter-other-1-tasks",
+  "url": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=tasks",
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/matters/1e1e78aa-4e6c-4a3f-ad34-fd038ec5d78d?tab=tasks",
+  "hits": [],
+  "err": null
+ }
+]

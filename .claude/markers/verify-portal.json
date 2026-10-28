@@ -1,7 +1,7 @@
 {
-  "commit": "04fbfdd2b",
+  "commit": "01eba16e5",
   "command": "cd portal && pnpm lint && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-10-28T18:15:21Z",
-  "summary": "627K epic gate PORTAL-GATE: lint 0 errors / 4 warnings, format clean, vitest 44 files / 238 passed, build OK; run on 3087d47aa, portal/ identical at 04fbfdd2b"
+  "ts": "2026-10-28T19:55:40Z",
+  "summary": "628A PORTAL-GATE on 01eba16e5 (shared @b2mash/ui Badge change): lint 0 errors, format clean, vitest 44 files / 238 passed, build OK"
 }

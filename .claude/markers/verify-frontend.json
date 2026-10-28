@@ -1,7 +1,7 @@
 {
-  "commit": "04fbfdd2b",
+  "commit": "01eba16e5",
   "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-10-28T18:15:21Z",
-  "summary": "627K epic gate FE-GATE on 04fbfdd2b: lint 0 errors / 91 warnings, format clean, vitest 431 files / 3421 passed / 2 skipped (re-run after 1 load flake in invoice-generation-dialog.test.tsx, default 1s waitFor), build OK; E2E-LEGAL fresh stack lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5"
+  "ts": "2026-10-28T19:55:40Z",
+  "summary": "628A FE-GATE on 01eba16e5: lint 0 errors / 91 warnings, format clean, vitest 431 files / 3424 passed / 2 skipped, build OK (final head a1a368101 differs only by an e2e spec line reverted to main); fresh-stack E2E-LEGAL lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5"
 }

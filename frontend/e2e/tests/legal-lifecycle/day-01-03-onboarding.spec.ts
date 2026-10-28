@@ -392,9 +392,12 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
     // the 30 s bell poll: a stall means the lost-ping regression is back (next 16.3.8, #1651).
     // Per-value assertions: the dt/dd text nodes have no whitespace between them, so the
     // strip's textContent is "Case no.2026/12345·Court…", not the visual "Case no. 2026/12345 · …".
-    await expect(strip.locator("dd")).toHaveText([caseNumber, court, opposingParty], {
+    // toHaveText does not check visibility, so each value is also asserted visible
+    const headerValues = strip.locator("dd");
+    await expect(headerValues).toHaveText([caseNumber, court, opposingParty], {
       timeout: 15_000,
     });
+    for (let i = 0; i < 3; i++) await expect(headerValues.nth(i)).toBeVisible();
     await expect(strip.getByTestId("matter-header-field-case_number").locator("dt")).toHaveText(
       "Case no."
     );
@@ -404,7 +407,8 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: `Ndlovu v RAF ${RUN_ID}` })
     ).toBeVisible({ timeout: 15_000 });
-    await expect(strip.locator("dd")).toHaveText([caseNumber, court, opposingParty]);
+    await expect(headerValues).toHaveText([caseNumber, court, opposingParty]);
+    for (let i = 0; i < 3; i++) await expect(headerValues.nth(i)).toBeVisible();
   });
 });
 

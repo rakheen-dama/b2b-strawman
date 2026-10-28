@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { formatFileSize, formatDate } from "@b2mash/shared/format";
-import { portalGet } from "@/lib/api-client";
-import type { PortalDocument, PortalPresignDownload } from "@/lib/types";
+import { fetchDocumentDownloadUrl } from "@/lib/api/documents";
+import type { PortalDocument } from "@/lib/types";
 
 interface DocumentListProps {
   documents: PortalDocument[];
@@ -30,10 +30,8 @@ function getFileIcon(contentType: string) {
 }
 
 async function handleDownload(documentId: string) {
-  const data = await portalGet<PortalPresignDownload>(
-    `/portal/documents/${documentId}/presign-download`,
-  );
-  window.open(data.presignedUrl, "_blank");
+  const presignedUrl = await fetchDocumentDownloadUrl(documentId);
+  window.open(presignedUrl, "_blank");
 }
 
 export function DocumentList({ documents }: DocumentListProps) {

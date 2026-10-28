@@ -1,14 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare, Loader2, Paperclip } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { portalPost } from "@/lib/api-client";
-import { formatRelativeDate } from "@b2mash/shared/format";
-import type { PortalComment } from "@/lib/types";
+import { fetchDocumentDownloadUrl } from "@/lib/api/documents";
+import { formatFileSize, formatRelativeDate } from "@b2mash/shared/format";
+import type { PortalComment, PortalCommentAttachment } from "@/lib/types";
 
 const MAX_CHARS = 2000;
 const WARN_THRESHOLD = 1800;
+const DOWNLOAD_ERROR = "Download failed. Please try again.";
+
+interface AttachmentChipProps {
+  attachment: PortalCommentAttachment;
+}
+
+function AttachmentChip({ attachment }: AttachmentChipProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleDownload() {
+    if (isLoading) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const presignedUrl = await fetchDocumentDownloadUrl(
+        attachment.documentId,
+      );
+      window.open(presignedUrl, "_blank");
+    } catch {
+      // A 401 is handled by portalFetch (clear auth, go to /login);
+      // anything else stays on the page with an inline error.
+      setError(DOWNLOAD_ERROR);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <span className="inline-flex max-w-full flex-wrap items-center gap-1.5">
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={isLoading}
+        aria-busy={isLoading}
+        aria-label={`Download ${attachment.fileName}`}
+        className="inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-100 disabled:opacity-60 md:min-h-0"
+      >
+        {isLoading ? (
+          <Loader2
+            className="size-3 shrink-0 animate-spin"
+            aria-hidden="true"
+          />
+        ) : (
+          <Paperclip
+            className="size-3 shrink-0 text-slate-400"
+            aria-hidden="true"
+          />
+        )}
+        <span className="truncate font-medium">{attachment.fileName}</span>
+        <span className="shrink-0 text-slate-500">
+          {formatFileSize(attachment.size)}
+        </span>
+      </button>
+      {error && (
+        <span role="alert" className="text-xs text-red-600">
+          {error}
+        </span>
+      )}
+    </span>
+  );
+}
 
 interface CommentSectionProps {
   projectId: string;
@@ -94,6 +157,18 @@ export function CommentSection({
               <p className="whitespace-pre-wrap text-sm text-slate-700">
                 {comment.content}
               </p>
+              {(comment.attachments ?? []).length > 0 && (
+                <ul
+                  aria-label="Attachments"
+                  className="mt-3 flex flex-wrap gap-2"
+                >
+                  {(comment.attachments ?? []).map((attachment) => (
+                    <li key={attachment.documentId} className="max-w-full">
+                      <AttachmentChip attachment={attachment} />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>

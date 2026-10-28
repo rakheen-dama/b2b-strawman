@@ -1,0 +1,86 @@
+- generic [active] [ref=f6e1]:
+  - button "Open Next.js Dev Tools" [ref=f6e7] [cursor=pointer]
+  - alert [ref=f6e11]
+  - generic [ref=f6e12]:
+    - banner [ref=f6e13]:
+      - link "Skip to content" [ref=f6e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - generic [ref=f6e61]: E2E Test Organization
+      - button "User menu" [ref=f6e15]:
+        - generic [ref=f6e16]: Acme Corp
+    - generic [ref=f6e17]:
+      - complementary "Portal sidebar" [ref=f6e18]:
+        - generic [ref=f6e19]: Portal
+        - navigation "Portal navigation" [ref=f6e20]:
+          - link "Home" [ref=f6e21] [cursor=pointer]:
+            - /url: /home
+          - link "Matters" [ref=f6e26] [cursor=pointer]:
+            - /url: /matters
+          - link "Trust statement" [ref=f6e63] [cursor=pointer]:
+            - /url: /trust
+          - link "Diary dates" [ref=f6e69] [cursor=pointer]:
+            - /url: /deadlines
+          - link "Fee notes" [ref=f6e31] [cursor=pointer]:
+            - /url: /invoices
+          - link "Documents & requests" [ref=f6e75] [cursor=pointer]:
+            - /url: /requests
+          - link "Activity" [ref=f6e36] [cursor=pointer]:
+            - /url: /activity
+        - generic [ref=f6e40]:
+          - link "Profile" [ref=f6e41] [cursor=pointer]:
+            - /url: /profile
+          - button "Logout" [ref=f6e45]
+      - main [ref=f6e49]:
+        - generic [ref=f6e79]:
+          - link "Back to matters" [ref=f6e80] [cursor=pointer]:
+            - /url: /matters
+          - generic [ref=f6e83]:
+            - generic [ref=f6e84]:
+              - heading "Website Redesign" [level=1] [ref=f6e85]
+              - generic [ref=f6e86]: Active
+            - paragraph [ref=f6e87]: E2E seed project for testing
+          - generic [ref=f6e88]:
+            - heading "Tasks" [level=2] [ref=f6e89]
+            - table [ref=f6e91]:
+              - rowgroup [ref=f6e92]:
+                - row [ref=f6e93]:
+                  - columnheader "Task" [ref=f6e94]
+                  - columnheader "Status" [ref=f6e95]
+                  - columnheader "Assignee" [ref=f6e96]
+              - rowgroup [ref=f6e97]:
+                - row [ref=f6e98]:
+                  - cell "627J portal chip repro task" [ref=f6e99]
+                  - cell "OPEN" [ref=f6e100]
+                  - cell "Unassigned" [ref=f6e102]
+          - generic [ref=f6e103]:
+            - heading "Documents" [level=2] [ref=f6e104]
+            - table [ref=f6e106]:
+              - rowgroup [ref=f6e107]:
+                - row [ref=f6e108]:
+                  - columnheader "File" [ref=f6e109]
+                  - columnheader "Size" [ref=f6e110]
+                  - columnheader "Uploaded" [ref=f6e111]
+                  - columnheader "Action" [ref=f6e112]
+              - rowgroup [ref=f6e113]:
+                - row [ref=f6e114]:
+                  - cell "627J-shared-chip.pdf" [ref=f6e115]
+                  - cell "41 B" [ref=f6e121]
+                  - cell "28 Oct 2026" [ref=f6e122]
+                  - cell [ref=f6e123]:
+                    - button "Download 627J-shared-chip.pdf" [ref=f6e124]
+          - generic [ref=f6e125]:
+            - heading "Comments" [level=2] [ref=f6e126]
+            - generic [ref=f6e127]:
+              - generic [ref=f6e129]:
+                - generic [ref=f6e130]:
+                  - generic [ref=f6e131]: Alice Owner
+                  - generic [ref=f6e132]: 1 minute ago
+                - paragraph [ref=f6e133]: "627J before: SHARED comment with chip 627J-shared-chip.pdf"
+              - generic [ref=f6e134]:
+                - text: Add a comment
+                - textbox "Add a comment" [ref=f6e135]:
+                  - /placeholder: Write a comment...
+                - generic [ref=f6e136]:
+                  - button "Post Comment" [disabled]
+    - contentinfo [ref=f6e58]:
+      - paragraph [ref=f6e60]: Powered by Kazi

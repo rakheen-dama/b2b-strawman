@@ -61,11 +61,21 @@ export interface PortalPresignDownload {
 
 // === Comments ===
 
+/** A document chip on a portal comment; download via GET /portal/documents/{documentId}/presign-download. */
+export interface PortalCommentAttachment {
+  documentId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+}
+
 export interface PortalComment {
   id: string;
   authorName: string;
   content: string;
   createdAt: string;
+  /** Client-visible documents only (filtered by the backend); absent on older backends. */
+  attachments?: PortalCommentAttachment[];
 }
 
 // === Tasks ===

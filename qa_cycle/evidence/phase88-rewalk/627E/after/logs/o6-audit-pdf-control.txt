@@ -1,0 +1,10 @@
+# O6 Audit trail Download PDF (control)
+## frontend
+ POST /org/mathebula-partners/settings/firm?tab=audit-trail 200 in 1142ms (next.js: 12ms, proxy.ts: 5ms, application-code: 1125ms)
+  └─ ƒ exportAuditPdfAction({"page":0,"size":50}) in 1106ms app/(app)/org/[slug]/settings/firm/_tabs/audit-trail-actions.ts
+## backend
+2026-10-28T10:27:54.295846Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/audit-events/export.pdf", parameters={}
+[non-json] com.openhtmltopdf.load INFO:: TIME: parse stylesheets 3ms
+[non-json] com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+[non-json] com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+2026-10-28T10:27:55.371044Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 200 OK

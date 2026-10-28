@@ -1,0 +1,101 @@
+- generic [active] [ref=f4e1]:
+  - link "Skip to content" [ref=f4e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f4e3]:
+    - complementary [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - img "Mathebula & Partners logo" [ref=f4e6]
+        - generic [ref=f4e7]: Kazi
+      - generic [ref=f4e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=f4e12]:
+        - text: Search...
+        - generic [ref=f4e16]: ⌘K
+      - navigation "Main navigation" [ref=f4e17]:
+        - generic [ref=f4e18]:
+          - button "Today" [expanded] [ref=f4e19]
+          - generic [ref=f4e23]:
+            - link "Home" [ref=f4e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+            - link "My work" [ref=f4e28] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+            - link "Diary" [ref=f4e32] [cursor=pointer]:
+              - /url: /org/mathebula-partners/diary
+        - generic [ref=f4e36]:
+          - button "Matters" [expanded] [ref=f4e37]
+          - generic [ref=f4e41]:
+            - link "Matters" [ref=f4e42] [cursor=pointer]:
+              - /url: /org/mathebula-partners/matters
+            - link "New matter" [ref=f4e47] [cursor=pointer]:
+              - /url: /org/mathebula-partners/matters/new
+            - link "Conflict check" [ref=f4e49] [cursor=pointer]:
+              - /url: /org/mathebula-partners/conflict-check
+            - link "Adverse parties" [ref=f4e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/legal/adverse-parties
+            - link "AI reviews" [ref=f4e60] [cursor=pointer]:
+              - /url: /org/mathebula-partners/ai/reviews
+        - generic [ref=f4e65]:
+          - button "Clients" [expanded] [ref=f4e66]
+          - generic [ref=f4e70]:
+            - link "Clients" [ref=f4e71] [cursor=pointer]:
+              - /url: /org/mathebula-partners/clients
+            - link "FICA & compliance" [ref=f4e76] [cursor=pointer]:
+              - /url: /org/mathebula-partners/compliance
+            - link "Data requests" [ref=f4e80] [cursor=pointer]:
+              - /url: /org/mathebula-partners/compliance/requests
+        - button "Fees" [ref=f4e86]
+        - button "Trust" [ref=f4e92]
+        - button "Firm" [ref=f4e98]
+      - link "Notifications" [ref=f4e104] [cursor=pointer]:
+        - /url: /org/mathebula-partners/notifications
+      - generic [ref=f4e109]:
+        - generic [ref=f4e110]: TM
+        - generic [ref=f4e111]:
+          - paragraph [ref=f4e112]: Thandi Mathebula
+          - paragraph [ref=f4e113]: thandi@mathebula-test.local
+    - generic [ref=f4e114]:
+      - banner [ref=f4e115]:
+        - navigation "Breadcrumb" [ref=f4e116]:
+          - link "Mathebula & Partners" [ref=f4e117] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - link "Reports" [ref=f4e121] [cursor=pointer]:
+            - /url: /org/mathebula-partners/reports
+          - generic [ref=f4e122]: Timesheet
+        - generic [ref=f4e126]:
+          - button "User menu" [ref=f4e128]: "?"
+          - button "Notifications" [ref=f4e130]
+      - main [ref=f4e132]:
+        - generic [ref=f4e135]:
+          - link "Back to Reports" [ref=f4e137] [cursor=pointer]:
+            - /url: /org/mathebula-partners/reports
+          - generic [ref=f4e140]:
+            - heading "Timesheet Report" [level=1] [ref=f4e141]
+            - paragraph [ref=f4e142]: Time entries grouped by member, project, or date for a given period.
+          - generic [ref=f4e143]:
+            - generic [ref=f4e144]:
+              - generic [ref=f4e145]:
+                - generic [ref=f4e146]:
+                  - generic [ref=f4e147]:
+                    - text: From Date
+                    - generic [ref=f4e148]: "*"
+                  - textbox "From Date *" [ref=f4e149]
+                - generic [ref=f4e150]:
+                  - generic [ref=f4e151]:
+                    - text: To Date
+                    - generic [ref=f4e152]: "*"
+                  - textbox "To Date *" [ref=f4e153]
+                - generic [ref=f4e154]:
+                  - generic [ref=f4e155]: Group By
+                  - combobox "Group By" [ref=f4e156]
+                  - combobox [aria-hidden] [ref=f4e157]
+                - generic [ref=f4e158]:
+                  - generic [ref=f4e159]: Project
+                  - combobox "Project" [ref=f4e161]: Select a project...
+                - generic [ref=f4e162]:
+                  - generic [ref=f4e163]: Member
+                  - combobox "Member" [ref=f4e165]: Select a member...
+              - button "Run Report" [ref=f4e166]
+            - generic [ref=f4e167]:
+              - button "Export CSV" [disabled]
+              - button "Export PDF" [disabled]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f4e173] [cursor=pointer]

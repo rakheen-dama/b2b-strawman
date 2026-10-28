@@ -1,0 +1,26 @@
+# O3 Client-ledger statement PDF
+## frontend
+⨯ Error [ApiError]: No reportdefinition found with id client-ledger-statement
+    at fetchExport (lib/api/reports.ts:152:11)
+    at async exportReportPdf (lib/api/reports.ts:174:20)
+  150 |       (typeof detail?.detail === "string" && detail.detail) ||
+  151 |       `Export failed: ${response.statusText}`;
+> 152 |     throw new ApiError(response.status, message, detail);
+      |           ^
+  153 |   }
+  154 |   return response;
+  155 | } {
+  status: 404,
+  detail: {
+    detail: 'No reportdefinition found with id client-ledger-statement',
+    instance: '/api/report-definitions/client-ledger-statement/export/pdf',
+    status: 404,
+    title: 'ReportDefinition not found'
+  },
+  digest: '3664599228'
+}
+ POST /org/mathebula-partners/trust-accounting/client-ledgers/df7536c3-aa8d-4a49-b094-3db2bbbd2279 500 in 123ms (next.js: 64ms, proxy.ts: 10ms, application-code: 50ms)
+  └─ ƒ generateStatementPdf("1a2cfeee-0562-47e6-88d3-8a79dd7ba746", "df7536c3-aa8d-4a49-b094-3db2bbbd2279", "2026-10-01", "2026-10-31") in 41ms app/(app)/org/[slug]/trust-accounting/client-ledgers/actions.ts
+## backend
+2026-10-28T10:26:42.074245Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/report-definitions/client-ledger-statement/export/pdf?trust_account_id=1a2cfeee-0562-47e6-88d3-8a79dd7ba746&dateTo=2026-10-31&dateFrom=2026-10-01&customer_id=df7536c3-aa8d-4a49-b094-3db2bbbd2279", parameters={masked}
+2026-10-28T10:26:42.095625Z DEBUG org.springframework.web.servlet.DispatcherServlet | Completed 404 NOT_FOUND

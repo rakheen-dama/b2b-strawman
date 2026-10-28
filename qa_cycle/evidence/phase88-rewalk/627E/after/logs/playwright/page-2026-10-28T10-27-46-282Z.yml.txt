@@ -1,0 +1,721 @@
+- generic [active] [ref=f7e1]:
+  - link "Skip to content" [ref=f7e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f7e3]:
+    - complementary [ref=f7e4]:
+      - generic [ref=f7e5]:
+        - img "Mathebula & Partners logo" [ref=f7e6]
+        - generic [ref=f7e7]: Kazi
+      - generic [ref=f7e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=f7e12]:
+        - text: Search...
+        - generic [ref=f7e16]: ⌘K
+      - navigation "Main navigation" [ref=f7e17]:
+        - generic [ref=f7e18]:
+          - button "Today" [expanded] [ref=f7e19]
+          - generic [ref=f7e23]:
+            - link "Home" [ref=f7e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+            - link "My work" [ref=f7e28] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+            - link "Diary" [ref=f7e32] [cursor=pointer]:
+              - /url: /org/mathebula-partners/diary
+        - generic [ref=f7e36]:
+          - button "Matters" [expanded] [ref=f7e37]
+          - generic [ref=f7e41]:
+            - link "Matters" [ref=f7e42] [cursor=pointer]:
+              - /url: /org/mathebula-partners/matters
+            - link "New matter" [ref=f7e47] [cursor=pointer]:
+              - /url: /org/mathebula-partners/matters/new
+            - link "Conflict check" [ref=f7e49] [cursor=pointer]:
+              - /url: /org/mathebula-partners/conflict-check
+            - link "Adverse parties" [ref=f7e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/legal/adverse-parties
+            - link "AI reviews" [ref=f7e60] [cursor=pointer]:
+              - /url: /org/mathebula-partners/ai/reviews
+        - generic [ref=f7e65]:
+          - button "Clients" [expanded] [ref=f7e66]
+          - generic [ref=f7e70]:
+            - link "Clients" [ref=f7e71] [cursor=pointer]:
+              - /url: /org/mathebula-partners/clients
+            - link "FICA & compliance" [ref=f7e76] [cursor=pointer]:
+              - /url: /org/mathebula-partners/compliance
+            - link "Data requests" [ref=f7e80] [cursor=pointer]:
+              - /url: /org/mathebula-partners/compliance/requests
+        - button "Fees" [ref=f7e86]
+        - button "Trust" [ref=f7e92]
+        - button "Firm" [ref=f7e98]
+      - link "Notifications" [ref=f7e104] [cursor=pointer]:
+        - /url: /org/mathebula-partners/notifications
+      - generic [ref=f7e109]:
+        - generic [ref=f7e110]: TM
+        - generic [ref=f7e111]:
+          - paragraph [ref=f7e112]: Thandi Mathebula
+          - paragraph [ref=f7e113]: thandi@mathebula-test.local
+    - generic [ref=f7e114]:
+      - banner [ref=f7e115]:
+        - navigation "Breadcrumb" [ref=f7e116]:
+          - link "Mathebula & Partners" [ref=f7e117] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - link "Settings" [ref=f7e121] [cursor=pointer]:
+            - /url: /org/mathebula-partners/settings
+          - generic [ref=f7e122]: Firm
+        - generic [ref=f7e126]:
+          - button "User menu" [ref=f7e128]: "?"
+          - button "Notifications" [ref=f7e130]
+      - main [ref=f7e132]:
+        - generic [ref=f7e135]:
+          - complementary [ref=f7e136]:
+            - navigation "Settings navigation" [ref=f7e137]:
+              - list [ref=f7e138]:
+                - listitem [ref=f7e139]:
+                  - link "Firm" [ref=f7e140] [cursor=pointer]:
+                    - /url: /org/mathebula-partners/settings/firm
+                  - list [ref=f7e145]:
+                    - listitem [ref=f7e146]:
+                      - link "General" [ref=f7e147] [cursor=pointer]:
+                        - /url: /org/mathebula-partners/settings/firm?tab=general
+                    - listitem [ref=f7e148]:
+                      - link "Roles" [ref=f7e149] [cursor=pointer]:
+                        - /url: /org/mathebula-partners/settings/firm?tab=roles
+                    - listitem [ref=f7e150]:
+                      - link "Audit trail" [ref=f7e151] [cursor=pointer]:
+                        - /url: /org/mathebula-partners/settings/firm?tab=audit-trail
+                    - listitem [ref=f7e152]:
+                      - link "Data protection" [ref=f7e153] [cursor=pointer]:
+                        - /url: /org/mathebula-partners/settings/firm?tab=data-protection
+                    - listitem [ref=f7e154]:
+                      - link "Data requests" [ref=f7e155] [cursor=pointer]:
+                        - /url: /org/mathebula-partners/settings/firm?tab=data-requests
+                    - listitem [ref=f7e156]:
+                      - link "Compliance" [ref=f7e157] [cursor=pointer]:
+                        - /url: /org/mathebula-partners/settings/firm?tab=compliance
+                    - listitem [ref=f7e158]:
+                      - link "Features" [ref=f7e159] [cursor=pointer]:
+                        - /url: /org/mathebula-partners/settings/firm?tab=features
+                    - listitem [ref=f7e160]:
+                      - link "Subscription" [ref=f7e161] [cursor=pointer]:
+                        - /url: /org/mathebula-partners/settings/firm?tab=subscription
+                - listitem [ref=f7e162]:
+                  - link "Matters" [ref=f7e163] [cursor=pointer]:
+                    - /url: /org/mathebula-partners/settings/matters
+                - listitem [ref=f7e168]:
+                  - link "Documents" [ref=f7e169] [cursor=pointer]:
+                    - /url: /org/mathebula-partners/settings/documents
+                - listitem [ref=f7e173]:
+                  - link "Fees & Trust" [ref=f7e174] [cursor=pointer]:
+                    - /url: /org/mathebula-partners/settings/fees
+                - listitem [ref=f7e178]:
+                  - link "Connections" [ref=f7e179] [cursor=pointer]:
+                    - /url: /org/mathebula-partners/settings/connections
+          - generic [ref=f7e183]:
+            - tablist "Firm settings" [ref=f7e185]:
+              - tab "General" [ref=f7e186]
+              - tab "Roles" [ref=f7e187]
+              - tab "Audit trail" [selected] [ref=f7e188]
+              - tab "Data protection" [ref=f7e189]
+              - tab "Data requests" [ref=f7e190]
+              - tab "Compliance" [ref=f7e191]
+              - tab "Features" [ref=f7e192]
+              - tab "Subscription" [ref=f7e193]
+            - tabpanel "Audit trail" [ref=f7e194]:
+              - generic [ref=f7e195]:
+                - generic [ref=f7e196]:
+                  - generic [ref=f7e197]:
+                    - heading "Audit log" [level=1] [ref=f7e198]
+                    - paragraph [ref=f7e199]: Read-only feed of audit events. Filter by date range, severity, actor, event type, or entity.
+                  - button "Export" [ref=f7e201]
+                - generic [ref=f7e202]:
+                  - generic [ref=f7e203]:
+                    - generic [ref=f7e204]: Preset
+                    - generic [ref=f7e206]:
+                      - generic [ref=f7e207]: Filter preset
+                      - combobox "Filter preset" [ref=f7e208]:
+                        - generic: — Choose a preset —
+                      - combobox [aria-hidden] [ref=f7e209]
+                  - generic [ref=f7e210]:
+                    - generic [ref=f7e211]: Filters
+                    - generic [ref=f7e213]:
+                      - generic [ref=f7e214]:
+                        - generic [ref=f7e215]:
+                          - text: From
+                          - textbox "From" [ref=f7e216]
+                        - generic [ref=f7e217]:
+                          - text: To
+                          - textbox "To" [ref=f7e218]
+                        - generic [ref=f7e219]:
+                          - text: Actor
+                          - combobox "Actor" [ref=f7e220]:
+                            - generic: All actors
+                          - combobox [aria-hidden] [ref=f7e221]
+                        - generic [ref=f7e222]:
+                          - text: Entity type
+                          - combobox "Entity type" [ref=f7e223]:
+                            - generic: All entity types
+                          - combobox [aria-hidden] [ref=f7e224]
+                        - generic [ref=f7e225]:
+                          - text: Event type
+                          - combobox "Event type" [ref=f7e226]:
+                            - generic [ref=f7e227]: All event types
+                        - generic [ref=f7e228]:
+                          - text: Entity ID
+                          - textbox "Entity ID" [ref=f7e229]:
+                            - /placeholder: UUID
+                      - generic [ref=f7e230]:
+                        - text: Severity
+                        - group "Severity filter" [ref=f7e231]:
+                          - button "INFO" [ref=f7e232]
+                          - button "NOTICE" [ref=f7e233]
+                          - button "WARNING" [ref=f7e234]
+                          - button "CRITICAL" [ref=f7e235]
+                  - generic [ref=f7e236]:
+                    - generic [ref=f7e238]:
+                      - text: Events
+                      - generic [ref=f7e239]: 199 total
+                    - table [ref=f7e243]:
+                      - rowgroup [ref=f7e244]:
+                        - row [ref=f7e245]:
+                          - columnheader [ref=f7e246]
+                          - columnheader "Time" [ref=f7e247]
+                          - columnheader "Severity" [ref=f7e248]
+                          - columnheader "Event" [ref=f7e249]
+                          - columnheader "Actor" [ref=f7e250]
+                          - columnheader "Entity" [ref=f7e251]
+                      - rowgroup [ref=f7e252]:
+                        - row [ref=f7e253]:
+                          - cell [ref=f7e254]:
+                            - button "Expand details" [ref=f7e255]
+                          - cell "28 Oct 2026, 12:25" [ref=f7e258]
+                          - cell "INFO" [ref=f7e259]
+                          - cell "REPORT EXPORTED REPORT_EXPORTED" [ref=f7e261]:
+                            - generic [ref=f7e262]: REPORT EXPORTED
+                            - generic [ref=f7e263]: REPORT_EXPORTED
+                          - cell "Thandi Mathebula" [ref=f7e264]
+                          - cell "REPORT 17f38228" [ref=f7e266]
+                        - row [ref=f7e268]:
+                          - cell [ref=f7e269]:
+                            - button "Expand details" [ref=f7e270]
+                          - cell "28 Oct 2026, 11:57" [ref=f7e273]
+                          - cell "NOTICE" [ref=f7e274]
+                          - cell "Audit Log Exported audit.export.generated" [ref=f7e276]:
+                            - generic [ref=f7e277]: Audit Log Exported
+                            - generic [ref=f7e278]: audit.export.generated
+                          - cell "Thandi Mathebula" [ref=f7e279]
+                          - cell "Audit export f8c56d72" [ref=f7e281]
+                        - row [ref=f7e283]:
+                          - cell [ref=f7e284]:
+                            - button "Expand details" [ref=f7e285]
+                          - cell "28 Oct 2026, 01:29" [ref=f7e288]
+                          - cell "NOTICE" [ref=f7e289]
+                          - cell "Cash Digest Sent collections.digest.sent" [ref=f7e291]:
+                            - generic [ref=f7e292]: Cash Digest Sent
+                            - generic [ref=f7e293]: collections.digest.sent
+                          - cell "System" [ref=f7e294]
+                          - cell "Cash digest c43374e4" [ref=f7e296]
+                        - row [ref=f7e298]:
+                          - cell [ref=f7e299]:
+                            - button "Expand details" [ref=f7e300]
+                          - cell "25 Oct 2026, 00:36" [ref=f7e303]
+                          - cell "INFO" [ref=f7e304]
+                          - cell "Matter created from template project.created_from_template" [ref=f7e306]:
+                            - generic [ref=f7e307]: Matter created from template
+                            - generic [ref=f7e308]: project.created_from_template
+                          - cell "Thandi Mathebula" [ref=f7e309]
+                          - cell [ref=f7e311]:
+                            - link "Matter a79db65e" [ref=f7e312] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/matters/a79db65e-c065-4101-b334-d541941b1166
+                        - row [ref=f7e313]:
+                          - cell [ref=f7e314]:
+                            - button "Expand details" [ref=f7e315]
+                          - cell "25 Oct 2026, 00:35" [ref=f7e318]
+                          - cell "INFO" [ref=f7e319]
+                          - cell "Client lifecycle transitioned customer.lifecycle.transitioned" [ref=f7e321]:
+                            - generic [ref=f7e322]: Client lifecycle transitioned
+                            - generic [ref=f7e323]: customer.lifecycle.transitioned
+                          - cell "Thandi Mathebula" [ref=f7e324]
+                          - cell [ref=f7e326]:
+                            - link "Client 98f91243" [ref=f7e327] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/clients/98f91243-4156-4a83-b261-45347de14062
+                        - row [ref=f7e328]:
+                          - cell [ref=f7e329]:
+                            - button "Expand details" [ref=f7e330]
+                          - cell "25 Oct 2026, 00:35" [ref=f7e333]
+                          - cell "INFO" [ref=f7e334]
+                          - cell "Checklist instance created checklist.instance.created" [ref=f7e336]:
+                            - generic [ref=f7e337]: Checklist instance created
+                            - generic [ref=f7e338]: checklist.instance.created
+                          - cell "Thandi Mathebula" [ref=f7e339]
+                          - cell "Checklist f6fbc794" [ref=f7e341]
+                        - row [ref=f7e343]:
+                          - cell [ref=f7e344]:
+                            - button "Expand details" [ref=f7e345]
+                          - cell "25 Oct 2026, 00:35" [ref=f7e348]
+                          - cell "INFO" [ref=f7e349]
+                          - cell "Client created customer.created" [ref=f7e351]:
+                            - generic [ref=f7e352]: Client created
+                            - generic [ref=f7e353]: customer.created
+                          - cell "Thandi Mathebula" [ref=f7e354]
+                          - cell [ref=f7e356]:
+                            - link "Client 98f91243" [ref=f7e357] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/clients/98f91243-4156-4a83-b261-45347de14062
+                        - row [ref=f7e358]:
+                          - cell [ref=f7e359]:
+                            - button "Expand details" [ref=f7e360]
+                          - cell "25 Oct 2026, 00:28" [ref=f7e363]
+                          - cell "INFO" [ref=f7e364]
+                          - cell "Document generated document.generated" [ref=f7e366]:
+                            - generic [ref=f7e367]: Document generated
+                            - generic [ref=f7e368]: document.generated
+                          - cell "Thandi Mathebula" [ref=f7e369]
+                          - cell "Generated document 23cc56fb" [ref=f7e371]
+                        - row [ref=f7e373]:
+                          - cell [ref=f7e374]:
+                            - button "Expand details" [ref=f7e375]
+                          - cell "25 Oct 2026, 00:28" [ref=f7e378]
+                          - cell "INFO" [ref=f7e379]
+                          - cell "Fee note invoice.sent" [ref=f7e381]:
+                            - generic [ref=f7e382]: Fee note
+                            - generic [ref=f7e383]: invoice.sent
+                          - cell "Thandi Mathebula" [ref=f7e384]
+                          - cell [ref=f7e386]:
+                            - link "Fee note INV-0004" [ref=f7e387] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/invoices/0feb4764-f6f4-425d-9fb1-5ca250ab8c88
+                        - row [ref=f7e388]:
+                          - cell [ref=f7e389]:
+                            - button "Expand details" [ref=f7e390]
+                          - cell "25 Oct 2026, 00:28" [ref=f7e393]
+                          - cell "INFO" [ref=f7e394]
+                          - cell "Payment session created payment.session.created" [ref=f7e396]:
+                            - generic [ref=f7e397]: Payment session created
+                            - generic [ref=f7e398]: payment.session.created
+                          - cell "System" [ref=f7e399]
+                          - cell [ref=f7e401]:
+                            - link "Fee note 0feb4764" [ref=f7e402] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/invoices/0feb4764-f6f4-425d-9fb1-5ca250ab8c88
+                        - row [ref=f7e403]:
+                          - cell [ref=f7e404]:
+                            - button "Expand details" [ref=f7e405]
+                          - cell "25 Oct 2026, 00:28" [ref=f7e408]
+                          - cell "INFO" [ref=f7e409]
+                          - cell "Fee note invoice.approved" [ref=f7e411]:
+                            - generic [ref=f7e412]: Fee note
+                            - generic [ref=f7e413]: invoice.approved
+                          - cell "Thandi Mathebula" [ref=f7e414]
+                          - cell [ref=f7e416]:
+                            - link "Fee note INV-0004" [ref=f7e417] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/invoices/0feb4764-f6f4-425d-9fb1-5ca250ab8c88
+                        - row [ref=f7e418]:
+                          - cell [ref=f7e419]:
+                            - button "Expand details" [ref=f7e420]
+                          - cell "25 Oct 2026, 00:27" [ref=f7e423]
+                          - cell "INFO" [ref=f7e424]
+                          - cell "Fee note invoice.created" [ref=f7e426]:
+                            - generic [ref=f7e427]: Fee note
+                            - generic [ref=f7e428]: invoice.created
+                          - cell "Thandi Mathebula" [ref=f7e429]
+                          - cell [ref=f7e431]:
+                            - link "Fee note 0feb4764" [ref=f7e432] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/invoices/0feb4764-f6f4-425d-9fb1-5ca250ab8c88
+                        - row [ref=f7e433]:
+                          - cell [ref=f7e434]:
+                            - button "Expand details" [ref=f7e435]
+                          - cell "25 Oct 2026, 00:27" [ref=f7e438]
+                          - cell "INFO" [ref=f7e439]
+                          - cell "Disbursement billed disbursement.billed" [ref=f7e441]:
+                            - generic [ref=f7e442]: Disbursement billed
+                            - generic [ref=f7e443]: disbursement.billed
+                          - cell "Thandi Mathebula" [ref=f7e444]
+                          - cell "Disbursement 699277c6" [ref=f7e446]
+                        - row [ref=f7e448]:
+                          - cell [ref=f7e449]:
+                            - button "Expand details" [ref=f7e450]
+                          - cell "25 Oct 2026, 00:26" [ref=f7e453]
+                          - cell "INFO" [ref=f7e454]
+                          - cell "Disbursement approved disbursement.approved" [ref=f7e456]:
+                            - generic [ref=f7e457]: Disbursement approved
+                            - generic [ref=f7e458]: disbursement.approved
+                          - cell "Thandi Mathebula" [ref=f7e459]
+                          - cell "Disbursement 699277c6" [ref=f7e461]
+                        - row [ref=f7e463]:
+                          - cell [ref=f7e464]:
+                            - button "Expand details" [ref=f7e465]
+                          - cell "25 Oct 2026, 00:26" [ref=f7e468]
+                          - cell "INFO" [ref=f7e469]
+                          - cell "Disbursement submitted disbursement.submitted" [ref=f7e471]:
+                            - generic [ref=f7e472]: Disbursement submitted
+                            - generic [ref=f7e473]: disbursement.submitted
+                          - cell "Thandi Mathebula" [ref=f7e474]
+                          - cell "Disbursement 699277c6" [ref=f7e476]
+                        - row [ref=f7e478]:
+                          - cell [ref=f7e479]:
+                            - button "Expand details" [ref=f7e480]
+                          - cell "25 Oct 2026, 00:26" [ref=f7e483]
+                          - cell "INFO" [ref=f7e484]
+                          - cell "Disbursement created disbursement.created" [ref=f7e486]:
+                            - generic [ref=f7e487]: Disbursement created
+                            - generic [ref=f7e488]: disbursement.created
+                          - cell "Thandi Mathebula" [ref=f7e489]
+                          - cell "Disbursement 699277c6" [ref=f7e491]
+                        - row [ref=f7e493]:
+                          - cell [ref=f7e494]:
+                            - button "Expand details" [ref=f7e495]
+                          - cell "24 Oct 2026, 11:14" [ref=f7e498]
+                          - cell "INFO" [ref=f7e499]
+                          - cell "Matter reopened project.reopened" [ref=f7e501]:
+                            - generic [ref=f7e502]: Matter reopened
+                            - generic [ref=f7e503]: project.reopened
+                          - cell "Thandi Mathebula" [ref=f7e504]
+                          - cell [ref=f7e506]:
+                            - link "Matter e794d8d8" [ref=f7e507] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/matters/e794d8d8-974b-4ac2-b073-e7ffc3bc9852
+                        - row [ref=f7e508]:
+                          - cell [ref=f7e509]:
+                            - button "Expand details" [ref=f7e510]
+                          - cell "24 Oct 2026, 11:13" [ref=f7e513]
+                          - cell "INFO" [ref=f7e514]
+                          - cell "Matter completed project.completed" [ref=f7e516]:
+                            - generic [ref=f7e517]: Matter completed
+                            - generic [ref=f7e518]: project.completed
+                          - cell "Thandi Mathebula" [ref=f7e519]
+                          - cell [ref=f7e521]:
+                            - link "Matter e794d8d8" [ref=f7e522] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/matters/e794d8d8-974b-4ac2-b073-e7ffc3bc9852
+                        - row [ref=f7e523]:
+                          - cell [ref=f7e524]:
+                            - button "Expand details" [ref=f7e525]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e528]
+                          - cell "INFO" [ref=f7e529]
+                          - cell "Task updated task.updated" [ref=f7e531]:
+                            - generic [ref=f7e532]: Task updated
+                            - generic [ref=f7e533]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e534]
+                          - cell "Task 0cb3ecd0" [ref=f7e536]
+                        - row [ref=f7e538]:
+                          - cell [ref=f7e539]:
+                            - button "Expand details" [ref=f7e540]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e543]
+                          - cell "INFO" [ref=f7e544]
+                          - cell "Task updated task.updated" [ref=f7e546]:
+                            - generic [ref=f7e547]: Task updated
+                            - generic [ref=f7e548]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e549]
+                          - cell "Task 0cb3ecd0" [ref=f7e551]
+                        - row [ref=f7e553]:
+                          - cell [ref=f7e554]:
+                            - button "Expand details" [ref=f7e555]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e558]
+                          - cell "INFO" [ref=f7e559]
+                          - cell "Task updated task.updated" [ref=f7e561]:
+                            - generic [ref=f7e562]: Task updated
+                            - generic [ref=f7e563]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e564]
+                          - cell "Task 4e1c0801" [ref=f7e566]
+                        - row [ref=f7e568]:
+                          - cell [ref=f7e569]:
+                            - button "Expand details" [ref=f7e570]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e573]
+                          - cell "INFO" [ref=f7e574]
+                          - cell "Task updated task.updated" [ref=f7e576]:
+                            - generic [ref=f7e577]: Task updated
+                            - generic [ref=f7e578]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e579]
+                          - cell "Task 4e1c0801" [ref=f7e581]
+                        - row [ref=f7e583]:
+                          - cell [ref=f7e584]:
+                            - button "Expand details" [ref=f7e585]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e588]
+                          - cell "INFO" [ref=f7e589]
+                          - cell "Task updated task.updated" [ref=f7e591]:
+                            - generic [ref=f7e592]: Task updated
+                            - generic [ref=f7e593]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e594]
+                          - cell "Task 72532386" [ref=f7e596]
+                        - row [ref=f7e598]:
+                          - cell [ref=f7e599]:
+                            - button "Expand details" [ref=f7e600]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e603]
+                          - cell "INFO" [ref=f7e604]
+                          - cell "Task updated task.updated" [ref=f7e606]:
+                            - generic [ref=f7e607]: Task updated
+                            - generic [ref=f7e608]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e609]
+                          - cell "Task 72532386" [ref=f7e611]
+                        - row [ref=f7e613]:
+                          - cell [ref=f7e614]:
+                            - button "Expand details" [ref=f7e615]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e618]
+                          - cell "INFO" [ref=f7e619]
+                          - cell "Task updated task.updated" [ref=f7e621]:
+                            - generic [ref=f7e622]: Task updated
+                            - generic [ref=f7e623]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e624]
+                          - cell "Task 4a19bc5c" [ref=f7e626]
+                        - row [ref=f7e628]:
+                          - cell [ref=f7e629]:
+                            - button "Expand details" [ref=f7e630]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e633]
+                          - cell "INFO" [ref=f7e634]
+                          - cell "Task updated task.updated" [ref=f7e636]:
+                            - generic [ref=f7e637]: Task updated
+                            - generic [ref=f7e638]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e639]
+                          - cell "Task 4a19bc5c" [ref=f7e641]
+                        - row [ref=f7e643]:
+                          - cell [ref=f7e644]:
+                            - button "Expand details" [ref=f7e645]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e648]
+                          - cell "INFO" [ref=f7e649]
+                          - cell "Task updated task.updated" [ref=f7e651]:
+                            - generic [ref=f7e652]: Task updated
+                            - generic [ref=f7e653]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e654]
+                          - cell "Task 1df4c873" [ref=f7e656]
+                        - row [ref=f7e658]:
+                          - cell [ref=f7e659]:
+                            - button "Expand details" [ref=f7e660]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e663]
+                          - cell "INFO" [ref=f7e664]
+                          - cell "Task updated task.updated" [ref=f7e666]:
+                            - generic [ref=f7e667]: Task updated
+                            - generic [ref=f7e668]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e669]
+                          - cell "Task 1df4c873" [ref=f7e671]
+                        - row [ref=f7e673]:
+                          - cell [ref=f7e674]:
+                            - button "Expand details" [ref=f7e675]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e678]
+                          - cell "INFO" [ref=f7e679]
+                          - cell "Task updated task.updated" [ref=f7e681]:
+                            - generic [ref=f7e682]: Task updated
+                            - generic [ref=f7e683]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e684]
+                          - cell "Task ff2c84ba" [ref=f7e686]
+                        - row [ref=f7e688]:
+                          - cell [ref=f7e689]:
+                            - button "Expand details" [ref=f7e690]
+                          - cell "24 Oct 2026, 11:11" [ref=f7e693]
+                          - cell "INFO" [ref=f7e694]
+                          - cell "Task updated task.updated" [ref=f7e696]:
+                            - generic [ref=f7e697]: Task updated
+                            - generic [ref=f7e698]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e699]
+                          - cell "Task ff2c84ba" [ref=f7e701]
+                        - row [ref=f7e703]:
+                          - cell [ref=f7e704]:
+                            - button "Expand details" [ref=f7e705]
+                          - cell "24 Oct 2026, 11:10" [ref=f7e708]
+                          - cell "INFO" [ref=f7e709]
+                          - cell "Task updated task.updated" [ref=f7e711]:
+                            - generic [ref=f7e712]: Task updated
+                            - generic [ref=f7e713]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e714]
+                          - cell "Task 127a54c4" [ref=f7e716]
+                        - row [ref=f7e718]:
+                          - cell [ref=f7e719]:
+                            - button "Expand details" [ref=f7e720]
+                          - cell "24 Oct 2026, 11:10" [ref=f7e723]
+                          - cell "INFO" [ref=f7e724]
+                          - cell "Task updated task.updated" [ref=f7e726]:
+                            - generic [ref=f7e727]: Task updated
+                            - generic [ref=f7e728]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e729]
+                          - cell "Task 127a54c4" [ref=f7e731]
+                        - row [ref=f7e733]:
+                          - cell [ref=f7e734]:
+                            - button "Expand details" [ref=f7e735]
+                          - cell "24 Oct 2026, 11:09" [ref=f7e738]
+                          - cell "INFO" [ref=f7e739]
+                          - cell "Task updated task.updated" [ref=f7e741]:
+                            - generic [ref=f7e742]: Task updated
+                            - generic [ref=f7e743]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e744]
+                          - cell "Task 228db34a" [ref=f7e746]
+                        - row [ref=f7e748]:
+                          - cell [ref=f7e749]:
+                            - button "Expand details" [ref=f7e750]
+                          - cell "24 Oct 2026, 11:09" [ref=f7e753]
+                          - cell "INFO" [ref=f7e754]
+                          - cell "Task updated task.updated" [ref=f7e756]:
+                            - generic [ref=f7e757]: Task updated
+                            - generic [ref=f7e758]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e759]
+                          - cell "Task 228db34a" [ref=f7e761]
+                        - row [ref=f7e763]:
+                          - cell [ref=f7e764]:
+                            - button "Expand details" [ref=f7e765]
+                          - cell "24 Oct 2026, 11:09" [ref=f7e768]
+                          - cell "INFO" [ref=f7e769]
+                          - cell "Task updated task.updated" [ref=f7e771]:
+                            - generic [ref=f7e772]: Task updated
+                            - generic [ref=f7e773]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e774]
+                          - cell "Task 0d67a511" [ref=f7e776]
+                        - row [ref=f7e778]:
+                          - cell [ref=f7e779]:
+                            - button "Expand details" [ref=f7e780]
+                          - cell "24 Oct 2026, 11:09" [ref=f7e783]
+                          - cell "INFO" [ref=f7e784]
+                          - cell "Task updated task.updated" [ref=f7e786]:
+                            - generic [ref=f7e787]: Task updated
+                            - generic [ref=f7e788]: task.updated
+                          - cell "Thandi Mathebula" [ref=f7e789]
+                          - cell "Task 0d67a511" [ref=f7e791]
+                        - row [ref=f7e793]:
+                          - cell [ref=f7e794]:
+                            - button "Expand details" [ref=f7e795]
+                          - cell "24 Oct 2026, 11:07" [ref=f7e798]
+                          - cell "INFO" [ref=f7e799]
+                          - cell "Trust payment approved trust_payment.approved" [ref=f7e801]:
+                            - generic [ref=f7e802]: Trust payment approved
+                            - generic [ref=f7e803]: trust_payment.approved
+                          - cell "Bob Ndlovu" [ref=f7e804]
+                          - cell [ref=f7e806]:
+                            - link "Trust transaction d38ec3e7" [ref=f7e807] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/trust-accounting/transactions/d38ec3e7-631d-41a1-a171-b0b40da799e6
+                        - row [ref=f7e808]:
+                          - cell [ref=f7e809]:
+                            - button "Expand details" [ref=f7e810]
+                          - cell "24 Oct 2026, 11:06" [ref=f7e813]
+                          - cell "INFO" [ref=f7e814]
+                          - cell "Trust payment recorded trust_payment.recorded" [ref=f7e816]:
+                            - generic [ref=f7e817]: Trust payment recorded
+                            - generic [ref=f7e818]: trust_payment.recorded
+                          - cell "Thandi Mathebula" [ref=f7e819]
+                          - cell [ref=f7e821]:
+                            - link "Trust transaction d38ec3e7" [ref=f7e822] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/trust-accounting/transactions/d38ec3e7-631d-41a1-a171-b0b40da799e6
+                        - row [ref=f7e823]:
+                          - cell [ref=f7e824]:
+                            - button "Expand details" [ref=f7e825]
+                          - cell "24 Oct 2026, 11:05" [ref=f7e828]
+                          - cell "NOTICE" [ref=f7e829]
+                          - cell "Security Event security.access_denied" [ref=f7e831]:
+                            - generic [ref=f7e832]: Security Event
+                            - generic [ref=f7e833]: security.access_denied
+                          - cell "Carol Mokoena" [ref=f7e834]
+                          - cell "Security f29a8be2" [ref=f7e836]
+                        - row [ref=f7e838]:
+                          - cell [ref=f7e839]:
+                            - button "Expand details" [ref=f7e840]
+                          - cell "24 Oct 2026, 11:05" [ref=f7e843]
+                          - cell "INFO" [ref=f7e844]
+                          - cell "Time entry created time_entry.created" [ref=f7e846]:
+                            - generic [ref=f7e847]: Time entry created
+                            - generic [ref=f7e848]: time_entry.created
+                          - cell "Carol Mokoena" [ref=f7e849]
+                          - cell "Time recording f6a996cb" [ref=f7e851]
+                        - row [ref=f7e853]:
+                          - cell [ref=f7e854]:
+                            - button "Expand details" [ref=f7e855]
+                          - cell "24 Oct 2026, 11:05" [ref=f7e858]
+                          - cell "NOTICE" [ref=f7e859]
+                          - cell "Security Event security.access_denied" [ref=f7e861]:
+                            - generic [ref=f7e862]: Security Event
+                            - generic [ref=f7e863]: security.access_denied
+                          - cell "Carol Mokoena" [ref=f7e864]
+                          - cell "Security 35271a87" [ref=f7e866]
+                        - row [ref=f7e868]:
+                          - cell [ref=f7e869]:
+                            - button "Expand details" [ref=f7e870]
+                          - cell "24 Oct 2026, 11:01" [ref=f7e873]
+                          - cell "INFO" [ref=f7e874]
+                          - cell "Document generated document.generated" [ref=f7e876]:
+                            - generic [ref=f7e877]: Document generated
+                            - generic [ref=f7e878]: document.generated
+                          - cell "Thandi Mathebula" [ref=f7e879]
+                          - cell "Generated document c552ac76" [ref=f7e881]
+                        - row [ref=f7e883]:
+                          - cell [ref=f7e884]:
+                            - button "Expand details" [ref=f7e885]
+                          - cell "24 Oct 2026, 11:01" [ref=f7e888]
+                          - cell "INFO" [ref=f7e889]
+                          - cell "Fee note invoice.sent" [ref=f7e891]:
+                            - generic [ref=f7e892]: Fee note
+                            - generic [ref=f7e893]: invoice.sent
+                          - cell "Thandi Mathebula" [ref=f7e894]
+                          - cell [ref=f7e896]:
+                            - link "Fee note INV-0003" [ref=f7e897] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/invoices/b4b05648-dd33-42d4-8129-0a1bac6cc498
+                        - row [ref=f7e898]:
+                          - cell [ref=f7e899]:
+                            - button "Expand details" [ref=f7e900]
+                          - cell "24 Oct 2026, 11:01" [ref=f7e903]
+                          - cell "INFO" [ref=f7e904]
+                          - cell "Payment session created payment.session.created" [ref=f7e906]:
+                            - generic [ref=f7e907]: Payment session created
+                            - generic [ref=f7e908]: payment.session.created
+                          - cell "System" [ref=f7e909]
+                          - cell [ref=f7e911]:
+                            - link "Fee note b4b05648" [ref=f7e912] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/invoices/b4b05648-dd33-42d4-8129-0a1bac6cc498
+                        - row [ref=f7e913]:
+                          - cell [ref=f7e914]:
+                            - button "Expand details" [ref=f7e915]
+                          - cell "24 Oct 2026, 11:01" [ref=f7e918]
+                          - cell "INFO" [ref=f7e919]
+                          - cell "Fee note invoice.approved" [ref=f7e921]:
+                            - generic [ref=f7e922]: Fee note
+                            - generic [ref=f7e923]: invoice.approved
+                          - cell "Thandi Mathebula" [ref=f7e924]
+                          - cell [ref=f7e926]:
+                            - link "Fee note INV-0003" [ref=f7e927] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/invoices/b4b05648-dd33-42d4-8129-0a1bac6cc498
+                        - row [ref=f7e928]:
+                          - cell [ref=f7e929]:
+                            - button "Expand details" [ref=f7e930]
+                          - cell "24 Oct 2026, 11:01" [ref=f7e933]
+                          - cell "INFO" [ref=f7e934]
+                          - cell "Fee note invoice.created" [ref=f7e936]:
+                            - generic [ref=f7e937]: Fee note
+                            - generic [ref=f7e938]: invoice.created
+                          - cell "Thandi Mathebula" [ref=f7e939]
+                          - cell [ref=f7e941]:
+                            - link "Fee note b4b05648" [ref=f7e942] [cursor=pointer]:
+                              - /url: /org/mathebula-partners/invoices/b4b05648-dd33-42d4-8129-0a1bac6cc498
+                        - row [ref=f7e943]:
+                          - cell [ref=f7e944]:
+                            - button "Expand details" [ref=f7e945]
+                          - cell "24 Oct 2026, 10:59" [ref=f7e948]
+                          - cell "NOTICE" [ref=f7e949]
+                          - cell "Security Event security.access_denied" [ref=f7e951]:
+                            - generic [ref=f7e952]: Security Event
+                            - generic [ref=f7e953]: security.access_denied
+                          - cell "Carol Mokoena" [ref=f7e954]
+                          - cell "Security fe629f2a" [ref=f7e956]
+                        - row [ref=f7e958]:
+                          - cell [ref=f7e959]:
+                            - button "Expand details" [ref=f7e960]
+                          - cell "24 Oct 2026, 10:59" [ref=f7e963]
+                          - cell "NOTICE" [ref=f7e964]
+                          - cell "Security Event security.access_denied" [ref=f7e966]:
+                            - generic [ref=f7e967]: Security Event
+                            - generic [ref=f7e968]: security.access_denied
+                          - cell "Carol Mokoena" [ref=f7e969]
+                          - cell "Security 18d0fbdf" [ref=f7e971]
+                        - row [ref=f7e973]:
+                          - cell [ref=f7e974]:
+                            - button "Expand details" [ref=f7e975]
+                          - cell "24 Oct 2026, 10:58" [ref=f7e978]
+                          - cell "NOTICE" [ref=f7e979]
+                          - cell "Security Event security.access_denied" [ref=f7e981]:
+                            - generic [ref=f7e982]: Security Event
+                            - generic [ref=f7e983]: security.access_denied
+                          - cell "Carol Mokoena" [ref=f7e984]
+                          - cell "Security 26c90589" [ref=f7e986]
+                        - row [ref=f7e988]:
+                          - cell [ref=f7e989]:
+                            - button "Expand details" [ref=f7e990]
+                          - cell "24 Oct 2026, 10:58" [ref=f7e993]
+                          - cell "NOTICE" [ref=f7e994]
+                          - cell "Security Event security.access_denied" [ref=f7e996]:
+                            - generic [ref=f7e997]: Security Event
+                            - generic [ref=f7e998]: security.access_denied
+                          - cell "Carol Mokoena" [ref=f7e999]
+                          - cell "Security bb4d690a" [ref=f7e1001]
+                  - navigation "Audit log pagination" [ref=f7e1003]:
+                    - generic [ref=f7e1004]: Page 1 of 4
+                    - generic [ref=f7e1005]:
+                      - button "Previous" [disabled] [ref=f7e1006]
+                      - button "Next" [ref=f7e1007]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f7e1013] [cursor=pointer]

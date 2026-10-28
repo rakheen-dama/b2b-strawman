@@ -1,0 +1,28 @@
+# O4/O5/O8-Bob Profitability Export CSV
+## frontend
+ POST /org/mathebula-partners/reports/profitability 200 in 68ms (next.js: 13ms, proxy.ts: 4ms, application-code: 51ms)
+  └─ ƒ exportProfitabilityCsvAction("2026-10-01", "2026-10-28") in 45ms app/(app)/org/[slug]/profitability/actions.ts
+--
+ POST /org/mathebula-partners/reports/profitability 200 in 177ms (next.js: 15ms, proxy.ts: 6ms, application-code: 156ms)
+  └─ ƒ exportProfitabilityCsvAction("2026-10-24", "2026-10-28") in 149ms app/(app)/org/[slug]/profitability/actions.ts
+--
+ POST /org/mathebula-partners/reports/profitability 200 in 33ms (next.js: 3ms, proxy.ts: 2ms, application-code: 28ms)
+  └─ ƒ exportProfitabilityCsvAction("2026-10-01", "2026-10-28") in 23ms app/(app)/org/[slug]/profitability/actions.ts
+## backend
+2026-10-28T10:27:04.886114Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:04.943787Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:27:10.870561Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability/export/csv?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:10.894306Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:27:10.894602Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Profitability CSV export: 3 row(s) for 2026-10-01 to 2026-10-28
+2026-10-28T10:27:24.985129Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability?from=2026-10-24&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:24.999907Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:27:28.023664Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability/export/csv?from=2026-10-24&to=2026-10-28", parameters={masked}
+2026-10-28T10:27:28.127143Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:27:28.127459Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Profitability CSV export: 3 row(s) for 2026-10-24 to 2026-10-28
+2026-10-28T10:28:05.684732Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:28:05.710692Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:29:54.283357Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:29:54.301091Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:29:54.582157Z DEBUG org.springframework.web.servlet.DispatcherServlet | GET "/api/reports/profitability/export/csv?from=2026-10-01&to=2026-10-28", parameters={masked}
+2026-10-28T10:29:54.591157Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Org profitability: 3 project-currency entries
+2026-10-28T10:29:54.591335Z DEBUG io.b2mash.b2b.b2bstrawman.report.ReportService | Profitability CSV export: 3 row(s) for 2026-10-01 to 2026-10-28

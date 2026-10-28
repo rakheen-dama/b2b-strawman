@@ -1,0 +1,22 @@
+O3 — chip click opens presigned LocalStack URL (portal :3002 @ f2c4177ab, e2e backend :8081)
+
+Click target: Comments section (h2 "Comments" -> parent) -> button "Download 627J-shared-chip.pdf"
+
+Browser (Playwright page.waitForResponse + context 'page' event):
+  presign request : GET http://localhost:8081/portal/documents/9b24a239-a7c4-4f92-b33b-925f6f243978/presign-download
+  presign status  : 200
+  response keys   : presignedUrl, expiresInSeconds
+  presigned URL   : http://localhost:4567/docteams-dev/org/e2e-test-org/project/ad89d02a-4990-4707-815e-99dcde0b63f9/9b24a239-a7c4-4f92-b33b-925f6f243978?<query redacted: X-Amz-* SigV4 params, Expires=3600>
+  new tab URL     : same host/path; popup.url() === presignedUrl -> true
+  portal page URL after click: http://localhost:3002/matters/ad89d02a-4990-4707-815e-99dcde0b63f9 (no navigation)
+  role=alert in Comments section after click: 0
+
+curl of the same presigned URL (query redacted):
+  status=200 size=41 ctype=application/pdf
+  Content-Type: application/pdf
+  Content-Length: 41
+  bytes (xxd):
+    00000000: 2550 4446 2d31 2e34 0a25 2036 3237 4a20  %PDF-1.4.% 627J
+    00000010: 6265 666f 7265 2073 6861 7265 6420 6368  before shared ch
+    00000020: 6970 0a25 2545 4f46 0a                   ip.%%EOF.
+  -> 41 B, matches the chip label "41 B" and the uploaded fixture body.

@@ -1,0 +1,50 @@
+{
+  "_note": "Raw return values of the Playwright run_code scripts (portal :3002 @ f2c4177ab, prod build, NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081). Presigned URLs reduced to origin+path.",
+  "O4_failure_path": {
+    "route": "page.route(/\\/portal\\/documents\\/9b24a239-...\\/presign-download/) -> fulfill 500 {title:'Internal Server Error'}",
+    "failState": {
+      "routedStatus": 500, "routeHits": 1,
+      "alertText": "Download failed. Please try again.",
+      "alertIsSiblingOfChip": true, "alertsInComments": 1,
+      "pageUrl": "http://localhost:3002/matters/ad89d02a-4990-4707-815e-99dcde0b63f9",
+      "popupOpened": false, "chipDisabled": false
+    },
+    "afterUnrouteRetry": {
+      "status": 200, "routeHitsAfterUnroute": 1,
+      "popupHostPath": "http://localhost:4567/docteams-dev/org/e2e-test-org/project/ad89d02a-4990-4707-815e-99dcde0b63f9/9b24a239-a7c4-4f92-b33b-925f6f243978",
+      "alertsInCommentsAfterRetry": 0,
+      "pageUrl": "http://localhost:3002/matters/ad89d02a-4990-4707-815e-99dcde0b63f9"
+    }
+  },
+  "O5_inflight": {
+    "route": "page.route(presign pattern) -> setTimeout 3000 then route.continue()",
+    "action": "chip.dblclick(); +400ms inspect; then an extra click({force:true}) while busy",
+    "inflight": { "disabled": true, "ariaBusy": "true", "spinnerPresent": 1 },
+    "after": { "disabled": false, "ariaBusy": "false", "presignRequestsObserved": 1, "routeHits": 1, "popupsOpened": 1 },
+    "requests": ["GET http://localhost:8081/portal/documents/9b24a239-a7c4-4f92-b33b-925f6f243978/presign-download"]
+  },
+  "O6_keyboard": {
+    "start": "focus Documents-table button 'Download 627J-shared-chip.pdf' (the preceding tab stop), reload first",
+    "tabSequence": ["BUTTON Download 627J-shared-chip.pdf  (= Comments chip, verified el === document.activeElement)"],
+    "chipFocused": true, "focusStyle": "outline auto 1px (browser default ring, visible in o6 screenshot)",
+    "enter": "GET http://localhost:8081/portal/documents/9b24a239-a7c4-4f92-b33b-925f6f243978/presign-download -> 200",
+    "popupHostPath": "http://localhost:4567/docteams-dev/org/e2e-test-org/project/ad89d02a-4990-4707-815e-99dcde0b63f9/9b24a239-a7c4-4f92-b33b-925f6f243978"
+  },
+  "O7_mobile_375x812": {
+    "viewport": { "width": 375, "height": 812 },
+    "chipBox": { "x": 33, "y": 699, "width": 197.3125, "height": 44 },
+    "chipComputed": { "minHeight": "44px", "height": "44px" },
+    "commentsSectionBox": { "x": 16, "y": 558, "width": 343, "height": 378 },
+    "overflow": { "docScrollWidth": 375, "clientWidth": 375, "bodyScrollWidth": 375 },
+    "chipRightEdgeWithinViewport": true,
+    "tap": { "presign": 200, "popupHostPath": "http://localhost:4567/docteams-dev/org/e2e-test-org/project/ad89d02a-4990-4707-815e-99dcde0b63f9/9b24a239-a7c4-4f92-b33b-925f6f243978" },
+    "desktopComparison": "at 1280 wide the chip is 26px high (md:min-h-0), by design"
+  },
+  "O8_documents_table": {
+    "button": "Documents table (filter hasText 'Uploaded') -> button 'Download 627J-shared-chip.pdf'",
+    "presign": "GET http://localhost:8081/portal/documents/9b24a239-a7c4-4f92-b33b-925f6f243978/presign-download -> 200",
+    "popupHostPath": "http://localhost:4567/docteams-dev/org/e2e-test-org/project/ad89d02a-4990-4707-815e-99dcde0b63f9/9b24a239-a7c4-4f92-b33b-925f6f243978",
+    "popupMatchesPresigned": true,
+    "pageUrl": "http://localhost:3002/matters/ad89d02a-4990-4707-815e-99dcde0b63f9"
+  }
+}

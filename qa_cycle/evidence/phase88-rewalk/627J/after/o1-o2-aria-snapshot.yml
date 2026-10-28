@@ -1,0 +1,47 @@
+# Aria snapshot of http://localhost:3002/matters/ad89d02a-4990-4707-815e-99dcde0b63f9 (portal @ f2c4177ab, desktop)
+# Comments-section scope = heading "Comments" [level=2] -> parent element (section.ariaSnapshot())
+- heading "Comments" [level=2]
+- text: Alice Owner 12 minutes ago
+- paragraph: "627J before: SHARED comment with chip 627J-shared-chip.pdf"
+- list "Attachments":
+  - listitem:
+    - button "Download 627J-shared-chip.pdf": 627J-shared-chip.pdf 41 B
+- text: Add a comment
+- textbox "Add a comment":
+  - /placeholder: Write a comment...
+- button "Post Comment" [disabled]
+
+# Full-page (body) main region, verbatim apart from the sidebar nav being elided:
+- main:
+  - link "Back to matters":
+    - /url: /matters
+  - heading "Website Redesign" [level=1]
+  - text: Active
+  - paragraph: E2E seed project for testing
+  - heading "Tasks" [level=2]
+  - table:
+    - rowgroup:
+      - row "Task Status Assignee"
+    - rowgroup:
+      - row "627J portal chip repro task OPEN Unassigned"
+  - heading "Documents" [level=2]
+  - table:
+    - rowgroup:
+      - row "File Size Uploaded Action"
+    - rowgroup:
+      - row "627J-shared-chip.pdf 41 B 28 Oct 2026 Download 627J-shared-chip.pdf":
+        - cell "627J-shared-chip.pdf"
+        - cell "41 B"
+        - cell "28 Oct 2026"
+        - cell "Download 627J-shared-chip.pdf":
+          - button "Download 627J-shared-chip.pdf"
+  - heading "Comments" [level=2]
+  - text: Alice Owner 12 minutes ago
+  - paragraph: "627J before: SHARED comment with chip 627J-shared-chip.pdf"
+  - list "Attachments":
+    - listitem:
+      - button "Download 627J-shared-chip.pdf": 627J-shared-chip.pdf 41 B
+  - text: Add a comment
+  - textbox "Add a comment":
+    - /placeholder: Write a comment...
+  - button "Post Comment" [disabled]

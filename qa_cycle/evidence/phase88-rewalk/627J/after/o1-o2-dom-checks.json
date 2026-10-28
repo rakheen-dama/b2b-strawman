@@ -1,0 +1,13 @@
+{
+  "scope": "heading 'Comments' (h2) -> parent element",
+  "sectionText": "Comments\nAlice Owner\n12 minutes ago\n\n627J before: SHARED comment with chip 627J-shared-chip.pdf\n\n627J-shared-chip.pdf\n41 B\nAdd a comment\nPost Comment",
+  "attachmentsListsInComments": 1,
+  "chipButtonsInComments_named_Download_627J-shared-chip.pdf": 1,
+  "chipText": "627J-shared-chip.pdf\n41 B",
+  "chipBox_desktop": { "x": 442, "y": 700, "width": 197.3125, "height": 26 },
+  "pageHtmlContains_627J-internal-chip.pdf": false,
+  "pageHtmlContains_INTERNAL_comment_body": false,
+  "getByText_627J-internal-chip.pdf_count": 0,
+  "pageWide_Download_627J-shared-chip.pdf_buttons": 2,
+  "note": "2 page-wide = Documents table button + Comments chip; 1 inside Comments section"
+}

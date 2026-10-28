@@ -1,0 +1,18 @@
+{
+  "count": 1,
+  "ids": [
+    "312f7a8b-0453-41e5-b0a3-c88db701fbbf"
+  ],
+  "shared312_attachments": [
+    {
+      "documentId": "9b24a239-a7c4-4f92-b33b-925f6f243978",
+      "fileName": "627J-shared-chip.pdf",
+      "contentType": "application/pdf",
+      "size": 41
+    }
+  ],
+  "internal734_present": false,
+  "internalChipFilenamePresent": false,
+  "internalDocIdPresent": false
+}
+internal presign status=404

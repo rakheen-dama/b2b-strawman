@@ -1,7 +1,7 @@
 {
-  "commit": "bd32f07ff2729c5f5d611a597c61d568cd022663",
-  "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
+  "commit": "275a897a20761492d3617c6b51981699df9301b0",
+  "command": "cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-10-24T23:00:00Z",
-  "summary": "Slice 624I epic gate PORTAL-GATE on main head bd32f07ff (worktree-epic-624I): lint 0 errors / 4 warnings, format:check clean, vitest 44 files / 233 passed (= 624H baseline), next build OK."
+  "ts": "2026-10-28T17:16:30Z",
+  "summary": "Slice 627J PORTAL-GATE on PR #1701 head 275a897a2 (worktree-epic-627J): lint 0 errors / 4 pre-existing warnings, format:check clean, vitest 44 files / 238 passed (baseline 44/233 + 5 chip tests), next build OK. CI Portal pass on the same head. Pre-existing load-sensitive 'character count' test fixed in 275a897a2 (§1 triage in PR body)."
 }

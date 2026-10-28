@@ -418,6 +418,20 @@ describe("Breadcrumbs", () => {
       expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toHaveClass("min-w-0");
     });
 
+    it("shows only the last crumb on a phone, its chevron hidden below sm", () => {
+      mockUsePathname.mockReturnValue(`/org/acme/matters/${MATTER_ID}`);
+      render(<Breadcrumbs slug="acme" orgName="Acme" />);
+      const nav = screen.getByRole("navigation", { name: "Breadcrumb" });
+      expect(screen.getByRole("link", { name: "Acme" })).toHaveClass("hidden", "sm:inline");
+      expect(screen.getByRole("link", { name: "Matters" }).parentElement).toHaveClass(
+        "hidden",
+        "sm:flex"
+      );
+      const chevrons = nav.querySelectorAll("svg");
+      const lastChevron = chevrons[chevrons.length - 1];
+      expect(lastChevron).toHaveClass("text-slate-400", "hidden", "sm:block");
+    });
+
     it("falls back to the generic label once the publisher unmounts", () => {
       mockUsePathname.mockReturnValue(`/org/acme/matters/${MATTER_ID}`);
       const tree = (withPublisher: boolean) => (

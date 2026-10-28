@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useBreadcrumbLabels } from "@/components/breadcrumb-label-provider";
 
 export const SEGMENT_LABELS: Record<string, string> = {
@@ -178,7 +179,7 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
             }
           >
             <ChevronRight
-              className={`h-3.5 w-3.5 shrink-0 text-slate-400${isLast ? "hidden sm:block" : ""}`}
+              className={cn("h-3.5 w-3.5 shrink-0 text-slate-400", isLast && "hidden sm:block")}
             />
             {isLast ? (
               <span

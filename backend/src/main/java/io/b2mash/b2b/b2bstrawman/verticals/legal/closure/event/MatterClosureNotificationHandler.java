@@ -75,7 +75,8 @@ public class MatterClosureNotificationHandler {
       notificationService.notifyAdminsAndOwners(
           "MATTER_REOPENED",
           "Matter reopened",
-          "Matter reopened. Retention window unchanged.",
+          "Matter reopened. The scheduled retention end date has been cleared; closing the matter"
+              + " again starts a new retention period.",
           "project",
           event.projectId());
     } catch (Exception e) {

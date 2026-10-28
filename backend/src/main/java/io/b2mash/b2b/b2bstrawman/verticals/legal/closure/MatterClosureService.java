@@ -433,14 +433,16 @@ public class MatterClosureService {
     // Retention window check (ADR-249, ADR-354): the frozen per-matter end date stamped at close is
     // the obligation — a later change to the firm's years does not move it. A CLOSED row without a
     // persisted end date (legacy, never backfilled) recomputes it from the close anchor + the
-    // firm's current years. Calendar-year arithmetic via LocalDate + plusYears so leap years
-    // don't bite.
+    // firm's current years. The anchor is closed_at first — it is the true close, whereas a legacy
+    // retention clock may hold the completion time — and the clock only when closed_at is missing,
+    // matching the tenant migration's backfill. Calendar-year arithmetic via LocalDate + plusYears
+    // so leap years don't bite.
     LocalDate retentionEndsOn = project.getRetentionEndsOn();
     if (retentionEndsOn == null) {
       Instant anchor =
-          project.getRetentionClockStartedAt() != null
-              ? project.getRetentionClockStartedAt()
-              : project.getClosedAt();
+          project.getClosedAt() != null
+              ? project.getClosedAt()
+              : project.getRetentionClockStartedAt();
       if (anchor == null) {
         throw new InvalidStateException(
             "Cannot reopen matter", "Project has no retention anchor — it was never closed.");

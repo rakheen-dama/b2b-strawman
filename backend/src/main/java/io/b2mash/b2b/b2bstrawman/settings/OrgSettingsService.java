@@ -354,7 +354,8 @@ public class OrgSettingsService {
         settings.getDataProtection().getFinancialRetentionMonths(),
         settings.getDataProtection().getInformationOfficerName(),
         settings.getDataProtection().getInformationOfficerEmail(),
-        settings.getDataProtection().getLegalMatterRetentionYears(),
+        // Effective (non-null) years, so the response always shows the value a close would stamp.
+        settings.getDataProtection().getEffectiveLegalMatterRetentionYears(),
         settings.getPortal().getEffectivePortalDigestCadence().name(),
         toLetterheadResponse(settings.getLetterhead()));
   }

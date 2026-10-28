@@ -32,6 +32,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -51,6 +52,7 @@ class OrgSettingsIntegrationTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private String memberIdOwner;
   private String memberIdAdmin;
@@ -769,6 +771,26 @@ class OrgSettingsIntegrationTest {
         .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.legalMatterRetentionYears").value(5));
+  }
+
+  @Test
+  void getSettings_legacyNullRetentionYears_reportsEffectiveFive() throws Exception {
+    // A legacy row written before the field initialiser existed holds NULL; the response must
+    // still show the 5 years a close would stamp, never null.
+    String schema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    try {
+      jdbcTemplate.update(
+          "UPDATE \"%s\".org_settings SET legal_matter_retention_years = NULL".formatted(schema));
+      mockMvc
+          .perform(
+              get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.legalMatterRetentionYears").value(5));
+    } finally {
+      jdbcTemplate.update(
+          "UPDATE \"%s\".org_settings SET legal_matter_retention_years = 5".formatted(schema));
+    }
   }
 
   @Test

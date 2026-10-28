@@ -533,6 +533,55 @@ class MatterClosureServiceIntegrationTest {
                 .isInstanceOf(RetentionElapsedException.class));
   }
 
+  @Test
+  void reopen_legacyClosedRowWithoutEndDate_anchorsOnClosedAtNotOnRetentionClock() {
+    UUID projectId = createProject("Legacy Closed Without End Date Matter");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED,
+                    null,
+                    false,
+                    false,
+                    true,
+                    VALID_JUSTIFICATION,
+                    null,
+                    null),
+                memberId));
+
+    // Shape of a legacy CLOSED row that was never backfilled: no persisted end date, a close long
+    // ago, and a retention clock that is recent (the old complete() stamped completion time, which
+    // need not be the close). The guard must anchor on the close, so retention has elapsed even
+    // though the clock alone would say the window is still open.
+    jdbcTemplate.update(
+        ("UPDATE \"%s\".projects SET retention_ends_on = NULL,"
+                + " closed_at = TIMESTAMPTZ '2006-01-15 10:00:00+00',"
+                + " retention_clock_started_at = (now() AT TIME ZONE 'UTC') WHERE id = ?")
+            .formatted(tenantSchema),
+        projectId);
+    Integer years =
+        jdbcTemplate.queryForObject(
+            "SELECT COALESCE(legal_matter_retention_years, 5) FROM \"%s\".org_settings LIMIT 1"
+                .formatted(tenantSchema),
+            Integer.class);
+    LocalDate expectedEndsOn = LocalDate.of(2006, 1, 15).plusYears(years);
+
+    runInTenantAsOwner(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        matterClosureService.reopen(
+                            projectId, new ReopenRequest(VALID_REOPEN_NOTES), memberId))
+                .isInstanceOfSatisfying(
+                    RetentionElapsedException.class,
+                    ex ->
+                        assertThat(ex.getBody().getProperties())
+                            .containsEntry("retentionEndedOn", expectedEndsOn.toString())));
+  }
+
   // ==========================================================================
   // GAP-L-74 part B / Phase 88 U13 (ADR-350) — the closure letter and the
   // closure SoA each get a linked Document. They are INTERNAL by default; the

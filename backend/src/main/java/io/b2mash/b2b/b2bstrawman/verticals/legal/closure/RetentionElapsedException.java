@@ -11,8 +11,9 @@ import org.springframework.web.ErrorResponseException;
 /**
  * Thrown by {@code MatterClosureService.reopen} when the retention window for the matter has
  * elapsed. The end date is the persisted {@code project.retentionEndsOn} stamped at close
- * (ADR-354); a legacy CLOSED row without one falls back to {@code retentionClockStartedAt} (or
- * {@code closedAt}) + the firm's current years. Eligibility condition:
+ * (ADR-354); a legacy CLOSED row without one falls back to {@code closedAt} (or {@code
+ * retentionClockStartedAt} when closedAt is missing) + the firm's current years. Eligibility
+ * condition:
  *
  * <pre>
  *   today (UTC) &gt; retentionEndsOn

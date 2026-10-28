@@ -79,6 +79,9 @@ class V8RetentionAndCommentAttachmentsTest {
   /** Inserted after migration by the re-run test, with the firm's years changed to 7. */
   private static final String RERUN_CLOSED = "00000000-0000-0000-0000-0000000008c8";
 
+  /** Clock-only CLOSED row inserted by the session-time-zone test, at 00:30 UTC. */
+  private static final String TZ_CLOCK_ONLY = "00000000-0000-0000-0000-0000000008c9";
+
   private static final String NO_SETTINGS_CLOSED = "00000000-0000-0000-0000-0000000008d1";
 
   private final DataSource migrationDataSource;
@@ -319,6 +322,47 @@ class V8RetentionAndCommentAttachmentsTest {
     } finally {
       exec(SCRATCH_SCHEMA, "DELETE FROM \"%s\".projects WHERE id = '" + RERUN_CLOSED + "'");
       exec(SCRATCH_SCHEMA, "UPDATE \"%s\".org_settings SET legal_matter_retention_years = 5");
+    }
+  }
+
+  /**
+   * closed_at is timestamptz but the clock is timestamp without time zone holding a UTC wall-clock
+   * (how the application writes it). The backfill must read the clock as UTC whatever the session
+   * time zone is: a clock-only row at 00:30 UTC run in a Johannesburg session would otherwise land
+   * on the previous day.
+   */
+  @Test
+  void clockOnlyBackfillUsesUtcDayInANonUtcSession() throws Exception {
+    String v8 =
+        new String(
+            getClass().getResourceAsStream(V8_RESOURCE).readAllBytes(), StandardCharsets.UTF_8);
+    try {
+      exec(
+          SCRATCH_SCHEMA,
+          "INSERT INTO \"%s\".projects"
+              + " (id, name, created_by, status, closed_at, retention_clock_started_at) VALUES ('"
+              + TZ_CLOCK_ONLY
+              + "', 'V8 clock only near midnight', '"
+              + MEMBER
+              + "', 'CLOSED', NULL, TIMESTAMP '2024-06-15 00:30:00')");
+
+      try (Connection c = migrationDataSource.getConnection();
+          Statement s = c.createStatement()) {
+        try {
+          s.execute("SET search_path TO \"%s\"".formatted(SCRATCH_SCHEMA));
+          s.execute("SET TIME ZONE 'Africa/Johannesburg'");
+          s.execute(v8);
+        } finally {
+          // Pooled connection — leave it as found.
+          s.execute("RESET search_path");
+          s.execute("RESET TIME ZONE");
+        }
+      }
+
+      assertThat(retentionEndsOn(SCRATCH_SCHEMA).get(TZ_CLOCK_ONLY))
+          .isEqualTo(LocalDate.of(2029, 6, 15));
+    } finally {
+      exec(SCRATCH_SCHEMA, "DELETE FROM \"%s\".projects WHERE id = '" + TZ_CLOCK_ONLY + "'");
     }
   }
 

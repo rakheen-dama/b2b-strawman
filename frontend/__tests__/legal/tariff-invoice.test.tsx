@@ -186,8 +186,10 @@ describe("TariffLineDialog", () => {
     await user.click(item);
 
     // Should show selected item count and total
-    // "R 850.00" appears in item browser row and in selected summary
-    expect(screen.getAllByText("R 850.00").length).toBeGreaterThanOrEqual(1);
+    // formatCurrency (en-ZA) renders "R 850,00" with U+00A0 after the R; the matcher normalises it to
+    // a plain space. It appears in the item browser row, the selected-item badge and the total (qty 1).
+    expect(screen.getAllByText("R 850,00").length).toBeGreaterThanOrEqual(3);
+    expect(screen.queryByText("R 850.00")).not.toBeInTheDocument();
     expect(screen.getByTestId("add-to-invoice-btn")).not.toBeDisabled();
   });
 });

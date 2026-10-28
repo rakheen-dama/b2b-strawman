@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import {
+  GeneratedDocumentsList,
+  isUnsavedGeneration,
+} from "@/components/templates/GeneratedDocumentsList";
 import { toast } from "sonner";
 
 const mockFetchGeneratedDocuments = vi.fn();
@@ -62,6 +65,7 @@ const SAMPLE_DOCS = [
     fileSize: 2048,
     generatedByName: "John Doe",
     generatedAt: "2026-01-15T10:00:00Z",
+    documentId: "doc-1",
   },
   {
     id: "gen-2",
@@ -70,6 +74,7 @@ const SAMPLE_DOCS = [
     fileSize: 1048576,
     generatedByName: "Jane Smith",
     generatedAt: "2026-01-16T14:00:00Z",
+    documentId: "doc-2",
   },
 ];
 
@@ -392,9 +397,28 @@ describe("GeneratedDocumentsList", () => {
 
   const VIS_DOCS = [
     { ...SAMPLE_DOCS[0], id: "gen-1", templateName: "Internal Letter", visibility: "INTERNAL" },
-    { ...SAMPLE_DOCS[1], id: "gen-2", templateName: "Portal Statement", visibility: "PORTAL" },
-    { ...SAMPLE_DOCS[1], id: "gen-3", templateName: "Shared Note", visibility: "SHARED" },
-    { ...SAMPLE_DOCS[1], id: "gen-4", templateName: "Unsaved Draft", visibility: null },
+    {
+      ...SAMPLE_DOCS[1],
+      id: "gen-2",
+      templateName: "Portal Statement",
+      visibility: "PORTAL",
+      documentId: "doc-3",
+    },
+    {
+      ...SAMPLE_DOCS[1],
+      id: "gen-3",
+      templateName: "Shared Note",
+      visibility: "SHARED",
+      documentId: "doc-4",
+    },
+    // Never saved to Documents: no linked Document, so no documentId and no visibility.
+    {
+      ...SAMPLE_DOCS[1],
+      id: "gen-4",
+      templateName: "Unsaved Draft",
+      visibility: null,
+      documentId: null,
+    },
   ];
 
   function rowFor(name: string) {
@@ -420,6 +444,8 @@ describe("GeneratedDocumentsList", () => {
     );
 
     await waitFor(() => expect(screen.getByText("Internal Letter")).toBeInTheDocument());
+    // The unsaved row is hidden by default (626F); reveal it to check its actions too.
+    await userEvent.setup().click(screen.getByRole("button", { name: "Show unsaved (1)" }));
 
     expect(
       within(rowFor("Internal Letter")).getByRole("button", { name: "Share with client" })
@@ -570,5 +596,118 @@ describe("GeneratedDocumentsList", () => {
     );
     expect(vi.mocked(toast.success)).not.toHaveBeenCalled();
     expect(within(rowFor("Internal Letter")).queryByText("Client portal")).not.toBeInTheDocument();
+  });
+  // ---- 626F / G-B6: unsaved generations badged "Not saved", hidden behind a toggle ----
+
+  const SAVED_LETTER = { ...SAMPLE_DOCS[0], id: "gen-s", templateName: "Saved Letter" };
+  const DOWNLOAD_ONLY = {
+    ...SAMPLE_DOCS[1],
+    id: "gen-u",
+    templateName: "Downloaded Letter",
+    documentId: null,
+    outputFormat: "PDF",
+    hasDocxDownload: false,
+    visibility: null,
+  };
+
+  it("isUnsavedGeneration: only plain-PDF rows without a linked Document", () => {
+    const base = { ...SAMPLE_DOCS[0], documentId: null };
+    expect(isUnsavedGeneration(base)).toBe(true); // outputFormat missing → PDF
+    expect(isUnsavedGeneration({ ...base, documentId: undefined })).toBe(true);
+    expect(isUnsavedGeneration({ ...base, outputFormat: "PDF" })).toBe(true);
+    expect(isUnsavedGeneration({ ...base, documentId: "doc-9" })).toBe(false);
+    // DOCX/BOTH generations have no save step — the list is their home, never "unsaved".
+    expect(isUnsavedGeneration({ ...base, outputFormat: "DOCX", hasDocxDownload: true })).toBe(
+      false
+    );
+    expect(isUnsavedGeneration({ ...base, outputFormat: "BOTH", hasDocxDownload: true })).toBe(
+      false
+    );
+    expect(isUnsavedGeneration({ ...base, outputFormat: "PDF", hasDocxDownload: true })).toBe(
+      false
+    );
+  });
+
+  it("hides unsaved generations by default and lists them with a Not saved badge behind the toggle", async () => {
+    const user = userEvent.setup();
+    mockFetchGeneratedDocuments.mockResolvedValue({
+      success: true,
+      data: [SAVED_LETTER, DOWNLOAD_ONLY],
+    });
+
+    render(
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" isAdmin={true} />
+    );
+
+    await waitFor(() => expect(screen.getByText("Saved Letter")).toBeInTheDocument());
+    expect(screen.queryByText("Downloaded Letter")).not.toBeInTheDocument();
+    expect(screen.queryByText("Not saved")).not.toBeInTheDocument();
+
+    const toggle = screen.getByRole("button", { name: "Show unsaved (1)" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await user.click(toggle);
+
+    expect(within(rowFor("Downloaded Letter")).getByText("Not saved")).toBeInTheDocument();
+    expect(within(rowFor("Saved Letter")).queryByText("Not saved")).not.toBeInTheDocument();
+    const hide = screen.getByRole("button", { name: "Hide unsaved" });
+    expect(hide).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(hide);
+    expect(screen.queryByText("Downloaded Letter")).not.toBeInTheDocument();
+    expect(screen.getByText("Saved Letter")).toBeInTheDocument();
+  });
+
+  it("shows no toggle when every row is saved", async () => {
+    mockFetchGeneratedDocuments.mockResolvedValue({ success: true, data: SAMPLE_DOCS });
+
+    render(<GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" />);
+
+    await waitFor(() => expect(screen.getByText("Engagement Letter")).toBeInTheDocument());
+    expect(screen.getByText("Invoice Template")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /unsaved/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Not saved")).not.toBeInTheDocument();
+  });
+
+  it("all rows unsaved: says so instead of the empty state, and the toggle reveals them", async () => {
+    const user = userEvent.setup();
+    mockFetchGeneratedDocuments.mockResolvedValue({
+      success: true,
+      data: [DOWNLOAD_ONLY, { ...DOWNLOAD_ONLY, id: "gen-u2", templateName: "Second Download" }],
+    });
+
+    render(<GeneratedDocumentsList entityType="CUSTOMER" entityId="cust-1" slug="acme" />);
+
+    await waitFor(() =>
+      expect(screen.getByText("No saved documents — 2 unsaved hidden.")).toBeInTheDocument()
+    );
+    expect(screen.queryByText("No documents generated yet")).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Show unsaved (2)" }));
+    expect(within(rowFor("Downloaded Letter")).getByText("Not saved")).toBeInTheDocument();
+    expect(within(rowFor("Second Download")).getByText("Not saved")).toBeInTheDocument();
+    expect(screen.queryByText(/No saved documents/)).not.toBeInTheDocument();
+  });
+
+  it("distinguishUnsaved={false} (fee note page) lists every row as before — no badge, no toggle", async () => {
+    mockFetchGeneratedDocuments.mockResolvedValue({
+      success: true,
+      data: [SAVED_LETTER, DOWNLOAD_ONLY],
+    });
+
+    render(
+      <GeneratedDocumentsList
+        entityType="INVOICE"
+        entityId="inv-1"
+        slug="acme"
+        isAdmin={true}
+        distinguishUnsaved={false}
+      />
+    );
+
+    await waitFor(() => expect(screen.getByText("Downloaded Letter")).toBeInTheDocument());
+    expect(screen.getByText("Saved Letter")).toBeInTheDocument();
+    expect(screen.queryByText("Not saved")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /unsaved/i })).not.toBeInTheDocument();
   });
 });

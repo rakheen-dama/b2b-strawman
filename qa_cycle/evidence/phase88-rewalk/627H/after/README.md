@@ -1,5 +1,7 @@
 # 627H AFTER: comment attachments backend (PR #1699 @ `3f5380e8e`)
 
+> **Note:** Observed on head `3f5380e8e` (before the UNIQUE index, `0a5bccc80`, and the kept-attachment visibility fix). Re-observation on the final head: see `../after-fix/`.
+
 Recorded 2026-10-28 13:06–13:12 UTC against the e2e mock-auth stack. Backend :8081, mock IDP :8090, `e2e-postgres` :5433,
 LocalStack :4567. Tenant schema `tenant_7d218705360b`, org `e2e-test-org`.
 

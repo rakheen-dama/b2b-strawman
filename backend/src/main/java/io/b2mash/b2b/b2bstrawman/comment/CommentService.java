@@ -354,10 +354,21 @@ public class CommentService {
 
     boolean attachmentsChanged =
         requested != null && replaceAttachments(commentId, existingLinks, requested);
-    if (attachmentsChanged) {
-      applyAttachmentRule(requested, finalVisibility);
-    } else if (visibilityChanging && !existingIds.isEmpty()) {
-      applyAttachmentRule(documentRepository.findAllById(existingIds), finalVisibility);
+    if (visibilityChanging) {
+      // A comment visibility change re-applies the rule to every document in the final set.
+      if (attachmentsChanged) {
+        applyAttachmentRule(requested, finalVisibility);
+      } else if (!existingIds.isEmpty()) {
+        applyAttachmentRule(documentRepository.findAllById(existingIds), finalVisibility);
+      }
+    } else if (attachmentsChanged) {
+      // Set-only edit: only newly added documents take the comment's visibility. A kept document
+      // keeps its current visibility — a lead may have unshared it directly, and a comment edit
+      // must not re-share it behind the document visibility gate.
+      var alreadyLinked = Set.copyOf(existingIds);
+      applyAttachmentRule(
+          requested.stream().filter(d -> !alreadyLinked.contains(d.getId())).toList(),
+          finalVisibility);
     }
 
     var updateDetails = new HashMap<String, Object>();

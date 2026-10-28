@@ -414,6 +414,59 @@ class CommentAttachmentIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
+  void addingAnAttachmentDoesNotReshareAKeptDocumentThatWasUnshared() throws Exception {
+    // Plain member authors a shared matter-level comment with two of their own uploads.
+    String a = uploadAndConfirm(member2(), matterA, "kept-a.pdf");
+    String b = uploadAndConfirm(member2(), matterA, "kept-b.pdf");
+    String c = uploadAndConfirm(member2(), matterA, "added-c.pdf");
+    String commentId =
+        id(
+            postComment(member2(), "PROJECT", matterA, "SHARED", a, b)
+                .andExpect(status().isCreated()));
+    assertDocument(b, Document.Visibility.SHARED, Document.Source.COMMENT);
+
+    // A lead deliberately unshares b through the document visibility endpoint.
+    mockMvc
+        .perform(
+            patch("/api/documents/" + b + "/visibility")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"visibility\": \"INTERNAL\"}"))
+        .andExpect(status().isOk());
+
+    // The author edits the comment to add c; the comment's visibility is unchanged.
+    putComment(member2(), commentId, "adds c", null, List.of(a, b, c))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.attachments", hasSize(3)));
+
+    assertDocument(a, Document.Visibility.SHARED, Document.Source.COMMENT);
+    assertDocument(b, Document.Visibility.INTERNAL, Document.Source.COMMENT);
+    assertDocument(c, Document.Visibility.SHARED, Document.Source.COMMENT);
+  }
+
+  @Test
+  void commentVisibilityChangeWithAnAttachmentEditReappliesToEveryDocumentInTheFinalSet()
+      throws Exception {
+    String a = uploadAndConfirm(owner(), matterA, "vis-change-a.pdf");
+    String b = uploadAndConfirm(owner(), matterA, "vis-change-b.pdf");
+    String c = uploadAndConfirm(owner(), matterA, "vis-change-c.pdf");
+    String commentId =
+        id(postComment(owner(), "TASK", taskA, "INTERNAL", a, b).andExpect(status().isCreated()));
+
+    putComment(owner(), commentId, "shared now, plus c", "SHARED", List.of(a, b, c))
+        .andExpect(status().isOk());
+    assertDocument(a, Document.Visibility.SHARED, Document.Source.COMMENT);
+    assertDocument(b, Document.Visibility.SHARED, Document.Source.COMMENT);
+    assertDocument(c, Document.Visibility.SHARED, Document.Source.COMMENT);
+
+    putComment(owner(), commentId, "internal again", "INTERNAL", List.of(a, b, c))
+        .andExpect(status().isOk());
+    assertDocument(a, Document.Visibility.INTERNAL, Document.Source.COMMENT);
+    assertDocument(b, Document.Visibility.INTERNAL, Document.Source.COMMENT);
+    assertDocument(c, Document.Visibility.INTERNAL, Document.Source.COMMENT);
+  }
+
+  @Test
   void updateReordersKeptAttachments() throws Exception {
     String a = uploadAndConfirm(owner(), matterA, "order-a.pdf");
     String b = uploadAndConfirm(owner(), matterA, "order-b.pdf");
@@ -458,10 +511,16 @@ class CommentAttachmentIntegrationTest extends AbstractIntegrationTest {
     String shown = uploadAndConfirm(owner(), matterA, "portal-shown.pdf");
     String unshared = uploadAndConfirm(owner(), matterA, "portal-unshared.pdf");
     String hidden = uploadAndConfirm(owner(), matterA, "portal-hidden.pdf");
+    // A generated artefact already shared through its own flow (PORTAL) is client-visible too.
+    String portalDoc = uploadAndConfirm(owner(), matterA, "portal-generated.pdf");
+    RequestScopes.runForTenant(
+        tenantSchema,
+        ORG_ID,
+        () -> documentService.markSystemAutoShared(UUID.fromString(portalDoc)));
 
     String sharedComment =
         id(
-            postComment(owner(), "PROJECT", matterA, "SHARED", shown, unshared)
+            postComment(owner(), "PROJECT", matterA, "SHARED", shown, unshared, portalDoc)
                 .andExpect(status().isCreated()));
     String internalComment =
         id(postComment(owner(), "TASK", taskA, "INTERNAL", hidden).andExpect(status().isCreated()));
@@ -487,13 +546,19 @@ class CommentAttachmentIntegrationTest extends AbstractIntegrationTest {
             .andExpect(
                 jsonPath("$[?(@.id == '%s')].attachments[0].fileName", sharedComment)
                     .value("portal-shown.pdf"))
+            .andExpect(
+                jsonPath("$[?(@.id == '%s')].attachments[1].documentId", sharedComment)
+                    .value(portalDoc))
+            .andExpect(
+                jsonPath("$[?(@.id == '%s')].attachments[1].fileName", sharedComment)
+                    .value("portal-generated.pdf"))
             .andExpect(jsonPath("$[?(@.id == '%s')]", internalComment).isEmpty())
             .andExpect(jsonPath("$[*].attachments").isArray())
             .andReturn()
             .getResponse()
             .getContentAsString();
     List<String> allChipIds = JsonPath.read(json, "$[*].attachments[*].documentId");
-    assertThat(allChipIds).contains(shown).doesNotContain(unshared, hidden);
+    assertThat(allChipIds).contains(shown, portalDoc).doesNotContain(unshared, hidden);
 
     mockMvc
         .perform(

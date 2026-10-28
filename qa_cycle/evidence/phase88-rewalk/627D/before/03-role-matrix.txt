@@ -1,0 +1,9 @@
+alice GET /api/reports/profitability?from=2020-01-01&to=2030-12-31 -> 200
+alice GET /api/reports/profitability/export/csv -> 404
+alice GET /api/me/capabilities -> 200
+bob GET /api/reports/profitability?from=2020-01-01&to=2030-12-31 -> 200
+bob GET /api/reports/profitability/export/csv -> 404
+bob GET /api/me/capabilities -> 200
+carol GET /api/reports/profitability?from=2020-01-01&to=2030-12-31 -> 403
+carol GET /api/reports/profitability/export/csv -> 404
+carol GET /api/me/capabilities -> 200

@@ -1,0 +1,91 @@
+## e2e (e2e-postgres, db app) — schema from public.org_schema_mapping
+ external_org_id |     schema_name     
+-----------------+---------------------
+ e2e-test-org    | tenant_7d218705360b
+(1 row)
+
+ email | status | accepted_at 
+-------+--------+-------------
+(0 rows)
+
+        email         |     name     
+----------------------+--------------
+ alice@e2e-test.local | Alice Owner
+ bob@e2e-test.local   | Bob Admin
+ carol@e2e-test.local | Carol Member
+(3 rows)
+
+                                name                                |    member    | project_role 
+--------------------------------------------------------------------+--------------+--------------
+ 627F repro - Bob lead court date                                   | Bob Admin    | lead
+ Apex Annual Returns h0g7                                           | Alice Owner  | lead
+ Apex Holdings — Shareholders' Agreement Review mvrzhxey64bd        | Alice Owner  | lead
+ Estate Late Peter Moroka fabk                                      | Alice Owner  | lead
+ Khumalo Property Holdings — Erf 1234 Sandton Transfer mvrzhxey64bd | Alice Owner  | lead
+ Ndlovu Property Dispute h0g7                                       | Alice Owner  | lead
+ Ndlovu v RAF fabk                                                  | Alice Owner  | lead
+ Ndlovu v RAF — Depth II mvrzhxey64bd                               | Alice Owner  | lead
+ Ndlovu — transition repro mvrzhxey64bd                             | Alice Owner  | lead
+ QC Debt Recovery #1 fabk                                           | Alice Owner  | lead
+ Team spec mvrzhjhp4cb0                                             | Carol Member | lead
+ Website Redesign                                                   | Alice Owner  | lead
+(12 rows)
+
+                  id                  |              project_id              |    date_type    | scheduled_date | scheduled_time |  status   |           court_name           | created_by 
+--------------------------------------+--------------------------------------+-----------------+----------------+----------------+-----------+--------------------------------+------------
+ cd4c6a2e-094b-4b9c-9460-fda74d0b7b99 | 5b7fcf0c-8f25-4295-b56b-875cdde2c63c | CASE_MANAGEMENT | 2026-11-05     | 09:30:00       | SCHEDULED | Gauteng Division, Johannesburg | Bob Admin
+(1 row)
+
+                  id                  |        name        |   party_type   |          created_at           
+--------------------------------------+--------------------+----------------+-------------------------------
+ 52487c55-1084-49ac-a982-430e6418aebe | Road Accident Fund | NATURAL_PERSON | 2026-10-28 10:40:17.730928+00
+ 7d803574-159e-4dff-bb02-7871f8d1a3ba | Road Accident Fund | NATURAL_PERSON | 2026-10-28 10:40:34.906963+00
+ 1adab4da-cb8c-4cb7-93f8-4447177e4437 | Mokoena            | NATURAL_PERSON | 2026-10-28 10:40:36.985415+00
+ a7e5e389-6341-4532-8a94-a7658b0ad785 | Pillay             | NATURAL_PERSON | 2026-10-28 10:40:39.051798+00
+(4 rows)
+
+ column_name |     data_type     | character_maximum_length 
+-------------+-------------------+--------------------------
+ party_type  | character varying |                       20
+(1 row)
+
+       conname        | pg_get_constraintdef 
+----------------------+----------------------
+ adverse_parties_pkey | PRIMARY KEY (id)
+(1 row)
+
+## Keycloak dev (b2b-postgres, db docteams) — READ-ONLY SELECTs
+     external_org_id      |     schema_name     
+--------------------------+---------------------
+ org_phase86_squash_smoke | tenant_56399d06a773
+ mathebula-partners       | tenant_5039f2d497cf
+(2 rows)
+
+           email            |  status  |          accepted_at          
+----------------------------+----------+-------------------------------
+ bob@mathebula-test.local   | ACCEPTED | 2026-10-24 07:14:47.00444+00
+ carol@mathebula-test.local | ACCEPTED | 2026-10-24 07:15:01.606816+00
+(2 rows)
+
+            email            
+-----------------------------
+ thandi@mathebula-test.local
+ bob@mathebula-test.local
+ carol@mathebula-test.local
+(3 rows)
+
+ court_dates 
+-------------
+           0
+(1 row)
+
+ members 
+---------
+       0
+(1 row)
+
+ invitations 
+-------------
+           0
+(1 row)
+

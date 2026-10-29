@@ -1,0 +1,7 @@
+tokens_total=1 last5min=1 newest_age_s=3
+tokens_total=3 last5min=0 newest_age_s=316
+tokens_total=4 last5min=1 newest_age_s=4
+tokens_total=4 last5min=0 newest_age_s=322
+tokens_total=6 last5min=2 newest_age_s=0
+tokens_total=6 last5min=0 newest_age_s=317
+tokens_total=8 last5min=2 newest_age_s=18

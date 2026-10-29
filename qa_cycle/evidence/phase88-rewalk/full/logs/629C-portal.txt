@@ -1,0 +1,119 @@
+
+> portal@0.1.0 test:e2e:portal /Users/rakheendama/Projects/2026/worktree-epic-629C/portal
+> PORTAL_CONTACT_EMAIL=${PORTAL_CONTACT_EMAIL:-contact@acme.example.com} playwright test --config=playwright.portal.config.ts --project=chromium --project=portal-client-90day --update-snapshots=all --reporter=list
+
+[2m[WebServer] [22m[33m[1m⚠[22m[39m The "middleware" file convention is deprecated. Please use "proxy" instead.
+[2m[WebServer] [22m
+[2m[WebServer] [22m  To migrate automatically, run:
+[2m[WebServer] [22m  npx @next/codemod@canary middleware-to-proxy .
+[2m[WebServer] [22m
+[2m[WebServer] [22m  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+Running 33 tests using 1 worker
+
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/sm-home-populated.png, writing actual.
+  ✓   1 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › home-populated (1.6s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/sm-trust-matter-list.png, writing actual.
+  ✓   2 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › trust-matter-list (817ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/sm-deadlines-list.png, writing actual.
+  ✓   3 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › deadlines-list (825ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/sm-invoices-list.png, writing actual.
+  ✓   4 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › invoices-list (724ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/sm-matters-list.png, writing actual.
+  ✓   5 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › matters-list (828ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/sm-settings-notifications.png, writing actual.
+  ✓   6 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › settings-notifications (803ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/sm-profile.png, writing actual.
+  ✓   7 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › profile (824ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/md-home-populated.png, writing actual.
+  ✓   8 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › home-populated (773ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/md-trust-matter-list.png, writing actual.
+  ✓   9 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › trust-matter-list (754ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/md-deadlines-list.png, writing actual.
+  ✓  10 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › deadlines-list (747ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/md-invoices-list.png, writing actual.
+  ✓  11 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › invoices-list (610ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/md-matters-list.png, writing actual.
+  ✓  12 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › matters-list (632ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/md-settings-notifications.png, writing actual.
+  ✓  13 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › settings-notifications (717ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/md-profile.png, writing actual.
+  ✓  14 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › profile (757ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/lg-home-populated.png, writing actual.
+  ✓  15 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › home-populated (860ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/lg-trust-matter-list.png, writing actual.
+  ✓  16 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › trust-matter-list (736ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/lg-deadlines-list.png, writing actual.
+  ✓  17 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › deadlines-list (749ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/lg-invoices-list.png, writing actual.
+  ✓  18 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › invoices-list (762ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/lg-matters-list.png, writing actual.
+  ✓  19 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › matters-list (938ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/lg-settings-notifications.png, writing actual.
+  ✓  20 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › settings-notifications (889ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/chromium/lg-profile.png, writing actual.
+  ✓  21 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › profile (734ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-00-home-landing.png, writing actual.
+  ✓  22 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:118:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 0: Client lands on /home and sees the pending info requests and the sent fee note (857ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-00-info-request-detail.png, writing actual.
+  ✓  23 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:140:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 0: Client opens the new info request from Home and sees its upload slot (2.0s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-03-info-request-submitted.png, writing actual.
+  ✓  24 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:177:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 3: Client uploads the document and submits the info request (1.6s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-07-deadlines-list.png, writing actual.
+  ✓  25 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:217:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 7: Diary dates page renders for the client (no portal-visible deadlines on the e2e tenant) (1.2s)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-21-trust-balance.png, writing actual.
+  ✓  26 [portal-client-90day] › e2e/tests/portal-client-90day/day-14-30.spec.ts:69:7 › Day 14–30 — Portal Client Lifecycle (Checkpoint 5) › Day 21 [legal-za]: Client follows the trust-activity email to the balance and the new deposit (2.5s)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-45-invoice-detail.png, writing actual.
+  ✓  27 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:48:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 45: Client opens the seeded SENT fee note (1.7s)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-45-invoice-no-psp.png, writing actual.
+  ✓  28 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:80:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 45: SENT fee note offers no online payment without a PSP (966ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-60-document-downloaded.png, writing actual.
+  ✓  29 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:112:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 60 [legal-za]: Client downloads the Statement of Account from the matter page (3.0s)
+  -  30 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:163:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 75 [legal-za]: Client marks the deadline nudge read and downloads its document
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-85-profile.png, writing actual.
+  ✓  31 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:57:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 85: Profile shows the client's contact details (read-only) (846ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-85-notifications-biweekly.png, writing actual.
+  ✓  32 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:86:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 85: Notifications page shows the firm's bi-weekly digest cadence (read-only) (778ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-629C/portal/e2e/screenshots/portal-v2/portal-client-90day/day-90-activity-trail.png, writing actual.
+  ✓  33 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:110:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 90: Activity trail shows this run's submit and download (1.1s)
+
+  1 skipped
+  32 passed (42.4s)
+--- portal failure artefacts:
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-lg-1280x800-home-populated-chromium/lg-home-populated-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-45-75-Day-45–75-—-Port-e2769-nline-payment-without-a-PSP-portal-client-90day/day-45-invoice-no-psp-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-md-768x1024-settings-notifications-chromium/md-settings-notifications-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-sm-375x667-home-populated-chromium/sm-home-populated-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-sm-375x667-profile-chromium/sm-profile-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-85-90-Day-85–90-—-Port-ea7dc--contact-details-read-only--portal-client-90day/day-85-profile-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-lg-1280x800-invoices-list-chromium/lg-invoices-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-00-07-Day-0–7-—-Portal-610f8-me-and-sees-its-upload-slot-portal-client-90day/day-00-info-request-detail-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-md-768x1024-deadlines-list-chromium/md-deadlines-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-45-75-Day-45–75-—-Port-2de89-ns-the-seeded-SENT-fee-note-portal-client-90day/day-45-invoice-detail-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-00-07-Day-0–7-—-Portal-4b256-eadlines-on-the-e2e-tenant--portal-client-90day/day-07-deadlines-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-lg-1280x800-trust-matter-list-chromium/lg-trust-matter-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-14-30-Day-14–30-—-Port-ed569-balance-and-the-new-deposit-portal-client-90day/day-21-trust-balance-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-md-768x1024-invoices-list-chromium/md-invoices-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-00-07-Day-0–7-—-Portal-cf35e-nd-submits-the-info-request-portal-client-90day/day-03-info-request-submitted-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-md-768x1024-home-populated-chromium/md-home-populated-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-lg-1280x800-profile-chromium/lg-profile-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-00-07-Day-0–7-—-Portal-e9bf8-uests-and-the-sent-fee-note-portal-client-90day/day-00-home-landing-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-85-90-Day-85–90-—-Port-b0ed3-y-digest-cadence-read-only--portal-client-90day/day-85-notifications-biweekly-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-sm-375x667-matters-list-chromium/sm-matters-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-lg-1280x800-deadlines-list-chromium/lg-deadlines-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-md-768x1024-matters-list-chromium/md-matters-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-sm-375x667-trust-matter-list-chromium/sm-trust-matter-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-sm-375x667-invoices-list-chromium/sm-invoices-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-lg-1280x800-matters-list-chromium/lg-matters-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-85-90-Day-85–90-—-Port-679dd-s-run-s-submit-and-download-portal-client-90day/day-90-activity-trail-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/day-45-75-Day-45–75-—-Port-bf9cc-ccount-from-the-matter-page-portal-client-90day/day-60-document-downloaded-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-sm-375x667-deadlines-list-chromium/sm-deadlines-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-sm-375x667-settings-notifications-chromium/sm-settings-notifications-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-md-768x1024-profile-chromium/md-profile-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-md-768x1024-trust-matter-list-chromium/md-trust-matter-list-actual.png
+/Users/rakheendama/Projects/2026/worktree-epic-629C/portal/test-results/portal-pages-portal-lg-1280x800-settings-notifications-chromium/lg-settings-notifications-actual.png

@@ -333,3 +333,29 @@ Written by W9 at 2026-10-29T21:12Z (`logs/exit-checkpoints-stack-W9.txt`, `logs/
 629A scored seven rows against step text that #1712 (`45dcc7a6f`) amended later the same day: 0.Aa, M.6a (§5a row 1), 3.3a (row 2), 6.2a, 33.1-aa (row 4), 6.3a (row 5) and 14.13a (row 6). They are reconciled in `gaps.md` § "Inside register §5": these rows sit inside §5a (authorised, applied), so they do not count against "0 FAIL outside register §5". G88-M1 is closed by §5a row 1. 6.3b stays a FAIL on G88-M6. **The 629A day files are untouched**; they remain the historical record of what was scored at the time. The totals in the Sections table above are unchanged.
 
 The dispositions of the "Open questions carried to 629C" are listed in `gaps.md` § "README 'Open questions carried to 629C' — dispositions". The verify-marker audit is in `markers-audit.md`. The 629.9 run table, the HIGH count after the suite rows, the exit-test result and the stack state left for 629D are added below by 629C builder 2.
+
+### 629.9 — three suites on a fresh stack (builder 2)
+
+Full record: `e2e-runs.md`. The stack was built fresh from the worktree at `20559c3d6`, whose product tree is byte-identical to the 628I gate `cb10c5d63`. The chain ran 21:52:45Z → 22:23:55Z, on AC power.
+
+| Leg | Result | 628I baseline | Verdict |
+|---|---|---|---|
+| E2E-LEGAL lifecycle | 82 / 4 failed / 1 skipped / 17 did not run | 101/0/3 | **FAIL** → G88-F48 HIGH, G88-F49 LOW, plus 1 cascade of F48 |
+| E2E-LEGAL depth-ii | 39 / 0 / 4 | 39/0/4 | PASS |
+| E2E-DEFAULT | 159 / 0 / 18 / 0 | 159/0/18/0 | PASS |
+| E2E-PORTAL login-bare | 1 / 0 | 1/0 | PASS |
+| E2E-PORTAL isolation | 2 / 0 | 2/0 | PASS |
+| E2E-PORTAL `test:e2e:portal` | 32 / 0 / 1 | 32/0/1 | PASS |
+
+**Root cause.** The lifecycle ran at 00:00–00:03 SAST, while the e2e containers were on UTC and still a day behind. The product stamps server-side dates (trust fee transfers, My Work "today") in the process zone, and client-side dates in the browser zone. The diagnosis is in `logs/629C-lifecycle-date-boundary-diagnosis.md`, and builder 2's read-only DB re-check is in `logs/629C-lifecycle-db-reverify.txt`. The 17 tests that did not run are DEFERRED until a diagnostic re-run in a date-aligned window (`e2e-runs.md` § "Diagnostic re-run"). That re-run does not change run 1's scored FAIL.
+
+**Outcome.**
+- Gap ids used by 629C: **G88-F35 … G88-F49** (next free G88-F50).
+- **HIGH = 3:** G88-F12, G88-F33, G88-F48.
+- Exit test (`gaps.md` § "Exit test — final arithmetic"): **FAIL — not demo-ready**.
+- E.11 = **FAIL** (`exit-checkpoints.md`): E.11a/b/d PASS by the 628I marker on byte-identical code, E.11c N/A (G88-F47), E.11e PARTIAL (G88-F35).
+
+**Stack state left for 629D.**
+- After run 1, the e2e stack was left UP: fresh from HEAD, plus run-1 data, plus the three cap restarts of `e2e-backend`. The diagnostic re-run will replace it with a fresh stack <!-- DIAG -->.
+- The KC svc portal is back on :3002, and the KC dev stack was untouched.
+- The worktree is clean apart from the two untracked orchestrator scripts.

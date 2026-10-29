@@ -1,6 +1,6 @@
 # 629.11 — Gap register — Phase 88 end-of-phase re-walk (629A + 629B + 629C) — 2026-10-30
 
-This is the authoritative register for Epic 629 (629B ruling O-10, `exit-checkpoints.md:3`), so 629C may re-rate any gap; each re-rating below states its reason. Written by 629C builder 1 at HEAD `20559c3d6`. The product tree is byte-identical to the 628I gate `cb10c5d63`: `git diff --stat cb10c5d63..HEAD -- backend frontend portal gateway packages compose` is empty. Every HIGH file:line below was re-read at HEAD on 2026-10-30.
+This is the authoritative register for Epic 629 (629B ruling O-10, `exit-checkpoints.md:3`), so 629C may re-rate any gap; each re-rating below states its reason. Written by 629C builder 1 at HEAD `20559c3d6`; builder 2 added the 629.9 suite rows (G88-F48, G88-F49) and the final arithmetic. The product tree is byte-identical to the 628I gate `cb10c5d63`: `git diff --stat cb10c5d63..HEAD -- backend frontend portal gateway packages compose` is empty. Every HIGH file:line below was re-read at HEAD on 2026-10-30.
 
 **Scales and classes.**
 - **Severity** uses the master-doc scale BLOCKER / HIGH / MEDIUM / LOW (`qa/testplan/demo-readiness-keycloak-master.md`).
@@ -21,10 +21,10 @@ This is the authoritative register for Epic 629 (629B ruling O-10, `exit-checkpo
 
 **Evidence paths** are relative to `qa_cycle/evidence/phase88-rewalk/full/` unless a path is shown in full. Each row links the day file that holds the full observed / expected text instead of copying it. The README index (`README.md` § "Candidate gaps (629A + 629B) — index") has the long-form rows for G88-F1 … F34.
 
-## Summary — PROVISIONAL (builder 1; the 629.9 suite rows and the final arithmetic are added by builder 2)
+## Summary
 
 **Exit test: FAIL — not demo-ready** (ruling O-9; stated plainly, not softened).
-- **0 HIGH → FAIL:** 2 HIGH, G88-F12 and G88-F33. Both were re-verified at HEAD (rows below).
+- **0 HIGH → FAIL:** 3 HIGH: G88-F12 and G88-F33 (both re-verified at HEAD), and **G88-F48** (the 629.9 suite run; re-verified at HEAD and in the e2e DB). Rows below.
 - **0 FAIL outside register §5 → FAIL:** 59 of the 71 scored FAIL rows are outside §5. Of the 71, 37 are 90-day rows and 34 are portal rows.
   - Inside §5 (12 rows):
     - 7 sit in §5a rows 1, 2, 4, 5, 6, which are applied (O-12 reconciliation, below);
@@ -33,23 +33,27 @@ This is the authoritative register for Epic 629 (629B ruling O-10, `exit-checkpo
     - 11 are product-bug FAILs (G88-F3 ×2, G-B8, G88-M6, **G88-F12**, G88-F27, G88-F29, G88-F31, **G88-F33** ×2, G88-F16);
     - 45 are scenario mismatches still awaiting founder authorisation (G88-F1 ×27, G88-F37 ×10, G88-F32 ×3, G88-F11, G88-F14, G88-F22, G88-F25, G88-F34);
     - 3 are portal exit aggregates (P-E.1, P-E.2a, P-E.3) that fail on the rows above.
-  - The four computed 90-day exit FAILs (E.1, E.2b, E.3, E.8, `exit-checkpoints.md`) are also outside §5.
-  - Suite failures from 629.9, if any, are added below by builder 2.
+  - The computed 90-day exit FAILs (E.1, E.2b, E.3, E.8 and now **E.11**, `exit-checkpoints.md`) are also outside §5.
+  - **629.9 suite:** the E2E-LEGAL lifecycle leg FAILs with 4 failing tests, all outside §5:
+    - G88-F48 HIGH (`day-60-interest.spec.ts:96`) and its cascade (`day-90-review.spec.ts:95`);
+    - G88-F49 LOW (`day-07-14-work-trust.spec.ts:167`, `:306`).
 
-**Open register (provisional): 61 open gaps + 1 hypothesis.** BLOCKER 0 · **HIGH 2** · **MEDIUM 15** · **LOW 44**, plus G88-F36 (LOW, HYPOTHESIS — not counted).
+    The other five legs equal their 628I baselines (`e2e-runs.md`).
+
+**Open register: 63 open gaps + 1 hypothesis.** BLOCKER 0 · **HIGH 3** · **MEDIUM 15** · **LOW 45**, plus G88-F36 (LOW, HYPOTHESIS — not counted).
 
 | Severity | product bug | scenario mismatch needing authorisation | process | ADR conflict (founder) | Total |
 |---|---|---|---|---|---|
-| HIGH | 2 (F12, F33) | 0 | 0 | 0 | **2** |
+| HIGH | 3 (F12, F33, F48) | 0 | 0 | 0 | **3** |
 | MEDIUM | 14 (F3, F16, F19, F23, F38, F39, F40, F43, F44, G-B8, M2, M4, M6, M13) | 1 (F32) | 0 | 0 | **15** |
-| LOW | 31 (F2, F4, F5, F6, F9, F10, F13, F15, F17, F18, F20, F24, F26, F27, F29, F30, F31, F41, F42, F45, F46, M5, M7, M9, M10, M11, M14, G-D10a, G-D10c, G-D17 residual, G-D20 residual) | 11 (F1, F7, F11, F14, F21, F22, F25, F28, F34, F37, F47) | 1 (F35) | 1 (G-D10b) | **44** |
-| **Total** | **47** | **12** | **1** | **1** | **61** |
+| LOW | 32 (F2, F4, F5, F6, F9, F10, F13, F15, F17, F18, F20, F24, F26, F27, F29, F30, F31, F41, F42, F45, F46, F49, M5, M7, M9, M10, M11, M14, G-D10a, G-D10c, G-D17 residual, G-D20 residual) | 11 (F1, F7, F11, F14, F21, F22, F25, F28, F34, F37, F47) | 1 (F35) | 1 (G-D10b) | **45** |
+| **Total** | **49** | **12** | **1** | **1** | **63** |
 
 These counts leave out:
 - **HYPOTHESIS:** G88-F36 (LOW).
 - **Not open:** G88-F8 (retired alias), G88-M1 (closed by §5a row 1), G-D5 (DEFERRED — not observed).
 - **Open register items cited by label (ruling O-5):** N-9 … N-12, and SB-11 (= §5b row 19).
-- **Suite rows:** placeholder below.
+- **Suite rows:** none left out. G88-F48 and G88-F49 are counted above; the `day-90-review.spec.ts:95` cascade has no own id.
 
 The 629A + 629B new ids alone (F1 … F34, F8 retired) still read HIGH 2 · MEDIUM 5 · LOW 26, as in the README.
 
@@ -61,7 +65,7 @@ The 629A + 629B new ids alone (F1 … F34, F8 retired) still read HIGH 2 · MEDI
 
 No severity was raised or lowered.
 
-**Gap ids:** 629C assigned **G88-F35 … G88-F47**. The next free id for the 629.9 suite rows is **G88-F48**.
+**Gap ids:** 629C assigned **G88-F35 … G88-F49**. F35–F47 are builder 1's; F48–F49 come from the 629.9 suite run. The next free id is **G88-F50**.
 
 ## Register
 
@@ -132,13 +136,18 @@ No severity was raised or lowered.
 | G-D20 (617C, residual) | LOW | 23.6 | product bug (layout) | The Diary week card title is still truncated ("Gauteng High…") | new — follow-up phase (attribution: U21 628B improved the card, not the truncation) | days-22-35.md | open |
 | G-D5 (617C) | — | 80.5b (related) | — | My work's Upcoming band exists (627F #1698; `diary-types.ts:114` `UPCOMING_DIARY_DAYS = 14`). Neither the walk's court date (D+45) nor the lifecycle spec's ("30 days out", `day-07-14-work-trust.spec.ts:119`) falls inside the window, so G-D5 is **neither observed closed nor observed open**. Vitest coverage exists (`__tests__/dashboard/my-work-dashboard.test.tsx` and others) but is not a PASS (root CLAUDE.md §3). The related scenario mismatch is G88-F25 | — (re-observe with a court date inside 14 days) | days-76-90.md 80.5 | **DEFERRED — not observed** |
 | G88-M1 | LOW | 0.Aa, M.6a | scenario mismatch | 0.A drop-schema name / M.6 `-d docteams` | — | session-0.md | **closed by §5a row 1** (applied #1712 `45dcc7a6f`; O-12) |
-<!-- 629.9 rows: filled by builder 2 -->
+| **G88-F48** | **HIGH** (orchestrator ruling R-2; above the O-4 "new failure → MEDIUM" default because it is the trust money path — O-4: money → HIGH) | suite: lifecycle `frontend/e2e/tests/legal-lifecycle/day-60-interest.spec.ts:96` (FAIL); its cascade `day-90-review.spec.ts:95` (FAIL, no own id) | product bug (backend — trust money path / trust compliance) | Server-dated trust postings take `LocalDate.now()` in the JVM default zone. That is UTC in the containers: no `TZ`, no `user.timezone`, no firm-timezone setting (diagnosis §0; `docker exec … date` UTC, `TZ=` empty, re-checked by builder 2). The client-dated flows carry the browser-local date instead: `RecordDepositDialog.tsx:48-57`, `RecordPaymentDialog.tsx:56`, `RecordRefundDialog.tsx:56`, `RecordTransferDialog.tsx:45`. **Server-dated sites (re-read at HEAD):** fee transfer `TrustTransactionService.java:622` (the Record Fee Transfer dialog has no date field); reversal postings `:1114`, `:1139`, `:1264`, `:1281`, `:1328`, `:1334`; `TrustAccountService.java:147` (opened-date default), `:244` (closed date); `TrustInvestmentService.java:243`, `:289`. Between 00:00 and 02:00 SAST, a fee transfer is therefore dated the previous day. **Observed in run 1 (00:01–00:03 SAST, 2026-10-30):** Moroka's DEPOSIT R 250 000 is dated 2026-10-30, and its FEE_TRANSFER R 8 500 is dated 2026-10-29. Moroka's balance as of 2026-10-29, under the product's own `calculateClientBalanceAsOfDate` rules (`TrustTransactionRepository.java:135-153`), is **−8 500,00**: a negative client trust balance for one day. **Interest misallocated:** `InterestService.java:189` gives 31 days; the transaction-weighted walk is at `:245-275`; avg `:280-281` and gross `:282-286`. Balance-days = 0 × 29 + (−8 500) × 1 + 241 500 × 1 = 233 000, so avg daily = 233 000 / 31 = **R 7 516,13** and gross = 7 516,13 × 0.065 × 31 / 365 = **R 41,49**. The expected values were R 7 790,32 / R 43,01 (241 500 for one day). QuickCollect has no server-dated posting and matched exactly (R 1 451,61 / R 8,01): it is the control. Window dependency: pending diagnostic re-run <!-- DIAG --> | new — follow-up fix PR (firm-timezone clock; red-first test) | e2e-runs.md § "Failures → gaps" 3; logs/629C-lifecycle.txt; logs/629C-lifecycle-date-boundary-diagnosis.md (Failure 3); logs/629C-lifecycle-db-reverify.txt | open |
+| G88-F49 | LOW (orchestrator ruling R-2; below the O-4 MEDIUM default because it is display-only: the stored data is correct, and the view corrects itself at 02:00 SAST) | suite: lifecycle `day-07-14-work-trust.spec.ts:167` and `:306` (FAIL) | product bug (frontend server) | My Work and the dashboard compute "today" on the Next.js server, in its process zone (UTC): `app/(app)/org/[slug]/my-work/page.tsx:109` `new Date().toLocaleDateString("en-CA")` feeds `/api/my-work/time-entries?from=${today}&to=${today}` (`:111-114`); the week range `resolveMyWorkDateRange` is at `:45-71`; `dashboard/page.tsx:92` does the same. Log Time defaults to the browser date (`components/tasks/log-time-dialog.tsx:58`). An entry logged between 00:00 and 02:00 SAST is therefore missing from "Today", and "Time Today" reads 0m. **Observed in run 1:** the entries are stored as 2026-10-30 (created 2026-10-29 22:01Z). The error-context shows "Time Today 0m / 8h" and "No time recordings yet", while the weekly strip shows "Fri: 1.0 hours logged" (`:167`) and "Fri: 2.3 hours logged" (`:306`). The Upcoming link `from=2026-10-30` is `addDays(today, 1)` (`my-work/todays-diary.ts:65`), which puts the server's "today" at 2026-10-29. Window dependency: pending diagnostic re-run <!-- DIAG --> | new — follow-up phase | e2e-runs.md § "Failures → gaps" 1–2; logs/629C-lifecycle.txt; logs/629C-lifecycle-date-boundary-diagnosis.md (Failures 1–2); logs/629C-lifecycle-db-reverify.txt | open |
 
-Builder 2: replace the comment line above with the 629.9 suite rows, so that they join the register table. Ids start at G88-F48. Per ruling O-4:
-- each failing title gets its own id;
-- a failure that is new against the 628I baseline on byte-identical code defaults to MEDIUM pending investigation;
-- "flaky" is PARTIAL, with its own id;
-- a soft-skip outside the named set is a gap.
+**629.9 suite rows — notes** (builder 2; source `e2e-runs.md`; orchestrator rulings R-1 … R-5).
+- **Lifecycle leg: FAIL.** Run 1 is the scored result (R-1): 82 passed / 4 failed / 1 skipped / 17 did not run, against the 628I baseline of 101/0/3 on byte-identical code. The four failing titles map as follows:
+  - `day-07-14-work-trust.spec.ts:167` and `:306` → G88-F49;
+  - `day-60-interest.spec.ts:96` → G88-F48;
+  - `day-90-review.spec.ts:95` → **cascade of G88-F48**, with no own id. It threw `Run-state value "siphoFeeNote2" was not recorded`. That value is recorded only at `day-60-interest.spec.ts:269`, inside test `:252`, which is in the same `test.describe.serial` block (`:84`) as the F48 failure and so did not run.
+- **Carried 624I item `day-90-review.spec.ts:95` is not resolved by this run.** Its fee-notes-list assertion was not exercised, so it is not dropped from the carried set. Final disposition: pending the diagnostic re-run <!-- DIAG -->.
+- **17 did-not-run tests: DEFERRED** pending the diagnostic re-run <!-- DIAG -->. They include two of the three named `628E-BLOCKER` fixmes (`day-60-interest.spec.ts:160` = G88-F39, `day-90-review.spec.ts:123` = G88-F40) and the former-carried `day-90-review.spec.ts:192`.
+- **Not a harness defect** (R-2). The spec dates entries with host-local `isoDate()` (`frontend/e2e/helpers/legal-depth-ii.ts:94-100`), which mirrors the product's own browser defaults (`log-time-dialog.tsx:58`, `RecordDepositDialog.tsx:48-57`), so a real SA user's browser produces the same dates. The defect is the product's server-side "today" disagreeing with its own client defaults. Pinning Playwright `timezoneId` would mask F48 / F49, not fix them.
+- **The other five legs equal their 628I baselines:** depth-ii 39/0/4, default 159/0/18/0, login-bare 1/0, isolation 2/0, `test:e2e:portal` 32/0/1. Each has 0 failed, 0 flaky and 0 soft-skips, and each skip set equals its named 628I set (ruling O-14), so these legs add no gap. The lifecycle skip set differs only by the cascade: 1 named fixme skipped, and 2 named fixmes in "did not run".
 
 ## Inside register §5 — the 12 scored FAIL rows that do not count against the exit test
 
@@ -224,11 +233,14 @@ These are cited here so that 629D sees the whole picture. Each was observed by a
 
 ## Exit test — final arithmetic
 
-<!-- 629.9 exit arithmetic: filled by builder 2 (add the suite rows to the counts above, then restate both exit-test lines with the final numbers) -->
-
-Provisional (builder 1, before the 629.9 rows):
-- **0 HIGH: FAIL** — 2 (G88-F12, G88-F33).
-- **0 FAIL outside register §5: FAIL** — 59 of the 71 scored FAIL rows, plus the computed 90-day exit FAILs E.1, E.2b, E.3 and E.8.
+Final, including the 629.9 suite rows (builder 2):
+- **0 HIGH: FAIL** — **3 HIGH**: G88-F12 (OTP Voetstoots binds `org.name`), G88-F33 (SoA S3-key collision; an internal SoA was served on the portal) and **G88-F48** (server-dated trust postings in UTC; a negative client trust balance day, and the interest run misallocated).
+- **0 FAIL outside register §5: FAIL**, made up of:
+  - 59 of the 71 scored day-file FAIL rows;
+  - the 4 failing lifecycle tests of 629.9 (G88-F48 ×1 + its cascade, G88-F49 ×2);
+  - the computed 90-day exit FAILs E.1, E.2b, E.3, E.8 and **E.11** (`exit-checkpoints.md`).
+- **Open register:** 63 open gaps (BLOCKER 0 · HIGH 3 · MEDIUM 15 · LOW 45) + 1 hypothesis (G88-F36, not counted).
+- **Not counted as FAIL:** the 17 lifecycle tests that did not run in 629.9 run 1. They are DEFERRED pending the diagnostic re-run <!-- DIAG -->, and its outcome does not change run 1's scored FAIL (ruling R-3).
 
 **Result: FAIL — the legal-za 90-day scenario is not demo-ready at HEAD `20559c3d6`.**
 

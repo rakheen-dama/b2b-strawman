@@ -1,0 +1,14 @@
+# 2026-10-29T15:04:00Z estate matter
+028d3901-e826-44a9-b6a6-b81328365629|Estate Late Peter Moroka|ACTIVE|ESTATES|acd36ca9-adc9-4a58-89bf-d36016febf49
+# tasks by created_at / sort
+edb80a24-900a-44c6-9411-4236f5ad5463|Obtain death certificate & will|OPEN|thandi@mathebula-test.local
+a00ac709-f131-4da9-a26d-a04665276da2|Report estate to Master of High Court|OPEN|thandi@mathebula-test.local
+d5c7694c-c605-4cc9-be5b-0884641c3650|Obtain Letters of Executorship|OPEN|thandi@mathebula-test.local
+e5a26d67-bdc3-4ab8-a777-9baa9a897a1f|Advertise for creditors (Gazette + local newspaper)|OPEN|
+7372f1c1-6f65-4179-b57f-e286e4739666|Inventory of assets & liabilities|OPEN|thandi@mathebula-test.local
+2d7d5c78-9fcc-4518-8ed3-b76e4dc09bb0|Open estate bank account|OPEN|
+b9b24509-f641-43f5-8307-7fa24a85881f|Prepare Liquidation & Distribution account|OPEN|thandi@mathebula-test.local
+e93932dd-cfc1-4a0e-8ca7-af4ef4699277|Lodge L&D account with Master|OPEN|thandi@mathebula-test.local
+a1bc11c6-fe5d-45d0-abcd-bbd3537d4a71|Distribute estate & file final account|OPEN|thandi@mathebula-test.local
+# members
+lead|thandi@mathebula-test.local

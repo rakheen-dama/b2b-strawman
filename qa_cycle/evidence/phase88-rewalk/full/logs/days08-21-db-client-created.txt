@@ -1,0 +1,6 @@
+# 2026-10-29T15:00:02Z Moroka client
+acd36ca9-adc9-4a58-89bf-d36016febf49|Moroka Family Trust|TRUST|PROSPECT|moroka.trust@email.co.za|9123456789|8 Rissik St|Johannesburg|ZA|IT000456/2018|{}
+# portal contact + directory
+moroka.trust@email.co.za|GENERAL|ACTIVE|2026-10-29 14:59:52.511612+00
+moroka.trust@email.co.za|mathebula-partners|tenant_5039f2d497cf|Mathebula & Partners
+# field definitions with 'benefic' in slug/name (customer)

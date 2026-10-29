@@ -81,6 +81,7 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | Days 1–4 (629.3, W2a) | 209–266 | days-01-07.md | 46 | 42 / 4 / 0 / 0 / 0 |
 | Days 5–7 (629.3, W2b) | 268–301 | days-01-07.md | 25 | 22 / 3 / 0 / 0 / 0 |
 | **Days 1–7 total** | 209–301 | days-01-07.md | 71 | 64 / 7 / 0 / 0 / 0 |
+| Days 8–13 (629.3, W3a) | 304–333 | days-08-21.md | 23 | 19 / 4 / 0 / 0 / 0 |
 
 ## Wow-moment candidates shot in 629A
 | Wow | Step | File | Shows |
@@ -94,18 +95,19 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | ID | Severity | Step | Class | Owner | File |
 |---|---|---|---|---|---|
 | G88-M1 (existing) | LOW | 0.Aa, M.6a | scenario mismatch — §5a row 1 pending founder authorisation | 628H / founder | session-0.md |
-| G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a (later runs append) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md, days-01-07.md |
+| G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 8.1a, 12.1a, 12.2a (later runs append) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md, days-01-07.md, days-08-21.md |
 | G88-F2 | LOW | Team page (0.27 / CP-AD-2) | product bug — "Joined" column hard-coded "—" (`member-list.tsx:75,124`) | new | day-00.md |
 | G88-F3 | MEDIUM | 0.47b, 0.48b | product bug — Edit Field Group dialog opens with no member fields checked (`custom-fields-content.tsx:281-287` passes no `initialFieldIds`; save would send `[]`); membership invisible in the UI | new | day-00.md |
 | G88-F4 | LOW | 0.48a, 0.56, 4.5 (side observations) | product bug — settings tables (Custom fields, Automations) overflow an 856 px wrapper at 1440; Status/Actions cut; task-sheet Time Entries table 713 px in 525 px (4.5) | 628B (628.5) class — ADD-ON; else new | day-00.md, days-01-07.md |
 | G88-F5 | LOW | 1.8 (side observation) | product bug (copy) — New Client labels activation prerequisite "Address Line 1 (optional)" (`create-customer-dialog.tsx:440-441` vs `StructuralPrerequisiteCheck.java:65-70`) | new | days-01-07.md |
 | G88-F6 | LOW | 3.3b (side observation) | product bug (UI) — matter Custom fields shows "Field Groups" twice (`matter-fields-tab.tsx:53-54` + `FieldGroupSelector.tsx:101-102`) | new | days-01-07.md |
-| G88-F7 | LOW | TEAM-sipho (then TEAM-estate, TEAM-raf) | scenario mismatch needing authorisation — scenario lacks matter-team steps (ADR-346 / 619; ruling C-4) | new — founder §6 | days-01-07.md |
+| G88-F7 | LOW | TEAM-sipho, TEAM-estate (then TEAM-raf) | scenario mismatch needing authorisation — scenario lacks matter-team steps (ADR-346 / 619; ruling C-4) | new — founder §6 | days-01-07.md |
 | G88-F8 | LOW | 4.6b | product bug — matter Activity feed gives no portal-source marker for portal-contact events (DTO has `actorName` only, `activity-feed-client.tsx:38-39`) | U5 (625A/B) ADD-ON; else new | days-01-07.md |
 | G88-F9 | LOW | 5.9 (side observation) | product bug (UI) — disbursement detail shows the linked trust transaction as a raw UUID (`legal/disbursements/[id]/detail-client.tsx:270-284`) instead of its reference | new (U21 polish class) | days-01-07.md |
 | G88-F10 | LOW | 5.12 (side observation) | product bug (UI) — matter Fees › Disbursements keeps a MATTER column reading "—" (`project-disbursements-tab.tsx:82-88` passes no `projectNames`) | new (U21 polish class) | days-01-07.md |
+| G88-F11 | LOW | 12.3a | scenario mismatch needing authorisation — account balance R 53 750,00 ≠ doc R50,000 because of §5 row 5 (Sipho keeps R 3 750); Moroka ledger R 50 000,00 (ruling C-11) | new — founder §6 (G88-M16 family) | days-08-21.md |
 | G88-M4 (existing, residual) | MEDIUM | 5.12, 5.14 | product bug — page no longer overflows (scrollWidth 1440) but disbursement tables (1249/1257 px) hide BILLING/ACTIONS behind an inner scroll at 1440 | 628B (628.5) | days-01-07.md |
-| G88-M5 / G88-M6 (existing) | LOW / MEDIUM | 6.1 / 6.3b | still open — Member `security.access_denied` noise; comment notification lands on the task list | new unit — founder | days-01-07.md |
+| G88-M5 / G88-M6 (existing) | LOW / MEDIUM | 6.1, 13.1 / 6.3b | still open — Member `security.access_denied` noise; comment notification lands on the task list | new unit — founder | days-01-07.md |
 
 ## Stack state left for 629B
 <filled by W4>

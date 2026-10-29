@@ -18,7 +18,7 @@
       "type": "heading",
       "attrs": { "level": 2 },
       "content": [
-        { "type": "text", "text": "Invoice Cover Letter" }
+        { "type": "text", "text": "Fee Note Cover Letter" }
       ]
     },
     {
@@ -32,13 +32,13 @@
     {
       "type": "paragraph",
       "content": [
-        { "type": "text", "text": "Please find attached the invoice for services rendered." }
+        { "type": "text", "text": "Please find attached the fee note for services rendered." }
       ]
     },
     {
       "type": "paragraph",
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Invoice Number:" },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Fee Note Number:" },
         { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
       ]

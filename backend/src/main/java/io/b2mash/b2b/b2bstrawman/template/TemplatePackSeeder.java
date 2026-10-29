@@ -31,10 +31,12 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
 
   private static final String PACK_LOCATION = "classpath:template-packs/*/pack.json";
 
-  /** ADR-356 reconcile entity name for template bodies (the only supported field: content). */
+  /** ADR-356 reconcile entity name for pack templates (fields: content, name, description). */
   private static final String TEMPLATE_ENTITY = "document_template";
 
   private static final String CONTENT_FIELD = "content";
+  private static final String NAME_FIELD = "name";
+  private static final String DESCRIPTION_FIELD = "description";
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final PackInstallRepository packInstallRepository;
@@ -151,26 +153,35 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
   }
 
   /**
-   * ADR-356 reconcile target for a {@code document_template} {@code content} entry (Phase 88 626D):
-   * {@code key} is the pack's {@code templateKey} ({@code pack_template_key}) and {@code to} is
-   * {@code sha256:} + {@link ContentHashUtil#hashOf} of the body shipped in this pack. The target
-   * is this pack install's pack-seeded row only — {@code PLATFORM}, not a clone, tagged with this
-   * pack's {@code pack_install} id — so clones and firm-authored templates are never written; the
-   * one rule (current body hash = {@code from}) keeps firm edits. Writes the classpath body through
-   * the managed entity (css untouched) and never a content hash — {@code TemplatePackInstaller}
-   * re-pins pristine rows. Unsupported entries, a {@code to} that does not match the shipped body
-   * and ambiguous rows are WARN-logged and skipped; nothing here throws at boot.
+   * ADR-356 reconcile target for a {@code document_template} entry. {@code content} (Phase 88
+   * 626D): {@code key} is the pack's {@code templateKey} ({@code pack_template_key}) and {@code to}
+   * is {@code sha256:} + {@link ContentHashUtil#hashOf} of the body shipped in this pack. The
+   * target is this pack install's pack-seeded row only — {@code PLATFORM}, not a clone, tagged with
+   * this pack's {@code pack_install} id — so clones and firm-authored templates are never written;
+   * the one rule (current body hash = {@code from}) keeps firm edits. Writes the classpath body
+   * through the managed entity (css untouched) and never a content hash — {@code
+   * TemplatePackInstaller} re-pins pristine rows. {@code name} / {@code description} (628C): a
+   * plain string {@code to} equal to the template's {@code name} / {@code description} in this
+   * pack, string equality; the same ownership, written through the managed entity (slug, body and
+   * css untouched — the slug is an identifier and is never reconciled). Names are not part of the
+   * install content hash, and {@code refreshIfUnmodified} does not touch them, so these entries are
+   * what renames a pristine row. Unsupported entries, a {@code to} that does not match the shipped
+   * value and ambiguous rows are WARN-logged and skipped; nothing here throws at boot.
    */
   @Override
   protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
       TemplatePackDefinition pack, PackReconcileEntry entry, Resource packResource) {
+    boolean content = CONTENT_FIELD.equals(entry.field());
+    boolean nameOrDescription =
+        NAME_FIELD.equals(entry.field()) || DESCRIPTION_FIELD.equals(entry.field());
     if (!TEMPLATE_ENTITY.equals(entry.entity())
-        || !CONTENT_FIELD.equals(entry.field())
         || !(entry.to() instanceof String to)
-        || !to.startsWith(PackReconcileEntry.HASH_PREFIX)) {
+        || !(content || nameOrDescription)
+        || content != to.startsWith(PackReconcileEntry.HASH_PREFIX)) {
       log.warn(
           "Reconcile entry ignored: template pack {} unsupported entity/field/value '{}'.{} (key"
-              + " {}) — only document_template content with a sha256: target is supported",
+              + " {}) — only document_template content with a sha256: target, or name /"
+              + " description with a plain string target, is supported",
           pack.packId(),
           entry.entity(),
           entry.field(),
@@ -186,6 +197,22 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
           entry.key());
       return Optional.empty();
     }
+    if (nameOrDescription) {
+      String shippedValue =
+          NAME_FIELD.equals(entry.field())
+              ? templateDef.get().name()
+              : templateDef.get().description();
+      if (!to.equals(shippedValue)) {
+        log.warn(
+            "Reconcile entry ignored: template pack {} '{}' {} 'to' does not match the shipped"
+                + " value",
+            pack.packId(),
+            entry.key(),
+            entry.field());
+        return Optional.empty();
+      }
+      return packSeededRow(pack, entry).map(template -> nameOrDescriptionTarget(template, entry));
+    }
     Map<String, Object> shipped = loadTemplateContent(templateDef.get(), packResource).content();
     if (!to.equals(PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(shipped))) {
       log.warn(
@@ -194,6 +221,51 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
           entry.key());
       return Optional.empty();
     }
+    return packSeededRow(pack, entry)
+        .map(
+            template ->
+                new PackReconcileEntry.Target() {
+                  @Override
+                  public Object currentValue() {
+                    return template.getContent();
+                  }
+
+                  @Override
+                  public void apply(Object toHash) {
+                    // sha256: contract — the argument is the hash string; write the shipped body.
+                    template.updateContent(
+                        template.getName(), template.getDescription(), shipped, template.getCss());
+                  }
+                });
+  }
+
+  /** {@code name} / {@code description}: string target written through the managed entity. */
+  private static PackReconcileEntry.Target nameOrDescriptionTarget(
+      DocumentTemplate template, PackReconcileEntry entry) {
+    boolean name = NAME_FIELD.equals(entry.field());
+    return new PackReconcileEntry.Target() {
+      @Override
+      public Object currentValue() {
+        return name ? template.getName() : template.getDescription();
+      }
+
+      @Override
+      public void apply(Object to) {
+        template.updateContent(
+            name ? (String) to : template.getName(),
+            name ? template.getDescription() : (String) to,
+            template.getContent(),
+            template.getCss());
+      }
+    };
+  }
+
+  /**
+   * The single clone-safe pack-seeded row for the entry's template key in this pack's install
+   * (empty when there is none; WARN + empty when more than one).
+   */
+  private Optional<DocumentTemplate> packSeededRow(
+      TemplatePackDefinition pack, PackReconcileEntry entry) {
     UUID installId =
         packInstallRepository.findByPackId(pack.packId()).map(PackInstall::getId).orElse(null);
     if (installId == null) {
@@ -209,24 +281,7 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
           rows.size());
       return Optional.empty();
     }
-    if (rows.isEmpty()) {
-      return Optional.empty();
-    }
-    DocumentTemplate template = rows.getFirst();
-    return Optional.of(
-        new PackReconcileEntry.Target() {
-          @Override
-          public Object currentValue() {
-            return template.getContent();
-          }
-
-          @Override
-          public void apply(Object toHash) {
-            // sha256: contract — the argument is the hash string; write the shipped body.
-            template.updateContent(
-                template.getName(), template.getDescription(), shipped, template.getCss());
-          }
-        });
+    return rows.stream().findFirst();
   }
 
   private void createTemplate(

@@ -1,0 +1,355 @@
+{
+  "packId": "legal-za-clauses",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "name": "SA Legal Clauses",
+  "description": "Clauses for South African law firm engagement letters and legal documents",
+  "clauses": [
+    {
+      "title": "Scope of Mandate",
+      "slug": "legal-za-mandate-scope",
+      "category": "engagement",
+      "description": "Defines the scope and limits of the attorney's mandate",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "The mandate of " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " is limited to the scope of work described in this engagement letter. Any additional work or matters falling outside the stated scope shall require a separate written agreement between the parties." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall exercise reasonable skill, care, and diligence in the performance of the mandate and shall keep " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " reasonably informed of material developments in the matter." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 1
+    },
+    {
+      "title": "Fees — Hourly Basis",
+      "slug": "legal-za-fees-hourly",
+      "category": "fees",
+      "description": "Hourly fee structure for legal services",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Fees shall be charged on an hourly basis at the applicable rates of " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " as communicated to the client from time to time. Time spent on the matter shall include, but not be limited to, consultations, preparation of documents, attendance at court, telephone calls, emails, and travel time." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Invoices shall be rendered monthly or at the conclusion of the matter, whichever occurs first. Payment is due within thirty (30) days of the date of the invoice. Interest on overdue accounts shall accrue at the prescribed rate under the Prescribed Rate of Interest Act 55 of 1975." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 2
+    },
+    {
+      "title": "Fees — Tariff Basis",
+      "slug": "legal-za-fees-tariff",
+      "category": "fees",
+      "description": "Tariff-based fee structure per LSSA guidelines",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Fees shall be charged in accordance with the tariff prescribed by the Law Society of South Africa (LSSA) for party-and-party costs, as applicable to the nature of the matter and the court in which proceedings are instituted." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Where the matter is resolved without the need for taxation of a bill of costs, " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " reserves the right to charge fees on an attorney-and-client basis as agreed between the parties, which may exceed the tariff rates." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 3
+    },
+    {
+      "title": "Fees — Contingency",
+      "slug": "legal-za-fees-contingency",
+      "category": "fees",
+      "description": "Contingency fee arrangement per Contingency Fees Act",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "This engagement is subject to a contingency fee arrangement in terms of the Contingency Fees Act 66 of 1997. In the event of success, " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall be entitled to fees not exceeding the normal fees which the attorney would have been entitled to for the work performed, or double the normal fees, whichever is the lesser, or 25% of the amount awarded, whichever is the lesser." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "In the event of failure, " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " shall not be liable for any fees, save for disbursements reasonably incurred, which shall remain for the account of the client regardless of the outcome." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 4
+    },
+    {
+      "title": "Trust Account Deposits",
+      "slug": "legal-za-trust-deposits",
+      "category": "trust",
+      "description": "Trust account deposit requirements per Section 86 of the Attorneys Act",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " may require " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " to deposit funds into the trust account of " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " as security for fees and disbursements. All funds held in trust shall be dealt with in accordance with Section 86 of the Legal Practice Act 28 of 2014 and the rules of the Legal Practice Council." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Trust funds shall be invested in an interest-bearing trust account, and interest earned shall accrue to " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " unless otherwise agreed or directed by law. " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall not be entitled to draw against trust funds without the client's prior written authority or a court order." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 5
+    },
+    {
+      "title": "Jurisdiction & Domicilium",
+      "slug": "legal-za-jurisdiction",
+      "category": "general",
+      "description": "Jurisdiction and domicilium citandi et executandi provisions",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "The parties hereby consent to the jurisdiction of the Magistrate's Court in terms of Section 45 of the Magistrates' Courts Act 32 of 1944, notwithstanding that the amount in issue may exceed the jurisdiction of such court." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " chooses as domicilium citandi et executandi the physical address provided in the client details above, for the purposes of service of all notices and legal process arising from this engagement. Any notice or process delivered or sent to this address shall be deemed to have been received by the client." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 6
+    },
+    {
+      "title": "Termination of Mandate",
+      "slug": "legal-za-termination",
+      "category": "general",
+      "description": "Provisions for termination of the attorney-client relationship",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Either party may terminate this engagement by providing fourteen (14) days written notice to the other party. Upon termination, " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall:" }
+            ]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Take all necessary steps to protect the client's interests pending the appointment of a new attorney;" }] }] },
+              { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Deliver the client's file and all documents belonging to the client within fourteen (14) days, subject to the exercise of any lien for unpaid fees;" }] }] },
+              { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Co-operate with the incoming attorney for a reasonable handover period." }] }] }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " shall remain liable for all fees and disbursements incurred up to the effective date of termination." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 7
+    },
+    {
+      "title": "FICA Consent",
+      "slug": "legal-za-fica-consent",
+      "category": "compliance",
+      "description": "Client consent for FICA/KYC verification under FIC Act",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " acknowledges and consents to " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " obtaining and verifying personal and financial information as required by the Financial Intelligence Centre Act 38 of 2001 (FICA) and the regulations thereto. This includes verification of identity, residential address, source of funds, and beneficial ownership." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " undertakes to provide all necessary documentation for FICA compliance and acknowledges that " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " is unable to accept the mandate or disburse funds until satisfactory FICA verification has been completed." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 8
+    },
+    {
+      "title": "Data Protection (POPIA)",
+      "slug": "legal-za-data-protection",
+      "category": "compliance",
+      "description": "Data protection and POPIA compliance provisions",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " undertakes to process all personal information received from or on behalf of " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " in accordance with the Protection of Personal Information Act 4 of 2013 (POPIA). Personal information shall be processed only for the purpose of fulfilling the mandate and shall not be disclosed to third parties without the client's consent, except where required by law or court order." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " consents to " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " communicating by electronic means, including email and the client portal. The client acknowledges the inherent risks of electronic communication and agrees that " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall not be liable for any interception or unauthorised access to electronic communications, provided reasonable security measures are in place." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 9
+    },
+    {
+      "title": "Conflict of Interest Waiver",
+      "slug": "legal-za-conflict-waiver",
+      "category": "compliance",
+      "description": "Conflict of interest disclosure and waiver provisions",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " has conducted a conflict of interest check and is satisfied that no conflict exists that would prevent the firm from acting on behalf of " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " in this matter." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Should a conflict arise during the course of the engagement, " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall promptly notify " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " and, if the conflict cannot be resolved or waived, shall withdraw from the mandate in accordance with the termination provisions herein and the rules of the Legal Practice Council." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 10
+    }
+  ],
+  "templateAssociations": [
+    {
+      "templatePackId": "legal-za",
+      "templateKey": "engagement-letter-litigation",
+      "clauseSlugs": [
+        "legal-za-mandate-scope",
+        "legal-za-fees-hourly",
+        "legal-za-trust-deposits",
+        "legal-za-termination",
+        "legal-za-data-protection",
+        "legal-za-conflict-waiver"
+      ],
+      "requiredSlugs": [
+        "legal-za-mandate-scope",
+        "legal-za-fees-hourly",
+        "legal-za-termination"
+      ]
+    },
+    {
+      "templatePackId": "legal-za",
+      "templateKey": "engagement-letter-conveyancing",
+      "clauseSlugs": [
+        "legal-za-fees-tariff",
+        "legal-za-trust-deposits",
+        "legal-za-fica-consent",
+        "legal-za-data-protection",
+        "legal-za-termination"
+      ],
+      "requiredSlugs": [
+        "legal-za-fees-tariff",
+        "legal-za-trust-deposits",
+        "legal-za-fica-consent"
+      ]
+    },
+    {
+      "templatePackId": "legal-za",
+      "templateKey": "engagement-letter-general",
+      "clauseSlugs": [
+        "legal-za-mandate-scope",
+        "legal-za-fees-hourly",
+        "legal-za-termination",
+        "legal-za-data-protection",
+        "legal-za-jurisdiction"
+      ],
+      "requiredSlugs": [
+        "legal-za-mandate-scope",
+        "legal-za-fees-hourly",
+        "legal-za-termination"
+      ]
+    }
+  ]
+}

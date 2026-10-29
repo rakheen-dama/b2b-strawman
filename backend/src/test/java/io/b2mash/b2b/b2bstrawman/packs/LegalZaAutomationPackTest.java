@@ -146,7 +146,7 @@ class LegalZaAutomationPackTest {
                 tx -> {
                   var install =
                       packInstallRepository.findByPackId("automation-common").orElseThrow();
-                  assertThat(install.getPackVersion()).isEqualTo("3");
+                  assertThat(install.getPackVersion()).isEqualTo("4");
                   var rules =
                       ruleRepository.findBySourcePackInstallId(install.getId()).stream()
                           .filter(r -> "document-review-notification".equals(r.getTemplateSlug()))

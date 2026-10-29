@@ -55,18 +55,18 @@ class PackInstallBackfillTest {
           new TreeMap<>(
               Map.of(
                   "conveyancing-za-clauses", "2",
-                  "legal-za-clauses", "1",
-                  "standard-clauses", "1")),
+                  "legal-za-clauses", "2",
+                  "standard-clauses", "2")),
           PackType.FIELD,
           new TreeMap<>(
               Map.of(
-                  "common-project", "2",
+                  "common-project", "3",
                   "common-task", "2",
-                  "conveyancing-za-project", "1",
+                  "conveyancing-za-project", "2",
                   "legal-za-customer", "2",
-                  "legal-za-project", "2")),
+                  "legal-za-project", "3")),
           PackType.REPORT,
-          new TreeMap<>(Map.of("standard-reports", "1")),
+          new TreeMap<>(Map.of("standard-reports", "2")),
           PackType.REQUEST,
           new TreeMap<>(
               Map.of(

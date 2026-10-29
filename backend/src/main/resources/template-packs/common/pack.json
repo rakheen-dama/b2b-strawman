@@ -1,6 +1,57 @@
 {
   "packId": "common",
-  "version": 3,
+  "version": 4,
+  "reconcile": [
+    {
+      "entity": "document_template",
+      "key": "project-summary",
+      "field": "name",
+      "from": "Project Summary Report",
+      "to": "Matter Summary Report"
+    },
+    {
+      "entity": "document_template",
+      "key": "project-summary",
+      "field": "description",
+      "from": "Project summary report template",
+      "to": "Matter summary report template"
+    },
+    {
+      "entity": "document_template",
+      "key": "invoice-cover-letter",
+      "field": "name",
+      "from": "Invoice Cover Letter",
+      "to": "Fee Note Cover Letter"
+    },
+    {
+      "entity": "document_template",
+      "key": "invoice-cover-letter",
+      "field": "description",
+      "from": "Cover letter for invoices",
+      "to": "Cover letter for fee notes"
+    },
+    {
+      "entity": "document_template",
+      "key": "engagement-letter",
+      "field": "content",
+      "from": "sha256:114fd15079d408fe9df3c46dda74120d24a12510e2dcf482e37cc0c8148531df",
+      "to": "sha256:d1857ffbe3f33a0597047938141d1803a93f94f809bef9104d37773e5a80c078"
+    },
+    {
+      "entity": "document_template",
+      "key": "project-summary",
+      "field": "content",
+      "from": "sha256:0aad5a631de0341e80806490afbc661b3956ca2b7439c826d07fcac7744529d3",
+      "to": "sha256:26a345ecd23339df62cf0be3e084b733946b8a9d0fbfd4f0b30eb8e67b451f69"
+    },
+    {
+      "entity": "document_template",
+      "key": "invoice-cover-letter",
+      "field": "content",
+      "from": "sha256:83ef08f3d531df28bc70627ca30934d68cee4f40863b4871d6df2b74e01c5101",
+      "to": "sha256:3b7b8250853374986cbd68d321f91a0e862138cdf8f4679f613920774fa5d416"
+    }
+  ],
   "name": "Common Templates",
   "description": "Standard document templates for all organizations",
   "templates": [
@@ -16,22 +67,22 @@
     },
     {
       "templateKey": "project-summary",
-      "name": "Project Summary Report",
+      "name": "Matter Summary Report",
       "category": "PROJECT_SUMMARY",
       "primaryEntityType": "PROJECT",
       "contentFile": "project-summary.json",
       "cssFile": null,
-      "description": "Project summary report template",
+      "description": "Matter summary report template",
       "sortOrder": 2
     },
     {
       "templateKey": "invoice-cover-letter",
-      "name": "Invoice Cover Letter",
+      "name": "Fee Note Cover Letter",
       "category": "COVER_LETTER",
       "primaryEntityType": "INVOICE",
       "contentFile": "invoice-cover-letter.json",
       "cssFile": null,
-      "description": "Cover letter for invoices",
+      "description": "Cover letter for fee notes",
       "sortOrder": 3
     }
   ]

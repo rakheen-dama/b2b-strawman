@@ -73,7 +73,7 @@
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
       <tr th:each="risk : ${topRisks}">
         <td style="padding: 6px 0; border-bottom: 1px solid #f3f4f6;">
-          <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${risk.customerName}">Customer</span>
+          <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${risk.customerName}">Client</span>
           <span style="font-size: 13px; color: #6b7280;">
             &mdash; <span th:text="${risk.currency}">ZAR</span> <span th:text="${risk.outstanding}">0</span>
           </span>
@@ -91,7 +91,7 @@
     <div th:if="${aiRisks != null and !aiRisks.isEmpty()}">
       <h4 style="margin: 12px 0 6px 0; font-size: 14px; font-weight: 600; color: #111827;">Risks to watch</h4>
       <div th:each="airisk : ${aiRisks}" style="margin: 0 0 10px 0;">
-        <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${airisk.customerName}">Customer</span>
+        <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${airisk.customerName}">Client</span>
         <p style="margin: 2px 0 0 0; font-size: 13px; line-height: 1.5; color: #374151;" th:text="${airisk.why}">Why.</p>
         <p style="margin: 2px 0 0 0; font-size: 13px; line-height: 1.5; color: #6b7280;">
           Suggested: <span th:text="${airisk.suggestedAction}">Action.</span>

@@ -75,7 +75,7 @@ class VisualRegressionTest {
     // Project name resolved
     assertThat(html).contains("Website Redesign");
     // Bold labels
-    assertThat(html).contains("<strong>Project:</strong>");
+    assertThat(html).contains("<strong>Matter:</strong>");
     assertThat(html).contains("<strong>Status:</strong>");
     assertThat(html).contains("<strong>Description:</strong>");
     // Variable values
@@ -109,11 +109,11 @@ class VisualRegressionTest {
     // Heading with org name
     assertThat(html).contains("<h1>Legal Partners LLP</h1>");
     // Static heading
-    assertThat(html).contains("<h2>Project Summary Report</h2>");
+    assertThat(html).contains("<h2>Matter Summary Report</h2>");
     // Project name in h3
     assertThat(html).contains("<h3>Due Diligence Review</h3>");
     // Customer
-    assertThat(html).contains("<strong>Customer:</strong>");
+    assertThat(html).contains("<strong>Client:</strong>");
     assertThat(html).contains("BigCo Inc");
     // Status
     assertThat(html).contains("<strong>Status:</strong>");
@@ -121,7 +121,7 @@ class VisualRegressionTest {
     // Description
     assertThat(html).contains("Comprehensive review of acquisition target");
     // Lead
-    assertThat(html).contains("<strong>Project Lead:</strong>");
+    assertThat(html).contains("<strong>Matter Lead:</strong>");
     assertThat(html).contains("Alice Johnson");
     // Footer
     assertThat(html).contains("Internal Use Only");
@@ -148,14 +148,14 @@ class VisualRegressionTest {
     // Heading with org name
     assertThat(html).contains("<h1>Consulting Group SA</h1>");
     // Static heading
-    assertThat(html).contains("<h2>Invoice Cover Letter</h2>");
+    assertThat(html).contains("<h2>Fee Note Cover Letter</h2>");
     // Customer greeting
     assertThat(html).contains("Dear ");
     assertThat(html).contains("Client Corp");
     // Static body text
-    assertThat(html).contains("Please find attached the invoice for services rendered.");
+    assertThat(html).contains("Please find attached the fee note for services rendered.");
     // Invoice number
-    assertThat(html).contains("<strong>Invoice Number:</strong>");
+    assertThat(html).contains("<strong>Fee Note Number:</strong>");
     assertThat(html).contains("INV-2026-001");
     // Total amount
     assertThat(html).contains("<strong>Total Amount:</strong>");

@@ -12,7 +12,7 @@
       "type": "heading",
       "attrs": { "level": 2 },
       "content": [
-        { "type": "text", "text": "Project Summary Report" }
+        { "type": "text", "text": "Matter Summary Report" }
       ]
     },
     {
@@ -25,7 +25,7 @@
     {
       "type": "paragraph",
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Customer:" },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Client:" },
         { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "customer.name" } }
       ]
@@ -49,7 +49,7 @@
     {
       "type": "paragraph",
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Project Lead:" },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter Lead:" },
         { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "project.lead" } }
       ]

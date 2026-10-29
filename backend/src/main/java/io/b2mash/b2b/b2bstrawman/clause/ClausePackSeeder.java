@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.ContentHashUtil;
 import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
@@ -10,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.core.io.Resource;
@@ -28,6 +30,12 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
 
   /** {@code field} of an association entry: names the relation; {@code from} is unused. */
   static final String ASSOCIATION_FIELD = "association";
+
+  /** ADR-356 entity of a pack clause's body (628C): one-rule field update, key = clause slug. */
+  static final String CLAUSE_ENTITY = "clause";
+
+  /** The only supported {@value #CLAUSE_ENTITY} field: the Tiptap body ({@code sha256:} values). */
+  static final String BODY_FIELD = "body";
 
   private final ClauseRepository clauseRepository;
   private final TemplateClauseRepository templateClauseRepository;
@@ -212,18 +220,26 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
   @Override
   protected void applyReconcileEntry(
       ClausePackDefinition pack, Resource packResource, PackReconcileEntry entry, String tenantId) {
+    if (CLAUSE_ENTITY.equals(entry.entity())) {
+      // 628C: a clause body is a one-rule field update — resolve + apply via the framework.
+      super.applyReconcileEntry(pack, packResource, entry, tenantId);
+      return;
+    }
     if (!ASSOCIATION_ENTITY.equals(entry.entity())
         || !ASSOCIATION_FIELD.equals(entry.field())
         || !(entry.to() instanceof String templateKey)) {
       log.warn(
           "Reconcile entry ignored: clause pack {} unsupported entity/field/value '{}'.{} (key {})"
-              + " — only {} {} entries with a string 'to' are supported",
+              + " — only {} {} entries with a string 'to' (or {} {} sha256: entries) are"
+              + " supported",
           pack.packId(),
           entry.entity(),
           entry.field(),
           entry.key(),
           ASSOCIATION_ENTITY,
-          ASSOCIATION_FIELD);
+          ASSOCIATION_FIELD,
+          CLAUSE_ENTITY,
+          BODY_FIELD);
       return;
     }
     String slug = entry.key();
@@ -299,6 +315,74 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
         slug,
         templateKey,
         ASSOCIATION_FIELD);
+  }
+
+  /**
+   * ADR-356 reconcile target of a {@value #CLAUSE_ENTITY} {@value #BODY_FIELD} entry (628C): {@code
+   * key} is a clause slug declared in this pack and {@code to} is {@code sha256:} + {@link
+   * ContentHashUtil#hashOf} of the body shipped for it (else WARN + skip). The target is this
+   * pack's active SYSTEM clause ({@code pack_id} = this pack AND {@code source = SYSTEM}; {@code
+   * Clause.cloneFrom} copies the pack id, so the source filter keeps clones out). SYSTEM clauses
+   * are read-only to firms; the one rule (current body hash = {@code from}) still applies. Writes
+   * the shipped body through the managed entity (title, slug, description, category untouched).
+   */
+  @Override
+  protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
+      ClausePackDefinition pack, PackReconcileEntry entry, Resource packResource) {
+    if (!BODY_FIELD.equals(entry.field())
+        || !(entry.to() instanceof String to)
+        || !to.startsWith(PackReconcileEntry.HASH_PREFIX)) {
+      log.warn(
+          "Reconcile entry ignored: clause pack {} unsupported field/value '{}'.{} (key {}) — only"
+              + " {} {} with a sha256: target is supported",
+          pack.packId(),
+          entry.entity(),
+          entry.field(),
+          entry.key(),
+          CLAUSE_ENTITY,
+          BODY_FIELD);
+      return Optional.empty();
+    }
+    var clauseDef = pack.clauses().stream().filter(c -> entry.key().equals(c.slug())).findFirst();
+    if (clauseDef.isEmpty() || !(clauseDef.get().body() instanceof Map<?, ?> rawBody)) {
+      log.warn(
+          "Reconcile entry ignored: clause pack {} has no clause body '{}'",
+          pack.packId(),
+          entry.key());
+      return Optional.empty();
+    }
+    @SuppressWarnings("unchecked")
+    Map<String, Object> shipped = (Map<String, Object>) rawBody;
+    if (!to.equals(PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(shipped))) {
+      log.warn(
+          "Reconcile entry ignored: clause pack {} '{}' to-hash does not match the shipped body",
+          pack.packId(),
+          entry.key());
+      return Optional.empty();
+    }
+    return clauseRepository
+        .findBySlug(entry.key())
+        .filter(c -> pack.packId().equals(c.getPackId()))
+        .filter(c -> c.getSource() == ClauseSource.SYSTEM && c.isActive())
+        .map(
+            clause ->
+                new PackReconcileEntry.Target() {
+                  @Override
+                  public Object currentValue() {
+                    return clause.getBody();
+                  }
+
+                  @Override
+                  public void apply(Object toHash) {
+                    // sha256: contract — the argument is the hash string; write the shipped body.
+                    clause.update(
+                        clause.getTitle(),
+                        clause.getSlug(),
+                        clause.getDescription(),
+                        shipped,
+                        clause.getCategory());
+                  }
+                });
   }
 
   /** The single {@code templateAssociations} declaration covering ({@code slug}, template). */

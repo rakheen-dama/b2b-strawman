@@ -229,6 +229,69 @@ class EmailTemplateRenderingIntegrationTest {
     assertThat(result.htmlBody()).contains("#FF5733");
   }
 
+  // --- 628C (U21 terminology): rendered copy says matter / fee estimate / client ---
+
+  @Test
+  void render_notification_budget_saysMatterAndFeeEstimate() {
+    var context = buildBaseContext("Fee estimate alert: Estate Late J Smith");
+    context.put("projectName", "Estate Late J Smith");
+    context.put("budgetPercentage", "85%");
+    context.put("threshold", "80%");
+    context.put("projectUrl", "https://app.example.com/matter-link");
+
+    String html = renderer.render("notification-budget", context).htmlBody();
+
+    assertThat(html)
+        .contains("Fee estimate alert")
+        .contains("The matter")
+        .contains("of its fee estimate")
+        .contains("Fee estimate used:")
+        .contains("View matter")
+        .doesNotContain("Budget Alert")
+        .doesNotContain("Budget utilization")
+        .doesNotContain("View Project")
+        .doesNotContain("The project")
+        .doesNotContain("your project");
+  }
+
+  @Test
+  void render_notification_budget_nullProjectName_saysYourMatter() {
+    String html = renderer.render("notification-budget", buildBaseContext("s")).htmlBody();
+
+    assertThat(html).contains("your matter").doesNotContain("your project");
+  }
+
+  @Test
+  void render_notification_document_and_task_sayMatter() {
+    var document = buildBaseContext("New document");
+    document.put("documentName", "Affidavit");
+    document.put("projectName", "Estate Late J Smith");
+    var task = buildBaseContext("Task assigned");
+    task.put("taskName", "Draft affidavit");
+    task.put("action", "assigned");
+
+    String documentHtml = renderer.render("notification-document", document).htmlBody();
+    String taskHtml = renderer.render("notification-task", task).htmlBody();
+
+    assertThat(documentHtml).contains("in matter").doesNotContain("in project");
+    assertThat(taskHtml)
+        .contains("in matter")
+        .contains("your matter")
+        .doesNotContain("in project")
+        .doesNotContain("your project");
+  }
+
+  @Test
+  void render_notification_invoice_nullCustomer_saysAClient() {
+    var context = buildBaseContext("Fee Note FN-0001 approved");
+    context.put("invoiceTerm", "Fee Note");
+    context.put("invoiceNumber", "FN-0001");
+
+    String html = renderer.render("notification-invoice", context).htmlBody();
+
+    assertThat(html).contains("a client").doesNotContain("a customer");
+  }
+
   private Map<String, Object> buildBaseContext(String subject) {
     var context = new HashMap<String, Object>();
     context.put("orgName", "Test Org");

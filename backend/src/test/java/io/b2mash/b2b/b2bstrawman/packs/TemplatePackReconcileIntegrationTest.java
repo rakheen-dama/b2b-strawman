@@ -6,9 +6,13 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateSource;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,6 +46,7 @@ class TemplatePackReconcileIntegrationTest {
 
   private static final String COMMON_PACK_ID = "common";
   private static final String COVER_LETTER_KEY = "invoice-cover-letter";
+  private static final String SUMMARY_KEY = "project-summary";
   private static final String EDITED_TEMPLATE_KEY = "engagement-letter";
 
   @Autowired private TenantProvisioningService provisioningService;
@@ -205,7 +210,7 @@ class TemplatePackReconcileIntegrationTest {
 
                   // Rewind the recorded common-pack version to simulate pre-v2 install.
                   int updated =
-                      packInstallRepository.advancePackVersion(COMMON_PACK_ID, "3", "1", 3);
+                      packInstallRepository.advancePackVersion(COMMON_PACK_ID, "4", "1", 3);
                   assertThat(updated).isEqualTo(1);
                 }));
 
@@ -218,7 +223,7 @@ class TemplatePackReconcileIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var install = packInstallRepository.findByPackId(COMMON_PACK_ID).orElseThrow();
-                  assertThat(install.getPackVersion()).isEqualTo("3");
+                  assertThat(install.getPackVersion()).isEqualTo("4");
 
                   var coverLetter =
                       documentTemplateRepository
@@ -241,6 +246,155 @@ class TemplatePackReconcileIntegrationTest {
                   assertThat(engagement.getContent().toString())
                       .contains("Tenant customized engagement");
                 }));
+  }
+
+  /**
+   * 628C (U21 terminology): the common pack v4 renames {@code project-summary} / {@code
+   * invoice-cover-letter}. A v3 tenant's pristine names/descriptions reach the v4 strings through
+   * the {@code document_template} name/description reconcile entries ({@code refreshIfUnmodified}
+   * does not touch names); a firm-renamed template keeps its name. Names are not part of the
+   * install content hash, so both rows still read as pristine.
+   */
+  @Test
+  void commonPackV3Names_areReconciledOnVersionBump_firmRenameSurvives() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var summary =
+                      documentTemplateRepository
+                          .findPackSeeded(COMMON_PACK_ID, SUMMARY_KEY)
+                          .getFirst();
+                  summary.updateContent(
+                      "Project Summary Report",
+                      "Project summary report template",
+                      summary.getContent(),
+                      summary.getCss());
+                  documentTemplateRepository.save(summary);
+
+                  var coverLetter =
+                      documentTemplateRepository
+                          .findPackSeeded(COMMON_PACK_ID, COVER_LETTER_KEY)
+                          .getFirst();
+                  coverLetter.updateContent(
+                      "Our cover letter",
+                      "Cover letter for invoices",
+                      coverLetter.getContent(),
+                      coverLetter.getCss());
+                  documentTemplateRepository.save(coverLetter);
+
+                  assertThat(packInstallRepository.advancePackVersion(COMMON_PACK_ID, "4", "3", 3))
+                      .isEqualTo(1);
+                }));
+
+    packInstallService.internalInstall(COMMON_PACK_ID, tenantSchema);
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  assertThat(
+                          packInstallRepository
+                              .findByPackId(COMMON_PACK_ID)
+                              .orElseThrow()
+                              .getPackVersion())
+                      .isEqualTo("4");
+                  var summary =
+                      documentTemplateRepository
+                          .findPackSeeded(COMMON_PACK_ID, SUMMARY_KEY)
+                          .getFirst();
+                  assertThat(summary.getName()).isEqualTo("Matter Summary Report");
+                  assertThat(summary.getDescription()).isEqualTo("Matter summary report template");
+
+                  var coverLetter =
+                      documentTemplateRepository
+                          .findPackSeeded(COMMON_PACK_ID, COVER_LETTER_KEY)
+                          .getFirst();
+                  assertThat(coverLetter.getName())
+                      .as("firm rename survives (current name differs from the v3 'from')")
+                      .isEqualTo("Our cover letter");
+                  assertThat(coverLetter.getDescription()).isEqualTo("Cover letter for fee notes");
+
+                  for (var template : List.of(summary, coverLetter)) {
+                    assertThat(template.getContentHash())
+                        .as("%s still reads as pristine", template.getPackTemplateKey())
+                        .isEqualTo(
+                            templatePackInstaller.computeContentHash(
+                                template.getContent(), template.getCss()));
+                  }
+                }));
+  }
+
+  /**
+   * R-18 non-owned row for the 628C {@code name} / {@code description} path: a firm clone of {@code
+   * project-summary} (Clone &amp; Customize copies {@code pack_id} + {@code pack_template_key}),
+   * renamed back to the v3 name, keeps its v3 name and description while the pack row is renamed.
+   * Worst case like 626D's {@code cloneTaggedWithTheInstall_isNeverATarget}: the clone also carries
+   * the install tag, so only the JPQL source / clone predicates of {@code findPackSeededByInstall}
+   * keep it out.
+   */
+  @Test
+  void commonPackV3Names_firmCloneOfProjectSummary_keepsTheOldName() {
+    UUID cloneId =
+        runInTenantTx(
+            () -> {
+              var summary =
+                  documentTemplateRepository.findPackSeeded(COMMON_PACK_ID, SUMMARY_KEY).getFirst();
+              summary.updateContent(
+                  "Project Summary Report",
+                  "Project summary report template",
+                  summary.getContent(),
+                  summary.getCss());
+              documentTemplateRepository.save(summary);
+
+              var clone =
+                  new DocumentTemplate(
+                      summary.getPrimaryEntityType(),
+                      "Project Summary Report",
+                      summary.getSlug() + "-custom-628c",
+                      summary.getCategory(),
+                      summary.getContent());
+              clone.setDescription("Project summary report template");
+              clone.setCss(summary.getCss());
+              clone.setSourceTemplateId(summary.getId());
+              clone.setPackId(summary.getPackId());
+              clone.setPackTemplateKey(summary.getPackTemplateKey());
+              clone.setSourcePackInstallId(summary.getSourcePackInstallId());
+              UUID id = documentTemplateRepository.save(clone).getId();
+
+              assertThat(packInstallRepository.advancePackVersion(COMMON_PACK_ID, "4", "3", 3))
+                  .isEqualTo(1);
+              return id;
+            });
+    try {
+      packInstallService.internalInstall(COMMON_PACK_ID, tenantSchema);
+
+      runInTenantTx(
+          () -> {
+            assertThat(
+                    packInstallRepository
+                        .findByPackId(COMMON_PACK_ID)
+                        .orElseThrow()
+                        .getPackVersion())
+                .isEqualTo("4");
+            var summary =
+                documentTemplateRepository.findPackSeeded(COMMON_PACK_ID, SUMMARY_KEY).getFirst();
+            assertThat(summary.getName()).isEqualTo("Matter Summary Report");
+            assertThat(summary.getDescription()).isEqualTo("Matter summary report template");
+
+            var clone = documentTemplateRepository.findById(cloneId).orElseThrow();
+            assertThat(clone.getSource()).isEqualTo(TemplateSource.ORG_CUSTOM);
+            assertThat(clone.getName()).isEqualTo("Project Summary Report");
+            assertThat(clone.getDescription()).isEqualTo("Project summary report template");
+            return null;
+          });
+    } finally {
+      runInTenantTx(
+          () -> {
+            documentTemplateRepository.deleteById(cloneId);
+            return null;
+          });
+    }
   }
 
   /**
@@ -308,6 +462,12 @@ class TemplatePackReconcileIntegrationTest {
                       .isEqualTo(
                           templatePackInstaller.computeContentHash(soa.getContent(), soa.getCss()));
                 }));
+  }
+
+  private <T> T runInTenantTx(Supplier<T> body) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .call(() -> transactionTemplate.execute(tx -> body.get()));
   }
 
   private void runInTenant(Runnable action) {

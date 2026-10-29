@@ -135,7 +135,7 @@ class ReportingControllerTest {
         .andExpect(
             jsonPath("$.categories[?(@.category == 'TIME_ATTENDANCE')].label")
                 .value("Time & Attendance"))
-        .andExpect(jsonPath("$.categories[?(@.category == 'PROJECT')].label").value("Project"));
+        .andExpect(jsonPath("$.categories[?(@.category == 'PROJECT')].label").value("Matter"));
   }
 
   @Test

@@ -1,11 +1,34 @@
 {
   "packId": "common-project",
-  "version": 2,
+  "version": 3,
+  "reconcile": [
+    {
+      "entity": "field_group",
+      "key": "project_info",
+      "field": "name",
+      "from": "Project Info",
+      "to": "Matter Info"
+    },
+    {
+      "entity": "field_group",
+      "key": "project_info",
+      "field": "description",
+      "from": "Common project metadata fields",
+      "to": "Common matter metadata fields"
+    },
+    {
+      "entity": "field_definition",
+      "key": "category",
+      "field": "description",
+      "from": "Project category or type",
+      "to": "Matter category or type"
+    }
+  ],
   "entityType": "PROJECT",
   "group": {
     "slug": "project_info",
-    "name": "Project Info",
-    "description": "Common project metadata fields",
+    "name": "Matter Info",
+    "description": "Common matter metadata fields",
     "autoApply": true
   },
   "fields": [
@@ -13,7 +36,7 @@
       "slug": "category",
       "name": "Category",
       "fieldType": "TEXT",
-      "description": "Project category or type",
+      "description": "Matter category or type",
       "required": false,
       "sortOrder": 1
     }

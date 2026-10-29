@@ -1,12 +1,21 @@
 {
   "packId": "conveyancing-za-project",
-  "version": 1,
+  "version": 2,
+  "reconcile": [
+    {
+      "entity": "field_group",
+      "key": "conveyancing_za_matter",
+      "field": "description",
+      "from": "South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)",
+      "to": "South African conveyancing-specific fields for property transfer matters (matter type Conveyancing)"
+    }
+  ],
   "verticalProfile": "legal-za",
   "entityType": "PROJECT",
   "group": {
     "slug": "conveyancing_za_matter",
     "name": "SA Conveyancing — Matter Details",
-    "description": "South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)",
+    "description": "South African conveyancing-specific fields for property transfer matters (matter type Conveyancing)",
     "autoApply": true,
     "applicableWorkTypes": ["CONVEYANCING"]
   },

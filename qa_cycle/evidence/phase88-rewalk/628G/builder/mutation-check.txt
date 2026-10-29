@@ -1,0 +1,33 @@
+# 628G R-17 mutation check — 2026-10-29T10:01:45Z
+Mutations (temporary, reverted after the run):
+  Day 3  day-00-07.spec.ts: getByText("Submitted — status: SUBMITTED") -> "Submitted — status: ACCEPTED"
+  Day 21 day-14-30.spec.ts: expect(row).toContainText("DEPOSIT") -> "WITHDRAWAL"
+Command: pnpm test:e2e:portal-client-90day --reporter=list --update-snapshots=all
+
+  ✓   1 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:118:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 0: Client lands on /home and sees the pending info requests and the sent fee note (1.1s)
+  ✓   2 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:140:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 0: Client opens the new info request from Home and sees its upload slot (1.9s)
+  ✘   3 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:177:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 3: Client uploads the document and submits the info request (15.5s)
+  -   4 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:217:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 7: Diary dates page renders for the client (no portal-visible deadlines on the e2e tenant)
+  ✘   5 [portal-client-90day] › e2e/tests/portal-client-90day/day-14-30.spec.ts:66:7 › Day 14–30 — Portal Client Lifecycle (Checkpoint 5) › Day 21 [legal-za]: Client follows the trust-activity email to the balance and the new deposit (6.0s)
+  ✓   6 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:48:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 45: Client opens the seeded SENT fee note (1.7s)
+  ✓   7 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:80:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 45: SENT fee note offers no online payment without a PSP (746ms)
+  ✓   8 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:112:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 60 [legal-za]: Client downloads the Statement of Account from the matter page (1.7s)
+  -   9 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:162:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 75 [legal-za]: Client marks the deadline nudge read and downloads its document
+  ✓  10 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:57:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 85: Profile shows the client's contact details (read-only) (789ms)
+  ✓  11 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:86:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 85: Notifications page shows the firm's bi-weekly digest cadence (read-only) (694ms)
+  ✓  12 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:110:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 90: Activity trail shows this run's submit and download (758ms)
+    Error: expect(locator).toBeVisible() failed
+    Locator: getByText('Submitted — status: ACCEPTED')
+    Expected: visible
+    Error: element(s) not found
+    Error: expect(locator).toContainText(expected) failed
+    Locator: getByRole('table', { name: 'Trust transactions' }).getByRole('row').filter({ hasText: 'Portal Day 21 deposit dil5h' })
+    Expected substring: "WITHDRAWAL"
+    Received string:    "29 Oct 2026DEPOSITPortal Day 21 deposit dil5hR 1 500,00R 4 500,00"
+  2 failed
+  1 skipped
+  1 did not run
+  8 passed (37.4s)
+ ELIFECYCLE  Command failed with exit code 1.
+
+Result: both mutated assertions FAIL (Day 3 element not found; Day 21 row text is DEPOSIT). Specs restored (cmp vs pre-mutation copies clean).

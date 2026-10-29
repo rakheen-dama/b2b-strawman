@@ -1,0 +1,1716 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/playwright.portal.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/628G/baseline/all-acme-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/tmp/628G/baseline/all-acme-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "portal-client-90day",
+        "name": "portal-client-90day",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "changed",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": {
+      "command": "NODE_OPTIONS= pnpm dev",
+      "url": "http://localhost:3002",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "e2e/tests/responsive/portal-pages.spec.ts",
+      "file": "e2e/tests/responsive/portal-pages.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "portal @ sm (375x667)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 87,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1289,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-home-populated.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:10.732Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "sm-home-populated-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-home-populated.png"
+                        },
+                        {
+                          "name": "sm-home-populated-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-sm-375x667-home-populated-chromium/sm-home-populated-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-69024fce2e7e298a7150",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 979,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-trust-matter-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:12.288Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "sm-trust-matter-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-trust-matter-list.png"
+                        },
+                        {
+                          "name": "sm-trust-matter-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-sm-375x667-trust-matter-list-chromium/sm-trust-matter-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4936be0782e882cc99c7",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 979,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-deadlines-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:13.274Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "sm-deadlines-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-deadlines-list.png"
+                        },
+                        {
+                          "name": "sm-deadlines-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-sm-375x667-deadlines-list-chromium/sm-deadlines-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-f56aaad8d3226f6e3e36",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 963,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-invoices-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:14.259Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "sm-invoices-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-invoices-list.png"
+                        },
+                        {
+                          "name": "sm-invoices-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-sm-375x667-invoices-list-chromium/sm-invoices-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4d13fd012bc7362cf286",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 974,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-matters-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:15.228Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "sm-matters-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-matters-list.png"
+                        },
+                        {
+                          "name": "sm-matters-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-sm-375x667-matters-list-chromium/sm-matters-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-572a83ed36366c5983ba",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1000,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-settings-notifications.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:16.208Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "sm-settings-notifications-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-settings-notifications.png"
+                        },
+                        {
+                          "name": "sm-settings-notifications-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-sm-375x667-settings-notifications-chromium/sm-settings-notifications-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-c167b3603998bd0f353b",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 957,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-profile.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:17.213Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "sm-profile-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/sm-profile.png"
+                        },
+                        {
+                          "name": "sm-profile-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-sm-375x667-profile-chromium/sm-profile-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-624b5f3561ef33f116ff",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            }
+          ]
+        },
+        {
+          "title": "portal @ md (768x1024)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 87,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1058,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-home-populated.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:18.175Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "md-home-populated-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-home-populated.png"
+                        },
+                        {
+                          "name": "md-home-populated-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-md-768x1024-home-populated-chromium/md-home-populated-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-2046750171c1ff0ff380",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1047,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-trust-matter-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:19.241Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "md-trust-matter-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-trust-matter-list.png"
+                        },
+                        {
+                          "name": "md-trust-matter-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-md-768x1024-trust-matter-list-chromium/md-trust-matter-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-494f5e2dc3adbfcf40b4",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1010,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-deadlines-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:20.296Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "md-deadlines-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-deadlines-list.png"
+                        },
+                        {
+                          "name": "md-deadlines-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-md-768x1024-deadlines-list-chromium/md-deadlines-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-5118ad571d55c7926ed3",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1001,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-invoices-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:21.313Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "md-invoices-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-invoices-list.png"
+                        },
+                        {
+                          "name": "md-invoices-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-md-768x1024-invoices-list-chromium/md-invoices-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-6692354094a3d64ab941",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1044,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-matters-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:22.320Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "md-matters-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-matters-list.png"
+                        },
+                        {
+                          "name": "md-matters-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-md-768x1024-matters-list-chromium/md-matters-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-ceae677b8db7d92190de",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1036,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-settings-notifications.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:23.370Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "md-settings-notifications-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-settings-notifications.png"
+                        },
+                        {
+                          "name": "md-settings-notifications-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-md-768x1024-settings-notifications-chromium/md-settings-notifications-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-3bb12c520d2f43e05d1a",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1030,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-profile.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:24.412Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "md-profile-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/md-profile.png"
+                        },
+                        {
+                          "name": "md-profile-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-md-768x1024-profile-chromium/md-profile-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-665a3cebfd44d7f9a880",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            }
+          ]
+        },
+        {
+          "title": "portal @ lg (1280x800)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 87,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1050,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-home-populated.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:25.447Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "lg-home-populated-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-home-populated.png"
+                        },
+                        {
+                          "name": "lg-home-populated-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-lg-1280x800-home-populated-chromium/lg-home-populated-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-7af7d032d6ded37a9418",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1092,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-trust-matter-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:26.503Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "lg-trust-matter-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-trust-matter-list.png"
+                        },
+                        {
+                          "name": "lg-trust-matter-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-lg-1280x800-trust-matter-list-chromium/lg-trust-matter-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-3d9a3a11b4275fcaa839",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1049,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-deadlines-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:27.601Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "lg-deadlines-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-deadlines-list.png"
+                        },
+                        {
+                          "name": "lg-deadlines-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-lg-1280x800-deadlines-list-chromium/lg-deadlines-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-74b50fa3b59c5f17ca3e",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1070,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-invoices-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:28.655Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "lg-invoices-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-invoices-list.png"
+                        },
+                        {
+                          "name": "lg-invoices-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-lg-1280x800-invoices-list-chromium/lg-invoices-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-abdac4ac70f742634ec0",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1061,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-matters-list.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:29.730Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "lg-matters-list-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-matters-list.png"
+                        },
+                        {
+                          "name": "lg-matters-list-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-lg-1280x800-matters-list-chromium/lg-matters-list-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-bf66ec8a67bd18a742c5",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1033,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-settings-notifications.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:30.796Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "lg-settings-notifications-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-settings-notifications.png"
+                        },
+                        {
+                          "name": "lg-settings-notifications-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-lg-1280x800-settings-notifications-chromium/lg-settings-notifications-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-6570b876bd1be628af8c",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1075,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-profile.png, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:31.835Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "lg-profile-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/screenshots/portal-v2/chromium/lg-profile.png"
+                        },
+                        {
+                          "name": "lg-profile-actual.png",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/portal-pages-portal-lg-1280x800-profile-chromium/lg-profile-actual.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4c4b75307a1bfa6e10f7",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)",
+          "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+          "line": 33,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 0: Client lands on /home, reviews pending info requests",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 939,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:33.308Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-2314ae72c75b2be9cd9c",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "Day 0: Info-request detail view renders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1442,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:35.663Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-5927dabbfb5a9d81dcba",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 86,
+              "column": 7
+            },
+            {
+              "title": "Day 3: Client uploads document and submits info request",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1475,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:37.112Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-8ac924fa490e15087ebc",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 119,
+              "column": 7
+            },
+            {
+              "title": "Day 7: Client clicks through weekly digest to /deadlines",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 919,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts:219:8",
+                        "location": {
+                          "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                          "column": 8,
+                          "line": 219
+                        },
+                        "snippet": "  217 |           .catch(() => false),\n  218 |       )\n> 219 |       .toBeTruthy();\n      |        ^\n  220 |\n  221 |     await expect(page).toHaveScreenshot(\"day-07-deadlines-list.png\", {\n  222 |       fullPage: true,"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                            "column": 8,
+                            "line": 219
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n  217 |           .catch(() => false),\n  218 |       )\n> 219 |       .toBeTruthy();\n      |        ^\n  220 |\n  221 |     await expect(page).toHaveScreenshot(\"day-07-deadlines-list.png\", {\n  222 |       fullPage: true,\n    at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts:219:8"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:38.592Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/day-00-07-Day-0–7-—-Portal-dc6ce--weekly-digest-to-deadlines-portal-client-90day/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/tmp/628G/baseline/all-acme-results/day-00-07-Day-0–7-—-Portal-dc6ce--weekly-digest-to-deadlines-portal-client-90day/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                        "column": 8,
+                        "line": 219
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-0e8ec6797f94e92bfe5c",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 192,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 14–30 — Portal Client Lifecycle (Checkpoint 5)",
+          "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+          "line": 27,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 21 [legal-za]: Client views trust balance after first deposit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 944,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:39.881Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6b88c1efb4bfdc5cc891-43551ab6a143d8bcb470",
+              "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+              "line": 48,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9)",
+          "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+          "line": 30,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 45: Client opens invoice detail view",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 913,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:40.946Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-567e8634ca018acae94c",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 51,
+              "column": 7
+            },
+            {
+              "title": "Day 45: Client pays invoice via portal payment flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "No payable invoice rendered",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                        "line": 91,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 821,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:41.872Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "No payable invoice rendered",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                            "line": 91,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-dadc3f891a0889454f88",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 80,
+              "column": 7
+            },
+            {
+              "title": "Day 60 [legal-za]: Client downloads SoA or financial statement",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 1784,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts:177:8",
+                        "location": {
+                          "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                          "column": 8,
+                          "line": 177
+                        },
+                        "snippet": "  175 |           .catch(() => false),\n  176 |       )\n> 177 |       .toBeTruthy();\n      |        ^\n  178 |\n  179 |     // Capture the document list state — actual download byte-verification\n  180 |     // is done in slice 500B against a real firm-generated file."
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                            "column": 8,
+                            "line": 177
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n  175 |           .catch(() => false),\n  176 |       )\n> 177 |       .toBeTruthy();\n      |        ^\n  178 |\n  179 |     // Capture the document list state — actual download byte-verification\n  180 |     // is done in slice 500B against a real firm-generated file.\n    at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts:177:8"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:42.698Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-acme-results/day-45-75-Day-45–75-—-Port-5673f--SoA-or-financial-statement-portal-client-90day/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/tmp/628G/baseline/all-acme-results/day-45-75-Day-45–75-—-Port-5673f--SoA-or-financial-statement-portal-client-90day/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                        "column": 8,
+                        "line": 177
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-e3a1bddf17711e2be256",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 133,
+              "column": 7
+            },
+            {
+              "title": "Day 75 [legal-za]: Client marks deadline nudge read",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:44.508Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-d5f634c7400bd8c27d1a",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 188,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11)",
+          "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+          "line": 31,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 85: Client updates profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 950,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:44.819Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-f65168e3255d8ec653a5",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 52,
+              "column": 7
+            },
+            {
+              "title": "Day 85: Client changes digest cadence to biweekly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 926,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:45.879Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-7bda388d31c4463d1c99",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "Day 90: Client reviews activity trail of the quarter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 886,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:39:46.811Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-3a6677611e4508ab9986",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 156,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T09:39:07.658Z",
+    "duration": 40142.994999999995,
+    "expected": 29,
+    "skipped": 2,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

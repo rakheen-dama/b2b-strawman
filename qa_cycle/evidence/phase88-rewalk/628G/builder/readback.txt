@@ -1,0 +1,32 @@
+# 628G non-vacuity read-back — 2026-10-29T10:12:34Z, tenant tenant_7d218705360b
+## Information requests on Acme (seeded REQ-0001 must still be SENT; run-unique ones IN_PROGRESS 1/1)
+ request_number |   status    | total_items | submitted_items 
+----------------+-------------+-------------+-----------------
+ REQ-0001       | SENT        |           1 |               0
+ REQ-0002       | IN_PROGRESS |           1 |               1
+ REQ-0003       | IN_PROGRESS |           1 |               1
+ REQ-0004       | IN_PROGRESS |           1 |               1
+ REQ-0005       | IN_PROGRESS |           1 |               1
+ REQ-0006       | IN_PROGRESS |           1 |               1
+(6 rows)
+
+## Trust transactions (run-unique Day 21 deposits)
+ transaction_type | amount  |  status  |    reference     |         description         
+------------------+---------+----------+------------------+-----------------------------
+ DEPOSIT          | 1500.00 | RECORDED | E2E-PORTAL-d4yal | Portal Day 21 deposit d4yal
+ DEPOSIT          | 1500.00 | RECORDED | E2E-PORTAL-dbudm | Portal Day 21 deposit dbudm
+ DEPOSIT          | 1500.00 | RECORDED | E2E-PORTAL-dil5h | Portal Day 21 deposit dil5h
+ DEPOSIT          | 1500.00 | RECORDED | E2E-PORTAL-dp5g6 | Portal Day 21 deposit dp5g6
+ DEPOSIT          | 1500.00 | RECORDED | E2E-PORTAL-dvsco | Portal Day 21 deposit dvsco
+(5 rows)
+
+## Portal audit events by this suite
+            event_type            | count |              max              
+----------------------------------+-------+-------------------------------
+ portal.document.downloaded       |     5 | 2026-10-29 10:11:48.46657+00
+ portal.document.upload_initiated |     5 | 2026-10-29 10:11:42.534997+00
+ portal.request_item.submitted    |     5 | 2026-10-29 10:11:42.569096+00
+(3 rows)
+
+## Trust-activity emails in Mailpit (e2e :8026)
+messages: 5 ['E2E Test Organization: Trust account activity', 'E2E Test Organization: Trust account activity', 'E2E Test Organization: Trust account activity', 'E2E Test Organization: Trust account activity', 'E2E Test Organization: Trust account activity']

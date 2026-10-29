@@ -47,6 +47,8 @@ jobs:
               # The portal terminology guard drift-checks its scanner copy against these (628B).
               - 'frontend/__tests__/no-terminology-remnants.test.ts'
               - 'frontend/__tests__/helpers/source-scan.ts'
+              # The portal no-isvisible-catch rule drift-checks its copy against this (628G).
+              - 'frontend/e2e/eslint/no-isvisible-catch.mjs'
               - 'packages/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'

@@ -1,0 +1,17 @@
+
+> portal@0.1.0 test:e2e:login-bare /Users/rakheendama/Projects/2026/worktree-epic-628G/portal
+> LOGIN_BARE=1 playwright test --config=playwright.portal.config.ts --project=login-bare --reporter=list
+
+[WebServer] ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+[WebServer] 
+[WebServer]   To migrate automatically, run:
+[WebServer]   npx @next/codemod@canary middleware-to-proxy .
+[WebServer] 
+[WebServer]   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[WebServer] ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+
+Running 1 test using 1 worker
+
+  ✓  1 [login-bare] › e2e/tests/login-bare.spec.ts:70:7 › Bare /login — email-only portal sign-in › fresh browser: bare /login → one branded link in Mailpit → /matters (4.0s)
+
+  1 passed (12.3s)

@@ -1,0 +1,1586 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/playwright.portal.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/628G/baseline/all-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/tmp/628G/baseline/all-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "portal-client-90day",
+        "name": "portal-client-90day",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "changed",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": {
+      "command": "NODE_OPTIONS= pnpm dev",
+      "url": "http://localhost:3002",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "e2e/tests/responsive/portal-pages.spec.ts",
+      "file": "e2e/tests/responsive/portal-pages.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "portal @ sm (375x667)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 87,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 308,
+                      "error": {
+                        "message": "Error: Could not obtain portal JWT for alice.portal@example.com. Confirm the seeded stack has a portal contact with that email.",
+                        "stack": "Error: Could not obtain portal JWT for alice.portal@example.com. Confirm the seeded stack has a portal contact with that email.\n    at authenticatePortalSession (/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive/portal-pages.spec.ts:79:11)\n    at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive/portal-pages.spec.ts:90:7",
+                        "location": {
+                          "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive/portal-pages.spec.ts",
+                          "column": 11,
+                          "line": 79
+                        },
+                        "snippet": "  77 |   const jwt = await getPortalJwt(PORTAL_EMAIL);\n  78 |   if (!jwt) {\n> 79 |     throw new Error(\n     |           ^\n  80 |       `Could not obtain portal JWT for ${PORTAL_EMAIL}. Confirm the seeded stack has a portal contact with that email.`,\n  81 |     );\n  82 |   }"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive/portal-pages.spec.ts",
+                            "column": 11,
+                            "line": 79
+                          },
+                          "message": "Error: Could not obtain portal JWT for alice.portal@example.com. Confirm the seeded stack has a portal contact with that email.\n\n  77 |   const jwt = await getPortalJwt(PORTAL_EMAIL);\n  78 |   if (!jwt) {\n> 79 |     throw new Error(\n     |           ^\n  80 |       `Could not obtain portal JWT for ${PORTAL_EMAIL}. Confirm the seeded stack has a portal contact with that email.`,\n  81 |     );\n  82 |   }\n    at authenticatePortalSession (/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive/portal-pages.spec.ts:79:11)\n    at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive/portal-pages.spec.ts:90:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:51.453Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/all-results/portal-pages-portal-sm-375x667-home-populated-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/tmp/628G/baseline/all-results/portal-pages-portal-sm-375x667-home-populated-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive/portal-pages.spec.ts",
+                        "column": 11,
+                        "line": 79
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-69024fce2e7e298a7150",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.030Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4936be0782e882cc99c7",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.030Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-f56aaad8d3226f6e3e36",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.030Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4d13fd012bc7362cf286",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-572a83ed36366c5983ba",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-c167b3603998bd0f353b",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-624b5f3561ef33f116ff",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            }
+          ]
+        },
+        {
+          "title": "portal @ md (768x1024)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 87,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-2046750171c1ff0ff380",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-494f5e2dc3adbfcf40b4",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-5118ad571d55c7926ed3",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-6692354094a3d64ab941",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-ceae677b8db7d92190de",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-3bb12c520d2f43e05d1a",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-665a3cebfd44d7f9a880",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            }
+          ]
+        },
+        {
+          "title": "portal @ lg (1280x800)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 87,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-7af7d032d6ded37a9418",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-3d9a3a11b4275fcaa839",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-74b50fa3b59c5f17ca3e",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.032Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-abdac4ac70f742634ec0",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.032Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-bf66ec8a67bd18a742c5",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.032Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-6570b876bd1be628af8c",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.032Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4c4b75307a1bfa6e10f7",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 94,
+              "column": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)",
+          "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+          "line": 33,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 0: Client lands on /home, reviews pending info requests",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                        "line": 44,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 144,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.346Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                            "line": 44,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-2314ae72c75b2be9cd9c",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "Day 0: Info-request detail view renders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                        "line": 44,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 94,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.596Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                            "line": 44,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-5927dabbfb5a9d81dcba",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 86,
+              "column": 7
+            },
+            {
+              "title": "Day 3: Client uploads document and submits info request",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                        "line": 44,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 82,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.698Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                            "line": 44,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-8ac924fa490e15087ebc",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 119,
+              "column": 7
+            },
+            {
+              "title": "Day 7: Client clicks through weekly digest to /deadlines",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                        "line": 44,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 88,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.787Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-00-07.spec.ts",
+                            "line": 44,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-0e8ec6797f94e92bfe5c",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 192,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 14–30 — Portal Client Lifecycle (Checkpoint 5)",
+          "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+          "line": 27,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 21 [legal-za]: Client views trust balance after first deposit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-14-30.spec.ts",
+                        "line": 38,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 85,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.884Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-14-30.spec.ts",
+                            "line": 38,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6b88c1efb4bfdc5cc891-43551ab6a143d8bcb470",
+              "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+              "line": 48,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9)",
+          "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+          "line": 30,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 45: Client opens invoice detail view",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                        "line": 41,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 86,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:52.982Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                            "line": 41,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-567e8634ca018acae94c",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 51,
+              "column": 7
+            },
+            {
+              "title": "Day 45: Client pays invoice via portal payment flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                        "line": 41,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 86,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:53.079Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                            "line": 41,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-dadc3f891a0889454f88",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 80,
+              "column": 7
+            },
+            {
+              "title": "Day 60 [legal-za]: Client downloads SoA or financial statement",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                        "line": 41,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 86,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:53.171Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                            "line": 41,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-e3a1bddf17711e2be256",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 133,
+              "column": 7
+            },
+            {
+              "title": "Day 75 [legal-za]: Client marks deadline nudge read",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                        "line": 41,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 86,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:53.263Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-45-75.spec.ts",
+                            "line": 41,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-d5f634c7400bd8c27d1a",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 188,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11)",
+          "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+          "line": 31,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 85: Client updates profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-85-90.spec.ts",
+                        "line": 42,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 79,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:53.356Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-85-90.spec.ts",
+                            "line": 42,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-f65168e3255d8ec653a5",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 52,
+              "column": 7
+            },
+            {
+              "title": "Day 85: Client changes digest cadence to biweekly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-85-90.spec.ts",
+                        "line": 42,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 86,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:53.447Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-85-90.spec.ts",
+                            "line": 42,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-7bda388d31c4463d1c99",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "Day 90: Client reviews activity trail of the quarter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-85-90.spec.ts",
+                        "line": 42,
+                        "column": 12
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 85,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:53.538Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Could not obtain portal JWT for sipho.portal@example.com. Stack may not be running or contact not seeded — deferred to slice 500B execution.",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day/day-85-90.spec.ts",
+                            "line": 42,
+                            "column": 12
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-3a6677611e4508ab9986",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 156,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T09:07:48.919Z",
+    "duration": 4764.067,
+    "expected": 0,
+    "skipped": 32,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

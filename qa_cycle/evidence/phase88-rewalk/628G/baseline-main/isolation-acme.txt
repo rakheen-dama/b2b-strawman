@@ -1,0 +1,8 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:36:7 › PORTAL-01: Data Isolation › Kgosi sees only Kgosi matters via API (140ms)
+  ✓  2 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:48:7 › PORTAL-01: Data Isolation › Portal JWT blocked from org API (84ms)
+
+  2 passed (668ms)
+exit=0

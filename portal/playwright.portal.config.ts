@@ -41,9 +41,29 @@ import { defineConfig, devices } from "@playwright/test";
  *                                 still reused, and the spec's exchange-count
  *                                 check fails loudly if that is a dev server.
  *                               - Spends 1 request of the per-email cap
- *                                 (3 / 15 min) per run; PORTAL_CONTACT_EMAIL
- *                                 set to the same address spends a second
+ *                                 (3 / 15 min) and 1 token of the
+ *                                 per-contact cap (3 / 5 min) per run;
+ *                                 PORTAL_CONTACT_EMAIL set to the same
+ *                                 address spends a second of each
  *                                 (globalSetup). Run it without that env.
+ *
+ * Magic-link caps (both apply to the e2e contact contact@acme.example.com):
+ *   - per contact: 3 tokens / 5 min (MagicLinkService; DB rows — request-link
+ *     AND information-request sends mint one; a backend restart does not
+ *     clear it, only time does);
+ *   - per email: 3 request-link calls / 15 min (PortalLoginRateLimiter;
+ *     in-memory, the 4th call is a 429; `docker restart e2e-backend` clears it).
+ * The boot seed's request send spends 1 token; each `test:e2e:portal*` run
+ * spends 1 request + 1 token in globalSetup and 1 token in the 90-day Day 0
+ * setup (a run-unique request send).
+ *
+ * Per-suite scripts (package.json; select by --project, never by a
+ * positional path filter — a checkout path containing "Projects" would match):
+ *   pnpm test:e2e:portal                 # responsive + 90-day, one globalSetup
+ *   pnpm test:e2e:portal-client-90day
+ *   pnpm test:e2e:responsive
+ *   pnpm test:e2e:login-bare             # opt-in, production portal
+ * They default PORTAL_CONTACT_EMAIL to the seed contact (login-bare does not).
  *
  * First-run usage (baselines):
  *   pnpm exec playwright test \
@@ -55,7 +75,8 @@ import { defineConfig, devices } from "@playwright/test";
  *     --project=portal-client-90day --update-snapshots
  *
  * By default all projects except the opt-in `login-bare` run (and
- * `webServer` boots the portal with `pnpm dev`).
+ * `webServer` boots the portal with `pnpm dev`, pointed at
+ * NEXT_PUBLIC_PORTAL_API_URL, else BACKEND_URL, else the e2e backend :8081).
  * Set SKIP_PORTAL_BASELINES=true to skip (the webServer is also skipped in
  * that case — no point booting a dev server when every test is skipped).
  * See e2e/tests/responsive/portal-pages.spec.ts and
@@ -109,8 +130,20 @@ export default defineConfig({
         : {
             command: "NODE_OPTIONS= pnpm dev",
             url: "http://localhost:3002",
+            // A server already on :3002 is reused — free the port first if it
+            // is a dev portal pointed at another backend (e.g. the Keycloak
+            // stack's svc.sh portal on :8080): the e2e JWT 401s there.
             reuseExistingServer: !process.env.CI,
             timeout: 120_000,
+            env: {
+              NODE_OPTIONS: "",
+              // Phase 88 628G: lib/api-client.ts defaults to :8080 (the KC
+              // backend); the e2e session must call the e2e backend.
+              NEXT_PUBLIC_PORTAL_API_URL:
+                process.env.NEXT_PUBLIC_PORTAL_API_URL ||
+                process.env.BACKEND_URL ||
+                "http://localhost:8081",
+            },
           },
   projects: [
     {

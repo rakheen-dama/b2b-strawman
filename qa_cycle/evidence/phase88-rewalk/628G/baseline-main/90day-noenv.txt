@@ -1,0 +1,28 @@
+
+> portal@0.1.0 test:e2e:portal-client-90day /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal
+> playwright test --config=playwright.portal.config.ts --project=portal-client-90day --reporter=list
+
+[2m[WebServer] [22m[33m[1m⚠[22m[39m The "middleware" file convention is deprecated. Please use "proxy" instead.
+[2m[WebServer] [22m
+[2m[WebServer] [22m  To migrate automatically, run:
+[2m[WebServer] [22m  npx @next/codemod@canary middleware-to-proxy .
+[2m[WebServer] [22m
+[2m[WebServer] [22m  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+Running 12 tests using 1 worker
+
+  -   1 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:54:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 0: Client lands on /home, reviews pending info requests
+  -   2 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:86:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 0: Info-request detail view renders
+  -   3 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:119:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 3: Client uploads document and submits info request
+  -   4 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:192:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 7: Client clicks through weekly digest to /deadlines
+  -   5 [portal-client-90day] › e2e/tests/portal-client-90day/day-14-30.spec.ts:48:7 › Day 14–30 — Portal Client Lifecycle (Checkpoint 5) › Day 21 [legal-za]: Client views trust balance after first deposit
+  -   6 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:51:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 45: Client opens invoice detail view
+  -   7 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:80:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 45: Client pays invoice via portal payment flow
+  -   8 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:133:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 60 [legal-za]: Client downloads SoA or financial statement
+  -   9 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:188:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 75 [legal-za]: Client marks deadline nudge read
+  -  10 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:52:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 85: Client updates profile
+  -  11 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:91:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 85: Client changes digest cadence to biweekly
+  -  12 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:156:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 90: Client reviews activity trail of the quarter
+
+  12 skipped
+exit=0

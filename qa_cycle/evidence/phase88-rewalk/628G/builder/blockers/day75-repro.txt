@@ -1,0 +1,32 @@
+# 628G Day 75 BLOCKER reproduction — 2026-10-29T09:52:27Z, fresh e2e stack from worktree-epic-628G @ 8121aa0c7 + slice changes
+
+## Playwright repro (temporary spec, not committed)
+[repro] firm court date created: {"id":"4e1783e5-632d-469c-bf8d-dcbd1bd9219e","matterId":"6512a3da-f70d-4a10-9a40-0435ddbcaf15","matterName":"Website Redesign","clientId":"506f04be-bc49-42d1-a8cd-abe9d5941887","clientName":"Acme Corp","dateType":"HEARING","scheduledDate":"2026-11-08","scheduledTime":"10:00:00","courtName":"Western Cape High Court","courtReference":"REPRO-d6m4a","judgeMagistrate":null,"description":"628G repro hearing d6m4a","status":"SCHEDULED","outcome":null,"reminderDays":7,"createdBy":"b6880ae6-03ad-4d3b-b277-b1d0ac32f322","createdAt":"2026-10-29T09:52:05.872530258Z","updatedAt":"2026-10-29T09:52:05.872531383Z"}
+[repro] firm GET /api/court-dates?matterId=6512a3da-f70d-4a10-9a40-0435ddbcaf15 → 1 row(s), includes new: true
+[repro] poll 1: GET /portal/deadlines?from=2026-10-29&to=2027-01-27 → []
+[repro] poll 2: GET /portal/deadlines?from=2026-10-29&to=2027-01-27 → []
+[repro] poll 3: GET /portal/deadlines?from=2026-10-29&to=2027-01-27 → []
+[repro] poll 4: GET /portal/deadlines?from=2026-10-29&to=2027-01-27 → []
+[repro] poll 5: GET /portal/deadlines?from=2026-10-29&to=2027-01-27 → []
+[repro] portal /deadlines shows: No deadlines in this view
+[repro] mark-read controls on /deadlines: 0
+  1 passed (17.1s)
+
+## Firm side (tenant tenant_7d218705360b): court_dates row
+                  id                  | date_type | scheduled_date |  status   | court_reference 
+--------------------------------------+-----------+----------------+-----------+-----------------
+ 4e1783e5-632d-469c-bf8d-dcbd1bd9219e | HEARING   | 2026-11-08     | SCHEDULED | REPRO-d6m4a
+(1 row)
+
+## Full portal resync (POST /internal/portal/resync/e2e-test-org)
+HTTP 200
+## Portal read model after resync: portal.portal_deadline_view
+ portal_deadline_rows 
+----------------------
+                    0
+(1 row)
+
+## Source: customerbackend/service/DeadlinePortalSyncService.java:36-44 (COURT_DATE / PRESCRIPTION / FILING sync Dormant — events do not exist)
+## Portal: no mark-read control (grep -rniE 'mark.?read|markRead|unread' portal/app portal/components portal/lib portal/hooks):
+       0
+## Screenshot: /tmp/628G/builder/day75-portal-deadlines-empty.png (portal /deadlines after the court date; not committed — PNGs stay out of the PR per the slice rules)

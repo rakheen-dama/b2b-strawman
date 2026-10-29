@@ -1,150 +1,104 @@
 import { test, expect } from "@playwright/test";
 import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
+import { RUN_STARTED_AT, SEED, portalApiGet } from "../../helpers/firm-api";
 
 /**
- * Epic 500A — Portal client-POV 90-day lifecycle: Day 85 → Day 90.
+ * Portal client-POV 90-day lifecycle: Day 85 → Day 90
+ * (checkpoints 10–11 of `qa/testplan/demos/portal-client-90day-keycloak.md`).
+ *   - Day 85: the client's profile (read-only) and the firm's digest cadence (read-only)
+ *   - Day 90: the client reviews the activity trail of the quarter
  *
- * Exercises checkpoints 10–11 from `qa/testplan/demos/portal-client-90day-keycloak.md`:
- *   - Day 85: Client updates profile + changes digest cadence to biweekly       [all profiles]
- *   - Day 90: Final digest, client reviews activity trail of the quarter         [all profiles]
+ * Phase 88 628G:
+ *   - The portal profile is display-only (app/(authenticated)/profile/page.tsx; backend
+ *     PortalProfileController exposes GET /portal/me only), so Day 85 checks the contact details
+ *     the client sees; profile editing (scenario 85.1–85.2) is a recorded finding, not a test.
+ *   - Digest cadence is firm-level by design (ADR-258; gap register §5 "Day 85 digest cadence"):
+ *     the seed sets BIWEEKLY (compose/seed/seed.sh) and the portal page shows it read-only.
+ *   - Day 90 reads the events this run's Day 3 (upload + submit) and Day 60 (statement download)
+ *     produced, so it depends on day-00-07 and day-45-75 having run first in the same worker
+ *     (`workers: 1`, files in name order) — if either failed, Day 90 fails too, by design.
  *
- * Prerequisites: same stack contract as day-00-07.spec.ts. Day 90 requires the
- * prior checkpoints (Day 3 submit, Day 14 accept, Day 45 pay, Day 60 download,
- * Day 75 mark-read, Day 85 profile update) to have actually landed in order for
- * the activity trail to populate — this is why the `portal-client-90day`
- * project runs `workers: 1` (sequential).
- *
- * Run (full — slice 500B):
- *   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
- *     pnpm exec playwright test --config=playwright.portal.config.ts \
- *     --project=portal-client-90day --update-snapshots
- *
- * Scaffold guard (slice 500A — this PR):
- *   SKIP_PORTAL_BASELINES=true is honoured so `playwright --list` parses cleanly.
+ * Strict: nothing is soft-asserted or skipped at runtime; SKIP_PORTAL_BASELINES=true is the only
+ * opt-out.
  */
 
-const PORTAL_EMAIL =
-  process.env.PORTAL_CONTACT_EMAIL || "sipho.portal@example.com";
+const PORTAL_EMAIL = process.env.PORTAL_CONTACT_EMAIL || SEED.contactEmail;
 const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
+
+type ActivityEvent = {
+  eventType: string;
+  actorType: string;
+  occurredAt: string;
+};
 
 test.describe
   .serial("Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11)", () => {
-  test.beforeAll(async () => {
+  let jwt: string;
+
+  test.beforeAll(() => {
     test.skip(
       SKIP,
-      "SKIP_PORTAL_BASELINES=true — scaffold-only run (Epic 500A). Unset with a seeded portal stack to execute (Epic 500B).",
+      "SKIP_PORTAL_BASELINES=true — portal e2e disabled (no seeded stack).",
     );
   });
 
   test.beforeEach(async ({ page }) => {
-    const jwt = await getPortalJwt(PORTAL_EMAIL);
-    if (!jwt) {
-      test.skip(
-        true,
-        `Could not obtain portal JWT for ${PORTAL_EMAIL}. Stack may not be running or contact not seeded — deferred to slice 500B execution.`,
-      );
-      return;
-    }
+    const token = await getPortalJwt(PORTAL_EMAIL);
+    expect(
+      token,
+      `portal JWT for ${PORTAL_EMAIL}: stack up, contact seeded, and neither magic-link cap hit ` +
+        `(3 tokens per contact per 5 min, DB; 3 request-link calls per email per 15 min, in-memory)`,
+    ).toBeTruthy();
+    jwt = token!;
     await loginAsPortalContact(page, jwt);
   });
 
-  // ── Checkpoint 10 — Day 85: profile + notifications cadence ────────────
-  test("Day 85: Client updates profile", async ({ page }) => {
+  // ── Checkpoint 10 — Day 85: profile + notifications ────────────────────
+  test("Day 85: Profile shows the client's contact details (read-only)", async ({
+    page,
+  }) => {
     await page.goto("/profile");
-    await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(500);
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Profile" }),
+    ).toBeVisible();
+    await expect(page.getByText("Contact Information")).toBeVisible();
+    // Each <dt>/<dd> pair sits in its own <div> (Name, Email, Role, Client).
+    const field = (label: string) =>
+      page
+        .locator("main dl > div")
+        .filter({ has: page.locator("dt", { hasText: label }) })
+        .locator("dd");
+    await expect(field("Email")).toHaveText(SEED.contactEmail);
+    await expect(field("Client")).toHaveText(SEED.client);
+    await expect(field("Role")).not.toBeEmpty();
+    // Display-only today: no editable field, no save action.
+    await expect(page.locator("main").getByRole("textbox")).toHaveCount(0);
+    await expect(
+      page.locator("main").getByRole("button", { name: /save|update/i }),
+    ).toHaveCount(0);
 
-    const main = page.locator("main");
-    if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "/profile not rendered");
-      return;
-    }
-
-    // Find the first editable text input that looks like a name field.
-    const nameField = page
-      .getByRole("textbox", { name: /name|display/i })
-      .first();
-    if (await nameField.isVisible({ timeout: 3000 }).catch(() => false)) {
-      const currentValue = (await nameField.inputValue().catch(() => "")) || "";
-      // Idempotent update — only append suffix if not already present.
-      if (!/updated Day 85/.test(currentValue)) {
-        await nameField.fill(`${currentValue} (updated Day 85)`.trim());
-      }
-
-      const saveBtn = page
-        .getByRole("button", { name: /save|update/i })
-        .first();
-      if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await saveBtn.click();
-        await page.waitForTimeout(800);
-      }
-    }
-
-    await page.waitForLoadState("domcontentloaded");
-
-    await expect(page).toHaveScreenshot("day-85-profile-updated.png", {
+    await expect(page).toHaveScreenshot("day-85-profile.png", {
       fullPage: true,
       animations: "disabled",
     });
   });
 
-  test("Day 85: Client changes digest cadence to biweekly", async ({
+  test("Day 85: Notifications page shows the firm's bi-weekly digest cadence (read-only)", async ({
     page,
   }) => {
     await page.goto("/settings/notifications");
-    await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(500);
-
-    const main = page.locator("main");
-    if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "/settings/notifications not rendered");
-      return;
-    }
-
-    // The cadence control shape varies — could be a Radio group, a Select,
-    // or a SegmentedControl. Try `combobox` first, fall back to radio.
-    const cadenceCombobox = page
-      .getByRole("combobox", { name: /cadence|frequency|digest/i })
-      .first();
-    if (await cadenceCombobox.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await cadenceCombobox.click();
-      await page.waitForTimeout(300);
-      const biweeklyOption = page
-        .getByRole("option", { name: /biweekly|bi-weekly|every other/i })
-        .first();
-      if (
-        await biweeklyOption.isVisible({ timeout: 2000 }).catch(() => false)
-      ) {
-        await biweeklyOption.click();
-        await page.waitForTimeout(300);
-      }
-    } else {
-      const biweeklyRadio = page
-        .getByRole("radio", { name: /biweekly|bi-weekly|every other/i })
-        .first();
-      if (await biweeklyRadio.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await biweeklyRadio.click();
-        await page.waitForTimeout(300);
-      }
-    }
-
-    const saveBtn = page.getByRole("button", { name: /save|update/i }).first();
-    if (await saveBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await saveBtn.click();
-      await page.waitForTimeout(800);
-    }
-
-    await page.waitForLoadState("domcontentloaded");
-
-    expect
-      .soft(
-        await page
-          .getByText(/biweekly|bi-weekly|every other/i)
-          .first()
-          .isVisible({ timeout: 5000 })
-          .catch(() => false),
-      )
-      .toBeTruthy();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Notification Preferences" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Your firm sends bi-weekly digests.", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("switch", { name: /Weekly digest/ }),
+    ).toBeVisible();
+    // The cadence itself is the firm's setting: the client has no control for it.
+    await expect(page.locator("main").getByRole("combobox")).toHaveCount(0);
+    await expect(page.locator("main").getByRole("radio")).toHaveCount(0);
 
     await expect(page).toHaveScreenshot("day-85-notifications-biweekly.png", {
       fullPage: true,
@@ -152,35 +106,40 @@ test.describe
     });
   });
 
-  // ── Checkpoint 11 — Day 90: final digest + activity trail ──────────────
-  test("Day 90: Client reviews activity trail of the quarter", async ({
+  // ── Checkpoint 11 — Day 90: activity trail ─────────────────────────────
+  test("Day 90: Activity trail shows this run's submit and download", async ({
     page,
   }) => {
-    // The activity trail lives either on /home (scrolled to an activity
-    // section) or on a dedicated /profile/activity route. Try /home first;
-    // it is the documented landing target for the quarter-summary digest link.
-    await page.goto("/home");
-    await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(500);
+    // This run's Day 3 and Day 60 events (not an older run's): occurred after the helpers loaded,
+    // less a minute of host/container clock tolerance.
+    const mine = await portalApiGet<{ content: ActivityEvent[] }>(
+      "/portal/activity?tab=MINE",
+      jwt,
+    );
+    const thisRun = (eventType: string) =>
+      mine.content.some(
+        (e) =>
+          e.eventType === eventType &&
+          e.actorType === "PORTAL_CONTACT" &&
+          Date.parse(e.occurredAt) >= RUN_STARTED_AT - 60_000,
+      );
+    expect(thisRun("portal.request_item.submitted")).toBe(true);
+    expect(thisRun("portal.document.downloaded")).toBe(true);
 
-    const main = page.locator("main");
-    if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "/home not rendered");
-      return;
-    }
-
-    // Activity trail surface — look for expected keywords from prior days.
-    // Empty-match is tolerated because slice 500A does not actually populate
-    // the prior-day state; slice 500B will execute the full chain in order.
-    expect
-      .soft(
-        await page
-          .getByText(/activity|history|recent|timeline/i)
-          .first()
-          .isVisible({ timeout: 5000 })
-          .catch(() => false),
-      )
-      .toBeTruthy();
+    await page.goto("/activity");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Activity" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("tab", { name: "Your actions" }),
+    ).toHaveAttribute("aria-selected", "true");
+    const list = page.getByTestId("activity-list");
+    await expect(
+      list.getByText("You submitted an information request item").first(),
+    ).toBeVisible();
+    await expect(
+      list.getByText("You downloaded a document").first(),
+    ).toBeVisible();
 
     await expect(page).toHaveScreenshot("day-90-activity-trail.png", {
       fullPage: true,

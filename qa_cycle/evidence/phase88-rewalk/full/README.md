@@ -71,56 +71,64 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | `public` (global) | 2 | 2 | — |
 
 ## Sections
-| Section | Doc lines | File | Rows | P / F / PARTIAL / D / N/A |
-|---|---|---|---|---|
-| KC-STACK (629.1) | — | README.md | 1 | PASS |
-| Session 0 (629.2) | 43–48 + master 115–152 | session-0.md | 18 | 15 / 2 / 0 / 0 / 1 |
-| Day 0 A–D (629.2, W1a) | 52–125 | day-00.md | 44 | 40 / 4 / 0 / 0 / 0 |
-| Day 0 E–K + LH + K-PRO + CP0.1–9 (629.2, W1b) | 129–206 | day-00.md | 46 | 41 / 3 / 0 / 2 / 0 |
-| **Day 0 total** | 52–206 | day-00.md | 90 | 83 / 7 / 0 / 0 / 0 (0.50 + CP0.5 closed PASS in place by W2a after 1.9; W1b snapshot was 81 / 7 / 0 / 2 / 0) |
-| Days 1–4 (629.3, W2a) | 209–266 | days-01-07.md | 46 | 42 / 4 / 0 / 0 / 0 |
-| Days 5–7 (629.3, W2b) | 268–301 | days-01-07.md | 25 | 22 / 3 / 0 / 0 / 0 |
-| **Days 1–7 total** | 209–301 | days-01-07.md | 71 | 64 / 7 / 0 / 0 / 0 |
-| Days 8–13 (629.3, W3a) | 304–333 | days-08-21.md | 23 | 19 / 4 / 0 / 0 / 0 |
-| Days 14–21 (629.3, W3b) | 334–366 | days-08-21.md | 26 | 24 / 2 / 0 / 0 / 0 |
-| **Days 8–21 total** | 304–366 | days-08-21.md | 49 | 43 / 6 / 0 / 0 / 0 |
-| Days 22–35 + Day 33 (629.3, W4) | 369–409 (Day 30 SoA 414–424 → 629B) | days-22-35.md | 27 | 23 / 3 / 0 / 0 / 1 |
-| **629A grand total** (5 day files + KC-STACK) | — | all | **256** | **229 / 25 / 0 / 0 / 2** |
 
-Per-file totals (rows: P / F / PARTIAL / D / N/A): `session-0.md` 18: 15 / 2 / 0 / 0 / 1 · `day-00.md` 90: 83 / 7 / 0 / 0 / 0 · `days-01-07.md` 71: 64 / 7 / 0 / 0 / 0 · `days-08-21.md` 49: 43 / 6 / 0 / 0 / 0 · `days-22-35.md` 27: 23 / 3 / 0 / 0 / 1 · README KC-STACK 1: PASS. Recount with `for f in session-0.md day-00.md days-01-07.md days-08-21.md days-22-35.md; do for s in PASS FAIL PARTIAL DEFERRED N/A; do printf "%s %s %s\n" $f $s $(grep -cE "^\| [^|]+ \| $s \|" $f); done; done`. FAILs by source (25): 13 × G88-F1 LOW wording/behaviour drift (0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 8.1a, 12.1a, 12.2a, 22.1a, 23.3a, 35.1a); 6 × §5a pending founder authorisation (0.Aa + M.6a row 1 / G88-M1, 3.3a row 2, 6.2a row 4, 6.3a row 5, 14.13a row 6); 2 × G88-F3 MEDIUM product bug (0.47b, 0.48b); G88-F8 LOW (4.6b); G88-M6 MEDIUM (6.3b); G88-F11 LOW (12.3a); G88-F14 LOW (15.3b) — **no HIGH anywhere in 629A**.
+Scenario-step totals (the headline). Rows added by rulings or the brief (LH, K-PRO, TEAM-sipho/-estate/-raf, INFRA-1…5) are **unscored**: they sit in an "Added rows (unscored)" table in each file with status `NOTE`, and are listed separately below. Recounted after the PR #1711 review (2026-10-29).
+
+| Section | Doc lines | File | Scenario rows | P / F / PARTIAL / D / N/A |
+|---|---|---|---|---|
+| Session 0 (629.2) | 43–48 + master 115–152 | session-0.md | 18 | 15 / 2 / 0 / 0 / 1 |
+| Day 0 (629.2, W1a + W1b; 0.50 / CP0.5 closed by W2a after 1.9) | 52–206 | day-00.md | 88 | 81 / 7 / 0 / 0 / 0 |
+| Days 1–7 (629.3, W2a + W2b) | 209–301 | days-01-07.md | 70 | 61 / 9 / 0 / 0 / 0 |
+| Days 8–21 (629.3, W3a + W3b) | 304–366 | days-08-21.md | 46 | 39 / 7 / 0 / 0 / 0 |
+| Days 22–35 + Day 33 (629.3, W4) | 369–409 (Day 30 SoA 414–424 → 629B) | days-22-35.md | 26 | 22 / 3 / 0 / 0 / 1 |
+| **629A scenario total** | — | 5 day files | **248** | **218 / 28 / 0 / 0 / 2** |
+
+Unscored rows (status `NOTE`, not in the totals above): **10** — `day-00.md` LH, K-PRO; `days-01-07.md` TEAM-sipho, INFRA-1, INFRA-2; `days-08-21.md` TEAM-estate, INFRA-3, INFRA-4, INFRA-5 (**incident**: the walker's `pkill -9 -f next-server` killed the svc frontend; it was restarted and no state was lost — not a PASS); `days-22-35.md` TEAM-raf. Slice gate 629.1 (KC-STACK, this file) PASS — reported on its own, not a scenario row.
+
+Per-file totals (scenario rows: P / F / PARTIAL / D / N/A; + unscored `NOTE`): `session-0.md` 18: 15 / 2 / 0 / 0 / 1 (+0) · `day-00.md` 88: 81 / 7 / 0 / 0 / 0 (+2) · `days-01-07.md` 70: 61 / 9 / 0 / 0 / 0 (+3) · `days-08-21.md` 46: 39 / 7 / 0 / 0 / 0 (+4) · `days-22-35.md` 26: 22 / 3 / 0 / 0 / 1 (+1). Recount with `for f in session-0.md day-00.md days-01-07.md days-08-21.md days-22-35.md; do for s in PASS FAIL PARTIAL DEFERRED N/A NOTE; do printf "%s %s %s\n" $f $s $(grep -cE "^\| [^|]+ \| $s \|" $f); done; done`.
+
+FAILs by source (28): **16 × G88-F1** LOW wording/behaviour drift (0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 4.1a, 6.5a, 8.1a, 12.1a, 12.2a, 14.7a, 22.1a, 23.3a, 35.1a); **6 × §5a** pending founder authorisation (0.Aa + M.6a row 1 / G88-M1, 3.3a row 2, 6.2a row 4, 6.3a row 5, 14.13a row 6); **2 × G88-F3** MEDIUM product bug (0.47b, 0.48b); **1 × G-B8** incomplete fix (4.6b; U5 625A/B → follow-up); **1 × G88-M6** MEDIUM (6.3b); **1 × G88-F11** LOW (12.3a); **1 × G88-F14** LOW (15.3b). **HIGH: G88-F12** (OTP voetstoots clause names the firm, Seller line empty) — the walk's only HIGH so far; a side-observation gap on a PASS row (14.8, which checks only that the clauses are present), routed to a follow-up phase.
 
 ## Wow-moment candidates shot in 629A
 | Wow | Step | File | Shows |
 |---|---|---|---|
 | 1 (Day 0) | after 0.40 / LH (ruling C-6) | screens/wow-1-candidate.png | Thandi's Home, six-zone legal nav, Mathebula logo tile + brand accent bar, 1440×900 light (brand colour visible only as logo + accent bar; empty Day-0 widgets) |
 | 2 (Day 4) | 4.3b | screens/wow-2-candidate.png | Portal acceptance page (prod build) with the engagement letter PDF inline (letterhead logo, firm block, navy headings) and the green "Sipho Dlamini accepted this document on 29 Oct 2026, 16:35." state, 1440×900 light |
-| 3 (Day 2 per the list; walked at 1.4) | 1.4 | screens/wow-3-candidate.png | Bob, Conflict check: green "No Conflict — Checked "Sipho Dlamini" at 29/10/2026, 16:11:17" card, 1440×900 light |
+| 3 (Day 2 per the list; walked at 1.4) | 1.4 | screens/wow-3-candidate.png | Bob, Conflict check: green "No Conflict — Checked "Sipho Dlamini" at 29/10/2026, 16:11:17" card, 1440×900 light. Caveat for 629B: the "CLEAR" label the scenario names is absent (the card reads "No Conflict"), and 1.3a is a FAIL (G88-F1) — the 629.8 "clean PASS only" rule applies to this candidate |
 | 4 (Day 5) | 5.4 | screens/wow-4-candidate.png | Bob, Sipho's litigation matter Overview: "Active · LITIGATION", facts strip "Case no. JHB/CIV/2026/001 · Gauteng High Court, Johannesburg", grouped tabs, 0 Project/Customer/Invoice, 1440×900 light. Wow 4's text says "a RAF claim" — wrong for Day 5 (Sipho's matter); §5a row 3 pending founder authorisation — not re-shot on the RAF matter |
-
 | 5 (Day 33) | 33.5 | screens/wow-5-candidate.png | Thandi, Reports › Profitability: Team Utilization + Matter Profitability with Estate (18.0h · R 31 025,00 · R 12 500,00 · R 18 525,00 · 59.7%), RAF (9.0h · R 9 500,00 · R 3 900,00 · R 5 600,00 · 59.0%), Sipho (3.5h · R 2 900,00 · R 1 150,00 · R 1 750,00 · 60.3%), ZAR, "Client" headers, 1440×900 light. Caveats for 629B: the Margin % column's "%" is clipped by an 11 px inner scroll (G88-F4) and RAF reads 59.0% vs 58.9% in the Client table (G88-F15) |
 
 ## Candidate gaps (629A) — index
+Owner rule (PR #1711 review): the 629 re-walk writes gaps and never fixes them; Epics 625, 626 and 628 are Done, so a product gap a closed slice introduced or did not cover is owned by **"new — follow-up phase"**, with the slice named as attribution.
+
 | ID | Severity | Step | Class | Owner | File |
 |---|---|---|---|---|---|
+| G88-F12 | **HIGH** (re-rated by the review; the only HIGH in 629A so far) | 14.8 (side observation) | product bug (legal content) — OTP "Voetstoots (As Is)" clause names the firm (`org.name`) as the party not liable for defects (`backend/src/main/resources/clause-packs/conveyancing-za-clauses/pack.json:33-37`, `org.name` at `:36`); separately, the "Seller:" line is empty because the OTP template's `project.customFields.seller_name` (`template-packs/legal-za/offer-to-purchase.json:54-55`) has no field definition in any field pack. Cannot be demo'd to a conveyancer as-is | new — follow-up phase (attribution: U10 626G associated the clause with the OTP, `pack.json:5`, and did not cover the `org.name` binding; Seller line pre-existing) | days-08-21.md |
 | G88-M1 (existing) | LOW | 0.Aa, M.6a | scenario mismatch — §5a row 1 pending founder authorisation | 628H / founder | session-0.md |
-| G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 8.1a, 12.1a, 12.2a, 22.1a, 23.3a, 35.1a (629B appends) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md, days-01-07.md, days-08-21.md |
+| G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 4.1a, 6.5a, 8.1a, 12.1a, 12.2a, 14.7a, 22.1a, 23.3a, 35.1a (629B appends) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md, days-01-07.md, days-08-21.md, days-22-35.md |
 | G88-F2 | LOW | Team page (0.27 / CP-AD-2) | product bug — "Joined" column hard-coded "—" (`member-list.tsx:75,124`) | new | day-00.md |
-| G88-F3 | MEDIUM | 0.47b, 0.48b | product bug — Edit Field Group dialog opens with no member fields checked (`custom-fields-content.tsx:281-287` passes no `initialFieldIds`; save would send `[]`); membership invisible in the UI | new | day-00.md |
-| G88-F4 | LOW | 0.48a, 0.56, 4.5, 33.5 (side observations) | product bug — settings tables (Custom fields, Automations) overflow an 856 px wrapper at 1440; Status/Actions cut; task-sheet Time Entries table 713 px in 525 px (4.5) | 628B (628.5) class — ADD-ON; else new | day-00.md, days-01-07.md |
+| G88-F3 | MEDIUM | 0.47b, 0.48b | product bug — group membership is invisible in the UI and the Edit Field Group dialog's field picker is a silent no-op: the frontend sends `fieldDefinitionIds: []` (`custom-fields-content.tsx:281-287` passes no `initialFieldIds`; `FieldGroupDialog.tsx:74,163`) and the backend ignores it (`UpdateFieldGroupRequest.java:8-13` has no membership field; `FieldGroupService.java:111-140` never touches members) | new | day-00.md |
+| G88-F4 | LOW | 0.48a, 0.56, 4.5, 33.5 (side observations) | product bug — settings tables (Custom fields, Automations) overflow an 856 px wrapper at 1440; Status/Actions cut; task-sheet Time Entries table 713 px in 525 px (4.5); Profitability Margin % clipped (33.5) | new — follow-up phase (attribution: 628B (628.5) container-query work did not cover these tables) | day-00.md, days-01-07.md, days-22-35.md |
 | G88-F5 | LOW | 1.8 (side observation) | product bug (copy) — New Client labels activation prerequisite "Address Line 1 (optional)" (`create-customer-dialog.tsx:440-441` vs `StructuralPrerequisiteCheck.java:65-70`) | new | days-01-07.md |
-| G88-F6 | LOW | 3.3b (side observation) | product bug (UI) — matter Custom fields shows "Field Groups" twice (`matter-fields-tab.tsx:53-54` + `FieldGroupSelector.tsx:101-102`) | new | days-01-07.md |
-| G88-F7 | LOW | TEAM-sipho, TEAM-estate, TEAM-raf | scenario mismatch needing authorisation — scenario lacks matter-team steps (ADR-346 / 619; ruling C-4) | new — founder §6 | days-01-07.md |
-| G88-F8 | LOW | 4.6b | product bug — matter Activity feed gives no portal-source marker for portal-contact events (DTO has `actorName` only, `activity-feed-client.tsx:38-39`) | U5 (625A/B) ADD-ON; else new | days-01-07.md |
+| G88-F6 | LOW | 3.3b, 14.4 (side observations) | product bug (UI) — matter Custom fields shows "Field Groups" twice (`matter-fields-tab.tsx:53-54` + `FieldGroupSelector.tsx:101-102`) | new | days-01-07.md, days-08-21.md |
+| G88-F7 | LOW | TEAM-sipho, TEAM-estate, TEAM-raf (unscored rows) | scenario mismatch needing authorisation — scenario lacks matter-team steps (ADR-346 / 619; ruling C-4) | new — founder §6 | days-01-07.md, days-08-21.md, days-22-35.md |
+| G88-F8 | — | 4.6b | **retired: alias of G-B8 (incomplete fix)** — id kept so the numbering stays stable for 629B | — | days-01-07.md |
 | G88-F9 | LOW | 5.9 (side observation) | product bug (UI) — disbursement detail shows the linked trust transaction as a raw UUID (`legal/disbursements/[id]/detail-client.tsx:270-284`) instead of its reference | new (U21 polish class) | days-01-07.md |
 | G88-F10 | LOW | 5.12 (side observation) | product bug (UI) — matter Fees › Disbursements keeps a MATTER column reading "—" (`project-disbursements-tab.tsx:82-88` passes no `projectNames`) | new (U21 polish class) | days-01-07.md |
-| G88-F11 | LOW | 12.3a | scenario mismatch needing authorisation — account balance R 53 750,00 ≠ doc R50,000 because of §5 row 5 (Sipho keeps R 3 750); Moroka ledger R 50 000,00 (ruling C-11) | new — founder §6 (G88-M16 family) | days-08-21.md |
-| G88-F12 | MEDIUM | 14.8 (side observation) | product bug (legal content) — OTP "Voetstoots (As Is)" clause names the firm (`org.name`) as the party not liable for defects (`clause-packs/conveyancing-za-clauses/pack.json` `voetstoots`); "Seller:" line empty | U10 (626G) ADD-ON; else new | days-08-21.md |
+| G88-F11 | LOW | 12.3a | scenario mismatch needing authorisation — account balance R 53 750,00 ≠ doc R50,000 because of §5 row 5 (Sipho keeps R 3 750); Moroka ledger R 50 000,00 (ruling C-11). Product correct: cashbook = one sum over all the account's transactions (`TrustTransactionRepository.java:106-126`), client-ledger total = sum of ledger cards (`ClientLedgerCardRepository.java:28-31`) | new — founder §6 (G88-M16 family) | days-08-21.md |
 | G88-F13 | LOW | 15.1 (side observation) | product bug (copy) — fee-estimate empty state / help promise a fixed vs T&M choice the dialog does not offer (`empty-states.json:70`, `help.json:26-27`) | new (U21 copy class) | days-08-21.md |
-| G88-F14 | LOW | 15.3b | scenario mismatch needing authorisation — "~R11,000" vs R 9 850,00 = Σ(hours × the scenario's own rates) (ruling C-12) | new — founder §6 | days-08-21.md |
+| G88-F14 | LOW | 15.3b | scenario mismatch needing authorisation — "~R11,000" vs R 9 850,00 = Σ(hours × the scenario's own rates) (ruling C-12). Product correct: `TimeEntryRepository.java:372-387` `budgetAmountConsumed` = `SUM(billing_rate_snapshot × duration_minutes / 60)`, via `ProjectBudgetService.java:168-179` | new — founder §6 | days-08-21.md |
 | G88-F15 | LOW | 33.2 (side observation) | product bug (rounding) — Matter Profitability Margin % double-rounded (`ReportService.java:437-441` 2 dp HALF_UP + `toFixed(1)`): RAF 59.0% vs 58.9% in the Client table for the same figures | new | days-22-35.md |
-| §5a row 6 (existing) | — | 14.13a | scenario mismatch — §5a row 6 pending founder authorisation (14.13b two shots PASS) | 628H / founder | days-08-21.md |
-| G88-M4 (existing, residual) | MEDIUM | 5.12, 5.14 | product bug — page no longer overflows (scrollWidth 1440) but disbursement tables (1249/1257 px) hide BILLING/ACTIONS behind an inner scroll at 1440 | 628B (628.5) | days-01-07.md |
-| G88-M5 / G88-M6 (existing) | LOW / MEDIUM | 6.1, 13.1 / 6.3b | still open — Member `security.access_denied` noise; comment notification lands on the task list | new unit — founder | days-01-07.md |
+| §5a rows 2, 4, 5, 6 (existing) | — | 3.3a, 6.2a, 6.3a, 14.13a | scenario mismatch — §5a rows pending founder authorisation (product-path `b` rows PASS, except 6.3b → G88-M6) | 628H / founder | days-01-07.md, days-08-21.md |
+| **Cited still-open (existing ids, not re-filed)** | | | | | |
+| G-B8 (617C, incomplete fix) | MEDIUM (617C) | 4.6b (FAIL); events half seen fixed at 4.6a, 6.6, 23.5 | product bug — feed shows the acceptance events but no source-PORTAL marker (DTO `actorName` only, `activity-feed-client.tsx:38-39`); 617C `phase87-capstone/gaps.md:21` expects "(actor Sipho, source PORTAL)" | new — follow-up phase (attribution: U5 625A/B, merged, fixed the events and did not cover the source half) | days-01-07.md |
+| G88-M2 (existing) | MEDIUM | TEAM-sipho, TEAM-estate, TEAM-raf | product bug — matter Team tab shows org roles only; no lead marker | new — follow-up phase (attribution: 628A did not cover it; mid `gaps.md:63` had routed it to 628A, and Epic 628 is Done) | days-01-07.md, days-08-21.md, days-22-35.md |
+| G88-M4 (existing, residual) | MEDIUM | 5.12, 5.14 | product bug — page no longer overflows (scrollWidth 1440) but disbursement tables (1249/1257 px) hide BILLING/ACTIONS behind an inner scroll at 1440 | new — follow-up phase (attribution: 628B (628.5) fixed the page overflow and did not cover the inner-scroll residual) | days-01-07.md |
+| G88-M5 (existing) | LOW | 6.1, 13.1 | product bug — Member visit writes `security.access_denied` noise (`/time-summary/by-member`) | new unit — founder (mid `gaps.md:66`) | days-01-07.md, days-08-21.md |
+| G88-M6 (existing) | MEDIUM | 6.3b (FAIL) | product bug — comment notification lands on the task list, not the comment | new unit — founder (mid `gaps.md:67`) | days-01-07.md |
+| G88-M7 (existing) | LOW | 3.5 | product bug — client Matters list STATUS cell blank for an Active matter | new unit — founder (mid `gaps.md:68`) | days-01-07.md |
+| G-D17 (617C, residual) | LOW | 32.1 (N/A row; cited) | matter/client Fees › sub-tab still labelled "Tariffs" for member rate overrides (`frontend/lib/constants/matter-tab-groups.ts:57`, `client-tab-groups.ts:51`); settings half closed by 628B ("Rates") | new — follow-up phase (attribution: 628B renamed the settings tab and did not cover the matter/client sub-tab) | day-00.md, days-22-35.md |
+| G-D20 (617C, residual) | LOW | 23.6 | Diary week card title still truncated ("Gauteng High…", was "G…") | new — follow-up phase (attribution: U21 628B improved the card and did not cover the truncation) | days-22-35.md |
 
 ## Stack state left for 629B
 Written by W4 at 2026-10-29T15:40Z (full detail: `days-22-35.md` § Handoff).
@@ -131,5 +139,5 @@ Written by W4 at 2026-10-29T15:40Z (full detail: `days-22-35.md` § Handoff).
 - **Matters (4, ACTIVE), unbilled time (no fee notes yet):** Sipho `d42337ad-…` 3.5 h / R 2 900,00 + 2 approved unbilled disbursements; Estate `028d3901-…` 18.0 h / R 31 025,00 (fee estimate 40 h / R 80 000,00); Khumalo `aa61195f-…` 0 h (OTP acceptance `ad215a7c-…` VIEWED); RAF `5c42e002-…` 9 h / R 9 500,00 (court date 2026-12-13, adverse party Road Accident Fund).
 - **Trust:** account R 53 750,00 = Moroka R 50 000,00 + Sipho R 3 750,00.
 - **Mailpit:** 10 messages (last `2eLfLXG6siubpr6BZYZmEC`, Khumalo OTP acceptance request).
-- **Gap ids:** G88-F1 … G88-F15 used; **next free G88-F16**. No HIGH.
+- **Gap ids:** G88-F1 … G88-F15 used (G88-F8 retired as an alias of G-B8); **next free G88-F16**. **HIGH: G88-F12** (re-rated by the PR #1711 review; the only HIGH so far).
 - **629B starts at:** the Day 30 Statement of Account block (scenario lines 414–424, ids `30.1`–`30.7`, ruling C-8), then Day 36. Wow 5 candidate is `screens/wow-5-candidate.png` (see caveats in the wow table).

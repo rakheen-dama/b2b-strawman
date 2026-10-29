@@ -226,7 +226,7 @@ Walkers W5a … W9, 2026-10-29T18:48Z → 2026-10-29T21:15Z, same KC stack (no b
 | W7c | Day 90 final regression sweep (90.1 … 90.7): terminology / field-promotion / nav / tier / console / Mailpit sweeps (E.4/E.5/E.6/E.8 evidence) | days-76-90.md (part 3, file totals) | 8 + 0 | 6 / 1 / 0 / 0 / 1 | ~70 | 59f8b2877 |
 | W8a | INFRA-8, portal Session 0 (P-0.A … P-0.D), PRE-P-request (ruling O-2), portal Days 0 / 3 / 7 / 21 + checkpoints (P-0.1 … P-CP21.3), INFRA-9; portal wow 1 (P-0.6) + 2 (P-21.6) | portal-90day.md (part 1) | 61 + 3 | 39 / 15 / 0 / 4 / 3 | ~65 | 3a5c56350 |
 | W8b | INFRA-10, portal Days 45 (Moroka, ruling O-3) / 60 / 75 / 85 / 90 + checkpoints (P-45.1 … P-CP90.3), portal exit P-E.1 … P-E.11d, INFRA-11; portal wow 3 (P-45.7), 4 (P-60.6a), 5 (P-90.6) | portal-90day.md (part 2, file totals) | 77 + 2 | 36 / 19 / 0 / 21 / 1 | ~70 | de23be4d8 |
-| W9 | 90-day exit checkpoints E.1–E.11 (computed; no browser), 629.8 wow copy (7 deck PNGs), README finalisation, R-5 redaction sweep | exit-checkpoints.md (+ README; ruling notes appended to days-76-90.md and portal-90day.md) | 17 + 0 | 7 / 4 / 0 / 6 / 0 | 0 | (this commit) |
+| W9 | 90-day exit checkpoints E.1–E.11 (computed; no browser), 629.8 wow copy (7 deck PNGs), README finalisation, R-5 redaction sweep | exit-checkpoints.md (+ README; ruling notes appended to days-76-90.md and portal-90day.md) | 17 + 0 | 7 / 4 / 0 / 6 / 0 | 0 | 9bb91cc7c (SHA recorded by a follow-up docs commit) |
 
 Power at W5a start: battery 78 %, clamshell open (ruling O-13 — proceed); 76 % at 18:55Z.
 W5a re-observations of existing ids: **closed — observed PASS** G-C4 (30.4/30.6 SoA preview + Download PDF), G-C10 (36.4 narrative lines), G-B5 / G-C7 + 623B 38.3b (38.3 fee-note letterhead / brand / banking), G88-M8 (38.3 emailed-PDF VAT column), G-C3 terminology half (38.2 "Fee note"); **still open** G88-M9 (38.1/38.2 panels stale after Send until reload).
@@ -298,7 +298,7 @@ Whole re-walk (629A + 629B), new ids G88-F1 … F34 (F8 retired) = 33 active: **
 Written by W9 at 2026-10-29T21:12Z (`logs/exit-checkpoints-stack-W9.txt`, `logs/exit-checkpoints-db-stack-state-W9.txt`, `logs/exit-checkpoints-e10-git.txt`).
 
 - **Services (KC dev stack, from `$MAIN` @ 45dcc7a6f = 138119b81 code):** backend svc 1293 (:8080 JVM **1420**, up since Session 0 R.6, 13:43:49Z) · gateway 207 (:8443 **334**) · frontend 33245 (:3000 next-server **33288**, restarted at 629A INFRA-5) · portal **71782** (:3002 **71826**) = svc **`next dev`**, restored at INFRA-11, `portal/next-env.d.ts` checked out. All `yes yes`; health 200 × 6 (8080, 8443, 3000, 3002/login, :8180 realm `docteams`, Mailpit). No backend/gateway restart in 629B.
-- **Branch / HEAD:** `$MAIN` 45dcc7a6f, status empty for backend/frontend/portal/gateway/packages/compose. `$WT` `phase88/12B-full-rewalk-days-36-90` → W9 commit (see the run table).
+- **Branch / HEAD:** `$MAIN` 45dcc7a6f, status empty for backend/frontend/portal/gateway/packages/compose. `$WT` `phase88/12B-full-rewalk-days-36-90` → W9 commit 9bb91cc7c + this SHA-record commit.
 - **Power / holds:** AC Power, 100 %, clamshell open. caffeinate **99323** `-dimsu -t 43200` expires ≈ **2026-10-30T01:41Z** (re-arm if 629C runs past ~01:00Z). Phase runner caffeinate **112** (never kill). `/tmp/.e2e-keycloak-mode` present. Last sleep in `pmset -g log`: 2026-10-27 (none on 10-29).
 - **Tenant `tenant_5039f2d497cf`:** Flyway V9; global V2.
   - Clients 5, all ACTIVE: Sipho, Moroka Family Trust, Khumalo Property Holdings, Lerato Mthembu, Nomvula Khoza.

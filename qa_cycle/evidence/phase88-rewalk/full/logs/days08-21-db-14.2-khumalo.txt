@@ -1,0 +1,20 @@
+Thu Oct 29 15:16:38 UTC 2026
+> SELECT id, name, customer_type, lifecycle_status, email, address_line1, city, country_code, lifecycle_status_changed_at FROM tenant_5039f2d497cf.customers WHERE name='Khumalo Property Holdings'
+ERROR:  column "country_code" does not exist
+LINE 1: ...pe, lifecycle_status, email, address_line1, city, country_co...
+                                                             ^
+> SELECT ci.status, ci.completed_at, ct.slug FROM tenant_5039f2d497cf.checklist_instances ci JOIN tenant_5039f2d497cf.checklist_templates ct ON ct.id=ci.template_id JOIN tenant_5039f2d497cf.customers c ON c.id=ci.customer_id WHERE c.name='Khumalo Property Holdings'
+COMPLETED|2026-10-29 15:16:21.92095+00|legal-za-individual-client-onboarding
+> SELECT cii.name, cii.status, cii.completed_at, cii.document_id IS NOT NULL FROM tenant_5039f2d497cf.checklist_instance_items cii JOIN tenant_5039f2d497cf.checklist_instances ci ON ci.id=cii.instance_id JOIN tenant_5039f2d497cf.customers c ON c.id=ci.customer_id WHERE c.name='Khumalo Property Holdings' ORDER BY cii.completed_at
+Proof of Identity|COMPLETED|2026-10-29 15:15:58.05944+00|t
+Proof of Address|COMPLETED|2026-10-29 15:16:01.353841+00|t
+Beneficial Ownership Declaration|COMPLETED|2026-10-29 15:16:04.664402+00|t
+Source of Funds Declaration|COMPLETED|2026-10-29 15:16:07.976123+00|t
+Engagement Letter Signed|COMPLETED|2026-10-29 15:16:11.23934+00|t
+Conflict Check Performed|COMPLETED|2026-10-29 15:16:13.700478+00|f
+Power of Attorney Signed|COMPLETED|2026-10-29 15:16:16.958923+00|t
+FICA Risk Assessment|COMPLETED|2026-10-29 15:16:19.449773+00|f
+Sanctions Screening|COMPLETED|2026-10-29 15:16:21.916846+00|f
+> SELECT email_lower, org_id, tenant_schema FROM portal.portal_contact_directory WHERE email_lower like 'khumalo%'
+khumalo.holdings@email.co.za|mathebula-partners|tenant_5039f2d497cf
+30aa3450-f3d4-46ec-8403-8f4cab5bf877|Khumalo Property Holdings|INDIVIDUAL|ACTIVE|khumalo.holdings@email.co.za|12 Rivonia Road|Sandton|ZA|2026-10-29 15:16:21.926292+00

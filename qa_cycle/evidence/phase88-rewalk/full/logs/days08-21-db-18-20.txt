@@ -1,0 +1,16 @@
+Thu Oct 29 15:27:11 UTC 2026
+> SELECT file_name, source, status, created_at FROM tenant_5039f2d497cf.documents WHERE project_id='028d3901-e826-44a9-b6a6-b81328365629' ORDER BY created_at
+Trust Deed — Moroka Family Trust.pdf|MANUAL|UPLOADED|2026-10-29 15:06:41.381074+00
+Master's appointment.pdf|MANUAL|UPLOADED|2026-10-29 15:13:36.44608+00
+Master's appointment.pdf|COMMENT|UPLOADED|2026-10-29 15:13:49.977889+00
+Inventory draft.pdf|MANUAL|UPLOADED|2026-10-29 15:25:39.25475+00
+Bank statements.pdf|MANUAL|UPLOADED|2026-10-29 15:25:39.288166+00
+> SELECT title, status, completed_at FROM tenant_5039f2d497cf.tasks WHERE project_id='028d3901-e826-44a9-b6a6-b81328365629' AND status='DONE' ORDER BY completed_at
+Obtain death certificate & will|DONE|2026-10-29 15:07:43.356379+00
+Report estate to Master of High Court|DONE|2026-10-29 15:26:36.153017+00
+Obtain Letters of Executorship|DONE|2026-10-29 15:26:43.987248+00
+> SELECT type, title, created_at FROM tenant_5039f2d497cf.notifications WHERE created_at > now() - interval '10 minutes' ORDER BY created_at
+DOCUMENT_SHARED|Thandi Mathebula uploaded "Inventory draft.pdf"|2026-10-29 15:25:39.333782+00
+DOCUMENT_SHARED|Thandi Mathebula uploaded "Inventory draft.pdf"|2026-10-29 15:25:39.334626+00
+DOCUMENT_SHARED|Thandi Mathebula uploaded "Bank statements.pdf"|2026-10-29 15:25:39.445114+00
+DOCUMENT_SHARED|Thandi Mathebula uploaded "Bank statements.pdf"|2026-10-29 15:25:39.446687+00

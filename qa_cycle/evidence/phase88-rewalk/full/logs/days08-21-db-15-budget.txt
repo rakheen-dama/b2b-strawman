@@ -1,0 +1,9 @@
+Thu Oct 29 15:23:54 UTC 2026
+> SELECT budget_hours, budget_amount, budget_currency, alert_threshold_pct FROM tenant_5039f2d497cf.project_budgets WHERE project_id='028d3901-e826-44a9-b6a6-b81328365629'
+40.00|80000.00|ZAR|80
+> SELECT m.email, te.duration_minutes, te.billing_rate_snapshot, te.cost_rate_snapshot, te.duration_minutes*te.billing_rate_snapshot/60 AS amount, te.description FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='028d3901-e826-44a9-b6a6-b81328365629' ORDER BY te.created_at
+thandi@mathebula-test.local|180|2500.00|1000.00|7500.0000000000000000|Initial consultation with heirs + document gathering
+bob@mathebula-test.local|90|1200.00|500.00|1800.0000000000000000|Master of High Court filing preparation
+carol@mathebula-test.local|60|550.00|200.00|550.0000000000000000|Drafting Section 29 advertisement notice
+> SELECT sum(te.duration_minutes)/60.0 AS hours, sum(te.duration_minutes*te.billing_rate_snapshot/60) AS amount FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='028d3901-e826-44a9-b6a6-b81328365629'
+5.5000000000000000|9850.0000000000000000

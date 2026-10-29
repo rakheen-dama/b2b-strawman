@@ -82,6 +82,8 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | Days 5–7 (629.3, W2b) | 268–301 | days-01-07.md | 25 | 22 / 3 / 0 / 0 / 0 |
 | **Days 1–7 total** | 209–301 | days-01-07.md | 71 | 64 / 7 / 0 / 0 / 0 |
 | Days 8–13 (629.3, W3a) | 304–333 | days-08-21.md | 23 | 19 / 4 / 0 / 0 / 0 |
+| Days 14–21 (629.3, W3b) | 334–366 | days-08-21.md | 26 | 24 / 2 / 0 / 0 / 0 |
+| **Days 8–21 total** | 304–366 | days-08-21.md | 49 | 43 / 6 / 0 / 0 / 0 |
 
 ## Wow-moment candidates shot in 629A
 | Wow | Step | File | Shows |
@@ -106,6 +108,10 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | G88-F9 | LOW | 5.9 (side observation) | product bug (UI) — disbursement detail shows the linked trust transaction as a raw UUID (`legal/disbursements/[id]/detail-client.tsx:270-284`) instead of its reference | new (U21 polish class) | days-01-07.md |
 | G88-F10 | LOW | 5.12 (side observation) | product bug (UI) — matter Fees › Disbursements keeps a MATTER column reading "—" (`project-disbursements-tab.tsx:82-88` passes no `projectNames`) | new (U21 polish class) | days-01-07.md |
 | G88-F11 | LOW | 12.3a | scenario mismatch needing authorisation — account balance R 53 750,00 ≠ doc R50,000 because of §5 row 5 (Sipho keeps R 3 750); Moroka ledger R 50 000,00 (ruling C-11) | new — founder §6 (G88-M16 family) | days-08-21.md |
+| G88-F12 | MEDIUM | 14.8 (side observation) | product bug (legal content) — OTP "Voetstoots (As Is)" clause names the firm (`org.name`) as the party not liable for defects (`clause-packs/conveyancing-za-clauses/pack.json` `voetstoots`); "Seller:" line empty | U10 (626G) ADD-ON; else new | days-08-21.md |
+| G88-F13 | LOW | 15.1 (side observation) | product bug (copy) — fee-estimate empty state / help promise a fixed vs T&M choice the dialog does not offer (`empty-states.json:70`, `help.json:26-27`) | new (U21 copy class) | days-08-21.md |
+| G88-F14 | LOW | 15.3b | scenario mismatch needing authorisation — "~R11,000" vs R 9 850,00 = Σ(hours × the scenario's own rates) (ruling C-12) | new — founder §6 | days-08-21.md |
+| §5a row 6 (existing) | — | 14.13a | scenario mismatch — §5a row 6 pending founder authorisation (14.13b two shots PASS) | 628H / founder | days-08-21.md |
 | G88-M4 (existing, residual) | MEDIUM | 5.12, 5.14 | product bug — page no longer overflows (scrollWidth 1440) but disbursement tables (1249/1257 px) hide BILLING/ACTIONS behind an inner scroll at 1440 | 628B (628.5) | days-01-07.md |
 | G88-M5 / G88-M6 (existing) | LOW / MEDIUM | 6.1, 13.1 / 6.3b | still open — Member `security.access_denied` noise; comment notification lands on the task list | new unit — founder | days-01-07.md |
 

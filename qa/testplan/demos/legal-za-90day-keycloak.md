@@ -33,7 +33,7 @@
 1. **Day 0** — Firm Home with the six-zone legal nav (Matters, Trust, Diary, Conflict check) + Mathebula brand colour applied (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: dashboard → Home, Trust Accounting → Trust zone, Court Calendar → Diary (ADR-339))
 2. **Day 4** — Engagement letter generated from the matter, sent for acceptance, and accepted by Sipho on the client portal (ADR-336 mandate flow) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.1: replaces the deleted Pipeline wow moment, Epic 596 #1565)
 3. **Day 2** — Conflict check "CLEAR" result with the SA legal green confirmation state
-4. **Day 5** — Matter detail page for a RAF claim, with promoted fields (matter_type, court_name, case_number) rendered inline + vertical terminology ("Matter" not "Project")
+4. **Day 5** — Matter detail page for Sipho's litigation matter with the header facts strip (case number, court) + vertical terminology ("Matter" not "Project") (Phase 88, register §5a row 3 — wording amendment, founder-authorised 2026-10-29: Day 5 is Sipho's litigation matter (5.1), not a RAF claim; the header fields are the legal-za list, `header-field-slugs.ts:14-16`, rendered by `matter-header-card.tsx:76-80`)
 5. **Day 33** — Profitability page with three active matters, ZAR revenue vs cost, margin ribbon
 6. **Day 47** — Fee note rendered as PDF preview with Mathebula letterhead + LSSA tariff line items
 7. **Day 88** — Audit event feed showing 90 days of activity across all three matters, filterable by actor and entity
@@ -44,7 +44,7 @@
 
 Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack startup & teardown" for shared steps (M.1–M.9). In addition, for this vertical specifically:
 
-- [ ] **0.A** Confirm no tenant schema named `tenant_mathebula*` exists (drop if present)
+- [ ] **0.A** Confirm no tenant schema is left over from a previous Mathebula run: tenant schemas are named `tenant_<12 hex>`, not after the firm, so look up the previous org's `schema_name` in `public.org_schema_mapping` and drop that schema if present (Phase 88, register §5a row 1 — wording amendment, founder-authorised 2026-10-29: schema names are `"tenant_"` + 12 hex characters, `SchemaNameGenerator.java:19`; no `tenant_mathebula*` schema ever exists)
 - [ ] **0.B** Delete any Keycloak users with `@mathebula-test.local` emails from the `docteams` realm
 
 ---
@@ -244,7 +244,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **3.1** On Sipho's client detail, click **New Matter**
 - [ ] **3.2** Select template: **Litigation (Personal Injury / General)**
-- [ ] **3.3** Fill: Matter Name = "Sipho Dlamini v. Standard Bank (civil)", Work Type = **LITIGATION** (inherited from the template; #1580/#1581 normalise to upper-case), `case_number` = "JHB/CIV/2026/001", `court_name` = "Gauteng High Court, Johannesburg"
+- [ ] **3.3** Fill: Matter Name = "Sipho Dlamini v. Standard Bank (civil)", Work Type = **LITIGATION** (inherited from the template; #1580/#1581 normalise to upper-case). The template dialog has no `case_number` / `court_name` inputs: right after Save (3.4), open the matter's **Details › Custom fields** sub-tab and enter `case_number` = "JHB/CIV/2026/001", `court_name` = "Gauteng High Court, Johannesburg" (Phase 88, register §5a row 2 — wording amendment, founder-authorised 2026-10-29: the New-from-template dialog offers only Matter name, Description, Client, Lead, Reference, Priority and Work type, `NewFromTemplateDialog.tsx:305-429`)
 - [ ] **3.4** Save → matter created from template with pre-populated task list
 - [ ] **3.5** Verify matter appears under Sipho's matter list
 - [ ] **3.6** Navigate to matter detail → verify task list is pre-populated from template (expect 5+ tasks)
@@ -270,7 +270,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.1** Navigate to Sipho's litigation matter detail page
 - [ ] **5.2** Verify the header fields render in the matter header's facts strip (`data-testid="matter-header-fields"`) under the title: `case_number` ("Case no. JHB/CIV/2026/001") and `court_name` ("Gauteng High Court, Johannesburg"); `opposing_party` joins them once it is filled. The Work Type (LITIGATION) shows beside the status badge (Phase 88, ADR-344 + register §5 row 4 — wording amendment, founder-authorised 2026-10-22: the header fields are the legal-za list `case_number`, `court_name`, `opposing_party` (D9, `header-field-slugs.ts:14-16`); promoted slugs are structural columns, not header facts)
 - [ ] **5.3** Verify grouped tab bar renders and all key tabs load without errors: click **Work** group → **Tasks** sub-tab loads; click **Fees** group → **Time recording** sub-tab loads; click **Work** group → **Documents** sub-tab loads; click **Client** group → **Client comments** sub-tab loads; click **Activity** group → **Activity** sub-tab loads (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
-- [ ] **5.4** 📸 **Screenshot**: Matter detail page with promoted fields + terminology + tabs visible
+- [ ] **5.4** 📸 **Screenshot**: Matter detail page with header fields + terminology + tabs visible (Phase 88, register §5a row 3 — wording amendment, founder-authorised 2026-10-29: the matter header shows header fields (see 5.2), not promoted fields, `header-field-slugs.ts:14-16`)
 
 #### Phase 67 — Disbursements (Epics 486–488)
 
@@ -293,8 +293,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ### Days 6–7 — More activity on Sipho's matter
 
 - [ ] **6.1** Carol logs 2.0 hours: "Legal research — precedent review"
-- [ ] **6.2** Bob adds a comment on the matter: "Need to confirm court date by Monday" with `@Carol` mention
-- [ ] **6.3** Carol logs in → sees notification bell with 1 unread → clicks → notification routes to the matter comment
+- [ ] **6.2** Bob adds a comment on a task (or a document) of the matter: "Need to confirm court date by Monday" with `@Carol` mention (Phase 88, register §5a row 4 — wording amendment, founder-authorised 2026-10-29: there is no matter-level comment thread; comments attach to a `TASK` or a `DOCUMENT`, `comment-section-client.tsx:14`, `task-detail-sheet.tsx:366`, `documents-panel.tsx:553`)
+- [ ] **6.3** Carol logs in → sees notification bell with at least 1 unread (the earlier member-added and task-assigned notifications also count) → clicks → notification routes to the matter comment (Phase 88, register §5a row 5 — wording amendment, founder-authorised 2026-10-29: the 623A walk showed 3 unread, `qa_cycle/evidence/phase88-rewalk/mid/days-01-07.md:116`)
 - [ ] **6.4** Carol replies to comment: "Confirmed, court date is 2026-05-12"
 - [ ] **6.5** Bob uploads a PDF document to matter (label: "Particulars of Claim — draft v1")
 - [ ] **6.6** Verify activity feed for the matter shows all events in reverse-chronological order
@@ -348,7 +348,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **14.10** Fill acceptance request: recipient = client contact email, expiry = 7 days → submit
 - [ ] **14.11** Verify Mailpit inbox (http://localhost:8025) receives acceptance request email with magic-link token
 - [ ] **14.12** Open the magic link in a new incognito context (public `/accept/[token]` route) → verify AcceptanceDetailPanel renders OTP preview + Accept/Decline actions (Phase 88, ADR-344 + register §5 row 9 — product decision: Decline kept, built in 624F/624H (PRs #1675/#1677, U23); step unchanged: `portal/app/accept/[token]/acceptance-page.tsx:421-424`)
-- [ ] **14.13** 📸 **Screenshot**: Conveyancing matter detail with the 8 visible conveyancing custom fields (Registration Date and Deed Number appear once the earlier date is filled) + OTP document listed + acceptance status badge (Phase 88, ADR-344 + register §5 row 8 — product decision kept, wording amendment, founder-authorised 2026-10-22: see 14.4)
+- [ ] **14.13** 📸 **Screenshot** (two shots allowed): Conveyancing matter **Details › Custom fields** with the 8 visible conveyancing custom fields (Registration Date and Deed Number appear once the earlier date is filled), and **Work › Generated documents** with the OTP document listed + acceptance status badge (Phase 88, ADR-344 + register §5 row 8 — product decision kept, wording amendment, founder-authorised 2026-10-22: see 14.4) (Phase 88, register §5a row 6 — wording amendment, founder-authorised 2026-10-29: custom fields and documents sit on different tabs, `matter-tab-groups.ts:24-46`)
 
 ### Day 15 — Budget check
 
@@ -455,10 +455,10 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **45.5** Navigate to **Fees** zone → **Disbursements** → select one `APPROVED`/`UNBILLED` disbursement from Sipho's matter (pre-state from Day 5 flow) → open detail page (`data-testid="disbursement-detail"`) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Disbursements is a Fees-zone item (612A); URL unchanged)
 - [ ] **45.6** Click **Write Off** action → dialog prompts for reason → enter "Client dispute — unable to recover from third party, firm absorbing the cost"
 - [ ] **45.7** Click **Write off** (`data-testid="disbursement-write-off-confirm-button"`) → the dialog closes with no error. The write-off runs as a server action (no `POST …/write-off` appears in the browser network panel), so confirm it by the detail-page change (45.8) and a read-only SELECT on `legal_disbursements`: `billing_status` `UNBILLED → WRITTEN_OFF`, `write_off_reason` set (Phase 88, ADR-344 + register §5 row 3 — wording amendment, founder-authorised 2026-10-22: QA drives the browser and reads state with read-only SELECTs, never REST; `legal/disbursements/actions.ts:222-238`)
-- [ ] **45.8** Verify status badge on detail page shows **WRITTEN_OFF** and `writeOffReason` text renders inline
-- [ ] **45.9** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) → filter by entity = disbursement, action = WRITE_OFF → verify event recorded with the reason string in the details JSON (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Audit Log is the Firm-zone Audit trail (612A/616A))
+- [ ] **45.8** Verify the billing status badge on the detail page reads **Written off** (the label; `WRITTEN_OFF` is the stored value) and `writeOffReason` text renders inline (Phase 88, register §5a row 7 — wording amendment, founder-authorised 2026-10-29: the badge renders the label, `disbursement-list-view.tsx:58-59`, used by `disbursements/[id]/detail-client.tsx:180`)
+- [ ] **45.9** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) → filter **Entity type** = **Disbursement** and **Event type** = `disbursement.written_off` (there is no "action" filter) → verify event recorded with the reason string in the details JSON (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Audit Log is the Firm-zone Audit trail (612A/616A)) (Phase 88, register §5a row 8 — wording amendment, founder-authorised 2026-10-29: the audit trail filters by an Entity type select and an Event type combobox, `audit-log-client.tsx:810,833`; `legal_disbursement` is labelled Disbursement, `entity-type-labels.ts:25`)
 - [ ] **45.10** Navigate to Sipho's matter → open a **new fee note draft** from unbilled items → verify the written-off disbursement is **NOT** present in the selectable items list (excluded from next invoice draft)
-- [ ] **45.11** Verify terminology: write-off reason displayed as "Disbursement written off" (never "Expense written off")
+- [ ] **45.11** Verify terminology: the detail page shows the **Written off** badge and a **Write-off reason** row; the phrase "Disbursement written off" is not shown on the detail page (it is the write-off success toast, and the activity feed reads "<actor> wrote off a disbursement") — never "Expense written off" (Phase 88, register §5a row 9 — wording amendment, founder-authorised 2026-10-29: `detail-client.tsx:296` (Write-off reason row); `ActivityMessageFormatter.java:237`; toast in `use-disbursement-write-off.tsx:64`)
 
 ### Day 47 — 📸 Fee note PDF wow moment
 
@@ -477,8 +477,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Days 61–75 — Additional cycles & portal interaction
 
-- [ ] **61.1** Create a 4th client (individual, collections matter from template) — compressed onboarding (happy path only)
-- [ ] **62.1** Log 4 time entries across the team on the 4th matter
+- [ ] **61.1** Create another client (individual, collections matter from template) — compressed onboarding (happy path only); in a full walk this is the 5th client and 5th matter (Phase 88, register §5a row 10 — wording amendment, founder-authorised 2026-10-29: Khumalo (14.2/14.3) and Lerato (22.2/22.4) are created before Day 61, after Sipho and Moroka)
+- [ ] **62.1** Log 4 time entries across the team on the new matter (61.1) (Phase 88, register §5a row 10 — wording amendment, founder-authorised 2026-10-29: it is the 5th matter in a full walk, see 61.1)
 - [ ] **65.1** Generate fee note → approve → send
 - [ ] **68.1** **Portal**: Sipho's portal contact was auto-created when the client was created (`PortalContactAutoProvisioner`). In an incognito context open http://localhost:3002/login → enter Sipho's email → request the login link → Mailpit → open the link (lands on `/auth/exchange?token=…`) → portal `/matters` loads with Sipho's matters; open **Home** (`/home`) → it shows his fee notes and requests (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.3: firm-side magic-link generator and the in-app /portal copy removed, Epic 597 #1566) (Phase 88, ADR-344 + register §5 row 13 — wording amendment, founder-authorised 2026-10-22: the link exchange lands on `/matters`, `portal/app/auth/exchange/page.tsx:74`; `/home` carries the Pending info requests and Recent fee notes cards)
 - [ ] **68.2** On the portal, verify Sipho can view (but not edit) matter status + fee notes
@@ -489,7 +489,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 #### Phase 67 — Day 75: Matter closure (happy path) (Epic 489)
 
-**Pre-state**: Pick a matter where trust balance is R0, no outstanding prescriptions, no open info-requests, no unsent acceptances, all invoices PAID, all tasks done.
+**Pre-state**: Pick a matter where trust balance is R0, no outstanding prescriptions, no open info-requests, no unsent acceptances, all invoices PAID, all tasks done. Sipho's litigation matter still holds R 3 750 in trust (the R 5 000 deposit at 5.8a less the R 1 250 payment at 5.8b), so its trust-balance gate correctly fails: either first clear that balance with a trust refund to the client or a fee transfer, or close a matter with no trust activity (Phase 88, register §5a row 11 — wording amendment, founder-authorised 2026-10-29: the pre-state must be reachable after register §5 row 5; the walk saw `TRUST_BALANCE_ZERO` correctly fail, `qa_cycle/evidence/phase88-rewalk/mid/days-61-75.md:23,57`)
 
 **Actor**: Thandi (Owner — has `CLOSE_MATTER` capability).
 
@@ -498,10 +498,10 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **75.4** Click **Continue** (`data-testid="matter-closure-next-btn"`) → advances to **Step 2 — Close form** (`data-testid="matter-closure-step-2"`)
 - [ ] **75.5** Reason select (`data-testid="matter-closure-reason-select"`) defaults to **CONCLUDED** → leave
 - [ ] **75.6** Leave **Generate closure letter** checkbox (`data-testid="matter-closure-generate-letter-checkbox"`) ticked (default `generateClosureLetter = true`)
-- [ ] **75.7** Click **Confirm Close** (`data-testid="matter-closure-confirm-close-btn"`) → success toast renders
+- [ ] **75.7** Click **Close matter** (`data-testid="matter-closure-confirm-close-btn"`) → success toast renders (Phase 88, register §5a row 12 — wording amendment, founder-authorised 2026-10-29: the Step 2 submit button reads "Close matter", `matter-closure-dialog.tsx:520-528`; test id unchanged)
 - [ ] **75.8** Verify matter status badge flips to **CLOSED**
 - [ ] **75.9** Verify a **closure letter** document is created and attached to matter (visible in Documents tab)
-- [ ] **75.10** Verify a **retention policy** row is inserted with `end_date = today + 5 years` (ADR-249)
+- [ ] **75.10** Verify the matter's **Retention** card reads "Scheduled deletion: <close date + the firm's retention years>" (`data-testid="retention-card-scheduled-deletion"`; 5 years by default → today + 5 years), persisted as `projects.retention_ends_on`; no `retention_policies` row is written per matter (ADR-249) (Phase 88, register §5a row 13 — wording amendment, founder-authorised 2026-10-29: closure sets `retention_ends_on`, `Project.java:318`; tenant `V8__phase88_retention_comment_attachments.sql:15`; `retention-card.tsx:181-193`)
 - [ ] **75.11** 📸 **Screenshot**: Matter closure dialog with all-green gate report + closure-letter preview after close
 
 ---
@@ -542,9 +542,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **85.12** Click **Continue** → since `canOverride = true && anyFailing`, dialog advances to Step 2 with the **override section visible**
 - [ ] **85.13** Toggle the **override switch on** (`data-testid="matter-closure-override-toggle"`) → justification input appears (`data-testid="matter-closure-override-justification-input"`)
 - [ ] **85.14** Enter override justification ≥ 20 chars: "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override" (≥ 20 chars)
-- [ ] **85.15** Click **Confirm Close** → success toast
+- [ ] **85.15** Click **Close matter** → success toast (Phase 88, register §5a row 12 — wording amendment, founder-authorised 2026-10-29: the Step 2 submit button reads "Close matter", `matter-closure-dialog.tsx:520-528`)
 - [ ] **85.16** Verify matter status transitions to **CLOSED**
-- [ ] **85.17** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) → filter by entity = matter, action = CLOSE → verify event includes `override_used = true` and the justification text verbatim in the details JSON (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Audit Log is the Firm-zone Audit trail (612A/616A)) (Phase 88, ADR-344 + register §5 row 12 — product decision, built in 625A (PR #1679, D3); step unchanged: `matter_closure.closed` details carry `justification`, `MatterClosureService.java:285-290`)
+- [ ] **85.17** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) → filter **Entity type** = **Matter** and **Event type** = `matter_closure.closed` (there is no "action" filter) → verify event includes `override_used = true` and the justification text verbatim in the details JSON (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Audit Log is the Firm-zone Audit trail (612A/616A)) (Phase 88, ADR-344 + register §5 row 12 — product decision, built in 625A (PR #1679, D3); step unchanged: `matter_closure.closed` details carry `justification`, `MatterClosureService.java:285-290`) (Phase 88, register §5a row 8 — wording amendment, founder-authorised 2026-10-29: Entity type select + Event type combobox, `audit-log-client.tsx:810,833`; the closure event is `matter_closure.closed` on entity type `project`, labelled Matter, `MatterClosureService.java:275-277`, `entity-type-labels.ts:15`)
 - [ ] **85.18** 📸 **Screenshot**: Matter closure dialog with gate report failing + override toggle + justification input visible
 
 ### Day 88 — 📸 Activity feed wow moment

@@ -130,13 +130,13 @@ Each lifecycle script starts with "Prep & Reset — Session 0". This master doc 
   - `curl -sf -o /dev/null -w '%{http_code}' http://localhost:3002/login` → 200
   - `curl -sf http://localhost:8180/realms/docteams` → realm JSON
 - [ ] **M.5** Open Mailpit (`http://localhost:8025`) — inbox should be empty
-- [ ] **M.6** Drop any leftover tenant schemas from a previous run:
+- [ ] **M.6** Drop any leftover tenant schemas from a previous run (Phase 88, register §5a row 1 — wording amendment, founder-authorised 2026-10-29: the Keycloak dev stack's database is `docteams` (`app` is the E2E stack's); tenant schemas are named `tenant_<12 hex>`, `SchemaNameGenerator.java:19`):
   ```bash
-  docker exec b2b-postgres psql -U postgres -d app -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
+  docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
   ```
-  For each tenant schema belonging to the vertical being tested (e.g. `tenant_mathebula_partners`), drop it:
+  For each tenant schema belonging to the vertical being tested (the org's `schema_name` in `public.org_schema_mapping`, a `tenant_<12 hex>` name — never one named after the firm), drop it:
   ```bash
-  docker exec b2b-postgres psql -U postgres -d app -c "DROP SCHEMA tenant_mathebula_partners CASCADE;"
+  docker exec b2b-postgres psql -U postgres -d docteams -c "DROP SCHEMA tenant_<12 hex> CASCADE;"
   ```
 - [ ] **M.7** Confirm Keycloak admin console (`http://localhost:8180/admin`) shows **only** `padmin@docteams.local` under Users in the `docteams` realm. Delete any lingering test users (`thandi@*-test.local`, `bob@*-test.local`, `carol@*-test.local`) from previous runs.
 - [ ] **M.8** Clear Mailpit inbox (if not already empty).

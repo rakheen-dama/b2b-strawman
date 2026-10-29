@@ -1,0 +1,7 @@
+# 2026-10-29T19:34:23Z tenant=tenant_5039f2d497cf
++ SELECT c.name, l.balance, l.total_deposits, l.total_payments, l.total_fee_transfers, l.last_transaction_date, l.updated_at FROM tenant_5039f2d497cf.client_ledger_cards l JOIN tenant_5039f2d497cf.customers c ON c.id=l.customer_id ORDER BY c.name
+Moroka Family Trust|38000.00|50000.00|12000.00|0.00|2026-10-29|2026-10-29 19:33:23.652093+00
+Sipho Dlamini|3750.00|5000.00|1250.00|0.00|2026-10-29|2026-10-29 14:48:00.250519+00
+# 2026-10-29T19:34:23Z tenant=tenant_5039f2d497cf
++ SELECT sum(balance) FROM tenant_5039f2d497cf.client_ledger_cards
+41750.00

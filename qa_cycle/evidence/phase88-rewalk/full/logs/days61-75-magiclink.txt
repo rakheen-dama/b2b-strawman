@@ -1,0 +1,4 @@
+# W6b magic-link requests (brief §5.5) — links redacted (R-5)
+UTC | email | purpose | Mailpit id | pre-request DB count (5 min / total) | post-request
+2026-10-29T19:27:09Z | sipho.dlamini@email.co.za | 68.1 sign-in (68.2 in the same context) | bdm3MjpDgj9RNXdRwqmHkT ("Your portal access link from Mathebula & Partners", CTA "Access Portal" → http://localhost:3002/auth/exchange?[REDACTED]) | 0 / 0 (19:24:17Z SELECT, logs/days61-75-db-W6b-start.txt follow-up) | 1 / 1 (19:27:23Z, max created_at 19:27:09.209Z)
+Browser network (observation): POST http://localhost:8080/portal/auth/request-link => 200 (once); POST http://localhost:8080/portal/auth/exchange => 200 (once — no double-POST on the prod build).

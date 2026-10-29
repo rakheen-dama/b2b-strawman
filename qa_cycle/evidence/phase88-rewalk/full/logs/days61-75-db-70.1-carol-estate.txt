@@ -1,0 +1,19 @@
+# 2026-10-29T19:31:35Z tenant=tenant_5039f2d497cf
++ SELECT m.email, te.duration_minutes, te.billing_rate_snapshot, te.cost_rate_snapshot, te.billable, te.description, t.title, te.invoice_id IS NOT NULL AS billed, te.created_at FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='028d3901-e826-44a9-b6a6-b81328365629' ORDER BY te.created_at
+thandi@mathebula-test.local|180|2500.00|1000.00|t|Initial consultation with heirs + document gathering|Obtain death certificate & will|t|2026-10-29 15:06:27.907626+00
+bob@mathebula-test.local|90|1200.00|500.00|t|Master of High Court filing preparation|Report estate to Master of High Court|t|2026-10-29 15:07:15.386549+00
+carol@mathebula-test.local|60|550.00|200.00|t|Drafting Section 29 advertisement notice|Advertise for creditors (Gazette + local newspaper)|t|2026-10-29 15:09:34.845875+00
+thandi@mathebula-test.local|180|2500.00|1000.00|t|Reporting estate to the Master — J294 + inventory|Report estate to Master of High Court|t|2026-10-29 15:24:26.253786+00
+thandi@mathebula-test.local|150|2500.00|1000.00|t|Letters of Executorship application|Obtain Letters of Executorship|t|2026-10-29 15:24:29.580206+00
+bob@mathebula-test.local|180|1200.00|500.00|t|Section 29 notice — Gazette + newspaper placement|Advertise for creditors (Gazette + local newspaper)|t|2026-10-29 15:24:50.92792+00
+bob@mathebula-test.local|150|1200.00|500.00|t|Estate bank account opening documents|Open estate bank account|t|2026-10-29 15:24:54.238084+00
+carol@mathebula-test.local|90|550.00|200.00|t|Drafting inventory of assets & liabilities|Inventory of assets & liabilities|t|2026-10-29 15:25:10.660253+00
+carol@mathebula-test.local|60|550.00|200.00|t|Estate correspondence with heirs|Distribute estate & file final account|f|2026-10-29 19:31:17.949338+00
+# 2026-10-29T19:31:35Z tenant=tenant_5039f2d497cf
++ SELECT sum(te.duration_minutes), sum(te.duration_minutes*te.billing_rate_snapshot/60.0), count(*) FILTER (WHERE te.invoice_id IS NULL) FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='028d3901-e826-44a9-b6a6-b81328365629'
+1140|31575.0000000000000000|1
+# 2026-10-29T19:31:35Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type, details->>'path' FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > now() - interval '5 minutes' ORDER BY occurred_at
+2026-10-29 19:30:50.236732+00|security.access_denied|security|/api/matters/028d3901-e826-44a9-b6a6-b81328365629/time-summary/by-member
+2026-10-29 19:31:17.955895+00|time_entry.created|time_entry|
+2026-10-29 19:31:18.298167+00|security.access_denied|security|/api/matters/028d3901-e826-44a9-b6a6-b81328365629/time-summary/by-member

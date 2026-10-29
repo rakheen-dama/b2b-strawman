@@ -1,7 +1,7 @@
 {
-  "commit": "be1f543c1",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
+  "commit": "cb10c5d63",
+  "command": "cd backend && ./mvnw spotless:apply -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-29T02:21:00Z",
-  "summary": "628D BE-VERIFY (628.11 gate for 628C+628D) on final head be1f543c1 (worktree-epic-628D): 6290 testcases / 0 failures / 0 errors / 26 skipped across 745 reports; baseline 6284 (+6 guard cases); also green on be017bcde (6289); Backend CI pass on the same head (17m39s)"
+  "ts": "2026-10-29T12:48:25Z",
+  "summary": "628I BE-VERIFY (Epic 628 gate, 628.19) on main cb10c5d63 (worktree-628I-be, no target/): 6290 testcases / 0 failures / 0 errors / 26 skipped across 745 reports; 16:52; spotless no diff; = 628D baseline 6290"
 }

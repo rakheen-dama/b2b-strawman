@@ -66,6 +66,10 @@ The research changed the picture in these places. Fix agents must work from this
 - **N-6** HYPOTHESIS: portal Firm-trail whitelist lists `trust_transaction.approved` but the backend emits `trust_<type>.approved`, so the portal may never show trust approvals (R3 aside). Reproduce before filing.
 - **N-7** `VerticalModuleRegistry` still lists a dead "Court Calendar" module pointing at `/court-calendar` (R8 §1.3).
 - **N-8** `restore()` (undo write-off) exists in the entity with no endpoint (R6).
+- **N-9** (628I grep, outside the R8 census) The POPIA processing-register seed `datarequest/ProcessingActivityService.java:84,97` creates "Financial Records — Invoices, payment records…" and the category "Project Documentation". It renders on Settings › Firm › Data protection (`processing-register-table.tsx`). Rows are keyed by `category` (`existsByCategory`), so renaming needs a reconcile on existing tenants (ADR-356 shape). Evidence: `$EV/628I/grep.md`.
+- **N-10** (628I grep) `integration/accounting/sync/TrustBoundaryGuard.java:61` "Invoice is flagged as trust-related…" reaches `markBlockedTrustBoundary` → `SyncLogTable.tsx:139-144` (Integrations sync log). R8 row 98 fixed `:125` in the same class.
+- **N-11** (628I grep) `orElse("Unknown Project")` fallback names feed notification text at `member/ProjectMemberService.java:109` and `budget/BudgetCheckService.java:129`. They are effectively dead (the project row would have to vanish mid-transaction).
+- **N-12** (628I grep) `automation/executor/UpdateStatusActionExecutor.java:72` ActionFailure "Customer status update not yet supported" (automation run log). It is reachable only for an UPDATE_STATUS action that targets CUSTOMER.
 
 ---
 

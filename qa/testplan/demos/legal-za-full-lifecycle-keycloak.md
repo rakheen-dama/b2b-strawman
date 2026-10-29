@@ -825,7 +825,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 - [ ] **60.18** Click **Continue** → Step 2 — Close form
 - [ ] **60.19** Reason: **CONCLUDED** (settlement reached)
-- [ ] **60.20** Leave **Generate closure letter** checked, and also check **Generate Statement of Account** (Phase 67 Epic 491) if surfaced as a separate flag
+- [ ] **60.20** Leave **Generate closure letter** checked, and also check **Generate Statement of Account** (Phase 67 Epic 491) if surfaced as a separate flag — then tick **Email the client now** (which also shares on the client portal; both default off) (Phase 88, ADR-350 + register §5a row 14 — wording amendment, founder-authorised 2026-10-29: the closure dialog's share/email intents default to INTERNAL, so Day 61's client email and 61.2's portal listing exist only when this box is ticked)
 - [ ] **60.21** Click **Confirm Close** → matter status = **CLOSED**
 - [ ] **60.22** Closure letter + Statement of Account documents both attached to matter **Work** > **Documents** sub-tab
 - [ ] **60.23** Retention policy row inserted with `end_date = today + 5 years` (ADR-249 verify)
@@ -834,7 +834,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] All 4 closure gates resolved before closure attempt (trust dual-approval, court date, tasks, info requests)
 - [ ] Matter closes cleanly after gate resolution (no override needed)
 - [ ] Statement of Account PDF generated and attached to matter Documents
-- [ ] Mailpit → notification email to `sipho.portal@example.com`: "Your Statement of Account is ready" (or equivalent)
+- [ ] Mailpit → notification email to `sipho.portal@example.com`: "Your Statement of Account is ready" (or equivalent) (sent only because 60.20 ticked **Email the client now** — §5a row 14, founder-authorised 2026-10-29)
 
 ---
 

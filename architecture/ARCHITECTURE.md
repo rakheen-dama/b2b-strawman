@@ -6,7 +6,7 @@
 
 > **Phase 87 (2026-10):** legal-native shell — matter/client wire vocabulary, one Diary, five settings families. See [Section 12 — `phase87-legal-native-shell.md`](phase87-legal-native-shell.md) and ADR-337..344; closure report in `tasks/phase87-legal-native-shell.md` § Closure report.
 
-> **Phase 88 (2026-10):** demo-ready — root-cause closure of the Phase 87 capstone's 59 gaps in 24 fix units (matter team + role casing, fee-note due date/balance model, FICA source, activity-feed correlation, firm letterhead, portal contact directory, acceptance PDF framing, decline, part payments, comment attachments, terminology census). See [Section 13 — `phase88-demo-ready-root-cause-closure.md`](phase88-demo-ready-root-cause-closure.md) and ADR-345..357; vetted register in `tasks/phase88-gap-register.md`, research dossiers in `tasks/phase88-research/`.
+> **Phase 88 (2026-10):** demo-ready — root-cause closure of the Phase 87 capstone's 59 gaps in 24 fix units (matter team + role casing, fee-note due date/balance model, FICA source, activity-feed correlation, firm letterhead, portal contact directory, acceptance PDF framing, decline, part payments, comment attachments, terminology census). See [Section 13 — `phase88-demo-ready-root-cause-closure.md`](phase88-demo-ready-root-cause-closure.md) and ADR-345..357; vetted register in `tasks/phase88-gap-register.md`, research dossiers in `tasks/phase88-research/`; closure report in `tasks/phase88-demo-ready-root-cause-closure.md` § Closure report.
 
 ## 1. Overview
 

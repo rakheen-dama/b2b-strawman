@@ -1,0 +1,44 @@
+##### PR1670-624A(control) (session e058cce4)
+2026-10-24T13:09:16.966Z cwd=$P/b2b-strawman MARKER-WRITE .claude/markers/verify-backend.json :: { "commit": "c68529891", "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate)", "exit": 0, "ts": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "summary": "PR #1670 (624A) head c68529891: 5653 testcases / 0 failures / 0 errors / 26 skipped" }
+2026-10-24T13:40:21.355Z cwd=$P/b2b-strawman MERGE :: gh pr merge 1670 --squash --delete-branch --match-head-commit c68529891b2015f7b9e25db38cae21f135523fe1
+2026-10-24T13:40:31.573Z RESULT[MERGE] is_error=False :: (Bash completed with no output)
+2026-10-24T13:41:39.210Z cwd=$P/b2b-strawman DOCS-COMMIT git-add :: git add TASKS.md tasks/phase88-demo-ready-root-cause-closure.md .claude/markers/verify-backend.json | git add -f qa_cycle/evidence/phase88-rewalk/624A/observed
+
+##### PR1671-624B (session 14d81c59)
+2026-10-24T14:55:54.814Z cwd=$P/b2b-strawman MARKER-WRITE $P/b2b-strawman/.claude/markers/verify-backend.json :: { "commit": "0e669d7d8a0f478d5c60e5d96a837075112d72c6", "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate)", "exit": 0, "ts": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "summary": "PR #1671 (624B) head 0e669d7d8: 5674 testcases / 0 failing report files / $S skipped" }
+2026-10-24T15:01:09.667Z cwd=$P/b2b-strawman MERGE :: gh pr merge 1671 --squash --delete-branch --match-head-commit 0e669d7d8a0f478d5c60e5d96a837075112d72c6
+2026-10-24T15:01:18.955Z RESULT[MERGE] is_error=False :: (Bash completed with no output)
+2026-10-24T15:01:56.294Z cwd=$P/b2b-strawman DOCS-COMMIT git-add :: git add TASKS.md tasks/phase88-demo-ready-root-cause-closure.md | git add -f $D
+
+##### PR1672-624C (session e66759be)
+2026-10-24T16:12:12.457Z cwd=$P/b2b-strawman MARKER-WRITE .claude/markers/verify-backend.json :: { "commit": "54b98f25abe41bce107e16427d469934b2a7703a", "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate)", "exit": 0, "ts": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "summary": "PR #1672 (624C) head 54b98f25a: 5689 testcases / 0 failing report files" }
+2026-10-24T16:41:44.701Z cwd=$P/b2b-strawman MERGE :: gh pr merge 1672 --squash --delete-branch --match-head-commit 54b98f25abe41bce107e16427d469934b2a7703a
+2026-10-24T16:41:54.252Z RESULT[MERGE] is_error=False :: (Bash completed with no output)
+2026-10-24T16:42:33.281Z cwd=$P/b2b-strawman DOCS-COMMIT git-add :: git add -f qa_cycle/evidence/phase88-rewalk/624C/observed-email-links.md TASKS.md tasks/phase88-demo-ready-root-cause-closure.md
+
+##### PR1673-624D (session 58ec3a55)
+2026-10-24T17:13:24.529Z cwd=$P/b2b-strawman MARKER-WRITE .claude/markers/verify-portal.json :: { "commit": "43985b2157e03bb5dd3c0eb9be7879fdebeedb35", "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build", "exit": 0, "ts": "2026-10-24T17:20:00Z", "summary": "Slice 624D PORTAL-GATE on head 43985b215: lint 0 errors / 5 warnings (= baseline); format:check clean; vitest 43 files / 203 passed (baseline 42/196; +layout.test.tsx, page.test.tsx cases); next build OK. login-bare Playwright 1 passed against a production build on the e2e stack (fixer run)." }
+2026-10-24T17:49:45.714Z cwd=$P/b2b-strawman MARKER-WRITE .claude/markers/verify-portal.json :: { "commit": "a48eb885624012b457de6d7c197dba3cf358eb8e", "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build", "exit": 0, "ts": "2026-10-24T18:05:00Z", "summary": "Slice 624D PORTAL-GATE on final head a48eb885: lint 0 errors / 5 warnings (= baseline); format:check clean; vitest 43 files / 203 passed (baseline 42/196); next build OK. login-bare (opt-in, LOGIN_BARE=1, self-served production build) 1 passed on the e2e stack; 624.11 KC-observed PASS (steps 1-2), step 3 PARTIAL, multi-firm DEFERRED to 624I." }
+2026-10-24T17:52:39.041Z cwd=$P/b2b-strawman MERGE :: gh pr merge 1673 --squash --delete-branch --match-head-commit a48eb885624012b457de6d7c197dba3cf358eb8e
+2026-10-24T17:52:51.842Z RESULT[MERGE] is_error=False :: (Bash completed with no output)
+2026-10-24T17:53:50.436Z cwd=$P/b2b-strawman DOCS-COMMIT git-add :: git add TASKS.md $F
+
+##### PR1674-624E(control) (session 5b4242c1)
+2026-10-24T19:04:48.161Z cwd=$P/b2b-strawman MARKER-WRITE .claude/markers/verify-backend.json :: { "commit": "af4187510dd95605e5b595e5ac38be42aa4d0e5b", "command": "cd backend && caffeinate -is ./mvnw clean verify -q (verify.sh preflight skipped: it would kill the svc.sh spring-boot:run KC backend)", "exit": 0, "ts": "2026-10-24T19:20:00Z", "summary": "PR #1674 (624E) head af4187510: 5710 testcases / 0 failing report files / 26 skipped; Backend CI pass" }
+2026-10-24T19:04:56.324Z cwd=$P/b2b-strawman MERGE :: gh pr merge 1674 --squash --delete-branch --match-head-commit af4187510dd95605e5b595e5ac38be42aa4d0e5b
+2026-10-24T19:05:06.555Z RESULT[MERGE] is_error=False :: (Bash completed with no output)
+2026-10-24T19:05:42.541Z cwd=$P/b2b-strawman MARKER-WRITE .claude/markers/verify-backend.json :: { "commit": "af4187510dd95605e5b595e5ac38be42aa4d0e5b", "command": "cd backend && caffeinate -is ./mvnw clean verify -q (verify.sh preflight skipped: it would kill the svc.sh spring-boot:run KC backend)", "exit": 0, "ts": "2026-10-24T19:04:48Z", "summary": "PR #1674 (624E) head af4187510: 5710 testcases / 0 failing report files / 26 skipped; Backend CI pass" }
+2026-10-24T19:05:42.541Z cwd=$P/b2b-strawman DOCS-COMMIT git-add :: git add TASKS.md tasks/phase88-demo-ready-root-cause-closure.md .claude/markers/verify-backend.json
+
+##### PR1676-624G (session a092c493)
+2026-10-24T21:11:34.085Z cwd=$P/b2b-strawman MARKER-WRITE .claude/markers/verify-frontend.json :: { "commit": "17834f000661b1954fd0fc21b0521418410b0740", "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build", "exit": 0, "ts": "2026-10-24T21:12:00Z", "summary": "Slice 624G PR #1676 head 17834f000 (orchestrator re-run in worktree-epic-624G): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3150 passed / 2 skipped (baseline 3130 + 20 new), next build OK; CI Frontend pass. Observer on e2e (frontend rebuilt from 7cce247d2, then 17834f000): 624.18 steps a-i PASS; Generated-tab overflow found + fixed, no overflow at 1280/1440/1536; legal-depth-ii 35/0/8, legal-lifecycle 69/5/3/20 (carried set)." }
+2026-10-24T21:11:51.206Z cwd=$P/b2b-strawman MERGE :: gh pr merge 1676 --squash --delete-branch --match-head-commit 17834f000661b1954fd0fc21b0521418410b0740
+2026-10-24T21:12:00.386Z RESULT[MERGE] is_error=False :: (Bash completed with no output)
+2026-10-24T21:12:54.481Z cwd=$P/b2b-strawman DOCS-COMMIT git-add :: git add TASKS.md tasks/phase88-demo-ready-root-cause-closure.md | git add -f qa_cycle/evidence/phase88-rewalk/624G
+
+##### PR1677-624H (session 24137570)
+2026-10-24T22:14:16.477Z cwd=$P/b2b-strawman MARKER-WRITE .claude/markers/verify-portal.json :: { "commit": "cd00b6ba4369c82b1a85834bd464d0b9ad4dc601", "command": "pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build", "exit": 0, "ts": "2026-10-24T22:16:00Z", "summary": "Slice 624H PORTAL-GATE on final head cd00b6ba4: lint 0 errors / 4 warnings (baseline 5); format:check clean; vitest 44 files / 233 passed (baseline 43/203); next build OK. CI Portal pass (re-run after pre-existing comment-section userEvent.type 5s timeout, triaged in PR body). 624.21 observed PASS a-i on e2e @0a1abef81 + fix-surface re-observation PASS @cd00b6ba4; G88-M11 portal half code/test-covered only (no payment provider on e2e)." }
+2026-10-24T22:14:34.440Z cwd=$P/b2b-strawman MERGE :: gh pr merge 1677 --squash --delete-branch --match-head-commit cd00b6ba4369c82b1a85834bd464d0b9ad4dc601
+2026-10-24T22:14:45.637Z RESULT[MERGE] is_error=False :: (Bash completed with no output)
+2026-10-24T22:15:27.982Z cwd=$P/b2b-strawman DOCS-COMMIT git-add :: git add TASKS.md tasks/phase88-demo-ready-root-cause-closure.md | git add -f qa_cycle/evidence/phase88-rewalk/624H
+

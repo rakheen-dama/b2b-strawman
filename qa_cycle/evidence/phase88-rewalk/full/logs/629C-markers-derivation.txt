@@ -1,0 +1,494 @@
+=== PR #1643 phase88/01A-frame-ancestors squash=a1b927b3f parents=1 head=a81e5fe39 files=4 tops=backend areas=backend
+  grep '(#1643)' -- .claude/markers/ -> ['b9687dea6']; squash changed markers: none
+  candidate b9687dea6 changed=['.claude/markers/verify-backend.json'] subject=docs: Epic 618A done (#1643) — acceptance PDF frame-ancestors (G-B7 closed, observed on e2e); GET-only matcher
+    backend: commit=a81e5fe39381acb385ef91d1d845bfe2dbff1f4d ts=2026-10-23T02:27:41+02:00 exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=PR #1643 (Epic 618A: acceptance PDF frame-ancestors, scoped frame headers on @Order(2) chain + PortalOrigin) head a81e5fe39 (orchestrator run, 1 CodeRabbit fix cycle): 5464 testcases / 0 failures / 0 errors / 26 skipped across 698 surefire reports (+20 vs 615B's 5444: FrameHeadersIntegrationTest 4 + PortalOriginTest 16). Log /tmp/mvn-618A-final.log. Backend CI pass 16m14s.
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 findings, addressed in fixer pass']
+  mergedAt=2026-10-23T00:27:57Z mergedBy=rakheen-dama
+=== PR #1644 phase88/01B-portal-open-in-new-tab squash=38aba3758 parents=1 head=a599a6767 files=2 tops=portal areas=portal
+  grep '(#1644)' -- .claude/markers/ -> ['21e261d71']; squash changed markers: none
+  candidate 21e261d71 changed=['.claude/markers/verify-portal.json'] subject=docs: Epic 618B done (#1644) — portal acceptance page 'Open in new tab' link (reuses iframe pdfUrl, rel noopen
+    portal: commit=a599a6767fc4adee761ad4aaefff69968269aa8e ts=2026-10-23T02:38:34+0200 exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pn
+      summary=PR #1644 (618B; portal acceptance page 'Open in new tab' link reusing the iframe pdfUrl, rel=noopener noreferrer) on a599a6767 (orchestrator run in worktree): lint 0 errors / 5 warnings (main 6; unused mockAcceptedPageData now used); format:check clean; vitest 42 files / 195 passed (+2); build OK (/accept/[token]). Observed on :3002 (worktree portal dev → e2e backend :8081, 618A token): PDF render
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-23T01:13:21Z mergedBy=rakheen-dama
+=== PR #1645 phase88/01C-owner-only-mirror squash=1b41573fd parents=1 head=00d1bd42d files=6 tops=frontend areas=frontend
+  grep '(#1645)' -- .claude/markers/ -> ['037fe46a7']; squash changed markers: none
+  candidate 037fe46a7 changed=['.claude/markers/verify-frontend.json'] subject=docs: Epic 618C done (#1645) — owner-only capabilities client-side mirror; G-D7 reproduced (Bob override → 403
+    frontend: commit=00d1bd42d4f2c5680da3718f0406144a07da52f2 ts=2026-10-23T03:45:13+0200 exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm run buil
+      summary=PR #1645 (618C) on 00d1bd42d (orchestrator re-run in worktree, independent of builder's run): lint 0 errors / 92 warnings (= 617B baseline); format:check clean; build OK; vitest 407 files / 3018 passed / 2 skipped (main 406 / 3008 / 2; +1 file matter-closure-actions.test.ts, +10 tests). E2E: legal-depth-ii config on :3001 rebuilt from worktree → 29 passed / 0 failed / 14 skipped (ref 28/0/15; delt
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-23T02:31:03Z mergedBy=rakheen-dama
+=== PR #1646 phase88/02A-role-constants-guard squash=ef63813cf parents=1 head=0e6ba31fb files=12 tops=backend areas=backend
+  grep '(#1646)' -- .claude/markers/ -> ['1b200f80b']; squash changed markers: none
+  candidate 1b200f80b changed=['.claude/markers/verify-backend.json'] subject=docs: Epic 619A done (#1646) — canonical project-role constants + ProjectMember normaliser; G-D11 a / G-D13 / 
+    backend: commit=0e6ba31fbb3fd74ece8a074d9c98f7e14c98cb21 ts=2026-10-23T03:35:00Z exit=0 rel== head cmd=cd backend && ./mvnw spotless:apply && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Epic 619A PR #1646 head 0e6ba31fb (orchestrator run in worktree-epic-619A): 5477 testcases / 0 failures / 0 errors / 26 skipped across 699 surefire reports (= 5464 baseline + 13 new ProjectMemberTest cases), 12:36 wall. spotless:apply no diff. Backend CI pass (20m). Log /tmp/mvn-619A-final.log.
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding, triaged in reply (no code change)']
+  mergedAt=2026-10-23T03:35:17Z mergedBy=rakheen-dama
+=== PR #1647 phase88/02B-v4-role-migration-readpath-test squash=9649cdb88 parents=1 head=b8fe6f023 files=4 tops=backend areas=backend
+  grep '(#1647)' -- .claude/markers/ -> ['e2ba42c6d']; squash changed markers: none
+  candidate e2ba42c6d changed=['.claude/markers/verify-backend.json'] subject=docs: Epic 619B done (#1647) — tenant V4 §1 canonical project-role migration + real-write-path read test; obse
+    backend: commit=b8fe6f0237705306049ee3aaefe0cb92de81a0a6 ts=2026-10-23T04:17:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Epic 619B PR #1647 head b8fe6f023 (orchestrator run in worktree-epic-619B): 5493 testcases / 0 failures / 0 errors / 26 skipped across 701 surefire reports (= 5477 baseline + 16 new: V4ProjectRoleMigrationTest 9, TemplateCreatedMatterReadPathIntegrationTest 7). Log /tmp/mvn-619B-final.log.
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-23T04:34:43Z mergedBy=rakheen-dama
+=== PR #1648 phase88/02C-creator-autoadd-canmanage squash=648e65560 parents=1 head=ce2349b66 files=15 tops=backend areas=backend
+  grep '(#1648)' -- .claude/markers/ -> ['e8ba6027a']; squash changed markers: none
+  candidate e8ba6027a changed=['.claude/markers/verify-backend.json'] subject=docs: Epic 619C done (#1648) — creator auto-add on template instantiation + canManage gates (Owner/Admin/lead;
+    backend: commit=ce2349b665336e1101cd0d347699ebd5672812c6 ts=2026-10-23T05:28:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Epic 619C PR #1648 head ce2349b66 (orchestrator run in worktree-epic-619C): 5507 testcases / 0 failures / 0 errors / 26 skipped across 701 surefire reports (= 5493 after 619B + 14 new: ProjectMemberIntegrationTest + InstantiateTemplateIntegrationTest gate/auto-add cases). Covers 619.9 BE-VERIFY for 619A+619B+619C. Log /tmp/mvn-619C-final.log.
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding, triaged no-change (scope)']
+  mergedAt=2026-10-23T05:28:03Z mergedBy=rakheen-dama
+=== PR #1649 phase88/02D-team-tab-notfound-canmanage squash=04d0ab454 parents=1 head=e50f579d7 files=14 tops=frontend areas=frontend
+  grep '(#1649)' -- .claude/markers/ -> ['d697028f5']; squash changed markers: none
+  candidate d697028f5 changed=['.claude/markers/verify-frontend.json'] subject=docs: Epic 619D done (#1649) — Team tab (Details 7/22, members→team alias) + ProjectMembersPanel mounted with 
+    frontend: commit=e50f579d7ab40399918748699c9712bc81738d7c ts=2026-10-23T06:20:00Z exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Epic 619D FE-GATE (orchestrator run in worktree-epic-619D on PR #1649 head e50f579d7): lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 408 files / 3025 passed / 2 skipped (+1 file / +7 vs 618D); build OK; 117s. 619.12 observed PASS A-I on :3001 (/tmp/619D-evidence/observe/OBSERVE.md).
+  verdicts bound=2/2; coderabbit=["REVIEWED — 1 finding, triaged no-change (pre-existing `?tab=` URL precedence in `matter-tabs.tsx` — the URL tab outranks the user's click. Reproduced on main's build with `?tab=tasks` before this PR; the logic dates back to Epic 33B; it affects every deep link (notification `?tab=tasks`, setup `?tab=budget`, the old `?tab=members`), so it gets its own slice per the one-fix-per-PR rule → filed follow-up)"]
+  mergedAt=2026-10-23T06:33:55Z mergedBy=rakheen-dama
+=== PR #1650 phase88/02E-team-specs-gate squash=9ff0963cf parents=1 head=0db240476 files=3 tops=frontend areas=frontend
+  grep '(#1650)' -- .claude/markers/ -> ['8dfe4681b']; squash changed markers: none
+  candidate 8dfe4681b changed=['.claude/markers/verify-frontend.json'] subject=docs: Epic 619E done (#1650) — Epic 619 done; matter-team spec + Carol Day-1 add / Day-7 strict lookup; unbloc
+    frontend: commit=0db240476d0b3931c6664669a9e31dc1ae082b9f ts=2026-10-23T12:42:59Z exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Epic 619E FE-GATE on phase88/02E-team-specs-gate head 0db240476 (rebased on next 16.3.8 main): lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 408 files / 3025 passed / 2 skipped (= baseline); next build OK. E2E-LEGAL fresh stack (e2e-down -v + e2e-up from worktree, --update-snapshots=changed as 618D): legal-lifecycle 69/4/5/19 failed={A1,A2,A4,A5} (carried six unchanged; +6 p
+  verdicts bound=2/2; coderabbit=["REVIEWED — 1 finding (Minor, Day-7 `/Ndlovu|Sipho|RAF/i` `.first()` lookup), triaged no-change with a reply on the thread: cross-file run-state is beyond 619.13's locator/flow scope, and the lookup is unambiguous on the fresh-stack gate. Follow-up → 628E."]
+  mergedAt=2026-10-23T13:11:37Z mergedBy=rakheen-dama
+=== PR #1651 phase88/02E-next-16-3-8-react-ping squash=8f35312df parents=1 head=fe9451e93 files=12 tops=.claude,frontend,patches,pnpm-lock.yaml,pnpm-workspace.yaml,portal,tasks areas=frontend,portal
+  grep '(#1651)' -- .claude/markers/ -> ['8dfe4681b', '8f35312df']; squash changed markers: ['.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json']
+  candidate 8f35312df changed=['.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json'] subject=fix(deps): next 16.2.6 -> 16.3.8 for React lost-ping fix (unblocks 619E) (#1651)
+    frontend: commit=c524efc8c159c1d00be54a6a18dedb8a57a7b30e ts=2026-10-23T11:55:00Z exit=0 rel=anc cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=next 16.2.6 -> 16.3.8 (React lost-ping fix) FE-GATE on phase88/02E-next-16-3-8-react-ping head c524efc8c: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 408 files / 3025 passed / 2 skipped (= baseline, incl. next-null-prefetch-patch guard); next build 16.3.8 OK (API type-check, useTypeScriptCli false). E2E on :3001 built from e6243dd (same frontend runtime; later commit only 
+    portal: commit=c524efc8c159c1d00be54a6a18dedb8a57a7b30e ts=2026-10-23T11:56:00Z exit=0 rel=anc cmd=pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pn
+      summary=next 16.2.6 -> 16.3.8 PORTAL-GATE on phase88/02E-next-16-3-8-react-ping head c524efc8c: lint 0 errors / 5 warnings (= 618B); format:check clean; vitest 42 files / 195 passed (= baseline); next build 16.3.8 OK. Portal Playwright on fresh :3001 stacks (portal dev 16.3.8 on :3002): portal-client-90day 5/3/1/3 (failing titles = 617B/617C data-prerequisite trio), responsive 21 passed, frontend portal-d
+  candidate 8dfe4681b changed=['.claude/markers/verify-frontend.json'] subject=docs: Epic 619E done (#1650) — Epic 619 done; matter-team spec + Carol Day-1 add / Day-7 strict lookup; unbloc
+  candidate 8f35312df changed=['.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json'] subject=fix(deps): next 16.2.6 -> 16.3.8 for React lost-ping fix (unblocks 619E) (#1651)
+  verdicts bound=2/2; coderabbit=['REVIEWED']
+  mergedAt=2026-10-23T12:36:04Z mergedBy=rakheen-dama
+=== PR #1652 phase88/03A-payment-terms-due-date squash=5656330d8 parents=1 head=b52f4727b files=39 tops=backend areas=backend
+  grep '(#1652)' -- .claude/markers/ -> ['b38fe9189']; squash changed markers: none
+  candidate b38fe9189 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 620A done (#1652) — payment terms (default 30, batch-billing PATCH) + approve stamps due date + V4
+    backend: commit=b52f4727b52fc09dabd5d38e5470e389fd903c93 ts=2026-10-23T14:01:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 620A PR #1652 head b52f4727b (orchestrator run in worktree-epic-620A): 5526 testcases / 0 failures / 0 errors / 26 skipped across 702 surefire reports (= 5507 after 619C + 19 new: V4InvoiceDueDateBackfillTest, InvoiceLifecycleIntegrationTest due-date cases, OrgSettingsIntegrationTest terms cases, seeder pin). Log /tmp/mvn-620A-final.log.
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-23T14:11:29Z mergedBy=rakheen-dama
+=== PR #1653 phase88/03B-outstanding-summary-collections-sql squash=f15348332 parents=1 head=b4d747701 files=12 tops=backend areas=backend
+  grep '(#1653)' -- .claude/markers/ -> ['36cb3913e']; squash changed markers: none
+  candidate 36cb3913e changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 620B done (#1653) — CollectionsSql (OUTSTANDING_PREDICATE/AMOUNT + OUTSTANDING_STATUSES for triage
+    backend: commit=b4d747701814edaf699c3d4cecd5f23e3d347c77 ts=2026-10-23T15:20:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 620B PR #1653 head b4d747701 (orchestrator run in worktree-epic-620B): 5534 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5526 after 620A + 8 new: CollectionsSqlSourceScanTest 5, CollectionsReadApiTest real-path + 2x 403). Backend CI pass (19m35s). Log /tmp/mvn-620B-final.log.
+  verdicts bound=2/2; coderabbit=['DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate']
+  mergedAt=2026-10-23T15:03:30Z mergedBy=rakheen-dama
+=== PR #1654 phase88/03C-fee-notes-tiles-terms-field squash=d514c24b5 parents=1 head=3c07aa0f4 files=16 tops=frontend areas=frontend
+  grep '(#1654)' -- .claude/markers/ -> ['bd18f96bc']; squash changed markers: none
+  candidate bd18f96bc changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 620C done (#1654) — Fee notes tiles read GET /api/invoices/outstanding-summary (client-side APPROV
+    frontend: commit=3c07aa0f42c32693deec185ae71b8e6dfd3c4902 ts=2026-10-23T15:45:42Z exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Slice 620C FE-GATE on phase88/03C-fee-notes-tiles-terms-field head 3c07aa0f4: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 411 files / 3059 passed / 2 skipped (+3 files, +34 tests vs 408/3025/2); next build OK; CI Frontend pass. Observed 620.9 on e2e :3001 rebuilt from the branch: Fee notes Total outstanding R 3 450,00 = Home Debtors = Collections (was R 4 950,00 vs R 3 450
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding (Major), triaged no-change with reply on the thread']
+  mergedAt=2026-10-23T15:46:00Z mergedBy=rakheen-dama
+=== PR #1655 phase88/03D-fica-checklist-first squash=fa4850692 parents=1 head=24db61722 files=13 tops=backend areas=backend
+  grep '(#1655)' -- .claude/markers/ -> ['2fbc34292']; squash changed markers: none
+  candidate 2fbc34292 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 620D done (#1655) — checklist-first FICA projection (onboarding checklist instances on auto_instan
+    backend: commit=24db61722408b24b9119df3a9da312ac644a444c ts=2026-10-23T16:25:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 620D PR #1655 head 24db61722 (orchestrator run in worktree-epic-620D): 5544 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5534 after 620B + 10 new: CustomerFicaStatusIntegrationTest real-path 3, FicaStatusProjectorTest checklist cases, FicaOutstanding/ClientListRow checklist fixtures). Backend CI pass (16m39s). Log /tmp/mvn-620D-final.log.
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-23T16:37:08Z mergedBy=rakheen-dama
+=== PR #1656 phase88/03E-fica-card-deck-gate squash=a326e6b10 parents=1 head=6b9b2f601 files=3 tops=frontend areas=frontend
+  grep '(#1656)' -- .claude/markers/ -> ['bc21c16d8']; squash changed markers: none
+  candidate bc21c16d8 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 620E done (#1656) — Epic 620 Done. FICA card copy ("No FICA onboarding started."; checklist-decide
+    frontend: commit=6b9b2f6011608dcfe34414dd77989ed4bd451f60 ts=2026-10-23T15:45:42Z exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Slice 620C FE-GATE on phase88/03C-fee-notes-tiles-terms-field head 3c07aa0f4: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 411 files / 3059 passed / 2 skipped (+3 files, +34 tests vs 408/3025/2); next build OK; CI Frontend pass. Observed 620.9 on e2e :3001 rebuilt from the branch: Fee notes Total outstanding R 3 450,00 = Home Debtors = Collections (was R 4 950,00 vs R 3 450
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-23T17:33:59Z mergedBy=rakheen-dama
+=== PR #1657 phase88/04A-restore-endpoint-trust-filters squash=9dce4f14e parents=1 head=eb988d2a3 files=10 tops=backend areas=backend
+  grep '(#1657)' -- .claude/markers/ -> ['a2694c7ce']; squash changed markers: none
+  candidate a2694c7ce changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 621A done (#1657) — POST /api/legal/disbursements/{id}/restore (WRITE_OFF_DISBURSEMENTS; WRITTEN_O
+    backend: commit=eb988d2a32a0933501eb7db19859a3542f6e6824 ts=2026-10-23T18:10:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 621A PR #1657 head eb988d2a3 (orchestrator run in worktree-epic-621A): 5554 testcases / 0 failures / 0 errors / 26 skipped across 703 reports (= 5544 after 620D + 10 new: DisbursementControllerIntegrationTest restore 200/409/403, DisbursementServiceTest restore_*, TrustTransactionControllerTest filters + excludeLinked, AuditEventTypeRegistryTest 29→30). Backend CI pass (14m54s). Log /tmp/mvn
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding (Major, `TrustTransactionRepository.java:36` "keep the trust-link picker functional"), triaged no-change with evidence and a reply on the thread: the picker already returns `[]` on main (client-side `DISBURSEMENT_PAYMENT` filter; G-B11 reproduced), so this is not a regression; 621C switches it to `PAYMENT` + `excludeLinked`. First pass was rate-limited; the wait → `@coderabbitai review` recipe produced a real review.']
+  mergedAt=2026-10-23T18:36:30Z mergedBy=rakheen-dama
+=== PR #1658 phase88/04B-write-off-restore-ui squash=df5e79dcf parents=1 head=7233ffae7 files=15 tops=frontend areas=frontend
+  grep '(#1658)' -- .claude/markers/ -> ['4b9e1aad6']; squash changed markers: none
+  candidate 4b9e1aad6 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 621B done (#1658) — write-off dialog (reason required, ≤5000) + Undo write-off on detail page, fir
+    frontend: commit=7233ffae7c8928d71f2bf8390eb6d5727e20376e ts=2026-10-23T20:05:00Z exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Slice 621B FE-GATE on phase88/04B-write-off-restore-ui head 7233ffae7: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 414 files / 3092 passed / 2 skipped (+3 files, +30 tests vs 411/3062/2); next build OK; CI Frontend pass. Observed 621.5 on e2e :3001 rebuilt from the branch: write-off (reason required) -> Written off badge + reason row + disbursement.written_off audit; next 
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 findings, addressed in fixer pass']
+  mergedAt=2026-10-23T19:51:17Z mergedBy=rakheen-dama
+=== PR #1659 phase88/04C-payment-link-unbilled-strip squash=b1df9c850 parents=1 head=4e05ce60e files=14 tops=frontend areas=frontend
+  grep '(#1659)' -- .claude/markers/ -> ['aeb4a0f46']; squash changed markers: none
+  candidate aeb4a0f46 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 621C done (#1659) — trust-link dialog lists unlinked APPROVED PAYMENTs (type=PAYMENT&status=APPROV
+    frontend: commit=4e05ce60ea096ec8e28d054e10c108852ad0ff82 ts=2026-10-23T21:00:00Z exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Slice 621C FE-GATE on phase88/04C-payment-link-unbilled-strip head 4e05ce60e: lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 417 files / 3106 passed / 2 skipped (+3 files, +14 tests vs 414/3092/2); next build OK; CI Frontend pass. Reproduced G-B11/G-B12 on :3001; observed 621.7 Day 5 on e2e :3001 rebuilt from the branch (heads 234fc3f22, ac4bd412f, 4e05ce60e): trust-link dial
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, addressed in fixer pass']
+  mergedAt=2026-10-23T21:00:22Z mergedBy=rakheen-dama
+=== PR #1660 phase88/04D-depth-ii-unfixme-gate squash=985e2d18d parents=1 head=93566920a files=2 tops=frontend areas=frontend
+  grep '(#1660)' -- .claude/markers/ -> ['8c08dfb11']; squash changed markers: none
+  candidate 8c08dfb11 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 621D done (#1660) — Epic 621 DONE; six depth-ii fixme lifted (day-05 trust-linked create/approve/u
+    frontend: commit=93566920a16c6cf98777cfbe294f72a6cd89b978 ts=2026-10-23T22:01:33Z exit=0 rel== head cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Slice 621D FE-GATE on phase88/04D-depth-ii-unfixme-gate head 93566920a (and 8bc05757e): lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 417 files / 3106 passed / 2 skipped (= baseline, spec-only PR); next build OK; CI Frontend pass. E2E-LEGAL on fresh stacks built from the worktree: depth-ii full 35/0/8 (was 29/0/14; the six un-fixme'd day-05 T1-T3 + day-30-45 T4-T6 pass); leg
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-23T22:01:55Z mergedBy=rakheen-dama
+=== PR #1661 phase88/05A-narrative-lines-precheck-messages squash=706a13555 parents=1 head=d981903ca files=7 tops=backend areas=backend
+  grep '(#1661)' -- .claude/markers/ -> ['eaee068c0']; squash changed markers: none
+  candidate eaee068c0 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 622A done (#1661) — fee-note lines now "{date} · {fee earner} · {narrative}" (narrative → task tit
+    backend: commit=d981903cae8642dc53624aa5a487ddc499df5efa ts=2026-10-23T22:57:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 622A PR #1661 head d981903ca (orchestrator run in worktree-epic-622A): 5569 testcases / 0 failures / 0 errors / 26 skipped across 704 reports (= 5554 after 621A + 15 new: InvoiceLineDescriptionIntegrationTest 8, PdfRenderingServiceTest +4, InvoiceGenerationValidationIntegrationTest TRUST + company-generation cases, InvoiceTerminologyLegalZaTest legal-za COMPANY case). Backend CI pass (14m35s
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-23T22:58:00Z mergedBy=rakheen-dama
+=== PR #1662 phase88/05B-balance-model-partially-paid squash=1b419d74d parents=1 head=e828f5624 files=33 tops=backend,frontend,portal areas=backend,frontend,portal
+  grep '(#1662)' -- .claude/markers/ -> ['8ac4e17be']; squash changed markers: none
+  candidate 8ac4e17be changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json'] subject=docs: Slice 622B done (#1662) — fee-note balance model: PARTIALLY_PAID + amount_paid/balanceDue, postPayment/r
+    backend: commit=e828f562475c8d1a09998626de67298f6b82a444 ts=2026-10-24T01:39:12Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 622B PR #1662 final head e828f5624 (orchestrator run in worktree-epic-622B): 5603 testcases / 0 failures / 0 errors / 26 skipped across 705 reports (= 5569 after 622A + 34 new: InvoiceLifecycleIntegrationTest partial/complete/overpay 409/back-compat/void guard/reversal cases, V4InvoiceStatusCheckTest, PaymentEventTest, InvoiceAuditIntegrationTest new keys, TrustFeeTransferReversalCascadeTest
+    frontend: commit=b1c73e0d2fb7ec0b5c371e09a3bd6e6e472d3a52 ts=2026-10-24T01:00:00Z exit=0 rel=anc cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Slice 622B FE-GATE on phase88/05B-balance-model-partially-paid head b1c73e0d2 (frontend tree identical at final head e828f5624): lint 0 errors / 92 warnings (= baseline); format:check clean; vitest 417 files / 3109 passed / 2 skipped (+3: StatusBadge PARTIALLY_PAID + unknown fallback, customer invoices tab); next build OK. CI Frontend pass @b1c73e0d2 and on re-run @e828f5624 (first attempt hit the
+    portal: commit=b1c73e0d2fb7ec0b5c371e09a3bd6e6e472d3a52 ts=2026-10-24T01:00:00Z exit=0 rel=anc cmd=pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pn
+      summary=Slice 622B PORTAL-GATE on head b1c73e0d2 (portal tree identical at final head e828f5624): lint 0 errors / 5 warnings (= baseline); format:check clean; vitest 42 files / 196 passed (+1: PARTIALLY_PAID badge colour); next build OK. CI Portal pass. Portal UI not observed (no portal service on the e2e stack); portal read-model PARTIALLY_PAID projection observed via portal.portal_invoices (INV-0005 SEN
+  verdicts bound=2/2; coderabbit=['REVIEWED — 4 findings, addressed in fixer pass']
+  mergedAt=2026-10-24T01:51:00Z mergedBy=rakheen-dama
+=== PR #1663 phase88/05C-external-sources-post-amount squash=4ccc255c2 parents=1 head=450c6eee3 files=15 tops=backend areas=backend
+  grep '(#1663)' -- .claude/markers/ -> ['015da80ce']; squash changed markers: none
+  candidate 015da80ce changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 622C done (#1663) — every source posts its real amount: trust fee-transfer approval / pay-now webh
+    backend: commit=450c6eee385760e9528656902f937ed711410252 ts=2026-10-24T03:56:52Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 622C PR #1663 final head 450c6eee3 (orchestrator run in worktree-epic-622C): 5619 testcases / 0 failures / 0 errors / 26 skipped across 706 reports (= 5603 after 622B + 16 new: trust fee-transfer partial/remainder/excess/reversal, CardPaymentBalanceLinkIntegrationTest balance link + replay + session-cancel on trust/Xero, PaymentReconciliationServiceIntegrationTest session amount + session-le
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, addressed in fixer pass']
+  mergedAt=2026-10-24T03:58:29Z mergedBy=rakheen-dama
+=== PR #1664 phase88/05D-read-sites-on-balance squash=f78c22b27 parents=1 head=d0a139b12 files=23 tops=backend areas=backend
+  grep '(#1664)' -- .claude/markers/ -> ['09a911f1e']; squash changed markers: none
+  candidate 09a911f1e changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 622D done (#1664) — debtor-book reads on balance: CollectionsSql flip (OUTSTANDING_PREDICATE IN ('
+    backend: commit=d0a139b12e3afd03871fee030ef0033dd9472e68 ts=2026-10-24T04:43:28Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 622D PR #1664 final head d0a139b12 (orchestrator run in worktree-epic-622D): 5629 testcases / 0 failures / 0 errors / 26 skipped (= 5619 after 622C + 10 new: CollectionsReadApiTest part-paid at balance, ClientListRow client F, CashDigestData pins, aging part-paid row, scan/triage part-paid, reminder amount = balance, AI reminder balance line, FinalBillIssuedGate part-paid, MatterClosureConte
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-24T04:43:39Z mergedBy=rakheen-dama
+=== PR #1665 phase88/05E-payment-form-partially-paid-ui squash=424b4380c parents=1 head=a4aa86b0b files=32 tops=backend,frontend,scripts areas=backend,frontend
+  grep '(#1665)' -- .claude/markers/ -> ['1c2f72b8e']; squash changed markers: none
+  candidate 1c2f72b8e changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json'] subject=docs: Slice 622E done (#1665) — payment form (amount default balanceDue, method default EFT, reference; 409 'P
+    backend: commit=a4aa86b0bd9a9a3b6aee7f38f681333e85d55220 ts=2026-10-24T05:48:56Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=Slice 622E PR #1665 final head a4aa86b0b (orchestrator run in worktree-epic-622E): 5630 testcases / 0 failures / 0 errors / 26 skipped, 14 min (= 5629 after 622D + 1 net: RecordPaymentRequest @NotNull 400 cases, D-A TRUST_TRANSFER/XERO refusal, reference-only settle test converted to 400). Log /tmp/mvn-622E-final.log.
+    frontend: commit=a4aa86b0bd9a9a3b6aee7f38f681333e85d55220 ts=2026-10-24T05:48:56Z exit=0 rel== head cmd=cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test
+      summary=Slice 622E PR #1665 final head a4aa86b0b (orchestrator re-run in worktree-epic-622E): lint 0 errors, format:check clean, build OK, vitest 417 files / 3129 passed / 2 skipped (was 417/3109/2).
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 Minor findings, both triaged no-change with evidence (thread replies)']
+  mergedAt=2026-10-24T05:47:59Z mergedBy=rakheen-dama
+=== PR #1666 phase88/05F-invoice-lifecycle-spec-gate squash=957bc8765 parents=1 head=90a7695b9 files=1 tops=frontend areas=frontend
+  grep '(#1666)' -- .claude/markers/ -> ['6cc2b525e']; squash changed markers: none
+  candidate 6cc2b525e changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 622F done (#1666) — Epic 622 DONE
+    frontend: commit=90a7695b9660f3402be834dacf6eed76337f0320 ts=2026-10-24T06:10:39Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build
+      summary=Slice 622F PR #1666 head 90a7695b9 (orchestrator re-run in worktree-epic-622F): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3129 passed / 2 skipped (= baseline, spec-only PR), next build OK; CI Frontend pass. E2E-LEGAL fresh stack: lifecycle alone 74/4/5/14 (failed = carried {A1,A2,A4,A6}), depth-ii 35/0/8; E2E-DEFAULT invoices/ 19/0/2.
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-24T06:42:37Z mergedBy=rakheen-dama
+=== PR #1667 phase88/06A-mid-rewalk-days-01-07 squash=092f75505 parents=1 head=30e0fa37b files=83 tops=qa_cycle areas=docs-only
+  grep '(#1667)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, addressed in fixer pass']
+  mergedAt=2026-10-24T08:08:14Z mergedBy=rakheen-dama
+=== PR #1668 phase88/06B-mid-rewalk-days-36-75 squash=2a17c6ff6 parents=1 head=0f5b68b76 files=114 tops=marketing,qa_cycle areas=docs-only
+  grep '(#1668)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, addressed in fixer pass']
+  mergedAt=2026-10-24T10:36:03Z mergedBy=rakheen-dama
+=== PR #1669 phase88/06C-mid-rewalk-gaps-migrations squash=4a6cdd818 parents=1 head=ff4c8bee4 files=5 tops=qa_cycle,tasks areas=docs-only
+  grep '(#1669)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding, addressed in fixer pass']
+  mergedAt=2026-10-24T11:39:48Z mergedBy=rakheen-dama
+=== PR #1670 phase88/07A-global-v2-directory squash=ccd04c467 parents=1 head=c68529891 files=33 tops=backend,qa_cycle areas=backend
+  grep '(#1670)' -- .claude/markers/ -> ['13420b84b']; squash changed markers: none
+  candidate 13420b84b changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 624A done (#1670) — global V2 portal contact directory + read-model amount_paid
+    backend: commit=c68529891 ts=2026-10-24T13:09:17Z exit=0 rel== head cmd=cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate)
+      summary=PR #1670 (624A) head c68529891: 5653 testcases / 0 failures / 0 errors / 26 skipped
+  verdicts bound=2/2; coderabbit=['REVIEWED — 4 findings, addressed in fixer pass']
+  mergedAt=2026-10-24T13:40:28Z mergedBy=rakheen-dama
+=== PR #1671 phase88/07B-email-only-request-link squash=211a6dfc8 parents=1 head=0e669d7d8 files=8 tops=backend areas=backend
+  grep '(#1671)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 findings, addressed in fixer pass']
+  mergedAt=2026-10-24T15:01:16Z mergedBy=rakheen-dama
+=== PR #1672 phase88/07C-portal-link-builder squash=44c123007 parents=1 head=54b98f25a files=25 tops=backend areas=backend
+  grep '(#1672)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-24T16:41:51Z mergedBy=rakheen-dama
+=== PR #1673 phase88/07D-portal-login-bare squash=011028434 parents=1 head=a48eb8856 files=23 tops=portal,qa_cycle areas=portal
+  grep '(#1673)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — 4 findings, addressed in fixer pass']
+  mergedAt=2026-10-24T17:52:49Z mergedBy=rakheen-dama
+=== PR #1674 epic-624E/client-notification-intent squash=9ad07aa7e parents=1 head=af4187510 files=23 tops=backend areas=backend
+  grep '(#1674)' -- .claude/markers/ -> ['db10fda24']; squash changed markers: none
+  candidate db10fda24 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 624E done (#1674) — SoA/closure intent flags (INTERNAL default, notify implies share), POST /share
+    backend: commit=af4187510dd95605e5b595e5ac38be42aa4d0e5b ts=2026-10-24T19:04:48Z exit=0 rel== head cmd=cd backend && caffeinate -is ./mvnw clean verify -q (verify.sh preflight skipped: it would kill the svc.sh spring-boot:r
+      summary=PR #1674 (624E) head af4187510: 5710 testcases / 0 failing report files / 26 skipped; Backend CI pass
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-24T19:05:03Z mergedBy=rakheen-dama
+=== PR #1675 phase88/07F-acceptance-decline-v5 squash=15fe4a3b4 parents=1 head=cdb1dbb0a files=25 tops=backend,frontend areas=backend,frontend
+  grep '(#1675)' -- .claude/markers/ -> ['eee4a2cf2']; squash changed markers: none
+  candidate eee4a2cf2 changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json'] subject=docs: Slice 624F done (#1675) — acceptance DECLINED end to end (decline from SENT|VIEWED unexpired, 409 otherw
+    backend: commit=cdb1dbb0a622d1597c6ea4c725f1ebd0cd6b3efe ts=2026-10-24T20:05:00Z exit=0 rel== head cmd=cd backend && caffeinate -is ./mvnw clean verify -q (verify.sh preflight skipped: it would kill the svc.sh spring-boot:r
+      summary=PR #1675 (624F) head cdb1dbb0a: 5743 testcases / 0 failing report files (baseline 5710); Backend CI pass 16m03s
+    frontend: commit=cdb1dbb0a622d1597c6ea4c725f1ebd0cd6b3efe ts=2026-10-24T20:05:18Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && pnpm run build
+      summary=Slice 624F PR #1675 head cdb1dbb0a (orchestrator re-run in worktree-epic-624F): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3130 passed / 2 skipped (baseline 3129 + 1 DECLINED badge case), next build OK; CI Frontend pass. Observer: firm generated-documents list renders Declined badge with 0 console errors on e2e (built from cdb1dbb0a).
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-24T20:05:34Z mergedBy=rakheen-dama
+=== PR #1676 epic-624G/intent-dialogs-share-declined squash=1fe9799a0 parents=1 head=17834f000 files=22 tops=frontend areas=frontend
+  grep '(#1676)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-24T21:11:58Z mergedBy=rakheen-dama
+=== PR #1677 phase88/07H-portal-status-balance-decline squash=4e7fc7827 parents=1 head=cd00b6ba4 files=22 tops=portal areas=portal
+  grep '(#1677)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-24T22:14:43Z mergedBy=rakheen-dama
+=== PR #1678 phase88/07I-gate squash=12de7d3e4 parents=1 head=9cc0743ab files=41 tops=.claude,qa_cycle,tasks areas=docs-only
+  grep '(#1678)' -- .claude/markers/ -> ['12de7d3e4']; squash changed markers: ['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json']
+  candidate 12de7d3e4 changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json'] subject=Slice 624I: Epic 624 gate — gates green, E2E = baseline, KC fee-note link + multi-firm observed (#1678)
+    backend: commit=bd32f07ff2729c5f5d611a597c61d568cd022663 ts=2026-10-24T22:35:00Z exit=0 rel=anc cmd=cd backend && caffeinate -is ./mvnw clean verify -q (verify.sh preflight skipped: it would kill the svc.sh spring-boot:r
+      summary=Slice 624I epic gate BE-VERIFY on main head bd32f07ff (backend tree identical to 624F head cdb1dbb0a): 717 surefire reports / 5743 testcases / 0 failing report files / 26 skipped (= 624F baseline 5743), 18 min, exit 0
+    frontend: commit=bd32f07ff2729c5f5d611a597c61d568cd022663 ts=2026-10-24T22:58:00Z exit=0 rel=anc cmd=pnpm install --frozen-lockfile && cd frontend && rm -rf .next && pnpm run lint && pnpm run format:check && pnpm test && 
+      summary=Slice 624I epic gate FE-GATE on main head bd32f07ff (worktree-epic-624I): lint 0 errors / 92 warnings, format:check clean, vitest 417 files / 3150 passed / 2 skipped (= 624G baseline), next build OK.
+    portal: commit=bd32f07ff2729c5f5d611a597c61d568cd022663 ts=2026-10-24T23:00:00Z exit=0 rel=anc cmd=pnpm install --frozen-lockfile && cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pn
+      summary=Slice 624I epic gate PORTAL-GATE on main head bd32f07ff (worktree-epic-624I): lint 0 errors / 4 warnings, format:check clean, vitest 44 files / 233 passed (= 624H baseline), next build OK.
+  candidate 12de7d3e4 changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json'] subject=Slice 624I: Epic 624 gate — gates green, E2E = baseline, KC fee-note link + multi-firm observed (#1678)
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 findings, addressed in fixer pass']
+  mergedAt=2026-10-24T23:28:38Z mergedBy=rakheen-dama
+=== PR #1679 phase88/08A-publisher-obligation-entity-branch squash=60ac43b65 parents=1 head=69357616d files=18 tops=backend areas=backend
+  grep '(#1679)' -- .claude/markers/ -> ['285171749']; squash changed markers: none
+  candidate 285171749 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 625A done (#1679) — publisher obligation via AuditDetails.matterScoped (acceptance/trust/fee-note 
+    backend: commit=69357616d181364bff1a81ec5097c6da83ca9b45 ts=2026-10-25T00:56:30Z exit=0 rel== head cmd=cd backend && caffeinate -is ./mvnw clean verify -q (worktree-epic-625A; verify.sh preflight skipped: it would kill the 
+      summary=Slice 625A BE-VERIFY on PR #1679 head 69357616d: 720 surefire reports / 5759 testcases / 0 failing report files / 26 skipped (baseline 5743 + 16 new), exit 0
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-25T01:23:07Z mergedBy=rakheen-dama
+=== PR #1680 phase88/08B-legal-formatter-home squash=6b80488a2 parents=1 head=46e4db845 files=8 tops=backend areas=backend
+  grep '(#1680)' -- .claude/markers/ -> ['2958399ba']; squash changed markers: none
+  candidate 2958399ba changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 625B done (#1680) — one legal ActivityMessageFormatter for the matter feed, Home Recent Activity a
+    backend: commit=46e4db8455f80450f5e294b71dd1fc8bcf3f4889 ts=2026-10-27T12:47:36Z exit=0 rel== head cmd=cd backend && caffeinate -is ./mvnw clean verify -q (worktree-epic-625B; verify.sh preflight skipped: it would kill the 
+      summary=Slice 625B BE-VERIFY on PR #1680 head 46e4db845: 721 surefire reports / 5914 testcases / 0 failing report files / 26 skipped (baseline 5759 + 155 new), exit 0
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings, addressed in fixer pass']
+  mergedAt=2026-10-27T12:49:15Z mergedBy=rakheen-dama
+=== PR #1681 phase88/08C-audit-labels-client-activity squash=1631e4868 parents=1 head=8bf8f0139 files=61 tops=backend,qa_cycle areas=backend
+  grep '(#1681)' -- .claude/markers/ -> ['b56371a2c']; squash changed markers: none
+  candidate b56371a2c changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 625C done (#1681) — "Fee note" + legal sentence-case audit labels (one legalLabel for registry + f
+    backend: commit=8bf8f0139132b50ac33b3a5f9a9093f5049c01ee ts=2026-10-27T14:25:00Z exit=0 rel== head cmd=cd backend && caffeinate -is ./mvnw clean verify -q (worktree-epic-625C; verify.sh preflight skipped: it would kill the 
+      summary=Slice 625C BE-VERIFY (625.8 gate for 625A-625C) on PR #1681 head 8bf8f0139: 722 surefire reports / 5927 testcases / 0 failing report files / 26 skipped (baseline 5914 + 13 new), exit 0. Prior head 520f22eda also green (5926).
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding (Trivial nitpick), evaluated and declined with evidence below; no actionable comments on 520f22eda']
+  mergedAt=2026-10-27T14:10:11Z mergedBy=rakheen-dama
+=== PR #1682 phase88/08D-audit-facet-selects squash=bd14638c7 parents=1 head=0bf76bb35 files=73 tops=frontend,qa_cycle areas=frontend
+  grep '(#1682)' -- .claude/markers/ -> ['63de8389d']; squash changed markers: none
+  candidate 63de8389d changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 625D done (#1682) — audit facet Selects (Actor/Entity type Selects, Event type combobox, Enter com
+    frontend: commit=0bf76bb35 ts=2026-10-27T15:21:35Z exit=0 rel== head cmd=cd frontend && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build (worktree-epic-625D
+      summary=Slice 625D PR #1682: lint 0 errors / 92 warnings; format clean; vitest 418 files / 3191 passed / 2 skipped; next build compiled OK
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings, addressed in fixer pass']
+  mergedAt=2026-10-27T15:30:31Z mergedBy=rakheen-dama
+=== PR #1683 phase88/08E-reconcile-framework squash=7a1311207 parents=1 head=e7bf0e386 files=36 tops=backend areas=backend
+  grep '(#1683)' -- .claude/markers/ -> ['abc533eb4']; squash changed markers: none
+  candidate abc533eb4 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 625E done (#1683) — pack reconcile framework: PackVersionGate (CAS claim + hook in one txn, non-nu
+    backend: commit=e7bf0e386f0c66768f3c90fd67cbec01863c398e ts=2026-10-27T17:05:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (preflight + caffeinate -is ./mvnw verify; worktree-epic-625E
+      summary=Slice 625E BE-VERIFY on PR #1683 head e7bf0e386: 5988 testcases / 0 failing report files / 26 skipped (baseline 5927 + 61 new), exit 0, 948s. Earlier heads 6716c2997 and 38c28656d verifies were intentionally killed when fixers were dispatched (shared target/).
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding, addressed in fixer pass']
+  mergedAt=2026-10-27T17:04:21Z mergedBy=rakheen-dama
+=== PR #1684 phase88/08F-document-uploaded-rule squash=c331f3a7d parents=1 head=84c2123b8 files=44 tops=backend,frontend,qa_cycle areas=backend,frontend
+  grep '(#1684)' -- .claude/markers/ -> ['977419fa8']; squash changed markers: none
+  candidate 977419fa8 changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json'] subject=docs: Slice 625F done (#1684) — "Document uploaded — notify matter lead" rule, disabled, first pack-reconcile 
+    backend: commit=295fcbd7468e624cc172d0f8103a0392a03342d9 ts=2026-10-27T18:19:45Z exit=0 rel=anc cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (preflight + caffeinate -is ./mvnw verify; worktree-epic-625F
+      summary=Slice 625F BE-VERIFY on PR #1684 code head 295fcbd74: 6006 testcases / 0 failing report files / 26 skipped (baseline 5988 + 18 new), exit 0. Later commits c799f7606 (backend/CLAUDE.md bullet) + 84c2123b8 (evidence) are non-code. The verify on 6c51f36bc was intentionally killed when the fixer was dispatched (shared target/).
+    frontend: commit=84c2123b8a4b31ce93a699ec895b0fa9e9e82c54 ts=2026-10-27T18:19:45Z exit=0 rel== head cmd=cd frontend && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check (worktree-epic-625F, NODE_OPTIONS="
+      summary=Slice 625F PR #1684: lint exit 0; next build OK; vitest 419 files / 3192 passed / 2 skipped; format clean
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-27T18:18:56Z mergedBy=rakheen-dama
+=== PR #1685 phase88/09A-letterhead-embeddable-v7 squash=fc70aad69 parents=1 head=99420af96 files=72 tops=architecture,backend,qa_cycle areas=backend
+  grep '(#1685)' -- .claude/markers/ -> ['3065a0fb1']; squash changed markers: none
+  candidate 3065a0fb1 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 626A done (#1685) — LetterheadSettings embeddable (16 nullable letterhead_* columns, tenant V7; V6
+    backend: commit=99420af96 ts=2026-10-27T19:42:45Z exit=0 rel== head cmd=cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate, preflight-guarded)
+      summary=Slice 626A PR #1685 head 99420af96: 6033 testcases / 0 failures / 0 errors / 26 skipped — 15:15 min; Backend CI pass 21m13s
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings: 1 Minor (whitespace email → 400 before trim) addressed in fixer pass 99420af96 (CR marked "Addressed"); 1 Minor on an evidence transcript (`after/04c` echo shows a raw tab) triaged evidence-only with a thread reply, note appended in the post-merge docs commit.']
+  mergedAt=2026-10-27T19:43:05Z mergedBy=rakheen-dama
+=== PR #1686 phase88/09B-letterhead-context-brand-css squash=46e5411ef parents=1 head=14f84b925 files=53 tops=backend,qa_cycle areas=backend
+  grep '(#1686)' -- .claude/markers/ -> ['6c9a07092']; squash changed markers: none
+  candidate 6c9a07092 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 626B done (#1686) — letterhead context keys (org.address/addressLines/phone/email/website, org.ban
+    backend: commit=14f84b925 ts=2026-10-27T20:56:05Z exit=0 rel== head cmd=cd backend && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-626B @14f84b9250ebfb4cccff407cbed8de818d4c4e97)
+      summary=6056 tests / 0 failures / 0 errors / 26 skipped — PR #1686 (626B) final head; Backend CI run 40579164301 pass
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 findings, addressed in fixer pass']
+  mergedAt=2026-10-27T20:56:16Z mergedBy=rakheen-dama
+=== PR #1687 phase88/09C-letterhead-settings-form squash=969c9a36c parents=1 head=c25867b72 files=10 tops=frontend areas=frontend
+  grep '(#1687)' -- .claude/markers/ -> ['cdb3e819f']; squash changed markers: none
+  candidate cdb3e819f changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 626C done (#1687) — letterhead settings form under Firm › General (Address · Contact · Banking · S
+    frontend: commit=c25867b72 ts=2026-10-27T21:40:25Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-626C, NODE_OPTIO
+      summary=Slice 626C FE-GATE on c25867b72: lint 0 errors / 92 warnings; format clean; vitest 421 files / 3220 passed / 2 skipped; build OK; CI Frontend pass
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-27T21:40:42Z mergedBy=rakheen-dama
+=== PR #1688 phase88/09D-pack-content-reconcile squash=b66061708 parents=1 head=2afd0e605 files=93 tops=backend,qa_cycle areas=backend
+  grep '(#1688)' -- .claude/markers/ -> ['d7718c7e0']; squash changed markers: none
+  candidate d7718c7e0 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 626D done (#1688) — legal-za template pack v7 → v8: letterhead (logo, firm name, org.address, Tel/
+    backend: commit=2afd0e605 ts=2026-10-27T23:26:09Z exit=0 rel== head cmd=cd backend && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-626D @2afd0e60531d58b97fbd003c4120e425019d1ca0)
+      summary=6117 tests / 0 failures / 0 errors / 26 skipped (18:25) — PR #1688 (626D) final head; Backend CI run 40599584436 pass; pre-fix head 837e2dcdd also 6100/0/0
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, addressed in fixer pass']
+  mergedAt=2026-10-27T23:27:19Z mergedBy=rakheen-dama
+=== PR #1689 phase88/09E-tiptap-preview-closure-arithmetic squash=93ed0191c parents=1 head=1070711c7 files=66 tops=backend,documentation,frontend,qa_cycle areas=backend,frontend
+  grep '(#1689)' -- .claude/markers/ -> ['9f504059f']; squash changed markers: none
+  candidate 9f504059f changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json'] subject=docs: Slice 626E done (#1689) — the fee-note preview now renders the template the emailed PDF uses (resolveDef
+    backend: commit=1070711c7 ts=2026-10-28T01:08:37Z exit=0 rel== head cmd=cd backend && bash scripts/verify.sh (./mvnw verify, worktree-epic-626E @1070711c784b8a36146c4dcdb77605614feb8e14)
+      summary=6140 tests / 0 failures / 0 errors / 26 skipped — PR #1689 (626E) final head; 626.11 BE-VERIFY gate for 626A–626E; Backend CI pass (21m51s); pre-fix head c46eb4203 also 6139/0/0/26
+    frontend: commit=1070711c7 ts=2026-10-28T01:08:37Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-626E, NODE_OPTIO
+      summary=Slice 626E FE-GATE on 1070711c7 (frontend change = one E2E string, day-75-85-closure.spec.ts:254): lint 0 errors / 92 warnings; format clean; vitest 421 files / 3220 passed / 2 skipped; build OK; CI Frontend pass
+  verdicts bound=2/2; coderabbit=['REVIEWED — no actionable findings']
+  mergedAt=2026-10-28T01:08:52Z mergedBy=rakheen-dama
+=== PR #1690 phase88/09F-format-currency-preview-wrapper-not-saved squash=8f8017c28 parents=1 head=130bc3016 files=62 tops=frontend,qa_cycle areas=frontend
+  grep '(#1690)' -- .claude/markers/ -> ['d0fda55d2']; squash changed markers: none
+  candidate d0fda55d2 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 626F done (#1690) — formatCurrency for all 11 money toFixed(2) sites + formatCurrencyFromCents + n
+    frontend: commit=130bc3016 ts=2026-10-28T02:09:42Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-626F, NODE_OPTIO
+      summary=Slice 626F FE-GATE on 130bc3016 (orchestrator run): lint 0 errors / 92 warnings; format clean; vitest 424 files / 3243 passed / 2 skipped; build OK; CI Frontend pass
+  verdicts bound=2/2; coderabbit=['REVIEWED — 0 actionable on cc59f005a; 1 trivial nitpick on 130bc3016 triaged no-change (scoped to 626H)']
+  mergedAt=2026-10-28T02:10:06Z mergedBy=rakheen-dama
+=== PR #1691 phase88/09G-otp-associations-subject squash=347b94ee6 parents=1 head=8c9023427 files=28 tops=backend,qa_cycle areas=backend
+  grep '(#1691)' -- .claude/markers/ -> ['76dd7971f']; squash changed markers: none
+  candidate 76dd7971f changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 626G done (#1691) — acceptance subject names the document template (ENGAGEMENT_LETTER → "engagemen
+    backend: commit=8c90234272ad699a46720fd0a5bb76d5849202d1 ts=2026-10-28T03:39:51Z exit=0 rel== head cmd=cd backend && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-626G @8c90234272ad699a46720fd0a5bb76d5849202d1)
+      summary=6159 tests / 0 failures / 0 errors / 26 skipped — PR #1691 (626G) final head; earlier heads 330f385da 6154/0/0/26, 1f3b6cec6 6158/0/0/26; Backend CI pass (16m18s)
+  verdicts bound=2/2; coderabbit=['REVIEWED — 0 actionable on 330f385da; 1 Minor on 1f3b6cec6 (guard counted association entries with an unsupported `field`), fixed in 8c9023427 + thread reply']
+  mergedAt=2026-10-28T03:41:06Z mergedBy=rakheen-dama
+=== PR #1692 phase88/09H-docs-specs-gate squash=6b15cc40f parents=1 head=c3279dfb7 files=2 tops=frontend areas=frontend
+  grep '(#1692)' -- .claude/markers/ -> ['c94a6e18f']; squash changed markers: none
+  candidate c94a6e18f changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json'] subject=docs: Slice 626H done (#1692) — Epic 626 DONE. Un-fixme'd day-14:335 (OTP clause step + Conditions of Sale, G-
+    backend: commit=76dd7971f6dcefda6a2625983ae541e08bc9c2f1 ts=2026-10-28T05:10:00Z exit=0 rel=anc cmd=cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-626H @76dd7971f = main af
+      summary=Epic 626 gate BE-VERIFY on merged head 76dd7971f (626.18): 6159 tests / 0 failures / 0 errors / 26 skipped in 16:11; spotless no diff. = 626G final head 8c9023427 (6159).
+    frontend: commit=ce58e7d2229569f0eb096e13c9a01a3f6fb8b4f7 ts=2026-10-28T04:16:04Z exit=0 rel=anc cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-626H, NODE_OPTIO
+      summary=Slice 626H / Epic 626 FE-GATE on ce58e7d22 (orchestrator run): lint 0 errors / 92 warnings; format clean; vitest 424 files / 3243 passed / 2 skipped; build OK. PR #1692 head c3279dfb7 differs by one E2E comment line only. E2E-LEGAL fresh stack on ce58e7d22: lifecycle 74/4/5/14 (carried A1,A2,A4,A6), depth-ii 37/0/6.
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding (Major: commit `:222` screenshot baseline), triaged no-change with thread reply (suite-wide convention, no baselines tracked); CodeRabbit withdrew it; incremental review of c3279dfb7 posted no new comments']
+  mergedAt=2026-10-28T04:23:21Z mergedBy=rakheen-dama
+=== PR #1693 phase88/10A-matter-header-url-tabs squash=b0e94dc41 parents=1 head=8e8c118d7 files=75 tops=architecture,frontend,qa_cycle areas=frontend
+  grep '(#1693)' -- .claude/markers/ -> ['f469434d7']; squash changed markers: none
+  candidate f469434d7 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 627A done (#1693) — matter header facts strip (case no. · court · opposing party; client ID struct
+    frontend: commit=8e8c118d79bff732d6523f3280f16e09b0fa5d17 ts=2026-10-28T05:44:41Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-627A, NODE_OPTIO
+      summary=Slice 627A FE-GATE on 8e8c118d7 (PR #1693 final head, orchestrator run): lint 0 errors / 91 warnings; format clean; vitest 425 files / 3281 passed / 2 skipped; build OK; CI Frontend pass. E2E-LEGAL fresh stack on a16fec0f8 (product-equivalent): lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179), depth-ii 35/1/6/1 — day-14:335 networkidle timeout reproduced identically on ma
+  verdicts bound=2/2; coderabbit=['REVIEWED — 6 findings across 4 heads; 5 addressed in fixer passes, 1 triaged no-change (pre-existing)']
+  mergedAt=2026-10-28T05:59:15Z mergedBy=rakheen-dama
+=== PR #1694 phase88/10B-retention-model squash=f78b041f6 parents=1 head=fa0225e72 files=25 tops=adr,architecture,backend areas=backend
+  grep '(#1694)' -- .claude/markers/ -> ['b90c9be48']; squash changed markers: none
+  candidate b90c9be48 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 627B done (#1694) — persisted per-matter retention_ends_on stamped at every close (UTC date + firm
+    backend: commit=fa0225e725c3a54084e5d02cbaeca834269dff43 ts=2026-10-28T07:20:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-627B @fa0225e72 = PR #1694 fina
+      summary=Slice 627B BE-VERIFY (627.6) on final head fa0225e72: 6187 tests / 0 failures / 0 errors / 26 skipped (baseline 6159 → +28). Earlier head c8371067c also green (6184). Backend CI run 40647043268 success on fa0225e72.
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings, addressed in fixer pass']
+  mergedAt=2026-10-28T07:27:12Z mergedBy=rakheen-dama
+=== PR #1695 phase88/10C-retention-card-years-field squash=8c3a7a808 parents=1 head=32425c851 files=17 tops=architecture,frontend areas=frontend
+  grep '(#1695)' -- .claude/markers/ -> ['02fc220ff']; squash changed markers: none
+  candidate 02fc220ff changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 627C done (#1695) — Overview retention card keyed on status + persisted retentionEndsOn ("Schedule
+    frontend: commit=32425c851c5be4d67ed88af91030669ddf8af4d6 ts=2026-10-28T08:25:00Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (worktree-epic-627C, NODE_OPTIO
+      summary=Slice 627C FE-GATE on 32425c851 (PR #1695 final head, orchestrator run): lint 0 errors; format clean; vitest 428 files / 3336 passed / 2 skipped; build OK; CI Frontend pass. E2E-LEGAL fresh stack on 32425c851: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179), depth-ii 38/0/5 (un-fixme'd day-75-85-closure:305 retention card green; day-14:335 passed this run).
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, addressed in fixer pass']
+  mergedAt=2026-10-28T08:22:13Z mergedBy=rakheen-dama
+=== PR #1696 phase88/10D-profitability-csv squash=3559fe6c9 parents=1 head=0c9acf7b9 files=26 tops=backend,qa_cycle areas=backend
+  grep '(#1696)' -- .claude/markers/ -> ['e1df4c43c']; squash changed markers: none
+  candidate e1df4c43c changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 627D done (#1696) — GET /api/reports/profitability/export/csv (FINANCIAL_VISIBILITY) returns the p
+    backend: commit=0c9acf7b9e03105416194f653abf289fa05a7bcd ts=2026-10-28T09:49:28Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-627D @0c9acf7b9 = PR #1696 fina
+      summary=Slice 627D (profitability CSV endpoint) BE verify on final head 0c9acf7b9: 6208 tests / 0 failures / 0 errors / 26 skipped (baseline 6187 → +21: ReportControllerTest 9 + ProfitabilityCsvExporterTest 12). Backend CI run 40663990630 success on 0c9acf7b9.
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings, addressed in fixer pass']
+  mergedAt=2026-10-28T09:49:40Z mergedBy=rakheen-dama
+=== PR #1697 phase88/10E-bff-exports squash=fbf0af126 parents=1 head=06f0337bd files=64 tops=architecture,frontend,qa_cycle areas=frontend
+  grep '(#1697)' -- .claude/markers/ -> ['dae1a9cbf']; squash changed markers: none
+  candidate dae1a9cbf changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 627E done (#1697) — BFF-safe report/statement exports + Profitability Export CSV. Closes G-D4; N-2
+    frontend: commit=eab2ca2703533edfe0f569f5842c40b6f0a7cbd4 ts=2026-10-28T10:37:29Z exit=0 rel=anc cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build (detached worktree-627E-gate, N
+      summary=Slice 627E FE-GATE on eab2ca270 (PR #1697; final head 06f0337bd differs only in docs/evidence — frontend/packages/lockfile diff empty): lint 0 errors; format clean; vitest 428 files / 3356 passed / 2 skipped; build OK; CI Frontend pass (06f0337bd: first run Turbopack next/font/google resolve failure, re-run pass). E2E-LEGAL fresh stack on eab2ca270: lifecycle 74/4/5/14 (carried day-00:282, day-30:
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings; 2 addressed (arch acceptance wording; local paths/username in evidence), 1 triaged no-change with thread reply (export abort deadline: pre-existing parity, no budget defined → follow-up); final head review: no actionable comments']
+  mergedAt=2026-10-28T11:02:23Z mergedBy=rakheen-dama
+=== PR #1698 phase88/10F-small-fixes squash=d4efc84f1 parents=1 head=37e4ae375 files=52 tops=architecture,frontend,qa_cycle areas=frontend
+  grep '(#1698)' -- .claude/markers/ -> ['69a4d4e16']; squash changed markers: none
+  candidate 69a4d4e16 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 627F done (#1698) — four small fixes. G-C2 Link to Matter list shape; G-D5 My work Upcoming · next
+    frontend: commit=37e4ae3757d60fd1c6c6bce4b2d758425e9bd626 ts=2026-10-28T12:07:46Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm format:check && pnpm test && pnpm bui
+      summary=Slice 627F FE-GATE on 37e4ae375 (PR #1698 final head): lint 0 errors (91 warnings, unchanged); format clean; vitest 430 files / 3378 passed / 2 skipped (was 428/3356/2); build OK; CI Frontend pass. E2E-LEGAL fresh stack on 37e4ae375: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179); depth-ii 36/1/5/1 — day-14:335 networkidle@:353 timeout, the known flake (fails identicall
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, addressed in fixer pass']
+  mergedAt=2026-10-28T12:15:40Z mergedBy=rakheen-dama
+=== PR #1699 phase88/10H-comment-attachments-backend squash=18082ab72 parents=1 head=45107cec3 files=227 tops=adr,architecture,backend,qa_cycle areas=backend
+  grep '(#1699)' -- .claude/markers/ -> ['b0a8631ba']; squash changed markers: none
+  candidate b0a8631ba changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 627H done (#1699) — comment attachments backend, tenant V9 comment_attachments (UNIQUE document_id
+    backend: commit=45107cec338e8b427fc03abca9aad8e7c4e8ae6e ts=2026-10-28T14:28:02Z exit=0 rel== head cmd=cd backend && bash scripts/verify.sh -q (./mvnw verify, worktree-epic-627H @45107cec3 = PR #1699 final head)
+      summary=Slice 627H (comment attachments backend, tenant V9) BE verify (627.18 BE-VERIFY for 627D + 627H) on final head 45107cec3: 6238 tests / 0 failures / 0 errors / 26 skipped (baseline 6208 → +30; the new classes CommentAttachmentIntegrationTest 21 + V9CommentAttachmentsTest 8 account for 29). Earlier verifies on 3f5380e8e (6236) and f022281c3 (6238) also green. Backend CI run 40701142678 success on 45
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, addressed in fixer pass']
+  mergedAt=2026-10-28T14:29:03Z mergedBy=rakheen-dama
+=== PR #1700 phase88/10I-comment-attachments-frontend squash=08c627141 parents=1 head=f7206efe7 files=20 tops=frontend areas=frontend
+  grep '(#1700)' -- .claude/markers/ -> ['de97fb19d']; squash changed markers: none
+  candidate de97fb19d changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 627I done (#1700) — comment attachments frontend. Task + document-thread comments get a compact dr
+    frontend: commit=f7206efe78b163d165a641f8f1ec9ca8618b867b ts=2026-10-28T16:15:07Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm format:check && pnpm test && pnpm bui
+      summary=Slice 627I FE-GATE on f7206efe7 (PR #1700 final head): lint 0 errors (91 warnings, unchanged); format clean; vitest 431 files / 3421 passed / 2 skipped (was 430/3378/2); build OK (TypeScript pass). E2E-LEGAL fresh stack (e2e-down/up) on f7206efe7: lifecycle 74/4/5/14 (carried day-00:282, day-30:32, day-45:41, day-90:179 — unchanged); depth-ii 38/0/5. Observed on :3001: O1–O11 (O9 N/A) on 136ba30d7
+  verdicts bound=2/2; coderabbit=['REVIEWED — 5 findings, addressed in fixer pass']
+  mergedAt=2026-10-28T16:31:55Z mergedBy=rakheen-dama
+=== PR #1701 phase88/10J-portal-comment-chips squash=3e9e5c5a2 parents=1 head=275a897a2 files=16 tops=portal,qa_cycle areas=portal
+  grep '(#1701)' -- .claude/markers/ -> ['aa0442b91']; squash changed markers: none
+  candidate aa0442b91 changed=['.claude/markers/verify-portal.json'] subject=docs: Slice 627J done (#1701) — portal comment attachment chips
+    portal: commit=275a897a20761492d3617c6b51981699df9301b0 ts=2026-10-28T17:16:30Z exit=0 rel== head cmd=cd portal && pnpm run lint && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build
+      summary=Slice 627J PORTAL-GATE on PR #1701 head 275a897a2 (worktree-epic-627J): lint 0 errors / 4 pre-existing warnings, format:check clean, vitest 44 files / 238 passed (baseline 44/233 + 5 chip tests), next build OK. CI Portal pass on the same head. Pre-existing load-sensitive 'character count' test fixed in 275a897a2 (§1 triage in PR body).
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings, addressed in fixer pass']
+  mergedAt=2026-10-28T17:22:06Z mergedBy=rakheen-dama
+=== PR #1702 phase88/10K-gate squash=5aacb61a8 parents=1 head=04fbfdd2b files=1 tops=frontend areas=frontend
+  grep '(#1702)' -- .claude/markers/ -> ['e4bc376d6']; squash changed markers: none
+  candidate e4bc376d6 changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json'] subject=docs: Slice 627K done (#1702) — Epic 627 DONE
+    backend: commit=04fbfdd2b ts=2026-10-28T18:15:21Z exit=0 rel== head cmd=cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q
+      summary=627K epic gate (BE-VERIFY on merged head): 6238 testcases / 0 failures / 0 errors / 26 skipped across 738 reports — 20:26 min; run on 3087d47aa, backend/ identical to main aa0442b91 and to 04fbfdd2b; spotless no diff
+    frontend: commit=04fbfdd2b ts=2026-10-28T18:15:21Z exit=0 rel== head cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build
+      summary=627K epic gate FE-GATE on 04fbfdd2b: lint 0 errors / 91 warnings, format clean, vitest 431 files / 3421 passed / 2 skipped (re-run after 1 load flake in invoice-generation-dialog.test.tsx, default 1s waitFor), build OK; E2E-LEGAL fresh stack lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5
+    portal: commit=04fbfdd2b ts=2026-10-28T18:15:21Z exit=0 rel== head cmd=cd portal && pnpm lint && pnpm format:check && pnpm test && pnpm build
+      summary=627K epic gate PORTAL-GATE: lint 0 errors / 4 warnings, format clean, vitest 44 files / 238 passed, build OK; run on 3087d47aa, portal/ identical at 04fbfdd2b
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 findings, addressed in fixer pass']
+  mergedAt=2026-10-28T18:15:45Z mergedBy=rakheen-dama
+=== PR #1703 phase88/11A-frontend-terminology-census squash=4f1886c24 parents=1 head=b1e4b56d2 files=265 tops=frontend,packages areas=frontend,portal
+  grep '(#1703)' -- .claude/markers/ -> ['835f53338']; squash changed markers: none
+  candidate 835f53338 changed=['.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json'] subject=docs: Slice 628A done (#1703) — frontend terminology census + tier removal
+    frontend: commit=01eba16e5 ts=2026-10-28T19:55:40Z exit=0 rel=anc cmd=cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build
+      summary=628A FE-GATE on 01eba16e5: lint 0 errors / 91 warnings, format clean, vitest 431 files / 3424 passed / 2 skipped, build OK (final head a1a368101 differs only by an e2e spec line reverted to main); fresh-stack E2E-LEGAL lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5
+    portal: commit=01eba16e5 ts=2026-10-28T19:55:40Z exit=0 rel=anc cmd=cd portal && pnpm lint && pnpm format:check && pnpm test && pnpm build
+      summary=628A PORTAL-GATE on 01eba16e5 (shared @b2mash/ui Badge change): lint 0 errors, format clean, vitest 44 files / 238 passed, build OK
+  verdicts bound=2/4; coderabbit=['DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate', 'DEFERRED — not arrived after full review cycle; paid on-demand only above 150 files; superpowers reviews are the merge gate']
+  mergedAt=2026-10-28T20:45:26Z mergedBy=rakheen-dama
+=== PR #1704 phase88/11B-portal-breadcrumbs-settings-shell squash=8a0b96265 parents=1 head=5cd76cc68 files=49 tops=.github,frontend,portal areas=frontend,portal
+  grep '(#1704)' -- .claude/markers/ -> ['fe579bdc9']; squash changed markers: none
+  candidate fe579bdc9 changed=['.claude/markers/verify-frontend.json', '.claude/markers/verify-portal.json'] subject=docs: Slice 628B done (#1704) — portal terminology + breadcrumbs + settings labels + shell layout
+    frontend: commit=5cd76cc68 ts=2026-10-28T22:42:35Z exit=0 rel== head cmd=cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build
+      summary=628B FE-GATE on 5cd76cc68 (final head, detached gate worktree): lint 0 errors / 91 warnings, format clean, vitest 433 files / 3485 passed / 2 skipped, build OK; fresh-stack (e2e-down/up from 5cd76cc68) E2E-LEGAL lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5; default navigation+settings on bd9d01fcd 29/1/15/1 — the 1 (packs.spec:94 strict-mode) A/B'd: fails identically on main 835f5333
+    portal: commit=5cd76cc68 ts=2026-10-28T22:42:35Z exit=0 rel== head cmd=cd portal && pnpm lint && pnpm format:check && pnpm test && pnpm build
+      summary=628B PORTAL-GATE on 5cd76cc68: lint 0 errors / 4 warnings, format clean, vitest 44 files / 243 passed (portal terminology guard twin + drift check), build OK
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 findings, 2 addressed in fixer pass, 1 triaged no-change']
+  mergedAt=2026-10-28T22:53:47Z mergedBy=rakheen-dama
+=== PR #1705 phase88/11C-pack-report-email-reconciles squash=f812283a4 parents=1 head=5a8ef577b files=52 tops=backend,frontend areas=backend,frontend
+  grep '(#1705)' -- .claude/markers/ -> ['6d8346256']; squash changed markers: none
+  candidate 6d8346256 changed=['.claude/markers/verify-backend.json', '.claude/markers/verify-frontend.json'] subject=docs: Slice 628C done (#1705) — pack / report / email text + reconciles
+    backend: commit=5a8ef577b ts=2026-10-29T00:39:55Z exit=0 rel== head cmd=cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q
+      summary=628C BE-VERIFY on final head 5a8ef577b (worktree-epic-628C): 6284 testcases / 0 failures / 0 errors / 26 skipped across 744 reports, about 16 min; baseline 6238 (+46 new reconcile/guard cases); spotless check clean; Backend CI pass on the same head (21m25s)
+    frontend: commit=5a8ef577b ts=2026-10-29T00:39:55Z exit=0 rel== head cmd=cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build
+      summary=628C FE-GATE on 5a8ef577b: lint 0 errors / 91 warnings, format clean, vitest 433 files / 3486 passed / 2 skipped (+1 report-parameter-form optionLabels case), build OK. The build failed in the slice worktree while backend/target (left by the Maven verify) was present (Turbopack next/font/google: 'queries have exactly one entry'). It passed with backend/target moved aside, and on the same commit in
+  verdicts bound=2/2; coderabbit=['REVIEWED — 1 finding, triaged (out of scope → 628D; reply on the thread https://github.com/rakheen-dama/b2b-strawman/pull/1705#discussion_r4407416578)']
+  mergedAt=2026-10-29T00:40:55Z mergedBy=rakheen-dama
+=== PR #1706 phase88/11D-backend-labels-messages squash=d55417882 parents=1 head=be1f543c1 files=139 tops=adr,backend areas=backend
+  grep '(#1706)' -- .claude/markers/ -> ['2b442c0b8']; squash changed markers: none
+  candidate 2b442c0b8 changed=['.claude/markers/verify-backend.json'] subject=docs: Slice 628D done (#1706) — backend labels / registries / messages + terminology guard
+    backend: commit=be1f543c1 ts=2026-10-29T02:21:00Z exit=0 rel== head cmd=cd backend && ./mvnw clean -q && bash scripts/verify.sh -q
+      summary=628D BE-VERIFY (628.11 gate for 628C+628D) on final head be1f543c1 (worktree-epic-628D): 6290 testcases / 0 failures / 0 errors / 26 skipped across 745 reports; baseline 6284 (+6 guard cases); also green on be017bcde (6289); Backend CI pass on the same head (17m39s)
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings, addressed in fixer pass']
+  mergedAt=2026-10-29T02:50:31Z mergedBy=rakheen-dama
+=== PR #1707 phase88/11E-strict-playwright squash=ded12e044 parents=1 head=1a00394ad files=20 tops=frontend areas=frontend
+  grep '(#1707)' -- .claude/markers/ -> ['43e8fddb2']; squash changed markers: none
+  candidate 43e8fddb2 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 628E done (#1707) — strict Playwright sweep + legal real flows + no-isvisible-catch rule
+    frontend: commit=1a00394ad ts=2026-10-29T05:50:18Z exit=0 rel== head cmd=cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build; then e2e-down/
+      summary=628E FE-GATE on 1a00394ad (final head, detached gate worktree): lint 0 errors, format clean, vitest 434 files / 3535 passed / 2 skipped, build OK; fresh-stack (e2e-down/up from 1a00394ad) E2E-LEGAL lifecycle 101 passed / 0 failed / 3 skipped (3 cited 628E-BLOCKER fixmes: conflict-check-result.tsx:141, interest-run approval, Section 35 seeder unwired), depth-ii 39/0/4. Baseline main 2b442c0b8: life
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings, addressed in fixer pass']
+  mergedAt=2026-10-29T05:51:13Z mergedBy=rakheen-dama
+=== PR #1708 phase88/11F-default-config-seed-scripts squash=15e19187d parents=1 head=b7033ebc9 files=77 tops=compose,frontend,qa_cycle areas=frontend
+  grep '(#1708)' -- .claude/markers/ -> ['8121aa0c7']; squash changed markers: none
+  candidate 8121aa0c7 changed=['.claude/markers/verify-frontend.json'] subject=docs: Slice 628F done (#1708) — default-config strict sweep + seed rows + per-suite scripts
+    frontend: commit=b7033ebc9 ts=2026-10-29T08:47:58Z exit=0 rel== head cmd=cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build; then e2e-down/
+      summary=628F FE-GATE on 1563e023e (final head): lint 0 errors, format clean, vitest 434 files / 3551 passed / 2 skipped, build OK; fresh stack seed 'E2E Boot-Seed Complete!' in ~3.8 s (trust account, INV-0001 SENT + draft, REQ SENT, shared SoA, BIWEEKLY); E2E-LEGAL lifecycle 101/0/3, depth-ii 39/0/4; E2E-DEFAULT 159 passed / 0 failed / 18 skipped / 0 did not run (8 admin-audit SKIP_REASON, 1 KC-only, 2 po
+  verdicts bound=2/2; coderabbit=['REVIEWED — 5 findings, addressed in fixer pass']
+  mergedAt=2026-10-29T08:56:36Z mergedBy=rakheen-dama
+=== PR #1709 phase88/11G-portal-90day-seed squash=87784b799 parents=1 head=7bdd51eaf files=57 tops=.github,portal,qa_cycle areas=portal
+  grep '(#1709)' -- .claude/markers/ -> ['ebbd97884']; squash changed markers: none
+  candidate ebbd97884 changed=['.claude/markers/verify-portal.json'] subject=docs: Slice 628G done (#1709) — portal 90-day on the seeded rows + portal soft-skip ban
+    portal: commit=7bdd51eaf3feb19c2e850cedd5014716ab1726b0 ts=2026-10-29T11:30:59Z exit=0 rel== head cmd=cd portal && pnpm lint && pnpm format:check && pnpm test && pnpm build
+      summary=628G PORTAL-GATE on 7bdd51eaf (orchestrator): lint 0 errors / 4 warnings, format clean, vitest 45 files / 256 passed (no-isvisible-catch wiring + drift test), build OK. E2E-PORTAL fresh stack @39881847d: isolation 2/0, portal 32/0/1 x2 (skip = Day 75 628G-BLOCKER fixme), login-bare 1/0; @7bdd51eaf portal 32/0/1
+  verdicts bound=2/2; coderabbit=['REVIEWED — 6 findings across 2 reviews; 4 fixed, 2 triaged no-change']
+  mergedAt=2026-10-29T11:31:22Z mergedBy=rakheen-dama
+=== PR #1710 phase88/11H-scenario-amendments-docs squash=cfc3e4db9 parents=1 head=6b8fe1e53 files=4 tops=qa,tasks areas=docs-only
+  grep '(#1710)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — 3 Minor findings triaged, no change required (full review on 6b8fe1e53 after the rate-limit wait + `@coderabbitai review`)']
+  mergedAt=2026-10-29T12:28:31Z mergedBy=rakheen-dama
+=== PR #1711 phase88/12A-full-rewalk-days-00-35 squash=9a08796e4 parents=1 head=76aaa1be8 files=295 tops=qa_cycle areas=docs-only
+  grep '(#1711)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — 6 findings (3 on d49f4b335, 1 actionable + 2 nits on 8fb0e2335), addressed in fixer pass']
+  mergedAt=2026-10-29T17:01:47Z mergedBy=rakheen-dama
+=== PR #1712 phase88/11I-scenario-amendments-5a-rows-1-18 squash=45dcc7a6f parents=1 head=4e8e0ecf4 files=5 tops=qa,tasks areas=docs-only
+  grep '(#1712)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/4; coderabbit=['REVIEWED — 5 Minor findings, all addressed in 4e8e0ecf4']
+  mergedAt=2026-10-29T18:20:22Z mergedBy=rakheen-dama
+=== PR #1713 phase88/12B-full-rewalk-days-36-90 squash=3c037ebb6 parents=1 head=140e97210 files=297 tops=marketing,qa_cycle areas=docs-only
+  grep '(#1713)' -- .claude/markers/ -> none; squash changed markers: none
+  verdicts bound=2/2; coderabbit=['REVIEWED — 2 findings, addressed in fixer pass']
+  mergedAt=2026-10-29T21:31:17Z mergedBy=rakheen-dama

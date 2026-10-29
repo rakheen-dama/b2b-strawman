@@ -326,3 +326,10 @@ Written by W9 at 2026-10-29T21:12Z (`logs/exit-checkpoints-stack-W9.txt`, `logs/
   - per contact: 3 tokens per 5 min, counted in the DB (a restart does not clear it);
   - per email: 3 requests per 15 min, in memory (a backend restart clears it).
   - Sending a firm info request also mints a portal token (`InformationRequestEmailService.java:63-67`).
+
+## 629C
+
+### O-12 reconciliation (ruling O-3)
+629A scored seven rows against step text that #1712 (`45dcc7a6f`) amended later the same day: 0.Aa, M.6a (§5a row 1), 3.3a (row 2), 6.2a, 33.1-aa (row 4), 6.3a (row 5) and 14.13a (row 6). They are reconciled in `gaps.md` § "Inside register §5": these rows sit inside §5a (authorised, applied), so they do not count against "0 FAIL outside register §5". G88-M1 is closed by §5a row 1. 6.3b stays a FAIL on G88-M6. **The 629A day files are untouched**; they remain the historical record of what was scored at the time. The totals in the Sections table above are unchanged.
+
+The dispositions of the "Open questions carried to 629C" are listed in `gaps.md` § "README 'Open questions carried to 629C' — dispositions". The verify-marker audit is in `markers-audit.md`. The 629.9 run table, the HIGH count after the suite rows, the exit-test result and the stack state left for 629D are added below by 629C builder 2.

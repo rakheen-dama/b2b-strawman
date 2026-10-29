@@ -1,0 +1,11 @@
+# 2026-10-29T18:55:54Z Mailpit (W5a)
+total: 11
+9aX7RFWMCyBQLGF6oadfDw	2026-10-29T18:55:40.05Z	sipho.dlamini@email.co.za	Fee Note INV-0001 from Mathebula & Partners
+2eLfLXG6siubpr6BZYZmEC	2026-10-29T15:19:34.232Z	khumalo.holdings@email.co.za	Mathebula & Partners -- Please review offer to purchase for acceptance: offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf
+9x7Bvomc5iozoQ84iqA98X	2026-10-29T15:08:12.092Z	moroka.trust@email.co.za	Mathebula & Partners: Trust account activity
+nDLyma4n2diVpufTjJVFDz	2026-10-29T14:48:00.288Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+HneqAesGSSPW6o56bgS5uG	2026-10-29T14:47:05.978Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+newest to sipho: 9aX7RFWMCyBQLGF6oadfDw
+From: noreply@kazi.app  Subject: Fee Note INV-0001 from Mathebula & Partners
+attachment: 2 INV-0001.pdf 4255
+attachment INV-0001.pdf of 9aX7RFWMCyBQLGF6oadfDw fetched via GET /api/v1/message/9aX7RFWMCyBQLGF6oadfDw/part/2 -> logs/days36-60-38.3-INV-0001-emailed.pdf (4 255 B, no token)

@@ -1,0 +1,10 @@
+# 2026-10-29T18:56:36Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type, entity_id, actor_type FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > '2026-10-29 18:52:00+00' ORDER BY occurred_at
+2026-10-29 18:53:50.126673+00|disbursement.billed|legal_disbursement|adee383d-e115-451a-b144-9e7b04663685|USER
+2026-10-29 18:53:50.151571+00|invoice.created|invoice|4a10f00a-600b-42d8-944a-a4f1697b4c7e|USER
+2026-10-29 18:55:26.659584+00|invoice.approved|invoice|4a10f00a-600b-42d8-944a-a4f1697b4c7e|USER
+2026-10-29 18:55:39.657306+00|payment.session.created|invoice|4a10f00a-600b-42d8-944a-a4f1697b4c7e|SYSTEM
+2026-10-29 18:55:39.662132+00|invoice.sent|invoice|4a10f00a-600b-42d8-944a-a4f1697b4c7e|USER
+2026-10-29 18:55:39.807554+00|document.generated|generated_document|27e38a7b-9848-4fc3-99fe-d6b67d985254|USER
++ SELECT id, invoice_number, status, issue_date, due_date, total, amount_paid, payment_url IS NOT NULL AS has_pay_url FROM tenant_5039f2d497cf.invoices
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|SENT|2026-10-29|2026-11-28|4585.00|0.00|t

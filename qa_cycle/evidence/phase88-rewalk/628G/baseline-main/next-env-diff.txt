@@ -1,0 +1,12 @@
+diff --git a/portal/next-env.d.ts b/portal/next-env.d.ts
+index ce4e94a6b..a419cbe4e 100644
+--- a/portal/next-env.d.ts
++++ b/portal/next-env.d.ts
+@@ -1,7 +1,7 @@
+ /// <reference types="next" />
+ /// <reference types="next/image-types/global" />
+-import "./.next/types/routes.d.ts";
+-import "./.next/types/root-params.d.ts";
++import "./.next/dev/types/routes.d.ts";
++import "./.next/dev/types/root-params.d.ts";
+ 

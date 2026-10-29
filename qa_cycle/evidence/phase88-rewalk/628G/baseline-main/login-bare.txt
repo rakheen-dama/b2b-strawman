@@ -1,0 +1,51 @@
+
+> portal@0.1.0 test:e2e:login-bare /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal
+> LOGIN_BARE=1 playwright test --config=playwright.portal.config.ts --project=login-bare --reporter=list,json --trace=on --output=/tmp/628G/baseline/login-bare-results
+
+[2m[WebServer] [22m[33m[1m⚠[22m[39m The "middleware" file convention is deprecated. Please use "proxy" instead.
+[2m[WebServer] [22m
+[2m[WebServer] [22m  To migrate automatically, run:
+[2m[WebServer] [22m  npx @next/codemod@canary middleware-to-proxy .
+[2m[WebServer] [22m
+[2m[WebServer] [22m  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[2m[WebServer] [22m[33m[1m⚠[22m[39m "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+
+Running 1 test using 1 worker
+
+  ✘  1 [login-bare] › e2e/tests/login-bare.spec.ts:64:7 › Bare /login — email-only portal sign-in › fresh browser: bare /login → one branded link in Mailpit → /matters (30.8s)
+
+
+  1) [login-bare] › e2e/tests/login-bare.spec.ts:64:7 › Bare /login — email-only portal sign-in › fresh browser: bare /login → one branded link in Mailpit → /matters 
+
+    Error: Timed out waiting for a new email to contact@acme.example.com ("Your portal access link from E2E Test Organization") (30000ms)
+
+       at e2e/helpers/mailpit.ts:81
+
+      79 |     await new Promise((r) => setTimeout(r, interval));
+      80 |   }
+    > 81 |   throw new Error(
+         |         ^
+      82 |     `Timed out waiting for a new email to ${recipient}` +
+      83 |       `${subject ? ` ("${subject}")` : ""} (${timeout}ms)`,
+      84 |   );
+        at waitForNewEmail (/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/mailpit.ts:81:9)
+        at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/login-bare.spec.ts:112:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../tmp/628G/baseline/login-bare-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../tmp/628G/baseline/login-bare-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../../../../../tmp/628G/baseline/login-bare-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../../../../../tmp/628G/baseline/login-bare-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [login-bare] › e2e/tests/login-bare.spec.ts:64:7 › Bare /login — email-only portal sign-in › fresh browser: bare /login → one branded link in Mailpit → /matters 
+ ELIFECYCLE  Command failed with exit code 1.
+exit=1

@@ -1,0 +1,59 @@
+===== day-00-07-Day-0–7-—-Portal-48d19-request-detail-view-renders-portal-client-90day
+ goto sel=/home -> {'response': '<Response>'}
+ isVisible sel=internal:role=link[name=/info request|view/i] >> nth=0 -> {'value': True}
+ click sel=internal:role=link[name=/info request|view/i] >> nth=0
+===== day-00-07-Day-0–7-—-Portal-6d1a5-nt-and-submits-info-request-portal-client-90day
+ goto sel=/home -> {'response': '<Response>'}
+ isVisible sel=internal:role=link[name=/info request|view/i] >> nth=0 -> {'value': True}
+ click sel=internal:role=link[name=/info request|view/i] >> nth=0
+ isVisible sel=input[type="file"] >> nth=0 -> {'value': False}
+ isVisible sel=internal:role=textbox[name=/response|note|message/i] >> nth=0 -> {'value': False}
+ isVisible sel=internal:role=button[name=/submit|send|complete/i] >> nth=0 -> {'value': False}
+ isVisible sel=internal:text=/submitted|awaiting review|received/i >> nth=0 -> {'value': True}
+===== day-00-07-Day-0–7-—-Portal-ae8ed-views-pending-info-requests-portal-client-90day
+ goto sel=/home -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ isVisible sel=internal:text=/info request|pending|awaiting/i >> nth=0 -> {'value': True}
+===== day-00-07-Day-0–7-—-Portal-dc6ce--weekly-digest-to-deadlines-portal-client-90day
+ goto sel=/deadlines -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ isVisible sel=internal:text=/deadline|due|upcoming/i >> nth=0 -> {'value': False}
+===== day-14-30-Day-14–30-—-Port-b0375-balance-after-first-deposit-portal-client-90day
+ goto sel=/trust -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ textContent sel=body -> {'value': 'self.__next_r="ViAjkKHB4H5rg60bjs4GX";if(document.cookie.indexOf(\'next-instant-navigation-testing=\')>-1){se
+ isVisible sel=internal:text=/trust|balance|deposit|ledger/i >> nth=0 -> {'value': True}
+===== day-45-75-Day-45–75-—-Port-088e6-t-marks-deadline-nudge-read-portal-client-90day
+ goto sel=/deadlines -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ isVisible sel=internal:role=link[name=/deadline|due|upcoming/i] >> nth=0 -> {'value': False}
+ isVisible sel=internal:role=button[name=/mark read|dismiss|acknowledge/i] >> nth=0 -> {'value': False}
+===== day-45-75-Day-45–75-—-Port-50761-t-opens-invoice-detail-view-portal-client-90day
+ goto sel=/invoices -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ isVisible sel=internal:role=link[name=/invoice|due|unpaid|sent/i] >> nth=0 -> {'value': False}
+===== day-45-75-Day-45–75-—-Port-5673f--SoA-or-financial-statement-portal-client-90day
+ goto sel=/matters -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ isVisible sel=main >> a[href^="/matters/"] >> nth=0 -> {'value': True}
+ click sel=main >> a[href^="/matters/"] >> nth=0
+ isVisible sel=internal:role=tab[name=/document/i] >> nth=0 -> {'value': False}
+ isVisible sel=internal:text=/Statement of Account|financial statement|\.pdf/i >> nth=0 -> {'value': False}
+===== day-45-75-Day-45–75-—-Port-d2d7c-ice-via-portal-payment-flow-portal-client-90day
+ goto sel=/invoices -> {'response': '<Response>'}
+ isVisible sel=internal:role=link[name=/invoice|due|unpaid|sent/i] >> nth=0 -> {'value': False}
+===== day-85-90-Day-85–90-—-Port-a5ea5-y-85-Client-updates-profile-portal-client-90day
+ goto sel=/profile -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ isVisible sel=internal:role=textbox[name=/name|display/i] >> nth=0 -> {'value': False}
+===== day-85-90-Day-85–90-—-Port-cb093--digest-cadence-to-biweekly-portal-client-90day
+ goto sel=/settings/notifications -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ isVisible sel=internal:role=combobox[name=/cadence|frequency|digest/i] >> nth=0 -> {'value': False}
+ isVisible sel=internal:role=radio[name=/biweekly|bi-weekly|every other/i] >> nth=0 -> {'value': False}
+ isVisible sel=internal:role=button[name=/save|update/i] >> nth=0 -> {'value': False}
+ isVisible sel=internal:text=/biweekly|bi-weekly|every other/i >> nth=0 -> {'value': True}
+===== day-85-90-Day-85–90-—-Port-fa131-tivity-trail-of-the-quarter-portal-client-90day
+ goto sel=/home -> {'response': '<Response>'}
+ isVisible sel=main -> {'value': True}
+ isVisible sel=internal:text=/activity|history|recent|timeline/i >> nth=0 -> {'value': True}

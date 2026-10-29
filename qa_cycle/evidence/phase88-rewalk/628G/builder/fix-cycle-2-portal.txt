@@ -1,0 +1,89 @@
+
+> portal@0.1.0 test:e2e:portal /Users/rakheendama/Projects/2026/worktree-epic-628G/portal
+> PORTAL_CONTACT_EMAIL=${PORTAL_CONTACT_EMAIL:-contact@acme.example.com} playwright test --config=playwright.portal.config.ts --project=chromium --project=portal-client-90day --update-snapshots=all --reporter=list
+
+[2m[WebServer] [22m[33m[1m⚠[22m[39m The "middleware" file convention is deprecated. Please use "proxy" instead.
+[2m[WebServer] [22m
+[2m[WebServer] [22m  To migrate automatically, run:
+[2m[WebServer] [22m  npx @next/codemod@canary middleware-to-proxy .
+[2m[WebServer] [22m
+[2m[WebServer] [22m  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+Running 33 tests using 1 worker
+
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/sm-home-populated.png, writing actual.
+  ✓   1 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › home-populated (897ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/sm-trust-matter-list.png, writing actual.
+  ✓   2 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › trust-matter-list (1.6s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/sm-deadlines-list.png, writing actual.
+  ✓   3 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › deadlines-list (683ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/sm-invoices-list.png, writing actual.
+  ✓   4 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › invoices-list (703ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/sm-matters-list.png, writing actual.
+  ✓   5 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › matters-list (684ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/sm-settings-notifications.png, writing actual.
+  ✓   6 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › settings-notifications (726ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/sm-profile.png, writing actual.
+  ✓   7 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ sm (375x667) › profile (705ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/md-home-populated.png, writing actual.
+  ✓   8 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › home-populated (666ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/md-trust-matter-list.png, writing actual.
+  ✓   9 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › trust-matter-list (773ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/md-deadlines-list.png, writing actual.
+  ✓  10 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › deadlines-list (637ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/md-invoices-list.png, writing actual.
+  ✓  11 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › invoices-list (568ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/md-matters-list.png, writing actual.
+  ✓  12 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › matters-list (580ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/md-settings-notifications.png, writing actual.
+  ✓  13 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › settings-notifications (650ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/md-profile.png, writing actual.
+  ✓  14 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ md (768x1024) › profile (644ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/lg-home-populated.png, writing actual.
+  ✓  15 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › home-populated (718ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/lg-trust-matter-list.png, writing actual.
+  ✓  16 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › trust-matter-list (780ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/lg-deadlines-list.png, writing actual.
+  ✓  17 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › deadlines-list (665ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/lg-invoices-list.png, writing actual.
+  ✓  18 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › invoices-list (655ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/lg-matters-list.png, writing actual.
+  ✓  19 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › matters-list (657ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/lg-settings-notifications.png, writing actual.
+  ✓  20 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › settings-notifications (591ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/chromium/lg-profile.png, writing actual.
+  ✓  21 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:235:11 › portal @ lg (1280x800) › profile (649ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-00-home-landing.png, writing actual.
+  ✓  22 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:118:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 0: Client lands on /home and sees the pending info requests and the sent fee note (717ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-00-info-request-detail.png, writing actual.
+  ✓  23 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:140:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 0: Client opens the new info request from Home and sees its upload slot (1.2s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-03-info-request-submitted.png, writing actual.
+  ✓  24 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:177:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 3: Client uploads the document and submits the info request (989ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-07-deadlines-list.png, writing actual.
+  ✓  25 [portal-client-90day] › e2e/tests/portal-client-90day/day-00-07.spec.ts:217:7 › Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3) › Day 7: Diary dates page renders for the client (no portal-visible deadlines on the e2e tenant) (656ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-21-trust-balance.png, writing actual.
+  ✓  26 [portal-client-90day] › e2e/tests/portal-client-90day/day-14-30.spec.ts:69:7 › Day 14–30 — Portal Client Lifecycle (Checkpoint 5) › Day 21 [legal-za]: Client follows the trust-activity email to the balance and the new deposit (1.0s)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-45-invoice-detail.png, writing actual.
+  ✓  27 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:48:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 45: Client opens the seeded SENT fee note (1.5s)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-45-invoice-no-psp.png, writing actual.
+  ✓  28 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:80:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 45: SENT fee note offers no online payment without a PSP (722ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-60-document-downloaded.png, writing actual.
+  ✓  29 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:112:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 60 [legal-za]: Client downloads the Statement of Account from the matter page (1.6s)
+  -  30 [portal-client-90day] › e2e/tests/portal-client-90day/day-45-75.spec.ts:163:7 › Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9) › Day 75 [legal-za]: Client marks the deadline nudge read and downloads its document
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-85-profile.png, writing actual.
+  ✓  31 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:57:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 85: Profile shows the client's contact details (read-only) (674ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-85-notifications-biweekly.png, writing actual.
+  ✓  32 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:86:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 85: Notifications page shows the firm's bi-weekly digest cadence (read-only) (578ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-epic-628G/portal/e2e/screenshots/portal-v2/portal-client-90day/day-90-activity-trail.png, writing actual.
+  ✓  33 [portal-client-90day] › e2e/tests/portal-client-90day/day-85-90.spec.ts:110:7 › Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11) › Day 90: Activity trail shows this run's submit and download (772ms)
+
+  1 skipped
+  32 passed (31.1s)

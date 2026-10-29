@@ -10,10 +10,16 @@ import {
  * no ?orgId=, no localStorage hint — and the firm is resolved by email alone.
  *
  * The link is read from the real magic-link email in Mailpit, never from the
- * dev-profile `magicLink` echo. Each run makes exactly one request-link call:
- * the backend caps requests per email at 3 / 15 min (in-memory, cleared only
- * by a backend restart). Run this project WITHOUT PORTAL_CONTACT_EMAIL so
- * globalSetup does not spend a second request on the same address.
+ * dev-profile `magicLink` echo. Each run makes exactly one request-link call,
+ * and two caps apply to it:
+ *   - per email: 3 request-link calls / 15 min (PortalLoginRateLimiter;
+ *     in-memory, cleared only by a backend restart; the 4th call is a 429);
+ *   - per contact: 3 magic-link tokens / 5 min (MagicLinkService; DB rows,
+ *     cleared only by time; information-request sends mint tokens too — the
+ *     boot seed's and the 90-day suite's). When it is hit the call still
+ *     answers 200 but no email is sent, so the Mailpit wait times out.
+ * Run this project WITHOUT PORTAL_CONTACT_EMAIL so globalSetup does not spend
+ * a second request and token on the same address.
  *
  * Strict by design: a missing precondition (stack down, contact not seeded,
  * cap hit) fails the test; nothing is soft-asserted or skipped.
@@ -93,8 +99,8 @@ test.describe("Bare /login — email-only portal sign-in", () => {
     const response = await responseP;
     expect(
       response.status(),
-      "429 = per-email cap (3 / 15 min) hit — restart the backend " +
-        "(e2e: docker restart e2e-backend) and re-run",
+      "429 = per-email cap (3 request-link calls / 15 min) hit — restart " +
+        "the backend (e2e: docker restart e2e-backend) and re-run",
     ).toBe(200);
     expect(await response.json()).toMatchObject({
       message: "If an account exists, a link has been sent.",

@@ -1,1 +1,4 @@
 .claude
+# Phase 88 628G: byte-identical copy of frontend/e2e/eslint/no-isvisible-catch.mjs (frontend
+# Prettier settings); __tests__/eslint-rules/no-isvisible-catch.test.ts drift-checks it.
+e2e/eslint/no-isvisible-catch.mjs

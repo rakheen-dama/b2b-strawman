@@ -11,7 +11,9 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:e2e:login-bare": "LOGIN_BARE=1 playwright test --config=playwright.portal.config.ts --project=login-bare",
-    "test:e2e:portal-client-90day": "playwright test --config=playwright.portal.config.ts --project=portal-client-90day",
+    "test:e2e:portal": "PORTAL_CONTACT_EMAIL=${PORTAL_CONTACT_EMAIL:-contact@acme.example.com} playwright test --config=playwright.portal.config.ts --project=chromium --project=portal-client-90day",
+    "test:e2e:portal-client-90day": "PORTAL_CONTACT_EMAIL=${PORTAL_CONTACT_EMAIL:-contact@acme.example.com} playwright test --config=playwright.portal.config.ts --project=portal-client-90day",
+    "test:e2e:responsive": "PORTAL_CONTACT_EMAIL=${PORTAL_CONTACT_EMAIL:-contact@acme.example.com} playwright test --config=playwright.portal.config.ts --project=chromium",
     "test:watch": "vitest"
   },
   "dependencies": {

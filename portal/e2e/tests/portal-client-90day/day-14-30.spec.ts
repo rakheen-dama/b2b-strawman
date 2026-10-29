@@ -1,89 +1,137 @@
 import { test, expect } from "@playwright/test";
 import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
+import {
+  RUN_ID,
+  SEED,
+  portalApiGet,
+  recordAcmeDeposit,
+  websiteRedesignId,
+} from "../../helpers/firm-api";
+import { listMessageIds, waitForNewEmail } from "../../helpers/mailpit";
 
 /**
- * Epic 500A — Portal client-POV 90-day lifecycle: Day 14 → Day 30.
+ * Portal client-POV 90-day lifecycle: Day 14 → Day 30
+ * (checkpoint 5 of `qa/testplan/demos/portal-client-90day-keycloak.md`).
+ *   - Day 21: trust-deposit nudge email → the client views the balance and the deposit on /trust
  *
- * Exercises checkpoint 5 from `qa/testplan/demos/portal-client-90day-keycloak.md`:
- *   - Day 21: Trust-deposit nudge, views balance on /trust                       [legal-za only]
+ * Phase 88 628G (R-2): the boot seed carries no Acme trust deposit (628F R-10), so `beforeAll`
+ * records a RUN-UNIQUE deposit for Acme on Website Redesign through the firm API (RECORDED at once,
+ * synced to the portal after commit). The test asserts the row by its run-unique description, never
+ * a balance total (balances accumulate across runs). On a shared stack run this suite after the
+ * legal lifecycle suite: a deposit gives Acme a trust balance, which a later Day 60 interest run
+ * would include.
  *
- * Prerequisites: same stack contract as day-00-07.spec.ts. Day 21 requires a
- * legal-za tenant with at least one trust-deposit transaction.
- *
- * Run (full — slice 500B):
- *   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
- *     pnpm exec playwright test --config=playwright.portal.config.ts \
- *     --project=portal-client-90day --update-snapshots
- *
- * Scaffold guard (slice 500A — this PR):
- *   SKIP_PORTAL_BASELINES=true is honoured so `playwright --list` parses cleanly.
+ * Strict: nothing is soft-asserted or skipped at runtime; SKIP_PORTAL_BASELINES=true is the only
+ * opt-out.
  */
 
-const PORTAL_EMAIL =
-  process.env.PORTAL_CONTACT_EMAIL || "sipho.portal@example.com";
+const PORTAL_EMAIL = process.env.PORTAL_CONTACT_EMAIL || SEED.contactEmail;
 const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
+
+const DEPOSIT_AMOUNT = 1500;
+const DESCRIPTION = `Portal Day 21 deposit ${RUN_ID}`;
+const TRUST_EMAIL_SUBJECT = `${SEED.orgName}: Trust account activity`;
 
 test.describe
   .serial("Day 14–30 — Portal Client Lifecycle (Checkpoint 5)", () => {
+  let matterId: string;
+  let mailBaseline: string[];
+  let jwt: string;
+
   test.beforeAll(async () => {
     test.skip(
       SKIP,
-      "SKIP_PORTAL_BASELINES=true — scaffold-only run (Epic 500A). Unset with a seeded portal stack to execute (Epic 500B).",
+      "SKIP_PORTAL_BASELINES=true — portal e2e disabled (no seeded stack).",
     );
+    matterId = await websiteRedesignId();
+    // Mailbox baseline first: the nudge for THIS deposit is the one new message with its subject.
+    mailBaseline = await listMessageIds(PORTAL_EMAIL);
+    const deposit = await recordAcmeDeposit(
+      DEPOSIT_AMOUNT,
+      DESCRIPTION,
+      `E2E-PORTAL-${RUN_ID}`,
+    );
+    expect(deposit.status).toBe("RECORDED");
   });
 
   test.beforeEach(async ({ page }) => {
-    const jwt = await getPortalJwt(PORTAL_EMAIL);
-    if (!jwt) {
-      test.skip(
-        true,
-        `Could not obtain portal JWT for ${PORTAL_EMAIL}. Stack may not be running or contact not seeded — deferred to slice 500B execution.`,
-      );
-      return;
-    }
+    const sessionJwt = await getPortalJwt(PORTAL_EMAIL);
+    expect(
+      sessionJwt,
+      `portal JWT for ${PORTAL_EMAIL}: stack up, contact seeded, and neither magic-link cap hit ` +
+        `(3 tokens per contact per 5 min, DB; 3 request-link calls per email per 15 min, in-memory)`,
+    ).toBeTruthy();
+    jwt = sessionJwt!;
     await loginAsPortalContact(page, jwt);
   });
 
-  // ── Checkpoint 5 — Day 21: trust balance (legal-za only) ───────────────
-  test("Day 21 [legal-za]: Client views trust balance after first deposit", async ({
+  // ── Checkpoint 5 — Day 21: trust balance (legal-za) ────────────────────
+  test("Day 21 [legal-za]: Client follows the trust-activity email to the balance and the new deposit", async ({
     page,
   }) => {
+    // 21.1–21.2 — the deposit emails the contact; its button links the matter's trust page.
+    // No token is minted (an authenticated route with ?orgId=), so the replay uses the session.
+    const mail = await waitForNewEmail(PORTAL_EMAIL, {
+      exclude: mailBaseline,
+      subject: TRUST_EMAIL_SUBJECT,
+    });
+    const href = mail.HTML.match(/href="([^"]*\/trust\/[^"]+)"/)?.[1]?.replace(
+      /&amp;/g,
+      "&",
+    );
+    expect(href, `trust link in "${mail.Subject}"`).toBeTruthy();
+    const link = new URL(href!);
+    expect(link.pathname).toBe(`/trust/${matterId}`);
+    expect(link.searchParams.get("orgId")).toBe(SEED.org);
+    await page.goto(link.pathname + link.search);
+
+    // 21.3–21.4 — the balance card and the deposit row (by its run-unique description).
+    await expect(page).toHaveURL(new RegExp(`/trust/${matterId}(\\?|$)`));
+    await expect(page.getByLabel("Current balance")).toBeVisible();
+    const row = page
+      .getByRole("table", { name: "Trust transactions" })
+      .getByRole("row")
+      .filter({ hasText: DESCRIPTION });
+    await expect(row).toContainText("DEPOSIT");
+    await expect(row).toContainText(/1\s?500,00/);
+
+    // /trust reaches the same matter: it redirects when the client has exactly one trust matter
+    // (app/(authenticated)/trust/page.tsx), else it lists them. Expect the state the portal API
+    // reports — other suites on a shared stack may give Acme more trust matters.
+    const { matters } = await portalApiGet<{
+      matters: { matterId: string }[];
+    }>("/portal/trust/summary", jwt);
+    expect(matters.map((m) => m.matterId)).toContain(matterId);
     await page.goto("/trust");
-    await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(500);
-
-    const main = page.locator("main");
-    if (!(await main.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(
-        true,
-        "/trust not rendered — non-legal-za tenant (profile-gated skip is expected)",
-      );
-      return;
+    if (matters.length === 1) {
+      await expect(page).toHaveURL(new RegExp(`/trust/${matterId}$`));
+    } else {
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Trust statement" }),
+      ).toBeVisible();
+      const matterLink = page.locator(`main a[href="/trust/${matterId}"]`);
+      await expect(matterLink).toBeVisible();
+      await matterLink.click();
+      await expect(page).toHaveURL(new RegExp(`/trust/${matterId}$`));
     }
+    await expect(
+      page
+        .getByRole("table", { name: "Trust transactions" })
+        .getByRole("row")
+        .filter({ hasText: DESCRIPTION }),
+    ).toBeVisible();
+    // Statements load independently of the balance: no loading skeleton may remain.
+    await expect(page.locator('[data-slot="skeleton"]')).toHaveCount(0);
 
-    // Empty state vs populated — both acceptable; only fail on 500.
-    const bodyText =
-      (await page
-        .locator("body")
-        .textContent()
-        .catch(() => "")) || "";
-    if (/something went wrong|internal server error/i.test(bodyText)) {
-      throw new Error("/trust rendered an error page — investigate backend");
-    }
-
-    expect
-      .soft(
-        await page
-          .getByText(/trust|balance|deposit|ledger/i)
-          .first()
-          .isVisible({ timeout: 5000 })
-          .catch(() => false),
-      )
-      .toBeTruthy();
-
+    // Balance + transactions grow with every run's deposit: masked (asserted above). By label:
+    // below md the transactions render as a <ul aria-label="Trust transactions">.
     await expect(page).toHaveScreenshot("day-21-trust-balance.png", {
       fullPage: true,
       animations: "disabled",
+      mask: [
+        page.getByLabel("Current balance"),
+        page.getByLabel("Trust transactions"),
+      ],
     });
   });
 });

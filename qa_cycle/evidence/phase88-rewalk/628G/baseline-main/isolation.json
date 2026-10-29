@@ -1,0 +1,198 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/frontend/e2e/playwright.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/frontend/e2e/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/628G/baseline/isolation-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/frontend/e2e/tests",
+        "testIgnore": [
+          "**/keycloak/**",
+          "**/legal-lifecycle/**",
+          "**/legal-depth-ii/**",
+          "**/demo-full-90day.spec.ts",
+          "**/demo-recording.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 5,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "portal/portal-data-isolation.spec.ts",
+      "file": "portal/portal-data-isolation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PORTAL-01: Data Isolation",
+          "file": "portal/portal-data-isolation.spec.ts",
+          "line": 32,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Kgosi sees only Kgosi matters via API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "KGOSI_EMAIL not set — run with portal contact emails",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/frontend/e2e/tests/portal/portal-data-isolation.spec.ts",
+                        "line": 33,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:32.739Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "KGOSI_EMAIL not set — run with portal contact emails",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/frontend/e2e/tests/portal/portal-data-isolation.spec.ts",
+                            "line": 33,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "af562a568c77f9cfc280-7a759f828c4bfa8096e6",
+              "file": "portal/portal-data-isolation.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "Portal JWT blocked from org API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "KGOSI_EMAIL not set — run with portal contact emails",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/frontend/e2e/tests/portal/portal-data-isolation.spec.ts",
+                        "line": 33,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:07:32.739Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "KGOSI_EMAIL not set — run with portal contact emails",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/frontend/e2e/tests/portal/portal-data-isolation.spec.ts",
+                            "line": 33,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "af562a568c77f9cfc280-e27b2a60e8a1c1cab253",
+              "file": "portal/portal-data-isolation.spec.ts",
+              "line": 48,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T09:07:32.704Z",
+    "duration": 36.238,
+    "expected": 0,
+    "skipped": 2,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/playwright.portal.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/628G/baseline/login-bare-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/responsive",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/tmp/628G/baseline/login-bare-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "portal-client-90day",
+        "name": "portal-client-90day",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/portal-client-90day",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/tmp/628G/baseline/login-bare-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "login-bare",
+        "name": "login-bare",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/login-bare\\.spec\\.ts$/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": {
+      "command": "pnpm run build && pnpm run start",
+      "url": "http://localhost:3002",
+      "reuseExistingServer": true,
+      "timeout": 300000,
+      "env": {
+        "NODE_OPTIONS": "",
+        "NEXT_PUBLIC_PORTAL_API_URL": "http://localhost:8081"
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "e2e/tests/login-bare.spec.ts",
+      "file": "e2e/tests/login-bare.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Bare /login — email-only portal sign-in",
+          "file": "e2e/tests/login-bare.spec.ts",
+          "line": 56,
+          "column": 6,
+          "specs": [
+            {
+              "title": "fresh browser: bare /login → one branded link in Mailpit → /matters",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "login-bare",
+                  "projectName": "login-bare",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 30780,
+                      "error": {
+                        "message": "Error: Timed out waiting for a new email to contact@acme.example.com (\"Your portal access link from E2E Test Organization\") (30000ms)",
+                        "stack": "Error: Timed out waiting for a new email to contact@acme.example.com (\"Your portal access link from E2E Test Organization\") (30000ms)\n    at waitForNewEmail (/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/mailpit.ts:81:9)\n    at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/login-bare.spec.ts:112:18",
+                        "location": {
+                          "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/mailpit.ts",
+                          "column": 9,
+                          "line": 81
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39me2e/helpers/mailpit.ts:81\n\n  79 |     await new Promise((r) => setTimeout(r, interval));\n  80 |   }\n> 81 |   throw new Error(\n     |         ^\n  82 |     `Timed out waiting for a new email to ${recipient}` +\n  83 |       `${subject ? ` (\"${subject}\")` : \"\"} (${timeout}ms)`,\n  84 |   );"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/mailpit.ts",
+                            "column": 9,
+                            "line": 81
+                          },
+                          "message": "Error: Timed out waiting for a new email to contact@acme.example.com (\"Your portal access link from E2E Test Organization\") (30000ms)\n\n   at e2e/helpers/mailpit.ts:81\n\n  79 |     await new Promise((r) => setTimeout(r, interval));\n  80 |   }\n> 81 |   throw new Error(\n     |         ^\n  82 |     `Timed out waiting for a new email to ${recipient}` +\n  83 |       `${subject ? ` (\"${subject}\")` : \"\"} (${timeout}ms)`,\n  84 |   );\n    at waitForNewEmail (/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/mailpit.ts:81:9)\n    at /Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/tests/login-bare.spec.ts:112:18"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T09:06:43.542Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/tmp/628G/baseline/login-bare-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/tmp/628G/baseline/login-bare-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/tmp/628G/baseline/login-bare-results/login-bare-Bare-login-—-em-ea39b-d-link-in-Mailpit-→-matters-login-bare/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/rakheendama/Projects/2026/worktree-628G-baseline/portal/e2e/helpers/mailpit.ts",
+                        "column": 9,
+                        "line": 81
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7815cae34acebba261bf-a161da5ee6f115196b4c",
+              "file": "e2e/tests/login-bare.spec.ts",
+              "line": 64,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T09:06:31.734Z",
+    "duration": 42860.277,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

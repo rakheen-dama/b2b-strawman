@@ -597,7 +597,7 @@ class DisbursementServiceTest {
 
           assertThatThrownBy(() -> disbursementService.create(req, memberId))
               .isInstanceOf(InvalidStateException.class)
-              .hasMessageContaining("different project");
+              .hasMessageContaining("different matter");
         });
   }
 

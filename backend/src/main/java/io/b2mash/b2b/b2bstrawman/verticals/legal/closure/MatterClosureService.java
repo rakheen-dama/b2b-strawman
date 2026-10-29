@@ -446,7 +446,7 @@ public class MatterClosureService {
               : project.getRetentionClockStartedAt();
       if (anchor == null) {
         throw new InvalidStateException(
-            "Cannot reopen matter", "Project has no retention anchor — it was never closed.");
+            "Cannot reopen matter", "Matter has no retention anchor — it was never closed.");
       }
       int retentionYears =
           orgSettingsService

@@ -260,9 +260,9 @@ class InvoiceEmailServiceIntegrationTest {
     assertThat(htmlBody)
         .as("rendered email must include the full portalUrl (with orgId) even without PSP")
         .contains("href=\"" + expectedPortalUrl + "\"");
-    // The placeholder text "View Invoice" appears next to the CTA — sanity check the button exists
-    assertThat(htmlBody).contains("View Invoice");
-    // Confirm the View Invoice anchor's href is non-empty (no href="" — that was the bug)
+    // The CTA text "View Fee Note" (one legal vocabulary, R-4) — sanity check the button exists
+    assertThat(htmlBody).contains("View Fee Note");
+    // Confirm the View Fee Note anchor's href is non-empty (no href="" — that was the bug)
     assertThat(htmlBody).doesNotContain("href=\"\"");
   }
 

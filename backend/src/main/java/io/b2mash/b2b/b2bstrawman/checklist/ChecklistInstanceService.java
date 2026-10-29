@@ -90,7 +90,7 @@ public class ChecklistInstanceService {
     if (instanceRepository.existsByCustomerIdAndTemplateId(customerId, templateId)) {
       throw new ResourceConflictException(
           "Duplicate checklist instance",
-          "A checklist instance already exists for this customer and template");
+          "A checklist instance already exists for this client and template");
     }
 
     var templateItems = templateItemRepository.findByTemplateIdOrderBySortOrder(templateId);

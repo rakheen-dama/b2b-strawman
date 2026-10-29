@@ -126,7 +126,7 @@ public class DocumentGenerationReadinessService {
       case PROJECT -> {
         var project = asMap(context.get("project"));
         if (project == null || project.get("name") == null) {
-          missing.add("Project Name");
+          missing.add("Matter Name");
         }
         // Customer is not a structural requirement — internal projects (without
         // customers) should still be able to generate documents.  Individual
@@ -136,10 +136,10 @@ public class DocumentGenerationReadinessService {
       case CUSTOMER -> {
         var customer = asMap(context.get("customer"));
         if (customer == null || customer.get("name") == null) {
-          missing.add("Customer Name");
+          missing.add("Client Name");
         }
         if (customer == null || customer.get("email") == null) {
-          missing.add("Customer Email");
+          missing.add("Client Email");
         }
         if (context.get("org") == null) {
           missing.add("Org Settings");
@@ -148,15 +148,15 @@ public class DocumentGenerationReadinessService {
       case INVOICE -> {
         var invoice = asMap(context.get("invoice"));
         if (invoice == null || invoice.get("invoiceNumber") == null) {
-          missing.add("Invoice Number");
+          missing.add("Fee note number");
         }
         var customer = asMap(context.get("customer"));
         if (customer == null || customer.get("name") == null) {
-          missing.add("Customer Name");
+          missing.add("Client Name");
         }
         var lines = context.get("lines");
         if (lines == null || (lines instanceof List<?> list && list.isEmpty())) {
-          missing.add("Invoice Lines");
+          missing.add("Fee note lines");
         }
       }
       default -> {

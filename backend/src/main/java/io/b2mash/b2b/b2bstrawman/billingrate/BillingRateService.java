@@ -366,7 +366,7 @@ public class BillingRateService {
 
     throw new ForbiddenException(
         "Insufficient permissions",
-        "Only admins, owners, or project leads can manage billing rates");
+        "Only admins, owners, or matter leads can manage billing rates");
   }
 
   /**

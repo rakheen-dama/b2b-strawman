@@ -391,7 +391,7 @@ public class DisbursementService {
     } catch (IllegalStateException e) {
       throw new ResourceConflictException("Cannot bill disbursement", e.getMessage());
     } catch (IllegalArgumentException e) {
-      throw new InvalidStateException("Invalid invoice line", e.getMessage());
+      throw new InvalidStateException("Invalid fee note line", e.getMessage());
     }
     var saved = disbursementRepository.save(entity);
 
@@ -696,8 +696,8 @@ public class DisbursementService {
     }
     if (tx.getProjectId() == null || !tx.getProjectId().equals(projectId)) {
       throw new InvalidStateException(
-          "Trust transaction project mismatch",
-          "Linked trust transaction belongs to a different project");
+          "Trust transaction matter mismatch",
+          "Linked trust transaction belongs to a different matter");
     }
   }
 

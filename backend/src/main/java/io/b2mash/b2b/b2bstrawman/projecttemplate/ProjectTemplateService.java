@@ -488,7 +488,7 @@ public class ProjectTemplateService {
                 () -> new ResourceNotFoundException(EntityNoun.MATTER_TEMPLATE, templateId));
     if (!template.isActive()) {
       throw new InvalidStateException(
-          "Template inactive", "Cannot create project from an inactive template.");
+          "Template inactive", "Cannot create matter from an inactive template.");
     }
 
     // 2. Load customer (if requested)
@@ -877,7 +877,7 @@ public class ProjectTemplateService {
         if (field.getEntityType() != EntityType.CUSTOMER) {
           throw new InvalidStateException(
               "Invalid field definition",
-              "Field definition is not a customer field: " + field.getId());
+              "Field definition is not a client field: " + field.getId());
         }
       }
     }
@@ -900,13 +900,13 @@ public class ProjectTemplateService {
             .orElseThrow(
                 () ->
                     new ForbiddenException(
-                        "Cannot save project as template",
-                        "Only admins, owners, or project leads may save a project as a"
+                        "Cannot save matter as template",
+                        "Only admins, owners, or matter leads may save a matter as a"
                             + " template."));
     if (!Roles.PROJECT_LEAD.equals(pm.getProjectRole())) {
       throw new ForbiddenException(
-          "Cannot save project as template",
-          "Only admins, owners, or project leads may save a project as a template.");
+          "Cannot save matter as template",
+          "Only admins, owners, or matter leads may save a matter as a template.");
     }
   }
 

@@ -322,7 +322,7 @@ public class TrustTransactionService {
 
     if (request.sourceClientId().equals(request.targetClientId())) {
       throw new InvalidStateException(
-          "Invalid transfer", "Source and target customer cannot be the same");
+          "Invalid transfer", "Source and target client cannot be the same");
     }
 
     var sourceCustomer =
@@ -586,7 +586,7 @@ public class TrustTransactionService {
 
     if (!invoice.getCustomerId().equals(request.clientId())) {
       throw new InvalidStateException(
-          "Invalid fee transfer", "Invoice does not belong to the specified customer");
+          "Invalid fee transfer", "Fee note does not belong to the specified client");
     }
 
     // A remainder transfer can be recorded against a part-paid fee note (Phase 88 U15, ADR-347).
@@ -595,7 +595,7 @@ public class TrustTransactionService {
         && invoice.getStatus() != InvoiceStatus.PARTIALLY_PAID) {
       throw new InvalidStateException(
           "Invalid fee transfer",
-          "Invoice must be in APPROVED, SENT or PARTIALLY_PAID status, current status: "
+          "Fee note must be in APPROVED, SENT or PARTIALLY_PAID status, current status: "
               + invoice.getStatus());
     }
 
@@ -907,8 +907,8 @@ public class TrustTransactionService {
                             EntityNoun.FEE_NOTE, transaction.getInvoiceId()));
         if (invoice.getStatus() == InvoiceStatus.PAID) {
           throw new InvalidStateException(
-              "Invoice already paid",
-              "Cannot complete fee transfer — invoice is already in PAID status");
+              "Fee note already paid",
+              "Cannot complete fee transfer — fee note is already in PAID status");
         }
         invoiceService.postPayment(
             transaction.getInvoiceId(),

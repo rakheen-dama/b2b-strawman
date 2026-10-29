@@ -186,7 +186,7 @@ public class TaxRateService {
     if (draftLineCount > 0) {
       throw new InvalidStateException(
           "Cannot deactivate tax rate",
-          "Tax rate is referenced by " + draftLineCount + " draft invoice line(s)");
+          "Tax rate is referenced by " + draftLineCount + " draft fee note line(s)");
     }
 
     taxRate.deactivate();

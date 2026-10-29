@@ -122,7 +122,7 @@ public class TrustBoundaryGuard {
       BigDecimal trustBalance = clientLedgerCardRepository.sumBalancesForCustomer(customer.getId());
       if (trustBalance != null && trustBalance.compareTo(BigDecimal.ZERO) != 0) {
         return TrustBoundaryDecision.refused(
-            "Customer '%s' has active trust balance of %s"
+            "Client '%s' has active trust balance of %s"
                 .formatted(customer.getName(), trustBalance));
       }
     } catch (DataAccessException e) {

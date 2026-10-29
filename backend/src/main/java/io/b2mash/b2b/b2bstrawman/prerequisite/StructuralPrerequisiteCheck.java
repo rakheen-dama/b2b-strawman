@@ -120,7 +120,7 @@ public final class StructuralPrerequisiteCheck {
                 customer.getId(),
                 field.fieldSlug(),
                 null,
-                "Fill the " + field.displayName() + " field on the customer profile"));
+                "Fill the " + field.displayName() + " field on the client profile"));
       }
     }
     return violations;
@@ -158,12 +158,12 @@ public final class StructuralPrerequisiteCheck {
         violations.add(
             new PrerequisiteViolation(
                 "STRUCTURAL",
-                field.displayName() + " is required to send an invoice",
+                field.displayName() + " is required to send a fee note",
                 "CUSTOMER",
                 customer.getId(),
                 field.fieldSlug(),
                 null,
-                "Fill the " + field.displayName() + " field on the customer profile"));
+                "Fill the " + field.displayName() + " field on the client profile"));
       }
     }
     return violations;

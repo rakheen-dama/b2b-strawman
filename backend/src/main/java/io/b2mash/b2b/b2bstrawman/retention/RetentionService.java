@@ -338,7 +338,7 @@ public class RetentionService {
             if (customerOpt.isPresent()) {
               var customer = customerOpt.get();
               String hash = customerId.toString().substring(0, 6);
-              customer.anonymize("Anonymized Customer " + hash);
+              customer.anonymize("Anonymized Client " + hash);
               customerRepository.save(customer);
               purged++;
             }

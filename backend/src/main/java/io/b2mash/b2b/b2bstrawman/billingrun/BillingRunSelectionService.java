@@ -280,7 +280,7 @@ public class BillingRunSelectionService {
 
     if (run.getStatus() != BillingRunStatus.PREVIEW) {
       throw new InvalidStateException(
-          "Cannot exclude customer",
+          "Cannot exclude client",
           "Only billing runs in PREVIEW status allow exclusions. Current status: "
               + run.getStatus());
     }
@@ -314,7 +314,7 @@ public class BillingRunSelectionService {
 
     if (run.getStatus() != BillingRunStatus.PREVIEW) {
       throw new InvalidStateException(
-          "Cannot include customer",
+          "Cannot include client",
           "Only billing runs in PREVIEW status allow inclusions. Current status: "
               + run.getStatus());
     }

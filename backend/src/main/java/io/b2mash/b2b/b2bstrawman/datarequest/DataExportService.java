@@ -524,7 +524,7 @@ public class DataExportService {
     } catch (IOException e) {
       throw new InvalidStateException(
           "Export generation failed",
-          "Failed to generate structured export ZIP for customer " + customerId);
+          "Failed to generate structured export ZIP for client " + customerId);
     }
   }
 

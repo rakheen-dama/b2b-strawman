@@ -47,7 +47,7 @@ public class PortalContactService {
     if (portalContactRepository.existsByEmailAndCustomerId(email, customerId)) {
       throw new ResourceConflictException(
           "Portal contact email conflict",
-          "A contact with this email already exists for this customer");
+          "A contact with this email already exists for this client");
     }
 
     var contact = new PortalContact(orgId, customerId, email, displayName, role);

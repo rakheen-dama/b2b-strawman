@@ -229,7 +229,7 @@ public class AdversePartyService {
                   "Duplicate link",
                   "Adverse party "
                       + adversePartyId
-                      + " is already linked to project "
+                      + " is already linked to matter "
                       + request.matterId());
             });
 

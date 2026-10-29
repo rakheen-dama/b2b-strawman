@@ -111,7 +111,7 @@ class NotificationControllerTest extends AbstractIntegrationTest {
                       .createNotification(
                           memberUuid,
                           "MEMBER_INVITED",
-                          "You were added to project \"Acme\"",
+                          "You were added to matter \"Acme\"",
                           null,
                           "PROJECT",
                           projectId,

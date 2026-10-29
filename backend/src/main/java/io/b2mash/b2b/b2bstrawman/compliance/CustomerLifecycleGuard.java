@@ -73,6 +73,6 @@ public class CustomerLifecycleGuard {
   private void throwBlocked(LifecycleAction action, LifecycleStatus status) {
     throw new InvalidStateException(
         "Lifecycle action blocked",
-        "Cannot create " + action.label() + " for customer in " + status + " lifecycle status");
+        "Cannot create " + action.label() + " for client in " + status + " lifecycle status");
   }
 }

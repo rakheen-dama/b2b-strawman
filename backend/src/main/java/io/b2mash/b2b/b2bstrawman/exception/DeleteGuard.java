@@ -12,10 +12,10 @@ import java.util.function.Supplier;
  * <p>Usage:
  *
  * <pre>{@code
- * DeleteGuard.forEntity("customer", customerId)
- *     .checkNotExists("linked projects", () -> projectRepository.existsByCustomerId(id))
- *     .checkCountZero("invoices", invoiceRepository.countByCustomerId(id),
- *         "Void or delete all invoices first.")
+ * DeleteGuard.forEntity("client", customerId)
+ *     .checkNotExists("linked matters", () -> projectRepository.existsByCustomerId(id))
+ *     .checkCountZero("fee notes", invoiceRepository.countByCustomerId(id),
+ *         "Void or delete all fee notes first.")
  *     .execute();
  * }</pre>
  */

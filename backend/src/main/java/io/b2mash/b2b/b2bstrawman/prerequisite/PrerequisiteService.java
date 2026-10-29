@@ -186,13 +186,13 @@ public class PrerequisiteService {
             violations.add(
                 new PrerequisiteViolation(
                     "STRUCTURAL",
-                    "Customer must have an email address or portal contact for invoice delivery",
+                    "Client must have an email address or portal contact for fee note delivery",
                     entityType.name(),
                     entityId,
                     null,
                     null,
-                    "Add a portal contact with email on the customer detail page,"
-                        + " or set the customer email"));
+                    "Add a portal contact with email on the client detail page,"
+                        + " or set the client email"));
           }
         }
       }
@@ -273,6 +273,6 @@ public class PrerequisiteService {
         entityId,
         fd.getSlug(),
         null,
-        "Fill the " + fd.getName() + " field on the customer profile");
+        "Fill the " + fd.getName() + " field on the client profile");
   }
 }

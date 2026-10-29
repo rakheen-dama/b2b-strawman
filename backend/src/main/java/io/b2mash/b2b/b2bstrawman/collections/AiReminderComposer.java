@@ -97,7 +97,7 @@ public class AiReminderComposer implements ReminderComposer {
         new SkillContext(
             persisted.getId(),
             "collection_activity",
-            "Collection reminder draft for invoice "
+            "Collection reminder draft for fee note "
                 + (invoice.getInvoiceNumber() != null
                     ? invoice.getInvoiceNumber()
                     : invoice.getId())

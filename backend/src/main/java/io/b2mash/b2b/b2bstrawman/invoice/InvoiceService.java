@@ -133,7 +133,7 @@ public class InvoiceService {
             .orElseThrow(
                 () ->
                     io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException.withDetail(
-                        "Invoice not found", "No invoice found with number " + invoiceNumber));
+                        "Fee note not found", "No fee note found with number " + invoiceNumber));
     return renderingService.buildResponse(invoice);
   }
 

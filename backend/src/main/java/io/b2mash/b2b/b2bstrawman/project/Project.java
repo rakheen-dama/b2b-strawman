@@ -340,7 +340,7 @@ public class Project {
   private void requireTransition(ProjectStatus target, String action) {
     if (!this.status.canTransitionTo(target)) {
       throw new InvalidStateException(
-          "Invalid project state", "Cannot " + action + " project in status " + this.status);
+          "Invalid matter state", "Cannot " + action + " matter in status " + this.status);
     }
   }
 

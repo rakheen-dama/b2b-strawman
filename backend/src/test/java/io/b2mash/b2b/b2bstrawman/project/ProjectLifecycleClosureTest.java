@@ -144,7 +144,7 @@ class ProjectLifecycleClosureTest {
 
     assertThatThrownBy(() -> project.closeMatter(Instant.now(), YEARS))
         .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("Cannot close project in status ARCHIVED");
+        .hasMessageContaining("Cannot close matter in status ARCHIVED");
   }
 
   @Test
@@ -154,7 +154,7 @@ class ProjectLifecycleClosureTest {
 
     assertThatThrownBy(() -> project.archive(MEMBER_ID))
         .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("Cannot archive project in status CLOSED");
+        .hasMessageContaining("Cannot archive matter in status CLOSED");
   }
 
   @Test
@@ -163,7 +163,7 @@ class ProjectLifecycleClosureTest {
     // ACTIVE -> ACTIVE via reopenMatter() must fail (no self-transition allowed)
     assertThatThrownBy(project::reopenMatter)
         .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("Cannot reopen project in status ACTIVE");
+        .hasMessageContaining("Cannot reopen matter in status ACTIVE");
   }
 
   @Test

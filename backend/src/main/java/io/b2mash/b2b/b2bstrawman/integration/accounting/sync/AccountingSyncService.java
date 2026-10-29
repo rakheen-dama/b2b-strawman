@@ -134,7 +134,7 @@ public class AccountingSyncService {
               trigger,
               "KAZI-INV-" + invoiceId);
       entry.markDeadLetter(
-          "MULTI_CURRENCY", "Org settings not configured; cannot verify invoice currency");
+          "MULTI_CURRENCY", "Org settings not configured; cannot verify fee note currency");
       syncEntryRepository.save(entry);
       log.warn("Invoice {} dead-lettered: org settings absent, cannot verify currency", invoiceId);
       return;
@@ -150,7 +150,7 @@ public class AccountingSyncService {
               "KAZI-INV-" + invoiceId);
       entry.markDeadLetter(
           "MULTI_CURRENCY",
-          "Invoice currency %s does not match org default %s"
+          "Fee note currency %s does not match org default %s"
               .formatted(invoice.getCurrency(), orgSettings.get().getDefaultCurrency()));
       syncEntryRepository.save(entry);
       log.warn(
@@ -362,7 +362,7 @@ public class AccountingSyncService {
                 event.externalInvoiceReference());
         currencyDriftEntry.markReconcileDrift(
             "CURRENCY_MISMATCH",
-            "Xero payment currency %s does not match Kazi invoice currency %s"
+            "Xero payment currency %s does not match Kazi fee note currency %s"
                 .formatted(event.currency(), invoice.getCurrency()));
         syncEntryRepository.save(currencyDriftEntry);
 

@@ -465,7 +465,7 @@ public class CustomerService {
       java.time.LocalDate financialYearEnd) {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
-          "Customer email conflict", "A customer with email " + email + " already exists");
+          "Client email conflict", "A client with email " + email + " already exists");
     }
 
     // Reject unknown field slugs before validation
@@ -623,7 +623,7 @@ public class CustomerService {
     // Check email uniqueness if changed
     if (!customer.getEmail().equals(email) && repository.existsByEmail(email)) {
       throw new ResourceConflictException(
-          "Customer email conflict", "A customer with email " + email + " already exists");
+          "Client email conflict", "A client with email " + email + " already exists");
     }
 
     // Validate and set custom fields
@@ -784,17 +784,17 @@ public class CustomerService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, id));
 
-    DeleteGuard.forEntity("customer", id, "archive")
+    DeleteGuard.forEntity("client", id, "archive")
         .checkNotExists(
-            "linked projects",
+            "linked matters",
             () ->
                 projectRepository.countByCustomerId(id) > 0
                     || customerProjectRepository.existsByCustomerId(id),
-            "Unlink all projects first.")
+            "Unlink all matters first.")
         .checkCountZero(
-            "invoice(s)",
+            "fee note(s)",
             invoiceRepository.countByCustomerId(id),
-            "Void or delete all invoices first.")
+            "Void or delete all fee notes first.")
         .execute();
 
     customer.archive();
@@ -838,7 +838,7 @@ public class CustomerService {
     if (!"ARCHIVED".equals(customer.getStatus())) {
       throw new InvalidStateException(
           "Cannot unarchive",
-          "Customer is not archived (current status: " + customer.getStatus() + ")");
+          "Client is not archived (current status: " + customer.getStatus() + ")");
     }
 
     customer.unarchive();

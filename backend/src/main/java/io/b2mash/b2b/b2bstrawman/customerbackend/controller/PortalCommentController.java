@@ -56,7 +56,7 @@ public class PortalCommentController {
     var project = portalReadModelService.getProjectDetail(matterId, customerId, orgId);
     if ("ARCHIVED".equals(project.status())) {
       throw new InvalidStateException(
-          "Project is archived", "Project is archived. No modifications allowed.");
+          "Matter is archived", "Matter is archived. No modifications allowed.");
     }
 
     // Resolve contact display name (TENANT_ID already bound by CustomerAuthFilter)

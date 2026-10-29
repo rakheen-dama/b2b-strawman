@@ -33,23 +33,23 @@ class ProjectDeletionGuard {
 
   /** Checks that a project has no linked resources and can be safely deleted. */
   void checkAndExecute(UUID projectId) {
-    DeleteGuard.forEntity("project", projectId)
+    DeleteGuard.forEntity("matter", projectId)
         .checkCountZero(
             "task(s)",
             taskRepository.countByProjectId(projectId),
-            "Delete or cancel all tasks before deleting the project.")
+            "Delete or cancel all tasks before deleting the matter.")
         .checkCountZero(
             "time entry/entries",
             timeEntryRepository.countByProjectId(projectId),
-            "Remove all time entries before deleting the project.")
+            "Remove all time entries before deleting the matter.")
         .checkCountZero(
-            "invoice(s)",
+            "fee note(s)",
             invoiceRepository.countByProjectId(projectId),
-            "Void or delete all invoices before deleting the project.")
+            "Void or delete all fee notes before deleting the matter.")
         .checkCountZero(
             "document(s)",
             documentRepository.countByProjectId(projectId),
-            "Delete all documents before deleting the project.")
+            "Delete all documents before deleting the matter.")
         .execute();
   }
 }

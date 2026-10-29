@@ -253,7 +253,7 @@ class ProjectServiceTest {
     when(projectAccessService.requireEditAccess(id, new ActorContext(MEMBER_ID, "member")))
         .thenThrow(
             new ForbiddenException(
-                "Cannot edit project", "You do not have permission to edit project " + id));
+                "Cannot edit matter", "You do not have permission to edit matter " + id));
 
     assertThatThrownBy(
             () -> service.updateProject(id, "Name", "Desc", new ActorContext(MEMBER_ID, "member")))
@@ -338,9 +338,9 @@ class ProjectServiceTest {
     when(repository.findById(id)).thenReturn(Optional.of(project));
     doThrow(
             new ResourceConflictException(
-                "Cannot delete project",
-                "Cannot delete project with 3 task(s). Delete or cancel all tasks before deleting"
-                    + " the project."))
+                "Cannot delete matter",
+                "Cannot delete matter with 3 task(s). Delete or cancel all tasks before deleting"
+                    + " the matter."))
         .when(projectDeletionGuard)
         .checkAndExecute(id);
 

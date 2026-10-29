@@ -353,7 +353,7 @@ public class CustomerLifecycleService {
     if (anyNotComplete) {
       throw new InvalidStateException(
           "Onboarding incomplete",
-          "Cannot activate customer — one or more onboarding checklists are not yet completed");
+          "Cannot activate client — one or more onboarding checklists are not yet completed");
     }
   }
 }

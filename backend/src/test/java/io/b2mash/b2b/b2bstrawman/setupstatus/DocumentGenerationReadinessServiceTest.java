@@ -205,7 +205,7 @@ class DocumentGenerationReadinessServiceTest {
 
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().ready()).isFalse();
-    assertThat(result.getFirst().missingFields()).containsExactly("Invoice Lines");
+    assertThat(result.getFirst().missingFields()).containsExactly("Fee note lines");
   }
 
   private DocumentTemplate createProjectTemplate(String name, String slug) {

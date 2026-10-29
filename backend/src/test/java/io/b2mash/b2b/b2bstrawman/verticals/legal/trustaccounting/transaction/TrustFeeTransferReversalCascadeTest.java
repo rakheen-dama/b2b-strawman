@@ -865,7 +865,7 @@ class TrustFeeTransferReversalCascadeTest {
                         invoiceTransitionService.reversePayment(
                             invoiceIdHolder[0], paymentEventIdHolder[0]))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("paid invoices"));
+                .hasMessageContaining("paid fee notes"));
 
     // Also exercise: a fresh COMPLETED payment_event on a non-PAID invoice still rejects.
     UUID[] orphanEventIdHolder = new UUID[1];
@@ -895,7 +895,7 @@ class TrustFeeTransferReversalCascadeTest {
                         invoiceTransitionService.reversePayment(
                             invoiceIdHolder[0], orphanEventIdHolder[0]))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("paid invoices"));
+                .hasMessageContaining("paid fee notes"));
   }
 
   // --- helpers ---

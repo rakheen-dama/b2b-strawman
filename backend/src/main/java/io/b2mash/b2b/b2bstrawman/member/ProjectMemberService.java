@@ -82,8 +82,8 @@ public class ProjectMemberService {
 
     if (projectMemberRepository.existsByProjectIdAndMemberId(projectId, memberId)) {
       throw new ResourceConflictException(
-          "Member already on project",
-          "Member " + memberId + " is already a member of project " + projectId);
+          "Member already on matter",
+          "Member " + memberId + " is already a member of matter " + projectId);
     }
 
     var projectMember = new ProjectMember(projectId, memberId, Roles.PROJECT_MEMBER, addedBy);
@@ -138,12 +138,12 @@ public class ProjectMemberService {
             .orElseThrow(
                 () ->
                     ResourceNotFoundException.withDetail(
-                        "Project member not found",
-                        "Member " + memberId + " is not a member of project " + projectId));
+                        "Matter member not found",
+                        "Member " + memberId + " is not a member of matter " + projectId));
 
     if (Roles.PROJECT_LEAD.equals(projectMember.getProjectRole())) {
       throw new InvalidStateException(
-          "Cannot remove project lead",
+          "Cannot remove matter lead",
           "Transfer lead role to another member before removing the current lead");
     }
 
@@ -177,7 +177,7 @@ public class ProjectMemberService {
                 () ->
                     ResourceNotFoundException.withDetail(
                         "New lead not found",
-                        "Member " + newLeadId + " is not a member of project " + projectId));
+                        "Member " + newLeadId + " is not a member of matter " + projectId));
 
     if (Roles.PROJECT_LEAD.equals(newLead.getProjectRole())) {
       return;

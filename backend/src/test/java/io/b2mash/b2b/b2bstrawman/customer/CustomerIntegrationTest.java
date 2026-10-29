@@ -208,7 +208,7 @@ class CustomerIntegrationTest {
                     {"name": "Second", "email": "duplicate@test.com"}
                     """));
     ProblemDetailAssertions.assertProblemWithDetail(
-        result, HttpStatus.CONFLICT, "Customer email conflict", "duplicate@test.com");
+        result, HttpStatus.CONFLICT, "Client email conflict", "duplicate@test.com");
   }
 
   @Test

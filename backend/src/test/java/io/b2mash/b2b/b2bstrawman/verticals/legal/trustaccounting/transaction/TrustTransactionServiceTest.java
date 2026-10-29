@@ -2504,7 +2504,7 @@ class TrustTransactionServiceTest {
         () ->
             assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], approverId))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("invoice is already in PAID status"));
+                .hasMessageContaining("fee note is already in PAID status"));
   }
 
   @Test

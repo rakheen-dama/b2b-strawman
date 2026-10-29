@@ -263,7 +263,8 @@ public class ExpenseService {
     // Guard: not BILLED
     if (expense.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Expense is billed", "Expense is part of an invoice. Void the invoice to unlock.");
+          "Disbursement is billed",
+          "Disbursement is part of a fee note. Void the fee note to unlock.");
     }
 
     // Permission: creator OR ADMIN+
@@ -309,7 +310,8 @@ public class ExpenseService {
     // Guard: not BILLED (entity.writeOff() checks this too, but give better error)
     if (expense.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Expense is billed", "Cannot write off a billed expense. Void the invoice first.");
+          "Disbursement is billed",
+          "Cannot write off a billed disbursement. Void the fee note first.");
     }
 
     try {
@@ -395,7 +397,8 @@ public class ExpenseService {
     // Guard: must not be BILLED
     if (expense.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Expense is billed", "Expense is part of an invoice. Void the invoice to unlock.");
+          "Disbursement is billed",
+          "Disbursement is part of a fee note. Void the fee note to unlock.");
     }
 
     // Permission: creator OR ADMIN+
@@ -472,7 +475,7 @@ public class ExpenseService {
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot modify expense",
-          "Only the creator or a project lead/admin/owner can modify this expense");
+          "Only the creator or a matter lead/admin/owner can modify this disbursement");
     }
   }
 

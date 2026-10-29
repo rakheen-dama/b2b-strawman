@@ -152,8 +152,8 @@ public class AcceptanceService {
 
     if (!contact.getCustomerId().equals(customerId)) {
       throw new InvalidStateException(
-          "Portal contact does not belong to customer",
-          "The selected contact is not associated with the document's customer");
+          "Portal contact does not belong to client",
+          "The selected contact is not associated with the document's client");
     }
 
     // 4. Auto-revoke existing active request for same doc-contact pair
@@ -1096,8 +1096,8 @@ public class AcceptanceService {
               .orElseThrow(
                   () ->
                       new InvalidStateException(
-                          "No customer linked to project",
-                          "Cannot send acceptance: project has no linked customer"));
+                          "No client linked to matter",
+                          "Cannot send acceptance: matter has no linked client"));
       case INVOICE ->
           invoiceRepository
               .findById(doc.getPrimaryEntityId())

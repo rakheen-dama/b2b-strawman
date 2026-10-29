@@ -23,15 +23,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * LZKC-031 PR-2 (class D) — stored invoice-notification titles must use the tenant's vertical
- * vocabulary at creation time. Legal-za tenants store "Fee Note … has been sent/paid". Since 628D
- * (R-4, ADR-330/ADR-338) tenants without a vertical profile store the same legal copy — there is
- * one vocabulary, no "Invoice" fallback. Mirrors the LZKC-004/009 mechanism: {@code
- * EmailTerminology} resolved from the tenant's {@code OrgSettings} vertical profile (PR #1518), not
- * a blind string replace.
+ * LZKC-031 PR-2 (class D) — stored fee-note notification titles use the single legal vocabulary at
+ * creation time: "Fee Note … has been sent/paid". Since 628D (R-4, ADR-330/ADR-338) {@code
+ * EmailTerminology} returns the legal map for every tenant, with or without a vertical profile —
+ * there is one vocabulary and no "Invoice" fallback, so the generic (no-profile) tenant is asserted
+ * to store the same legal copy.
  *
  * <p>Titles are generated once and stored — existing notification rows keep their original copy;
- * only notifications created after this fix pick up the vertical vocabulary.
+ * only notifications created after this fix carry the legal wording.
  */
 @SpringBootTest
 @AutoConfigureMockMvc

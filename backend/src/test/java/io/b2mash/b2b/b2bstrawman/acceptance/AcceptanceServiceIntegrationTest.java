@@ -246,7 +246,7 @@ class AcceptanceServiceIntegrationTest {
           assertThatThrownBy(
                   () -> acceptanceService.createAndSend(fixture.docId, otherContactRef[0], null))
               .isInstanceOf(InvalidStateException.class)
-              .hasMessageContaining("not associated with the document's customer");
+              .hasMessageContaining("not associated with the document's client");
         });
   }
 

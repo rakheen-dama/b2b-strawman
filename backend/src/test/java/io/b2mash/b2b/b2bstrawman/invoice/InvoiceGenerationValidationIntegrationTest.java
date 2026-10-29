@@ -49,9 +49,9 @@ class InvoiceGenerationValidationIntegrationTest {
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_inv_gen_val_test";
 
-  /** G-C6 blocking copy for COMPANY/TRUST clients; this tenant has no profile → "invoice" noun. */
+  /** G-C6 blocking copy for COMPANY/TRUST clients; one legal vocabulary (R-4) → "fee note" noun. */
   private static final String BLOCKING_TAX_NUMBER_COPY =
-      "A tax number is required before an invoice can be sent to a company or trust";
+      "A tax number is required before a fee note can be sent to a company or trust";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -330,11 +330,11 @@ class InvoiceGenerationValidationIntegrationTest {
         // Error-path convention: assert the ProblemDetail body shape (status/title/detail per
         // RFC 9457, produced by InvoiceValidationFailedException), not just the HTTP status.
         .andExpect(jsonPath("$.status").value(422))
-        .andExpect(jsonPath("$.title").value("Invoice validation failed"))
+        .andExpect(jsonPath("$.title").value("Fee note validation failed"))
         .andExpect(
             jsonPath("$.detail")
                 .value(
-                    "Invoice has validation issues that must be resolved or overridden before"
+                    "Fee note has validation issues that must be resolved or overridden before"
                         + " sending."))
         .andExpect(jsonPath("$.canOverride").value(true))
         .andExpect(
@@ -342,7 +342,7 @@ class InvoiceGenerationValidationIntegrationTest {
         .andExpect(
             jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].severity")
                 .value("CRITICAL"))
-        // G-C6: blocking copy for COMPANY/TRUST (generic tenant → "invoice" noun).
+        // G-C6: blocking copy for COMPANY/TRUST (single legal vocabulary → "fee note" noun).
         .andExpect(
             jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].message")
                 .value(BLOCKING_TAX_NUMBER_COPY));
@@ -361,7 +361,7 @@ class InvoiceGenerationValidationIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnprocessableEntity())
-        .andExpect(jsonPath("$.title").value("Invoice validation failed"))
+        .andExpect(jsonPath("$.title").value("Fee note validation failed"))
         .andExpect(
             jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].passed").value(false))
         .andExpect(
@@ -432,7 +432,7 @@ class InvoiceGenerationValidationIntegrationTest {
                       // G-C6: warning copy — an INDIVIDUAL is never blocked at send.
                       assertThat(taxCheck.message())
                           .isEqualTo(
-                              "Client has no tax number \u2014 the invoice will be sent without a"
+                              "Client has no tax number \u2014 the fee note will be sent without a"
                                   + " client VAT number");
                       assertThat(invoiceValidationService.hasCriticalFailures(checks)).isFalse();
                     }));

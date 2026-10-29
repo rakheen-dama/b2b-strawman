@@ -196,8 +196,8 @@ public class XeroCustomerImportService {
     long customerCount = customerRepository.count();
     if (customerCount > MAX_CUSTOMER_COUNT_FOR_IMPORT) {
       throw new InvalidStateException(
-          "Customer table too large for import",
-          "Customer table has "
+          "Client table too large for import",
+          "Client table has "
               + customerCount
               + " rows — too large for in-memory dedup (limit "
               + MAX_CUSTOMER_COUNT_FOR_IMPORT
@@ -315,8 +315,8 @@ public class XeroCustomerImportService {
         Map<String, Object> config = objectMapper.readValue(configJson, MAP_TYPE);
         if (Boolean.TRUE.equals(config.get("customersImported"))) {
           throw new ResourceConflictException(
-              "Customer import already completed",
-              "Customers have already been imported from Xero for this connection");
+              "Client import already completed",
+              "Clients have already been imported from Xero for this connection");
         }
       } catch (JacksonException e) {
         throw new InvalidStateException(
@@ -340,7 +340,7 @@ public class XeroCustomerImportService {
       log.error("Failed to update OrgIntegration configJson after import", e);
       throw new InvalidStateException(
           "Failed to mark import as completed",
-          "Could not update OrgIntegration configJson after Xero customer import");
+          "Could not update OrgIntegration configJson after Xero client import");
     }
   }
 

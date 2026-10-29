@@ -121,13 +121,13 @@ public class DataAnonymizationService {
     // Verification: customer name must match exactly
     if (!customer.getName().equals(confirmCustomerName)) {
       throw new InvalidStateException(
-          "Customer name mismatch",
-          "Provided name does not match the customer record. Please confirm the exact customer name.");
+          "Client name mismatch",
+          "Provided name does not match the client record. Please confirm the exact client name.");
     }
 
     // Step 1: Anonymize customer PII
     String hash = customerId.toString().substring(0, 6);
-    customer.anonymize("Anonymized Customer " + hash);
+    customer.anonymize("Anonymized Client " + hash);
     customerRepository.save(customer);
 
     // Step 2: Redact portal-visible comments (BEFORE deleting documents, since the query joins
@@ -225,15 +225,14 @@ public class DataAnonymizationService {
     // Guard: reject if already ANONYMIZED
     if (customer.getLifecycleStatus() == LifecycleStatus.ANONYMIZED) {
       throw new ResourceConflictException(
-          "Customer is already anonymized",
-          "Customer " + customerId + " has already been anonymized");
+          "Client is already anonymized", "Client " + customerId + " has already been anonymized");
     }
 
     // Confirmation name validation (case-insensitive)
     if (!customer.getName().equalsIgnoreCase(confirmationName)) {
       throw new InvalidStateException(
-          "Confirmation name does not match customer name",
-          "The provided confirmation name does not match the customer name");
+          "Confirmation name does not match client name",
+          "The provided confirmation name does not match the client name");
     }
 
     // Step 0: Pre-anonymization export (BEFORE any modification).
@@ -244,7 +243,7 @@ public class DataAnonymizationService {
 
     // Step 1: Anonymize customer PII (existing method)
     String hash = customerId.toString().substring(0, 6);
-    customer.anonymize("Anonymized Customer " + hash);
+    customer.anonymize("Anonymized Client " + hash);
 
     // Step 2: Clear notes and customFields
     customer.setNotes(null);

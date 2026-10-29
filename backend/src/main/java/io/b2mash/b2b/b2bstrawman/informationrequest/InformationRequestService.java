@@ -1013,7 +1013,7 @@ public class InformationRequestService {
             .orElseThrow(() -> new ResourceNotFoundException("PortalContact", portalContactId));
     if (!contact.getCustomerId().equals(customerId)) {
       throw new InvalidStateException(
-          "Portal contact mismatch", "Portal contact does not belong to the specified customer");
+          "Portal contact mismatch", "Portal contact does not belong to the specified client");
     }
   }
 }

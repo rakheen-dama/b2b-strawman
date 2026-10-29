@@ -178,7 +178,7 @@ public class TimeEntryService {
     // Block toggle when time entry is part of an invoice (Epic 86A review)
     if (entry.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
+          "Time entry is billed", "Time entry is part of a fee note. Void the fee note to unlock.");
     }
 
     requireEditPermission(entry, actor);
@@ -231,7 +231,7 @@ public class TimeEntryService {
     // Block edit when time entry is part of an invoice (Epic 82B)
     if (entry.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
+          "Time entry is billed", "Time entry is part of a fee note. Void the fee note to unlock.");
     }
 
     requireEditPermission(entry, actor);
@@ -383,7 +383,7 @@ public class TimeEntryService {
     // Block delete when time entry is part of an invoice (Epic 82B)
     if (entry.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
+          "Time entry is billed", "Time entry is part of a fee note. Void the fee note to unlock.");
     }
 
     requireEditPermission(entry, actor);
@@ -427,7 +427,7 @@ public class TimeEntryService {
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot view member breakdown",
-          "Per-member time breakdown is restricted to project leads, org admins, and org owners");
+          "Per-member time breakdown is restricted to matter leads, org admins, and org owners");
     }
     return timeEntryRepository.projectTimeSummaryByMember(projectId, from, to);
   }
@@ -620,7 +620,7 @@ public class TimeEntryService {
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot modify time entry",
-          "Only the creator or a project lead/admin/owner can modify this time entry");
+          "Only the creator or a matter lead/admin/owner can modify this time entry");
     }
   }
 

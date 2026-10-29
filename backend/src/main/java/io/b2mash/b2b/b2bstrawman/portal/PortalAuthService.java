@@ -190,11 +190,10 @@ public class PortalAuthService {
             var customer =
                 customerRepository
                     .findById(contact.getCustomerId())
-                    .orElseThrow(
-                        () -> new PortalAuthException("Customer account no longer exists"));
+                    .orElseThrow(() -> new PortalAuthException("Client account no longer exists"));
 
             if (!"ACTIVE".equals(customer.getStatus())) {
-              throw new PortalAuthException("Customer account is no longer active");
+              throw new PortalAuthException("Client account is no longer active");
             }
 
             // Issue portal JWT

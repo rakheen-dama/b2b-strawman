@@ -78,8 +78,8 @@ public class CustomerProjectService {
     // Check not already linked
     if (customerProjectRepository.existsByCustomerIdAndProjectId(customerId, projectId)) {
       throw new ResourceConflictException(
-          "Customer already linked",
-          "Customer " + customerId + " is already linked to project " + projectId);
+          "Client already linked",
+          "Client " + customerId + " is already linked to matter " + projectId);
     }
 
     var link = customerProjectRepository.save(new CustomerProject(customerId, projectId, linkedBy));

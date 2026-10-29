@@ -112,7 +112,7 @@ public class InvoiceTransitionService {
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
     if (lines.isEmpty()) {
       throw new InvalidStateException(
-          "No line items", "Invoice must have at least one line item before approval");
+          "No line items", "Fee note must have at least one line item before approval");
     }
 
     for (var line : lines) {
@@ -125,7 +125,7 @@ public class InvoiceTransitionService {
         if (timeEntry.getInvoiceId() != null && !timeEntry.getInvoiceId().equals(invoiceId)) {
           throw new ResourceConflictException(
               "Time entry already billed",
-              "Time entry " + line.getTimeEntryId() + " is already linked to another invoice");
+              "Time entry " + line.getTimeEntryId() + " is already linked to another fee note");
         }
       }
     }
@@ -169,8 +169,8 @@ public class InvoiceTransitionService {
                             EntityNoun.DISBURSEMENT, line.getExpenseId()));
         if (expense.getInvoiceId() != null && !expense.getInvoiceId().equals(invoiceId)) {
           throw new ResourceConflictException(
-              "Expense already billed",
-              "Expense " + line.getExpenseId() + " is already linked to another invoice");
+              "Disbursement already billed",
+              "Disbursement " + line.getExpenseId() + " is already linked to another fee note");
         }
         if (expense.getInvoiceId() == null) {
           expense.markBilled(invoiceId);
@@ -376,7 +376,7 @@ public class InvoiceTransitionService {
                       invoiceId,
                       posting.amount(),
                       invoice.getCurrency(),
-                      "Payment for invoice " + invoice.getInvoiceNumber()));
+                      "Payment for fee note " + invoice.getInvoiceNumber()));
       if (!paymentResult.success()) {
         throw new InvalidStateException("Payment failed", paymentResult.errorMessage());
       }
@@ -613,7 +613,7 @@ public class InvoiceTransitionService {
     if (!Invoice.REVERSIBLE.contains(invoice.getStatus())) {
       throw new InvalidStateException(
           "Invalid status for payment reversal",
-          "Only paid or partially paid invoices can have a payment reversed (current status: "
+          "Only paid or partially paid fee notes can have a payment reversed (current status: "
               + invoice.getStatus()
               + ")");
     }
@@ -626,7 +626,7 @@ public class InvoiceTransitionService {
     if (!paymentEvent.getInvoiceId().equals(invoiceId)) {
       throw new InvalidStateException(
           "Mismatched payment event",
-          "Payment event " + paymentEventId + " does not belong to invoice " + invoiceId);
+          "Payment event " + paymentEventId + " does not belong to fee note " + invoiceId);
     }
 
     if (paymentEvent.getStatus() != PaymentEventStatus.COMPLETED) {

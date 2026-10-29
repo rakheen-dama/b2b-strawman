@@ -70,7 +70,7 @@ class ProjectDeletionGuardTest {
 
     assertThatThrownBy(() -> guard.checkAndExecute(PROJECT_ID))
         .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("invoice");
+        .hasMessageContaining("fee note");
   }
 
   @Test

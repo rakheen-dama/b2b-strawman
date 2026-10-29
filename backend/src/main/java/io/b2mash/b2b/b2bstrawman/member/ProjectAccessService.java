@@ -73,7 +73,7 @@ public class ProjectAccessService {
     var access = requireViewAccess(projectId, actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
-          "Cannot edit project", "You do not have permission to edit project " + projectId);
+          "Cannot edit matter", "You do not have permission to edit matter " + projectId);
     }
     return access;
   }

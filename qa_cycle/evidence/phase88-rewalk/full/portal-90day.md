@@ -253,3 +253,10 @@ Last completed step: **P-E.11d** (portal `:258`) — the portal file is complete
 - README: the W8b row of the 629B run table reads "(this commit)" — W9 replaces it with W8b's commit SHA (W8a's placeholder was replaced with 3a5c56350 in this run).
 - Browser tool calls used by this run: ~70.
 - Dev artefacts in `$MAIN` (not committed): `.playwright-mcp/629B/P-45*.png`, `P-60*.png`, `P-85*.png`, `P-90*.png`, `P-CP*.png`, `P-60.4-portal-soa-download.pdf`; `.playwright-mcp/statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf` (viewer download copy); `.playwright-mcp/page-*.yml` / `console-*.log` (contain unredacted presigned URLs and one mock session id — never commit); `portal/.next` (prod build output, overwritten by the svc dev server); `/tmp/629B/qw8b-*.sh`, `/tmp/629B/ml.sh`, `/tmp/629B/qend.sh`, `/tmp/629B/addrow.py`, `/tmp/629B/rows/`.
+
+## Orchestrator rulings on W8b's open calls (2026-10-29; recorded by W9)
+- **P-CP60.1 FAIL — CONFIRMED** (the bytes served are a different document: the INTERNAL closure SoA, not the Day-30 shared SoA).
+- **P-E.2a FAIL — CONFIRMED.**
+- **G88-F32 MEDIUM — CONFIRMED** (no payment receipt after a portal payment).
+- **G88-F33 HIGH — CONFIRMED** (internal closure SoA served to the client via the portal; same-day SoAs share one S3 key).
+Row statuses above are unchanged by these rulings. Applied in `exit-checkpoints.md` (E.3) and the README gap index.

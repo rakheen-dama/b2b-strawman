@@ -1,0 +1,22 @@
+# 2026-10-29T21:08:11Z E.10 code-change check
++ git log --oneline 138119b81..HEAD -- backend frontend portal gateway packages compose
+(end; empty = no code change)
++ git log --oneline 138119b81..HEAD
+de23be4d8 docs: 629B W8b — portal Days 45/60/75/85/90 + checkpoints + portal exit observed on KC prod-build portal (36/19/0/21/1); portal-90day.md complete (75/34/0/25/4)
+3a5c56350 docs: 629B W8a — portal Session 0 + PRE-P-request + portal Days 0/3/7/21 observed on KC prod-build portal (39/15/0/4/3)
+59f8b2877 docs: 629B W7c — Day 90 final regression sweep (90.1–90.7) observed on KC (6/1/0/0/1); days-76-90.md complete (32/3/0/0/1)
+f79957e65 docs: 629B W7b — Day 85 closure override + Day 88 activity feed (85.5–88.3) observed on KC (17/1/0/0/0); wow-7a/7b PASS
+d173342b5 docs: 629B W7a — Day 80 reports + Day 85 audit sweep (80.1–85.4) observed on KC (9/1/0/0/0)
+6114f726c docs: 629B W6c — Day 75 closure (75.1a/b, PRE-75-tasks, PRE-75-refund, APPROVE-75, 75.2–75.11) observed on KC (11/1/0/0/0 + 3 NOTE)
+e8c1b84aa docs: 629B W6b — 65.1, 68.1–68.2 (portal prod build), 70.1, 72.1, APPROVE-72, 72.2 observed on KC (6/0/0/0/0 + 3 NOTE)
+35265feda docs: 629B W6a — 61.1, TEAM-nomvula, 62.1 observed on KC (2/0/0/0/0 + 1 NOTE)
+1c71af942 docs: 629B W5b — Days 45–60 observed on KC (18/1/0/0/0); days-36-60 totals 35/3/0/0/0; wow 6
+d4b6a6d9a docs: 629B W5a — Day 30 SoA + Days 36–38 observed on KC (17/2/0/0/0)
+45dcc7a6f docs: apply register §5a rows 1–13, 15–18 scenario amendments; document rows 19–20 (founder-authorised 2026-10-29) (#1712)
+7ea0175ac docs: apply register §5a row 14 — Day 60 closure step ticks 'Email the client now' (founder-authorised 2026-10-29)
+69d6a5ec1 docs: Slice 629A done (#1711) — full KC re-walk Session 0, Day 0, Days 1–35
+9a08796e4 Slice 629A: full KC re-walk — KC-STACK, Session 0, Day 0, Days 1–35 (629.1–629.4) (#1711)
++ git -C $MAIN status --short -- backend frontend portal gateway packages compose
+(end)
++ git -C $MAIN rev-parse HEAD
+45dcc7a6f2daf82871354919c6d5b3f30ec59df2

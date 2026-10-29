@@ -117,7 +117,13 @@ describe("no-isvisible-catch — eslint.config.mjs wiring", { timeout: 30_000 },
     "e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts",
     "e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts",
     "e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts",
+    "e2e/tests/legal-lifecycle/day-30-billing.spec.ts",
+    "e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts",
+    "e2e/tests/legal-lifecycle/day-60-interest.spec.ts",
+    "e2e/tests/legal-lifecycle/day-75-complex.spec.ts",
+    "e2e/tests/legal-lifecycle/day-90-review.spec.ts",
     "e2e/tests/legal-lifecycle/matter-team.spec.ts",
+    "e2e/tests/legal-lifecycle/__probe__.spec.ts",
     "e2e/tests/legal-depth-ii/__probe__.spec.ts",
     "e2e/helpers/__probe__.ts",
     "e2e/fixtures/__probe__.ts",
@@ -125,14 +131,13 @@ describe("no-isvisible-catch — eslint.config.mjs wiring", { timeout: 30_000 },
     expect(await ruleMessages(file)).toEqual(["swallowed"]);
   });
 
-  // Deliberate scope (Phase 88 628E R-2 / OD-2 (b)): the Days 30–90 lifecycle files are converted by
-  // the second 628E builder, which widens the rule to all of legal-lifecycle; 628F widens it to
-  // e2e/** when it sweeps the default-config specs. Flip these assertions when widening.
-  it.each([
-    "e2e/tests/legal-lifecycle/day-30-billing.spec.ts",
-    "e2e/tests/settings/__probe__.spec.ts",
-    "components/__probe__.tsx",
-  ])("is not (yet) enforced in %s", async (file) => {
-    expect(await ruleMessages(file)).toEqual([]);
-  });
+  // Deliberate scope (Phase 88 628E R-2 / OD-2 (b)): the rule covers the two legal suites, helpers
+  // and fixtures; 628F widens it to e2e/** when it sweeps the default-config specs. Flip these
+  // assertions when widening.
+  it.each(["e2e/tests/settings/__probe__.spec.ts", "components/__probe__.tsx"])(
+    "is not (yet) enforced in %s",
+    async (file) => {
+      expect(await ruleMessages(file)).toEqual([]);
+    }
+  );
 });

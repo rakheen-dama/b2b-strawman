@@ -22,7 +22,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { openGroupedTab } from "./grouped-tabs";
-import { BASE, escapeRegExp, selectNativeOption } from "./legal-depth-ii";
+import { BASE, clickThrough, escapeRegExp, openClient, selectNativeOption } from "./legal-depth-ii";
 
 const RUN_FILE = path.join(tmpdir(), "kazi-legal-lifecycle-run.json");
 
@@ -312,4 +312,104 @@ export async function recordTrustDeposit(
   await expect(trustTransactionRow(page, opts.reference)).toContainText("RECORDED", {
     timeout: 15_000,
   });
+}
+
+// ── Fee notes (Days 30–90) ───────────────────────────────────────────────────────────────────
+
+/** Opens a client's Fees → Fee notes tab. */
+export async function openClientFeeNotes(page: Page, client: string): Promise<void> {
+  await openClient(page, client);
+  await openGroupedTab(page, "finance", "invoices");
+}
+
+/**
+ * On a client's Fee notes tab: New fee note → Fetch Unbilled Time → Validate & Create Draft →
+ * Create Draft, for the unbilled items of `matter` (`items` = how many the dialog must select).
+ * Opens the created draft (the one fee-note link that was not listed before) and returns its UUID.
+ */
+export async function generateFeeNoteDraft(
+  page: Page,
+  { matter, items }: { matter: string; items: number }
+): Promise<string> {
+  const panel = page.getByRole("tabpanel");
+  const newFeeNote = panel.getByRole("button", { name: "New fee note" });
+  await expect(newFeeNote).toBeEnabled({ timeout: 15_000 });
+  const feeNoteLinks = () =>
+    panel
+      .locator('a[href*="/invoices/"]')
+      .evaluateAll((els) => els.map((e) => e.getAttribute("href")!));
+  const before = new Set(await feeNoteLinks());
+
+  await newFeeNote.click();
+  const generate = page.getByRole("dialog", { name: /Generate fee note|Select Unbilled Items/ });
+  await expect(generate).toBeVisible({ timeout: 15_000 });
+  await generate.getByRole("button", { name: "Fetch Unbilled Time" }).click();
+  // Step 2: the matter's unbilled items, all pre-selected and all rated (Day 0 rate cards)
+  await expect(
+    generate.getByRole("checkbox", { name: `Select all entries for ${matter}` })
+  ).toBeChecked({ timeout: 15_000 });
+  // (the dialog always says "items": "1 items selected for …")
+  await expect(generate).toContainText(`${items} items selected for`);
+  await expect(generate.getByTestId("null-rate-warning")).toHaveCount(0);
+  await generate.getByRole("button", { name: "Validate & Create Draft" }).click();
+  await generate.getByRole("button", { name: /^Create Draft/ }).click();
+  await expect(generate).toBeHidden({ timeout: 15_000 });
+
+  await expect
+    .poll(async () => (await feeNoteLinks()).filter((href) => !before.has(href)), {
+      timeout: 15_000,
+    })
+    .toHaveLength(1);
+  const created = (await feeNoteLinks()).find((href) => !before.has(href))!;
+  expect(created).toMatch(/\/invoices\/[0-9a-f-]{36}$/);
+  const createdRow = panel.getByRole("row").filter({ has: page.locator(`a[href="${created}"]`) });
+  await expect(createdRow).toContainText("Draft");
+  await clickThrough(
+    createdRow.locator(`a[href="${created}"]`).first(),
+    page.getByRole("heading", { level: 1, name: "Draft fee note" })
+  );
+  await expect(page.locator("main")).toContainText(matter);
+  return idFromUrl(page, "invoices");
+}
+
+/** Opens a fee note by its UUID and waits for its header. */
+export async function openFeeNote(page: Page, id: string): Promise<void> {
+  await page.goto(`${BASE}/invoices/${id}`);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("main").getByText(/^Client: /)).toBeVisible();
+}
+
+/** Adds a manual line (Add Line → Add Line Item) to the open draft fee note, at the default tax rate. */
+export async function addFeeNoteLine(
+  page: Page,
+  { description, quantity, unitPrice }: { description: string; quantity: string; unitPrice: string }
+): Promise<void> {
+  const main = page.locator("main");
+  await main.getByRole("button", { name: "Add Line" }).click();
+  const form = main.locator("div").filter({
+    has: page.getByRole("heading", { level: 3, name: "Add Line Item" }),
+  });
+  const editor = form.last();
+  await expect(editor).toBeVisible();
+  await editor.getByPlaceholder("Line item description").fill(description);
+  // Quantity and Unit Price are the editor's two (unlabelled) number inputs
+  const numbers = editor.locator('input[type="number"]');
+  await numbers.nth(0).fill(quantity);
+  await numbers.nth(1).fill(unitPrice);
+  await editor.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 3, name: "Add Line Item" })).toBeHidden({
+    timeout: 15_000,
+  });
+  await expect(main.getByRole("row").filter({ hasText: description })).toHaveCount(1, {
+    timeout: 15_000,
+  });
+}
+
+/**
+ * A row of the open fee note's totals block ("Subtotal", "VAT — Standard (15%)", "Total" …): the
+ * row whose text starts with `label` (so "Total" does not match "Subtotal").
+ */
+export function feeNoteTotalsRow(page: Page, label: string): Locator {
+  const totals = page.locator("main").getByText("Subtotal", { exact: true }).locator("xpath=../..");
+  return totals.locator(":scope > div").filter({ hasText: new RegExp(`^${escapeRegExp(label)}`) });
 }

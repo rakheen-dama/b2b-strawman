@@ -19,9 +19,9 @@ public enum EmailTemplate {
   COMMENT_ADDED(
       "New comment on your task", "Hi,\n\n%s\n\nView the comment in Kazi.\n\nBest,\nKazi"),
   DOCUMENT_SHARED(
-      "New document in your project", "Hi,\n\n%s\n\nView the document in Kazi.\n\nBest,\nKazi"),
+      "New document in your matter", "Hi,\n\n%s\n\nView the document in Kazi.\n\nBest,\nKazi"),
   MEMBER_INVITED(
-      "You've been added to a project", "Hi,\n\n%s\n\nView the project in Kazi.\n\nBest,\nKazi"),
+      "You've been added to a matter", "Hi,\n\n%s\n\nView the matter in Kazi.\n\nBest,\nKazi"),
   DEFAULT("Kazi notification", "Hi,\n\n%s\n\nBest,\nKazi");
 
   private final String subjectTemplate;

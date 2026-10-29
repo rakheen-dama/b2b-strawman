@@ -60,15 +60,15 @@ public class VariableMetadataRegistry {
     switch (templateEntityType) {
       case PROJECT -> {
         addCustomFieldGroup(groups, EntityType.PROJECT, "project", "Custom Fields");
-        addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Customer Custom Fields");
+        addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Client Custom Fields");
       }
       case CUSTOMER -> {
         addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Custom Fields");
       }
       case INVOICE -> {
         addCustomFieldGroup(groups, EntityType.INVOICE, "invoice", "Custom Fields");
-        addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Customer Custom Fields");
-        addCustomFieldGroup(groups, EntityType.PROJECT, "project", "Project Custom Fields");
+        addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Client Custom Fields");
+        addCustomFieldGroup(groups, EntityType.PROJECT, "project", "Matter Custom Fields");
       }
       case ORGANIZATION -> {
         // No custom fields for organization-level templates
@@ -114,11 +114,11 @@ public class VariableMetadataRegistry {
 
     groups.add(
         new VariableGroup(
-            "Project",
+            "Matter",
             "project",
             List.of(
-                new VariableInfo("project.id", "Project ID", "string"),
-                new VariableInfo("project.name", "Project Name", "string"),
+                new VariableInfo("project.id", "Matter ID", "string"),
+                new VariableInfo("project.name", "Matter Name", "string"),
                 new VariableInfo("project.description", "Description", "string"),
                 new VariableInfo("project.createdAt", "Created At", "date"),
                 // Promoted structural project fields (Epic 460)
@@ -128,12 +128,12 @@ public class VariableMetadataRegistry {
 
     groups.add(
         new VariableGroup(
-            "Customer",
+            "Client",
             "customer",
             List.of(
-                new VariableInfo("customer.id", "Customer ID", "string"),
-                new VariableInfo("customer.name", "Customer Name", "string"),
-                new VariableInfo("customer.email", "Customer Email", "string"),
+                new VariableInfo("customer.id", "Client ID", "string"),
+                new VariableInfo("customer.name", "Client Name", "string"),
+                new VariableInfo("customer.email", "Client Email", "string"),
                 // Promoted structural customer fields (Epic 459)
                 new VariableInfo("customer.taxNumber", "Tax Number", "string"),
                 new VariableInfo("customer.registrationNumber", "Registration Number", "string"),
@@ -177,7 +177,7 @@ public class VariableMetadataRegistry {
         List.of(
             new LoopSource(
                 "members",
-                "Project Members",
+                "Matter Members",
                 List.of("PROJECT"),
                 List.of("id", "name", "email", "role")),
             new LoopSource(
@@ -189,14 +189,14 @@ public class VariableMetadataRegistry {
 
     groups.add(
         new VariableGroup(
-            "Customer",
+            "Client",
             "customer",
             List.of(
-                new VariableInfo("customer.id", "Customer ID", "string"),
-                new VariableInfo("customer.name", "Customer Name", "string"),
-                new VariableInfo("customer.email", "Customer Email", "string"),
-                new VariableInfo("customer.phone", "Customer Phone", "string"),
-                new VariableInfo("customer.status", "Customer Status", "string"),
+                new VariableInfo("customer.id", "Client ID", "string"),
+                new VariableInfo("customer.name", "Client Name", "string"),
+                new VariableInfo("customer.email", "Client Email", "string"),
+                new VariableInfo("customer.phone", "Client Phone", "string"),
+                new VariableInfo("customer.status", "Client Status", "string"),
                 // Promoted structural customer fields (Epic 459)
                 new VariableInfo("customer.taxNumber", "Tax Number", "string"),
                 new VariableInfo("customer.registrationNumber", "Registration Number", "string"),
@@ -214,7 +214,7 @@ public class VariableMetadataRegistry {
 
     groups.add(
         new VariableGroup(
-            "Invoice Summary",
+            "Fee note summary",
             "invoiceSummary",
             List.of(new VariableInfo("totalOutstanding", "Total Outstanding", "currency"))));
 
@@ -226,10 +226,10 @@ public class VariableMetadataRegistry {
     loopSourcesByType.put(
         TemplateEntityType.CUSTOMER,
         List.of(
-            new LoopSource("projects", "Projects", List.of("CUSTOMER"), List.of("id", "name")),
+            new LoopSource("projects", "Matters", List.of("CUSTOMER"), List.of("id", "name")),
             new LoopSource(
                 "invoices",
-                "Invoices",
+                "Fee notes",
                 List.of("CUSTOMER"),
                 List.of(
                     "invoiceNumber",
@@ -248,12 +248,12 @@ public class VariableMetadataRegistry {
 
     groups.add(
         new VariableGroup(
-            "Invoice",
+            "Fee note",
             "invoice",
             List.of(
-                new VariableInfo("invoice.id", "Invoice ID", "string"),
-                new VariableInfo("invoice.invoiceNumber", "Invoice Number", "string"),
-                new VariableInfo("invoice.status", "Invoice Status", "string"),
+                new VariableInfo("invoice.id", "Fee note ID", "string"),
+                new VariableInfo("invoice.invoiceNumber", "Fee note number", "string"),
+                new VariableInfo("invoice.status", "Fee note status", "string"),
                 new VariableInfo("invoice.issueDate", "Issue Date", "date"),
                 new VariableInfo("invoice.dueDate", "Due Date", "date"),
                 new VariableInfo("invoice.subtotal", "Subtotal", "currency"),
@@ -269,12 +269,12 @@ public class VariableMetadataRegistry {
 
     groups.add(
         new VariableGroup(
-            "Customer",
+            "Client",
             "customer",
             List.of(
-                new VariableInfo("customer.id", "Customer ID", "string"),
-                new VariableInfo("customer.name", "Customer Name", "string"),
-                new VariableInfo("customer.email", "Customer Email", "string"),
+                new VariableInfo("customer.id", "Client ID", "string"),
+                new VariableInfo("customer.name", "Client Name", "string"),
+                new VariableInfo("customer.email", "Client Email", "string"),
                 // Promoted structural customer fields (Epic 459)
                 new VariableInfo("customer.taxNumber", "Tax Number", "string"),
                 new VariableInfo("customer.registrationNumber", "Registration Number", "string"),
@@ -292,11 +292,11 @@ public class VariableMetadataRegistry {
 
     groups.add(
         new VariableGroup(
-            "Project",
+            "Matter",
             "project",
             List.of(
-                new VariableInfo("project.id", "Project ID", "string"),
-                new VariableInfo("project.name", "Project Name", "string"),
+                new VariableInfo("project.id", "Matter ID", "string"),
+                new VariableInfo("project.name", "Matter Name", "string"),
                 // Promoted structural project fields (Epic 460)
                 new VariableInfo("project.referenceNumber", "Reference Number", "string"),
                 new VariableInfo("project.priority", "Priority", "string"),
@@ -312,7 +312,7 @@ public class VariableMetadataRegistry {
         List.of(
             new LoopSource(
                 "lines",
-                "Invoice Lines",
+                "Fee note lines",
                 List.of("INVOICE"),
                 List.of("description", "quantity", "unitPrice", "amount"))));
   }

@@ -260,7 +260,7 @@ public class PaymentReconciliationService {
     // Notify admins + owners
     notificationService.notifyAdminsAndOwners(
         "PAYMENT_FAILED",
-        "Online payment for Invoice " + invoice.getInvoiceNumber() + " failed",
+        "Online payment for fee note " + invoice.getInvoiceNumber() + " failed",
         null,
         "INVOICE",
         invoice.getId());
@@ -297,7 +297,7 @@ public class PaymentReconciliationService {
       notificationService.createNotification(
           invoice.getCreatedBy(),
           "PAYMENT_LINK_EXPIRED",
-          "Payment link for Invoice " + invoice.getInvoiceNumber() + " has expired",
+          "Payment link for fee note " + invoice.getInvoiceNumber() + " has expired",
           null,
           "INVOICE",
           invoice.getId(),

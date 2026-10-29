@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
@@ -178,7 +179,7 @@ public class DataExportService {
   public ExportStatusResponse exportCustomerData(UUID customerId, UUID actorId) {
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Collect all data (compliance export: ALL time entries, not just billable)
     Map<String, Object> data = collectData(customerId, true);

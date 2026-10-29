@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestDeclinedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestRevokedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestViewedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -1102,7 +1103,8 @@ public class AcceptanceService {
               .findById(doc.getPrimaryEntityId())
               .map(invoice -> invoice.getCustomerId())
               .orElseThrow(
-                  () -> new ResourceNotFoundException("Invoice", doc.getPrimaryEntityId()));
+                  () ->
+                      new ResourceNotFoundException(EntityNoun.FEE_NOTE, doc.getPrimaryEntityId()));
       case ORGANIZATION ->
           throw new InvalidStateException(
               "Unsupported entity type",

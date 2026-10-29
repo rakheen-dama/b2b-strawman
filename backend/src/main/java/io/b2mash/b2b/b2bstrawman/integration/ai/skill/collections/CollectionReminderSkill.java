@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.collections.CollectionStage;
 import io.b2mash.b2b.b2bstrawman.collections.ReminderHtmlSanitizer;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGate;
@@ -105,11 +106,13 @@ public class CollectionReminderSkill implements AiSkill {
     Invoice invoice =
         invoiceRepository
             .findById(activity.getInvoiceId())
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", activity.getInvoiceId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, activity.getInvoiceId()));
     Customer customer =
         customerRepository
             .findById(activity.getCustomerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", activity.getCustomerId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, activity.getCustomerId()));
 
     long daysOverdue =
         invoice.getDueDate() != null

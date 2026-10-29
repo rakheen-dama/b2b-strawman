@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectUnlinkedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
@@ -61,7 +62,7 @@ public class CustomerProjectService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Check lifecycle guard before linking
     customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
@@ -69,7 +70,7 @@ public class CustomerProjectService {
     // Validate project exists in tenant (uses filter-aware JPQL query)
     projectRepository
         .findById(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     // Check permission: Owner/Admin or Project Lead
     requireLinkPermission(projectId, actor);
@@ -106,19 +107,19 @@ public class CustomerProjectService {
     // Validate customer exists in tenant
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Validate project exists in tenant
     projectRepository
         .findById(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     // Check permission: Owner/Admin or Project Lead
     requireLinkPermission(projectId, actor);
 
     // Check link exists
     if (!customerProjectRepository.existsByCustomerIdAndProjectId(customerId, projectId)) {
-      throw new ResourceNotFoundException("CustomerProject link", customerId);
+      throw new ResourceNotFoundException(EntityNoun.CLIENT_MATTER_LINK, customerId);
     }
 
     customerProjectRepository.deleteByCustomerIdAndProjectId(customerId, projectId);
@@ -148,7 +149,7 @@ public class CustomerProjectService {
     // Validate customer exists in tenant
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Merge projects from both linkage mechanisms:
     // 1. Join table (customer_projects) — created via "Link Project" dialog

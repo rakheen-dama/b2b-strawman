@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.setupstatus;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldUtils;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -46,7 +47,7 @@ public class ProjectSetupStatusService {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     boolean customerAssigned = !customerProjectRepository.findByProjectId(projectId).isEmpty();
 

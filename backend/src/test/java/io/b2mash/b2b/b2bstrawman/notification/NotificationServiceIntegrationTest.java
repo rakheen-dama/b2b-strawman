@@ -487,7 +487,7 @@ class NotificationServiceIntegrationTest {
                   .anyMatch(
                       n ->
                           "MEMBER_INVITED".equals(n.getType())
-                              && n.getTitle().contains("You were added to project")
+                              && n.getTitle().contains("You were added to matter")
                               && n.getTitle().contains("Test Project"));
             });
   }

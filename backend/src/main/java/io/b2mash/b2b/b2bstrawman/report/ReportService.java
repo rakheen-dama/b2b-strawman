@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.report;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
@@ -72,7 +73,7 @@ public class ReportService {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     var revenueList = reportRepository.getProjectRevenue(projectId, from, to);
     var costList = reportRepository.getProjectCost(projectId, from, to);
@@ -97,7 +98,7 @@ public class ReportService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     var revenueList = reportRepository.getCustomerRevenue(customerId, from, to);
     var costList = reportRepository.getCustomerCost(customerId, from, to);

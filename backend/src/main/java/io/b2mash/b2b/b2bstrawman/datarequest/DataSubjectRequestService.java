@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.datarequest;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
@@ -65,7 +66,7 @@ public class DataSubjectRequestService {
     }
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     int deadlineDays =

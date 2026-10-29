@@ -406,7 +406,7 @@ class NotificationEventHandlerIntegrationTest {
                   .anyMatch(
                       n ->
                           "MEMBER_INVITED".equals(n.getType())
-                              && n.getTitle().contains("You were added to project"));
+                              && n.getTitle().contains("You were added to matter"));
             });
   }
 
@@ -422,7 +422,7 @@ class NotificationEventHandlerIntegrationTest {
         new BillingRunCompletedEvent(runId, "", PERIOD_FROM, PERIOD_TO, 1, tenantSchema, ORG_ID));
 
     assertThat(billingRunNotificationTitle("BILLING_RUN_COMPLETED", runId))
-        .isEqualTo("Billing run 01 Jul 2026 – 31 Jul 2026 completed — 1 invoice generated");
+        .isEqualTo("Billing run 01 Jul 2026 – 31 Jul 2026 completed — 1 fee note generated");
   }
 
   @Test
@@ -433,7 +433,7 @@ class NotificationEventHandlerIntegrationTest {
             runId, "July Run", PERIOD_FROM, PERIOD_TO, 2, tenantSchema, ORG_ID));
 
     assertThat(billingRunNotificationTitle("BILLING_RUN_COMPLETED", runId))
-        .isEqualTo("Billing run \"July Run\" completed — 2 invoices generated");
+        .isEqualTo("Billing run \"July Run\" completed — 2 fee notes generated");
   }
 
   @Test
@@ -445,7 +445,7 @@ class NotificationEventHandlerIntegrationTest {
         new BillingRunCompletedEvent(runId, "", null, null, 1, tenantSchema, ORG_ID));
 
     assertThat(billingRunNotificationTitle("BILLING_RUN_COMPLETED", runId))
-        .isEqualTo("Billing run completed — 1 invoice generated");
+        .isEqualTo("Billing run completed — 1 fee note generated");
   }
 
   @Test
@@ -469,7 +469,7 @@ class NotificationEventHandlerIntegrationTest {
                     runId, null, PERIOD_FROM, PERIOD_TO, 1, tenantSchema, ORG_ID)));
 
     assertThat(billingRunNotificationTitle("BILLING_RUN_SENT", runId))
-        .isEqualTo("Billing run 01 Jul 2026 – 31 Jul 2026 — 1 invoice sent");
+        .isEqualTo("Billing run 01 Jul 2026 – 31 Jul 2026 — 1 fee note sent");
   }
 
   /** Fetches the owner's notification title for the given type + billing-run reference id. */

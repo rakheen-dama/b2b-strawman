@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventMetadataResolver;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventResponse;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -43,7 +44,7 @@ public class ClientActivityService {
   @Transactional(readOnly = true)
   public Page<AuditEventResponse> getClientActivity(UUID clientId, int page, int size) {
     if (!customerRepository.existsById(clientId)) {
-      throw new ResourceNotFoundException("Customer", clientId);
+      throw new ResourceNotFoundException(EntityNoun.CLIENT, clientId);
     }
     // Sort-free: the ordering (occurred_at DESC, id DESC) is baked into the native query.
     var pageable = PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, MAX_PAGE_SIZE));

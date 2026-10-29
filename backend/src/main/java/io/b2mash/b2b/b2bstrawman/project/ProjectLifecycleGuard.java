@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.util.UUID;
@@ -26,7 +27,7 @@ public class ProjectLifecycleGuard {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
     if (project.isReadOnly()) {
       throw new InvalidStateException(
           "Project is archived", "Project is archived. No modifications allowed.");
@@ -41,7 +42,7 @@ public class ProjectLifecycleGuard {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
     if (project.getStatus() != ProjectStatus.ACTIVE) {
       throw new InvalidStateException(
           "Project is not active",

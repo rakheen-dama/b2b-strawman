@@ -64,12 +64,12 @@ public class VerticalModuleRegistry {
         "court_calendar",
         new ModuleDefinition(
             "court_calendar",
-            "Court Calendar",
+            "Court dates",
             "Court date tracking and deadline management",
             "active",
             ModuleCategory.VERTICAL,
             List.of("legal-za"),
-            List.of(new NavItem("/court-calendar", "Court Calendar", "legal"))));
+            List.of()));
 
     map.put(
         "conflict_check",
@@ -100,7 +100,7 @@ public class VerticalModuleRegistry {
         new ModuleDefinition(
             "bulk_billing",
             "Bulk Billing Runs",
-            "Batch invoice generation across multiple customers in a single run. Best for firms"
+            "Batch fee-note generation across multiple clients in a single run. Best for firms"
                 + " billing 10+ clients per cycle.",
             "active",
             ModuleCategory.HORIZONTAL,
@@ -112,7 +112,7 @@ public class VerticalModuleRegistry {
         new ModuleDefinition(
             "information_requests",
             "Information Requests",
-            "Customer document-request workflows with portal pickup and acceptance",
+            "Client document-request workflows with portal pickup and acceptance",
             "active",
             ModuleCategory.HORIZONTAL,
             List.of("legal-za"),

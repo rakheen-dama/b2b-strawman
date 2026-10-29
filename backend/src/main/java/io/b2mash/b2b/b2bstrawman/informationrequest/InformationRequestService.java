@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.event.InformationRequestCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.RequestItemAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.RequestItemRejectedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.AdHocItemRequest;
@@ -221,12 +222,12 @@ public class InformationRequestService {
       boolean createdByScheduler) {
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     validatePortalContact(portalContactId, customerId);
     if (projectId != null) {
       projectRepository
           .findById(projectId)
-          .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+          .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
     }
     var template =
         templateRepository
@@ -294,12 +295,12 @@ public class InformationRequestService {
       List<AdHocItemRequest> items) {
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     validatePortalContact(portalContactId, customerId);
     if (projectId != null) {
       projectRepository
           .findById(projectId)
-          .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+          .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
     }
 
     UUID memberId = RequestScopes.requireMemberId();
@@ -622,7 +623,7 @@ public class InformationRequestService {
     if (dto.matterId() != null) {
       projectRepository
           .findById(dto.matterId())
-          .orElseThrow(() -> new ResourceNotFoundException("Project", dto.matterId()));
+          .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, dto.matterId()));
     }
     request.setProjectId(dto.matterId());
     request.setReminderIntervalDays(dto.reminderIntervalDays());

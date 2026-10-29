@@ -353,7 +353,7 @@ class CustomerIntegrationTest {
         mockMvc.perform(
             get("/api/clients/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")));
-    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Customer not found");
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Client not found");
   }
 
   // --- Capability Tests (added in Epic 315A) ---

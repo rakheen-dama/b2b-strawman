@@ -505,8 +505,8 @@ class CollectionsReadApiTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_read_owner")))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
-        .andExpect(jsonPath("$.title").value("Invoice not found"))
-        .andExpect(jsonPath("$.detail").value("No invoice found with id " + unknownInvoiceId));
+        .andExpect(jsonPath("$.title").value("Fee note not found"))
+        .andExpect(jsonPath("$.detail").value("No fee note found with id " + unknownInvoiceId));
   }
 
   @Test

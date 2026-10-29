@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -232,7 +233,8 @@ public class TrustTransactionService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -326,11 +328,13 @@ public class TrustTransactionService {
     var sourceCustomer =
         customerRepository
             .findById(request.sourceClientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.sourceClientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.sourceClientId()));
 
     customerRepository
         .findById(request.targetClientId())
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", request.targetClientId()));
+        .orElseThrow(
+            () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.targetClientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -499,7 +503,8 @@ public class TrustTransactionService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -570,12 +575,14 @@ public class TrustTransactionService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     var invoice =
         invoiceRepository
             .findById(request.invoiceId())
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", request.invoiceId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, request.invoiceId()));
 
     if (!invoice.getCustomerId().equals(request.clientId())) {
       throw new InvalidStateException(
@@ -671,7 +678,8 @@ public class TrustTransactionService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -842,7 +850,9 @@ public class TrustTransactionService {
           customerRepository
               .findById(transaction.getCustomerId())
               .orElseThrow(
-                  () -> new ResourceNotFoundException("Customer", transaction.getCustomerId()));
+                  () ->
+                      new ResourceNotFoundException(
+                          EntityNoun.CLIENT, transaction.getCustomerId()));
 
       var ledgerCard =
           ledgerCardRepository
@@ -892,7 +902,9 @@ public class TrustTransactionService {
             invoiceRepository
                 .findByIdForUpdate(transaction.getInvoiceId())
                 .orElseThrow(
-                    () -> new ResourceNotFoundException("Invoice", transaction.getInvoiceId()));
+                    () ->
+                        new ResourceNotFoundException(
+                            EntityNoun.FEE_NOTE, transaction.getInvoiceId()));
         if (invoice.getStatus() == InvoiceStatus.PAID) {
           throw new InvalidStateException(
               "Invoice already paid",

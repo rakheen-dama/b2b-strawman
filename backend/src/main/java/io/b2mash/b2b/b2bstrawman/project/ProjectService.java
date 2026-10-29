@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.diary.NextDiaryDateRepository;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -556,7 +557,9 @@ public class ProjectService {
   @Transactional(readOnly = true)
   public MatterWithRole getProject(UUID id, ActorContext actor) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, id));
     var access = projectAccessService.requireViewAccess(id, actor);
     return new MatterWithRole(project, access.projectRole());
   }
@@ -769,7 +772,9 @@ public class ProjectService {
       ProjectPriority priority,
       String workType) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, id));
     var access = projectAccessService.requireEditAccess(id, actor);
 
     // Validate customer link if provided. GAP-L-35: pass the existing customerId so the
@@ -858,7 +863,9 @@ public class ProjectService {
   public List<FieldDefinitionResponse> setFieldGroups(
       UUID id, List<UUID> appliedFieldGroups, ActorContext actor) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, id));
     projectAccessService.requireEditAccess(id, actor);
 
     var result = projectFieldService.setFieldGroups(project, appliedFieldGroups);
@@ -871,7 +878,9 @@ public class ProjectService {
   public void deleteProject(UUID id) {
     RequestScopes.requireOwner();
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, id));
 
     // Guard 1: Status check — only ACTIVE projects can be deleted
     if (project.getStatus() != ProjectStatus.ACTIVE) {
@@ -907,7 +916,7 @@ public class ProjectService {
     var project =
         repository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     projectAccessService.requireEditAccess(projectId, actor);
 
@@ -988,7 +997,7 @@ public class ProjectService {
     var project =
         repository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     projectAccessService.requireEditAccess(projectId, actor);
 
@@ -1038,7 +1047,7 @@ public class ProjectService {
     var project =
         repository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     projectAccessService.requireEditAccess(projectId, actor);
 

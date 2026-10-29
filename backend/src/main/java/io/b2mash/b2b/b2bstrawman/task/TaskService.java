@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.event.TaskCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskRecurrenceCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskReopenedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -317,7 +318,7 @@ public class TaskService {
     boolean isAdminOrOwner = "admin".equals(actor.orgRole()) || "owner".equals(actor.orgRole());
     if (assigneeId != null && isAdminOrOwner) {
       if (!projectMemberRepository.existsByProjectIdAndMemberId(projectId, assigneeId)) {
-        throw new ResourceNotFoundException("ProjectMember", assigneeId);
+        throw new ResourceNotFoundException(EntityNoun.MATTER_MEMBER, assigneeId);
       }
       task.claim(assigneeId);
       // TODO: Send assignee notification on pre-assign (deferred — task.created event captures
@@ -469,7 +470,7 @@ public class TaskService {
 
     if (assigneeId != null
         && !projectMemberRepository.existsByProjectIdAndMemberId(task.getProjectId(), assigneeId)) {
-      throw new ResourceNotFoundException("ProjectMember", assigneeId);
+      throw new ResourceNotFoundException(EntityNoun.MATTER_MEMBER, assigneeId);
     }
 
     // Validate recurrence rule format if provided; blank/empty = clear recurrence

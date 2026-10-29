@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
@@ -59,7 +60,7 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
     var project =
         projectRepository
             .findById(entityId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", entityId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, entityId));
 
     var context = new HashMap<String, Object>();
     contextHelper.populateLocale(context);

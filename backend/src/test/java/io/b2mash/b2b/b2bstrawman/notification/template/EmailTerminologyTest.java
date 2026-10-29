@@ -17,9 +17,14 @@ class EmailTerminologyTest {
   }
 
   @Test
-  void nullOrUnknownNamespace_returnsEmptyMap() {
-    assertThat(emailTerminology.resolve(null)).isEmpty();
-    assertThat(emailTerminology.resolve("retail-uk")).isEmpty();
+  void nullOrUnknownNamespace_returnsTheLegalVocabulary() {
+    // 628D (R-4, ADR-330/ADR-338): one vocabulary for every tenant, profile or not.
+    assertThat(emailTerminology.resolve(null))
+        .containsEntry("Invoice", "Fee Note")
+        .containsEntry("invoices", "fee notes")
+        .isEqualTo(emailTerminology.resolve("legal-za"));
+    assertThat(emailTerminology.resolve("retail-uk"))
+        .isEqualTo(emailTerminology.resolve("legal-za"));
   }
 
   @Test

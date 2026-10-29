@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -165,7 +166,7 @@ public class ChecklistInstanceService {
       customer =
           customerRepository
               .findById(customerId)
-              .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+              .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     }
     // Phase 63: acct_entity_type was promoted to a structural column
     if (customer.getEntityType() != null) {
@@ -392,7 +393,7 @@ public class ChecklistInstanceService {
   public List<ChecklistInstanceResponse> getInstancesWithItemsForCustomer(UUID customerId) {
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     var instances = instanceRepository.findByCustomerId(customerId);
     if (instances.isEmpty()) {
@@ -542,7 +543,7 @@ public class ChecklistInstanceService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     if (customer.getLifecycleStatus() != LifecycleStatus.ONBOARDING) {
       return;
@@ -575,7 +576,7 @@ public class ChecklistInstanceService {
   private void sendPrerequisiteBlockedNotification(
       io.b2mash.b2b.b2bstrawman.customer.Customer customer, PrerequisiteCheck prereqCheck) {
     var title =
-        "Customer \"%s\" has completed all checklist items but has %d incomplete required fields for activation."
+        "Client \"%s\" has completed all checklist items but has %d incomplete required fields for activation."
             .formatted(customer.getName(), prereqCheck.violations().size());
 
     notificationService.notifyAdminsAndOwners(

@@ -32,7 +32,8 @@ import org.springframework.test.web.servlet.MockMvc;
  *       → warning copy, COMPANY/TRUST → blocking copy).
  * </ul>
  *
- * A generic (no-profile) tenant is asserted as a control — its copy must keep saying "Invoice".
+ * A generic (no-profile) tenant is asserted too — since 628D (R-4, ADR-330/ADR-338) its copy says
+ * "fee note" as well: one vocabulary for every tenant, profile or not.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -198,7 +199,7 @@ class InvoiceTerminologyLegalZaTest {
   }
 
   @Test
-  void validateInvoiceSend_genericTenant_taxNumberMessageStillSaysInvoice() {
+  void validateInvoiceSend_genericTenant_taxNumberMessageAlsoSaysFeeNote() {
     var checks =
         ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
             .where(RequestScopes.ORG_ID, GENERIC_ORG_ID)
@@ -222,7 +223,7 @@ class InvoiceTerminologyLegalZaTest {
     assertThat(taxCheck.passed()).isFalse();
     assertThat(taxCheck.message())
         .isEqualTo(
-            "Client has no tax number \u2014 the invoice will be sent without a client VAT number");
+            "Client has no tax number \u2014 the fee note will be sent without a client VAT number");
   }
 
   // --- Helpers ---

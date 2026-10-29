@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -120,7 +121,7 @@ public class InvoiceService {
             .orElseThrow(
                 () ->
                     new io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException(
-                        "Invoice", invoiceId));
+                        EntityNoun.FEE_NOTE, invoiceId));
     return renderingService.buildResponse(invoice);
   }
 
@@ -143,7 +144,7 @@ public class InvoiceService {
         .orElseThrow(
             () ->
                 new io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException(
-                    "Invoice", invoiceId));
+                    EntityNoun.FEE_NOTE, invoiceId));
 
     return paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(invoiceId).stream()
         .map(PaymentEventResponse::from)
@@ -260,7 +261,7 @@ public class InvoiceService {
   public String renderPreview(UUID invoiceId, UUID memberId) {
     invoiceRepository
         .findById(invoiceId)
-        .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
     var template =
         generatedDocumentService
             .resolveDefaultInvoiceTemplate()

@@ -295,8 +295,8 @@ class PortalTrustControllerIntegrationTest {
   }
 
   // ==========================================================================
-  // Scenario 5 (GAP-L-55) — unknown matter yields a "Project not found" error so the portal
-  // message matches sibling portal endpoints instead of drifting into legal-firm "Matter" wording.
+  // Scenario 5 (GAP-L-55) — unknown matter yields a "Matter not found" error so the portal
+  // message matches sibling portal endpoints (628D: 404 titles use EntityNoun, ADR-357).
   // ==========================================================================
 
   @Test
@@ -311,7 +311,7 @@ class PortalTrustControllerIntegrationTest {
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
-        .andExpect(jsonPath("$.title").value("Project not found"));
+        .andExpect(jsonPath("$.title").value("Matter not found"));
   }
 
   // ==========================================================================

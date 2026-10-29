@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.ExpenseCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ExpenseDeletedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -167,10 +168,10 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId);
     }
 
     return expense;
@@ -213,7 +214,7 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     validateExpenseUpdate(expense, projectId, actor);
     validateExpenseReferences(projectId, taskId, receiptDocumentId, amount, markupPercent);
@@ -253,10 +254,10 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId);
     }
 
     // Guard: not BILLED
@@ -296,10 +297,10 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId);
     }
 
     // ADMIN+ only
@@ -339,10 +340,10 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId);
     }
 
     // ADMIN+ only
@@ -388,7 +389,7 @@ public class ExpenseService {
   /** Validates that an expense can be updated: belongs to project, not billed, has permission. */
   private void validateExpenseUpdate(Expense expense, UUID projectId, ActorContext actor) {
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expense.getId());
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expense.getId());
     }
 
     // Guard: must not be BILLED

@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -38,7 +39,7 @@ public class UnbilledTimeSummaryService {
   public UnbilledTimeSummary getProjectUnbilledSummary(UUID projectId) {
     projectRepository
         .findById(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     String currency = resolveCurrency();
 
@@ -87,7 +88,7 @@ public class UnbilledTimeSummaryService {
   public UnbilledTimeSummary getCustomerUnbilledSummary(UUID customerId) {
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     String currency = resolveCurrency();
 

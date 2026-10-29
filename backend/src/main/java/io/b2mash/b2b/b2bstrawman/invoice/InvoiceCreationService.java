@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -295,7 +296,7 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new InvalidStateException(
@@ -342,7 +343,7 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (request.taxAmount() != null
         && lineRepository.existsByInvoiceIdAndTaxRateIdIsNotNull(invoiceId)) {
@@ -392,7 +393,7 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
@@ -472,7 +473,7 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
@@ -570,7 +571,7 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
@@ -580,10 +581,10 @@ public class InvoiceCreationService {
     var line =
         lineRepository
             .findById(lineId)
-            .orElseThrow(() -> new ResourceNotFoundException("InvoiceLine", lineId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId));
 
     if (!line.getInvoiceId().equals(invoiceId)) {
-      throw new ResourceNotFoundException("InvoiceLine", lineId);
+      throw new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId);
     }
 
     int sortOrder = request.sortOrder() != null ? request.sortOrder() : line.getSortOrder();
@@ -626,7 +627,7 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
@@ -636,10 +637,10 @@ public class InvoiceCreationService {
     var line =
         lineRepository
             .findById(lineId)
-            .orElseThrow(() -> new ResourceNotFoundException("InvoiceLine", lineId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId));
 
     if (!line.getInvoiceId().equals(invoiceId)) {
-      throw new ResourceNotFoundException("InvoiceLine", lineId);
+      throw new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId);
     }
 
     if (line.getTimeEntryId() != null) {
@@ -711,7 +712,7 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
@@ -749,7 +750,7 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
@@ -794,7 +795,7 @@ public class InvoiceCreationService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     if (!"ACTIVE".equals(customer.getStatus())) {
       throw new InvalidStateException(
@@ -942,7 +943,7 @@ public class InvoiceCreationService {
       var expense =
           expenseRepository
               .findById(expenseId)
-              .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+              .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
       if (!expense.isBillable()) {
         throw new InvalidStateException(
@@ -1006,7 +1007,7 @@ public class InvoiceCreationService {
           disbursementRepository
               .findById(disbursementId)
               .orElseThrow(
-                  () -> new ResourceNotFoundException("LegalDisbursement", disbursementId));
+                  () -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, disbursementId));
 
       if (!DisbursementApprovalStatus.APPROVED.name().equals(disbursement.getApprovalStatus())) {
         throw new InvalidStateException(

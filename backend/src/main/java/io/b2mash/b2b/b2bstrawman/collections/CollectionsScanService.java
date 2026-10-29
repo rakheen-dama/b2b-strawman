@@ -382,7 +382,7 @@ public class CollectionsScanService {
   private void fireEscalationNotification(EscalationNotification notification) {
     notificationService.notifyAdminsAndOwners(
         "COLLECTION_ESCALATED",
-        "Invoice "
+        "Fee note "
             + notification.invoiceNumber()
             + " is "
             + notification.daysOverdue()

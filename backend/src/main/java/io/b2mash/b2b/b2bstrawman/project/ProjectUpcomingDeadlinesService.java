@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -55,7 +56,7 @@ public class ProjectUpcomingDeadlinesService {
   public List<MatterUpcomingDeadline> getUpcomingDeadlines(UUID projectId, ActorContext actor) {
     projectRepository
         .findById(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
     projectAccessService.requireViewAccess(projectId, actor);
 
     LocalDate today = LocalDate.now(clock);

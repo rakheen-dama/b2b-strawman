@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
@@ -93,7 +94,7 @@ public class DraftingSkill implements AiSkill {
     Project project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     // Load template from additional context
     Object templateIdObj = context.additionalContext().get("templateId");

@@ -358,8 +358,8 @@ class ProjectMemberIntegrationTest {
                 .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
-        .andExpect(jsonPath("$.title").value("Project not found"))
-        .andExpect(jsonPath("$.detail").value("No project found with id " + projectId));
+        .andExpect(jsonPath("$.title").value("Matter not found"))
+        .andExpect(jsonPath("$.detail").value("No matter found with id " + projectId));
   }
 
   @Test

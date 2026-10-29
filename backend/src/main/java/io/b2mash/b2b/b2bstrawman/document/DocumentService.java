@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent;
 import io.b2mash.b2b.b2bstrawman.document.DocumentController.DocumentResponse;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -255,7 +256,7 @@ public class DocumentService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Check lifecycle guard before creating customer document
     customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_DOCUMENT);

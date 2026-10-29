@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
@@ -40,7 +41,7 @@ public class PortalContactService {
     // Validate customer exists (JPQL query scoped to current tenant schema via search_path)
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Check email uniqueness per customer
     if (portalContactRepository.existsByEmailAndCustomerId(email, customerId)) {
@@ -67,7 +68,7 @@ public class PortalContactService {
   public List<PortalContactSummary> listPortalContactSummaries(UUID customerId) {
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     return portalContactRepository.findByCustomerId(customerId).stream()
         .map(PortalContactSummary::from)
         .toList();

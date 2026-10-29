@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -58,7 +59,7 @@ public class ProjectAccessService {
   public ProjectAccess requireViewAccess(UUID projectId, ActorContext actor) {
     var access = checkAccess(projectId, actor);
     if (!access.canView()) {
-      throw new ResourceNotFoundException("Project", projectId);
+      throw new ResourceNotFoundException(EntityNoun.MATTER, projectId);
     }
     return access;
   }

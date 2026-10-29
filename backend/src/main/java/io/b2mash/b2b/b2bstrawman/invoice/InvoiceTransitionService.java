@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentPartiallyReversedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentReversedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.InvoiceValidationFailedException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -106,7 +107,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
     if (lines.isEmpty()) {
@@ -162,7 +163,10 @@ public class InvoiceTransitionService {
         var expense =
             expenseRepository
                 .findById(line.getExpenseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Expense", line.getExpenseId()));
+                .orElseThrow(
+                    () ->
+                        new ResourceNotFoundException(
+                            EntityNoun.DISBURSEMENT, line.getExpenseId()));
         if (expense.getInvoiceId() != null && !expense.getInvoiceId().equals(invoiceId)) {
           throw new ResourceConflictException(
               "Expense already billed",
@@ -228,7 +232,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     var validationChecks = invoiceValidationService.validateInvoiceSend(invoice);
     if (invoiceValidationService.hasCriticalFailures(validationChecks) && !overrideWarnings) {
@@ -337,7 +341,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
     try {
       invoice.requireStatus(Invoice.PAYABLE, "take a payment");
     } catch (IllegalStateException e) {
@@ -514,7 +518,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
     return postPayment(
         invoiceId, PaymentPosting.manual(invoice.getBalanceDue(), method, reference));
   }
@@ -564,7 +568,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (!invoice.isPayable()) {
       throw new ResourceConflictException(
@@ -604,7 +608,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (!Invoice.REVERSIBLE.contains(invoice.getStatus())) {
       throw new InvalidStateException(
@@ -785,7 +789,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     try {
       invoice.voidInvoice();

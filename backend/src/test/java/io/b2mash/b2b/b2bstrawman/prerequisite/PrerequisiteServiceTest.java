@@ -221,13 +221,12 @@ class PrerequisiteServiceTest {
   @Test
   void prerequisiteContext_displayLabels_areCorrect() {
     assertThat(PrerequisiteContext.LIFECYCLE_ACTIVATION.getDisplayLabel())
-        .isEqualTo("Customer Activation");
+        .isEqualTo("Client Activation");
     assertThat(PrerequisiteContext.INVOICE_GENERATION.getDisplayLabel())
-        .isEqualTo("Invoice Generation");
+        .isEqualTo("Fee note generation");
     assertThat(PrerequisiteContext.DOCUMENT_GENERATION.getDisplayLabel())
         .isEqualTo("Document Generation");
-    assertThat(PrerequisiteContext.PROJECT_CREATION.getDisplayLabel())
-        .isEqualTo("Project Creation");
+    assertThat(PrerequisiteContext.PROJECT_CREATION.getDisplayLabel()).isEqualTo("Matter Creation");
   }
 
   // --- Structural check tests (244.6) ---

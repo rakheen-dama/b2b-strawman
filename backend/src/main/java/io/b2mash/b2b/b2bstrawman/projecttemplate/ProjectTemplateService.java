@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestDraftCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
@@ -211,7 +212,7 @@ public class ProjectTemplateService {
     var template =
         templateRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", id));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER_TEMPLATE, id));
 
     validateRequestTemplateId(request.requestTemplateId());
     template.update(
@@ -278,7 +279,7 @@ public class ProjectTemplateService {
     var template =
         templateRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", id));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER_TEMPLATE, id));
 
     String templateName = template.getName();
     templateRepository.deleteById(id);
@@ -299,7 +300,7 @@ public class ProjectTemplateService {
     var source =
         templateRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", id));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER_TEMPLATE, id));
 
     var tasks = templateTaskRepository.findByTemplateIdOrderBySortOrder(id);
     var tagIds = templateTagRepository.findTagIdsByTemplateId(id);
@@ -377,7 +378,7 @@ public class ProjectTemplateService {
     var template =
         templateRepository
             .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", id));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER_TEMPLATE, id));
     return buildResponse(template);
   }
 
@@ -388,7 +389,7 @@ public class ProjectTemplateService {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     // 2. Permission check: admin/owner always allowed; member must be project lead
     requireAdminOwnerOrProjectLead(actor.orgRole(), projectId, actor.memberId());
@@ -483,7 +484,8 @@ public class ProjectTemplateService {
     var template =
         templateRepository
             .findById(templateId)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", templateId));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.MATTER_TEMPLATE, templateId));
     if (!template.isActive()) {
       throw new InvalidStateException(
           "Template inactive", "Cannot create project from an inactive template.");
@@ -495,7 +497,8 @@ public class ProjectTemplateService {
       customer =
           customerRepository
               .findById(request.clientId())
-              .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+              .orElseThrow(
+                  () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
       // Check engagement prerequisites for manual project creation
       var prereqCheck =
@@ -833,7 +836,8 @@ public class ProjectTemplateService {
     var template =
         templateRepository
             .findById(templateId)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", templateId));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.MATTER_TEMPLATE, templateId));
 
     var fieldIds = template.getRequiredCustomerFieldIds();
     if (fieldIds == null || fieldIds.isEmpty()) {
@@ -851,7 +855,8 @@ public class ProjectTemplateService {
     var template =
         templateRepository
             .findById(templateId)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectTemplate", templateId));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.MATTER_TEMPLATE, templateId));
 
     if (fieldDefinitionIds != null && !fieldDefinitionIds.isEmpty()) {
       var fields = fieldDefinitionRepository.findAllById(fieldDefinitionIds);

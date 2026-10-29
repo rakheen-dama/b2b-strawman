@@ -120,6 +120,8 @@ test.describe
         .getByRole("row")
         .filter({ hasText: DESCRIPTION }),
     ).toBeVisible();
+    // Statements load independently of the balance: no loading skeleton may remain.
+    await expect(page.locator('[data-slot="skeleton"]')).toHaveCount(0);
 
     // Balance + transactions grow with every run's deposit: masked (asserted above). By label:
     // below md the transactions render as a <ul aria-label="Trust transactions">.

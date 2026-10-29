@@ -125,6 +125,9 @@ const PAGES: Array<{
           new RegExp(`/trust/${matters[0].matterId}$`),
         );
         await expect(page.getByLabel("Current balance")).toBeVisible();
+        // Transactions and statements load independently of the balance: no
+        // loading skeleton may remain in the capture.
+        await expect(page.locator('[data-slot="skeleton"]')).toHaveCount(0);
       } else {
         await h1(page, "Trust statement");
         if (matters.length === 0) {

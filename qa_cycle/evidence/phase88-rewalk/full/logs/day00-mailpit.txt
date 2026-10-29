@@ -1,0 +1,6 @@
+# 2026-10-29T13:45:43Z 0.6 Mailpit search to:thandi@mathebula-test.local
+UJ3HXoAJ33jC9UjKzZs5hQ	2026-10-29T13:45:34.317Z	thandi@mathebula-test.local	Your Kazi verification code
+S3TJcWLLFayunZhfL6cEa9	2026-10-29T13:47:23.877Z	thandi@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+# 2026-10-29T13:50:33Z 0.30 Mailpit invitations
+7DA8LpsXnky4Htky8EtxDu	2026-10-29T13:50:11.726Z	bob@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+d3nSx8DmRagLZxJL3SJTdP	2026-10-29T13:50:14.875Z	carol@mathebula-test.local	Invitation to join the Mathebula & Partners organization

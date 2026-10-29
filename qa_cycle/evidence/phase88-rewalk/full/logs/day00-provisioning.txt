@@ -1,0 +1,24 @@
+# 2026-10-29T13:47:41Z 0.16 provisioning lines from backend.log (jq extraction)
+2026-10-29T13:47:22.142131Z INFO AccessRequestApprovalService Created Keycloak organization 'Mathebula & Partners' with ID 115c9a51-6168-48c5-bce6-594af78d7673
+2026-10-29T13:47:22.171686Z INFO TenantProvisioningService Provisioning tenant schema tenant_5039f2d497cf for org mathebula-partners on shard primary
+2026-10-29T13:47:22.175077Z INFO TenantProvisioningService Created schema tenant_5039f2d497cf
+2026-10-29T13:47:22.237986Z INFO DbMigrate Current version of schema "tenant_5039f2d497cf": << Empty Schema >>
+2026-10-29T13:47:22.295455Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "1 - baseline"
+2026-10-29T13:47:23.153203Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "2 - add project template work type"
+2026-10-29T13:47:23.164447Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "3 - normalise work types"
+2026-10-29T13:47:23.177766Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "4 - phase88 demo ready"
+2026-10-29T13:47:23.202636Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "5 - phase88 acceptance decline"
+2026-10-29T13:47:23.210371Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "6 - phase88 audit customer index"
+2026-10-29T13:47:23.218836Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "7 - phase88 letterhead"
+2026-10-29T13:47:23.227065Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "8 - phase88 retention comment attachments"
+2026-10-29T13:47:23.236071Z INFO DbMigrate Migrating schema "tenant_5039f2d497cf" to version "9 - phase88 comment attachments"
+2026-10-29T13:47:23.249289Z INFO DbMigrate Successfully applied 9 migrations to schema "tenant_5039f2d497cf", now at version v9 (execution time 00:00.880s)
+2026-10-29T13:47:23.251326Z INFO TenantProvisioningService Ran tenant migrations for schema tenant_5039f2d497cf
+2026-10-29T13:47:23.776300Z INFO TenantProvisioningService Created mapping mathebula-partners -> tenant_5039f2d497cf on shard primary
+2026-10-29T13:47:23.778731Z INFO TenantProvisioningService Successfully provisioned tenant tenant_5039f2d497cf for org mathebula-partners
+2026-10-29T13:47:23.778976Z INFO AccessRequestApprovalService Provisioned tenant schema for org 115c9a51-6168-48c5-bce6-594af78d7673 (slug=mathebula-partners)
+2026-10-29T13:47:23.888762Z INFO AccessRequestApprovalService Sent invitation to thandi@mathebula-test.local for org 115c9a51-6168-48c5-bce6-594af78d7673
+2026-10-29T13:47:23.901213Z WARN KeycloakProvisioningClient Could not find Keycloak user for email thandi@mathebula-test.local to set as org creator
+2026-10-29T13:47:23.907385Z WARN KeycloakProvisioningClient Cannot set password — no Keycloak user found for email thandi@mathebula-test.local
+2026-10-29T13:47:23.907611Z INFO AccessRequestApprovalService Set default password for thandi@mathebula-test.local (local dev mode)
+ERROR count in backend.log: 0

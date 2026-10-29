@@ -1,0 +1,47 @@
+# 2026-10-29T13:44:15Z Session 0 as-written checks (read-only)
+## M.1 docker ps
+b2b-keycloak	Up 6 days (healthy)
+b2b-localstack	Up 11 days (healthy)
+b2b-postgres	Up 11 days (healthy)
+b2b-mailpit	Up 11 days (healthy)
+## 0.Aa as written: SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_mathebula%'  (-d docteams)
+(rows end)
+## M.6a as written: psql -d app -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  database "app" does not exist
+exit 2
+## M.6b product path: -d docteams
+     schema_name     
+---------------------
+ tenant_56399d06a773
+(1 row)
+
+     external_org_id      |     schema_name     
+--------------------------+---------------------
+ org_phase86_squash_smoke | tenant_56399d06a773
+(1 row)
+
+## M.7 KC docteams realm users + orgs (keycloak DB read-only)
+padmin@docteams.local
+0
+## M.5/M.8 Mailpit
+{"Messages":0,"Unread":0}
+## M.4 health
+http://localhost:8080/actuator/health 200
+http://localhost:8443/actuator/health 200
+http://localhost:3000/ 200
+http://localhost:3002/login 200
+http://localhost:8180/realms/docteams 200
+{"realm":"docteams"}
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      1293     yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     344      yes      yes      3000
+  portal       441      yes      yes      3002
+
+
+Done.

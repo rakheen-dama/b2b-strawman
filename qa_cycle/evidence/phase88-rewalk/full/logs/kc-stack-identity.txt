@@ -1,0 +1,23 @@
+caffeinate -dimsu -t 43200 pid 99323
+## identity
+138119b8116a0ee3e32e86293815cd6479a1211f
+138119b8116a0ee3e32e86293815cd6479a1211f
+status --short (code dirs):
+(end)
+WT HEAD: 138119b8116a0ee3e32e86293815cd6479a1211f
+## zombies
+none
+## svc status before
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      5527     ext      yes      8080
+  gateway      68482    ext      yes      8443
+  frontend     45819    yes      yes      3000
+  portal       88764    yes      yes      3002
+
+
+Done.

@@ -1,0 +1,26 @@
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      99912    yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     344      yes      yes      3000
+  portal       441      yes      yes      3002
+
+
+Done.
+## port holders
+:8080 pid 175 etime 00:33 cwd /Users/rakheendama/Projects/2026/b2b-strawman/backend
+:8443 pid 334 etime 00:16 cwd /Users/rakheendama/Projects/2026/b2b-strawman/gateway
+:3000 pid 421 etime 00:12 cwd /Users/rakheendama/Projects/2026/b2b-strawman/frontend
+:3002 pid 494 etime 00:08 cwd /Users/rakheendama/Projects/2026/b2b-strawman/portal
+## health
+http://localhost:8080/actuator/health 200
+http://localhost:8443/actuator/health 200
+http://localhost:3000/ 200
+http://localhost:3002/login 200
+http://localhost:8180/realms/docteams 200
+{"groups":["liveness","readiness"],"status":"UP"}
+{"groups":["liveness","readiness"],"status":"UP"}

@@ -1,0 +1,14 @@
+
+=== svc.sh start backend gateway frontend portal ===
+
+  backend: starting...
+  Waiting for backend (port 8080)... ready (27s)
+  gateway: starting...
+  Waiting for gateway (port 8443)... ready (6s)
+  frontend: starting...
+  Waiting for frontend (port 3000)... ready (3s)
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+wall 41s

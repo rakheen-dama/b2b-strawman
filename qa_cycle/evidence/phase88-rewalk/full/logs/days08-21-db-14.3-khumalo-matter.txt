@@ -1,0 +1,7 @@
+Thu Oct 29 15:17:59 UTC 2026
+> SELECT id, name, status, work_type, custom_fields, created_at FROM tenant_5039f2d497cf.projects WHERE id='aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f'
+aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|Khumalo Property Holdings — Erf 1234 Sandton Transfer|ACTIVE|CONVEYANCING|{"erf_number": "1234", "deeds_office": "JOHANNESBURG", "property_address": "12 Rivonia Road, Sandton, 2196"}|2026-10-29 15:17:05.911972+00
+> SELECT pm.project_role, m.email FROM tenant_5039f2d497cf.project_members pm JOIN tenant_5039f2d497cf.members m ON m.id=pm.member_id WHERE pm.project_id='aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f'
+lead|thandi@mathebula-test.local
+> SELECT count(*), count(assignee_id) FROM tenant_5039f2d497cf.tasks WHERE project_id='aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f'
+12|9

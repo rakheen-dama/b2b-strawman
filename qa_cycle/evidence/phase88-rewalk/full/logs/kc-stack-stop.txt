@@ -1,0 +1,17 @@
+
+=== svc.sh stop backend gateway frontend portal ===
+
+  portal: stopping (PID 88764)...
+  portal: stopped
+  frontend: stopping (PID 45819)...
+  frontend: stopped
+  gateway: stopping (PID 68353)...
+  gateway: stopped
+  backend: stopping (PID 5394)...
+  backend: stopped
+
+Done.
+:8080 []
+:8443 []
+:3000 []
+:3002 []

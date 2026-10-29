@@ -1,0 +1,7 @@
+Thu Oct 29 15:13:03 UTC 2026
+SELECT p.name, m.email, sum(te.duration_minutes), min(te.created_at), max(te.created_at) FROM time_entries te JOIN tasks t ON t.id=te.task_id JOIN projects p ON p.id=t.project_id JOIN members m ON m.id=te.member_id GROUP BY 1,2
+Estate Late Peter Moroka|bob@mathebula-test.local|90|2026-10-29 15:07:15.386549+00|2026-10-29 15:07:15.386549+00
+Estate Late Peter Moroka|carol@mathebula-test.local|60|2026-10-29 15:09:34.845875+00|2026-10-29 15:09:34.845875+00
+Estate Late Peter Moroka|thandi@mathebula-test.local|180|2026-10-29 15:06:27.907626+00|2026-10-29 15:06:27.907626+00
+Sipho Dlamini v. Standard Bank (civil)|bob@mathebula-test.local|90|2026-10-29 14:38:51.147418+00|2026-10-29 14:38:51.147418+00
+Sipho Dlamini v. Standard Bank (civil)|carol@mathebula-test.local|120|2026-10-29 14:52:57.803357+00|2026-10-29 14:52:57.803357+00

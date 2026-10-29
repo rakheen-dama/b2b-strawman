@@ -1,0 +1,15 @@
+# 2026-10-29T13:42:55Z flyway snapshot (read-only)
++ SELECT external_org_id, schema_name FROM public.org_schema_mapping ORDER BY 1
+mathebula-partners|tenant_5039f2d497cf
+org_phase86_squash_smoke|tenant_56399d06a773
++ SELECT version, description, installed_on, success FROM tenant_5039f2d497cf.flyway_schema_history ORDER BY installed_rank DESC LIMIT 3
+9|phase88 comment attachments|2026-10-29 15:42:28.74666|t
+8|phase88 retention comment attachments|2026-10-28 12:23:09.387785|t
+7|phase88 letterhead|2026-10-28 12:23:09.376617|t
++ SELECT version, description, installed_on, success FROM tenant_56399d06a773.flyway_schema_history ORDER BY installed_rank DESC LIMIT 3
+9|phase88 comment attachments|2026-10-29 15:42:28.683291|t
+8|phase88 retention comment attachments|2026-10-28 12:23:09.308036|t
+7|phase88 letterhead|2026-10-28 12:23:09.28625|t
++ SELECT version, description, installed_on FROM public.flyway_schema_history ORDER BY installed_rank DESC LIMIT 3
+2|portal contact directory|2026-10-24 19:13:06.756576
+1|baseline|2026-10-18 04:20:53.007533

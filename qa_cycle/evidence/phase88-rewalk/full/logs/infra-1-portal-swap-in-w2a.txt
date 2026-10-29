@@ -1,0 +1,20 @@
+2026-10-29T14:33:59Z
+
+=== svc.sh stop portal ===
+
+  portal: stopping (PID 441)...
+  portal: stopped
+
+Done.
+:3002 free
+ M portal/next-env.d.ts
+build exit 0
+:8080 files        4  :8081 files        0
+2026-10-29T14:34:26Z GET :3002/login -> 200
+COMMAND   PID        USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+node    17167 rakheendama   16u  IPv6 0xeb2a1a1c98ce1bc2      0t0  TCP *:3002 (LISTEN)
+  PID  PPID ELAPSED COMMAND
+17167 17130   00:02 next-server (v16.3.8)    
+  PID  PPID COMMAND
+17130 17129 node /opt/homebrew/bin/pnpm run start
+n/Users/rakheendama/Projects/2026/b2b-strawman/portal

@@ -1,0 +1,9 @@
+Thu Oct 29 15:35:03 UTC 2026
+> SELECT file_name, source, status, created_at FROM tenant_5039f2d497cf.documents WHERE project_id='5c42e002-1218-48ac-9d74-a7e3aeff13e6'
+RAF medical report — Dr Naidoo.pdf|MANUAL|UPLOADED|2026-10-29 15:33:57.562307+00
+RAF medical report — hospital records.pdf|MANUAL|UPLOADED|2026-10-29 15:33:57.606931+00
+> SELECT type, title, created_at FROM tenant_5039f2d497cf.notifications WHERE created_at > now() - interval '3 minutes' ORDER BY created_at
+MEMBER_INVITED|You were added to matter "Lerato Mthembu — RAF Claim (MVA 2025-11-03)"|2026-10-29 15:34:52.792534+00
+> SELECT pm.project_role, m.email, pm.created_at FROM tenant_5039f2d497cf.project_members pm JOIN tenant_5039f2d497cf.members m ON m.id=pm.member_id WHERE pm.project_id='5c42e002-1218-48ac-9d74-a7e3aeff13e6'
+lead|bob@mathebula-test.local|2026-10-29 15:30:17.156998+00
+member|carol@mathebula-test.local|2026-10-29 15:34:52.78362+00

@@ -1,0 +1,6 @@
+# 2026-10-29T14:53:09Z time_entries
+bob@mathebula-test.local|90|t|1200.00|500.00|Drafting particulars of claim|Initial consultation & case assessment|2026-10-29 14:38:51.147418+00
+carol@mathebula-test.local|120|t|550.00|200.00|Legal research — precedent review|Letter of demand|2026-10-29 14:52:57.803357+00
+# security.access_denied since 14:52Z (G88-M5)
+security.access_denied|13c678b8-4e22-411e-8be0-1e5c90a01e43|{"path": "/api/matters/d42337ad-2c76-4a79-ac75-e3d9f4d36881/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to matter leads, org admins, and org 
+security.access_denied|13c678b8-4e22-411e-8be0-1e5c90a01e43|{"path": "/api/matters/d42337ad-2c76-4a79-ac75-e3d9f4d36881/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to matter leads, org admins, and org 

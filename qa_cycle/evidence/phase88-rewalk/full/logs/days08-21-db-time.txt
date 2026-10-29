@@ -1,0 +1,14 @@
+# 2026-10-29T15:09:45Z time entries on the estate matter
+thandi@mathebula-test.local|180|t|2500.00|1000.00|7500.00|Initial consultation with heirs + document gathering|Obtain death certificate & will|2026-10-29 15:06:27.907626+00
+bob@mathebula-test.local|90|t|1200.00|500.00|1800.00|Master of High Court filing preparation|Report estate to Master of High Court|2026-10-29 15:07:15.386549+00
+carol@mathebula-test.local|60|t|550.00|200.00|550.00|Drafting Section 29 advertisement notice|Advertise for creditors (Gazette + local newspaper)|2026-10-29 15:09:34.845875+00
+# task 'Obtain death certificate & will'
+Obtain death certificate & will|DONE|2026-10-29 15:07:43.356379+00|thandi@mathebula-test.local
+# trust transactions
+d37ebccd-34bb-401f-8f2c-91e122cfd115|DEPOSIT|5000.00|DEP/SIPHO-001|RECORDED|Client deposit — litigation disbursements|fbfe7eba-53f6-4536-809d-2fc785628ef3|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 14:47:05.872404+00
+11288c1d-b866-4bd2-ac02-0b6047eff200|PAYMENT|1250.00|DEEDS/SIPHO-001|APPROVED|Deeds office search fee — Deeds Office Pretoria|fbfe7eba-53f6-4536-809d-2fc785628ef3|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 14:47:40.895167+00
+49fccb54-62b4-4965-ab7d-4d6cac04aa4d|DEPOSIT|50000.00|Initial fund for estate admin|RECORDED|Deposit for estate admin. Source: Moroka Trust operating account|acd36ca9-adc9-4a58-89bf-d36016febf49|028d3901-e826-44a9-b6a6-b81328365629|2026-10-29 15:08:12.007151+00
+# estate documents
+3b01799b-d5e8-40dd-b2d3-d66aa2aa14c5|Trust Deed — Moroka Family Trust.pdf|PROJECT|UPLOADED|2026-10-29 15:06:41.381074+00
+# security.access_denied by carol since 15:09Z (G88-M5)
+2

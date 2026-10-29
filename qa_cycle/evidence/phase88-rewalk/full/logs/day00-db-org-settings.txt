@@ -1,0 +1,18 @@
+# 2026-10-29T13:47:47Z 0.16/0.17 read-only
++ SELECT external_org_id, schema_name FROM public.org_schema_mapping ORDER BY 1
+mathebula-partners|tenant_5039f2d497cf
+org_phase86_squash_smoke|tenant_56399d06a773
++ SELECT version, description, success FROM tenant_5039f2d497cf.flyway_schema_history ORDER BY installed_rank
+1|baseline|t
+2|add project template work type|t
+3|normalise work types|t
+4|phase88 demo ready|t
+5|phase88 acceptance decline|t
+6|phase88 audit customer index|t
+7|phase88 letterhead|t
+8|phase88 retention comment attachments|t
+9|phase88 comment attachments|t
++ SELECT vertical_profile, default_currency, brand_color FROM tenant_5039f2d497cf.org_settings
+legal-za|ZAR|
++ SELECT email, status FROM public.access_requests ORDER BY created_at
+thandi@mathebula-test.local|APPROVED

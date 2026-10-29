@@ -1,0 +1,25 @@
+# 2026-10-29T13:52:57Z Day 0 A–D checkpoints (read-only) tenant=tenant_5039f2d497cf
++ KC docteams users
+bob@mathebula-test.local|Bob|Ndlovu|t
+carol@mathebula-test.local|Carol|Mokoena|t
+padmin@docteams.local|Platform|Admin|t
+thandi@mathebula-test.local|Thandi|Mathebula|t
++ KC docteams orgs
+mathebula-partners|Mathebula & Partners|115c9a51-6168-48c5-bce6-594af78d7673
++ KC org members (user_group_membership via org group)
+bob@mathebula-test.local
+carol@mathebula-test.local
+thandi@mathebula-test.local
++ SELECT m.id, m.email, m.name, r.name FROM tenant_5039f2d497cf.members m LEFT JOIN tenant_5039f2d497cf.org_roles r ON r.id=m.org_role_id ORDER BY m.created_at
+09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|thandi@mathebula-test.local|Thandi Mathebula|Owner
+bd26a345-8cff-4745-8c20-55a1f5bc4786|bob@mathebula-test.local|Bob Ndlovu|Admin
+13c678b8-4e22-411e-8be0-1e5c90a01e43|carol@mathebula-test.local|Carol Mokoena|Member
++ SELECT p.email, r.name, p.status, p.accepted_at FROM tenant_5039f2d497cf.pending_invitations p LEFT JOIN tenant_5039f2d497cf.org_roles r ON r.id=p.org_role_id ORDER BY p.created_at
+bob@mathebula-test.local|Admin|ACCEPTED|2026-10-29 13:51:02.052463+00
+carol@mathebula-test.local|Member|ACCEPTED|2026-10-29 13:51:58.963427+00
++ SELECT vertical_profile, default_currency FROM tenant_5039f2d497cf.org_settings
+legal-za|ZAR
++ public.organizations / subscriptions
+mathebula-partners|Mathebula & Partners
+org_phase86_squash_smoke|Phase 86 Squash Smoke
+2

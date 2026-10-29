@@ -1,0 +1,37 @@
+# 0.52 read-only proof (review item 9) — run 2026-10-29T15:51:20Z — docker exec b2b-postgres psql -U postgres -d docteams
+# 0.52 observed in W1b between 0.47a (SELECT 14:00:58Z) and 0.62 (SELECT 14:06:15Z); 0 clients / 0 matters must mean no customer/project row was created before ~14:06Z
+
+$ SELECT ...   # SQL text not captured at 15:51:20Z — the exact query is recorded in the delimited re-run section at the end of this file (identical values)
+SET
+    tbl    | total |         first_created         | created_before_0_62 
+-----------+-------+-------------------------------+---------------------
+ customers |     4 | 2026-10-29 14:12:53.516979+00 |                   0
+ projects  |     4 | 2026-10-29 14:21:19.672611+00 |                   0
+(2 rows)
+
+
+$ first customer / first project
+SET
+   kind   |                  name                  |          created_at           
+----------+----------------------------------------+-------------------------------
+ customer | Sipho Dlamini                          | 2026-10-29 14:12:53.516979+00
+ project  | Sipho Dlamini v. Standard Bank (civil) | 2026-10-29 14:21:19.672611+00
+(2 rows)
+
+# ===== RE-RUN (CodeRabbit review on 8fb0e2335: record the executed SQL) — 2026-10-29T16:56:58Z — read-only — docker exec -i b2b-postgres psql -U postgres -d docteams =====
+# cutoff literal = the 0.62 SELECT timestamp (14:06:15Z); original output above is kept unchanged
+$ SET search_path TO tenant_5039f2d497cf;
+  SELECT 'customers' AS tbl, count(*) AS total, min(created_at) AS first_created,
+         count(*) FILTER (WHERE created_at < TIMESTAMPTZ '2026-10-29 14:06:15+00') AS created_before_0_62
+    FROM customers
+  UNION ALL
+  SELECT 'projects', count(*), min(created_at),
+         count(*) FILTER (WHERE created_at < TIMESTAMPTZ '2026-10-29 14:06:15+00')
+    FROM projects;
+SET
+    tbl    | total |         first_created         | created_before_0_62 
+-----------+-------+-------------------------------+---------------------
+ customers |     4 | 2026-10-29 14:12:53.516979+00 |                   0
+ projects  |     4 | 2026-10-29 14:21:19.672611+00 |                   0
+(2 rows)
+# ===== END RE-RUN =====

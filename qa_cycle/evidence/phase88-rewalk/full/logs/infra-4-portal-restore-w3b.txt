@@ -1,0 +1,53 @@
+Thu Oct 29 15:21:13 UTC 2026
+:3002 free
+no next-server / pnpm start left
+
+=== svc.sh start portal ===
+
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+=== svc.sh status backend gateway frontend portal ===
+  portal       33055    yes      yes      3002
+GET /login 200
+  PID ELAPSED COMMAND
+33098   00:05 next-server (v16.3.8) 
+n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+git status -- portal:
+(end)
+--- incident: the 'pkill -9 -f next-server' sweep also killed the svc frontend dev server (:3000); restarting it
+Thu Oct 29 15:21:31 UTC 2026
+
+=== svc.sh stop frontend ===
+
+  frontend: stopping (PID 344)...
+  frontend: stopped
+
+Done.
+:3000 free
+
+=== svc.sh start frontend ===
+
+  frontend: starting...
+  Waiting for frontend (port 3000)... ready (3s)
+
+Done.
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      1293     yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     33245    yes      yes      3000
+  portal       33055    yes      yes      3002
+
+
+Done.
+GET :3000/ 200
+  PID ELAPSED COMMAND
+33288   00:03 next-server (v16.3.8) 
+n/Users/rakheendama/Projects/2026/b2b-strawman/frontend
+(end)

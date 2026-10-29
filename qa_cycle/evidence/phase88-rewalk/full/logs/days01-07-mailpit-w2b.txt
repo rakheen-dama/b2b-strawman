@@ -1,0 +1,95 @@
+# 2026-10-29T14:56:36Z Mailpit (W2b) — ID / Created / To / Subject
+nDLyma4n2diVpufTjJVFDz	2026-10-29T14:48:00.288Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+HneqAesGSSPW6o56bgS5uG	2026-10-29T14:47:05.978Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+42gqzT8eeBNS9eYUpMTkJW	2026-10-29T14:35:02.733Z	sipho.dlamini@email.co.za	Confirmed: You have accepted engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf
+8KMEefXcNrHvxHXDpkZLT6	2026-10-29T14:32:59.955Z	sipho.dlamini@email.co.za	Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf
+d3nSx8DmRagLZxJL3SJTdP	2026-10-29T13:50:14.875Z	carol@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+7DA8LpsXnky4Htky8EtxDu	2026-10-29T13:50:11.726Z	bob@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+S3TJcWLLFayunZhfL6cEa9	2026-10-29T13:47:23.877Z	thandi@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+UJ3HXoAJ33jC9UjKzZs5hQ	2026-10-29T13:45:34.317Z	thandi@mathebula-test.local	Your Kazi verification code
+## body HneqAesGSSPW6o56bgS5uG
+Mathebula & Partners: Trust account activity
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ Mathebula & Partners
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+## body nDLyma4n2diVpufTjJVFDz
+Mathebula & Partners: Trust account activity
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ Mathebula & Partners
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+## body HneqAesGSSPW6o56bgS5uG
+Mathebula & Partners: Trust account activity
+ Mathebula & Partners
+ Trust account activity
+ Hi Sipho Dlamini,
+ A new transaction has been recorded in your trust account.
+ Date
+ 29 Oct 2026
+ Type
+ DEPOSIT
+ Amount
+ R 5 000,00
+ View trust ledger
+ (http://localhost:3002/trust/d42337ad-2c76-4a79-ac75-e3d9f4d36881?orgId=mathebula-partners)
+ Best,
+ Mathebula & Partners
+ Mathebula & Partners
+## body nDLyma4n2diVpufTjJVFDz
+Mathebula & Partners: Trust account activity
+ Mathebula & Partners
+ Trust account activity
+ Hi Sipho Dlamini,
+ A new transaction has been recorded in your trust account.
+ Date
+ 29 Oct 2026
+ Type
+ PAYMENT
+ Amount
+ R 1 250,00
+ View trust ledger
+ (http://localhost:3002/trust/d42337ad-2c76-4a79-ac75-e3d9f4d36881?orgId=mathebula-partners)
+ Best,
+ Mathebula & Partners
+ Mathebula & Partners

@@ -1,0 +1,9 @@
+# 2026-10-29T14:06:15Z read-only SELECTs (W1b 0.62–0.64)
+## trust_accounts columns: id,account_name,bank_name,branch_code,account_number,account_type,is_primary,require_dual_approval,payment_approval_threshold,status,opened_date,closed_date,notes,created_at,updated_at
+## lpff_rates columns: id,trust_account_id,effective_from,rate_percent,lpff_share_percent,notes,created_at
+SQL: SELECT * FROM tenant_5039f2d497cf.trust_accounts
+696ce2f0-0061-46bd-91f4-a95c8a23a009|Mathebula & Partners Trust Account|Standard Bank|051001|1234567890|GENERAL|t|f||ACTIVE|2026-10-29|||2026-10-29 14:05:38.616483+00|2026-10-29 14:05:38.616483+00
+SQL: SELECT * FROM tenant_5039f2d497cf.lpff_rates
+5825f520-65b4-419d-93e7-266aa1f204b8|696ce2f0-0061-46bd-91f4-a95c8a23a009|2026-10-29|0.0650|0.0000||2026-10-29 14:05:57.077207+00
+SQL: SELECT count(*) FROM tenant_5039f2d497cf.trust_transactions
+0

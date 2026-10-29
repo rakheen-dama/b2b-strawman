@@ -1,0 +1,44 @@
+2026-10-29T14:35:31Z
+  PID  PPID COMMAND
+17130     1 node /opt/homebrew/bin/pnpm run start
+17167 17130 next-server (v16.3.8)    
+17129 gone
+:3002 free
+421 next-server (v16.3.8) [env redacted]
+17167 next-server (v16.3.8) [env redacted]
+
+=== svc.sh start portal ===
+
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+=== svc.sh status backend gateway frontend portal ===
+  portal       17616    yes      yes      3002
+GET :3002/login 200
+  PID ELAPSED COMMAND
+17659   00:05 next-server (v16.3.8) 
+n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+git status portal:
+(end)
+2026-10-29T14:35:46Z post-check:
+17167 alive
+=== svc.sh status backend gateway frontend portal ===
+  backend      1293     yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     344      yes      yes      3000
+  portal       17616    yes      yes      3002
+  PID  PPID ELAPSED COMMAND
+17167 17130   01:30 next-server (v16.3.8)
+n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+17167 holds no listening port
+SIGKILL sent
+2026-10-29T14:35:58Z 17167 gone
+  PID COMMAND
+  421 next-server (v16.3.8)
+n/Users/rakheendama/Projects/2026/b2b-strawman/frontend
+3002 holder 17659
+17130 gone
+no pnpm run start
+GET :3002/login 200
+(portal tree clean)

@@ -1,0 +1,103 @@
+2026-10-29T13:42:20.268760Z DbMigrate Current version of schema "public": 2
+2026-10-29T13:42:20.271063Z DbMigrate Schema "public" is up to date. No migration necessary.
+2026-10-29T13:42:28.593328Z BackendApplication Started BackendApplication in 10.625 seconds (process running for 10.815)
+2026-10-29T13:42:28.658302Z TenantMigrationRunner Running tenant migrations for 2 schemas
+2026-10-29T13:42:28.685747Z DbMigrate Current version of schema "tenant_56399d06a773": 8
+2026-10-29T13:42:28.694933Z DbMigrate Migrating schema "tenant_56399d06a773" to version "9 - phase88 comment attachments"
+2026-10-29T13:42:28.724151Z DbMigrate Successfully applied 1 migration to schema "tenant_56399d06a773", now at version v9 (execution time 00:00.020s)
+2026-10-29T13:42:28.726132Z TenantMigrationRunner Migrated schema tenant_56399d06a773 — 1 migrations applied
+2026-10-29T13:42:28.748715Z DbMigrate Current version of schema "tenant_5039f2d497cf": 8
+2026-10-29T13:42:28.751055Z DbMigrate Migrating schema "tenant_5039f2d497cf" to version "9 - phase88 comment attachments"
+2026-10-29T13:42:28.762294Z DbMigrate Successfully applied 1 migration to schema "tenant_5039f2d497cf", now at version v9 (execution time 00:00.006s)
+2026-10-29T13:42:28.764053Z TenantMigrationRunner Migrated schema tenant_5039f2d497cf — 1 migrations applied
+2026-10-29T13:42:28.764191Z TenantMigrationRunner Tenant migration runner completed
+2026-10-29T13:42:28.789289Z PortalContactDirectoryBackfillRunner Portal contact directory backfill: 0 tenants scanned, 2 skipped (already marked), 0 failed, 0 rows upserted
+2026-10-29T13:42:28.792862Z PackReconciliationRunner Running pack reconciliation for 2 tenants
+2026-10-29T13:42:28.862561Z PackVersionGate Reconciling FIELD pack common-project v2 -> v3 for tenant tenant_56399d06a773
+2026-10-29T13:42:28.867991Z FieldPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=common-project field_group 'project_info' field name updated
+2026-10-29T13:42:28.872617Z FieldPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=common-project field_group 'project_info' field description updated
+2026-10-29T13:42:28.876323Z FieldPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=common-project field_definition 'category' field description updated
+2026-10-29T13:42:28.883224Z PackVersionGate Reconciling FIELD pack conveyancing-za-project v1 -> v2 for tenant tenant_56399d06a773
+2026-10-29T13:42:28.884434Z FieldPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=conveyancing-za-project field_group 'conveyancing_za_matter' field description updated
+2026-10-29T13:42:28.890700Z PackVersionGate Reconciling FIELD pack legal-za-project v2 -> v3 for tenant tenant_56399d06a773
+2026-10-29T13:42:28.891917Z FieldPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=legal-za-project field_group 'legal_za_matter' field description updated
+2026-10-29T13:42:28.947434Z TemplatePackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=common document_template 'project-summary' field name updated
+2026-10-29T13:42:28.950597Z TemplatePackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=common document_template 'project-summary' field description updated
+2026-10-29T13:42:28.954149Z TemplatePackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=common document_template 'invoice-cover-letter' field name updated
+2026-10-29T13:42:28.956835Z TemplatePackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=common document_template 'invoice-cover-letter' field description updated
+2026-10-29T13:42:28.964736Z TemplatePackInstaller Reconciled template pack common to v4 for tenant tenant_56399d06a773 (0 new templates, 3 refreshed, 0 re-pinned after the reconcile block)
+2026-10-29T13:42:28.997840Z PackVersionGate Reconciling CLAUSE pack legal-za-clauses v1 -> v2 for tenant tenant_56399d06a773
+2026-10-29T13:42:29.003351Z ClausePackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=legal-za-clauses clause 'legal-za-fees-hourly' field body updated
+2026-10-29T13:42:29.007944Z PackVersionGate Reconciling CLAUSE pack standard-clauses v1 -> v2 for tenant tenant_56399d06a773
+2026-10-29T13:42:29.009977Z ClausePackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-clauses clause 'payment-terms' field body updated
+2026-10-29T13:42:29.012225Z ClausePackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-clauses clause 'fee-schedule' field body updated
+2026-10-29T13:42:29.038230Z PackVersionGate Reconciling REPORT pack standard-reports v1 -> v2 for tenant tenant_56399d06a773
+2026-10-29T13:42:29.044544Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'timesheet' field description updated
+2026-10-29T13:42:29.051349Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'timesheet' field parameterSchema updated
+2026-10-29T13:42:29.056812Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'timesheet' field templateBody updated
+2026-10-29T13:42:29.059681Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'invoice-aging' field name updated
+2026-10-29T13:42:29.061850Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'invoice-aging' field description updated
+2026-10-29T13:42:29.064629Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'invoice-aging' field parameterSchema updated
+2026-10-29T13:42:29.068608Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'invoice-aging' field columnDefinitions updated
+2026-10-29T13:42:29.072312Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'invoice-aging' field templateBody updated
+2026-10-29T13:42:29.074817Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'project-profitability' field name updated
+2026-10-29T13:42:29.076837Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'project-profitability' field description updated
+2026-10-29T13:42:29.079289Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'project-profitability' field parameterSchema updated
+2026-10-29T13:42:29.081757Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'project-profitability' field columnDefinitions updated
+2026-10-29T13:42:29.084470Z StandardReportPackSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=standard-reports report_definition 'project-profitability' field templateBody updated
+2026-10-29T13:42:29.126827Z PackVersionGate Reconciling AUTOMATION_TEMPLATE pack automation-common v3 -> v4 for tenant tenant_56399d06a773
+2026-10-29T13:42:29.165135Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'overdue-invoice-reminder' field name updated
+2026-10-29T13:42:29.167349Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'overdue-invoice-reminder' field description updated
+2026-10-29T13:42:29.173181Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[0].actionConfig.subject updated
+2026-10-29T13:42:29.177640Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[0].actionConfig.body updated
+2026-10-29T13:42:29.180932Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[1].actionConfig.title updated
+2026-10-29T13:42:29.184800Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[1].actionConfig.message updated
+2026-10-29T13:42:29.185876Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'budget-alert-escalation' field name updated
+2026-10-29T13:42:29.188225Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'budget-alert-escalation' field description updated
+2026-10-29T13:42:29.190907Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'budget-alert-escalation' field actions[0].actionConfig.title updated
+2026-10-29T13:42:29.193845Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_56399d06a773 pack=automation-common automation_rule 'budget-alert-escalation' field actions[0].actionConfig.message updated
+2026-10-29T13:42:29.260957Z PackVersionGate Reconciling FIELD pack common-project v2 -> v3 for tenant tenant_5039f2d497cf
+2026-10-29T13:42:29.263393Z FieldPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=common-project field_group 'project_info' field name updated
+2026-10-29T13:42:29.265712Z FieldPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=common-project field_group 'project_info' field description updated
+2026-10-29T13:42:29.267320Z FieldPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=common-project field_definition 'category' field description updated
+2026-10-29T13:42:29.273180Z PackVersionGate Reconciling FIELD pack conveyancing-za-project v1 -> v2 for tenant tenant_5039f2d497cf
+2026-10-29T13:42:29.274363Z FieldPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=conveyancing-za-project field_group 'conveyancing_za_matter' field description updated
+2026-10-29T13:42:29.279333Z PackVersionGate Reconciling FIELD pack legal-za-project v2 -> v3 for tenant tenant_5039f2d497cf
+2026-10-29T13:42:29.280191Z FieldPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=legal-za-project field_group 'legal_za_matter' field description updated
+2026-10-29T13:42:29.301035Z TemplatePackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=common document_template 'project-summary' field name updated
+2026-10-29T13:42:29.303263Z TemplatePackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=common document_template 'project-summary' field description updated
+2026-10-29T13:42:29.306223Z TemplatePackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=common document_template 'invoice-cover-letter' field name updated
+2026-10-29T13:42:29.308499Z TemplatePackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=common document_template 'invoice-cover-letter' field description updated
+2026-10-29T13:42:29.314738Z TemplatePackInstaller Reconciled template pack common to v4 for tenant tenant_5039f2d497cf (0 new templates, 3 refreshed, 0 re-pinned after the reconcile block)
+2026-10-29T13:42:29.339248Z PackVersionGate Reconciling CLAUSE pack legal-za-clauses v1 -> v2 for tenant tenant_5039f2d497cf
+2026-10-29T13:42:29.342209Z ClausePackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=legal-za-clauses clause 'legal-za-fees-hourly' field body updated
+2026-10-29T13:42:29.347532Z PackVersionGate Reconciling CLAUSE pack standard-clauses v1 -> v2 for tenant tenant_5039f2d497cf
+2026-10-29T13:42:29.349493Z ClausePackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-clauses clause 'payment-terms' field body updated
+2026-10-29T13:42:29.351670Z ClausePackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-clauses clause 'fee-schedule' field body updated
+2026-10-29T13:42:29.369239Z PackVersionGate Reconciling REPORT pack standard-reports v1 -> v2 for tenant tenant_5039f2d497cf
+2026-10-29T13:42:29.372790Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'timesheet' field description updated
+2026-10-29T13:42:29.375782Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'timesheet' field parameterSchema updated
+2026-10-29T13:42:29.378013Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'timesheet' field templateBody updated
+2026-10-29T13:42:29.379710Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'invoice-aging' field name updated
+2026-10-29T13:42:29.381182Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'invoice-aging' field description updated
+2026-10-29T13:42:29.382956Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'invoice-aging' field parameterSchema updated
+2026-10-29T13:42:29.385284Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'invoice-aging' field columnDefinitions updated
+2026-10-29T13:42:29.387322Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'invoice-aging' field templateBody updated
+2026-10-29T13:42:29.389020Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'project-profitability' field name updated
+2026-10-29T13:42:29.390293Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'project-profitability' field description updated
+2026-10-29T13:42:29.392202Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'project-profitability' field parameterSchema updated
+2026-10-29T13:42:29.393997Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'project-profitability' field columnDefinitions updated
+2026-10-29T13:42:29.395754Z StandardReportPackSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=standard-reports report_definition 'project-profitability' field templateBody updated
+2026-10-29T13:42:29.409029Z PackVersionGate Reconciling AUTOMATION_TEMPLATE pack automation-common v3 -> v4 for tenant tenant_5039f2d497cf
+2026-10-29T13:42:29.421183Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'overdue-invoice-reminder' field name updated
+2026-10-29T13:42:29.422507Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'overdue-invoice-reminder' field description updated
+2026-10-29T13:42:29.424443Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[0].actionConfig.subject updated
+2026-10-29T13:42:29.426349Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[0].actionConfig.body updated
+2026-10-29T13:42:29.428140Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[1].actionConfig.title updated
+2026-10-29T13:42:29.430158Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[1].actionConfig.message updated
+2026-10-29T13:42:29.430846Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'budget-alert-escalation' field name updated
+2026-10-29T13:42:29.432650Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'budget-alert-escalation' field description updated
+2026-10-29T13:42:29.434512Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'budget-alert-escalation' field actions[0].actionConfig.title updated
+2026-10-29T13:42:29.436273Z AutomationTemplateSeeder Reconcile applied: tenant=tenant_5039f2d497cf pack=automation-common automation_rule 'budget-alert-escalation' field actions[0].actionConfig.message updated
+2026-10-29T13:42:29.467190Z PackReconciliationRunner Pack reconciliation: checked 2 tenants, 2 succeeded, 0 failed
+ERROR count: 0

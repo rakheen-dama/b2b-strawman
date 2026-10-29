@@ -1,0 +1,20 @@
+# 2026-10-29T14:00:58Z read-only SELECTs (W1b 0.46–0.48)
+SQL: SELECT g.entity_type, g.pack_id, g.slug, g.name, string_agg(fd.slug, ',' ORDER BY m.sort_order) FROM tenant_5039f2d497cf.field_groups g LEFT JOIN tenant_5039f2d497cf.field_group_members m ON m.field_group_id=g.id LEFT JOIN tenant_5039f2d497cf.field_definitions fd ON fd.id=m.field_definition_id GROUP BY 1,2,3,4 ORDER BY 1,2,3
+CUSTOMER|legal-za-customer|legal_za_client|SA Legal — Client Details|id_passport_number,postal_address,preferred_correspondence,referred_by
+CUSTOMER|sa-fica-company|company_fica_details|Company FICA Details|company_registration_number,entity_type
+CUSTOMER|sa-fica-individual|fica_compliance|FICA Compliance|sa_id_number,passport_number,risk_rating
+PROJECT|common-project|project_info|Matter Info|category
+PROJECT|conveyancing-za-project|conveyancing_za_matter|SA Conveyancing — Matter Details|conveyancing_type,property_address,erf_number,deeds_office,lodgement_date,registration_date,deed_number,purchase_price,transfer_duty,bond_institution
+PROJECT|legal-za-project|legal_za_matter|SA Legal — Matter Details|case_number,court_name,opposing_party,opposing_attorney,advocate_name,date_of_instruction,estimated_value
+TASK|common-task|task_info|Task Info|category
+SQL: SELECT entity_type, pack_id, slug, name, description FROM tenant_5039f2d497cf.field_definitions WHERE name ~* 'project|customer|invoice' OR description ~* 'project|customer|invoice'
+SQL: SELECT entity_type, slug, name, description FROM tenant_5039f2d497cf.field_groups WHERE name ~* 'project|customer|invoice' OR description ~* 'project|customer|invoice'
+# [review annotation 2026-10-29] the following rows have no preceding SELECT in this transcript; see day00-db-field-groups-rerun.txt (they are the membership SELECT of :2 re-run after the Edit dialogs were cancelled, per the trailer line; the two copy-scan SELECTs at :10 and :11 each returned 0 rows, which psql -At prints as nothing)
+CUSTOMER|legal-za-customer|legal_za_client|SA Legal — Client Details|id_passport_number,postal_address,preferred_correspondence,referred_by
+CUSTOMER|sa-fica-company|company_fica_details|Company FICA Details|company_registration_number,entity_type
+CUSTOMER|sa-fica-individual|fica_compliance|FICA Compliance|sa_id_number,passport_number,risk_rating
+PROJECT|common-project|project_info|Matter Info|category
+PROJECT|conveyancing-za-project|conveyancing_za_matter|SA Conveyancing — Matter Details|conveyancing_type,property_address,erf_number,deeds_office,lodgement_date,registration_date,deed_number,purchase_price,transfer_duty,bond_institution
+PROJECT|legal-za-project|legal_za_matter|SA Legal — Matter Details|case_number,court_name,opposing_party,opposing_attorney,advocate_name,date_of_instruction,estimated_value
+TASK|common-task|task_info|Task Info|category
+(re-run after the two Edit dialogs were cancelled — membership unchanged)

@@ -1,0 +1,6 @@
+2026-10-29T14:37:31Z tenant=tenant_5039f2d497cf
+id,generated_document_id,portal_contact_id,customer_id,status,request_token,sent_at,viewed_at,accepted_at,expires_at,revoked_at,acceptor_name,acceptor_ip_address,acceptor_user_agent,certificate_s3_key,certificate_file_name,sent_by_member_id,revoked_by_member_id,reminder_count,last_reminded_at,created_at,updated_at,declined_at,decline_reason
+-- SELECT id,status,sent_at,viewed_at,accepted_at,acceptor_name,expires_at FROM acceptance_requests
+2a681d46-49e2-4f01-b457-c4c6b8dde8a2|ACCEPTED|2026-10-29 14:32:59.963094+00|2026-10-29 14:34:39.143241+00|2026-10-29 14:35:02.605338+00|Sipho Dlamini|2026-11-05 14:32:59.69319+00
+-- generated_documents
+c630f2b1-afab-44ff-9e61-e69c39f9f59b|engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|t

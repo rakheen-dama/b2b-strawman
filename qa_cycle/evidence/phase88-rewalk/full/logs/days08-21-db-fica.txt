@@ -1,0 +1,16 @@
+# 2026-10-29T15:02:57Z checklist instance + items for Moroka
+aa1f0f1d-4117-440c-987c-76396377fc01|COMPLETED|2026-10-29 15:02:43.346814+00|Legal Trust Client Onboarding|legal-za-trust-client-onboarding
+Trust Deed|COMPLETED|t|t||2026-10-29 15:02:01.720909+00
+Letters of Authority|COMPLETED|t|t||2026-10-29 15:02:05.903853+00
+Trustee 1 ID|COMPLETED|t|t||2026-10-29 15:02:10.099023+00
+Trustee 2 ID|COMPLETED|f|t||2026-10-29 15:02:14.309543+00
+Proof of Trust Banking|COMPLETED|t|t||2026-10-29 15:02:18.500117+00
+SARS Trust Tax Number|COMPLETED|t|f||2026-10-29 15:02:21.569091+00
+Beneficial Ownership Declaration|COMPLETED|t|t|Beneficial owners: Grace Moroka, James Moroka, Ruth Moroka|2026-10-29 15:02:25.762497+00
+Source of Funds Declaration|COMPLETED|t|t||2026-10-29 15:02:29.946541+00
+Engagement Letter Signed|COMPLETED|t|t||2026-10-29 15:02:34.133938+00
+Conflict Check Performed|COMPLETED|t|f||2026-10-29 15:02:37.199058+00
+FICA Risk Assessment|COMPLETED|t|f||2026-10-29 15:02:40.276405+00
+Sanctions Screening|COMPLETED|t|f||2026-10-29 15:02:43.33903+00
+# lifecycle
+ACTIVE|2026-10-29 15:02:43.353317+00

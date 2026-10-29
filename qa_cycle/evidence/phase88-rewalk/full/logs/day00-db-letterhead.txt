@@ -1,0 +1,25 @@
+# 2026-10-29T13:58:16Z read-only SELECTs (W1b LH / 0.39 / 0.40)
+tenant=tenant_5039f2d497cf
+SQL: SELECT default_currency, logo_s3_key, brand_color, vertical_profile, letterhead_address_line1, letterhead_address_line2, letterhead_address_line3, letterhead_city, letterhead_postal_code, letterhead_country, letterhead_phone, letterhead_email, letterhead_website, letterhead_bank_name, letterhead_bank_branch_code, letterhead_bank_account_number, letterhead_bank_account_type, letterhead_payment_reference_note, letterhead_signatory_name, letterhead_signatory_designation FROM tenant_5039f2d497cf.org_settings;
+-[ RECORD 1 ]---------------------+----------------------------------------------------------
+default_currency                  | ZAR
+logo_s3_key                       | org/tenant_5039f2d497cf/branding/logo.png
+brand_color                       | #1B3A4B
+vertical_profile                  | legal-za
+letterhead_address_line1          | 12 Rissik Street
+letterhead_address_line2          | 3rd Floor
+letterhead_address_line3          | 
+letterhead_city                   | Johannesburg
+letterhead_postal_code            | 2001
+letterhead_country                | South Africa
+letterhead_phone                  | +27 11 555 0100
+letterhead_email                  | accounts@mathebula-test.local
+letterhead_website                | https://mathebula-test.local
+letterhead_bank_name              | Standard Bank
+letterhead_bank_branch_code       | 051001
+letterhead_bank_account_number    | 0012345678
+letterhead_bank_account_type      | Cheque
+letterhead_payment_reference_note | Please use your fee note number as the payment reference.
+letterhead_signatory_name         | Thandi Mathebula
+letterhead_signatory_designation  | Senior Partner
+

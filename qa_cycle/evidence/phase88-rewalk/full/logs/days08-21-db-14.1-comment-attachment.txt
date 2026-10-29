@@ -1,0 +1,15 @@
+Thu Oct 29 15:14:25 UTC 2026
+> SELECT column_name FROM information_schema.columns WHERE table_schema='tenant_5039f2d497cf' AND table_name='comment_attachments' ORDER BY ordinal_position
+comment_id
+document_id
+sort_order
+created_at
+> SELECT id, entity_type, entity_id, body, visibility, created_at FROM tenant_5039f2d497cf.comments ORDER BY created_at DESC LIMIT 2
+09f436ce-0e88-4d1b-9085-b81dd1fce701|DOCUMENT|52a4636e-8993-4294-a4a6-661793590062|Master's appointment received|INTERNAL|2026-10-29 15:13:58.340334+00
+f82e243b-a949-41be-944f-0db1ee69a7a1|TASK|dea6cf65-bc9e-455b-8b67-9646efe20489|Confirmed, court date is 2026-05-12|INTERNAL|2026-10-29 14:55:49.017215+00
+> SELECT * FROM tenant_5039f2d497cf.comment_attachments
+09f436ce-0e88-4d1b-9085-b81dd1fce701|ff73a657-cf49-402d-adba-7e669a5ef2eb|0|2026-10-29 15:13:58.340863+00
+> SELECT id, file_name, source, status, scope, visibility, created_at FROM tenant_5039f2d497cf.documents WHERE project_id='028d3901-e826-44a9-b6a6-b81328365629' ORDER BY created_at
+3b01799b-d5e8-40dd-b2d3-d66aa2aa14c5|Trust Deed — Moroka Family Trust.pdf|MANUAL|UPLOADED|PROJECT|INTERNAL|2026-10-29 15:06:41.381074+00
+52a4636e-8993-4294-a4a6-661793590062|Master's appointment.pdf|MANUAL|UPLOADED|PROJECT|INTERNAL|2026-10-29 15:13:36.44608+00
+ff73a657-cf49-402d-adba-7e669a5ef2eb|Master's appointment.pdf|COMMENT|UPLOADED|PROJECT|INTERNAL|2026-10-29 15:13:49.977889+00

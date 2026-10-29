@@ -1,0 +1,16 @@
+2026-10-29T14:40:45Z tenant=tenant_5039f2d497cf
+id,event_type,entity_type,entity_id,actor_id,actor_type,source,ip_address,user_agent,details,occurred_at
+-- SELECT occurred_at, event_type, entity_type, actor_type, source FROM audit_events WHERE event_type LIKE 'acceptance%' OR event_type LIKE 'time_entry%' OR event_type LIKE 'document.generated%' OR event_type LIKE 'project%' OR event_type LIKE 'matter%'
+2026-10-29 14:16:19.609561+00|document.created|document|USER|API
+2026-10-29 14:16:19.681632+00|document.uploaded|document|USER|API
+2026-10-29 14:21:19.716159+00|project.created_from_template|project|USER|API
+2026-10-29 14:22:12.32395+00|project.updated|project|USER|API
+2026-10-29 14:24:57.222491+00|project_member.added|project_member|USER|API
+2026-10-29 14:31:27.047623+00|document.generated|generated_document|USER|API
+2026-10-29 14:31:27.047927+00|document.generated_with_clauses|generated_document|USER|API
+2026-10-29 14:32:59.699984+00|acceptance.created|acceptance_request|USER|API
+2026-10-29 14:32:59.963626+00|acceptance.sent|acceptance_request|USER|API
+2026-10-29 14:34:39.14606+00|acceptance.viewed|acceptance_request|PORTAL_CONTACT|PORTAL
+2026-10-29 14:35:02.607357+00|acceptance.accepted|acceptance_request|PORTAL_CONTACT|PORTAL
+2026-10-29 14:35:02.70361+00|acceptance.certificate_generated|acceptance_request|SYSTEM|INTERNAL
+2026-10-29 14:38:51.162812+00|time_entry.created|time_entry|USER|API

@@ -1,0 +1,249 @@
+# 629A Session 0 reset 2026-10-29T13:43:42Z  tenant=tenant_5039f2d497cf  DRY=0
+## census BEFORE
++ SQL(read): SELECT external_org_id, schema_name FROM public.org_schema_mapping ORDER BY 1
+mathebula-partners|tenant_5039f2d497cf
+org_phase86_squash_smoke|tenant_56399d06a773
++ SQL(read): SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%' ORDER BY 1
+tenant_5039f2d497cf
+tenant_56399d06a773
++ SQL(read): SELECT email, status, created_at FROM public.access_requests ORDER BY created_at
+thandi@mathebula-test.local|APPROVED|2026-10-24 07:08:41.396954+00
+thandi@mathebula-test.local|PENDING|2026-10-29 03:00:30.664422+00
++ SQL(read): SELECT email_lower, org_id FROM portal.portal_contact_directory ORDER BY 2,1
+moroka.trust@email.co.za|mathebula-partners
+multifirm.624i@email.co.za|mathebula-partners
+nomvula.khoza@email.co.za|mathebula-partners
+sipho.dlamini@email.co.za|mathebula-partners
+portal.portal_invoices org_id=mathebula-partners: 4
+portal.portal_requests org_id=mathebula-partners: 0
+portal.portal_tasks org_id=mathebula-partners: 9
+portal.portal_documents org_id=mathebula-partners: 0
+portal.portal_projects org_id=mathebula-partners: 4
+portal.portal_project_summaries org_id=mathebula-partners: 0
+portal.portal_comments org_id=mathebula-partners: 0
+portal.portal_contact_directory org_id=mathebula-partners: 4
+## R.0 stop backend
++ bash /Users/rakheendama/Projects/2026/b2b-strawman/compose/scripts/svc.sh stop backend
+
+=== svc.sh stop backend ===
+
+  backend: stopping (PID 99912)...
+  backend: stopped
+
+Done.
+lsof :8080 -> []
+## R.1 Keycloak (admin REST, master admin)
+token len 750
+users before:
+bob@mathebula-test.local
+carol@mathebula-test.local
+padmin@docteams.local
+thandi@mathebula-test.local
+orgs before:
+mathebula-partners|a21f5935-c745-4454-8dde-aa6b758af449
++ curl -s -o /dev/null -w 'org delete a21f5935-c745-4454-8dde-aa6b758af449 %{http_code}\n' -X DELETE 'http://localhost:8180/admin/realms/docteams/organizations/a21f5935-c745-4454-8dde-aa6b758af449' -H 'Authorization: Bearer [REDACTED]'
+org delete a21f5935-c745-4454-8dde-aa6b758af449 204
+thandi already gone
+bob already gone
+carol already gone
+users after:
+padmin@docteams.local
+orgs after:
+(end orgs)
+## R.2 guard (all four must be 0, else STOP before any delete)
++ SQL(read): SELECT (SELECT count(*) FROM portal.portal_acceptance_requests WHERE portal_contact_id NOT IN (SELECT id FROM tenant_5039f2d497cf.portal_contacts)) a, (SELECT count(*) FROM portal.portal_notification_preference WHERE portal_contact_id NOT IN (SELECT id FROM tenant_5039f2d497cf.portal_contacts)) b, (SELECT count(*) FROM portal.portal_trust_balance WHERE customer_id NOT IN (SELECT id FROM tenant_5039f2d497cf.customers)) c, (SELECT count(*) FROM portal.portal_trust_transaction WHERE customer_id NOT IN (SELECT id FROM tenant_5039f2d497cf.customers)) d
+0|0|0|0
+## R.2 portal read-model deletes
++ SQL(write): BEGIN;
+DELETE FROM portal.portal_acceptance_requests WHERE portal_contact_id IN (SELECT id FROM tenant_5039f2d497cf.portal_contacts);
+DELETE FROM portal.portal_notification_preference WHERE portal_contact_id IN (SELECT id FROM tenant_5039f2d497cf.portal_contacts);
+DELETE FROM portal.portal_trust_transaction WHERE customer_id IN (SELECT id FROM tenant_5039f2d497cf.customers);
+DELETE FROM portal.portal_trust_balance WHERE customer_id IN (SELECT id FROM tenant_5039f2d497cf.customers);
+DELETE FROM portal.portal_deadline_view WHERE customer_id IN (SELECT id FROM tenant_5039f2d497cf.customers);
+DELETE FROM portal.portal_invoices WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_requests WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_tasks WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_documents WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_projects WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_project_summaries WHERE org_id='mathebula-partners';
+DELETE FROM portal.portal_comments WHERE org_id='mathebula-partners';
+-- 629A addition (624I follow-up): the §R recipe predates global V2
+DELETE FROM portal.portal_contact_directory WHERE org_id='mathebula-partners';
+COMMIT;
+BEGIN
+DELETE 1
+DELETE 4
+DELETE 4
+DELETE 2
+DELETE 0
+DELETE 4
+DELETE 0
+DELETE 9
+DELETE 0
+DELETE 4
+DELETE 0
+DELETE 0
+DELETE 4
+COMMIT
+## R.3 drop schema
++ SQL(write): DROP SCHEMA tenant_5039f2d497cf CASCADE;
+NOTICE:  drop cascades to 103 other objects
+DETAIL:  drop cascades to table tenant_5039f2d497cf.flyway_schema_history
+drop cascades to table tenant_5039f2d497cf.acceptance_requests
+drop cascades to table tenant_5039f2d497cf.accounting_sync_entry
+drop cascades to table tenant_5039f2d497cf.accounting_tax_code_mapping
+drop cascades to table tenant_5039f2d497cf.adverse_parties
+drop cascades to table tenant_5039f2d497cf.ai_executions
+drop cascades to table tenant_5039f2d497cf.ai_firm_profiles
+drop cascades to table tenant_5039f2d497cf.audit_events
+drop cascades to table tenant_5039f2d497cf.billing_runs
+drop cascades to table tenant_5039f2d497cf.checklist_templates
+drop cascades to table tenant_5039f2d497cf.clauses
+drop cascades to table tenant_5039f2d497cf.collection_activities
+drop cascades to table tenant_5039f2d497cf.correspondence
+drop cascades to table tenant_5039f2d497cf.email_delivery_log
+drop cascades to table tenant_5039f2d497cf.expenses
+drop cascades to table tenant_5039f2d497cf.field_date_notification_log
+drop cascades to table tenant_5039f2d497cf.field_definitions
+drop cascades to table tenant_5039f2d497cf.field_groups
+drop cascades to table tenant_5039f2d497cf.invoice_counters
+drop cascades to table tenant_5039f2d497cf.mcp_egress_consents
+drop cascades to table tenant_5039f2d497cf.org_integrations
+drop cascades to table tenant_5039f2d497cf.org_roles
+drop cascades to table tenant_5039f2d497cf.org_secrets
+drop cascades to table tenant_5039f2d497cf.org_settings
+drop cascades to table tenant_5039f2d497cf.pack_install
+drop cascades to table tenant_5039f2d497cf.processing_activities
+drop cascades to table tenant_5039f2d497cf.report_definitions
+drop cascades to table tenant_5039f2d497cf.request_counters
+drop cascades to table tenant_5039f2d497cf.request_templates
+drop cascades to table tenant_5039f2d497cf.retention_policies
+drop cascades to table tenant_5039f2d497cf.saved_views
+drop cascades to table tenant_5039f2d497cf.tags
+drop cascades to table tenant_5039f2d497cf.tariff_schedules
+drop cascades to table tenant_5039f2d497cf.tax_rates
+drop cascades to table tenant_5039f2d497cf.trust_accounts
+drop cascades to table tenant_5039f2d497cf.accounting_xero_connection
+drop cascades to table tenant_5039f2d497cf.ai_execution_gates
+drop cascades to table tenant_5039f2d497cf.automation_rules
+drop cascades to table tenant_5039f2d497cf.checklist_template_items
+drop cascades to table tenant_5039f2d497cf.compliance_audit_reports
+drop cascades to table tenant_5039f2d497cf.document_templates
+drop cascades to table tenant_5039f2d497cf.entity_tags
+drop cascades to table tenant_5039f2d497cf.field_group_members
+drop cascades to table tenant_5039f2d497cf.lpff_rates
+drop cascades to table tenant_5039f2d497cf.members
+drop cascades to table tenant_5039f2d497cf.org_role_capabilities
+drop cascades to table tenant_5039f2d497cf.project_templates
+drop cascades to table tenant_5039f2d497cf.request_template_items
+drop cascades to table tenant_5039f2d497cf.tariff_items
+drop cascades to table tenant_5039f2d497cf.automation_actions
+drop cascades to table tenant_5039f2d497cf.automation_executions
+drop cascades to table tenant_5039f2d497cf.bank_statements
+drop cascades to table tenant_5039f2d497cf.compliance_audit_findings
+drop cascades to table tenant_5039f2d497cf.cost_rates
+drop cascades to table tenant_5039f2d497cf.customers
+drop cascades to table tenant_5039f2d497cf.interest_runs
+drop cascades to table tenant_5039f2d497cf.member_capability_overrides
+drop cascades to table tenant_5039f2d497cf.notification_preferences
+drop cascades to table tenant_5039f2d497cf.notifications
+drop cascades to table tenant_5039f2d497cf.pending_invitations
+drop cascades to table tenant_5039f2d497cf.projects
+drop cascades to table tenant_5039f2d497cf.template_clauses
+drop cascades to table tenant_5039f2d497cf.template_tags
+drop cascades to table tenant_5039f2d497cf.template_tasks
+drop cascades to table tenant_5039f2d497cf.action_executions
+drop cascades to table tenant_5039f2d497cf.adverse_party_links
+drop cascades to table tenant_5039f2d497cf.billing_rates
+drop cascades to table tenant_5039f2d497cf.checklist_instances
+drop cascades to table tenant_5039f2d497cf.client_ledger_cards
+drop cascades to table tenant_5039f2d497cf.comments
+drop cascades to table tenant_5039f2d497cf.court_dates
+drop cascades to table tenant_5039f2d497cf.customer_projects
+drop cascades to table tenant_5039f2d497cf.data_subject_requests
+drop cascades to table tenant_5039f2d497cf.documents
+drop cascades to table tenant_5039f2d497cf.invoices
+drop cascades to table tenant_5039f2d497cf.matter_closure_log
+drop cascades to table tenant_5039f2d497cf.portal_contacts
+drop cascades to table tenant_5039f2d497cf.prescription_trackers
+drop cascades to table tenant_5039f2d497cf.project_budgets
+drop cascades to table tenant_5039f2d497cf.project_members
+drop cascades to table tenant_5039f2d497cf.tasks
+drop cascades to table tenant_5039f2d497cf.template_task_items
+drop cascades to table tenant_5039f2d497cf.trust_reconciliations
+drop cascades to table tenant_5039f2d497cf.billing_run_items
+drop cascades to table tenant_5039f2d497cf.checklist_instance_items
+drop cascades to table tenant_5039f2d497cf.conflict_checks
+drop cascades to table tenant_5039f2d497cf.generated_documents
+drop cascades to table tenant_5039f2d497cf.information_requests
+drop cascades to table tenant_5039f2d497cf.magic_link_tokens
+drop cascades to table tenant_5039f2d497cf.payment_events
+drop cascades to table tenant_5039f2d497cf.task_items
+drop cascades to table tenant_5039f2d497cf.time_entries
+drop cascades to table tenant_5039f2d497cf.billing_run_entry_selections
+drop cascades to table tenant_5039f2d497cf.request_items
+drop cascades to table tenant_5039f2d497cf.bank_statement_lines
+drop cascades to table tenant_5039f2d497cf.trust_transactions
+drop cascades to table tenant_5039f2d497cf.interest_allocations
+drop cascades to table tenant_5039f2d497cf.trust_investments
+drop cascades to table tenant_5039f2d497cf.invoice_lines
+drop cascades to table tenant_5039f2d497cf.legal_disbursements
+and 3 other objects (see server log for list)
+DROP SCHEMA
+## R.4 public rows
++ SQL(write): BEGIN;
+DELETE FROM public.subscriptions WHERE organization_id = (SELECT id FROM public.organizations WHERE external_org_id='mathebula-partners');
+DELETE FROM public.org_schema_mapping WHERE external_org_id='mathebula-partners';
+DELETE FROM public.organizations WHERE external_org_id='mathebula-partners';
+DELETE FROM public.access_requests WHERE email LIKE '%@mathebula-test.local';
+COMMIT;
+BEGIN
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 2
+COMMIT
+## R.5 Mailpit
+count before: 0
++ curl -s -o /dev/null -w 'mailpit clear %{http_code}\n' -X DELETE 'http://localhost:8025/api/v1/messages'
+mailpit clear 200
+count after: 0
+## R.6 verify
++ SQL(read): SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%' ORDER BY 1
+tenant_56399d06a773
++ SQL(read): SELECT external_org_id, schema_name FROM public.org_schema_mapping ORDER BY 1
+org_phase86_squash_smoke|tenant_56399d06a773
++ SQL(read): SELECT count(*) FROM public.access_requests WHERE email LIKE '%@mathebula-test.local'
+0
++ SQL(read): SELECT count(*) FROM public.organizations
+1
++ SQL(read): SELECT count(*) FROM public.subscriptions
+1
+portal.portal_invoices org_id=mathebula-partners: 0
+portal.portal_requests org_id=mathebula-partners: 0
+portal.portal_tasks org_id=mathebula-partners: 0
+portal.portal_documents org_id=mathebula-partners: 0
+portal.portal_projects org_id=mathebula-partners: 0
+portal.portal_project_summaries org_id=mathebula-partners: 0
+portal.portal_comments org_id=mathebula-partners: 0
+portal.portal_contact_directory org_id=mathebula-partners: 0
+## R.6 restart backend 2026-10-29T13:43:46Z
++ bash /Users/rakheendama/Projects/2026/b2b-strawman/compose/scripts/svc.sh start backend
+
+=== svc.sh start backend ===
+
+  backend: starting...
+  Waiting for backend (port 8080)... ready (15s)
+
+Done.
+8080 pid 1420 etime 00:13
+2026-10-29T13:43:52.034850Z DbMigrate Current version of schema "public": 2
+2026-10-29T13:43:52.037017Z DbMigrate Schema "public" is up to date. No migration necessary.
+2026-10-29T13:44:00.407096Z BackendApplication Started BackendApplication in 10.715 seconds (process running for 10.886)
+2026-10-29T13:44:00.477603Z TenantMigrationRunner Running tenant migrations for 1 schemas
+2026-10-29T13:44:00.510502Z DbMigrate Current version of schema "tenant_56399d06a773": 9
+2026-10-29T13:44:00.511044Z DbMigrate Schema "tenant_56399d06a773" is up to date. No migration necessary.
+2026-10-29T13:44:00.513120Z TenantMigrationRunner Migrated schema tenant_56399d06a773 — 0 migrations applied
+2026-10-29T13:44:00.513282Z TenantMigrationRunner Tenant migration runner completed
+2026-10-29T13:44:00.539669Z PortalContactDirectoryBackfillRunner Portal contact directory backfill: 0 tenants scanned, 1 skipped (already marked), 0 failed, 0 rows upserted
+{"groups":["liveness","readiness"],"status":"UP"}

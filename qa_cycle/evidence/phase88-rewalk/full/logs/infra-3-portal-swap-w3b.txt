@@ -1,0 +1,19 @@
+Thu Oct 29 15:20:15 UTC 2026
+
+=== svc.sh stop portal ===
+
+  portal: stopping (PID 17616)...
+  portal: stopped
+
+Done.
+:3002 free
+:8080 files        4  :8081 files        0
+build exit 0 (logs/portal-build-w3b.log), rm -rf .next done before build
+COMMAND   PID        USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+node    32824 rakheendama   16u  IPv6 0xebe3c70f96fa1900      0t0  TCP *:3002 (LISTEN)
+  PID  PPID ELAPSED COMMAND
+32824 32787   00:02 next-server (v16.3.8)    
+n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+  PID  PPID COMMAND
+32787     1 node /opt/homebrew/bin/pnpm run start
+GET /login 200

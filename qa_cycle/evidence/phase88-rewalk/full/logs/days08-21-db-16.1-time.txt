@@ -1,0 +1,12 @@
+Thu Oct 29 15:25:20 UTC 2026
+> SELECT m.email, t.title, te.duration_minutes, te.billing_rate_snapshot, te.cost_rate_snapshot, te.billable, te.description, te.created_at FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='028d3901-e826-44a9-b6a6-b81328365629' ORDER BY te.created_at
+thandi@mathebula-test.local|Obtain death certificate & will|180|2500.00|1000.00|t|Initial consultation with heirs + document gathering|2026-10-29 15:06:27.907626+00
+bob@mathebula-test.local|Report estate to Master of High Court|90|1200.00|500.00|t|Master of High Court filing preparation|2026-10-29 15:07:15.386549+00
+carol@mathebula-test.local|Advertise for creditors (Gazette + local newspaper)|60|550.00|200.00|t|Drafting Section 29 advertisement notice|2026-10-29 15:09:34.845875+00
+thandi@mathebula-test.local|Report estate to Master of High Court|180|2500.00|1000.00|t|Reporting estate to the Master — J294 + inventory|2026-10-29 15:24:26.253786+00
+thandi@mathebula-test.local|Obtain Letters of Executorship|150|2500.00|1000.00|t|Letters of Executorship application|2026-10-29 15:24:29.580206+00
+bob@mathebula-test.local|Advertise for creditors (Gazette + local newspaper)|180|1200.00|500.00|t|Section 29 notice — Gazette + newspaper placement|2026-10-29 15:24:50.92792+00
+bob@mathebula-test.local|Open estate bank account|150|1200.00|500.00|t|Estate bank account opening documents|2026-10-29 15:24:54.238084+00
+carol@mathebula-test.local|Inventory of assets & liabilities|90|550.00|200.00|t|Drafting inventory of assets & liabilities|2026-10-29 15:25:10.660253+00
+> SELECT count(*), sum(te.duration_minutes)/60.0 AS hours, sum(te.duration_minutes*te.billing_rate_snapshot/60) AS amount, sum(te.duration_minutes*te.cost_rate_snapshot/60) AS cost FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='028d3901-e826-44a9-b6a6-b81328365629'
+8|18.0000000000000000|31025.0000000000000000|12500.0000000000000000

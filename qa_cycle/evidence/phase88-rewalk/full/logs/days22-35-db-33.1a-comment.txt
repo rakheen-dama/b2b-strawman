@@ -1,0 +1,6 @@
+Thu Oct 29 15:36:44 UTC 2026
+> SELECT c.id, c.entity_type, t.title, c.body, c.visibility, c.created_at FROM tenant_5039f2d497cf.comments c JOIN tenant_5039f2d497cf.tasks t ON t.id=c.entity_id ORDER BY c.created_at DESC LIMIT 1
+3068374f-8d12-4b75-9a11-8a112edc07c2|TASK|Court action if no settlement (Section 24 RAF Act)|Ready for summons @Bob|INTERNAL|2026-10-29 15:36:36.296357+00
+> SELECT n.type, m.email, n.title, n.created_at FROM tenant_5039f2d497cf.notifications n JOIN tenant_5039f2d497cf.members m ON m.id=n.recipient_member_id WHERE n.created_at > now() - interval '2 minutes' ORDER BY n.created_at
+MEMBER_INVITED|carol@mathebula-test.local|You were added to matter "Lerato Mthembu — RAF Claim (MVA 2025-11-03)"|2026-10-29 15:34:52.792534+00
+COMMENT_ADDED|bob@mathebula-test.local|Thandi Mathebula commented on task "Court action if no settlement (Section 24 RAF Act)"|2026-10-29 15:36:36.313528+00

@@ -12,43 +12,26 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
-import { SEED, acmeId, seedToken } from "../../helpers/seed";
+import { api, apiOk, createClient } from "../../helpers/api";
+import { SEED, acmeId } from "../../helpers/seed";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const RUN_ID = Date.now().toString(36).slice(-4);
 
-async function api(path: string, init: RequestInit = {}): Promise<Response> {
-  const token = await seedToken("alice");
-  return fetch(`${BACKEND_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...init.headers,
-    },
-  });
-}
-
-async function createClient(name: string): Promise<string> {
-  // Phase 87 S2 (ADR-337): API path
-  const res = await api("/api/clients", {
-    method: "POST",
-    body: JSON.stringify({ name, email: `${name.replace(/\W+/g, "-").toLowerCase()}@example.com` }),
-  });
-  expect(res.status).toBe(201);
-  return ((await res.json()) as { id: string }).id;
+/** A fresh PROSPECT client without a billing address; returns its id. */
+async function createOwnClient(name: string): Promise<string> {
+  const email = `${name.replace(/\W+/g, "-").toLowerCase()}@example.com`;
+  return (await createClient(name, email, { withAddress: false })).id;
 }
 
 /** Creates a client and anonymizes it through the API; returns its id. */
 async function createAnonymizedClient(name: string): Promise<string> {
-  const id = await createClient(name);
-  const res = await api(`/api/clients/${id}/anonymize`, {
+  const id = await createOwnClient(name);
+  await apiOk(`/api/clients/${id}/anonymize`, {
     method: "POST",
-    body: JSON.stringify({ confirmationName: name, reason: "E2E" }),
+    body: { confirmationName: name, reason: "E2E" },
   });
-  expect(res.ok, `anonymize ${name}`).toBe(true);
   return id;
 }
 
@@ -126,7 +109,7 @@ test.describe("DP-01: Customer Data Protection", () => {
       "628F-BLOCKER: Anonymize preview crashes the client page (TypeError reading 'portalContacts') — components/customers/anonymize-customer-dialog.tsx:148-154 reads preview.affectedEntities.* (lib/types/data-protection.ts:100-114) but GET /api/clients/{id}/anonymize/preview answers a flat record (backend datarequest/AnonymizationPreview.java:11-22)"
     );
     const name = `DP Anon ${RUN_ID}`;
-    const id = await createClient(name);
+    const id = await createOwnClient(name);
 
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${base}/clients/${id}`);
@@ -183,7 +166,7 @@ test.describe("DP-01: Customer Data Protection", () => {
     // Phase 87 S2 (ADR-337): API path — ANONYMIZED is terminal (LifecycleStatus.ALLOWED_TRANSITIONS)
     const res = await api(`/api/clients/${id}/transition`, {
       method: "POST",
-      body: JSON.stringify({ targetStatus: "ACTIVE", notes: "E2E: must be refused" }),
+      body: { targetStatus: "ACTIVE", notes: "E2E: must be refused" },
     });
     expect(res.status).toBe(400);
     expect(await res.text()).toContain("ANONYMIZED");

@@ -15,39 +15,26 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import {
+  addFeeNoteLineViaApi,
+  api,
   apiOk,
+  approveAndSendFeeNote,
   createActiveClient,
+  createDraftFeeNote,
   createMatter,
   createMatterRate,
   createTask,
   logTime,
   memberNamed,
+  type FeeNote,
 } from "../../helpers/api";
 import { loginAs } from "../../fixtures/auth";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 
 const RUN_ID = Date.now().toString(36).slice(-4);
 const CLIENT_PREFIX = "InvLife Client";
-
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: ORG }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
-}
 
 /**
  * This file's own ACTIVE client (628F R-5): fee notes are never raised on the boot seed's Acme Corp,
@@ -61,58 +48,10 @@ async function createOwnClient(): Promise<string> {
   );
 }
 
-async function createDraftWithLine(
-  token: string,
-  customerId: string
-): Promise<Record<string, unknown>> {
-  // Create draft
-  const draftRes = await fetch(`${BACKEND_URL}/api/invoices`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      // Phase 87 S3 (ADR-337): request body
-      clientId: customerId,
-      currency: "ZAR",
-      timeEntryIds: [],
-      notes: `Lifecycle test ${RUN_ID}`,
-    }),
-  });
-  expect(draftRes.status).toBe(201);
-  const draft = await draftRes.json();
-
-  // Add a line item so approve succeeds
-  const lineRes = await fetch(`${BACKEND_URL}/api/invoices/${draft.id}/lines`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      description: `Lifecycle line ${RUN_ID}`,
-      quantity: 2,
-      unitPrice: 750,
-      sortOrder: 0,
-    }),
-  });
-  expect(lineRes.status).toBe(201);
-  return lineRes.json();
-}
-
-async function approveAndSend(token: string, invoiceId: string): Promise<void> {
-  const approve = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/approve`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  expect(approve.ok, `approve ${invoiceId}: ${approve.status}`).toBeTruthy();
-  const send = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/send`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ overrideWarnings: false }),
-  });
-  expect(send.ok, `send ${invoiceId}: ${send.status} ${await send.text()}`).toBeTruthy();
+/** A DRAFT fee note with one manual line (so it can be approved). */
+async function createDraftWithLine(customerId: string): Promise<FeeNote> {
+  const draft = await createDraftFeeNote(customerId, `Lifecycle test ${RUN_ID}`);
+  return addFeeNoteLineViaApi(draft.id, `Lifecycle line ${RUN_ID}`, 2, 750);
 }
 
 /** Voids the open (SENT) fee note through the header button and its native confirm(). */
@@ -147,8 +86,7 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
   });
 
   test("DRAFT -> APPROVED", async ({ page }) => {
-    const token = await getToken("alice");
-    const invoice = await createDraftWithLine(token, customerId);
+    const invoice = await createDraftWithLine(customerId);
     invoiceId = invoice.id;
 
     await loginAs(page, "alice");
@@ -187,24 +125,14 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
     await expect(page.getByRole("button", { name: "Send fee note" })).toHaveCount(0);
     await expect(page.getByText("Sent", { exact: true }).first()).toBeVisible();
 
-    const token = await getToken("alice");
-    const res = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    expect(res.ok).toBeTruthy();
-    expect((await res.json()).status).toBe("SENT");
+    expect((await apiOk<FeeNote>(`/api/invoices/${invoiceId}`)).status).toBe("SENT");
   });
 
   test("SENT -> PAID (record payment)", async ({ page }) => {
     // Verify the invoice is actually in SENT status via API first
-    const token = await getToken("alice");
 
     // The previous test left the fee note SENT (serial chain)
-    const invoiceRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    expect(invoiceRes.ok).toBeTruthy();
-    const invoice = await invoiceRes.json();
+    const invoice = await apiOk<FeeNote>(`/api/invoices/${invoiceId}`);
     expect(invoice.status).toBe("SENT");
 
     await loginAs(page, "alice");
@@ -243,11 +171,13 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
 
     // (Phase 88, ADR-347) A full payment marks PAID: amount_paid = total, balance due 0, one
     // EFT payment for the whole total carrying the reference.
-    const paidRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    expect(paidRes.ok).toBeTruthy();
-    const paid = await paidRes.json();
+    const paid = await apiOk<
+      FeeNote & {
+        amountPaid: number;
+        balanceDue: number;
+        payments: { paymentMethod: string; paymentReference: string; amount: number }[];
+      }
+    >(`/api/invoices/${invoiceId}`);
     expect(paid.status).toBe("PAID");
     expect(Number(paid.amountPaid)).toBe(Number(paid.total));
     expect(Number(paid.balanceDue)).toBe(0);
@@ -260,21 +190,16 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
   });
 
   test("VOID a sent invoice", async ({ page }) => {
-    const token = await getToken("alice");
-
     // Create a separate invoice for voiding, approved and sent via the API
-    const invoice = await createDraftWithLine(token, customerId);
-    await approveAndSend(token, invoice.id as string);
+    const invoice = await createDraftWithLine(customerId);
+    await approveAndSendFeeNote(invoice.id);
 
     await loginAs(page, "alice");
     await page.goto(`${BASE}/invoices/${invoice.id}`);
     await expect(page.getByText("Sent", { exact: true }).first()).toBeVisible({ timeout: 10000 });
     await voidInUi(page);
 
-    const res = await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    expect((await res.json()).status).toBe("VOID");
+    expect((await apiOk<FeeNote>(`/api/invoices/${invoice.id}`)).status).toBe("VOID");
   });
 
   test("VOID releases time entries", async ({ page }) => {
@@ -289,8 +214,7 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
       method: "POST",
       body: { clientId: customerId, currency: "ZAR", timeEntryIds: [entryId] },
     });
-    const token = await getToken("alice");
-    await approveAndSend(token, feeNote.id);
+    await approveAndSendFeeNote(feeNote.id);
     expect((await timeEntry(taskId, entryId)).invoiceId).toBe(feeNote.id);
 
     await loginAs(page, "alice");
@@ -303,15 +227,9 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
   });
 
   test("Cannot edit approved invoice", async ({ page }) => {
-    const token = await getToken("alice");
-
     // Create and approve an invoice
-    const invoice = await createDraftWithLine(token, customerId);
-    const approve = await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}/approve`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    expect(approve.ok).toBeTruthy();
+    const invoice = await createDraftWithLine(customerId);
+    await apiOk(`/api/invoices/${invoice.id}/approve`, { method: "POST" });
 
     // The approved fee note is read-only in the UI: no draft actions
     await loginAs(page, "alice");
@@ -322,47 +240,28 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
     await expect(page.getByRole("button", { name: "Delete Draft" })).toHaveCount(0);
 
     // Attempt to add a line item via API — should fail
-    const lineRes = await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}/lines`, {
+    const lineRes = await api(`/api/invoices/${invoice.id}/lines`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        description: "Should fail",
-        quantity: 1,
-        unitPrice: 100,
-        sortOrder: 0,
-      }),
+      body: { description: "Should fail", quantity: 1, unitPrice: 100, sortOrder: 0 },
     });
     // Approved invoices should reject line edits
     expect([400, 409, 422].includes(lineRes.status)).toBeTruthy();
   });
 
   test("Cannot skip DRAFT -> SENT", async () => {
-    const token = await getToken("alice");
-    const invoice = await createDraftWithLine(token, customerId);
+    const invoice = await createDraftWithLine(customerId);
 
     // Try to send without approving first
-    const sendRes = await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}/send`, {
+    const sendRes = await api(`/api/invoices/${invoice.id}/send`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ overrideWarnings: true }),
+      body: { overrideWarnings: true },
     });
     expect([400, 409].includes(sendRes.status)).toBeTruthy();
   });
 
   test("Cannot transition PAID -> VOID", async () => {
-    const token = await getToken("alice");
-
     // The main test invoice is now PAID — try to void it
-    const voidRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/void`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const voidRes = await api(`/api/invoices/${invoiceId}/void`, { method: "POST" });
     // PAID invoices should not be voidable
     expect([400, 409].includes(voidRes.status)).toBeTruthy();
   });

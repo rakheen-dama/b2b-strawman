@@ -10,7 +10,7 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
-import { apiGet } from "../../helpers/seed";
+import { apiOk } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
@@ -34,7 +34,7 @@ test.describe("SET-01: General Settings", () => {
   let original: { brandColor: string; documentFooterText: string };
 
   test.beforeAll(async () => {
-    const settings = await apiGet<{ brandColor: string | null; documentFooterText: string | null }>(
+    const settings = await apiOk<{ brandColor: string | null; documentFooterText: string | null }>(
       "/api/settings"
     );
     original = {

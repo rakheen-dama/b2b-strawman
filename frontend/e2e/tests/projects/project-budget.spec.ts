@@ -15,56 +15,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
+import { apiOk, apiStatus } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 const RUN_ID = Date.now().toString(36).slice(-4);
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
-
-// --- API helpers ---
-
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: "e2e-test-org" }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
-}
-
-async function apiGet(path: string, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-}
-
-async function apiPost(path: string, body: object, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
-
-async function apiPut(path: string, body: object, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
 
 /** Opens the matter's Fees → Fee estimate sub-tab and returns the (unnamed) tab panel. */
 async function openFeeEstimateTab(page: Page, projectId: string) {
@@ -87,44 +42,39 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
   // Setup: create a project and task via API
   test.beforeAll(async () => {
-    const token = await getToken("alice");
-
     // Create project
-    const { data: project } = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      "/api/matters",
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { data: project } = await apiStatus("/api/matters", {
+      method: "POST",
+      body: {
         name: PROJECT_NAME,
         description: "Project for budget E2E tests",
       },
-      token
-    );
+    });
     projectId = project.id;
 
     // Add Carol as a project member for time logging
-    const members = (await apiGet("/api/members", token)) as Array<{ id: string; name: string }>;
+    const members = await apiOk<Array<{ id: string; name: string }>>("/api/members");
     const carol = members.find((m) => m.name?.includes("Carol"));
     expect(carol, "seed member Carol").toBeDefined();
-    const added = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/members`,
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const added = await apiStatus(`/api/matters/${projectId}/members`, {
+      method: "POST",
+      body: {
         memberId: carol!.id,
         projectRole: "contributor",
       },
-      token
-    );
+    });
     expect(added.status).toBeLessThan(300);
 
     // Create task for time logging
-    const { data: task } = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/tasks`,
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { data: task } = await apiStatus(`/api/matters/${projectId}/tasks`, {
+      method: "POST",
+      body: {
         title: TASK_TITLE,
       },
-      token
-    );
+    });
     taskId = task.id;
   });
 
@@ -139,21 +89,18 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
   });
 
   test("2. Set project budget via API and verify in UI", async ({ page }) => {
-    const token = await getToken("alice");
-
     // Set budget: 100 hours, R50,000
-    const { status, data } = await apiPut(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/budget`,
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { status, data } = await apiStatus(`/api/matters/${projectId}/budget`, {
+      method: "PUT",
+      body: {
         budgetHours: 100,
         budgetAmount: 50000,
         budgetCurrency: "ZAR",
         alertThresholdPct: 80,
         notes: `Budget set for E2E test ${RUN_ID}`,
       },
-      token
-    );
+    });
 
     expect(status).toBe(200);
     expect(Number(data.budgetHours)).toBe(100);
@@ -173,25 +120,26 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
   test("3. Budget shows usage after logging time", async ({ page }) => {
     // Log time via API to consume some budget
-    const token = await getToken("carol");
     const today = new Date().toISOString().split("T")[0];
 
-    const logged = await apiPost(
+    const logged = await apiStatus(
       `/api/tasks/${taskId}/time-entries`,
       {
-        date: today,
-        durationMinutes: 120, // 2 hours
-        billable: true,
-        description: `Budget usage test ${RUN_ID}`,
+        method: "POST",
+        body: {
+          date: today,
+          durationMinutes: 120, // 2 hours
+          billable: true,
+          description: `Budget usage test ${RUN_ID}`,
+        },
       },
-      token
+      "carol"
     );
     expect(logged.status).toBe(201);
 
     // Verify budget status via API — should show consumed hours
-    const aliceToken = await getToken("alice");
     // Phase 87 S1 (ADR-337): API path
-    const budgetStatus = await apiGet(`/api/matters/${projectId}/budget`, aliceToken);
+    const budgetStatus = await apiOk(`/api/matters/${projectId}/budget`);
 
     expect(Number(budgetStatus.hoursConsumed)).toBeGreaterThanOrEqual(2);
     expect(Number(budgetStatus.hoursRemaining)).toBeLessThanOrEqual(98);

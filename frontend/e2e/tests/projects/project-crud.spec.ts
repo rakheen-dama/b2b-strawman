@@ -15,57 +15,12 @@
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
+import { api, apiOk, apiStatus } from "../../helpers/api";
 import { SEED } from "../../helpers/seed";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 const RUN_ID = Date.now().toString(36).slice(-4);
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
-
-// --- API helpers ---
-
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: "e2e-test-org" }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
-}
-
-async function apiGet(path: string, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-}
-
-async function apiPost(path: string, body: object, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
-
-async function apiPatch(path: string, token: string, body?: object) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
 
 // ═══════════════════════════════════════════════════════════════════
 //  PROJ-01: Project CRUD
@@ -120,16 +75,14 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
 
     // Create via API — more reliable than UI creation for internal projects
-    const token = await getToken("alice");
-    const { status } = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      "/api/matters",
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { status } = await apiStatus("/api/matters", {
+      method: "POST",
+      body: {
         name: PROJECT_WITHOUT_CUSTOMER,
         description: "E2E internal project — no customer",
       },
-      token
-    );
+    });
     expect(status).toBe(201);
 
     // Verify project appears in UI
@@ -139,9 +92,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
   });
 
   test("3. Edit project name", async ({ page }) => {
-    const token = await getToken("alice");
     // Phase 87 S1 (ADR-337): API path
-    const projects = (await apiGet("/api/matters", token)) as Array<{ id: string; name: string }>;
+    const projects = await apiOk<Array<{ id: string; name: string }>>("/api/matters");
     const project = projects.find((p) => p.name === PROJECT_WITH_CUSTOMER);
     expect(project, `matter "${PROJECT_WITH_CUSTOMER}" created by test 1`).toBeDefined();
 
@@ -168,9 +120,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
   });
 
   test("4. Project detail tabs load", async ({ page }) => {
-    const token = await getToken("alice");
     // Phase 87 S1 (ADR-337): API path
-    const projects = (await apiGet("/api/matters", token)) as Array<{ id: string; name: string }>;
+    const projects = await apiOk<Array<{ id: string; name: string }>>("/api/matters");
     const project = projects.find((p) => p.name === EDITED_NAME);
     expect(project, `matter "${EDITED_NAME}" renamed by test 3`).toBeDefined();
 
@@ -204,9 +155,8 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
   // pre-610D /projects/:id/expenses URL, via the 610D row) 308s to the matter's Disbursements tab
   // (lib/legacy-redirects.ts). Replaces the retired projects/project-expenses.spec.ts.
   test("4b. Legacy expenses URL redirects to the Disbursements tab", async ({ page }) => {
-    const token = await getToken("alice");
     // Phase 87 S1 (ADR-337): API path
-    const projects = (await apiGet("/api/matters", token)) as Array<{ id: string; name: string }>;
+    const projects = await apiOk<Array<{ id: string; name: string }>>("/api/matters");
     const found = projects.find((p) => p.name === EDITED_NAME);
     expect(found, `matter "${EDITED_NAME}" renamed by test 3`).toBeDefined();
     const project = found!;
@@ -226,42 +176,46 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
   });
 
   test("5. Archive project (Complete then Archive)", async ({ page }) => {
-    const token = await getToken("alice");
     // Phase 87 S1 (ADR-337): API path
-    const projects = (await apiGet("/api/matters?status=ALL", token)) as Array<{
-      id: string;
-      name: string;
-    }>;
+    const projects = await apiOk<
+      Array<{
+        id: string;
+        name: string;
+      }>
+    >("/api/matters?status=ALL");
     const project = projects.find((p) => p.name === EDITED_NAME);
     expect(project, `matter "${EDITED_NAME}" renamed by test 3`).toBeDefined();
     projectId = project!.id;
 
     // A task (done before closing) for test 7's time-logging check
-    const task = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/tasks`,
-      { title: `Pre-archive Task ${RUN_ID}` },
-      token
-    );
+    // Phase 87 S1 (ADR-337): API path
+    const task = await apiStatus(`/api/matters/${projectId}/tasks`, {
+      method: "POST",
+      body: { title: `Pre-archive Task ${RUN_ID}` },
+    });
     expect(task.status).toBe(201);
     taskId = task.data.id;
     // OPEN → IN_PROGRESS → DONE (completing straight from OPEN is refused)
-    const started = await fetch(`${BACKEND_URL}/api/tasks/${taskId}`, {
+    const started = await apiStatus(`/api/tasks/${taskId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ...task.data, status: "IN_PROGRESS" }),
+      body: { ...task.data, status: "IN_PROGRESS" },
     });
     expect(started.status).toBe(200);
-    expect((await apiPatch(`/api/tasks/${taskId}/complete`, token)).status).toBe(200);
+    expect((await apiStatus(`/api/tasks/${taskId}/complete`, { method: "PATCH" })).status).toBe(
+      200
+    );
 
     // Complete the project first (required before archive), then archive
     // Phase 87 S1 (ADR-337): API path
-    const completed = await apiPatch(`/api/matters/${projectId}/complete`, token, {
-      acknowledgeUnbilledTime: true,
+    const completed = await apiStatus(`/api/matters/${projectId}/complete`, {
+      method: "PATCH",
+      body: {
+        acknowledgeUnbilledTime: true,
+      },
     });
     expect(completed.status).toBe(200);
     // Phase 87 S1 (ADR-337): API path
-    const archived = await apiPatch(`/api/matters/${projectId}/archive`, token);
+    const archived = await apiStatus(`/api/matters/${projectId}/archive`, { method: "PATCH" });
     expect(archived.status).toBe(200);
 
     // Verify in UI
@@ -276,15 +230,13 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
 
   test("6. Archived project blocks task creation", async () => {
     // Attempt to create a task on the archived project via API
-    const token = await getToken("alice");
-    const { status } = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/tasks`,
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { status } = await apiStatus(`/api/matters/${projectId}/tasks`, {
+      method: "POST",
+      body: {
         title: `Blocked Task ${RUN_ID}`,
       },
-      token
-    );
+    });
 
     // Should be rejected (400 or 409)
     expect([400, 409]).toContain(status);
@@ -292,16 +244,14 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
 
   test("7. Archived project blocks time logging via API", async () => {
     // The backend refuses time on a task of an archived matter (the UI may still show buttons)
-    const token = await getToken("alice");
-    const res = await fetch(`${BACKEND_URL}/api/tasks/${taskId}/time-entries`, {
+    const res = await api(`/api/tasks/${taskId}/time-entries`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
+      body: {
         date: new Date().toISOString().split("T")[0],
         durationMinutes: 30,
         billable: true,
         description: `Time Block Test ${RUN_ID}`,
-      }),
+      },
     });
     expect([400, 409]).toContain(res.status);
     expect(await res.text()).toMatch(/archived/i);

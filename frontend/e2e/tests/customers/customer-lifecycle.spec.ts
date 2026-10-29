@@ -17,107 +17,26 @@
  */
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
-import { seedToken } from "../../helpers/seed";
+import {
+  api,
+  clientStatus,
+  createActiveClient,
+  createClient,
+  settleChecklists,
+} from "../../helpers/api";
 import { startClientOnboarding } from "../../helpers/legal-depth-ii";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 
 const RUN_ID = Date.now().toString(36).slice(-4);
 
-interface Client {
-  id: string;
-  name: string;
-  lifecycleStatus: string;
-}
-
-async function api(path: string, init: RequestInit = {}): Promise<Response> {
-  const token = await seedToken("alice");
-  return fetch(`${BACKEND_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...init.headers,
-    },
-  });
-}
-
-/**
- * Creates a client via the API. With a billing address by default — LIFECYCLE_ACTIVATION needs
- * address line 1 / city / country (the tax number is exempt for an INDIVIDUAL, the default type).
- */
-async function createCustomerViaApi(
-  name: string,
-  email: string,
-  { withAddress = true } = {}
-): Promise<Client> {
+function transitionViaApi(clientId: string, targetStatus: string): Promise<Response> {
   // Phase 87 S2 (ADR-337): API path
-  const res = await api("/api/clients", {
+  return api(`/api/clients/${clientId}/transition`, {
     method: "POST",
-    body: JSON.stringify({
-      name,
-      email,
-      phone: "+27-11-555-9999",
-      ...(withAddress
-        ? { addressLine1: "1 Long Street", city: "Cape Town", postalCode: "8001", country: "ZA" }
-        : {}),
-    }),
+    body: { targetStatus, notes: "E2E test transition" },
   });
-  expect(res.status).toBe(201);
-  return res.json();
-}
-
-async function transitionViaApi(customerId: string, targetStatus: string): Promise<Response> {
-  // Phase 87 S2 (ADR-337): API path
-  return api(`/api/clients/${customerId}/transition`, {
-    method: "POST",
-    body: JSON.stringify({ targetStatus, notes: "E2E test transition" }),
-  });
-}
-
-async function statusOf(customerId: string): Promise<string> {
-  const res = await api(`/api/clients/${customerId}`);
-  expect(res.ok).toBe(true);
-  return ((await res.json()) as Client).lifecycleStatus;
-}
-
-/**
- * Settles every onboarding checklist item through the API: complete it, or — when the item needs a
- * linked document or depends on a skipped item — skip it (the boot seed does the same). Settling the
- * last item auto-activates a client whose activation prerequisites are on file.
- */
-async function settleChecklists(customerId: string): Promise<void> {
-  const res = await api(`/api/clients/${customerId}/checklists`);
-  expect(res.ok).toBe(true);
-  const checklists = (await res.json()) as { items?: { id: string; status: string }[] }[];
-  expect(checklists.length, "an onboarding checklist was instantiated").toBeGreaterThan(0);
-  for (const checklist of checklists) {
-    for (const item of checklist.items ?? []) {
-      if (item.status === "COMPLETED" || item.status === "SKIPPED") continue;
-      const complete = await api(`/api/checklist-items/${item.id}/complete`, {
-        method: "PUT",
-        body: JSON.stringify({ notes: "E2E auto-complete" }),
-      });
-      if (!complete.ok) {
-        const skip = await api(`/api/checklist-items/${item.id}/skip`, {
-          method: "PUT",
-          body: JSON.stringify({ reason: "E2E: no document to link" }),
-        });
-        expect(skip.ok, `skip checklist item ${item.id}`).toBe(true);
-      }
-    }
-  }
-}
-
-/** A fresh ACTIVE client (PROSPECT → ONBOARDING → checklist auto-activation), via the API. */
-async function createActiveCustomer(name: string, email: string): Promise<Client> {
-  const client = await createCustomerViaApi(name, email);
-  expect((await transitionViaApi(client.id, "ONBOARDING")).ok).toBe(true);
-  await settleChecklists(client.id);
-  await expect.poll(() => statusOf(client.id)).toBe("ACTIVE");
-  return client;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -129,7 +48,7 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
   let customerId: string;
 
   test("New customer defaults to PROSPECT", async ({ page }) => {
-    const customer = await createCustomerViaApi(LIFECYCLE_NAME, LIFECYCLE_EMAIL);
+    const customer = await createClient(LIFECYCLE_NAME, LIFECYCLE_EMAIL);
     customerId = customer.id;
     expect(customer.lifecycleStatus).toBe("PROSPECT");
 
@@ -160,18 +79,18 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
 
     await page.reload();
     await expect(page.getByTestId("lifecycle-badge")).toHaveText("Onboarding", { timeout: 10_000 });
-    expect(await statusOf(customerId)).toBe("ONBOARDING");
+    expect(await clientStatus(customerId)).toBe("ONBOARDING");
   });
 
   test("ONBOARDING -> ACTIVE (via checklist completion)", async () => {
-    expect(await statusOf(customerId)).toBe("ONBOARDING");
+    expect(await clientStatus(customerId)).toBe("ONBOARDING");
     await settleChecklists(customerId);
     // Settling the last item auto-transitions the client (its billing address is on file)
-    await expect.poll(() => statusOf(customerId)).toBe("ACTIVE");
+    await expect.poll(() => clientStatus(customerId)).toBe("ACTIVE");
   });
 
   test("PROSPECT blocked from creating project", async () => {
-    const prospect = await createCustomerViaApi(
+    const prospect = await createClient(
       `Prospect Guard ${RUN_ID}`,
       `prospect-guard-${RUN_ID}@example.com`
     );
@@ -179,12 +98,12 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     // Phase 87 S1 (ADR-337): API path
     const projectRes = await api("/api/matters", {
       method: "POST",
-      body: JSON.stringify({
+      body: {
         name: `Should Fail ${RUN_ID}`,
         description: "This should be blocked by lifecycle guard",
         // Phase 87 S1 (ADR-337): API field (CreateMatterRequest.clientId)
         clientId: prospect.id,
-      }),
+      },
     });
     // CustomerLifecycleGuard: CREATE_PROJECT is blocked for PROSPECT (InvalidStateException → 400)
     expect(projectRes.status).toBe(400);
@@ -194,7 +113,7 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
   test("Fee note blocked for a client without a billing address", async () => {
     // A PROSPECT may be billed (GAP-L-60); what blocks the fee note is the missing billing address
     // (INVOICE_GENERATION structural prerequisites → 422 with an address_line1 violation)
-    const prospect = await createCustomerViaApi(
+    const prospect = await createClient(
       `ProspectInv ${RUN_ID}`,
       `prospect-inv-${RUN_ID}@example.com`,
       { withAddress: false }
@@ -202,19 +121,19 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
 
     const invoiceRes = await api("/api/invoices", {
       method: "POST",
-      body: JSON.stringify({
+      body: {
         // Phase 87 S3 (ADR-337): request body
         clientId: prospect.id,
         currency: "ZAR",
         timeEntryIds: [],
-      }),
+      },
     });
     expect(invoiceRes.status).toBe(422);
     expect(await invoiceRes.text()).toContain("address_line1");
   });
 
   test("ACTIVE -> DORMANT", async ({ page }) => {
-    expect(await statusOf(customerId)).toBe("ACTIVE");
+    expect(await clientStatus(customerId)).toBe("ACTIVE");
 
     // The firm-UI ACTIVE → DORMANT path: Compliance › dormancy check › "Mark as Dormant". The client
     // has no matters, documents, fee notes or time, so it is always a dormancy candidate.
@@ -228,7 +147,7 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
     const markDormant = row.getByRole("button", { name: "Mark as Dormant" });
     await markDormant.click();
     // The candidate list is client state and is not re-fetched after marking: assert on the client
-    await expect.poll(() => statusOf(customerId), { timeout: 15_000 }).toBe("DORMANT");
+    await expect.poll(() => clientStatus(customerId), { timeout: 15_000 }).toBe("DORMANT");
 
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients/${customerId}`);
@@ -279,34 +198,34 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
 
   test("OFFBOARDED blocked from project creation", async () => {
     // Self-contained (the UI path to OFFBOARDED is blocked above): ACTIVE → OFFBOARDING → OFFBOARDED
-    const offboarded = await createActiveCustomer(
+    const offboardedId = await createActiveClient(
       `Offboarded Guard ${RUN_ID}`,
       `offboarded-guard-${RUN_ID}@example.com`
     );
-    expect((await transitionViaApi(offboarded.id, "OFFBOARDING")).ok).toBe(true);
-    expect((await transitionViaApi(offboarded.id, "OFFBOARDED")).ok).toBe(true);
-    expect(await statusOf(offboarded.id)).toBe("OFFBOARDED");
+    expect((await transitionViaApi(offboardedId, "OFFBOARDING")).ok).toBe(true);
+    expect((await transitionViaApi(offboardedId, "OFFBOARDED")).ok).toBe(true);
+    expect(await clientStatus(offboardedId)).toBe("OFFBOARDED");
 
     // Phase 87 S1 (ADR-337): API path
     const projectRes = await api("/api/matters", {
       method: "POST",
-      body: JSON.stringify({
+      body: {
         name: `Should Fail Offboarded ${RUN_ID}`,
         description: "Blocked by lifecycle guard",
         // Phase 87 S1 (ADR-337): API field (CreateMatterRequest.clientId)
-        clientId: offboarded.id,
-      }),
+        clientId: offboardedId,
+      },
     });
     expect(projectRes.status).toBe(400);
     expect(await projectRes.text()).toContain("OFFBOARDED");
   });
 
   test("Invalid: PROSPECT -> ACTIVE (skip) rejected via API", async () => {
-    const prospect = await createCustomerViaApi(`SkipTest ${RUN_ID}`, `skip-${RUN_ID}@example.com`);
+    const prospect = await createClient(`SkipTest ${RUN_ID}`, `skip-${RUN_ID}@example.com`);
 
     // PROSPECT may only move to ONBOARDING (LifecycleStatus.ALLOWED_TRANSITIONS)
     const res = await transitionViaApi(prospect.id, "ACTIVE");
     expect(res.status).toBe(400);
-    expect(await statusOf(prospect.id)).toBe("PROSPECT");
+    expect(await clientStatus(prospect.id)).toBe("PROSPECT");
   });
 });

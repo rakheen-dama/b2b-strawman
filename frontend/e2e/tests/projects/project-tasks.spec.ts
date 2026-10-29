@@ -16,65 +16,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
+import { apiOk, apiStatus } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 const RUN_ID = Date.now().toString(36).slice(-4);
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
-
-// --- API helpers ---
-
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: "e2e-test-org" }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
-}
-
-async function apiGet(path: string, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-}
-
-async function apiPost(path: string, body: object, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
-
-async function apiPut(path: string, body: object, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
-
-async function apiPatch(path: string, token: string, body?: object) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
 
 /** Opens the matter's Work → Tasks sub-tab and returns the (unnamed) tab panel. */
 async function openTasksTab(page: Page, projectId: string) {
@@ -124,39 +70,35 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
 
   // Setup: create a project via API for task testing, with Carol as a member (assignable)
   test.beforeAll(async () => {
-    const token = await getToken("alice");
-    const { status, data } = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      "/api/matters",
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { status, data } = await apiStatus("/api/matters", {
+      method: "POST",
+      body: {
         name: PROJECT_NAME,
         description: "Project for task E2E tests",
       },
-      token
-    );
+    });
     expect(status).toBe(201);
     projectId = data.id;
 
-    const members = (await apiGet("/api/members", token)) as Array<{ id: string; name: string }>;
+    const members = await apiOk<Array<{ id: string; name: string }>>("/api/members");
     const carol = members.find((m) => m.name?.includes("Carol"));
     expect(carol, "seed member Carol").toBeDefined();
-    const added = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/members`,
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const added = await apiStatus(`/api/matters/${projectId}/members`, {
+      method: "POST",
+      body: {
         memberId: carol!.id,
         projectRole: "contributor",
       },
-      token
-    );
+    });
     expect(added.status).toBeLessThan(300);
 
-    const companion = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/tasks`,
-      { title: COMPANION_TITLE },
-      token
-    );
+    // Phase 87 S1 (ADR-337): API path
+    const companion = await apiStatus(`/api/matters/${projectId}/tasks`, {
+      method: "POST",
+      body: { title: COMPANION_TITLE },
+    });
     expect(companion.status).toBe(201);
   });
 
@@ -178,40 +120,38 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     await expect(taskRow(page, TASK_TITLE)).toBeVisible({ timeout: 10_000 });
 
     // Get the task ID via API for subsequent tests
-    const token = await getToken("alice");
     // Phase 87 S1 (ADR-337): API path
-    const tasks = (await apiGet(`/api/matters/${projectId}/tasks`, token)) as Array<{
-      id: string;
-      title: string;
-    }>;
+    const tasks = await apiOk<
+      Array<{
+        id: string;
+        title: string;
+      }>
+    >(`/api/matters/${projectId}/tasks`);
     const task = tasks.find((t) => t.title === TASK_TITLE);
     expect(task).toBeTruthy();
     taskId = task!.id;
   });
 
   test("2. Edit task title via API and verify in UI", async ({ page }) => {
-    const token = await getToken("alice");
-
     // Get current task to preserve fields for the PUT request
-    const task = (await apiGet(`/api/tasks/${taskId}`, token)) as {
+    const task = await apiOk<{
       title: string;
       description: string;
       priority: string;
       status: string;
       type: string | null;
-    };
+    }>(`/api/tasks/${taskId}`);
 
-    const { status } = await apiPut(
-      `/api/tasks/${taskId}`,
-      {
+    const { status } = await apiStatus(`/api/tasks/${taskId}`, {
+      method: "PUT",
+      body: {
         title: EDITED_TITLE,
         description: task.description || "",
         priority: task.priority || "MEDIUM",
         status: task.status || "OPEN",
         type: task.type,
       },
-      token
-    );
+    });
     expect(status).toBe(200);
 
     await loginAs(page, "alice");
@@ -221,23 +161,21 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
   });
 
   test("3. Change task status: OPEN -> IN_PROGRESS", async ({ page }) => {
-    const token = await getToken("alice");
-    const task = (await apiGet(`/api/tasks/${taskId}`, token)) as {
+    const task = await apiOk<{
       title: string;
       description: string;
       priority: string;
       status: string;
       type: string | null;
-    };
+    }>(`/api/tasks/${taskId}`);
 
-    const { status, data } = await apiPut(
-      `/api/tasks/${taskId}`,
-      {
+    const { status, data } = await apiStatus(`/api/tasks/${taskId}`, {
+      method: "PUT",
+      body: {
         ...task,
         status: "IN_PROGRESS",
       },
-      token
-    );
+    });
 
     expect(status).toBe(200);
     expect(data.status).toBe("IN_PROGRESS");
@@ -249,10 +187,8 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
   });
 
   test("4. Change task status: IN_PROGRESS -> DONE", async ({ page }) => {
-    const token = await getToken("alice");
-
     // Use the PATCH complete endpoint
-    const { status, data } = await apiPatch(`/api/tasks/${taskId}/complete`, token);
+    const { status, data } = await apiStatus(`/api/tasks/${taskId}/complete`, { method: "PATCH" });
 
     expect(status).toBe(200);
     expect(data.status).toBe("DONE");
@@ -266,9 +202,7 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
   });
 
   test("5. Reopen completed task", async ({ page }) => {
-    const token = await getToken("alice");
-
-    const { status, data } = await apiPatch(`/api/tasks/${taskId}/reopen`, token);
+    const { status, data } = await apiStatus(`/api/tasks/${taskId}/reopen`, { method: "PATCH" });
 
     expect(status).toBe(200);
     expect(data.status).toBe("OPEN");
@@ -280,9 +214,7 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
   });
 
   test("6. Cancel task", async ({ page }) => {
-    const token = await getToken("alice");
-
-    const { status, data } = await apiPatch(`/api/tasks/${taskId}/cancel`, token);
+    const { status, data } = await apiStatus(`/api/tasks/${taskId}/cancel`, { method: "PATCH" });
 
     expect(status).toBe(200);
     expect(data.status).toBe("CANCELLED");
@@ -296,42 +228,38 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
   });
 
   test("7. Assign member to task", async ({ page }) => {
-    const token = await getToken("alice");
-
     // Create a fresh task to assign (cancelled task cannot be edited)
-    const { status: created, data: newTask } = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/tasks`,
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { status: created, data: newTask } = await apiStatus(`/api/matters/${projectId}/tasks`, {
+      method: "POST",
+      body: {
         title: ASSIGNABLE_TITLE,
       },
-      token
-    );
+    });
     expect(created).toBe(201);
     const newTaskId = newTask.id;
 
     // Get Carol's member ID
-    const members = (await apiGet("/api/members", token)) as Array<{ id: string; name: string }>;
+    const members = await apiOk<Array<{ id: string; name: string }>>("/api/members");
     const carol = members.find((m) => m.name?.includes("Carol"));
     expect(carol).toBeTruthy();
 
     // Assign Carol to the task
-    const task = (await apiGet(`/api/tasks/${newTaskId}`, token)) as {
+    const task = await apiOk<{
       title: string;
       description: string;
       priority: string;
       status: string;
       type: string | null;
-    };
+    }>(`/api/tasks/${newTaskId}`);
 
-    const { status, data: updatedTask } = await apiPut(
-      `/api/tasks/${newTaskId}`,
-      {
+    const { status, data: updatedTask } = await apiStatus(`/api/tasks/${newTaskId}`, {
+      method: "PUT",
+      body: {
         ...task,
         assigneeId: carol!.id,
       },
-      token
-    );
+    });
 
     expect(status).toBe(200);
     expect(updatedTask.assigneeId).toBe(carol!.id);

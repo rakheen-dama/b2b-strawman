@@ -6,7 +6,8 @@
  * `getByRole("tab", { name: "Tasks" })` / `getByRole("tabpanel", { name: "Tasks" })` match nothing.
  * Group ids: `frontend/lib/constants/matter-tab-groups.ts`, `client-tab-groups.ts`.
  *
- * Lifted verbatim from `legal-depth-ii.ts` (Phase 88 628E), which re-exports it.
+ * Lifted from `legal-depth-ii.ts` (Phase 88 628E), which re-exports it; 628F added the
+ * `visible: true` filter on the group / item locators (see the comment in `openGroupedTab`).
  */
 import { expect, type Page } from "@playwright/test";
 

@@ -105,6 +105,8 @@ these rows through `e2e/helpers/seed.ts` (`SEED`, `acmeId()`, `websiteRedesignId
 
 - A test that changes state creates its own run-unique entity — its own client (`createActiveClient` in
   `e2e/helpers/api.ts`), matter, fee note, information request, tag, template.
+- Backend calls in specs go through `e2e/helpers/api.ts` (`api` / `apiOk` / `apiStatus` and the entity builders),
+  which takes its token from `fixtures/auth.ts` `getApiToken` — no spec-local token fetch or fetch wrappers.
 - A shared setting a test must change (a notification preference, an automation rule, brand colour) is restored
   in `afterAll`.
 - Never assert global counts, and never pick "the first ACTIVE client" — sibling files create ACTIVE clients.

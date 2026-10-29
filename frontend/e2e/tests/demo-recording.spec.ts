@@ -1,3 +1,4 @@
+// KC-only demo script, excluded from the mock run and lint (628F R-2); follow-up: convert or delete
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../fixtures/keycloak-auth";
 

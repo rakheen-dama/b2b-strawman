@@ -14,30 +14,18 @@
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test invoices/invoice-arithmetic --reporter=list
  */
 import { test, expect } from "@playwright/test";
-import { createActiveClient } from "../../helpers/api";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
-const ORG = "e2e-test-org";
+import {
+  addFeeNoteLineViaApi,
+  api,
+  apiOk,
+  createActiveClient,
+  createDraftFeeNote,
+  type FeeNote,
+  type FeeNoteLine,
+} from "../../helpers/api";
 
 const RUN_ID = Date.now().toString(36).slice(-4);
 const CLIENT_PREFIX = "Arith Client";
-
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: ORG }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
-}
 
 /**
  * This file's own ACTIVE client (628F R-5): fee notes are never raised on the boot seed's Acme Corp,
@@ -51,114 +39,61 @@ async function createOwnClient(): Promise<string> {
   );
 }
 
-async function createDraft(token: string, customerId: string): Promise<Record<string, unknown>> {
-  const res = await fetch(`${BACKEND_URL}/api/invoices`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      // Phase 87 S3 (ADR-337): request body
-      clientId: customerId,
-      currency: "ZAR",
-      timeEntryIds: [],
-      notes: `Arithmetic test ${RUN_ID}`,
-    }),
-  });
-  expect(res.status).toBe(201);
-  return res.json();
+function createDraft(customerId: string): Promise<FeeNote> {
+  return createDraftFeeNote(customerId, `Arithmetic test ${RUN_ID}`);
 }
 
-async function addLine(
-  token: string,
-  invoiceId: string,
-  description: string,
-  quantity: number,
-  unitPrice: number
-): Promise<Record<string, unknown>> {
-  const res = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/lines`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      description,
-      quantity,
-      unitPrice,
-      sortOrder: 0,
-    }),
-  });
-  expect(res.status).toBe(201);
-  return res.json();
-}
-
-async function getInvoice(token: string, invoiceId: string): Promise<Record<string, unknown>> {
-  const res = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  expect(res.ok).toBeTruthy();
-  return res.json();
+function lineNamed(invoice: FeeNote, description: string): FeeNoteLine {
+  const line = invoice.lines.find((l) => l.description === description);
+  expect(line, `fee note line "${description}"`).toBeDefined();
+  return line!;
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  INV-03: Invoice Arithmetic
 // ═══════════════════════════════════════════════════════════════════
 test.describe("INV-03: Invoice Arithmetic", () => {
-  let token: string;
   let customerId: string;
 
   test.beforeAll(async () => {
-    token = await getToken("alice");
     customerId = await createOwnClient();
   });
 
   test("Single line: 3h x R450", async () => {
-    const draft = await createDraft(token, customerId);
-    const invoice = await addLine(token, draft.id, "3h consulting", 3, 450);
+    const draft = await createDraft(customerId);
+    const invoice = await addFeeNoteLineViaApi(draft.id, "3h consulting", 3, 450);
 
     // Subtotal should be 3 * 450 = 1350
     expect(invoice.subtotal).toBe(1350);
 
     // Line amount should be 1350
-    const line = (invoice.lines as Array<{ description: string; amount: number }>).find(
-      (l) => l.description === "3h consulting"
-    );
-    expect(line).toBeDefined();
+    const line = lineNamed(invoice, "3h consulting");
     expect(line.amount).toBe(1350);
   });
 
   test("Multiple lines: (2 x R500) + (1 x R1,500)", async () => {
-    const draft = await createDraft(token, customerId);
-    await addLine(token, draft.id, "Review work", 2, 500);
-    const invoice = await addLine(token, draft.id, "Advisory session", 1, 1500);
+    const draft = await createDraft(customerId);
+    await addFeeNoteLineViaApi(draft.id, "Review work", 2, 500);
+    const invoice = await addFeeNoteLineViaApi(draft.id, "Advisory session", 1, 1500);
 
     // Subtotal: (2 * 500) + (1 * 1500) = 1000 + 1500 = 2500
     expect(invoice.subtotal).toBe(2500);
     expect(invoice.lines.length).toBe(2);
 
     // Individual line amounts
-    const reviewLine = (invoice.lines as Array<{ description: string; amount: number }>).find(
-      (l) => l.description === "Review work"
-    );
+    const reviewLine = lineNamed(invoice, "Review work");
     expect(reviewLine.amount).toBe(1000);
 
-    const advisoryLine = (invoice.lines as Array<{ description: string; amount: number }>).find(
-      (l) => l.description === "Advisory session"
-    );
+    const advisoryLine = lineNamed(invoice, "Advisory session");
     expect(advisoryLine.amount).toBe(1500);
   });
 
   test("Rounding: non-terminating decimal (1.5h x R333.33)", async () => {
-    const draft = await createDraft(token, customerId);
-    const invoice = await addLine(token, draft.id, "Fractional rate", 1.5, 333.33);
+    const draft = await createDraft(customerId);
+    const invoice = await addFeeNoteLineViaApi(draft.id, "Fractional rate", 1.5, 333.33);
 
     // 1.5 * 333.33 = 499.995 — should be rounded
-    const line = (invoice.lines as Array<{ description: string; amount: number }>).find(
-      (l) => l.description === "Fractional rate"
-    );
-    expect(line).toBeDefined();
+    const line = lineNamed(invoice, "Fractional rate");
     // The amount should be rounded to 2 decimal places
     // Accept either 499.99 or 500.00 depending on rounding strategy
     expect(line.amount).toBeGreaterThanOrEqual(499.99);
@@ -168,29 +103,18 @@ test.describe("INV-03: Invoice Arithmetic", () => {
   });
 
   test("Zero quantity line", async () => {
-    const draft = await createDraft(token, customerId);
+    const draft = await createDraft(customerId);
 
     // Zero quantity should be rejected (backend validates @Positive)
-    const res = await fetch(`${BACKEND_URL}/api/invoices/${draft.id}/lines`, {
+    const res = await api(`/api/invoices/${draft.id}/lines`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        description: "Zero qty",
-        quantity: 0,
-        unitPrice: 500,
-        sortOrder: 0,
-      }),
+      body: { description: "Zero qty", quantity: 0, unitPrice: 500, sortOrder: 0 },
     });
     // Backend uses @Positive on quantity — zero should be rejected (400)
     // If zero is accepted, the line total should be 0
     if (res.status === 201) {
-      const invoice = await res.json();
-      const zeroLine = (invoice.lines as Array<{ description: string; amount: number }>).find(
-        (l) => l.description === "Zero qty"
-      );
+      const invoice = (await res.json()) as FeeNote;
+      const zeroLine = lineNamed(invoice, "Zero qty");
       expect(zeroLine.amount).toBe(0);
     } else {
       expect([400, 422].includes(res.status)).toBeTruthy();
@@ -198,14 +122,11 @@ test.describe("INV-03: Invoice Arithmetic", () => {
   });
 
   test("Fractional quantity: 0.25h x R1,200", async () => {
-    const draft = await createDraft(token, customerId);
-    const invoice = await addLine(token, draft.id, "Quarter hour", 0.25, 1200);
+    const draft = await createDraft(customerId);
+    const invoice = await addFeeNoteLineViaApi(draft.id, "Quarter hour", 0.25, 1200);
 
     // 0.25 * 1200 = 300
-    const line = (invoice.lines as Array<{ description: string; amount: number }>).find(
-      (l) => l.description === "Quarter hour"
-    );
-    expect(line).toBeDefined();
+    const line = lineNamed(invoice, "Quarter hour");
     expect(line.amount).toBe(300);
     expect(invoice.subtotal).toBe(300);
   });
@@ -214,21 +135,17 @@ test.describe("INV-03: Invoice Arithmetic", () => {
     // This test verifies that invoice line amounts are computed at creation time
     // and do not change when rates are updated later.
 
-    const draft = await createDraft(token, customerId);
-    const invoice = await addLine(token, draft.id, "Snapshot test", 2, 800);
+    const draft = await createDraft(customerId);
+    const invoice = await addFeeNoteLineViaApi(draft.id, "Snapshot test", 2, 800);
 
     // Record the line amount
-    const originalLine = (
-      invoice.lines as Array<{ description: string; amount: number; unitPrice: number }>
-    ).find((l) => l.description === "Snapshot test");
+    const originalLine = lineNamed(invoice, "Snapshot test");
     const originalAmount = originalLine.amount;
     expect(originalAmount).toBe(1600); // 2 * 800
 
     // Re-fetch the invoice — the amount should remain the same
-    const refetched = await getInvoice(token, draft.id);
-    const refetchedLine = (
-      refetched.lines as Array<{ description: string; amount: number; unitPrice: number }>
-    ).find((l) => l.description === "Snapshot test");
+    const refetched = await apiOk<FeeNote>(`/api/invoices/${draft.id}`);
+    const refetchedLine = lineNamed(refetched, "Snapshot test");
     expect(refetchedLine.amount).toBe(originalAmount);
     expect(refetchedLine.unitPrice).toBe(800);
   });

@@ -3,7 +3,8 @@
  *
  * Information requests live on the matter / client "Information requests" tab (there is no
  * /information-requests list page — only /information-requests/[id]). Tests: the seeded request on
- * the matter tab, creating a draft, sending it, the sent request's detail, and its progress.
+ * the matter tab, creating a draft from a request template, sending it, the sent request's detail,
+ * and its progress.
  *
  * Seed rows are read-only (628F R-5): the boot seed's SENT request on Website Redesign (to
  * contact@acme.example.com) is only viewed. Creating and sending use this run's own ACTIVE client
@@ -25,7 +26,8 @@ const base = `/org/${ORG}`;
 const RUN_ID = Date.now().toString(36).slice(-4);
 const CLIENT = `IReq Client ${RUN_ID}`;
 const CLIENT_EMAIL = `ireq-${RUN_ID}@example.com`;
-const ITEM = `Latest bank statement ${RUN_ID}`;
+/** A legal-za request template (compose/seed: pack-installed); its items are read in beforeAll. */
+const TEMPLATE = "FICA Onboarding Pack";
 
 /** Opens a matter's Client → Information requests tab and returns the (unnamed) panel. */
 async function openRequestsTab(page: Page, matterId: string) {
@@ -47,10 +49,18 @@ function requestRow(page: Page, number: string) {
 test.describe.serial("IREQ-01: Information Request CRUD", () => {
   let matterId: string;
   let requestNumber: string;
+  let templateItems: string[];
 
   test.beforeAll(async () => {
     const clientId = await createActiveClient(CLIENT, CLIENT_EMAIL);
     matterId = await createMatter(`IReq Matter ${RUN_ID}`, clientId);
+    const templates = await apiOk<{ name: string; items: { name: string }[] }[]>(
+      "/api/request-templates?active=true"
+    );
+    const template = templates.find((t) => t.name === TEMPLATE);
+    expect(template, `active request template "${TEMPLATE}"`).toBeDefined();
+    templateItems = template!.items.map((i) => i.name);
+    expect(templateItems.length).toBeGreaterThan(0);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -70,27 +80,29 @@ test.describe.serial("IREQ-01: Information Request CRUD", () => {
     await expect(seeded.first()).toBeVisible();
   });
 
-  test("Create information request", async ({ page }) => {
+  test("Create information request from a request template", async ({ page }) => {
     const panel = await openRequestsTab(page, matterId);
     await expect(panel.getByText("No information requests yet")).toBeVisible();
     await panel.getByRole("button", { name: "New Request" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Create Information Request" });
     await expect(dialog).toBeVisible();
-    // The client's only portal contact is preselected; no template = ad-hoc items
+    // The client's only portal contact is preselected
     await expect(dialog.getByRole("combobox", { name: "Portal Contact" })).toContainText(
       CLIENT_EMAIL,
       { timeout: 15_000 }
     );
-    await expect(dialog.getByRole("combobox", { name: "Template" })).toContainText(
-      "Ad-hoc (no template)"
-    );
-    await dialog.getByRole("button", { name: "Add Item" }).click();
-    await dialog.getByTestId("ad-hoc-item-name-0").fill(ITEM);
-    // Pressed from the keyboard, as the lifecycle suite does (day-75-complex): on the 1280×720
-    // viewport the dialog with an item row is taller than the screen and does not scroll, so its
-    // footer sits off-screen (follow-up: components/ui/dialog.tsx has no max-height / overflow-y-auto)
-    await dialog.getByRole("button", { name: "Save as Draft" }).press("Enter");
+    // From a template: the dialog fits the 1280×720 viewport. An ad-hoc item row makes it taller
+    // than the screen and it does not scroll, so its footer is unreachable by mouse (follow-up:
+    // components/ui/dialog.tsx DialogContent has no max-height / overflow-y-auto —
+    // qa_cycle/evidence/phase88-rewalk/628F/builder/blockers/ireq-dialog-overflow.txt)
+    await dialog.getByRole("combobox", { name: "Template" }).click();
+    await page
+      .getByRole("option", { name: `${TEMPLATE} (${templateItems.length} items)`, exact: true })
+      .click();
+    await expect(dialog.getByRole("combobox", { name: "Template" })).toContainText(TEMPLATE);
+    await expect(dialog.getByText(`Template items: ${templateItems.length}`)).toBeVisible();
+    await dialog.getByRole("button", { name: "Save as Draft" }).click();
     await expect(dialog).toBeHidden({ timeout: 15_000 });
 
     // The new draft is listed on the matter (persisted: checked after a reload)
@@ -142,16 +154,19 @@ test.describe.serial("IREQ-01: Information Request CRUD", () => {
   });
 
   test("Track completion status", async ({ page }) => {
-    // Nothing returned yet: 0 of the request's 1 item accepted, on the list and on the detail
+    // Nothing returned yet: 0 of the template's items accepted, on the list and on the detail
+    const progress = `0/${templateItems.length} accepted`;
     await openRequestsTab(page, matterId);
     const row = requestRow(page, requestNumber);
     await expect(row).toContainText("Sent");
-    await expect(row).toContainText("0/1 accepted");
+    await expect(row).toContainText(progress);
     await row.getByRole("link", { name: requestNumber }).click();
     await expect(page.getByRole("heading", { level: 1, name: requestNumber })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText("0/1 accepted")).toBeVisible();
-    await expect(page.getByText(ITEM, { exact: true })).toBeVisible();
+    await expect(page.getByText(progress)).toBeVisible();
+    for (const item of templateItems) {
+      await expect(page.getByText(item, { exact: true })).toBeVisible();
+    }
   });
 });

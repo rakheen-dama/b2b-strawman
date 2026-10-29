@@ -11,11 +11,10 @@
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
-import { seedToken } from "../../helpers/seed";
+import { createMatter } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const RUN_ID = Date.now().toString(36).slice(-4);
 
 async function openTagSettings(page: import("@playwright/test").Page) {
@@ -58,15 +57,7 @@ test.describe("TAG-01: Tags", () => {
   test("Apply tag to entity", async ({ page }) => {
     const matterName = `Tag Matter ${RUN_ID}`;
     const tagName = `Applied Tag ${RUN_ID}`;
-    const token = await seedToken("alice");
-    // Phase 87 S1 (ADR-337): API path
-    const res = await fetch(`${BACKEND_URL}/api/matters`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name: matterName, description: "TAG-01 apply-tag target" }),
-    });
-    expect(res.status).toBe(201);
-    const matterId = ((await res.json()) as { id: string }).id;
+    const matterId = await createMatter(matterName);
 
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${base}/matters/${matterId}`);

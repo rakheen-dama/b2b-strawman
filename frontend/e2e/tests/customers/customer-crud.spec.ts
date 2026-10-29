@@ -14,7 +14,7 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
-import { apiGet } from "../../helpers/seed";
+import { apiOk } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
@@ -28,7 +28,7 @@ interface ClientRow {
 }
 
 async function clientByName(name: string): Promise<ClientRow | undefined> {
-  const body = await apiGet<ClientRow[] | { content: ClientRow[] }>("/api/clients?size=500");
+  const body = await apiOk<ClientRow[] | { content: ClientRow[] }>("/api/clients?size=500");
   return (Array.isArray(body) ? body : body.content).find((c) => c.name === name);
 }
 

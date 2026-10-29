@@ -10,11 +10,10 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
-import { seedToken } from "../../helpers/seed";
+import { createClient } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const RUN_ID = Date.now().toString(36).slice(-4);
 
 /**
@@ -180,15 +179,9 @@ test.describe("DP-02: Data Protection Settings", () => {
   test("Create DSAR", async ({ page }) => {
     // Logged against this file's own client (seed rows are read-only, R-5)
     const clientName = `DSAR Client ${RUN_ID}`;
-    const token = await seedToken("alice");
-    // Phase 87 S2 (ADR-337): API path
-    const res = await fetch(`${BACKEND_URL}/api/clients`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name: clientName, email: `dsar-${RUN_ID}@example.com` }),
-    });
-    expect(res.status).toBe(201);
-    const clientId = ((await res.json()) as { id: string }).id;
+    const clientId = (
+      await createClient(clientName, `dsar-${RUN_ID}@example.com`, { withAddress: false })
+    ).id;
 
     await openDataRequests(page);
     await page.getByRole("button", { name: "Log New Request" }).click();

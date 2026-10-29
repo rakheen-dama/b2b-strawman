@@ -16,64 +16,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
+import { apiOk, apiStatus } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 const RUN_ID = Date.now().toString(36).slice(-4);
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
-
-// --- API helpers ---
-
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: "e2e-test-org" }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
-}
-
-async function apiGet(path: string, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-}
-
-async function apiPost(path: string, body: object, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
-
-async function apiPut(path: string, body: object, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  });
-  return { status: res.status, data: await res.json().catch(() => null) };
-}
-
-async function apiDelete(path: string, token: string) {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return { status: res.status };
-}
 
 /** Opens Work → Tasks on the matter and returns the row of the task titled `title`. */
 async function openTaskRow(page: Page, projectId: string, title: string) {
@@ -103,42 +50,37 @@ test.describe.serial("PROJ-03: Time Entries", () => {
 
   // Setup: create a project (Carol as a member) and a task via API
   test.beforeAll(async () => {
-    const token = await getToken("alice");
-
-    const { status, data: project } = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      "/api/matters",
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { status, data: project } = await apiStatus("/api/matters", {
+      method: "POST",
+      body: {
         name: PROJECT_NAME,
         description: "Project for time entry E2E tests",
       },
-      token
-    );
+    });
     expect(status).toBe(201);
     projectId = project.id;
 
-    const members = (await apiGet("/api/members", token)) as Array<{ id: string; name: string }>;
+    const members = await apiOk<Array<{ id: string; name: string }>>("/api/members");
     const carol = members.find((m) => m.name?.includes("Carol"));
     expect(carol, "seed member Carol").toBeDefined();
-    const added = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/members`,
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const added = await apiStatus(`/api/matters/${projectId}/members`, {
+      method: "POST",
+      body: {
         memberId: carol!.id,
         projectRole: "contributor",
       },
-      token
-    );
+    });
     expect(added.status).toBeLessThan(300);
 
-    const { status: taskStatus, data: task } = await apiPost(
-      // Phase 87 S1 (ADR-337): API path
-      `/api/matters/${projectId}/tasks`,
-      {
+    // Phase 87 S1 (ADR-337): API path
+    const { status: taskStatus, data: task } = await apiStatus(`/api/matters/${projectId}/tasks`, {
+      method: "POST",
+      body: {
         title: TASK_TITLE,
       },
-      token
-    );
+    });
     expect(taskStatus).toBe(201);
     taskId = task.id;
   });
@@ -161,12 +103,13 @@ test.describe.serial("PROJ-03: Time Entries", () => {
     await expect(dialog).toBeHidden({ timeout: 10_000 });
 
     // Verify time entry via API
-    const token = await getToken("carol");
-    const entries = (await apiGet(`/api/tasks/${taskId}/time-entries`, token)) as Array<{
-      id: string;
-      durationMinutes: number;
-      description: string;
-    }>;
+    const entries = await apiOk<
+      Array<{
+        id: string;
+        durationMinutes: number;
+        description: string;
+      }>
+    >(`/api/tasks/${taskId}/time-entries`, {}, "carol");
     const entry = entries.find((e) => e.description?.includes(`Time entry test ${RUN_ID}`));
     expect(entry).toBeTruthy();
     expect(entry!.durationMinutes).toBe(135); // 2h 15m = 135 min
@@ -174,16 +117,17 @@ test.describe.serial("PROJ-03: Time Entries", () => {
   });
 
   test("2. Edit time entry via API and verify", async ({ page }) => {
-    const token = await getToken("carol");
-
     // Update the time entry to 3 hours
-    const { status, data } = await apiPut(
+    const { status, data } = await apiStatus(
       `/api/time-entries/${timeEntryId}`,
       {
-        durationMinutes: 180,
-        description: `Edited time ${RUN_ID}`,
+        method: "PUT",
+        body: {
+          durationMinutes: 180,
+          description: `Edited time ${RUN_ID}`,
+        },
       },
-      token
+      "carol"
     );
 
     expect(status).toBe(200);
@@ -201,32 +145,37 @@ test.describe.serial("PROJ-03: Time Entries", () => {
   });
 
   test("3. Delete time entry via API and verify", async () => {
-    const token = await getToken("carol");
-
-    const { status } = await apiDelete(`/api/time-entries/${timeEntryId}`, token);
+    const { status } = await apiStatus(
+      `/api/time-entries/${timeEntryId}`,
+      { method: "DELETE" },
+      "carol"
+    );
     expect(status).toBe(204);
 
     // Verify entry is gone via API
-    const entries = (await apiGet(`/api/tasks/${taskId}/time-entries`, token)) as Array<{
-      id: string;
-    }>;
+    const entries = await apiOk<
+      Array<{
+        id: string;
+      }>
+    >(`/api/tasks/${taskId}/time-entries`, {}, "carol");
     const stillExists = entries.find((e) => e.id === timeEntryId);
     expect(stillExists).toBeFalsy();
   });
 
   test("4. Time entry captures rate snapshot", async () => {
     // Log a time entry via API and check that the rate snapshot fields are populated
-    const token = await getToken("carol");
-
-    const { status, data } = await apiPost(
+    const { status, data } = await apiStatus(
       `/api/tasks/${taskId}/time-entries`,
       {
-        date: new Date().toISOString().split("T")[0],
-        durationMinutes: 60,
-        billable: true,
-        description: `Rate snapshot test ${RUN_ID}`,
+        method: "POST",
+        body: {
+          date: new Date().toISOString().split("T")[0],
+          durationMinutes: 60,
+          billable: true,
+          description: `Rate snapshot test ${RUN_ID}`,
+        },
       },
-      token
+      "carol"
     );
 
     expect(status).toBe(201);
@@ -253,29 +202,32 @@ test.describe.serial("PROJ-03: Time Entries", () => {
   });
 
   test("6. Mark time entry non-billable", async () => {
-    const token = await getToken("carol");
-
     // Create a non-billable entry via API
-    const { status, data } = await apiPost(
+    const { status, data } = await apiStatus(
       `/api/tasks/${taskId}/time-entries`,
       {
-        date: new Date().toISOString().split("T")[0],
-        durationMinutes: 30,
-        billable: false,
-        description: `Non-billable entry ${RUN_ID}`,
+        method: "POST",
+        body: {
+          date: new Date().toISOString().split("T")[0],
+          durationMinutes: 30,
+          billable: false,
+          description: `Non-billable entry ${RUN_ID}`,
+        },
       },
-      token
+      "carol"
     );
 
     expect(status).toBe(201);
     expect(data.billable).toBe(false);
 
     // Verify the entry is non-billable
-    const entries = (await apiGet(`/api/tasks/${taskId}/time-entries`, token)) as Array<{
-      id: string;
-      billable: boolean;
-      description: string;
-    }>;
+    const entries = await apiOk<
+      Array<{
+        id: string;
+        billable: boolean;
+        description: string;
+      }>
+    >(`/api/tasks/${taskId}/time-entries`, {}, "carol");
     const nonBillable = entries.find((e) =>
       e.description?.includes(`Non-billable entry ${RUN_ID}`)
     );

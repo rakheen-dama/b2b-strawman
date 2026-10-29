@@ -11,11 +11,10 @@
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
-import { apiGet, seedToken } from "../../helpers/seed";
+import { apiOk, createClient } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const RUN_ID = Date.now().toString(36).slice(-4);
 const ID_FIELD = "ID / Passport Number"; // legal-za-customer field pack, slug id_passport_number
 
@@ -89,15 +88,9 @@ test.describe("CF-01: Custom Fields", () => {
   test("Custom field value persists", async ({ page }) => {
     // Own client (seed rows are read-only for specs)
     const name = `CF Persist ${RUN_ID}`;
-    const token = await seedToken("alice");
-    // Phase 87 S2 (ADR-337): API path
-    const created = await fetch(`${BACKEND_URL}/api/clients`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name, email: `cf-persist-${RUN_ID}@example.com` }),
-    });
-    expect(created.status).toBe(201);
-    const clientId = ((await created.json()) as { id: string }).id;
+    const clientId = (
+      await createClient(name, `cf-persist-${RUN_ID}@example.com`, { withAddress: false })
+    ).id;
     const value = `E2E-${RUN_ID}-7001015009087`;
 
     // Phase 87 S4 (ADR-344): route rename
@@ -117,7 +110,7 @@ test.describe("CF-01: Custom Fields", () => {
     await expect(page.getByRole("tabpanel").getByLabel(ID_FIELD)).toHaveValue(value, {
       timeout: 10_000,
     });
-    const client = await apiGet<{ customFields?: Record<string, unknown> }>(
+    const client = await apiOk<{ customFields?: Record<string, unknown> }>(
       `/api/clients/${clientId}`
     );
     expect(client.customFields?.id_passport_number).toBe(value);

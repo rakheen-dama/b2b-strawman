@@ -1,0 +1,21 @@
+# 2026-10-29T20:01:37Z tenant=tenant_5039f2d497cf
++ SELECT id, name, status, completed_at, closed_at, retention_clock_started_at, retention_ends_on FROM tenant_5039f2d497cf.projects WHERE id='028d3901-e826-44a9-b6a6-b81328365629'
+028d3901-e826-44a9-b6a6-b81328365629|Estate Late Peter Moroka|CLOSED||2026-10-29 20:01:20.394519+00|2026-10-29 20:01:20.394519|2031-10-29
+# 2026-10-29T20:01:38Z tenant=tenant_5039f2d497cf
++ SELECT id, project_id, closed_by, closed_at, reason, override_used, override_justification, closure_letter_document_id, gate_report->>'allPassed' FROM tenant_5039f2d497cf.matter_closure_log ORDER BY closed_at
+1f026a7c-ecfd-4062-a130-dced9700ea50|d42337ad-2c76-4a79-ac75-e3d9f4d36881|09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|2026-10-29 19:44:16.89476+00|CONCLUDED|f||271971e1-6889-4d0b-8ba0-522b3dc67b76|true
+ee89a803-3e3b-437f-a624-9dd821437262|028d3901-e826-44a9-b6a6-b81328365629|09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|2026-10-29 20:01:20.394519+00|CONCLUDED|t|Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override|9155779f-1012-403c-9e82-7e0aeca5f78b|false
+# 2026-10-29T20:01:38Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type, entity_id, actor_type, details FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > '2026-10-29 19:44:50+00' ORDER BY occurred_at
+2026-10-29 20:01:20.416275+00|matter_closure.closed|project|028d3901-e826-44a9-b6a6-b81328365629|USER|{"reason": "CONCLUDED", "actor_name": "Thandi Mathebula", "project_id": "028d3901-e826-44a9-b6a6-b81328365629", "justification": "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override", "override_used": true, "closure_log_id": "ee89a803-3e3b-437f-a624-9dd821437262"}
+2026-10-29 20:01:20.417287+00|matter.closure.override_used|matter_closure|ee89a803-3e3b-437f-a624-9dd821437262|USER|{"reason": "CONCLUDED", "actor_name": "Thandi Mathebula", "project_id": "028d3901-e826-44a9-b6a6-b81328365629", "justification": "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override"}
+2026-10-29 20:01:20.587291+00|document.generated|generated_document|9155779f-1012-403c-9e82-7e0aeca5f78b|USER|{"file_name": "matter-closure-letter-estate-late-peter-moroka-2026-10-29.pdf", "file_size": 2332, "actor_name": "Thandi Mathebula", "project_id": "028d3901-e826-44a9-b6a6-b81328365629", "template_name": "Matter Closure Letter", "primary_entity_id": "028d3901-e826-44a9-b6a6-b81328365629", "save_to_documents": true, "primary_entity_type": "PROJECT"}
+2026-10-29 20:01:20.70333+00|statement.generated|generated_document|1682d13c-081e-4cb9-815f-2e40ece142e0|USER|{"file_name": "statement-of-account-estate-late-peter-moroka-2026-10-29.pdf", "actor_name": "Thandi Mathebula", "period_end": "2026-10-29", "project_id": "028d3901-e826-44a9-b6a6-b81328365629", "template_id": "6cb44dd3-f3a4-433e-8439-a66b573362d3", "period_start": "2026-10-29", "notify_client": false, "shared_with_client": false}
+# 2026-10-29T20:01:38Z tenant=tenant_5039f2d497cf
++ SELECT file_name, scope, visibility, source, status, project_id, created_at FROM tenant_5039f2d497cf.documents WHERE created_at > '2026-10-29 19:59:00+00' ORDER BY created_at
+matter-closure-letter-estate-late-peter-moroka-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|2026-10-29 20:01:20.586401+00
+statement-of-account-estate-late-peter-moroka-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|2026-10-29 20:01:20.703132+00
+# 2026-10-29T20:01:38Z tenant=tenant_5039f2d497cf
++ SELECT count(*) FROM tenant_5039f2d497cf.audit_events
+280
+Mailpit total: 16

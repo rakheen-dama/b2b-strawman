@@ -1,0 +1,8 @@
+# 2026-10-29T20:02:1xZ — W7b, Thandi, /settings/firm?tab=audit-trail&entityType=project&eventType=matter_closure.closed
+# browser_run_code_unsafe (read-only: read total + rows, click the first row's "Expand details" UI toggle, read tbody text)
+{"total":"2 total",
+ "rowsBefore":["29 Oct 2026, 22:01 | INFO | Matter closure closed / matter_closure.closed | Thandi Mathebula | Matter 028d3901",
+               "29 Oct 2026, 21:44 | INFO | Matter closure closed / matter_closure.closed | Thandi Mathebula | Matter d42337ad"],
+ "expanded (row 1)":"Object(6) reason: CONCLUDED | actor_name: Thandi Mathebula | project_id: 028d3901-e826-44a9-b6a6-b81328365629 | justification: Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override | override_used: true | closure_log_id: ee89a803-3e3b-437f-a624-9dd821437262 | Source: API | IP: 127.0.0.1 | Agent: node"}
+# browser_evaluate layout probe: table width 974.8 px inside "relative w-full overflow-x-auto" wrapper clientWidth 806 / scrollWidth 975;
+#   justification leaf white-space: nowrap, rect left 742 → right 1528 (viewport 1440) → tail clipped until the wrapper is scrolled (scrollLeft 169 for the second shot).

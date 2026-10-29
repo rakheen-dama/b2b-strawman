@@ -86,26 +86,39 @@ export async function memberNamed(first: "Alice" | "Bob" | "Carol"): Promise<Mem
 }
 
 /**
- * Settles every onboarding checklist item: complete it or — when the item needs a linked document —
- * skip it (the boot seed does the same). Settling the last item auto-activates a client whose
- * activation prerequisites (billing address) are on file.
+ * Settles every onboarding checklist item: skip it when it needs a linked document or depends on a
+ * skipped item, otherwise complete it; any other refusal fails loudly. Settling the last item
+ * auto-activates a client whose activation prerequisites (billing address) are on file.
  */
 export async function settleChecklists(clientId: string): Promise<void> {
-  const checklists = await apiOk<{ items?: { id: string; status: string }[] }[]>(
-    `/api/clients/${clientId}/checklists`
-  );
+  const checklists = await apiOk<
+    {
+      items?: {
+        id: string;
+        status: string;
+        requiresDocument: boolean;
+        dependsOnItemId: string | null;
+      }[];
+    }[]
+  >(`/api/clients/${clientId}/checklists`);
   expect(checklists.length, "an onboarding checklist was instantiated").toBeGreaterThan(0);
   for (const checklist of checklists) {
-    for (const item of checklist.items ?? []) {
+    const items = checklist.items ?? [];
+    const skipped = new Set(items.filter((i) => i.status === "SKIPPED").map((i) => i.id));
+    for (const item of items) {
       if (item.status === "COMPLETED" || item.status === "SKIPPED") continue;
-      const complete = await api(`/api/checklist-items/${item.id}/complete`, {
-        method: "PUT",
-        body: { notes: "E2E auto-complete" },
-      });
-      if (!complete.ok) {
+      // A dependent of a skipped item can't be completed (409 "Checklist item blocked"), so it is
+      // skipped too.
+      if (item.requiresDocument || (item.dependsOnItemId && skipped.has(item.dependsOnItemId))) {
+        skipped.add(item.id);
         await apiOk(`/api/checklist-items/${item.id}/skip`, {
           method: "PUT",
           body: { reason: "E2E: no document to link" },
+        });
+      } else {
+        await apiOk(`/api/checklist-items/${item.id}/complete`, {
+          method: "PUT",
+          body: { notes: "E2E auto-complete" },
         });
       }
     }

@@ -166,7 +166,9 @@ seed_boot_fee_notes() {
     check_2xx "  Line: drafting" || return 1
   fi
 
-  _fn_status=$(api_get "/api/invoices/${FEE_NOTE_SENT_ID}" "$_fn_jwt" | jq -r '.status')
+  _fn_json=$(api_get "/api/invoices/${FEE_NOTE_SENT_ID}" "$_fn_jwt")
+  check_2xx "Fetch fee note to send" || return 1
+  _fn_status=$(echo "$_fn_json" | jq -r '.status')
   if [ "$_fn_status" = "DRAFT" ]; then
     api_post "/api/invoices/${FEE_NOTE_SENT_ID}/approve" '{}' "$_fn_jwt" > /dev/null
     check_2xx "Approve fee note" || return 1

@@ -1,0 +1,32 @@
+# 2026-10-29T19:12:38Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, customer_name, issue_date, due_date, subtotal, tax_amount, total, amount_paid, paid_at FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|PAID|Sipho Dlamini|2026-10-29|2026-11-28|4150.00|435.00|4585.00|4585.00|2026-10-29 19:11:47.237862+00
+2d84a43c-3e90-4455-b84e-32ae0c819915|INV-0002|SENT|Moroka Family Trust|2026-10-29|2026-11-28|31805.00|4770.75|36575.75|0.00|
+cd0fc2eb-217d-4ece-aea2-835c7f38784e||DRAFT|Lerato Mthembu|||9500.00|1425.00|10925.00|0.00|
++ SELECT id, category, amount, approval_status, billing_status, write_off_reason, invoice_line_id FROM tenant_5039f2d497cf.legal_disbursements ORDER BY created_at
+30e55eca-d598-4cdd-9171-ab938e9a911e|SHERIFF_FEES|750.00|APPROVED|WRITTEN_OFF|Client dispute — unable to recover from third party, firm absorbing the cost|
+adee383d-e115-451a-b144-9e7b04663685|DEEDS_OFFICE_FEES|1250.00|APPROVED|BILLED||062c8d85-2983-42f0-b2b0-1bef94cd0d36
++ SELECT p.name, count(*) FILTER (WHERE te.invoice_id IS NULL) AS unbilled, count(*) AS total FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id GROUP BY 1 ORDER BY 1
+Estate Late Peter Moroka|0|8
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|0|3
+Sipho Dlamini v. Standard Bank (civil)|0|2
++ SELECT id, file_name, primary_entity_type, document_id IS NOT NULL, generated_at FROM tenant_5039f2d497cf.generated_documents ORDER BY generated_at
+c630f2b1-afab-44ff-9e61-e69c39f9f59b|engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 14:31:27.045919+00
+168fe298-c279-4908-b76d-ce11d65e9af1|offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf|PROJECT|t|2026-10-29 15:18:57.703638+00
+c9d3482f-36c7-44b0-b203-f90ac0da06f8|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 18:49:29.771841+00
+27e38a7b-9848-4fc3-99fe-d6b67d985254|fee-note-inv-0001-2026-10-29.pdf|INVOICE|f|2026-10-29 18:55:39.806471+00
+52ab06fa-8569-46ef-b7c9-d884d665c6a4|fee-note-inv-0002-2026-10-29.pdf|INVOICE|f|2026-10-29 19:03:48.679945+00
+21a444ac-3bc5-4120-9ff9-8839f9467712|fee-note-inv-0002-2026-10-29.pdf|INVOICE|t|2026-10-29 19:04:33.946565+00
++ SELECT file_name, scope, visibility, status, created_at FROM tenant_5039f2d497cf.documents WHERE created_at > '2026-10-29 18:00:00' ORDER BY created_at
+statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|PORTAL|UPLOADED|2026-10-29 18:49:29.772718+00
+fee-note-inv-0002-2026-10-29.pdf|ORG|INTERNAL|UPLOADED|2026-10-29 19:04:33.947277+00
++ SELECT count(*), min(occurred_at), max(occurred_at) FROM tenant_5039f2d497cf.audit_events
+215|2026-10-29 13:47:23.345482+00|2026-10-29 19:11:47.240657+00
++ SELECT c.name, l.* FROM tenant_5039f2d497cf.client_ledger_cards l JOIN tenant_5039f2d497cf.customers c ON c.id=l.customer_id
+Sipho Dlamini|0733af1c-4be6-4d82-b3cd-6e0acb70cce8|696ce2f0-0061-46bd-91f4-a95c8a23a009|fbfe7eba-53f6-4536-809d-2fc785628ef3|3750.00|5000.00|1250.00|0.00|0.00|2026-10-29|2026-10-29 14:47:05.859944+00|2026-10-29 14:48:00.250519+00
+Moroka Family Trust|c99fe538-485f-404c-a6e5-9eccd7f118d7|696ce2f0-0061-46bd-91f4-a95c8a23a009|acd36ca9-adc9-4a58-89bf-d36016febf49|50000.00|50000.00|0.00|0.00|0.00|2026-10-29|2026-10-29 15:08:12.000412+00|2026-10-29 15:08:12.022611+00
++ SELECT id, name, status FROM tenant_5039f2d497cf.projects ORDER BY created_at
+d42337ad-2c76-4a79-ac75-e3d9f4d36881|Sipho Dlamini v. Standard Bank (civil)|ACTIVE
+028d3901-e826-44a9-b6a6-b81328365629|Estate Late Peter Moroka|ACTIVE
+aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|Khumalo Property Holdings — Erf 1234 Sandton Transfer|ACTIVE
+5c42e002-1218-48ac-9d74-a7e3aeff13e6|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|ACTIVE

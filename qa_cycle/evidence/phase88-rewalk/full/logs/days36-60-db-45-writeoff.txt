@@ -1,0 +1,6 @@
+# 2026-10-29T19:06:42Z tenant=tenant_5039f2d497cf
++ SELECT id, category, amount, approval_status, billing_status, write_off_reason, invoice_line_id, updated_at FROM tenant_5039f2d497cf.legal_disbursements ORDER BY created_at
+30e55eca-d598-4cdd-9171-ab938e9a911e|SHERIFF_FEES|750.00|APPROVED|WRITTEN_OFF|Client dispute — unable to recover from third party, firm absorbing the cost||2026-10-29 19:06:33.144794+00
+adee383d-e115-451a-b144-9e7b04663685|DEEDS_OFFICE_FEES|1250.00|APPROVED|BILLED||062c8d85-2983-42f0-b2b0-1bef94cd0d36|2026-10-29 18:53:50.132481+00
++ SELECT occurred_at, event_type, entity_type, entity_id, actor_type, details FROM tenant_5039f2d497cf.audit_events WHERE event_type LIKE 'disbursement.%' AND occurred_at > '2026-10-29 19:00:00' ORDER BY occurred_at
+2026-10-29 19:06:33.144065+00|disbursement.written_off|legal_disbursement|30e55eca-d598-4cdd-9171-ab938e9a911e|USER|{"reason": "Client dispute — unable to recover from third party, firm absorbing the cost", "actor_name": "Thandi Mathebula", "project_id": "d42337ad-2c76-4a79-ac75-e3d9f4d36881"}

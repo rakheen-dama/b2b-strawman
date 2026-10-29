@@ -9,3 +9,5 @@ newest to sipho: 9aX7RFWMCyBQLGF6oadfDw
 From: noreply@kazi.app  Subject: Fee Note INV-0001 from Mathebula & Partners
 attachment: 2 INV-0001.pdf 4255
 attachment INV-0001.pdf of 9aX7RFWMCyBQLGF6oadfDw fetched via GET /api/v1/message/9aX7RFWMCyBQLGF6oadfDw/part/2 -> logs/days36-60-38.3-INV-0001-emailed.pdf (4 255 B, no token)
+4EHa3SRfspVnUxc4RNmJ9S	2026-10-29T19:03:48.743Z	moroka.trust@email.co.za	Fee Note INV-0002 from Mathebula & Partners (attachment INV-0002.pdf) — W5b 45.4
+mailpit after 55.1: 12

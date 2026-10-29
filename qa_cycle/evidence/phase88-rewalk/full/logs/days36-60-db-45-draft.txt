@@ -1,0 +1,13 @@
+# 2026-10-29T19:03:29Z tenant=tenant_5039f2d497cf
++ SELECT i.invoice_number, i.status, l.line_type, l.sort_order, l.description, l.quantity, l.unit_price, l.amount, l.tax_rate_percent, l.tax_amount, l.tariff_item_id FROM tenant_5039f2d497cf.invoice_lines l JOIN tenant_5039f2d497cf.invoices i ON i.id=l.invoice_id WHERE i.id='2d84a43c-3e90-4455-b84e-32ae0c819915' ORDER BY l.sort_order, l.created_at
+|DRAFT|TIME|0|2026-10-29 · Bob Ndlovu · Master of High Court filing preparation|1.5000|1200.00|1800.00|15.00|270.00|
+|DRAFT|TARIFF|0|3(a) - Letters written (per folio)|4.0000|195.00|780.00|15.00|117.00|5ae09df9-e398-4192-b003-43fd2796c5a8
+|DRAFT|TIME|1|2026-10-29 · Bob Ndlovu · Estate bank account opening documents|2.5000|1200.00|3000.00|15.00|450.00|
+|DRAFT|TIME|2|2026-10-29 · Bob Ndlovu · Section 29 notice — Gazette + newspaper placement|3.0000|1200.00|3600.00|15.00|540.00|
+|DRAFT|TIME|3|2026-10-29 · Carol Mokoena · Drafting inventory of assets & liabilities|1.5000|550.00|825.00|15.00|123.75|
+|DRAFT|TIME|4|2026-10-29 · Carol Mokoena · Drafting Section 29 advertisement notice|1.0000|550.00|550.00|15.00|82.50|
+|DRAFT|TIME|5|2026-10-29 · Thandi Mathebula · Letters of Executorship application|2.5000|2500.00|6250.00|15.00|937.50|
+|DRAFT|TIME|6|2026-10-29 · Thandi Mathebula · Initial consultation with heirs + document gathering|3.0000|2500.00|7500.00|15.00|1125.00|
+|DRAFT|TIME|7|2026-10-29 · Thandi Mathebula · Reporting estate to the Master — J294 + inventory|3.0000|2500.00|7500.00|15.00|1125.00|
++ SELECT id, status, subtotal, tax_amount, total FROM tenant_5039f2d497cf.invoices WHERE id='2d84a43c-3e90-4455-b84e-32ae0c819915'
+2d84a43c-3e90-4455-b84e-32ae0c819915|DRAFT|31805.00|4770.75|36575.75

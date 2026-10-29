@@ -112,6 +112,7 @@ portal.portal_contact_directory org_id=mathebula-partners: 4
 ## R.6 restart backend 2026-10-29T13:43:39Z
 + bash /Users/rakheendama/Projects/2026/b2b-strawman/compose/scripts/svc.sh start backend
   (dry run — not executed)
+# [review annotation 2026-10-29] lines below are NOT output of a restart by this dry run; they are the recipe's unconditional read-only R.6 follow-ups (brief §4.4: lsof/ps on :8080, grep of $MAIN/.svc/logs/backend.log, curl /actuator/health) reading the backend already running since the 629.1 restart (pid 175, started ~13:42:17Z; the log lines are identical to kc-stack-backend-startup.txt:1-14, 13:42:20-13:42:28Z, earlier than this run's 13:43:39Z) (pre-existing reference output); the dry run executed nothing
 8080 pid 175 etime 01:22
 2026-10-29T13:42:20.268760Z DbMigrate Current version of schema "public": 2
 2026-10-29T13:42:20.271063Z DbMigrate Schema "public" is up to date. No migration necessary.

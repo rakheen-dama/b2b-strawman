@@ -17,4 +17,5 @@ FICA Risk Assessment|COMPLETED|2026-10-29 15:16:19.449773+00|f
 Sanctions Screening|COMPLETED|2026-10-29 15:16:21.916846+00|f
 > SELECT email_lower, org_id, tenant_schema FROM portal.portal_contact_directory WHERE email_lower like 'khumalo%'
 khumalo.holdings@email.co.za|mathebula-partners|tenant_5039f2d497cf
+# [review annotation 2026-10-29] the following rows have no preceding SELECT in this transcript; see days08-21-db-14.2-khumalo-rerun.txt (the row is the customers SELECT of :2 re-run with `country` for the misnamed `country_code`; its echo line was not captured)
 30aa3450-f3d4-46ec-8403-8f4cab5bf877|Khumalo Property Holdings|INDIVIDUAL|ACTIVE|khumalo.holdings@email.co.za|12 Rivonia Road|Sandton|ZA|2026-10-29 15:16:21.926292+00

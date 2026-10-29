@@ -72,22 +72,22 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 
 ## Sections
 
-Scenario-step totals (the headline). Rows added by rulings or the brief (LH, K-PRO, TEAM-sipho/-estate/-raf, INFRA-1…5) are **unscored**: they sit in an "Added rows (unscored)" table in each file with status `NOTE`, and are listed separately below. Recounted after the PR #1711 review (2026-10-29).
+Scenario-step totals (the headline). Rows added by rulings or the brief (LH, K-PRO, TEAM-sipho/-estate/-raf, INFRA-1…5) are **unscored**: they sit in an "Added rows (unscored)" table in each file with status `NOTE`, and are listed separately below. Recounted after the PR #1711 review (2026-10-29) and again after the orchestrator split 14.8 into 14.8a PASS / 14.8b FAIL (G88-F12 HIGH).
 
 | Section | Doc lines | File | Scenario rows | P / F / PARTIAL / D / N/A |
 |---|---|---|---|---|
 | Session 0 (629.2) | 43–48 + master 115–152 | session-0.md | 18 | 15 / 2 / 0 / 0 / 1 |
 | Day 0 (629.2, W1a + W1b; 0.50 / CP0.5 closed by W2a after 1.9) | 52–206 | day-00.md | 88 | 81 / 7 / 0 / 0 / 0 |
 | Days 1–7 (629.3, W2a + W2b) | 209–301 | days-01-07.md | 70 | 61 / 9 / 0 / 0 / 0 |
-| Days 8–21 (629.3, W3a + W3b) | 304–366 | days-08-21.md | 46 | 39 / 7 / 0 / 0 / 0 |
+| Days 8–21 (629.3, W3a + W3b) | 304–366 | days-08-21.md | 47 | 39 / 8 / 0 / 0 / 0 |
 | Days 22–35 + Day 33 (629.3, W4) | 369–409 (Day 30 SoA 414–424 → 629B) | days-22-35.md | 26 | 22 / 3 / 0 / 0 / 1 |
-| **629A scenario total** | — | 5 day files | **248** | **218 / 28 / 0 / 0 / 2** |
+| **629A scenario total** | — | 5 day files | **249** | **218 / 29 / 0 / 0 / 2** |
 
 Unscored rows (status `NOTE`, not in the totals above): **10** — `day-00.md` LH, K-PRO; `days-01-07.md` TEAM-sipho, INFRA-1, INFRA-2; `days-08-21.md` TEAM-estate, INFRA-3, INFRA-4, INFRA-5 (**incident**: the walker's `pkill -9 -f next-server` killed the svc frontend; it was restarted and no state was lost — not a PASS); `days-22-35.md` TEAM-raf. Slice gate 629.1 (KC-STACK, this file) PASS — reported on its own, not a scenario row.
 
-Per-file totals (scenario rows: P / F / PARTIAL / D / N/A; + unscored `NOTE`): `session-0.md` 18: 15 / 2 / 0 / 0 / 1 (+0) · `day-00.md` 88: 81 / 7 / 0 / 0 / 0 (+2) · `days-01-07.md` 70: 61 / 9 / 0 / 0 / 0 (+3) · `days-08-21.md` 46: 39 / 7 / 0 / 0 / 0 (+4) · `days-22-35.md` 26: 22 / 3 / 0 / 0 / 1 (+1). Recount with `for f in session-0.md day-00.md days-01-07.md days-08-21.md days-22-35.md; do for s in PASS FAIL PARTIAL DEFERRED N/A NOTE; do printf "%s %s %s\n" $f $s $(grep -cE "^\| [^|]+ \| $s \|" $f); done; done`.
+Per-file totals (scenario rows: P / F / PARTIAL / D / N/A; + unscored `NOTE`): `session-0.md` 18: 15 / 2 / 0 / 0 / 1 (+0) · `day-00.md` 88: 81 / 7 / 0 / 0 / 0 (+2) · `days-01-07.md` 70: 61 / 9 / 0 / 0 / 0 (+3) · `days-08-21.md` 47: 39 / 8 / 0 / 0 / 0 (+4) · `days-22-35.md` 26: 22 / 3 / 0 / 0 / 1 (+1). Recount with `for f in session-0.md day-00.md days-01-07.md days-08-21.md days-22-35.md; do for s in PASS FAIL PARTIAL DEFERRED N/A NOTE; do printf "%s %s %s\n" $f $s $(grep -cE "^\| [^|]+ \| $s \|" $f); done; done`.
 
-FAILs by source (28): **16 × G88-F1** LOW wording/behaviour drift (0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 4.1a, 6.5a, 8.1a, 12.1a, 12.2a, 14.7a, 22.1a, 23.3a, 35.1a); **6 × §5a** pending founder authorisation (0.Aa + M.6a row 1 / G88-M1, 3.3a row 2, 6.2a row 4, 6.3a row 5, 14.13a row 6); **2 × G88-F3** MEDIUM product bug (0.47b, 0.48b); **1 × G-B8** incomplete fix (4.6b; U5 625A/B → follow-up); **1 × G88-M6** MEDIUM (6.3b); **1 × G88-F11** LOW (12.3a); **1 × G88-F14** LOW (15.3b). **HIGH: G88-F12** (OTP voetstoots clause names the firm, Seller line empty) — the walk's only HIGH so far; a side-observation gap on a PASS row (14.8, which checks only that the clauses are present), routed to a follow-up phase.
+FAILs by source (29): **16 × G88-F1** LOW wording/behaviour drift (0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 4.1a, 6.5a, 8.1a, 12.1a, 12.2a, 14.7a, 22.1a, 23.3a, 35.1a); **6 × §5a** pending founder authorisation (0.Aa + M.6a row 1 / G88-M1, 3.3a row 2, 6.2a row 4, 6.3a row 5, 14.13a row 6); **2 × G88-F3** MEDIUM product bug (0.47b, 0.48b); **1 × G-B8** incomplete fix (4.6b; U5 625A/B → follow-up); **1 × G88-M6** MEDIUM (6.3b); **1 × G88-F11** LOW (12.3a); **1 × G88-F14** LOW (15.3b); **1 × G88-F12 HIGH** (14.8b — OTP voetstoots clause names the firm, Seller line empty; 14.8 split by the orchestrator ruling on PR #1711 because clause injection includes variable binding: 14.8a PASS clauses present / 14.8b FAIL binding) — the walk's only HIGH so far, routed to a follow-up phase.
 
 ## Wow-moment candidates shot in 629A
 | Wow | Step | File | Shows |
@@ -103,7 +103,7 @@ Owner rule (PR #1711 review): the 629 re-walk writes gaps and never fixes them; 
 
 | ID | Severity | Step | Class | Owner | File |
 |---|---|---|---|---|---|
-| G88-F12 | **HIGH** (re-rated by the review; the only HIGH in 629A so far) | 14.8 (side observation) | product bug (legal content) — OTP "Voetstoots (As Is)" clause names the firm (`org.name`) as the party not liable for defects (`backend/src/main/resources/clause-packs/conveyancing-za-clauses/pack.json:33-37`, `org.name` at `:36`); separately, the "Seller:" line is empty because the OTP template's `project.customFields.seller_name` (`template-packs/legal-za/offer-to-purchase.json:54-55`) has no field definition in any field pack. Cannot be demo'd to a conveyancer as-is | new — follow-up phase (attribution: U10 626G associated the clause with the OTP, `pack.json:5`, and did not cover the `org.name` binding; Seller line pre-existing) | days-08-21.md |
+| G88-F12 | **HIGH** (re-rated by the review; the only HIGH in 629A so far) | 14.8b (FAIL; split from 14.8 by the orchestrator ruling) | product bug (legal content) — OTP "Voetstoots (As Is)" clause names the firm (`org.name`) as the party not liable for defects (`backend/src/main/resources/clause-packs/conveyancing-za-clauses/pack.json:33-37`, `org.name` at `:36`); separately, the "Seller:" line is empty because the OTP template's `project.customFields.seller_name` (`template-packs/legal-za/offer-to-purchase.json:54-55`) has no field definition in any field pack. Cannot be demo'd to a conveyancer as-is | new — follow-up phase (attribution: U10 626G associated the clause with the OTP, `pack.json:5`, and did not cover the `org.name` binding; Seller line pre-existing) | days-08-21.md |
 | G88-M1 (existing) | LOW | 0.Aa, M.6a | scenario mismatch — §5a row 1 pending founder authorisation | 628H / founder | session-0.md |
 | G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 4.1a, 6.5a, 8.1a, 12.1a, 12.2a, 14.7a, 22.1a, 23.3a, 35.1a (629B appends) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md, days-01-07.md, days-08-21.md, days-22-35.md |
 | G88-F2 | LOW | Team page (0.27 / CP-AD-2) | product bug — "Joined" column hard-coded "—" (`member-list.tsx:75,124`) | new | day-00.md |
@@ -139,5 +139,5 @@ Written by W4 at 2026-10-29T15:40Z (full detail: `days-22-35.md` § Handoff).
 - **Matters (4, ACTIVE), unbilled time (no fee notes yet):** Sipho `d42337ad-…` 3.5 h / R 2 900,00 + 2 approved unbilled disbursements; Estate `028d3901-…` 18.0 h / R 31 025,00 (fee estimate 40 h / R 80 000,00); Khumalo `aa61195f-…` 0 h (OTP acceptance `ad215a7c-…` VIEWED); RAF `5c42e002-…` 9 h / R 9 500,00 (court date 2026-12-13, adverse party Road Accident Fund).
 - **Trust:** account R 53 750,00 = Moroka R 50 000,00 + Sipho R 3 750,00.
 - **Mailpit:** 10 messages (last `2eLfLXG6siubpr6BZYZmEC`, Khumalo OTP acceptance request).
-- **Gap ids:** G88-F1 … G88-F15 used (G88-F8 retired as an alias of G-B8); **next free G88-F16**. **HIGH: G88-F12** (re-rated by the PR #1711 review; the only HIGH so far).
+- **Gap ids:** G88-F1 … G88-F15 used (G88-F8 retired as an alias of G-B8); **next free G88-F16**. **HIGH: G88-F12** (re-rated by the PR #1711 review; the only HIGH so far; scored as the 14.8b FAIL — 14.8a PASS).
 - **629B starts at:** the Day 30 Statement of Account block (scenario lines 414–424, ids `30.1`–`30.7`, ruling C-8), then Day 36. Wow 5 candidate is `screens/wow-5-candidate.png` (see caveats in the wow table).

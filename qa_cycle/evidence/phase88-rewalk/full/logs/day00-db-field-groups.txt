@@ -9,6 +9,7 @@ PROJECT|legal-za-project|legal_za_matter|SA Legal — Matter Details|case_number
 TASK|common-task|task_info|Task Info|category
 SQL: SELECT entity_type, pack_id, slug, name, description FROM tenant_5039f2d497cf.field_definitions WHERE name ~* 'project|customer|invoice' OR description ~* 'project|customer|invoice'
 SQL: SELECT entity_type, slug, name, description FROM tenant_5039f2d497cf.field_groups WHERE name ~* 'project|customer|invoice' OR description ~* 'project|customer|invoice'
+# [review annotation 2026-10-29] the following rows have no preceding SELECT in this transcript; see day00-db-field-groups-rerun.txt (they are the membership SELECT of :2 re-run after the Edit dialogs were cancelled, per the trailer line; the two copy-scan SELECTs at :10 and :11 each returned 0 rows, which psql -At prints as nothing)
 CUSTOMER|legal-za-customer|legal_za_client|SA Legal — Client Details|id_passport_number,postal_address,preferred_correspondence,referred_by
 CUSTOMER|sa-fica-company|company_fica_details|Company FICA Details|company_registration_number,entity_type
 CUSTOMER|sa-fica-individual|fica_compliance|FICA Compliance|sa_id_number,passport_number,risk_rating

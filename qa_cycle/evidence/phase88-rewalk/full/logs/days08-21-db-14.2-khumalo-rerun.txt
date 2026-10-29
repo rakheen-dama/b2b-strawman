@@ -1,0 +1,24 @@
+# post-walk read-only re-run 2026-10-29T15:59:41Z; reason: CodeRabbit review PR #1711
+# step 14.2 (Khumalo client row). Read-only SELECTs, docker exec b2b-postgres psql -U postgres -d docteams -A -c. Header row = column names.
+
+-- QUERY:
+SELECT id, name, customer_type, lifecycle_status, email, address_line1, city, country, lifecycle_status_changed_at FROM tenant_5039f2d497cf.customers WHERE name='Khumalo Property Holdings';
+-- OUTPUT:
+id|name|customer_type|lifecycle_status|email|address_line1|city|country|lifecycle_status_changed_at
+30aa3450-f3d4-46ec-8403-8f4cab5bf877|Khumalo Property Holdings|INDIVIDUAL|ACTIVE|khumalo.holdings@email.co.za|12 Rivonia Road|Sandton|ZA|2026-10-29 15:16:21.926292+00
+(1 row)
+
+-- QUERY:
+SELECT ci.status, ci.completed_at, ct.slug FROM tenant_5039f2d497cf.checklist_instances ci JOIN tenant_5039f2d497cf.checklist_templates ct ON ct.id=ci.template_id JOIN tenant_5039f2d497cf.customers c ON c.id=ci.customer_id WHERE c.name='Khumalo Property Holdings';
+-- OUTPUT:
+status|completed_at|slug
+COMPLETED|2026-10-29 15:16:21.92095+00|legal-za-individual-client-onboarding
+(1 row)
+
+-- QUERY:
+SELECT email_lower, org_id, tenant_schema FROM portal.portal_contact_directory WHERE email_lower='khumalo.holdings@email.co.za';
+-- OUTPUT:
+email_lower|org_id|tenant_schema
+khumalo.holdings@email.co.za|mathebula-partners|tenant_5039f2d497cf
+(1 row)
+

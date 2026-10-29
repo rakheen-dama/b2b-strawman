@@ -6,4 +6,5 @@ LINE 1: ... template_id, file_name, document_id IS NOT NULL, created_at...
 > SELECT id, status, expires_at, sent_at, created_at FROM tenant_5039f2d497cf.acceptance_requests ORDER BY created_at DESC LIMIT 2
 ad215a7c-6feb-4e08-bca3-8dae9f46b2c6|SENT|2026-11-05 15:19:34.172201+00|2026-10-29 15:19:34.238194+00|2026-10-29 15:19:34.173376+00
 2a681d46-49e2-4f01-b457-c4c6b8dde8a2|ACCEPTED|2026-11-05 14:32:59.69319+00|2026-10-29 14:32:59.963094+00|2026-10-29 14:32:59.693803+00
+# [review annotation 2026-10-29] the following rows have no preceding SELECT in this transcript; see days08-21-db-14.7-generated-doc-rerun.txt (the row is the generated_documents SELECT of :2 re-run with `generated_at` for the non-existent `created_at`; its echo line was not captured; it is NOT output of the acceptance_requests SELECT at :6)
 168fe298-c279-4908-b76d-ce11d65e9af1|f63f0285-07f6-4378-9bef-790934664089|offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf|t|2026-10-29 15:18:57.703638+00

@@ -1,0 +1,30 @@
+# post-walk read-only re-run 2026-10-29T15:59:41Z; reason: CodeRabbit review PR #1711
+# step 14.7 (OTP generated-document row on the Khumalo matter aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f); Q3 also lists the persisted clause snapshots (14.8a/14.8b). Read-only SELECTs, docker exec b2b-postgres psql -U postgres -d docteams -A -c. Header row = column names.
+
+-- QUERY:
+SELECT gd.id, dt.name AS template, dt.slug, gd.primary_entity_type, gd.file_name, gd.output_format, gd.file_size, gd.document_id IS NOT NULL AS has_document, gd.generated_at FROM tenant_5039f2d497cf.generated_documents gd JOIN tenant_5039f2d497cf.document_templates dt ON dt.id=gd.template_id WHERE gd.primary_entity_id='aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f' ORDER BY gd.generated_at;
+-- OUTPUT:
+id|template|slug|primary_entity_type|file_name|output_format|file_size|has_document|generated_at
+168fe298-c279-4908-b76d-ce11d65e9af1|Offer to Purchase|offer-to-purchase|PROJECT|offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf|PDF|4714|t|2026-10-29 15:18:57.703638+00
+(1 row)
+
+-- QUERY:
+SELECT count(*) AS otp_rows_on_matter FROM tenant_5039f2d497cf.generated_documents gd JOIN tenant_5039f2d497cf.document_templates dt ON dt.id=gd.template_id WHERE gd.primary_entity_id='aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f' AND dt.name='Offer to Purchase';
+-- OUTPUT:
+otp_rows_on_matter
+1
+(1 row)
+
+-- QUERY:
+SELECT t.ord, t.c->>'slug' AS slug, t.c->>'title' AS title, (t.c->'body')::text LIKE '%"key": "org.name"%' AS binds_org_name FROM tenant_5039f2d497cf.generated_documents gd, jsonb_array_elements(gd.clause_snapshots) WITH ORDINALITY AS t(c, ord) WHERE gd.id='168fe298-c279-4908-b76d-ce11d65e9af1' ORDER BY t.ord;
+-- OUTPUT:
+ord|slug|title|binds_org_name
+1|voetstoots|Voetstoots (As Is)|t
+2|occupation-date|Occupation Date & Occupational Rent|f
+3|suspensive-bond|Suspensive Condition -- Bond Approval|f
+4|transfer-duty-liability|Transfer Duty Liability|f
+5|fica-compliance|FICA Compliance|t
+6|rates-clearance|Municipal Rates Clearance|t
+7|jurisdiction-za|SA Law & Jurisdiction|f
+(7 rows)
+

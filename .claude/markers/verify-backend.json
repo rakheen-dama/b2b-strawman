@@ -1,7 +1,7 @@
 {
-  "commit": "5a8ef577b",
-  "command": "cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q",
+  "commit": "be1f543c1",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-29T00:39:55Z",
-  "summary": "628C BE-VERIFY on final head 5a8ef577b (worktree-epic-628C): 6284 testcases / 0 failures / 0 errors / 26 skipped across 744 reports, about 16 min; baseline 6238 (+46 new reconcile/guard cases); spotless check clean; Backend CI pass on the same head (21m25s)"
+  "ts": "2026-10-29T02:21:00Z",
+  "summary": "628D BE-VERIFY (628.11 gate for 628C+628D) on final head be1f543c1 (worktree-epic-628D): 6290 testcases / 0 failures / 0 errors / 26 skipped across 745 reports; baseline 6284 (+6 guard cases); also green on be017bcde (6289); Backend CI pass on the same head (17m39s)"
 }

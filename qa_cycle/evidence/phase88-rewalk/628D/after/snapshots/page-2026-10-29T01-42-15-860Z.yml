@@ -1,0 +1,129 @@
+- generic [active] [ref=f85e1]:
+  - link "Skip to content" [ref=f85e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f85e3]:
+    - complementary [ref=f85e4]:
+      - generic [ref=f85e5]: Kazi
+      - generic [ref=f85e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f85e12]:
+        - text: Search...
+        - generic [ref=f85e16]: ⌘K
+      - navigation "Main navigation" [ref=f85e17]:
+        - generic [ref=f85e18]:
+          - button "Today" [expanded] [ref=f85e19]
+          - generic [ref=f85e23]:
+            - link "Home" [ref=f85e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f85e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f85e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f85e36]:
+          - button "Matters" [expanded] [ref=f85e37]
+          - generic [ref=f85e41]:
+            - link "Matters" [ref=f85e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f85e48] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f85e50] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f85e55] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f85e61] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f85e66]:
+          - button "Clients" [expanded] [ref=f85e67]
+          - generic [ref=f85e71]:
+            - link "Clients" [ref=f85e72] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f85e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f85e81] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f85e87]
+        - button "Trust" [ref=f85e93]
+        - button "Firm" [ref=f85e99]
+      - link "Platform Admin" [ref=f85e105] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f85e110] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f85e115]:
+        - generic [ref=f85e116]: AO
+        - generic [ref=f85e117]:
+          - paragraph [ref=f85e118]: Alice Owner
+          - paragraph [ref=f85e119]: alice@e2e-test.local
+    - generic [ref=f85e120]:
+      - banner [ref=f85e121]:
+        - navigation "Breadcrumb" [ref=f85e122]:
+          - link "E2E Test Organization" [ref=f85e123] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Matters" [ref=f85e127] [cursor=pointer]:
+            - /url: /org/e2e-test-org/matters
+          - generic "Team spec mvsox86s282d" [ref=f85e131]
+        - generic [ref=f85e132]:
+          - generic [ref=f85e133]: e2e-test-org
+          - button "AO" [ref=f85e136]
+          - button "Notifications" [ref=f85e138]:
+            - generic [ref=f85e139]: 7 unread notifications
+            - generic [aria-hidden] [ref=f85e140]: "7"
+      - main [ref=f85e141]:
+        - generic [ref=f85e144]:
+          - generic [ref=f85e145]:
+            - link "Back to Matters" [ref=f85e146] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - generic [ref=f85e149]:
+              - button "Generate Document" [ref=f85e150]
+              - button "Generate Statement of Account" [ref=f85e151]
+              - button "More actions" [ref=f85e152]
+          - generic [ref=f85e155]:
+            - generic [ref=f85e156]:
+              - heading "Team spec mvsox86s282d" [level=1] [ref=f85e157]
+              - generic [ref=f85e158]:
+                - generic [ref=f85e159]: Active
+                - generic [ref=f85e160]: LITIGATION
+              - generic [ref=f85e161]: Internal Matter
+            - generic [ref=f85e162]:
+              - button "Close Matter" [ref=f85e163]
+              - button "Complete Matter" [ref=f85e164]
+              - button [ref=f85e165]
+          - generic [ref=f85e166]:
+            - tablist [ref=f85e167]:
+              - tab "Details" [ref=f85e168] [cursor=pointer]
+              - tab "Overview" [selected] [ref=f85e171] [cursor=pointer]
+              - tab "Work" [ref=f85e173] [cursor=pointer]
+              - tab "Fees" [ref=f85e176] [cursor=pointer]
+              - tab "Client" [ref=f85e179] [cursor=pointer]
+              - tab "Diary" [ref=f85e182] [cursor=pointer]
+              - tab "Activity" [ref=f85e183] [cursor=pointer]
+            - tabpanel [ref=f85e186]:
+              - generic [ref=f85e187]:
+                - generic [ref=f85e188]: Healthy
+                - group [ref=f85e194]:
+                  - generic "3/5 setup steps complete 60%" [ref=f85e195] [cursor=pointer]:
+                    - generic [ref=f85e196]:
+                      - generic [ref=f85e197]: 3/5 setup steps complete
+                      - generic [ref=f85e199]: 60%
+                - generic [ref=f85e206]:
+                  - link "0.0h Hours logged" [ref=f85e207] [cursor=pointer]:
+                    - /url: "?tab=time"
+                    - generic [ref=f85e209]:
+                      - generic [ref=f85e214]: 0.0h
+                      - generic [ref=f85e215]: Hours logged
+                  - link "0% Task completion" [ref=f85e216] [cursor=pointer]:
+                    - /url: "?tab=tasks"
+                    - generic [ref=f85e218]:
+                      - generic [ref=f85e223]: 0%
+                      - generic [ref=f85e224]: Task completion
+                  - link "-- Outstanding fee notes" [ref=f85e225] [cursor=pointer]:
+                    - /url: "?tab=statements"
+                    - generic [ref=f85e227]:
+                      - generic [ref=f85e232]: "--"
+                      - generic [ref=f85e233]: Outstanding fee notes
+                - generic [ref=f85e234]:
+                  - generic [ref=f85e235]: Upcoming Deadlines
+                  - paragraph [ref=f85e238]: No upcoming deadlines.
+  - generic [ref=f85e239]:
+    - heading "Command Palette" [level=2] [ref=f85e240]
+    - paragraph [ref=f85e241]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f85e242]

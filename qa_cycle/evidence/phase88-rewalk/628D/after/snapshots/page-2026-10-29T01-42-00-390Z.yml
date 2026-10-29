@@ -1,0 +1,126 @@
+- generic [active] [ref=f84e1]:
+  - link "Skip to content" [ref=f84e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f84e3]:
+    - complementary [ref=f84e4]:
+      - generic [ref=f84e5]: Kazi
+      - generic [ref=f84e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f84e12]:
+        - text: Search...
+        - generic [ref=f84e16]: ⌘K
+      - navigation "Main navigation" [ref=f84e17]:
+        - generic [ref=f84e18]:
+          - button "Today" [expanded] [ref=f84e19]
+          - generic [ref=f84e23]:
+            - link "Home" [ref=f84e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f84e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f84e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f84e36]:
+          - button "Matters" [expanded] [ref=f84e37]
+          - generic [ref=f84e41]:
+            - link "Matters" [ref=f84e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f84e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f84e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f84e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f84e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f84e65]:
+          - button "Clients" [expanded] [ref=f84e66]
+          - generic [ref=f84e70]:
+            - link "Clients" [ref=f84e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f84e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f84e81] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f84e87]
+        - button "Trust" [ref=f84e93]
+        - button "Firm" [ref=f84e99]
+      - link "Platform Admin" [ref=f84e105] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f84e110] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f84e115]:
+        - generic [ref=f84e116]: AO
+        - generic [ref=f84e117]:
+          - paragraph [ref=f84e118]: Alice Owner
+          - paragraph [ref=f84e119]: alice@e2e-test.local
+    - generic [ref=f84e120]:
+      - banner [ref=f84e121]:
+        - navigation "Breadcrumb" [ref=f84e122]:
+          - link "E2E Test Organization" [ref=f84e123] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Clients" [ref=f84e127] [cursor=pointer]:
+            - /url: /org/e2e-test-org/clients
+          - generic "Acme Corp" [ref=f84e131]
+        - generic [ref=f84e132]:
+          - generic [ref=f84e133]: e2e-test-org
+          - button "AO" [ref=f84e136]
+          - button "Notifications" [ref=f84e138]:
+            - generic [ref=f84e139]: 7 unread notifications
+            - generic [aria-hidden] [ref=f84e140]: "7"
+      - main [ref=f84e141]:
+        - generic [ref=f84e144]:
+          - link "Back to Clients" [ref=f84e146] [cursor=pointer]:
+            - /url: /org/e2e-test-org/clients
+          - generic [ref=f84e151]:
+            - generic [ref=f84e152]:
+              - heading "Acme Corp" [level=1] [ref=f84e153]
+              - generic [ref=f84e154]: Active
+              - paragraph [ref=f84e157]: contact@acme.example.com · +1-555-0100
+              - paragraph [ref=f84e158]: Since 29 Oct 2026 · 1 matter
+            - generic [ref=f84e159]:
+              - button "Edit" [ref=f84e160]
+              - button "More actions" [ref=f84e161]
+          - generic [ref=f84e163]:
+            - tablist [ref=f84e164]:
+              - tab "Details" [ref=f84e165] [cursor=pointer]
+              - tab "Overview" [selected] [ref=f84e168] [cursor=pointer]
+              - tab "Matters" [ref=f84e170] [cursor=pointer]
+              - tab "Fees" [ref=f84e173] [cursor=pointer]
+              - tab "FICA & compliance" [ref=f84e176] [cursor=pointer]
+              - tab "Activity" [ref=f84e179] [cursor=pointer]
+            - tabpanel [ref=f84e180]:
+              - generic [ref=f84e181]:
+                - generic [ref=f84e183]:
+                  - generic [ref=f84e184]:
+                    - generic [ref=f84e185]: Client Readiness
+                    - button "Expand setup steps" [ref=f84e186]
+                  - generic [ref=f84e187]: Setup complete
+                - generic [ref=f84e192]:
+                  - generic [ref=f84e193]: Document Templates
+                  - list [ref=f84e196]:
+                    - listitem [ref=f84e197]:
+                      - generic [ref=f84e198]: Power of Attorney
+                      - link "Generate" [ref=f84e203] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc?generateTemplate=f507ab33-b991-4a62-a0bb-68877ecba180
+                    - listitem [ref=f84e204]:
+                      - generic [ref=f84e205]: Letter of Demand
+                      - link "Generate" [ref=f84e210] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc?generateTemplate=2605ef33-bb62-45c7-bdec-ef2d20f7b398
+                    - listitem [ref=f84e211]:
+                      - generic [ref=f84e212]: Client Trust Statement
+                      - link "Generate" [ref=f84e217] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc?generateTemplate=afbf3e87-c49a-42f0-acad-b5cdb49aaa70
+                    - listitem [ref=f84e218]:
+                      - generic [ref=f84e219]: Trust Receipt
+                      - link "Generate" [ref=f84e224] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc?generateTemplate=bc4e56ff-6df4-47e8-ac0e-040444dcade0
+                - generic [ref=f84e225]:
+                  - generic [ref=f84e227]:
+                    - generic [ref=f84e231]: FICA Verification
+                    - generic [ref=f84e232]: AI
+                  - generic [ref=f84e234]:
+                    - button "Verify with AI" [disabled]
+  - generic [ref=f84e235]:
+    - heading "Command Palette" [level=2] [ref=f84e236]
+    - paragraph [ref=f84e237]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f84e238]

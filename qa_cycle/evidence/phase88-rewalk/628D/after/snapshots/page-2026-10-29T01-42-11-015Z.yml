@@ -1,0 +1,181 @@
+- generic [active]:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+          - generic: Acme Corp
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 7 unread notifications
+              - generic [aria-hidden]: "7"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/clients
+                  - text: Back to Clients
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading [level=1]: Acme Corp
+                      - generic: Active
+                      - paragraph: contact@acme.example.com · +1-555-0100
+                      - paragraph: Since 29 Oct 2026 · 1 matter
+                    - generic:
+                      - button: Edit
+                      - button:
+                        - generic: More actions
+              - generic:
+                - tablist:
+                  - tab: Details
+                  - tab [selected]: Overview
+                  - tab: Matters
+                  - tab: Fees
+                  - tab: FICA & compliance
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: Client Readiness
+                          - button
+                        - generic: Setup complete
+                    - generic:
+                      - generic: Document Templates
+                      - generic:
+                        - list:
+                          - listitem:
+                            - generic: Power of Attorney
+                            - link:
+                              - /url: /org/e2e-test-org/clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc?generateTemplate=f507ab33-b991-4a62-a0bb-68877ecba180
+                              - text: Generate
+                          - listitem:
+                            - generic: Letter of Demand
+                            - link:
+                              - /url: /org/e2e-test-org/clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc?generateTemplate=2605ef33-bb62-45c7-bdec-ef2d20f7b398
+                              - text: Generate
+                          - listitem:
+                            - generic: Client Trust Statement
+                            - link:
+                              - /url: /org/e2e-test-org/clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc?generateTemplate=afbf3e87-c49a-42f0-acad-b5cdb49aaa70
+                              - text: Generate
+                          - listitem:
+                            - generic: Trust Receipt
+                            - link:
+                              - /url: /org/e2e-test-org/clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc?generateTemplate=bc4e56ff-6df4-47e8-ac0e-040444dcade0
+                              - text: Generate
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: FICA Verification
+                          - generic: AI
+                      - generic:
+                        - generic:
+                          - button [disabled]: Verify with AI
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - alertdialog [ref=f84e250]:
+    - generic [ref=f84e251]:
+      - generic [ref=f84e252]:
+        - heading "Archive Client" [level=2] [ref=f84e257]
+        - paragraph [ref=f84e258]: Archive Acme Corp? Their matter links will be preserved but they will be hidden from active client lists.
+      - paragraph [ref=f84e262]: Cannot archive client with linked matters. Unlink all matters first.
+      - generic [ref=f84e259]:
+        - button "Cancel" [ref=f84e260]
+        - button "Archive" [ref=f84e261]

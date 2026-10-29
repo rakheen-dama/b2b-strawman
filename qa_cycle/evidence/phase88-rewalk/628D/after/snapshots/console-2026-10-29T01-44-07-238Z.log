@@ -1,0 +1,12 @@
+[     181ms] [WARNING] [tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues. @ http://localhost:3001/_next/static/chunks/0mvk90nh9c9pw.js:0
+[   37958ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rJ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:62714)
+    at rZ (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:63747)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:158439
+    at sy (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:163600)
+    at sh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:154852)
+    at http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149670
+    at sr (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:149771)
+    at sq (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:176352)
+    at MessagePort.O (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:3360)
+[  164325ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3001/org/e2e-test-org/invoices/00000000-0000-4000-8000-000000000628:0

@@ -1,0 +1,5 @@
+total 4
+2026-10-28T22:34:41.529Z | Fee Note INV-0001 from E2E Test Organization | ['apex.holdings.mvsoxhi2a97e@example.com']
+2026-10-28T22:34:09.536Z | E2E Test Organization -- Please review offer to purchase for acceptance: offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-mvsoxhi2a97e-2026-10-28.pdf | ['khumalo.property.mvsoxhi2a97e@example.com']
+2026-10-28T22:33:23.49Z | E2E Test Organization: Trust account activity | ['sipho.ndlovu.mvsoxhi2a97e@example.com']
+2026-10-28T22:33:20.608Z | E2E Test Organization: Trust account activity | ['sipho.ndlovu.mvsoxhi2a97e@example.com']

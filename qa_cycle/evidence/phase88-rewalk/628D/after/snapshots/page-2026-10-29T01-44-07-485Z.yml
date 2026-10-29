@@ -1,0 +1,168 @@
+- generic [active] [ref=f96e1]:
+  - link "Skip to content" [ref=f96e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f96e3]:
+    - complementary [ref=f96e4]:
+      - generic [ref=f96e5]: Kazi
+      - generic [ref=f96e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f96e12]:
+        - text: Search...
+        - generic [ref=f96e16]: ⌘K
+      - navigation "Main navigation" [ref=f96e17]:
+        - generic [ref=f96e18]:
+          - button "Today" [expanded] [ref=f96e19]
+          - generic [ref=f96e23]:
+            - link "Home" [ref=f96e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f96e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f96e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f96e36]:
+          - button "Matters" [expanded] [ref=f96e37]
+          - generic [ref=f96e41]:
+            - link "Matters" [ref=f96e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f96e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f96e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f96e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f96e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f96e65]:
+          - button "Clients" [expanded] [ref=f96e66]
+          - generic [ref=f96e70]:
+            - link "Clients" [ref=f96e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f96e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f96e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f96e86]
+        - button "Trust" [ref=f96e92]
+        - button "Firm" [ref=f96e98]
+      - link "Platform Admin" [ref=f96e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f96e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f96e114]:
+        - generic [ref=f96e115]: AO
+        - generic [ref=f96e116]:
+          - paragraph [ref=f96e117]: Alice Owner
+          - paragraph [ref=f96e118]: alice@e2e-test.local
+    - generic [ref=f96e119]:
+      - banner [ref=f96e120]:
+        - navigation "Breadcrumb" [ref=f96e121]:
+          - link "E2E Test Organization" [ref=f96e122] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Settings" [ref=f96e126] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings
+          - link "Documents" [ref=f96e130] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings/documents
+          - generic [ref=f96e131]: Templates
+          - generic "New" [ref=f96e138]
+        - generic [ref=f96e139]:
+          - generic [ref=f96e140]: e2e-test-org
+          - button "AO" [ref=f96e143]
+          - button "Notifications" [ref=f96e145]
+      - main [ref=f96e147]:
+        - generic [ref=f96e150]:
+          - complementary [ref=f96e151]:
+            - navigation "Settings navigation" [ref=f96e152]:
+              - list [ref=f96e153]:
+                - listitem [ref=f96e154]:
+                  - link "Firm" [ref=f96e155] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/firm
+                - listitem [ref=f96e160]:
+                  - link "Matters" [ref=f96e161] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/matters
+                - listitem [ref=f96e166]:
+                  - link "Documents" [ref=f96e167] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/documents
+                  - list [ref=f96e171]:
+                    - listitem [ref=f96e172]:
+                      - link "Templates" [ref=f96e173] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=templates
+                    - listitem [ref=f96e174]:
+                      - link "Clauses" [ref=f96e175] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=clauses
+                    - listitem [ref=f96e176]:
+                      - link "Acceptance" [ref=f96e177] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=acceptance
+                    - listitem [ref=f96e178]:
+                      - link "Email" [ref=f96e179] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/documents?tab=email
+                - listitem [ref=f96e180]:
+                  - link "Fees & Trust" [ref=f96e181] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/fees
+                - listitem [ref=f96e185]:
+                  - link "Connections" [ref=f96e186] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/connections
+          - generic [ref=f96e190]:
+            - link "Templates" [ref=f96e191] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings/documents?tab=templates
+            - generic [ref=f96e194]:
+              - heading "New Template" [level=1] [ref=f96e195]
+              - paragraph [ref=f96e196]: Create a custom document template.
+            - generic [ref=f96e198]:
+              - generic [ref=f96e199]:
+                - generic [ref=f96e200]:
+                  - generic [ref=f96e201]:
+                    - generic [ref=f96e202]: Name
+                    - textbox "Name" [ref=f96e203]:
+                      - /placeholder: Template name
+                  - generic [ref=f96e204]:
+                    - generic [ref=f96e205]: Category
+                    - combobox "Category" [ref=f96e206]:
+                      - option "Engagement Letter" [selected]
+                      - option "Statement of Work"
+                      - option "Cover Letter"
+                      - option "Matter Summary"
+                      - option "NDA"
+                - generic [ref=f96e207]:
+                  - generic [ref=f96e208]:
+                    - generic [ref=f96e209]: Primary Entity Type
+                    - combobox "Primary Entity Type" [ref=f96e210]:
+                      - option "Matter" [selected]
+                      - option "Client"
+                      - option "Fee note"
+                  - generic [ref=f96e211]:
+                    - generic [ref=f96e212]: Description
+                    - textbox "Description" [ref=f96e213]:
+                      - /placeholder: Brief description
+                - group "Content" [ref=f96e214]:
+                  - generic [ref=f96e216]:
+                    - generic [ref=f96e217]:
+                      - button "Bold" [ref=f96e218]
+                      - button "Italic" [ref=f96e219]
+                      - button "Underline" [ref=f96e220]
+                      - button "Heading 1" [ref=f96e221]
+                      - button "Heading 2" [ref=f96e222]
+                      - button "Heading 3" [ref=f96e223]
+                      - button "Bullet list" [ref=f96e224]
+                      - button "Ordered list" [ref=f96e225]
+                      - button "Insert table" [ref=f96e226]
+                      - button "Horizontal rule" [ref=f96e227]
+                      - button "Link" [ref=f96e228]
+                      - button "Insert variable" [ref=f96e229]
+                      - button "Insert clause" [ref=f96e230]
+                      - button "Insert conditional block" [ref=f96e231]
+                    - textbox [ref=f96e234]:
+                      - paragraph [ref=f96e235]: Start typing...
+                - generic [ref=f96e236]:
+                  - generic [ref=f96e237]: Custom CSS
+                  - textbox "Custom CSS" [ref=f96e238]:
+                    - /placeholder: /* Custom styles */
+                - generic [ref=f96e239]:
+                  - button "Cancel" [ref=f96e240]
+                  - button "Create Template" [disabled]
+              - generic [ref=f96e242]:
+                - heading "Template Variables" [level=3] [ref=f96e243]
+                - paragraph [ref=f96e244]: Use the toolbar to insert variables and clauses. Variables are resolved from the selected entity type.
+  - generic [ref=f96e245]:
+    - heading "Command Palette" [level=2] [ref=f96e246]
+    - paragraph [ref=f96e247]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f96e248]

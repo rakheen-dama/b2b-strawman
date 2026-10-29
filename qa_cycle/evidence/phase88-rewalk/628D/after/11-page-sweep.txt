@@ -1,0 +1,21 @@
+Page sweep (Alice, post-rebuild), regex /\b(projects?|customers?|invoices?|court calendar)\b/i over <main> innerText
+dashboard => clean
+my-work => clean
+diary => clean
+matters => clean
+clients => clean
+invoices => clean
+invoices/unbilled => clean
+reports => clean
+compliance => clean
+trust-accounting => clean
+conflict-check => clean
+notifications => clean
+matters/2101255b-7e48-49ce-933a-5bb8923cd347 => clean
+matters/89095f06-1145-4ede-a1fb-6da358cba571?tab=team => clean
+clients/9965ed0a-f077-45c1-95a8-6c64186fe0dc => clean
+matters/<random uuid> => clean | "This matter isn't on your list / It may not exist, or you haven't been added to its team..."
+clients/<random uuid> => clean | "Something went wrong / An unexpected error occurred while loading this page..." (frontend error boundary, unchanged from before; out of 628D scope per repro row 4)
+invoices/<random uuid> => clean | "Something went wrong / ..." (same)
+Whole document: <a href*="court-calendar"> count = 0; nav text contains "Court Calendar" = false
+Console: React #418 hydration-text mismatch on audit-trail page (frontend; frontend container not rebuilt by this PR)

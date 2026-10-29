@@ -1,0 +1,1 @@
+{"modules":[{"id":"information_requests","name":"Information Requests","description":"Client document-request workflows with portal pickup and acceptance","enabled":true},{"id":"bulk_billing","name":"Bulk Billing Runs","description":"Batch fee-note generation across multiple clients in a single run. Best for firms billing 10+ clients per cycle.","enabled":true}]}

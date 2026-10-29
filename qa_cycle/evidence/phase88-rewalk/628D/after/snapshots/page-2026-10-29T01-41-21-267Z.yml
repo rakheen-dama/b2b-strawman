@@ -1,0 +1,134 @@
+- generic [active] [ref=f71e1]:
+  - link "Skip to content" [ref=f71e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f71e3]:
+    - complementary [ref=f71e4]:
+      - generic [ref=f71e5]: Kazi
+      - generic [ref=f71e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f71e12]:
+        - text: Search...
+        - generic [ref=f71e16]: ⌘K
+      - navigation "Main navigation" [ref=f71e17]:
+        - generic [ref=f71e18]:
+          - button "Today" [expanded] [ref=f71e19]
+          - generic [ref=f71e23]:
+            - link "Home" [ref=f71e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f71e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f71e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f71e36]:
+          - button "Matters" [expanded] [ref=f71e37]
+          - generic [ref=f71e41]:
+            - link "Matters" [ref=f71e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f71e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f71e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f71e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f71e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f71e65]:
+          - button "Clients" [expanded] [ref=f71e66]
+          - generic [ref=f71e70]:
+            - link "Clients" [ref=f71e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f71e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f71e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f71e86]
+        - button "Trust" [ref=f71e92]
+        - button "Firm" [ref=f71e98]
+      - link "Platform Admin" [ref=f71e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f71e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+    - generic [ref=f71e113]:
+      - banner [ref=f71e114]:
+        - navigation "Breadcrumb" [ref=f71e115]:
+          - link "E2E Test Organization" [ref=f71e116] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Settings" [ref=f71e120] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings
+          - generic "Firm" [ref=f71e124]
+        - generic [ref=f71e125]:
+          - button "…" [ref=f71e127]
+          - button "Notifications" [ref=f71e129]
+      - main [ref=f71e131]:
+        - generic [ref=f71e134]:
+          - complementary [ref=f71e135]:
+            - navigation "Settings navigation" [ref=f71e136]:
+              - list [ref=f71e137]:
+                - listitem [ref=f71e138]:
+                  - link "Firm" [ref=f71e139] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/firm
+                  - list [ref=f71e144]:
+                    - listitem [ref=f71e145]:
+                      - link "General" [ref=f71e146] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/firm?tab=general
+                    - listitem [ref=f71e147]:
+                      - link "Roles" [ref=f71e148] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/firm?tab=roles
+                    - listitem [ref=f71e149]:
+                      - link "Audit trail" [ref=f71e150] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/firm?tab=audit-trail
+                    - listitem [ref=f71e151]:
+                      - link "Data protection" [ref=f71e152] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/firm?tab=data-protection
+                    - listitem [ref=f71e153]:
+                      - link "Data requests" [ref=f71e154] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/firm?tab=data-requests
+                    - listitem [ref=f71e155]:
+                      - link "Compliance" [ref=f71e156] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/firm?tab=compliance
+                    - listitem [ref=f71e157]:
+                      - link "Features" [ref=f71e158] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/firm?tab=features
+                    - listitem [ref=f71e159]:
+                      - link "Subscription" [ref=f71e160] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/firm?tab=subscription
+                - listitem [ref=f71e161]:
+                  - link "Matters" [ref=f71e162] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/matters
+                - listitem [ref=f71e167]:
+                  - link "Documents" [ref=f71e168] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/documents
+                - listitem [ref=f71e172]:
+                  - link "Fees & Trust" [ref=f71e173] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/fees
+                - listitem [ref=f71e177]:
+                  - link "Connections" [ref=f71e178] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/connections
+          - generic [ref=f71e182]:
+            - tablist "Firm settings" [ref=f71e184]:
+              - tab "General" [ref=f71e185]
+              - tab "Roles" [ref=f71e186]
+              - tab "Audit trail" [ref=f71e187]
+              - tab "Data protection" [ref=f71e188]
+              - tab "Data requests" [ref=f71e189]
+              - tab "Compliance" [ref=f71e190]
+              - tab "Features" [selected] [ref=f71e191]
+              - tab "Subscription" [ref=f71e192]
+            - tabpanel "Features" [ref=f71e193]:
+              - generic [ref=f71e194]:
+                - generic [ref=f71e195]:
+                  - heading "Features" [level=1] [ref=f71e196]
+                  - paragraph [ref=f71e197]: Enable additional features for your organization. These can be turned on or off at any time.
+                - generic [ref=f71e198]:
+                  - generic [ref=f71e200]:
+                    - generic [ref=f71e201]:
+                      - generic [ref=f71e202]: Information Requests
+                      - paragraph [ref=f71e203]: Client document-request workflows with portal pickup and acceptance
+                    - switch "Toggle Information Requests" [checked] [ref=f71e204]
+                    - checkbox [checked] [aria-hidden]
+                  - generic [ref=f71e206]:
+                    - generic [ref=f71e207]:
+                      - generic [ref=f71e208]: Bulk Billing Runs
+                      - paragraph [ref=f71e209]: Batch fee-note generation across multiple clients in a single run. Best for firms billing 10+ clients per cycle.
+                    - switch "Toggle Bulk Billing Runs" [checked] [ref=f71e210]
+                    - checkbox [checked] [aria-hidden]
+  - region "Notifications alt+T"

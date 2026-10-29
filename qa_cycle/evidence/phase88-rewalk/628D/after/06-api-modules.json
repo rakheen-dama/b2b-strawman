@@ -1,0 +1,58 @@
+[
+    {
+        "id": "disbursements",
+        "name": "Disbursements",
+        "description": "Out-of-pocket costs incurred on behalf of clients (sheriff fees, deeds office, counsel)",
+        "enabled": true,
+        "status": "active"
+    },
+    {
+        "id": "information_requests",
+        "name": "Information Requests",
+        "description": "Client document-request workflows with portal pickup and acceptance",
+        "enabled": true,
+        "status": "active"
+    },
+    {
+        "id": "conflict_check",
+        "name": "Conflict Check",
+        "description": "Matter conflict of interest checks",
+        "enabled": true,
+        "status": "active"
+    },
+    {
+        "id": "trust_accounting",
+        "name": "Trust Accounting",
+        "description": "LSSA-compliant trust account management for client funds",
+        "enabled": true,
+        "status": "active"
+    },
+    {
+        "id": "matter_closure",
+        "name": "Matter Closure",
+        "description": "Compliance-gated closure workflow for legal matters (trust zero, disbursements settled, final bill, retention clock)",
+        "enabled": true,
+        "status": "active"
+    },
+    {
+        "id": "lssa_tariff",
+        "name": "LSSA Tariff",
+        "description": "LSSA tariff schedule management for legal billing",
+        "enabled": true,
+        "status": "active"
+    },
+    {
+        "id": "bulk_billing",
+        "name": "Bulk Billing Runs",
+        "description": "Batch fee-note generation across multiple clients in a single run. Best for firms billing 10+ clients per cycle.",
+        "enabled": true,
+        "status": "active"
+    },
+    {
+        "id": "court_calendar",
+        "name": "Court dates",
+        "description": "Court date tracking and deadline management",
+        "enabled": true,
+        "status": "active"
+    }
+]

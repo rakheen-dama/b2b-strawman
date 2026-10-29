@@ -1,0 +1,13 @@
+Settings sweep (Alice, :3001, 2026-10-29) — regex \b(Projects?|Customers?|Invoices?)\b over <main> innerText per tab
+/settings/firm?tab=features (2):
+  - Batch invoice generation across multiple customers in a single run. Best for firms billing 10+ clients per cycle.
+  - Customer document-request workflows with portal pickup and acceptance
+/settings/matters?tab=naming (1):
+  - {customer.name} — The linked client's name   [template token = key, not copy]
+All other tabs 0 hits: firm general/compliance/data-protection; matters templates/custom-fields/tags/checklists/request-templates/request-settings;
+documents templates/clauses/acceptance/email; connections notifications/packs/automations/ai/mcp; fees tariffs/tax/time-recording/fee-runs/collections/trust-accounting
+
+Top-level page sweep (same regex): dashboard, my-work, diary, matters, clients, invoices, invoices/unbilled, invoices/collections,
+reports, compliance, trust-accounting, conflict-check, legal/adverse-parties, notifications (Alice), matters/new — all 0 hits.
+Breadcrumbs: matter "E2E Test Organization > Matters > Team spec…", fee note "> Fee notes > INV-0001", client "> Clients > Apex Holdings…" (no raw UUID).
+Aside (frontend, not 628D): matter detail page has 1 unnamed icon-only dropdown trigger next to "Close Matter / Complete Matter".

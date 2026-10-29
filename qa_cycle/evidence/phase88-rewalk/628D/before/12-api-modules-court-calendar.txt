@@ -1,0 +1,33 @@
+== GET /api/modules
+8-    },
+9-    {
+10:        "id": "court_calendar",
+11:        "name": "Court Calendar",
+12:        "description": "Court date tracking and deadline management",
+13-        "enabled": true,
+14-        "status": "active"
+15-    },
+16-    {
+17-        "id": "disbursements",
+18-        "name": "Disbursements",
+19-        "description": "Out-of-pocket costs incurred on behalf of clients (sheriff fees, deeds office, counsel)",
+20-        "enabled": true,
+21-        "status": "active"
+22-    },
+== GET /api/settings/modules
+{
+    "modules": [
+        {
+            "id": "bulk_billing",
+            "name": "Bulk Billing Runs",
+            "description": "Batch invoice generation across multiple customers in a single run. Best for firms billing 10+ clients per cycle.",
+            "enabled": true
+        },
+        {
+            "id": "information_requests",
+            "name": "Information Requests",
+            "description": "Customer document-request workflows with portal pickup and acceptance",
+            "enabled": true
+        }
+    ]
+}

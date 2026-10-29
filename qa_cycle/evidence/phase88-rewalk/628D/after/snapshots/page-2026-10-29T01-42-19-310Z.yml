@@ -1,0 +1,177 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+          - generic: Team spec mvsox86s282d
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 7 unread notifications
+              - generic [aria-hidden]: "7"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/matters
+                  - text: Back to Matters
+                - generic:
+                  - button: Generate Document
+                  - button: Generate Statement of Account
+                  - button:
+                    - generic: More actions
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Team spec mvsox86s282d
+                    - generic:
+                      - generic: Active
+                      - generic: LITIGATION
+                    - generic: Internal Matter
+                  - generic:
+                    - button: Close Matter
+                    - button: Complete Matter
+                    - button
+              - generic:
+                - tablist:
+                  - tab: Details
+                  - tab [selected]: Overview
+                  - tab: Work
+                  - tab: Fees
+                  - tab: Client
+                  - tab: Diary
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic: Healthy
+                    - group:
+                      - generic:
+                        - generic:
+                          - generic: 3/5 setup steps complete
+                          - generic: 60%
+                    - generic:
+                      - link:
+                        - /url: "?tab=time"
+                        - generic:
+                          - generic:
+                            - generic: 0.0h
+                            - generic: Hours logged
+                      - link:
+                        - /url: "?tab=tasks"
+                        - generic:
+                          - generic:
+                            - generic: 0%
+                            - generic: Task completion
+                      - link:
+                        - /url: "?tab=statements"
+                        - generic:
+                          - generic:
+                            - generic: "--"
+                            - generic: Outstanding fee notes
+                    - generic:
+                      - generic: Upcoming Deadlines
+                      - generic:
+                        - paragraph: No upcoming deadlines.
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - alertdialog [ref=f85e250]:
+    - generic [ref=f85e251]:
+      - generic [ref=f85e252]:
+        - heading "Delete Matter" [level=2] [ref=f85e257]
+        - paragraph [ref=f85e258]: This action cannot be undone. This will permanently delete Team spec mvsox86s282d and all associated documents.
+      - generic [ref=f85e259]:
+        - button "Cancel" [active] [ref=f85e260]
+        - button "Delete" [ref=f85e261]

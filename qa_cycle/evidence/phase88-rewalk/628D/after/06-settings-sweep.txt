@@ -1,0 +1,13 @@
+Settings sweep (Alice, post-rebuild) — regex /court calendar|projects?|customers?|invoices?/i over <main> innerText, + count of <a href*="court-calendar">
+connections?tab=xero          hits=[] courtCalendarLinks=0
+connections?tab=mcp           hits=[] courtCalendarLinks=0
+connections?tab=ai            hits=[] courtCalendarLinks=0
+connections?tab=notifications hits=[] courtCalendarLinks=0
+connections?tab=packs         hits=[] courtCalendarLinks=0
+connections?tab=automations   hits=[] courtCalendarLinks=0
+firm?tab=features             hits=[] courtCalendarLinks=0
+firm?tab=general              hits=[] courtCalendarLinks=0
+matters                       hits=[] courtCalendarLinks=0
+documents                     hits=[] courtCalendarLinks=0
+fees                          hits=[] courtCalendarLinks=0
+Features tab text: "Information Requests / Client document-request workflows with portal pickup and acceptance" ; "Bulk Billing Runs / Batch fee-note generation across multiple clients in a single run. Best for firms billing 10+ clients per cycle."

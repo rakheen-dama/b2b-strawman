@@ -1,0 +1,16 @@
+              type               |                               title                               | count 
+---------------------------------+-------------------------------------------------------------------+-------
+ AUTOMATION                      | Complete onboarding: Acme Corp                                    |     2
+ AUTOMATION                      | Complete onboarding: Apex Holdings mvsoxhi2a97e                   |     2
+ AUTOMATION                      | Complete onboarding: Khumalo Property Holdings mvsoxhi2a97e       |     2
+ AUTOMATION                      | Complete onboarding: Sipho Ndlovu mvsoxhi2a97e                    |     2
+ DOCUMENT_GENERATED              | Alice Owner generated document "fee-note-inv-0001-2026-10-28.pdf" |     1
+ INVOICE_SENT                    | Fee Note INV-0001 for Apex Holdings mvsoxhi2a97e has been sent    |     1
+ MATTER_CLOSED                   | Matter closed                                                     |     2
+ MATTER_CLOSED                   | Matter closed (override used)                                     |     2
+ MEMBER_INVITED                  | You were added to project "Ndlovu v RAF uuzs"                     |     1
+ MEMBER_INVITED                  | You were added to project "Team spec mvsox86s282d"                |     2
+ TRUST_PAYMENT_APPROVED          | Trust payment approved                                            |     1
+ TRUST_PAYMENT_AWAITING_APPROVAL | Trust payment requires approval                                   |     2
+(12 rows)
+

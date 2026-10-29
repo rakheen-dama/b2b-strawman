@@ -1,0 +1,102 @@
+- generic [active] [ref=f100e1]:
+  - link "Skip to content" [ref=f100e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f100e3]:
+    - complementary [ref=f100e4]:
+      - generic [ref=f100e5]: Kazi
+      - generic [ref=f100e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f100e12]:
+        - text: Search...
+        - generic [ref=f100e16]: ⌘K
+      - navigation "Main navigation" [ref=f100e17]:
+        - generic [ref=f100e18]:
+          - button "Today" [expanded] [ref=f100e19]
+          - generic [ref=f100e23]:
+            - link "Home" [ref=f100e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f100e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f100e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f100e36]:
+          - button "Matters" [expanded] [ref=f100e37]
+          - generic [ref=f100e41]:
+            - link "Matters" [ref=f100e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f100e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f100e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f100e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f100e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f100e65]:
+          - button "Clients" [expanded] [ref=f100e66]
+          - generic [ref=f100e70]:
+            - link "Clients" [ref=f100e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f100e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f100e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f100e86]
+        - button "Trust" [ref=f100e92]
+        - button "Firm" [ref=f100e98]
+      - link "Notifications" [ref=f100e104] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f100e109]:
+        - generic [ref=f100e110]: BA
+        - generic [ref=f100e111]:
+          - paragraph [ref=f100e112]: Bob Admin
+          - paragraph [ref=f100e113]: bob@e2e-test.local
+    - generic [ref=f100e114]:
+      - banner [ref=f100e115]:
+        - navigation "Breadcrumb" [ref=f100e116]:
+          - link "E2E Test Organization" [ref=f100e117] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Clients" [ref=f100e220] [cursor=pointer]:
+            - /url: /org/e2e-test-org/clients
+          - generic "Acme Corp" [ref=f100e224]
+        - generic [ref=f100e122]:
+          - generic [ref=f100e123]: e2e-test-org
+          - button "BA" [ref=f100e126]
+          - button "Notifications" [ref=f100e128]:
+            - generic [ref=f100e129]: 11 unread notifications
+            - generic [aria-hidden] [ref=f100e130]: "11"
+      - main [ref=f100e131]:
+        - generic [ref=f100e226]:
+          - link "Back to Clients" [ref=f100e228] [cursor=pointer]:
+            - /url: /org/e2e-test-org/clients
+          - generic [ref=f100e233]:
+            - generic [ref=f100e234]:
+              - heading "Acme Corp" [level=1] [ref=f100e235]
+              - generic [ref=f100e236]: Active
+              - paragraph [ref=f100e239]: contact@acme.example.com · +1-555-0100
+              - paragraph [ref=f100e240]: Since 29 Oct 2026 · 1 matter
+            - generic [ref=f100e241]:
+              - button "Edit" [ref=f100e242]
+              - button "More actions" [ref=f100e243]
+          - generic [ref=f100e245]:
+            - tablist [ref=f100e246]:
+              - tab "Details" [ref=f100e247] [cursor=pointer]
+              - tab "Overview" [ref=f100e250] [cursor=pointer]
+              - tab "Matters" [ref=f100e251] [cursor=pointer]
+              - tab "Fees · Fee notes" [selected] [ref=f100e254] [cursor=pointer]:
+                - text: Fees
+                - generic [ref=f100e255]: · Fee notes
+              - tab "FICA & compliance" [ref=f100e259] [cursor=pointer]
+              - tab "Activity" [ref=f100e262] [cursor=pointer]
+            - tabpanel [ref=f100e263]:
+              - generic [ref=f100e264]:
+                - generic [ref=f100e265]:
+                  - heading "Fee notes" [level=2] [ref=f100e267]
+                  - button "New fee note" [ref=f100e268]
+                - generic [ref=f100e269]:
+                  - heading "No fee notes yet" [level=2] [ref=f100e273]
+                  - paragraph [ref=f100e274]: Generate fee note from unbilled time entries
+  - generic [ref=f100e192]:
+    - heading "Command Palette" [level=2] [ref=f100e193]
+    - paragraph [ref=f100e194]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f100e195]

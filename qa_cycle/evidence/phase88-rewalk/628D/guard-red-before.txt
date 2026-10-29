@@ -1,0 +1,48 @@
+# 628D guard red-before (unchanged code @ 6d8346256), Thu Oct 29 03:13:33 SAST 2026
+Tests run: 5, Failures: 2 (zeroUserVisibleRemnantsOutsideTheAllowList, notFoundTitlesUseEntityNounConstants); PASS: detectorsSeeMessagePositionsOnly, scansTheRealSourceTree, allowListEntriesAreLiveAndCarryAnAdr357Reason
+Counts: 337 Java hits in 80 files (130 RNFE type literals Customer/Project/Invoice + 207 message literals in 49 files); 2 resource hits, both allow-listed (allow-list live test PASSES => both live); 0 unallowed resource hits; legacy 404 literals: 160 sites (142 simple Customer/Project/Invoice/Expense + 18 R-3 compounds)
+Expected per brief: 337/80 + 2 resource + 142 (+18 OD-3) = matches exactly
+
+Tests run: 5, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 3.425 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.architecture.TerminologyRemnantScanTest
+ADR-357: legacy Project/Customer/Invoice copy — rewrite it (Matter/Client/Fee note) or allow-list it with an ADR-357 reason in architecture/terminology-allow-list.json — 337 hit(s):
+ADR-357: 404 titles use exception/EntityNoun (MATTER/CLIENT/FEE_NOTE/…), not a legacy type literal — 160 hit(s):
+
+src/main/java/io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceService.java:154  "Portal contact does not belong to customer"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceService.java:155  "The selected contact is not associated with the document's customer"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceService.java:1098  "No customer linked to project"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceService.java:1099  "Cannot send acceptance: project has no linked customer"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceService.java:1105  "Invoice"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/billingrate/BillingRateService.java:368  "Only admins, owners, or project leads can manage billing rates"  [call ForbiddenException]
+src/main/java/io/b2mash/b2b/b2bstrawman/billingrate/BillingRateService.java:377  "Project"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/billingrate/BillingRateService.java:387  "Customer"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/billingrun/BillingRunSelectionService.java:283  "Cannot exclude customer"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/billingrun/BillingRunSelectionService.java:317  "Cannot include customer"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/checklist/ChecklistInstanceService.java:92  "A checklist instance already exists for this customer and template"  [call ResourceConflictException]
+src/main/java/io/b2mash/b2b/b2bstrawman/checklist/ChecklistInstanceService.java:168  "Customer"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/checklist/ChecklistInstanceService.java:395  "Customer"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/checklist/ChecklistInstanceService.java:545  "Customer"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/checklist/ChecklistInstanceService.java:578  "Customer "%s" has completed all checklist items but has %d incomplete required fields for activation."  [var title]
+src/main/java/io/b2mash/b2b/b2bstrawman/collections/CollectionReminderSendService.java:99  "Invoice"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsReadService.java:198  "Customer"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsReadService.java:214  "Invoice"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsScanService.java:385  "Invoice"  [call notifyAdminsAndOwners]
+src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:191  "Invalid visibility for project comment"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:196  "Invalid entity for project comment"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/compliance/CustomerLifecycleGuard.java:76  "for customer in"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/compliance/CustomerLifecycleService.java:115  "Customer"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/compliance/CustomerLifecycleService.java:355  "Cannot activate customer — one or more onboarding checklists are not yet completed"  [call InvalidStateException]
+src/main/java/io/b2mash/b2b/b2bstrawman/compliance/DormancyScheduledJob.java:82  "1 customer marked as dormant"  [var title]
+src/main/java/io/b2mash/b2b/b2bstrawman/compliance/DormancyScheduledJob.java:83  "customers marked as dormant"  [var title]
+src/main/java/io/b2mash/b2b/b2bstrawman/compliance/DormancyScheduledJob.java:85  "customer(s) were automatically marked as dormant due to inactivity."  [var body]
+src/main/java/io/b2mash/b2b/b2bstrawman/correspondence/CorrespondenceService.java:172  "Customer"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/customer/ClientActivityService.java:46  "Customer"  [call ResourceNotFoundException]
+src/main/java/io/b2mash/b2b/b2bstrawman/customer/CustomerProjectService.java:64  "Customer"  [call ResourceNotFoundException]
+...
+src/main/java/io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceService.java:1105  "Invoice"
+src/main/java/io/b2mash/b2b/b2bstrawman/billingrate/BillingRateService.java:377  "Project"
+src/main/java/io/b2mash/b2b/b2bstrawman/billingrate/BillingRateService.java:387  "Customer"
+src/main/java/io/b2mash/b2b/b2bstrawman/budget/ProjectBudgetService.java:53  "ProjectBudget"
+src/main/java/io/b2mash/b2b/b2bstrawman/budget/ProjectBudgetService.java:152  "ProjectBudget"
+src/main/java/io/b2mash/b2b/b2bstrawman/checklist/ChecklistInstanceService.java:168  "Customer"
+src/main/java/io/b2mash/b2b/b2bstrawman/checklist/ChecklistInstanceService.java:395  "Customer"
+src/main/java/io/b2mash/b2b/b2bstrawman/checklist/ChecklistInstanceService.java:545  "Customer"

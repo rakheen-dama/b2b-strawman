@@ -1,0 +1,196 @@
+- generic [active] [ref=f72e1]:
+  - link "Skip to content" [ref=f72e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f72e3]:
+    - complementary [ref=f72e4]:
+      - generic [ref=f72e5]: Kazi
+      - generic [ref=f72e8]: E2E Test Organization
+      - button "Search, Command K" [ref=f72e12]:
+        - text: Search...
+        - generic [ref=f72e16]: ⌘K
+      - navigation "Main navigation" [ref=f72e17]:
+        - generic [ref=f72e18]:
+          - button "Today" [expanded] [ref=f72e19]
+          - generic [ref=f72e23]:
+            - link "Home" [ref=f72e24] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f72e28] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f72e32] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f72e36]:
+          - button "Matters" [expanded] [ref=f72e37]
+          - generic [ref=f72e41]:
+            - link "Matters" [ref=f72e42] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f72e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f72e49] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f72e54] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f72e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f72e65]:
+          - button "Clients" [expanded] [ref=f72e66]
+          - generic [ref=f72e70]:
+            - link "Clients" [ref=f72e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f72e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f72e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f72e86]
+        - button "Trust" [ref=f72e92]
+        - button "Firm" [ref=f72e98]
+      - link "Platform Admin" [ref=f72e104] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f72e109] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+    - generic [ref=f72e113]:
+      - banner [ref=f72e114]:
+        - navigation "Breadcrumb" [ref=f72e115]:
+          - link "E2E Test Organization" [ref=f72e116] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Settings" [ref=f72e120] [cursor=pointer]:
+            - /url: /org/e2e-test-org/settings
+          - generic "Connections" [ref=f72e124]
+        - generic [ref=f72e125]:
+          - button "…" [ref=f72e127]
+          - button "Notifications" [ref=f72e129]
+      - main [ref=f72e131]:
+        - generic [ref=f72e134]:
+          - complementary [ref=f72e135]:
+            - navigation "Settings navigation" [ref=f72e136]:
+              - list [ref=f72e137]:
+                - listitem [ref=f72e138]:
+                  - link "Firm" [ref=f72e139] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/firm
+                - listitem [ref=f72e144]:
+                  - link "Matters" [ref=f72e145] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/matters
+                - listitem [ref=f72e150]:
+                  - link "Documents" [ref=f72e151] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/documents
+                - listitem [ref=f72e155]:
+                  - link "Fees & Trust" [ref=f72e156] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/fees
+                - listitem [ref=f72e160]:
+                  - link "Connections" [ref=f72e161] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/connections
+                  - list [ref=f72e164]:
+                    - listitem [ref=f72e165]:
+                      - link "Integrations" [ref=f72e166] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/connections?tab=xero
+                    - listitem [ref=f72e167]:
+                      - link "MCP" [ref=f72e168] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/connections?tab=mcp
+                    - listitem [ref=f72e169]:
+                      - link "AI" [ref=f72e170] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/connections?tab=ai
+                    - listitem [ref=f72e171]:
+                      - link "Notifications" [ref=f72e172] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/connections?tab=notifications
+                    - listitem [ref=f72e173]:
+                      - link "Packs" [ref=f72e174] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/connections?tab=packs
+                    - listitem [ref=f72e175]:
+                      - link "Automations" [ref=f72e176] [cursor=pointer]:
+                        - /url: /org/e2e-test-org/settings/connections?tab=automations
+          - generic [ref=f72e178]:
+            - tablist "Connections settings" [ref=f72e180]:
+              - tab "Integrations" [selected] [ref=f72e181]
+              - tab "MCP" [ref=f72e182]
+              - tab "AI" [ref=f72e183]
+              - tab "Notifications" [ref=f72e184]
+              - tab "Packs" [ref=f72e185]
+              - tab "Automations" [ref=f72e186]
+            - tabpanel "Integrations" [ref=f72e187]:
+              - generic [ref=f72e188]:
+                - generic [ref=f72e189]:
+                  - heading [level=1] [ref=f72e190]:
+                    - text: Integrations
+                    - 'button "Help: Integrations" [ref=f72e191] [cursor=pointer]'
+                  - paragraph [ref=f72e195]: Connect third-party tools and services to your organization.
+                - generic [ref=f72e196]:
+                  - generic [ref=f72e197]:
+                    - generic [ref=f72e198]:
+                      - generic [ref=f72e199]:
+                        - generic [ref=f72e200]: Accounting
+                        - generic [ref=f72e205]: Not Connected
+                      - generic [ref=f72e206]: Connect your accounting software for fee note sync
+                    - link "Configure Xero" [ref=f72e208] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/settings/connections?tab=xero#xero
+                  - generic [ref=f72e209]:
+                    - generic [ref=f72e210]:
+                      - generic [ref=f72e211]:
+                        - generic [ref=f72e212]: AI Assistant
+                        - generic [ref=f72e218]: Not Configured
+                      - generic [ref=f72e219]: Enable AI-powered document drafting and analysis
+                    - generic [ref=f72e221]:
+                      - text: Provider
+                      - combobox "Provider" [ref=f72e222]:
+                        - generic: Select provider
+                  - generic [ref=f72e223]:
+                    - generic [ref=f72e224]:
+                      - generic [ref=f72e225]:
+                        - generic [ref=f72e226]: Document Signing
+                        - generic [ref=f72e234]: Not Configured
+                      - generic [ref=f72e235]: Enable electronic signatures on documents
+                    - generic [ref=f72e237]:
+                      - text: Provider
+                      - combobox "Provider" [ref=f72e238]:
+                        - generic: Select provider
+                  - generic [ref=f72e239]:
+                    - generic [ref=f72e240]:
+                      - generic [ref=f72e241]:
+                        - generic [ref=f72e242]: Email Delivery
+                        - generic [ref=f72e248]: Active
+                      - generic [ref=f72e249]: Platform email delivery with optional BYOAK configuration
+                    - generic [ref=f72e250]:
+                      - generic [ref=f72e251]:
+                        - generic [ref=f72e252]: Platform Email
+                        - generic [ref=f72e253]: Active
+                      - paragraph [ref=f72e254]: Loading stats...
+                      - button "Send Test Email" [ref=f72e256]
+                      - button "Bring Your Own API Key (SendGrid)" [ref=f72e258]
+                  - generic [ref=f72e262]:
+                    - generic [ref=f72e263]:
+                      - generic [ref=f72e264]:
+                        - generic [ref=f72e265]: Payment Gateway
+                        - generic [ref=f72e270]: Manual Payments Only
+                      - generic [ref=f72e271]: Connect a payment provider to enable online fee note payments for your clients.
+                    - generic [ref=f72e273]:
+                      - text: Provider
+                      - combobox "Provider" [ref=f72e274]:
+                        - generic: None
+                  - generic [ref=f72e275]:
+                    - generic [ref=f72e276]:
+                      - generic [ref=f72e277]:
+                        - generic [ref=f72e278]: KYC Verification
+                        - generic [ref=f72e284]: Not Configured
+                      - generic [ref=f72e285]: Automated identity verification for FICA compliance
+                    - button "Configure" [ref=f72e288]
+                  - generic [ref=f72e289]:
+                    - generic [ref=f72e290]:
+                      - generic [ref=f72e291]:
+                        - generic [ref=f72e292]: Claude / MCP Connector
+                        - generic [ref=f72e298]: Disabled
+                      - generic [ref=f72e299]: Let your firm's own Claude read your Kazi data over the Model Context Protocol
+                    - link "Configure Connector" [ref=f72e301] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/settings/connections?tab=mcp
+                - region [ref=f72e302]:
+                  - generic [ref=f72e303]:
+                    - heading "Xero Integration" [level=2] [ref=f72e304]
+                    - paragraph [ref=f72e305]: Manage your Xero connection, tax mappings, and sync settings.
+                  - generic [ref=f72e307]:
+                    - generic [ref=f72e308]:
+                      - generic [ref=f72e309]:
+                        - generic [ref=f72e310]:
+                          - generic [ref=f72e311]: X
+                          - generic [ref=f72e313]: Xero Connection
+                        - generic [ref=f72e314]: Not Connected
+                      - generic [ref=f72e315]: Connect your Xero account to sync fee notes and contacts.
+                    - button "Connect to Xero" [ref=f72e318]
+  - region "Notifications alt+T"
+  - alert [ref=f72e319]

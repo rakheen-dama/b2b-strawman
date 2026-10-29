@@ -1,0 +1,187 @@
+- generic:
+  - link [aria-hidden]:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary [aria-hidden]:
+      - generic: Kazi
+      - generic: E2E Test Organization
+      - button:
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Today
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/dashboard
+              - text: Home
+            - link:
+              - /url: /org/e2e-test-org/my-work
+              - text: My work
+            - link:
+              - /url: /org/e2e-test-org/diary
+              - text: Diary
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+            - link:
+              - /url: /org/e2e-test-org/matters/new
+              - text: New matter
+            - link:
+              - /url: /org/e2e-test-org/conflict-check
+              - text: Conflict check
+            - link:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+              - text: Adverse parties
+            - link:
+              - /url: /org/e2e-test-org/ai/reviews
+              - text: AI reviews
+        - generic:
+          - button [expanded]:
+            - generic: Clients
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/clients
+              - text: Clients
+            - link:
+              - /url: /org/e2e-test-org/compliance
+              - text: FICA & compliance
+            - link:
+              - /url: /org/e2e-test-org/compliance/requests
+              - text: Data requests
+        - generic:
+          - button:
+            - generic: Fees
+        - generic:
+          - button:
+            - generic: Trust
+        - generic:
+          - button:
+            - generic: Firm
+      - generic:
+        - link:
+          - /url: /platform-admin/access-requests
+          - text: Platform Admin
+      - generic:
+        - link:
+          - /url: /org/e2e-test-org/notifications
+          - text: Notifications
+      - generic:
+        - generic: AO
+        - generic:
+          - paragraph: Alice Owner
+          - paragraph: alice@e2e-test.local
+    - generic:
+      - banner:
+        - navigation [aria-hidden]:
+          - link:
+            - /url: /org/e2e-test-org/dashboard
+            - text: E2E Test Organization
+          - generic:
+            - link:
+              - /url: /org/e2e-test-org/matters
+              - text: Matters
+          - generic: Estate Late Peter Moroka uuzs
+        - generic:
+          - generic [aria-hidden]:
+            - generic: e2e-test-org
+          - generic [aria-hidden]:
+            - button: AO
+          - generic:
+            - button "Notifications":
+              - generic: 7 unread notifications
+              - generic [aria-hidden]: "7"
+      - main [aria-hidden]:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/e2e-test-org/matters
+                  - text: Back to Matters
+                - generic:
+                  - button: Generate Document
+                  - button: Generate Statement of Account
+                  - button:
+                    - generic: More actions
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Estate Late Peter Moroka uuzs
+                    - generic: Active
+                    - generic: Internal Matter
+                  - generic:
+                    - button: Close Matter
+                    - button: Complete Matter
+                    - button
+              - generic:
+                - tablist:
+                  - tab [selected]:
+                    - text: Details
+                    - generic: · Team
+                  - tab: Overview
+                  - tab: Work
+                  - tab: Fees
+                  - tab: Client
+                  - tab: Diary
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=2]: Members
+                        - generic: "1"
+                      - button [expanded]: Add Member
+                    - generic:
+                      - generic:
+                        - table:
+                          - rowgroup:
+                            - row:
+                              - columnheader: Member
+                              - columnheader: Email
+                              - columnheader: Role
+                              - columnheader: Added
+                              - columnheader
+                          - rowgroup:
+                            - row:
+                              - cell:
+                                - generic:
+                                  - generic: AO
+                                  - generic:
+                                    - paragraph: Alice Owner
+                              - cell: alice@e2e-test.local
+                              - cell:
+                                - generic: Owner
+                              - cell: 29 Oct 2026
+                              - cell
+  - generic [aria-hidden]:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - alert
+  - dialog [ref=f89e2]:
+    - generic [ref=f89e3]:
+      - generic [ref=f89e4]:
+        - heading "Add Member" [level=2] [ref=f89e5]
+        - paragraph [ref=f89e6]: Search and select an organization member to add to this matter.
+      - generic [ref=f89e7]:
+        - combobox [expanded] [ref=f89e13]
+        - listbox "Suggestions" [ref=f89e14]:
+          - group [ref=f89e16]:
+            - option "B Bob Admin bob@e2e-test.local" [selected] [ref=f89e17]:
+              - generic [ref=f89e18]: B
+              - generic [ref=f89e19]:
+                - paragraph [ref=f89e20]: Bob Admin
+                - paragraph [ref=f89e21]: bob@e2e-test.local
+            - option "C Carol Member carol@e2e-test.local" [ref=f89e22]:
+              - generic [ref=f89e23]: C
+              - generic [ref=f89e24]:
+                - paragraph [ref=f89e25]: Carol Member
+                - paragraph [ref=f89e26]: carol@e2e-test.local
+      - button "Close" [active] [ref=f89e27]

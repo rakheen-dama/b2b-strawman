@@ -1,0 +1,14 @@
+== GET /api/projects/00000000-0000-4000-8000-000000000628
+{"detail":"No static resource api/projects/00000000-0000-4000-8000-000000000628.","instance":"/api/projects/00000000-0000-4000-8000-000000000628","status":404,"title":"Not Found"}
+== GET /api/customers/00000000-0000-4000-8000-000000000628
+{"detail":"No static resource api/customers/00000000-0000-4000-8000-000000000628.","instance":"/api/customers/00000000-0000-4000-8000-000000000628","status":404,"title":"Not Found"}
+== GET /api/invoices/00000000-0000-4000-8000-000000000628
+{"detail":"No invoice found with id 00000000-0000-4000-8000-000000000628","instance":"/api/invoices/00000000-0000-4000-8000-000000000628","status":404,"title":"Invoice not found"}
+== GET /api/expenses/00000000-0000-4000-8000-000000000628
+{"detail":"No static resource api/expenses/00000000-0000-4000-8000-000000000628.","instance":"/api/expenses/00000000-0000-4000-8000-000000000628","status":404,"title":"Not Found"}
+== GET /api/matters/00000000-0000-4000-8000-000000000628
+{"detail":"No project found with id 00000000-0000-4000-8000-000000000628","instance":"/api/matters/00000000-0000-4000-8000-000000000628","status":404,"title":"Project not found"}
+== GET /api/clients/00000000-0000-4000-8000-000000000628
+{"detail":"No customer found with id 00000000-0000-4000-8000-000000000628","instance":"/api/clients/00000000-0000-4000-8000-000000000628","status":404,"title":"Customer not found"}
+== GET /api/matters/00000000-0000-4000-8000-000000000628/disbursements/00000000-0000-4000-8000-000000000628
+{"detail":"No static resource api/matters/00000000-0000-4000-8000-000000000628/disbursements/00000000-0000-4000-8000-000000000628.","instance":"/api/matters/00000000-0000-4000-8000-000000000628/disbursements/00000000-0000-4000-8000-000000000628","status":404,"title":"Not Found"}

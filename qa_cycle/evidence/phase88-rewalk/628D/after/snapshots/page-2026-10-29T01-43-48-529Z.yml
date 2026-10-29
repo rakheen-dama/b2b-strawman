@@ -1,0 +1,137 @@
+- generic [ref=f89e29]:
+  - link "Skip to content" [ref=f89e30] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f89e31]:
+    - complementary [ref=f89e32]:
+      - generic [ref=f89e33]: Kazi
+      - generic [ref=f89e36]: E2E Test Organization
+      - button "Search, Command K" [ref=f89e40]:
+        - text: Search...
+        - generic [ref=f89e44]: ⌘K
+      - navigation "Main navigation" [ref=f89e45]:
+        - generic [ref=f89e46]:
+          - button "Today" [expanded] [ref=f89e47]
+          - generic [ref=f89e51]:
+            - link "Home" [ref=f89e52] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+            - link "My work" [ref=f89e56] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+            - link "Diary" [ref=f89e60] [cursor=pointer]:
+              - /url: /org/e2e-test-org/diary
+        - generic [ref=f89e64]:
+          - button "Matters" [expanded] [ref=f89e65]
+          - generic [ref=f89e69]:
+            - link "Matters" [ref=f89e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - link "New matter" [ref=f89e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters/new
+            - link "Conflict check" [ref=f89e78] [cursor=pointer]:
+              - /url: /org/e2e-test-org/conflict-check
+            - link "Adverse parties" [ref=f89e83] [cursor=pointer]:
+              - /url: /org/e2e-test-org/legal/adverse-parties
+            - link "AI reviews" [ref=f89e89] [cursor=pointer]:
+              - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f89e94]:
+          - button "Clients" [expanded] [ref=f89e95]
+          - generic [ref=f89e99]:
+            - link "Clients" [ref=f89e100] [cursor=pointer]:
+              - /url: /org/e2e-test-org/clients
+            - link "FICA & compliance" [ref=f89e105] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance
+            - link "Data requests" [ref=f89e109] [cursor=pointer]:
+              - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f89e115]
+        - button "Trust" [ref=f89e121]
+        - button "Firm" [ref=f89e127]
+      - link "Platform Admin" [ref=f89e133] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Notifications" [ref=f89e138] [cursor=pointer]:
+        - /url: /org/e2e-test-org/notifications
+      - generic [ref=f89e143]:
+        - generic [ref=f89e144]: AO
+        - generic [ref=f89e145]:
+          - paragraph [ref=f89e146]: Alice Owner
+          - paragraph [ref=f89e147]: alice@e2e-test.local
+    - generic [ref=f89e148]:
+      - banner [ref=f89e149]:
+        - navigation "Breadcrumb" [ref=f89e150]:
+          - link "E2E Test Organization" [ref=f89e151] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - link "Matters" [ref=f89e155] [cursor=pointer]:
+            - /url: /org/e2e-test-org/matters
+          - generic "Estate Late Peter Moroka uuzs" [ref=f89e159]
+        - generic [ref=f89e160]:
+          - generic [ref=f89e161]: e2e-test-org
+          - button "AO" [ref=f89e164]
+          - button "Notifications" [ref=f89e166]:
+            - generic [ref=f89e167]: 7 unread notifications
+            - generic [aria-hidden] [ref=f89e168]: "7"
+      - main [ref=f89e169]:
+        - generic [ref=f89e172]:
+          - generic [ref=f89e173]:
+            - link "Back to Matters" [ref=f89e174] [cursor=pointer]:
+              - /url: /org/e2e-test-org/matters
+            - generic [ref=f89e177]:
+              - button "Generate Document" [ref=f89e178]
+              - button "Generate Statement of Account" [ref=f89e179]
+              - button "More actions" [ref=f89e180]
+          - generic [ref=f89e183]:
+            - generic [ref=f89e184]:
+              - heading "Estate Late Peter Moroka uuzs" [level=1] [ref=f89e185]
+              - generic [ref=f89e186]: Active
+              - generic [ref=f89e188]: Internal Matter
+            - generic [ref=f89e189]:
+              - button "Close Matter" [ref=f89e190]
+              - button "Complete Matter" [ref=f89e191]
+              - button [ref=f89e192]
+          - generic [ref=f89e193]:
+            - tablist [ref=f89e194]:
+              - tab "Details · Team" [selected] [ref=f89e195] [cursor=pointer]:
+                - text: Details
+                - generic [ref=f89e196]: · Team
+              - tab "Overview" [ref=f89e200] [cursor=pointer]
+              - tab "Work" [ref=f89e201] [cursor=pointer]
+              - tab "Fees" [ref=f89e204] [cursor=pointer]
+              - tab "Client" [ref=f89e207] [cursor=pointer]
+              - tab "Diary" [ref=f89e210] [cursor=pointer]
+              - tab "Activity" [ref=f89e211] [cursor=pointer]
+            - tabpanel [ref=f89e214]:
+              - generic [ref=f89e215]:
+                - generic [ref=f89e216]:
+                  - generic [ref=f89e217]:
+                    - heading "Members" [level=2] [ref=f89e218]
+                    - generic [ref=f89e219]: "2"
+                  - button "Add Member" [active] [ref=f89e220]
+                - table [ref=f89e223]:
+                  - rowgroup [ref=f89e224]:
+                    - row [ref=f89e225]:
+                      - columnheader "Member" [ref=f89e226]
+                      - columnheader "Email" [ref=f89e227]
+                      - columnheader "Role" [ref=f89e228]
+                      - columnheader "Added" [ref=f89e229]
+                      - columnheader [ref=f89e230]
+                  - rowgroup [ref=f89e231]:
+                    - row [ref=f89e232]:
+                      - cell "AO Alice Owner" [ref=f89e233]:
+                        - generic [ref=f89e234]:
+                          - generic [ref=f89e235]: AO
+                          - paragraph [ref=f89e237]: Alice Owner
+                      - cell "alice@e2e-test.local" [ref=f89e238]
+                      - cell "Owner" [ref=f89e239]
+                      - cell "29 Oct 2026" [ref=f89e241]
+                      - cell [ref=f89e242]
+                    - row [ref=f89e243]:
+                      - cell "CM Carol Member" [ref=f89e244]:
+                        - generic [ref=f89e245]:
+                          - generic [ref=f89e246]: CM
+                          - paragraph [ref=f89e248]: Carol Member
+                      - cell "carol@e2e-test.local" [ref=f89e249]
+                      - cell "Member" [ref=f89e250]
+                      - cell "29 Oct 2026" [ref=f89e252]
+                      - cell [ref=f89e253]:
+                        - button "Open menu" [ref=f89e254]
+  - generic [ref=f89e256]:
+    - heading "Command Palette" [level=2] [ref=f89e257]
+    - paragraph [ref=f89e258]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f89e259]

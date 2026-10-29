@@ -1,0 +1,9 @@
+== GET /api/matters/00000000-0000-4000-8000-000000000628
+{"detail":"No matter found with id 00000000-0000-4000-8000-000000000628","instance":"/api/matters/00000000-0000-4000-8000-000000000628","status":404,"title":"Matter not found"}
+HTTP 404
+== GET /api/clients/00000000-0000-4000-8000-000000000628
+{"detail":"No client found with id 00000000-0000-4000-8000-000000000628","instance":"/api/clients/00000000-0000-4000-8000-000000000628","status":404,"title":"Client not found"}
+HTTP 404
+== GET /api/invoices/00000000-0000-4000-8000-000000000628
+{"detail":"No fee note found with id 00000000-0000-4000-8000-000000000628","instance":"/api/invoices/00000000-0000-4000-8000-000000000628","status":404,"title":"Fee note not found"}
+HTTP 404

@@ -1,0 +1,97 @@
+Fee Note INV-0001 from E2E Test Organization
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ E2E Test Organization
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ Fee Note from E2E Test Organization
+ 
+ Hi Apex Holdings mvsoxhi2a97e,
+ 
+
+ 
+ Please find your fee note details below.
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ Fee Note Number
+
+ INV-0001
+ 
+ 
+ Due Date
+
+ 2026-11-27
+ 
+ 
+
+ 
+ 
+ Amount Due
+
+ 
+ ZAR
+ 4025.00
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ View Fee Note (http://localhost:3002/invoices/0864a3bb-d565-4e96-952d-86af2ce187ba?orgId=e2e-test-org)
+ 
+ 
+
+ 
+ 
+ Best,
+
+ E2E Test Organization
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ E2E Test Organization
+[]

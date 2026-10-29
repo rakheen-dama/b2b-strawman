@@ -112,14 +112,14 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **7.1** Open Mailpit → verify weekly digest email arrived with subject containing "Your weekly update" (or similar). Body includes an **Open portal** button (links to `/home`) (Phase 88, register §5a row 16 — wording amendment, founder-authorised 2026-10-29: the digest's only CTA is Open portal → `/home`, `portal-weekly-digest.html:72-73`, `PortalDigestScheduler.java:305`)
 - [ ] **7.2** Click **Open portal** in the digest → lands on portal `/home`; open **Diary dates** (`/deadlines`) from the portal nav `[legal-za]` (§5a row 16, founder-authorised 2026-10-29)
-- [ ] **7.3** Verify `/deadlines` renders: list of upcoming deadlines with title, due date, matter/engagement context, urgency indicator — court dates and prescriptions do not yet sync to the portal, so the list stays empty until the portal deadline sync is built (Phase 88, register §5a row 16 — wording amendment, founder-authorised 2026-10-29: those `DeadlinePortalSyncService` sources are dormant, `DeadlinePortalSyncService.java:36-44`)
+- [ ] **7.3** Verify `/deadlines` renders: list of upcoming deadlines with title, due date, matter/engagement context, urgency indicator — court dates and prescriptions do not yet sync to the portal, so until that sync is built the list is empty unless a portal-visible custom-field date exists (Phase 88, register §5a row 16 — wording amendment, founder-authorised 2026-10-29: those `DeadlinePortalSyncService` sources are dormant, only `CUSTOM_FIELD_DATE` is wired, `DeadlinePortalSyncService.java:36-49`)
 - [ ] **7.4** Click into one deadline → verify detail view renders with description and any attached document(s)
 - [ ] **7.5** 📸 **Screenshot**: `day-07-deadlines-list.png`
 
 **Day 7 checkpoints**
 - [ ] Digest email generated and delivered via Mailpit
 - [ ] Link from email → `/home` preserves auth (no re-login loop); `/deadlines` reached from the nav (§5a row 16, founder-authorised 2026-10-29)
-- [ ] `/deadlines` renders (non-empty only once the portal deadline sync is built) (§5a row 16, founder-authorised 2026-10-29)
+- [ ] `/deadlines` renders (empty unless a portal-visible custom-field date exists, until the portal deadline sync is built) (§5a row 16, founder-authorised 2026-10-29)
 
 ---
 

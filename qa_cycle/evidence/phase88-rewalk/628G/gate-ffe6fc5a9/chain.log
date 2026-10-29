@@ -1,0 +1,32 @@
+Preparing worktree (detached HEAD ffe6fc5a9)
+Updating files:  57% (6027/10536)Updating files:  58% (6111/10536)Updating files:  59% (6217/10536)Updating files:  60% (6322/10536)Updating files:  61% (6427/10536)Updating files:  62% (6533/10536)Updating files:  63% (6638/10536)Updating files:  64% (6744/10536)Updating files:  65% (6849/10536)Updating files:  66% (6954/10536)Updating files:  67% (7060/10536)Updating files:  68% (7165/10536)Updating files:  69% (7270/10536)Updating files:  70% (7376/10536)Updating files:  71% (7481/10536)Updating files:  72% (7586/10536)Updating files:  73% (7692/10536)Updating files:  74% (7797/10536)Updating files:  75% (7902/10536)Updating files:  76% (8008/10536)Updating files:  76% (8099/10536)Updating files:  77% (8113/10536)Updating files:  78% (8219/10536)Updating files:  79% (8324/10536)Updating files:  80% (8429/10536)Updating files:  81% (8535/10536)Updating files:  82% (8640/10536)Updating files:  83% (8745/10536)Updating files:  84% (8851/10536)Updating files:  85% (8956/10536)Updating files:  86% (9061/10536)Updating files:  87% (9167/10536)Updating files:  88% (9272/10536)Updating files:  89% (9378/10536)Updating files:  90% (9483/10536)Updating files:  91% (9588/10536)Updating files:  92% (9694/10536)Updating files:  93% (9799/10536)Updating files:  94% (9904/10536)Updating files:  95% (10010/10536)Updating files:  96% (10115/10536)Updating files:  97% (10220/10536)Updating files:  98% (10326/10536)Updating files:  99% (10431/10536)Updating files: 100% (10536/10536)Updating files: 100% (10536/10536), done.
+HEAD is now at ffe6fc5a9 Slice 628G: portal 90-day on the seeded rows + portal soft-skip ban (628.16–628.17)
+[12:15:46] worktree at ffe6fc5a9daef57eacc69f81481aec371571b40e
+[12:15:54] install exit 0
+[12:16:18] PORTAL-GATE lint=0 format=0 test=0 build=0
+[12:16:59] e2e-up exit 0
+
+=== svc.sh stop portal ===
+
+  portal: stopping (PID 37104)...
+  portal: stopped
+
+Done.
+[12:17:00] KC portal stopped
+[12:17:02] isolation exit 0
+[12:22:19] token age 317s
+[12:22:53] portal run1 exit 0
+[12:27:56] token age 315s
+[12:28:01] portal run2 exit 1
+[12:28:01] token age 320s
+e2e-backend
+[12:28:31] login-bare exit 0
+
+=== svc.sh start portal ===
+
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+[12:28:34] KC portal started
+[12:28:34] DONE

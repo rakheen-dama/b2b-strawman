@@ -1,0 +1,6 @@
+
+> portal@0.1.0 format:check /Users/rakheendama/Projects/2026/worktree-628G-gate/portal
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!

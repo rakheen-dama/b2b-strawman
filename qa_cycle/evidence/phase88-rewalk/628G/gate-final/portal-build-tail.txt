@@ -1,0 +1,25 @@
+├ ƒ /accept/[token]
+├ ○ /activity
+├ ○ /auth/exchange
+├ ○ /deadlines
+├ ○ /home
+├ ○ /invoices
+├ ƒ /invoices/[id]
+├ ƒ /invoices/[id]/payment-cancelled
+├ ƒ /invoices/[id]/payment-success
+├ ○ /login
+├ ○ /matters
+├ ƒ /matters/[id]
+├ ○ /profile
+├ ○ /requests
+├ ƒ /requests/[id]
+├ ○ /settings/notifications
+├ ○ /trust
+└ ƒ /trust/[matterId]
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

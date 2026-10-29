@@ -1,0 +1,34 @@
+Preparing worktree (detached HEAD 39881847d)
+Updating files:  56% (5912/10537)Updating files:  57% (6007/10537)Updating files:  58% (6112/10537)Updating files:  59% (6217/10537)Updating files:  60% (6323/10537)Updating files:  61% (6428/10537)Updating files:  62% (6533/10537)Updating files:  63% (6639/10537)Updating files:  64% (6744/10537)Updating files:  65% (6850/10537)Updating files:  66% (6955/10537)Updating files:  67% (7060/10537)Updating files:  68% (7166/10537)Updating files:  69% (7271/10537)Updating files:  70% (7376/10537)Updating files:  71% (7482/10537)Updating files:  72% (7587/10537)Updating files:  73% (7693/10537)Updating files:  74% (7798/10537)Updating files:  75% (7903/10537)Updating files:  76% (8009/10537)Updating files:  76% (8050/10537)Updating files:  77% (8114/10537)Updating files:  78% (8219/10537)Updating files:  79% (8325/10537)Updating files:  80% (8430/10537)Updating files:  81% (8535/10537)Updating files:  82% (8641/10537)Updating files:  83% (8746/10537)Updating files:  84% (8852/10537)Updating files:  85% (8957/10537)Updating files:  86% (9062/10537)Updating files:  87% (9168/10537)Updating files:  88% (9273/10537)Updating files:  89% (9378/10537)Updating files:  90% (9484/10537)Updating files:  91% (9589/10537)Updating files:  92% (9695/10537)Updating files:  93% (9800/10537)Updating files:  94% (9905/10537)Updating files:  95% (10011/10537)Updating files:  96% (10116/10537)Updating files:  97% (10221/10537)Updating files:  98% (10327/10537)Updating files:  99% (10432/10537)Updating files: 100% (10537/10537)Updating files: 100% (10537/10537), done.
+HEAD is now at 39881847d fix: address review findings for Slice 628G
+[12:41:19] worktree at 39881847dd40fb9c8aad4f7328a9c3dae39a4654
+[12:41:27] install exit 0
+[12:41:52] PORTAL-GATE lint=0 format=0 test=0 build=0
+[12:42:32] e2e-up exit 0
+
+=== svc.sh stop portal ===
+
+  portal: stopping (PID 45586)...
+  portal: stopped
+
+Done.
+[12:42:33] KC portal stopped
+[12:42:35] isolation exit 0
+[12:47:52] token age 317s
+[12:48:26] portal run1 exit 0
+[12:53:28] token age 315s
+e2e-backend
+[12:53:45] backend restarted (per-email limiter)
+[12:54:19] portal run2 exit 0
+[12:59:21] token age 315s
+e2e-backend
+[12:59:52] login-bare exit 0
+
+=== svc.sh start portal ===
+
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+[12:59:55] KC portal started
+[12:59:55] DONE

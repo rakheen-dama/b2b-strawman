@@ -1,0 +1,24 @@
+
+> portal@0.1.0 test:e2e:portal /Users/rakheendama/Projects/2026/worktree-628G-gate/portal
+> PORTAL_CONTACT_EMAIL=${PORTAL_CONTACT_EMAIL:-contact@acme.example.com} playwright test --config=playwright.portal.config.ts --project=chromium --project=portal-client-90day --update-snapshots=all --reporter=list
+
+[2m[WebServer] [22m[33m[1m⚠[22m[39m The "middleware" file convention is deprecated. Please use "proxy" instead.
+[2m[WebServer] [22m
+[2m[WebServer] [22m  To migrate automatically, run:
+[2m[WebServer] [22m  npx @next/codemod@canary middleware-to-proxy .
+[2m[WebServer] [22m
+[2m[WebServer] [22m  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+Error: Portal globalSetup: magic-link exchange failed for contact@acme.example.com (org e2e-test-org, backend http://localhost:8081). Check the backend is up, the contact is seeded, and neither magic-link cap has been hit by a recent run: 3 per contact per 5 min, or 3 requests per email per 15 min (in-memory; restart the backend to clear it).
+
+   at e2e/helpers/global-setup.ts:36
+
+  34 |   const session = await exchangePortalSession(email);
+  35 |   if (!session) {
+> 36 |     throw new Error(
+     |           ^
+  37 |       `Portal globalSetup: magic-link exchange failed for ${email} ` +
+  38 |         `(org ${ORG_SLUG}, backend ${BACKEND_URL}). Check the backend is up, ` +
+  39 |         `the contact is seeded, and neither magic-link cap has been hit by ` +
+    at globalSetup (/Users/rakheendama/Projects/2026/worktree-628G-gate/portal/e2e/helpers/global-setup.ts:36:11)
+
+ ELIFECYCLE  Command failed with exit code 1.

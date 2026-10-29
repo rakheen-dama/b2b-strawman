@@ -1,7 +1,7 @@
 {
-  "commit": "5cd76cc68",
+  "commit": "7bdd51eaf3feb19c2e850cedd5014716ab1726b0",
   "command": "cd portal && pnpm lint && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-10-28T22:42:35Z",
-  "summary": "628B PORTAL-GATE on 5cd76cc68: lint 0 errors / 4 warnings, format clean, vitest 44 files / 243 passed (portal terminology guard twin + drift check), build OK"
+  "ts": "2026-10-29T11:30:59Z",
+  "summary": "628G PORTAL-GATE on 7bdd51eaf (orchestrator): lint 0 errors / 4 warnings, format clean, vitest 45 files / 256 passed (no-isvisible-catch wiring + drift test), build OK. E2E-PORTAL fresh stack @39881847d: isolation 2/0, portal 32/0/1 x2 (skip = Day 75 628G-BLOCKER fixme), login-bare 1/0; @7bdd51eaf portal 32/0/1"
 }

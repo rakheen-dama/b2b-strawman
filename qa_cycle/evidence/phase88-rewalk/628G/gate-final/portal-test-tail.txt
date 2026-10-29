@@ -1,0 +1,15 @@
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+GET http://localhost:8080/api/portal/acceptance/test-token/pdf 404 ()
+
+ Test Files  45 passed (45)
+      Tests  256 passed (256)
+   Start at  12:41:34
+   Duration  5.56s (transform 3.01s, setup 3.40s, import 15.39s, tests 8.71s, environment 11.60s)
+

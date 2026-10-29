@@ -4,9 +4,10 @@ import { describe, it, expect } from "vitest";
 import { ESLint, RuleTester } from "eslint";
 import rule from "../../e2e/eslint/no-isvisible-catch.mjs";
 
-// Phase 88 628E (U22, R10 §0 M1): Playwright locator state checks (isVisible & co.) never wait and
-// reject only on a strict-mode violation, so `.catch(() => false)` on them hides "matched twice" and
-// turns guarded flow steps into silent no-ops. Part 1 tests the rule module (RuleTester, pattern
+// Phase 88 628E (U22, R10 §0 M1): Playwright locator state checks (isVisible & co.) reject only
+// when they cannot answer (strict-mode violation; for isEnabled & co. also a missing or wrong-kind
+// element), so `.catch(() => false)` on them hides "matched twice" / "never appeared" and turns
+// guarded flow steps into silent no-ops. Part 1 tests the rule module (RuleTester, pattern
 // no-aschild-adjacency.test.ts); part 2 lints probe snippets through the real flat config, so it
 // proves the rule is wired to the e2e files it is scoped to (pattern no-terminology-imports.test.ts).
 
@@ -46,8 +47,11 @@ ruleTester.run("no-isvisible-catch", rule as never, {
     { code: `foo.isVisibleish().catch(() => false);` },
     // One-argument then() does not swallow a rejection.
     { code: `x.isVisible().then((v) => v);` },
+    { code: `x.isVisible().then((v) => v).finally(() => {});` },
+    // A handler on an unrelated chain.
+    { code: `loc.textContent().then((t) => t).catch(() => "");` },
     { code: `x.isEnabled();` },
-    // isEnabled/isChecked honour no timeout either, but only isVisible/isHidden document it as ignored.
+    // isEnabled & co. honour their timeout (they wait for the element); only isVisible/isHidden ignore it.
     { code: `await x.isEnabled({ timeout: 1000 });` },
     // Computed access is not resolved.
     { code: `loc["isVisible"]().catch(() => false);` },
@@ -80,6 +84,23 @@ ruleTester.run("no-isvisible-catch", rule as never, {
       errors: [swallowed("isVisible", "then")],
     },
     { code: `loc?.isVisible()?.catch(() => false);`, errors: [swallowed("isVisible")] },
+    // The rejection still reaches a handler further down a then()/finally() chain.
+    {
+      code: `const v = await loc.isVisible().then((x) => x).catch(() => false);`,
+      errors: [swallowed("isVisible")],
+    },
+    {
+      code: `loc.isChecked().finally(() => {}).catch(() => false);`,
+      errors: [swallowed("isChecked")],
+    },
+    {
+      code: `loc.isHidden().then((h) => !h).then((v) => v, () => false);`,
+      errors: [swallowed("isHidden", "then")],
+    },
+    {
+      code: `loc?.isVisible()?.then((x) => x)?.catch(() => false);`,
+      errors: [swallowed("isVisible")],
+    },
     { code: `loc.isEnabled().catch(() => false);`, errors: [swallowed("isEnabled")] },
     { code: `loc.isDisabled().catch(() => false);`, errors: [swallowed("isDisabled")] },
     { code: `loc.isChecked().catch(() => null);`, errors: [swallowed("isChecked")] },

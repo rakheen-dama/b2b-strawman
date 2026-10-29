@@ -42,6 +42,7 @@ import {
   qcMatter,
   randPattern,
   recordedValue,
+  recordFeeTransfer,
   recordValue,
   siphoClient,
   siphoMatter,
@@ -195,25 +196,16 @@ test.describe.serial("Day 30 — First Billing Cycle", () => {
     page,
   }) => {
     await loginAs(page, "alice");
-    await openTrustTransactions(page);
-    await page.getByTestId("record-transaction-button").click();
-    await page.getByRole("menuitem", { name: "Record Fee Transfer" }).click();
-    const dialog = page.getByRole("dialog", { name: "Record Fee Transfer" });
-    await expect(dialog).toBeVisible();
     // The dialog takes raw UUIDs (follow-up: pickers); both come from the run state
-    await dialog.getByLabel("Client ID").fill(clientId("moroka"));
-    await dialog.getByLabel("Fee note ID").fill(recordedValue("morokaFeeNote"));
-    await dialog.getByLabel("Amount").fill("8500");
-    await dialog.getByLabel("Reference").fill(feeTransferRef());
-    await dialog.getByRole("button", { name: "Record Fee Transfer" }).click();
-    await expect(dialog).toBeHidden({ timeout: 15_000 });
-
-    const row = trustTransactionRow(page, feeTransferRef());
-    await expect(row).toHaveCount(1, { timeout: 15_000 });
-    await expect(row).toContainText("AWAITING APPROVAL");
-    await expect(row).toContainText(randPattern("8 500,00"));
-    const rowTestId = await row.getAttribute("data-testid");
-    const txId = rowTestId!.replace("transaction-row-", "");
+    const txId = await recordFeeTransfer(page, {
+      clientId: clientId("moroka"),
+      feeNoteId: recordedValue("morokaFeeNote"),
+      amount: "8500",
+      reference: feeTransferRef(),
+    });
+    await expect(trustTransactionRow(page, feeTransferRef())).toContainText(
+      randPattern("8 500,00")
+    );
     recordValue("morokaFeeTransfer", txId);
 
     // The recorder cannot be the sole approver
@@ -261,7 +253,7 @@ test.describe.serial("Day 30 — First Billing Cycle", () => {
   });
 
   // ── 30.22-30.24: QuickCollect fee note ────────────────────────────
-  test("Alice: Create QuickCollect fee note — collections time + court-filing line", async ({
+  test("Bob logs QuickCollect collections time; Alice creates its fee note with a court-filing line", async ({
     page,
   }) => {
     // Bob works the first collections task, so QuickCollect has unbilled time to bill
@@ -292,7 +284,7 @@ test.describe.serial("Day 30 — First Billing Cycle", () => {
   }) => {
     await loginAs(page, "alice");
     const numbers: string[] = [];
-    for (const key of ["siphoFeeNote", "apexFeeNote"]) {
+    for (const key of ["siphoFeeNote", "apexFeeNote"] as const) {
       await openFeeNote(page, recordedValue(key));
       await approveAndSend(page);
       numbers.push((await page.getByRole("heading", { level: 1 }).innerText()).trim());

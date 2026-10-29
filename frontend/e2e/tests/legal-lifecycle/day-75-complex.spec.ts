@@ -30,9 +30,9 @@ import {
   selectNativeOption,
 } from "../../helpers/legal-depth-ii";
 import {
+  apexAnnualReturns,
   apexClient,
   createTemplateMatter,
-  currentLifecycleRun,
   logTimeOnTask,
   morokaClient,
   morokaMatter,
@@ -40,13 +40,12 @@ import {
   runConflictCheck,
   siphoClient,
   siphoMatter,
+  siphoPropertyMatter,
 } from "../../helpers/legal-lifecycle";
 
 const RAF = "Road Accident Fund";
 const MOKOENA = "Thabo Mokoena";
 const PILLAY = "Pillay Holdings (Pty) Ltd";
-const siphoPropertyMatter = () => `Ndlovu Property Dispute ${currentLifecycleRun()}`;
-const apexAnnualReturns = () => `Apex Annual Returns ${currentLifecycleRun()}`;
 
 /** Adds a party to the adverse-party registry (Legal → Adverse parties). */
 async function addAdverseParty(page: Page, name: string, partyType: string): Promise<void> {

@@ -18,9 +18,11 @@ export async function loginAs(page: Page, email: string, password: string): Prom
   // (fill waits for the login form to render)
   await page.locator(KC_LOGIN.username).fill(email);
 
-  // Keycloak server-renders the whole login form, so once the username field is ready the
-  // password field is either already on the page (combined form) or not (username-first split
-  // flow) — a deterministic branch, no wait needed (e2e/AUTOMATION-NOTES.md › Assertion rules).
+  // Bare state read on settled server-rendered state (the carve-out in e2e/AUTOMATION-NOTES.md ›
+  // Assertion rules): Keycloak server-renders the whole login form, so once the awaited `fill` on
+  // the username field resolves, the password field is either already on the page (combined form)
+  // or not (username-first split flow) and cannot appear later on this page — a deterministic
+  // branch, no wait needed.
   if (await page.locator(KC_LOGIN.password).isVisible()) {
     // Combined login form — fill password and submit
     await page.locator(KC_LOGIN.password).fill(password);

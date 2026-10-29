@@ -27,6 +27,7 @@ import {
   logTimeOnTask,
   morokaClient,
   openClientFeeNotes,
+  openTrustTransactions,
   qcClient,
   randPattern,
   recordValue,
@@ -160,10 +161,32 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
       true,
       "628E-BLOCKER: a DRAFT interest run cannot be approved by a second member — the run wizard is session-local (components/trust/InterestRunWizard.tsx:173) and the runs table has no actions (app/(app)/org/[slug]/trust-accounting/interest/page.tsx:135-186), while the creator's own approval is refused (backend/.../trustaccounting/interest/InterestService.java:455)"
     );
+    // The intended flow once a second member can open a DRAFT run (the blocker above): Bob opens
+    // Alice's calculated run, approves it (Step 3) and posts it to the client ledgers (Step 4).
     await loginAs(page, "bob");
     await page.goto(`${BASE}/trust-accounting/interest`);
     const run = page.getByTestId("interest-runs-table").locator('[data-testid^="run-row-"]');
-    await expect(run).toContainText("POSTED");
+    await expect(run).toHaveCount(1, { timeout: 15_000 });
+    await expect(run).toContainText("DRAFT");
+    // No such control exists today — the product fix decides its name; adjust this locator then
+    await run.getByRole("button", { name: /Review|Open/ }).click();
+    const wizard = page.getByTestId("interest-run-wizard");
+    await expect(wizard).toContainText("Step 3 of 4", { timeout: 15_000 });
+    await wizard.getByRole("button", { name: "Approve Run" }).click();
+    await expect(wizard).toContainText("Step 4 of 4", { timeout: 15_000 });
+    await expect(wizard.getByRole("heading", { name: "Approved Interest Run" })).toBeVisible();
+    await wizard.getByRole("button", { name: "Post to Ledger" }).click();
+    await expect(wizard).toBeHidden({ timeout: 15_000 });
+
+    // The run is POSTED with a posted date …
+    await expect(run).toContainText("POSTED", { timeout: 15_000 });
+    await expect(run.getByRole("cell").last()).not.toHaveText("—");
+    // … and each allocated client (Moroka, QuickCollect) has an Interest Credit on the trust ledger
+    await openTrustTransactions(page);
+    await expect(
+      page.locator("main tbody tr").filter({ hasText: "Interest Credit" }),
+      "one Interest Credit per allocated client"
+    ).toHaveCount(2, { timeout: 15_000 });
   });
 
   // ── 60.11-60.17: Investment — Moroka R200,000 Fixed Deposit ───────

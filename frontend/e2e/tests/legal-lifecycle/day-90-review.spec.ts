@@ -22,6 +22,7 @@ import { captureScreenshot } from "../../helpers/screenshot";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
 import { BASE, clickThrough, isoDate, openMatter } from "../../helpers/legal-depth-ii";
 import {
+  apexAnnualReturns,
   apexMatter,
   clientId,
   currentLifecycleRun,
@@ -33,10 +34,13 @@ import {
   recordedValue,
   siphoClient,
   siphoMatter,
+  siphoPropertyMatter,
   openTrustTransactions,
+  recordFeeTransfer,
   recordValue,
   TRUST_ACCOUNT,
   trustTransactionRow,
+  type LifecycleValueKey,
 } from "../../helpers/legal-lifecycle";
 
 const runMatters = () => [
@@ -44,12 +48,18 @@ const runMatters = () => [
   apexMatter(),
   morokaMatter(),
   qcMatter(),
-  `Ndlovu Property Dispute ${currentLifecycleRun()}`,
-  `Apex Annual Returns ${currentLifecycleRun()}`,
+  siphoPropertyMatter(),
+  apexAnnualReturns(),
 ];
 const pendingTransferRef = () => `FEE/SIPHO/${currentLifecycleRun()}`;
 const ENGAGEMENT_LETTER = "Engagement Letter — Litigation";
-const FEE_NOTES = ["siphoFeeNote", "apexFeeNote", "morokaFeeNote", "qcFeeNote", "siphoFeeNote2"];
+const FEE_NOTES: LifecycleValueKey[] = [
+  "siphoFeeNote",
+  "apexFeeNote",
+  "morokaFeeNote",
+  "qcFeeNote",
+  "siphoFeeNote2",
+];
 
 // ═══════════════════════════════════════════════════════════════════
 //  DAY 90 — Quarter Review
@@ -318,23 +328,13 @@ test.describe.serial("Day 90 — Role-Based Access", () => {
     page,
   }) => {
     await loginAs(page, "alice");
-    await openTrustTransactions(page);
-    await page.getByTestId("record-transaction-button").click();
-    await page.getByRole("menuitem", { name: "Record Fee Transfer" }).click();
-    const dialog = page.getByRole("dialog", { name: "Record Fee Transfer" });
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel("Client ID").fill(clientId("sipho"));
-    await dialog.getByLabel("Fee note ID").fill(recordedValue("siphoFeeNote"));
-    await dialog.getByLabel("Amount").fill("500");
-    await dialog.getByLabel("Reference").fill(pendingTransferRef());
-    await dialog.getByRole("button", { name: "Record Fee Transfer" }).click();
-    await expect(dialog).toBeHidden({ timeout: 15_000 });
-    const row = trustTransactionRow(page, pendingTransferRef());
-    await expect(row).toContainText("AWAITING APPROVAL", { timeout: 15_000 });
-    recordValue(
-      "siphoPendingTransfer",
-      (await row.getAttribute("data-testid"))!.replace("transaction-row-", "")
-    );
+    const txId = await recordFeeTransfer(page, {
+      clientId: clientId("sipho"),
+      feeNoteId: recordedValue("siphoFeeNote"),
+      amount: "500",
+      reference: pendingTransferRef(),
+    });
+    recordValue("siphoPendingTransfer", txId);
   });
 
   test("Carol: Blocked from recording or approving trust transactions", async ({ page }) => {

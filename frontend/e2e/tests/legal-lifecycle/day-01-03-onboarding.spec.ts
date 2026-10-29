@@ -163,6 +163,8 @@ test.describe.serial("Day 1 — Sipho Ndlovu Onboarding", () => {
     const panel = page.getByRole("tabpanel");
     await expect(panel).toContainText("Legal Individual Client Onboarding", { timeout: 15_000 });
     for (const { name, requiresDocument } of FICA_ITEMS) {
+      // The checklist item row has no role / test id — product follow-up: a `data-testid` (or
+      // role="listitem") on components/compliance/ChecklistInstanceItemRow.tsx:136; class until then
       const item = panel
         .locator("div.rounded-lg.border.p-3")
         .filter({ has: page.getByText(name, { exact: true }) });

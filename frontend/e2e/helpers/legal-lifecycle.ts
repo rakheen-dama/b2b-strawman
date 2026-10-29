@@ -15,6 +15,11 @@
  * Re-running on a used stack: every name is run-scoped, Day 0's firm setup asserts-or-creates, but
  * the Day 1–3 conflict checks expect "No Conflict", which holds only on a fresh stack
  * (`e2e-down.sh && e2e-up.sh`) — earlier runs' clients and matters fuzzy-match the same names.
+ *
+ * NOT retry-safe: names are per run, not per attempt. A Playwright retry of a serial group re-runs
+ * its creates with the same names, so the records then exist twice and the "No Conflict" checks
+ * and exact-name lookups break. If retries are ever enabled for this suite, scope names per attempt
+ * the way depth-ii does (`attemptRunId()` in `legal-depth-ii.ts`).
  */
 import { expect, type Locator, type Page } from "@playwright/test";
 import { randomBytes } from "node:crypto";
@@ -37,9 +42,25 @@ interface LifecycleRunState {
   clients: Partial<Record<LifecycleClient, string>>;
   /** Matter UUIDs by key (from `/matters/{uuid}`), recorded when each matter is created. */
   matters: Record<string, string>;
-  /** Free-form values a later day needs (fee-note UUIDs, references …). */
-  values: Record<string, string>;
+  /** Values a later day needs (fee-note / transaction UUIDs, references …). */
+  values: Partial<Record<LifecycleValueKey, string>>;
 }
+
+/**
+ * Keys of the run-state values one lifecycle day records for a later one: Day 14 deposit
+ * references, fee-note UUIDs (Day 30; Sipho's second on Day 60) and trust-transaction UUIDs
+ * (Moroka's fee transfer on Day 30, Sipho's pending transfer on Day 90).
+ */
+export type LifecycleValueKey =
+  | "morokaDepositRef"
+  | "qcDepositRef"
+  | "siphoFeeNote"
+  | "apexFeeNote"
+  | "morokaFeeNote"
+  | "qcFeeNote"
+  | "siphoFeeNote2"
+  | "morokaFeeTransfer"
+  | "siphoPendingTransfer";
 
 function readRunState(): LifecycleRunState {
   if (!existsSync(RUN_FILE)) {
@@ -71,9 +92,13 @@ export function currentLifecycleRun(): string {
 }
 
 // ── Name builders (exact, run-scoped) ────────────────────────────────────────────────────────
+/** Sipho Ndlovu — individual litigation client (Day 1). */
 export const siphoClient = () => `Sipho Ndlovu ${currentLifecycleRun()}`;
+/** Apex Holdings — company client (Day 2). */
 export const apexClient = () => `Apex Holdings ${currentLifecycleRun()}`;
+/** Moroka Family Trust — the deceased-estate client (Day 2). */
 export const morokaClient = () => `Moroka Family Trust ${currentLifecycleRun()}`;
+/** QuickCollect Services — collections client (Day 3). */
 export const qcClient = () => `QuickCollect Services ${currentLifecycleRun()}`;
 
 /** Sipho's litigation matter (Litigation (Personal Injury / General) template, Day 1). */
@@ -84,6 +109,10 @@ export const apexMatter = () => `Apex Shareholder Agreement ${currentLifecycleRu
 export const morokaMatter = () => `Estate Late Peter Moroka ${currentLifecycleRun()}`;
 /** QuickCollect's first collections matter (Collections (Debt Recovery) template, Day 3). */
 export const qcMatter = () => `QC Debt Recovery #1 ${currentLifecycleRun()}`;
+/** Sipho's second matter (Day 75 — its conflict check finds his Day 1 matter). */
+export const siphoPropertyMatter = () => `Ndlovu Property Dispute ${currentLifecycleRun()}`;
+/** Apex's second matter (Day 75). */
+export const apexAnnualReturns = () => `Apex Annual Returns ${currentLifecycleRun()}`;
 
 const CLIENT_NAMES: Record<LifecycleClient, () => string> = {
   sipho: siphoClient,
@@ -98,6 +127,7 @@ export function lifecycleClientName(key: LifecycleClient): string {
 }
 
 // ── Record setters / getters ─────────────────────────────────────────────────────────────────
+/** Records a client's UUID (from `/clients/{uuid}`) for the later days. */
 export function recordClientId(key: LifecycleClient, id: string): void {
   const state = readRunState();
   writeRunState({ ...state, clients: { ...state.clients, [key]: id } });
@@ -110,6 +140,7 @@ export function clientId(key: LifecycleClient): string {
   return id;
 }
 
+/** Records a matter's UUID (from `/matters/{uuid}`) for the later days. */
 export function recordMatterId(key: LifecycleMatter, id: string): void {
   const state = readRunState();
   writeRunState({ ...state, matters: { ...state.matters, [key]: id } });
@@ -122,13 +153,14 @@ export function matterId(key: LifecycleMatter): string {
   return id;
 }
 
-/** Records any value a later day needs (e.g. a fee-note UUID for a raw-UUID dialog field). */
-export function recordValue(key: string, value: string): void {
+/** Records a value a later day needs (e.g. a fee-note UUID for a raw-UUID dialog field). */
+export function recordValue(key: LifecycleValueKey, value: string): void {
   const state = readRunState();
   writeRunState({ ...state, values: { ...state.values, [key]: value } });
 }
 
-export function recordedValue(key: string): string {
+/** A value recorded by an earlier lifecycle day (throws if it was not). */
+export function recordedValue(key: LifecycleValueKey): string {
   const value = readRunState().values[key];
   if (value === undefined) throw new Error(`Run-state value "${key}" was not recorded`);
   return value;
@@ -144,12 +176,23 @@ export function idFromUrl(page: Page, segment: string): string {
   return match[1];
 }
 
-/** A `Rand` amount as rendered by `formatCurrency` (en-ZA: NBSP/narrow-NBSP group separator). */
+/** Group separators `formatCurrency` (en-ZA) may render: space, NBSP, narrow NBSP. */
+const GROUP_SEP = "[\\s\\u00a0\\u202f]";
+
+/**
+ * A `Rand` amount as rendered by `formatCurrency` (en-ZA: NBSP/narrow-NBSP group separator),
+ * left-anchored so it never matches the tail of a larger number: "125,00" does not match
+ * "8 125,00" (neither a digit nor a digit + group separator may precede it) and "2 500,00" does
+ * not match "12 500,00". A preceding "R " is fine. Not right-anchored: the cents are always two
+ * digits, and a row's text runs straight into the next cell ("R 200 000,008.50%").
+ */
 export function randPattern(amount: string): RegExp {
-  // "250 000,00" → /250[\s  ]?000,00/
+  // "250 000,00" → /(?<!\d)(?<!\d[\s\u00a0\u202f])250[\s\u00a0\u202f]?000,00/
   const [whole, cents = "00"] = amount.split(",");
-  const groups = whole.split(/[\s  ]/).map(escapeRegExp);
-  return new RegExp(`${groups.join("[\\s\\u00a0\\u202f]?")},${cents}`);
+  const groups = whole.split(/[\s\u00a0\u202f]/).map(escapeRegExp);
+  return new RegExp(
+    `(?<!\\d)(?<!\\d${GROUP_SEP})${groups.join(`${GROUP_SEP}?`)},${escapeRegExp(cents)}`
+  );
 }
 
 /**
@@ -203,11 +246,13 @@ export async function logTimeOnTask(
 
   const dialog = page.getByRole("dialog", { name: "Log Time" });
   await expect(dialog).toBeVisible();
+  // Hours / minutes have no accessible name (the "Duration" label has no htmlFor) — product
+  // follow-up: label them (components/tasks/log-time-dialog.tsx:180-205); ids until then
   await dialog.locator("#time-hours").fill(String(opts.hours));
   await dialog.locator("#time-minutes").fill(String(opts.minutes));
-  await dialog.locator("#time-date").fill(opts.date);
-  await dialog.locator("#time-description").fill(opts.description);
-  await expect(dialog.locator("#time-billable")).toBeChecked();
+  await dialog.getByLabel("Date", { exact: true }).fill(opts.date);
+  await dialog.getByRole("textbox", { name: /^Description/ }).fill(opts.description);
+  await expect(dialog.getByRole("checkbox", { name: "Billable" })).toBeChecked();
   if (opts.rate) {
     await expect(dialog.getByTestId("rate-preview")).toContainText(
       new RegExp(`Billing rate: R[\\s\\u00a0\\u202f]?${randPattern(opts.rate).source}/hr`),
@@ -314,6 +359,36 @@ export async function recordTrustDeposit(
   });
 }
 
+/**
+ * Records a trust FEE_TRANSFER (Record Transaction → Record Fee Transfer) from a client's trust
+ * balance to a fee note, asserts its single row lands AWAITING APPROVAL, and returns the
+ * transaction UUID (from the row's `transaction-row-<uuid>` test id). The dialog takes raw UUIDs
+ * (UX follow-up: client / fee-note pickers, components/trust/RecordFeeTransferDialog.tsx).
+ */
+export async function recordFeeTransfer(
+  page: Page,
+  opts: { clientId: string; feeNoteId: string; amount: string; reference: string }
+): Promise<string> {
+  await openTrustTransactions(page);
+  await page.getByTestId("record-transaction-button").click();
+  await page.getByRole("menuitem", { name: "Record Fee Transfer" }).click();
+  const dialog = page.getByRole("dialog", { name: "Record Fee Transfer" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByLabel("Client ID").fill(opts.clientId);
+  await dialog.getByLabel("Fee note ID").fill(opts.feeNoteId);
+  await dialog.getByLabel("Amount").fill(opts.amount);
+  await dialog.getByLabel("Reference").fill(opts.reference);
+  await dialog.getByRole("button", { name: "Record Fee Transfer" }).click();
+  await expect(dialog).toBeHidden({ timeout: 15_000 });
+
+  const row = trustTransactionRow(page, opts.reference);
+  await expect(row).toHaveCount(1, { timeout: 15_000 });
+  await expect(row).toContainText("AWAITING APPROVAL");
+  const id = (await row.getAttribute("data-testid"))?.replace(/^transaction-row-/, "");
+  if (!id) throw new Error(`Fee transfer row "${opts.reference}" has no transaction-row-<id>`);
+  return id;
+}
+
 // ── Fee notes (Days 30–90) ───────────────────────────────────────────────────────────────────
 
 /** Opens a client's Fees → Fee notes tab. */
@@ -386,13 +461,16 @@ export async function addFeeNoteLine(
 ): Promise<void> {
   const main = page.locator("main");
   await main.getByRole("button", { name: "Add Line" }).click();
+  // The editor has no role / test id and its labels have no htmlFor — product follow-up: a
+  // data-testid + labelled inputs (components/invoices/invoice-line-editor.tsx:45-81). Until then:
+  // the innermost div holding the "Add Line Item" heading, and its two number inputs by position.
   const form = main.locator("div").filter({
     has: page.getByRole("heading", { level: 3, name: "Add Line Item" }),
   });
   const editor = form.last();
   await expect(editor).toBeVisible();
   await editor.getByPlaceholder("Line item description").fill(description);
-  // Quantity and Unit Price are the editor's two (unlabelled) number inputs
+  // Quantity and Unit Price are the editor's two (unlabelled) number inputs, in that order
   const numbers = editor.locator('input[type="number"]');
   await numbers.nth(0).fill(quantity);
   await numbers.nth(1).fill(unitPrice);
@@ -407,7 +485,10 @@ export async function addFeeNoteLine(
 
 /**
  * A row of the open fee note's totals block ("Subtotal", "VAT — Standard (15%)", "Total" …): the
- * row whose text starts with `label` (so "Total" does not match "Subtotal").
+ * row whose text starts with `label` (so "Total" does not match "Subtotal"). The block has no role
+ * or test id — product follow-up: a `data-testid` on the block and per row
+ * (components/invoices/invoice-totals-section.tsx:12-48); until then it is found from "Subtotal"
+ * by DOM position (`xpath=../..`).
  */
 export function feeNoteTotalsRow(page: Page, label: string): Locator {
   const totals = page.locator("main").getByText("Subtotal", { exact: true }).locator("xpath=../..");

@@ -1,0 +1,5 @@
+# 2026-10-29T19:19:54Z tenant=tenant_5039f2d497cf
++ SELECT m.email, pm.project_role, pm.created_at FROM tenant_5039f2d497cf.project_members pm JOIN tenant_5039f2d497cf.members m ON m.id=pm.member_id WHERE pm.project_id='0b9656be-244d-48e3-aaf8-80bcb154266e' ORDER BY pm.created_at
+bob@mathebula-test.local|lead|2026-10-29 19:18:50.55512+00
+thandi@mathebula-test.local|member|2026-10-29 19:18:50.555262+00
+carol@mathebula-test.local|member|2026-10-29 19:19:46.449238+00

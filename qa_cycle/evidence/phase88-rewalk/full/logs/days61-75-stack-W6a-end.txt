@@ -1,0 +1,38 @@
+/Users/rakheendama/Projects/2026/worktree-epic-629B
+phase88/12B-full-rewalk-days-36-90
+45dcc7a6f2daf82871354919c6d5b3f30ec59df2
+main code status:
+2026-10-29T19:21:56Z
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      1293     yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     33245    yes      yes      3000
+  portal       33055    yes      yes      3002
+
+
+Done.
+http://localhost:8080/actuator/health 200
+http://localhost:8443/actuator/health 200
+http://localhost:3000/ 200
+http://localhost:3002/login 200
+http://localhost:8180/realms/docteams 200
+http://localhost:8025/api/v1/info 200
+:8080 1420 05:38:08 Thu Oct 29 15:43:49 2026     n/Users/rakheendama/Projects/2026/b2b-strawman/backend
+:8443 334 05:39:23 Thu Oct 29 15:42:34 2026     n/Users/rakheendama/Projects/2026/b2b-strawman/gateway
+:3000 33288 04:00:25 Thu Oct 29 17:21:32 2026     n/Users/rakheendama/Projects/2026/b2b-strawman/frontend
+:3002 33098 04:00:40 Thu Oct 29 17:21:17 2026     n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+112 caffeinate -is ./scripts/run-phase.sh 88
+25845 caffeinate -i -t 300
+99323 caffeinate -dimsu -t 43200
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=24379491)	79%; charging; 0:45 remaining present: true
+      "AppleClamshellState" = No
+2026-10-27 13:10:47 +0200 Sleep               	Entering Sleep state due to 'Maintenance Sleep':TCPKeepAlive=active Using AC (Charge:82%) 165 secs  
+2026-10-27 13:13:32 +0200 Wake                	Wake from Deep Idle [CDNVA] : due to smc.sysState.Wake(0x70070000) trackpadkeyboard SMC.OutboxNotEmpty/HID Activity Using AC (Charge:82%)           
+mailpit: 12
+-rw-r--r--@ 1 rakheendama  wheel  0 Oct 29 15:42 /tmp/.e2e-keycloak-mode

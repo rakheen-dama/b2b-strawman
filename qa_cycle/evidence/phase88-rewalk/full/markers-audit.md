@@ -146,7 +146,7 @@ Slices with no PR by design: **618D, 625G, 628I** (gate-only, above) and **627G*
 
 **O-11 — how the five got past the hook: answered from evidence, not "unknown".** The session transcripts of the five merges (Claude Code session logs on this machine, under `~/.claude/projects/-Users-rakheendama-Projects-2026-b2b-strawman/<session>.jsonl`, extracted with `logs/629C-o11-extract.py` → `logs/629C-o11-merge-transcripts.txt`, which also carries the two control sessions (624A, 624E) and the #1703 session; paths shortened to `$P/`, no prompts or tokens; line numbers below are that file's) show the same sequence each time:
 1. The orchestrator session runs in the **main checkout** (`cwd=$P/b2b-strawman` on every line of `logs/629C-o11-merge-transcripts.txt`). That checkout is the hook's `$CLAUDE_PROJECT_DIR`, so it is the marker directory the hook reads.
-2. A few minutes before the merge, the session writes the marker there with `"commit"` = the full PR head and `"exit": 0` (MARKER-WRITE lines `logs/629C-o11-merge-transcripts.txt``:8`, `:14`, `:20-21`, `:34`, `:40`; the paths are relative to, or absolute under, the main checkout):
+2. A few minutes before the merge, the session writes the marker there with `"commit"` = the full PR head and `"exit": 0` (MARKER-WRITE lines `logs/629C-o11-merge-transcripts.txt` lines 8, 14, 20-21, 34, 40; the paths are relative to, or absolute under, the main checkout):
 
    | PR | Marker written | Merge |
    |---|---|---|

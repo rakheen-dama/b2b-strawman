@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""629C marker re-derivation. Run from the worktree: python3 -I /tmp/629C-b1/derive.py /tmp/629C-b1/prs.json"""
+"""629C marker re-derivation. Run from the worktree: python3 -I qa_cycle/evidence/phase88-rewalk/full/logs/629C-markers-derive.py <prs.json> (originally run as /tmp/629C-b1/derive.py; outputs byte-identical)"""
 import json, re, subprocess, sys
 
 import datetime as _dt

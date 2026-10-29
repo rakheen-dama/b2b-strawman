@@ -1,6 +1,6 @@
 # 629.9 — E2E runs on a fresh mock-auth stack (:3001 / :8081 / portal :3002) — 2026-10-29/30
 
-**Result: FAIL.** The E2E-LEGAL lifecycle leg failed (82 passed / 4 failed / 1 skipped / 17 did not run, against the 628I baseline of 101/0/3 on byte-identical code). Run 1 is the scored result (orchestrator ruling R-1); there was no re-run to get green. The other five legs equal their 628I baselines. The 17 "did not run" tests are **DEFERRED** until the diagnostic re-run (below).
+**Result: FAIL.** The E2E-LEGAL lifecycle leg failed (82 passed / 4 failed / 1 skipped / 17 did not run, against the 628I baseline of 101/0/3 on byte-identical code). Run 1 is the scored result (orchestrator ruling R-1); there was no re-run to get green. The other five legs equal their 628I baselines. A diagnostic lifecycle re-run (below), on a fresh stack with the Playwright host on `TZ=UTC` as the one controlled change, went **101/0/3**: it confirms the zone dependency of G88-F48 / F49 and ran the 17 run-1 "did not run" tests (15 PASS, 2 named fixmes skipped). It does not change run 1's scored FAIL.
 
 ## Provenance
 
@@ -43,7 +43,7 @@ These are verbatim from `logs/629C-chain.txt` `BEGIN` lines. The env is inline o
 | E2E-PORTAL isolation (`portal-data-isolation.spec.ts`, `KGOSI_EMAIL`) | 2 | 0 | 0 | 0 | 0 | 0 | 2/0 | none | **PASS** (= baseline) | `logs/629C-isolation.txt` |
 | E2E-PORTAL `test:e2e:portal` (chromium/responsive + portal-client-90day) | 32 | 0 | 1 | 0 | 0 | 0 | 32/0/1 | none | **PASS** (= baseline) | `logs/629C-portal.txt` |
 
-Lifecycle: Playwright reported "Running 104 tests". 82 + 4 + 1 + 17 = 104, which equals 628I's 101 + 0 + 3.
+Lifecycle: Playwright reported "Running 104 tests". 82 + 4 + 1 + 17 = 104, which equals 628I's 101 + 0 + 3. The unscored diagnostic re-run (Playwright host `TZ=UTC`) reported 101 passed / 0 failed / 3 skipped of 104 (`logs/629C-diag-summary.txt`; § "Diagnostic re-run").
 
 The five baseline-equal legs also ran inside the split-date window (22:03Z → 22:24Z) and still equal their baselines. Builder 2 did not inspect why they are unaffected; that is not claimed here.
 
@@ -80,13 +80,15 @@ The 628I sets are at `qa_cycle/evidence/phase88-rewalk/628I/gate.md:23-31`. Test
 
 | Suite | 628I set | Run 1 | Tests (run 1) | Match | Gap row |
 |---|---|---|---|---|---|
-| lifecycle | 3 `628E-BLOCKER` fixmes | **1 skipped** + 2 in "did not run" | Skipped: `day-07-14-work-trust.spec.ts:284` (fixme `:292`). The other two named fixme tests, `day-60-interest.spec.ts:159` (fixme `:160`) and `day-90-review.spec.ts:118` (fixme `:123`), sit in serial blocks after failures 3 and 4, so Playwright listed them under "did not run" | **differs only by the cascade** — no new skip; the two missing fixmes are DEFERRED with the other 17 | G88-F38 (`:292`), G88-F39 (`:160`), G88-F40 (`:123`) |
+| lifecycle | 3 `628E-BLOCKER` fixmes | **1 skipped** + 2 in "did not run" | Skipped: `day-07-14-work-trust.spec.ts:284` (fixme `:292`). The other two named fixme tests, `day-60-interest.spec.ts:159` (fixme `:160`) and `day-90-review.spec.ts:118` (fixme `:123`), sit in serial blocks after failures 3 and 4, so Playwright listed them under "did not run" | **differs only by the cascade** — no new skip; the diagnostic re-run skipped exactly the 3 named fixmes (§ "Diagnostic re-run") | G88-F38 (`:292`), G88-F39 (`:160`), G88-F40 (`:123`) |
 | depth-ii | 4: the `day-30-45-soa-writeoff.spec.ts:292` fixme + 3 opt-in null-prefetch probes | 4 | `day-30-45-soa-writeoff.spec.ts:292`; `null-prefetch-probe.spec.ts:74` ×3 (Matters list → matter, Reports → report detail, Sidebar /projects → /dashboard) | = set | none (the `:292` fixme is an E2E environment limitation, gaps.md § "Cited open register items") |
 | default | 18: 7 `628F-BLOCKER` + 8 `admin-audit-30day` 510A scaffolds + 1 Keycloak-only + 2 env-gated isolation | 18 | 628F-BLOCKER (7): `customers/customer-data-protection.spec.ts:47`, `:75`, `:105`; `customers/customer-lifecycle.spec.ts:157`, `:178`; `documents/document-generation.spec.ts:85`; `settings/roles-capabilities.spec.ts:53`. Scaffolds (8): `admin-audit-30day/admin-audit-lifecycle.spec.ts:33`, `:52`, `:70`, `:88`, `:108`, `:125`, `:143`, `:159`. Keycloak-only (1): `auth/auth-change-password.spec.ts:35`. Env-gated (2): `portal/portal-data-isolation.spec.ts:36`, `:48` (they ran and passed in the isolation leg) | = set | G88-F43 (`:47`), G88-F44 (`:75`, `:105`), G88-F41 (`:157`), G88-F42 (`:178`), G88-F46 (`document-generation :85`), G88-F45 (`roles :53`) |
 | `test:e2e:portal` | 1: the Day 75 `628G-BLOCKER` fixme | 1 | `portal-client-90day/day-45-75.spec.ts:163` (fixme `:166`, the dormant deadline sync) | = set | SB-11 → register §5b row 19 (no new id, ruling O-5) |
 | login-bare, isolation | 0 | 0 | — | = set | — |
 
-## Former carried six (617C) — status after run 1
+## Former carried six (617C) — status after run 1 and the diagnostic re-run
+
+**Tally: 6 of 6 resolved, 0 still carried.** Four were resolved by 628E and confirmed by run 1; two (`:95`, `:192`) are dropped on the diagnostic re-run.
 
 Titles were re-grepped at HEAD (`grep -n '^\s*test(' frontend/e2e/tests/legal-lifecycle/<file>`) and match the brief's HEAD locations.
 
@@ -96,8 +98,8 @@ Titles were re-grepped at HEAD (`grep -n '^\s*test(' frontend/e2e/tests/legal-li
 | `day-30-billing.spec.ts:32` | `day-30-billing.spec.ts:90` | "Generate Sipho's fee note from unbilled time, add an LSSA tariff item and a sheriff disbursement line (VAT 15%)" | PASSED (#51) | **resolved by 628E (#1707) — confirmed by run** |
 | `day-30-billing.spec.ts:159` | `day-30-billing.spec.ts:141` | "Create Apex fee note — fixed fee R35,000 + VAT = R40,250" | PASSED (#52) | **resolved by 628E (#1707) — confirmed by run** |
 | `day-45-recon-prescription.spec.ts:41` | `day-45-recon-prescription.spec.ts:50` | "Start a bank reconciliation — select the trust account and period end, reach the statement upload step" | PASSED (#60) | **resolved by 628E (#1707) — confirmed by run** |
-| `day-90-review.spec.ts:63` (624I carried item) | `day-90-review.spec.ts:95` | "Fee notes list shows the run's five fee notes" | FAILED (#84) on a missing precondition (`siphoFeeNote2` not recorded — cascade of G88-F48) | **not exercised in run 1.** The fee-notes-list assertion never ran, so this is **not** dropped from the carried set (624I `gate.md:36`). Final disposition: pending the diagnostic re-run |
-| `day-90-review.spec.ts:179` | `day-90-review.spec.ts:192` | "Profitability report — revenue, cost and margin columns for this month's matters" | did not run (#89, serial after #84) | **not exercised in run 1** — pending the diagnostic re-run |
+| `day-90-review.spec.ts:63` (624I carried item) | `day-90-review.spec.ts:95` | "Fee notes list shows the run's five fee notes" | FAILED (#84) on a missing precondition (`siphoFeeNote2` not recorded — cascade of G88-F48) | **not exercised in run 1** (the fee-notes-list assertion never ran). **Diagnostic re-run: PASSED (#84).** The run-1 failure is fully explained as a G88-F48 cascade, so it is **dropped from the carried set** (624I `gate.md:36`), citing both runs |
+| `day-90-review.spec.ts:179` | `day-90-review.spec.ts:192` | "Profitability report — revenue, cost and margin columns for this month's matters" | did not run (#89, serial after #84) | **not exercised in run 1. Diagnostic re-run: PASSED (#89)** → **dropped from the carried set**, citing both runs |
 
 ## E2E-PORTAL magic-link budget (observed)
 
@@ -139,7 +141,7 @@ Three of the 90 written snapshots were opened with the Read tool from `/tmp/629C
   - stopped at 22:06:47Z (`svc.sh stop portal`, PID 71782; ":3002 free");
   - restarted at 22:23:54Z (`svc.sh start portal`, "ready (3s)"), with ":3002 200" at 22:23:55Z;
   - the main checkout's `portal/next-env.d.ts` was restored at 22:23:54Z (`logs/629C-chain.txt`).
-- **e2e stack:** left UP (ruling O-12): six containers healthy, fresh from HEAD plus this run's data (`logs/629C-provenance.txt`, end section). `e2e-backend` shows "Up About a minute" there because of the 22:22:52Z cap restart.
+- **e2e stack:** left UP (ruling O-12): six containers healthy, fresh from HEAD plus this run's data (`logs/629C-provenance.txt`, end section). `e2e-backend` shows "Up About a minute" there because of the 22:22:52Z cap restart. The diagnostic re-run then replaced it with a fresh stack (§ "Diagnostic re-run").
 - The KC dev stack (backend :8080, gateway :8443, frontend :3000) was not touched (`svc.sh status` at the start: 4 × yes / yes).
 
 ## Evidence files
@@ -152,8 +154,20 @@ Three of the 90 written snapshots were opened with the Read tool from `/tmp/629C
 - **Redaction grep** (`token=`, `/accept/<token>`, `eyJ`, `X-Amz-`) over every file above: 0 hits.
 - **Not committed:** screenshots, `error-context.md` and traces, all under `/tmp/629C-e2e/artefacts/`.
 
-## Diagnostic re-run (lifecycle, date-aligned window)
+## Diagnostic re-run (lifecycle, browser zone aligned to UTC)
 
-A controlled lifecycle-only re-run on a fresh stack after 00:00Z (when the UTC and SAST dates agree) tests the predicted window dependency of G88-F48 / G88-F49 and exercises the 17 tests that did not run in run 1, without changing run 1's scored FAIL.
+**Result: 101 passed / 0 failed / 3 skipped (= the 628I baseline), exit 0.** This run is diagnostic evidence only. Run 1 remains the scored lifecycle result (R-1, R-3), so the lifecycle leg, E.11 and the exit test stay **FAIL**.
 
-<!-- DIAG: filled after /tmp/629C-e2e-diag -->
+- **Method** (`logs/629C-diag-rerun.sh.txt`; orchestrator script, run by the orchestrator). Fresh stack: `e2e-down.sh` removed all seven containers and both volumes (`/tmp/629C-e2e-diag/e2e-down.txt:33-34`). `e2e-up.sh` then logged `Building from source at: …/worktree-epic-629C` and `Seed completed (container exited)` (`/tmp/629C-e2e-diag/e2e-up.txt:3`, `:348`). Lifecycle only, with run 1's command plus **one controlled change**: the Playwright host process ran with `TZ=UTC` (`env TZ=UTC E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle --update-snapshots=all --reporter=list`). The lifecycle config pins no `timezoneId`, so Chromium and the node helpers' `isoDate()` both follow the host zone.
+- **Provenance** (`logs/629C-diag-provenance.txt`, `logs/629C-diag-chain.txt`). HEAD `239df0f13`. `git diff --stat cb10c5d63..HEAD -- backend frontend portal gateway packages compose` printed nothing, so the product tree is byte-identical to the 628I gate code. AC power, 100 %. Run 22:33:36Z → 22:37:21Z; lifecycle 22:34:17Z → 22:37:21Z.
+- **Window.** That is 00:33–00:37 SAST on 2026-10-30, so the run was **still inside the 00:00–02:00 SAST window** in which run 1 failed. The script's header comment describes an earlier plan (run after 00:00Z); the actual control is the zone, not the clock. Clocks at lifecycle start: container `Thu Oct 29 22:34:17 UTC 2026`, Playwright host (`TZ=UTC`) `Thu Oct 29 22:34:17 UTC 2026`, host shell `Fri Oct 30 00:34:17 SAST 2026`. So the browser date and the server date were both 2026-10-29.
+- **Interpretation (orchestrator ruling, binding).** The only variable changed was the browser / helper zone, and all four run-1 failures disappear with it. That confirms G88-F48 and G88-F49 are zone-mismatch defects (browser-local date vs container-UTC date), as the diagnosis predicted. It does **not** make the product correct: real SA users' browsers are on SAST, so **F48 (HIGH) and F49 (LOW) stand unchanged**.
+- **Reproduction recipe for the follow-up fix PR (red-first).** Run the converse: give the Playwright host a zone ahead of UTC whose calendar date has already rolled over at run time. `TZ=Africa/Johannesburg` does so 22:00–24:00Z (00:00–02:00 SAST, run 1); `TZ=Pacific/Kiritimati` (UTC+14) does so 10:00–24:00Z. A zone alone cannot cover 00:00–10:00Z; that needs a clock override.
+- **Run-1 failures in this run:** `day-07-14-work-trust.spec.ts:167` and `:306` (F49), `day-60-interest.spec.ts:96` (F48) and `day-90-review.spec.ts:95` (F48 cascade) all **PASSED** (#40, #48, #65, #84).
+- **The 17 run-1 "did not run" tests,** all from this run (TZ=UTC): 15 **PASS (diagnostic run, TZ=UTC)** and the 2 named fixmes skipped as expected.
+  - PASS: `day-07-14-work-trust.spec.ts:330` "Trust dashboard overview"; `day-60-interest.spec.ts:193` "Navigate to Investment Register", `:200` "Place investment — Moroka R200,000 Standard Bank Fixed Deposit (s86(3))", `:229` "Place investment — QuickCollect R30,000 Nedbank Call Account (s86(4))", `:252` "Second billing cycle — log new Sipho time and generate its fee note", `:278` "Run the timesheet report for this month", `:299` "Check profitability report"; `day-90-review.spec.ts:149` "Trust reports — Client Trust Balances", `:160` "Trust reports — Investment Register with s86 basis", `:173` "Trust reports — Receipts & Payments", `:192` "Profitability report — revenue, cost and margin columns for this month's matters", `:218` "Home shows the owner dashboard", `:232` "Generate an engagement letter for Sipho's matter", `:256` "Compliance overview page", `:269` "Sipho's diary shows the POSTPONED motion, its rescheduled SCHEDULED date and the prescription tracker".
+  - Skipped (named `628E-BLOCKER` fixmes): `day-60-interest.spec.ts:159` "Approve and post the interest run to the client ledgers" (fixme `:160`, G88-F39) and `day-90-review.spec.ts:118` "Generate Section 35 Data Pack report" (fixme `:123`, G88-F40).
+- **Skip set = the named 628I set:** the 3 skipped are exactly `day-07-14-work-trust.spec.ts:284` (fixme `:292`, G88-F38), `day-60-interest.spec.ts:159` and `day-90-review.spec.ts:118`. 0 soft-skips.
+- **Carried set:** `day-90-review.spec.ts:95` (624I carried item) passed here, and its run-1 failure is fully explained as a G88-F48 cascade (missing `siphoFeeNote2`, recorded only by `day-60-interest.spec.ts:252`, which did not run). It is **dropped from the carried set**, citing both runs. `day-90-review.spec.ts:192` passed here too and is dropped on the same basis. With the four 628E resolutions, **none of the former carried six remains carried**.
+- **Stack state after this run:** fresh from `239df0f13` plus diagnostic-run data, left UP (six containers healthy at 22:38Z). The script's scoped restore left the worktree with only the two untracked `.629C-*.sh` files (`logs/629C-diag-chain.txt`).
+- **Evidence** (`logs/`, `git add -f`): `629C-diag-provenance.txt`, `629C-diag-chain.txt`, `629C-diag-summary.txt`, `629C-diag-lifecycle.txt`, `629C-diag-rerun.sh.txt`. The redaction grep (`token=`, `/accept/`, `eyJ`, `X-Amz-`) found 0 hits, so they are verbatim copies. `e2e-down.txt`, `e2e-up.txt` and `test-results/` stay in `/tmp/629C-e2e-diag/` and are not committed.

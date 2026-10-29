@@ -1,0 +1,8 @@
+start=2026-10-29T22:33:36Z local=2026-10-30T00:33:36+0200
+HEAD=239df0f13062c18be1761a08f732a7aa44e49429
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=24379491)	100%; charged; 0:00 remaining present: true
+container date: Thu Oct 29 22:34:17 UTC 2026
+host date: Fri Oct 30 00:34:17 SAST 2026
+playwright TZ=UTC date: Thu Oct 29 22:34:17 UTC 2026
+end=2026-10-29T22:37:21Z

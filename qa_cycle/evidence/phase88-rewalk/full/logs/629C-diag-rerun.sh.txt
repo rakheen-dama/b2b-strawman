@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# 629C controlled diagnostic re-run (orchestrator ruling O-4 + date-boundary diagnosis):
+# fresh e2e stack, E2E-LEGAL lifecycle ONLY, run entirely inside a window where UTC and SAST calendar dates agree
+# (00:00Z–22:00Z). Run 1 (/tmp/629C-e2e) is kept as the scored result; this run is diagnostic evidence.
+set -u
+SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+if [ -z "${CAFFEINATED_629C_D:-}" ]; then export CAFFEINATED_629C_D=1; exec caffeinate -is "$SELF" "$@"; fi
+W=/Users/rakheendama/Projects/2026/worktree-epic-629C
+O=/tmp/629C-e2e-diag
+PNPM=/opt/homebrew/bin/pnpm
+export SHELL=/bin/bash NODE_OPTIONS=""
+unset PLAYWRIGHT_BASE_URL E2E_AUTH_MODE BACKEND_URL CI
+mkdir -p "$O"
+ts(){ date -u +%Y-%m-%dT%H:%M:%SZ; }
+log(){ echo "[$(ts)] $*" | tee -a "$O/chain.log"; }
+# Controlled variable: the Playwright host (node helpers + Chromium, no timezoneId pinned in the config) runs with TZ=UTC,
+# so browser-local dates == container (UTC) dates. Everything else identical to run 1.
+{ echo "start=$(ts) local=$(date '+%Y-%m-%dT%H:%M:%S%z')"; echo "HEAD=$(git -C "$W" rev-parse HEAD)";
+  git -C "$W" diff --stat cb10c5d63..HEAD -- backend frontend portal gateway packages compose | tail -3; pmset -g batt; } > "$O/provenance.txt" 2>&1
+( cd "$W" && bash compose/scripts/e2e-down.sh ) > "$O/e2e-down.txt" 2>&1; log "e2e-down exit=$?"
+( cd "$W" && bash compose/scripts/e2e-up.sh ) > "$O/e2e-up.txt" 2>&1; UP=$?; log "e2e-up exit=$UP"
+{ echo "container date: $(docker exec e2e-backend date -u 2>&1)"; echo "host date: $(date)"; echo "playwright TZ=UTC date: $(TZ=UTC date)"; } >> "$O/provenance.txt"
+log "BEGIN lifecycle"
+( cd "$W/frontend" && env TZ=UTC E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 "$PNPM" test:e2e:legal-lifecycle --update-snapshots=all --reporter=list ) > "$O/lifecycle.txt" 2>&1
+RC=$?; log "lifecycle exit=$RC"
+grep -E '^[[:space:]]+[0-9]+ (passed|failed|flaky|skipped|did not run|interrupted)' "$O/lifecycle.txt" > "$O/summary.txt"
+awk '/^[[:space:]]+[0-9]+ (failed|flaky)$/{f=1;print;next} /^[[:space:]]+[0-9]+ (passed|skipped|did not run|interrupted)/{f=0} f && /\[/' "$O/lifecycle.txt" >> "$O/summary.txt"
+grep -E '^\s+[0-9]+ skipped' -A0 "$O/lifecycle.txt" >/dev/null
+[ -d "$W/frontend/test-results" ] && cp -R "$W/frontend/test-results" "$O/test-results" 2>/dev/null
+echo "end=$(ts)" >> "$O/provenance.txt"
+( cd "$W" && git checkout -- documentation/screenshots 2>/dev/null; git clean -fdq -- documentation/screenshots frontend/e2e/screenshots frontend/e2e/test-results 2>/dev/null )
+rm -rf "$W/frontend/test-results"
+git -C "$W" status --short | head -10 >> "$O/chain.log"
+echo "done rc=$RC at $(ts)" > "$O/ALL.done"

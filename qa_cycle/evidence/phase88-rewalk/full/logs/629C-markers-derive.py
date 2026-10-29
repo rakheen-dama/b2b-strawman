@@ -16,7 +16,13 @@ def git(*a, check=False):
         raise SystemExit(r.stderr)
     return r.returncode, r.stdout
 
-prs = sorted((p for p in json.load(open(sys.argv[1])) if p["number"] >= 1643), key=lambda p: p["number"])
+# Audit set pinned at both ends (#1643-#1713, the Phase 88 PRs). An open upper bound would let later merges
+# join the set on a re-run; a missing number in the range aborts instead of silently shrinking the audit.
+LO, HI = 1643, 1713
+prs = sorted((p for p in json.load(open(sys.argv[1])) if LO <= p["number"] <= HI), key=lambda p: p["number"])
+_missing = sorted(set(range(LO, HI + 1)) - {p["number"] for p in prs})
+if _missing:
+    raise SystemExit(f"input is missing audited PRs: {_missing}")
 VER = re.compile(r"^## Verdict: APPROVE @([0-9a-fA-F]{7,40})\s*$")
 CR = re.compile(r"^## CodeRabbit: (.*)$")
 out, crl, tsv = [], [], []

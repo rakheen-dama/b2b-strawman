@@ -1,5 +1,7 @@
 # 629C — E2E-LEGAL lifecycle failures: root-cause diagnosis
 
+> **Review annotations (PR #1714 fixer, 2026-10-30; the findings below are kept as written).** (1) The severity for failure 3 (MEDIUM, "arguably HIGH", § "Severity and suggested fix location") is **superseded by 629C ruling R-2: HIGH** — see `../gaps.md` G88-F48. (2) The serial block of failure 3 starts at `day-60-interest.spec.ts:84`, not `:85` (corrected inline). (3) One more server-dated site was found at HEAD and added in G88-F48: `TrustTransactionService.java:1334` (`targetLedger.debitBalance(…, LocalDate.now())`, reversal of a transfer). (4) The production-zone sentence in § 0 is an assumption, not an observation (annotated inline).
+
 Read-only investigation, 2026-10-29/30. Code: `/Users/rakheendama/Projects/2026/worktree-epic-629C` (product byte-identical to 628I gate head cb10c5d63).
 
 ## 0. Timing and timezones (common cause)
@@ -12,7 +14,7 @@ Read-only investigation, 2026-10-29/30. Code: `/Users/rakheendama/Projects/2026/
 | e2e-postgres | UTC | `SHOW timezone` → `UTC`; `now(), current_date` → `2026-10-29 22:09:01+00 / 2026-10-29` |
 
 Playwright config sets no `timezoneId` (`frontend/e2e/playwright.legal-lifecycle.config.ts:26-39`), so Chromium uses the host zone (SAST).
-No `TZ` / `user.timezone` / firm-timezone setting anywhere in `compose/`, `infra/`, the Dockerfiles or `backend/src/main` (grep found no hits). Production containers will also run in UTC.
+No `TZ` / `user.timezone` / firm-timezone setting anywhere in `compose/`, `infra/`, the Dockerfiles or `backend/src/main` (grep found no hits). Production containers will also run in UTC. *[Annotation: assumption, not observed. It rests on the absence of any `TZ` / `user.timezone` setting in `compose/`, `infra/` and the Dockerfiles; the JVM then takes the container's default zone, which for the `eclipse-temurin:25-jre-alpine` runtime image (`backend/Dockerfile:21`) with no `TZ` is UTC unless a deployment overrides it. No deployed environment was checked.]*
 
 **Correction to the brief's window.** `/tmp/629C-e2e/chain.log` shows `e2e-up exit=0` and `BEGIN lifecycle` at `2026-10-29T22:00:09Z` and `STEP lifecycle exit=1` at `22:03:28Z`. So the whole suite ran from **00:00:09 to 00:03:28 SAST**, after local midnight. For the entire run the host/browser calendar date was **2026-10-30** and the containers' date was **2026-10-29**. This is why every "today" in the run split in two.
 
@@ -124,7 +126,7 @@ Results:
 QC has no server-dated transaction, so its date did not shift. It matched the expected 1 451,61 / 8,01 exactly (45 000 / 31; 45 000 × 0.065 / 365). This is a built-in control.
 
 ### Verdict
-**(a) Product defect, backend.** `TrustTransactionService.java:622` stamps `FEE_TRANSFER.transaction_date` with `LocalDate.now()` in the JVM default zone (UTC). Sibling client flows stamp the browser-local date (deposit/payment/refund/transfer dialogs: `RecordDepositDialog.tsx:57`, `RecordPaymentDialog.tsx:56`, `RecordRefundDialog.tsx:56`, `RecordTransferDialog.tsx:45`). The same `LocalDate.now()` pattern is in reversal posting (`TrustTransactionService.java:1114,1139,1264,1281,1328`), `TrustAccountService.java:147,244` and `TrustInvestmentService.java:243,289`.
+**(a) Product defect, backend.** `TrustTransactionService.java:622` stamps `FEE_TRANSFER.transaction_date` with `LocalDate.now()` in the JVM default zone (UTC). Sibling client flows stamp the browser-local date (deposit/payment/refund/transfer dialogs: `RecordDepositDialog.tsx:57`, `RecordPaymentDialog.tsx:56`, `RecordRefundDialog.tsx:56`, `RecordTransferDialog.tsx:45`). The same `LocalDate.now()` pattern is in reversal posting (`TrustTransactionService.java:1114,1139,1264,1281,1328`; *annotation: also `:1334`*), `TrustAccountService.java:147,244` and `TrustInvestmentService.java:243,289`.
 - **Real use:** a fee transfer recorded from 00:00 to 02:00 SAST is dated the previous day. If that is the same night the deposit was recorded, the client ledger shows a debit before its funding credit: a one-day **negative client trust balance** in the Section 86 ledger, the statement running balance and the interest balance-days. Interest is understated (here R41,49 instead of R43,01). Any tenant whose zone differs from the server's has the same exposure during its offset window.
 - **Harness:** the expected values are correct under the product's own intended semantics (both dated "today").
 - **Confidence:** high, because the exact numbers reproduce and QC acts as a control.
@@ -134,7 +136,7 @@ QC has no server-dated transaction, so its date did not shift. It matched the ex
 ## Failure 4: `day-90-review.spec.ts:95` `Run-state value "siphoFeeNote2" was not recorded`
 
 - `siphoFeeNote2` is recorded only at `day-60-interest.spec.ts:269`, inside test `:252` "Alice: Second billing cycle — log new Sipho time and generate its fee note".
-- That test is in the same `test.describe.serial("Day 60 — …")` block as failure 3 (`:85`). The lifecycle log lists it as `-   70 … day-60-interest.spec.ts:252:7 … Second billing cycle` (did not run), along with 66–72, after `✘ 65` (failure 3).
+- That test is in the same `test.describe.serial("Day 60 — …")` block as failure 3 (`:84`). The lifecycle log lists it as `-   70 … day-60-interest.spec.ts:252:7 … Second billing cycle` (did not run), along with 66–72, after `✘ 65` (failure 3).
 - `day-90-review.spec.ts:108` then calls `recordedValue("siphoFeeNote2")` (`helpers/legal-lifecycle.ts:164-166`), which throws. 85–93 did not run after it (serial).
 
 **Verdict: pure cascade from failure 3.** It is not an independent defect. Test `:252` itself was never exercised in this run. It passed at 628I. Whether it would have passed tonight (its `isoDate()` time entry is 10-30) is unproven. Nothing in its path compares against a server-side "today" that I found, but this was not observed.

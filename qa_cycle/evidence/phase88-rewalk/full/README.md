@@ -340,14 +340,14 @@ Full record: `e2e-runs.md`. The stack was built fresh from the worktree at `2055
 
 | Leg | Result | 628I baseline | Verdict |
 |---|---|---|---|
-| E2E-LEGAL lifecycle | 82 / 4 failed / 1 skipped / 17 did not run (run 1, scored); diagnostic re-run `TZ=UTC` 101 / 0 / 3, not scored | 101/0/3 | **FAIL** → G88-F48 HIGH, G88-F49 LOW, plus 1 cascade of F48 |
+| E2E-LEGAL lifecycle | 82 / 4 failed / 1 skipped / 17 did not run (run 1, scored; the 17 are DEFERRED); diagnostic re-run `TZ=UTC` 101 / 0 / 3, not scored | 101/0/3 | **FAIL** → G88-F48 HIGH, G88-F49 LOW, plus 1 cascade of F48 |
 | E2E-LEGAL depth-ii | 39 / 0 / 4 | 39/0/4 | PASS |
 | E2E-DEFAULT | 159 / 0 / 18 / 0 | 159/0/18/0 | PASS |
 | E2E-PORTAL login-bare | 1 / 0 | 1/0 | PASS |
 | E2E-PORTAL isolation | 2 / 0 | 2/0 | PASS |
 | E2E-PORTAL `test:e2e:portal` | 32 / 0 / 1 | 32/0/1 | PASS |
 
-**Root cause.** The lifecycle ran at 00:00–00:03 SAST, while the e2e containers were on UTC and still a day behind. The product stamps server-side dates (trust fee transfers, My Work "today") in the process zone, and client-side dates in the browser zone. The diagnosis is in `logs/629C-lifecycle-date-boundary-diagnosis.md`, and builder 2's read-only DB re-check is in `logs/629C-lifecycle-db-reverify.txt`. A diagnostic re-run on a fresh stack, still inside the window but with the Playwright host on `TZ=UTC` as the one controlled change, went **101/0/3** (= 628I). That confirms the zone mismatch; F48 / F49 stand, because real SA browsers are SAST. The 17 run-1 did-not-run tests all ran there (15 PASS, 2 named fixmes skipped), and the carried `day-90-review.spec.ts:95` and `:192` are dropped (`e2e-runs.md` § "Diagnostic re-run"). The re-run does not change run 1's scored FAIL.
+**Root cause.** The lifecycle ran at 00:00–00:03 SAST, while the e2e containers were on UTC and still a day behind. The product stamps server-side dates (trust fee transfers, My Work "today") in the process zone, and client-side dates in the browser zone. The diagnosis is in `logs/629C-lifecycle-date-boundary-diagnosis.md`, and builder 2's read-only DB re-check is in `logs/629C-lifecycle-db-reverify.txt`. A diagnostic re-run on a fresh stack, still inside the window but with the Playwright host on `TZ=UTC` as the one controlled change, went **101/0/3** (= 628I). That confirms the zone mismatch; F48 / F49 stand, because real SA browsers are SAST. The 17 run-1 did-not-run tests all ran there (15 passed, 2 named fixmes skipped), but they stay **DEFERRED** for 629.9 (629C ruling R-1). Former carried six, scored on run 1 (629C ruling R-6): **4 of 6 resolved by 628E (#1707)**; `day-90-review.spec.ts:95` is **still carried** (FAILED in run 1 as a G88-F48 cascade) and `:192` is **DEFERRED** (did not run in run 1); both passed in the unscored diagnostic run (`e2e-runs.md` § "Diagnostic re-run"). The re-run does not change run 1's scored FAIL (629C ruling R-3). The 629C rulings R-1 … R-6 are listed in `gaps.md` § "629C orchestrator rulings".
 
 **Outcome.**
 - Gap ids used by 629C: **G88-F35 … G88-F49** (next free G88-F50).

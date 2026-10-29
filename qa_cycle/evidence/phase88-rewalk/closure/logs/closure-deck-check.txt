@@ -1,0 +1,30 @@
+# C.10 deck check, 2026-10-29T23:39:36Z, exec-deck.html at worktree (after the 629D swap)
+slides: 13
+lines: 209
+ok line 84 screens/phase88/home-debtors.png 1440x900 275b0a48c907
+ok line 85 screens/phase87/home-firm.png 1440x900 6f777995987e
+ok line 86 screens/phase87/home-fee-earner.png 1440x900 4f4b8f00fc34
+ok line 87 screens/phase87/diary-week.png 1440x900 c4d028937236
+ok line 95 screens/phase88/matters-fee-earner.png 1440x900 12392bdf2d41
+ok line 96 screens/phase88/clients-outstanding.png 1440x900 fceac0db467e
+ok line 97 screens/phase87/matter-fees-group.png 1440x900 1ea55f5465c4
+ok line 98 screens/phase87/portal-matters.png 1440x900 ef0f911fe57b
+ok line 106 screens/phase87/settings-firm.png 1440x900 72d0402b8c12
+ok line 107 screens/phase87/settings-matters.png 1440x900 44d250c4c6e3
+ok line 108 screens/phase87/settings-documents.png 1440x900 89791a2feaf5
+ok line 109 screens/phase87/settings-fees.png 1440x900 cbd1c2cd2737
+ok line 110 screens/phase87/settings-connections.png 1440x900 b3a6ea194732
+== phase88 files not referenced by the deck:
+unreferenced screens/phase88/clients.png 1440x900
+unreferenced screens/phase88/fee-note-lines.png 1440x900
+unreferenced screens/phase88/home.png 1440x900
+unreferenced screens/phase88/matters.png 1440x900
+unreferenced screens/phase88/part-payment.png 1440x900
+unreferenced screens/phase88/wow-1.png 1440x900
+unreferenced screens/phase88/wow-2.png 1440x900
+unreferenced screens/phase88/wow-3.png 1440x900
+unreferenced screens/phase88/wow-4.png 1440x900
+unreferenced screens/phase88/wow-5.png 1440x900
+unreferenced screens/phase88/wow-6.png 1440x900
+unreferenced screens/phase88/wow-7.png 1440x900
+== browser render check: NOT RUN. Playwright MCP refused the deck URL: 'Error: Access to "file:" protocol is blocked.' (2026-10-29T23:40Z). Per the brief (§7.2) the shell check above is the only render evidence; no server was started to work around it. The three swapped files are 1440x900 like the phase87 shots they replace, and the slide markup is unchanged apart from src/alt/figcaption, so the .shots grid geometry is unchanged.

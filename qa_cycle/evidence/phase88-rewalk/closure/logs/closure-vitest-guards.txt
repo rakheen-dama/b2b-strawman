@@ -1,0 +1,190 @@
+# C.3/C.4 frontend + portal guard runs at HEAD 59aee8731, 2026-10-29T23:38:02Z
+# pnpm install --frozen-lockfile at worktree root: EXIT=0 (pnpm v10.26.1)
+# frontend: cd frontend && NODE_OPTIONS="" pnpm vitest run --reporter=verbose __tests__/no-terminology-remnants.test.ts __tests__/no-adhoc-currency.test.ts __tests__/capabilities.test.tsx __tests__/eslint-rules/no-isvisible-catch.test.ts __tests__/lib/constants/matter-tab-groups.test.ts __tests__/lib/legacy-redirects.test.ts __tests__/no-legacy-hrefs.test.ts -> EXIT=0
+# portal: cd portal && NODE_OPTIONS="" pnpm vitest run --reporter=verbose __tests__/no-terminology-remnants.test.ts __tests__/eslint-rules/no-isvisible-catch.test.ts __tests__/next-config-redirects.test.ts -> EXIT=0
+== frontend (pnpm vitest run --reporter=verbose <files>)
+  __tests__/lib/constants/matter-tab-groups.test.ts: passed 9 failed 0 skipped 0
+  __tests__/lib/legacy-redirects.test.ts: passed 34 failed 0 skipped 0
+  __tests__/capabilities.test.tsx: passed 12 failed 0 skipped 0
+  __tests__/no-adhoc-currency.test.ts: passed 4 failed 0 skipped 0
+  __tests__/no-legacy-hrefs.test.ts: passed 7 failed 0 skipped 0
+  __tests__/no-terminology-remnants.test.ts: passed 5 failed 0 skipped 0
+  __tests__/eslint-rules/no-isvisible-catch.test.ts: passed 65 failed 0 skipped 0
+  Test Files  7 passed (7)
+  Tests  136 passed (136)
+== portal (pnpm vitest run --reporter=verbose <files>)
+  __tests__/next-config-redirects.test.ts: passed 2 failed 0 skipped 0
+  __tests__/no-terminology-remnants.test.ts: passed 8 failed 0 skipped 0
+  __tests__/eslint-rules/no-isvisible-catch.test.ts: passed 13 failed 0 skipped 0
+  Test Files  3 passed (3)
+  Tests  23 passed (23)
+== capabilities.test.tsx drift pin (reads backend Capability.java):
+13:  OWNER_ONLY_CAPABILITIES,
+21:const OWNER_ONLY_NAMES = [
+156:        <CapProbe caps={OWNER_ONLY_NAMES} />
+160:    for (const cap of OWNER_ONLY_NAMES) {
+168:        <CapProbe caps={OWNER_ONLY_NAMES} />
+== ESLint no-isvisible-catch enabled:
+portal/eslint.config.mjs:25:      "kazi-portal-local/no-isvisible-catch": "error",
+frontend/eslint.config.mjs:36:      "kazi-frontend-local/no-isvisible-catch": "error",
+
+== verbose test lines (ANSI stripped):
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > MATTER_TAB_GROUPS > has 7 groups and 22 tabs 1ms
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > MATTER_TAB_GROUPS > keeps the group ids stable, in order 0ms
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > MATTER_TAB_GROUPS > labels the groups with the legal words 0ms
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > MATTER_TAB_GROUPS > labels every tab exactly as §12.6.5 0ms
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > MATTER_TAB_GROUPS > keeps the deep-linked tab ids in their groups 0ms
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > MATTER_TAB_GROUPS > has no expenses, customers or members tab and unique tab ids 0ms
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > LEGACY_TAB_IDS / aliasLegacyTabId > maps the renamed ids, the removed Expenses tab and the members alias 0ms
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > LEGACY_TAB_IDS / aliasLegacyTabId > aliases legacy ids and passes everything else through 0ms
+ ✓ __tests__/lib/constants/matter-tab-groups.test.ts > LEGACY_TAB_IDS / aliasLegacyTabId > resolves old matter ?tab= links to the renamed tabs 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > has unique rows (source + has condition) 1ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > puts every `has` row before the plain row for the same source 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > never redirects a row back onto its own source 3ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > resolves every chain (A → B → C allowed) without a cycle 6ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > sends every row to an org-scoped destination 1ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > makes every row permanent (HTTP 308) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the renamed matter and client route segments (610D) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects /profitability to its single entry under Reports (612A) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > serves the real profitability page at /reports/profitability — no page-level loop back (612A) 1ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects both calendars to the Diary, the ?tab=prescription row first (613D) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > leaves the calendar routes without pages — the config redirect owns them (613D) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the deleted matter expenses page to the Disbursements tab (615E) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > chains the pre-610D /projects/:id/expenses URL through the route rename (615E) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > leaves matters/[id]/expenses without a page — the config redirect owns it (615E) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the eight Firm settings pages to their /settings/firm tabs (616A) 1ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > does not let /settings/data-protection swallow /settings/data-protection/requests (616A) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > leaves the eight Firm pages deleted and serves /settings/firm (616A) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the seven Matters settings pages to their /settings/matters tabs (616B) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the six Matters editor routes to their routes under /settings/matters (616B) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > routes each old Matters URL to the right row — :id never swallows /new or /edit (616B) 5ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > leaves the seven Matters pages deleted and serves /settings/matters + its editors (616B) 1ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the four Documents settings pages to their /settings/documents tabs (616C) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the two document-template editor routes under /settings/documents (616C) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the six Fees & Trust settings pages to their /settings/fees tabs (616C) 1ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > routes each old Documents URL to the right row (616C) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > leaves the ten Documents/Fees pages deleted and serves both families + the editors (616C) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the seven Connections settings pages to their /settings/connections tabs (616D) 1ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > redirects the three Connections log routes under /settings/connections (616D) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > routes each old Connections URL to the right row (616D) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > leaves the seven Connections pages deleted and serves the family + its three routes (616D) 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > holds the 43 Phase 87 settings rows — 32 tab + 11 route (616D, §12.7.2) 1ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > leaves exactly 17 settings page.tsx — 5 families + 11 sub-routes + index (616D, §12.7.2) 3ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > keeps the pre-Phase-87 /settings/team row 0ms
+ ✓ __tests__/lib/legacy-redirects.test.ts > LEGACY_REDIRECTS > is exactly what next.config.ts redirects() returns 0ms
+ ✓ __tests__/capabilities.test.tsx > CapabilityProvider > provides capabilities, role, and flags to consumers 15ms
+ ✓ __tests__/capabilities.test.tsx > CapabilityProvider > hasCapability returns true when capability is present 1ms
+ ✓ __tests__/capabilities.test.tsx > CapabilityProvider > hasCapability returns false when capability is missing 1ms
+ ✓ __tests__/capabilities.test.tsx > CapabilityProvider > isAdmin bypasses non-owner-only capabilities — hasCapability true without the capability 1ms
+ ✓ __tests__/capabilities.test.tsx > CapabilityProvider > isOwner bypasses capability check — hasCapability always true 2ms
+ ✓ __tests__/capabilities.test.tsx > CapabilityProvider > admin is denied owner-only capabilities (ADR-355, G-D7) 2ms
+ ✓ __tests__/capabilities.test.tsx > CapabilityProvider > owner holds owner-only capabilities 1ms
+ ✓ __tests__/capabilities.test.tsx > CapabilityProvider > an explicit grant still wins for owner-only capabilities 1ms
+ ✓ __tests__/capabilities.test.tsx > OWNER_ONLY_CAPABILITIES mirror > equals backend Capability.OWNER_ONLY (reads Capability.java) 1ms
+ ✓ __tests__/capabilities.test.tsx > RequiresCapability > renders children when user has the required capability 2ms
+ ✓ __tests__/capabilities.test.tsx > RequiresCapability > renders nothing when user lacks the required capability 2ms
+ ✓ __tests__/capabilities.test.tsx > useCapabilities outside provider > throws when used without CapabilityProvider 4ms
+ ✓ __tests__/no-adhoc-currency.test.ts > no ad-hoc money formatting (Phase 88 626F, arch §13.8.5) > detector: catches the census shapes, ignores percentages, sizes and comments 1ms
+ ✓ __tests__/no-adhoc-currency.test.ts > no ad-hoc money formatting (Phase 88 626F, arch §13.8.5) > scans the real source tree 0ms
+ ✓ __tests__/no-adhoc-currency.test.ts > no ad-hoc money formatting (Phase 88 626F, arch §13.8.5) > zero ad-hoc money formatters outside the allow-list 0ms
+ ✓ __tests__/no-adhoc-currency.test.ts > no ad-hoc money formatting (Phase 88 626F, arch §13.8.5) > allow-list entries are live and justified 0ms
+ ✓ __tests__/no-legacy-hrefs.test.ts > no legacy /projects | /customers route hrefs (Phase 87 610E) > detector: catches every href form, skips specifiers, comments, settings routes and prose 8ms
+ ✓ __tests__/no-legacy-hrefs.test.ts > no legacy /projects | /customers route hrefs (Phase 87 610E) > scans the real source tree 0ms
+ ✓ __tests__/no-legacy-hrefs.test.ts > no legacy /projects | /customers route hrefs (Phase 87 610E) > the redirect table still carries the legacy sources (allowlist is live, not stale) 5ms
+ ✓ __tests__/no-legacy-hrefs.test.ts > no legacy /projects | /customers route hrefs (Phase 87 610E) > zero legacy route segments outside lib/legacy-redirects.ts 624ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains (Phase 87 611D, ADR-338; Phase 88 628A, ADR-357) > detectors: BANNED catches the mechanism; the noun scan sees user-visible literals only 2ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains (Phase 87 611D, ADR-338; Phase 88 628A, ADR-357) > scans the real source tree 0ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains (Phase 87 611D, ADR-338; Phase 88 628A, ADR-357) > zero references to the deleted mechanism 18ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains (Phase 87 611D, ADR-338; Phase 88 628A, ADR-357) > zero user-visible project/customer/invoice literals outside the allow-list (ADR-357) 0ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains (Phase 87 611D, ADR-338; Phase 88 628A, ADR-357) > allow-list entries are live and carry an ADR-357 reason 0ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > await expect(page.getByText("x").first()).toBeVisible(); 26ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > if (await a.isVisible()) {} 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > await expect(a.or(b).first()).toBeVisible(); if (await a.isVisible()) {} 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > await item.waitFor({ state: "visible", timeout: 2000 }).then(() => true, () => false); 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > promise.catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > fetch(url).then((r) => r.json(), () => null); 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > page.isVisible("sel"); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > foo.isVisibleish().catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > x.isVisible().then((v) => v); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > x.isVisible().then((v) => v).finally(() => {}); 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > loc.textContent().then((t) => t).catch(() => ""); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > x.isEnabled(); 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > await x.isEnabled({ timeout: 1000 }); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > loc["isVisible"]().catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > x.isChecked().catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > valid > await loc.isVisible({ timeout: 5000 }); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > const v = await loc.isVisible().catch(() => false); 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > const has = await page
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > expect.soft(await loc.isVisible().catch(() => false)).toBeTruthy(); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isVisible().then(() => true, () => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc?.isVisible()?.catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > const v = await loc.isVisible().then((x) => x).catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isChecked().finally(() => {}).catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isHidden().then((h) => !h).then((v) => v, () => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc?.isVisible()?.then((x) => x)?.catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isEnabled().catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isDisabled().catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isChecked().catch(() => null); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isEditable().catch(() => false); 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isHidden().catch(() => true); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > await loc.isVisible({ timeout: 5000 }); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > await loc.isHidden({ "timeout": 1 }); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isVisible({ timeout: 1 }).catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > x.isVisible().catch(() => false); x.isChecked().catch(() => false); 1ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts 1182ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts 5ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts 5ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/day-30-billing.spec.ts 5ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/day-60-interest.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/day-75-complex.spec.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/day-90-review.spec.ts 5ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/matter-team.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-lifecycle/__probe__.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/legal-depth-ii/__probe__.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/helpers/__probe__.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/fixtures/__probe__.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/customers/__probe__.spec.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/projects/__probe__.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/settings/__probe__.spec.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/navigation/__probe__.spec.ts 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/documents/__probe__.spec.ts 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/information-requests/__probe__.spec.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/invoices/__probe__.spec.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/automations/__probe__.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/compliance/__probe__.spec.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/finance/__probe__.spec.ts 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/notifications/__probe__.spec.ts 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/tests/__probe__.spec.ts 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is enforced in e2e/__probe__.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is not enforced outside e2e/ (or in the R-2 exception) in e2e/tests/demo-full-90day.spec.ts 9ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is not enforced outside e2e/ (or in the R-2 exception) in e2e/tests/demo-recording.spec.ts 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is not enforced outside e2e/ (or in the R-2 exception) in components/__probe__.tsx 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is not enforced outside e2e/ (or in the R-2 exception) in app/__probe__.tsx 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — eslint.config.mjs wiring > is not enforced outside e2e/ (or in the R-2 exception) in lib/__probe__.ts 2ms
+ ✓ __tests__/no-legacy-hrefs.test.ts > no legacy /calendar | /court-calendar hrefs (Phase 87 613D) > detector: catches both routes, skips the Diary and module ids 0ms
+ ✓ __tests__/no-legacy-hrefs.test.ts > no legacy /calendar | /court-calendar hrefs (Phase 87 613D) > the redirect table carries exactly the three calendar sources 1ms
+ ✓ __tests__/no-legacy-hrefs.test.ts > no legacy /calendar | /court-calendar hrefs (Phase 87 613D) > zero calendar route segments outside lib/legacy-redirects.ts 486ms
+ ✓ __tests__/next-config-redirects.test.ts > portal next.config redirects > permanently redirects the old /projects segment to /matters 1ms
+ ✓ __tests__/next-config-redirects.test.ts > portal next.config redirects > serves Matters from app/(authenticated)/matters — the old segment has no page 0ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains in the portal (Phase 87 611E, ADR-338; Phase 88 628B, ADR-357) > detector: BANNED catches the mechanism, not the legal copy 2ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains in the portal (Phase 87 611E, ADR-338; Phase 88 628B, ADR-357) > detector: the noun scan sees user-visible literals only (the frontend guard's cases) 2ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains in the portal (Phase 87 611E, ADR-338; Phase 88 628B, ADR-357) > drift comparison: formatting is ignored, code changes are not 2ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains in the portal (Phase 87 611E, ADR-338; Phase 88 628B, ADR-357) > the classifier has not drifted from the frontend guard's <terminology-scanner> block 7ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains in the portal (Phase 87 611E, ADR-338; Phase 88 628B, ADR-357) > scans the real source tree 0ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains in the portal (Phase 87 611E, ADR-338; Phase 88 628B, ADR-357) > zero references to the deleted mechanism 1ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains in the portal (Phase 87 611E, ADR-338; Phase 88 628B, ADR-357) > zero user-visible project/customer/invoice literals outside the allow-list (ADR-357) 0ms
+ ✓ __tests__/no-terminology-remnants.test.ts > no runtime terminology layer remains in the portal (Phase 87 611E, ADR-338; Phase 88 628B, ADR-357) > allow-list entries are live and carry an ADR-357 reason 0ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is a byte-identical copy of the frontend rule 2ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is enforced in e2e/tests/portal-client-90day/day-00-07.spec.ts 820ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is enforced in e2e/tests/portal-client-90day/__probe__.spec.ts 5ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is enforced in e2e/tests/responsive/portal-pages.spec.ts 6ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is enforced in e2e/tests/login-bare.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is enforced in e2e/tests/__probe__.spec.ts 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is enforced in e2e/helpers/__probe__.ts 5ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is enforced in e2e/__probe__.ts 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > flags the ignored isVisible({ timeout }) and a two-argument then() 4ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > leaves web-first assertions and a bare state read after an a.or(b) wait alone 6ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is not enforced outside e2e/ in components/__probe__.tsx 10ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is not enforced outside e2e/ in app/__probe__.tsx 3ms
+ ✓ __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch — portal copy + eslint.config.mjs wiring > is not enforced outside e2e/ in lib/__probe__.ts 4ms

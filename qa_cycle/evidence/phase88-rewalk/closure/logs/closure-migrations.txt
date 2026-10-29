@@ -1,0 +1,87 @@
+# C.6 migrations at HEAD 59aee8731, 2026-10-29T23:37:16Z
+tenant latest: V9__phase88_comment_attachments.sql
+tenant files: V1__baseline.sql V2__add_project_template_work_type.sql V3__normalise_work_types.sql V4__phase88_demo_ready.sql V5__phase88_acceptance_decline.sql V6__phase88_audit_customer_index.sql V7__phase88_letterhead.sql V8__phase88_retention_comment_attachments.sql V9__phase88_comment_attachments.sql 
+global latest: V2__portal_contact_directory.sql
+global files: V1__baseline.sql V2__portal_contact_directory.sql 
+== backend/src/main/resources/db/migration/global/V1__baseline.sql
+  d8fb3983c 2026-10-18 Epic 605: Migration squash → tenant V1 / global V1 (Phase 86) (#1577)
+== backend/src/main/resources/db/migration/global/V2__portal_contact_directory.sql
+  ccd04c467 2026-10-24 Epic 624A: global V2 portal contact directory + read-model amount_paid (#1670)
+== backend/src/main/resources/db/migration/tenant/V1__baseline.sql
+  d8fb3983c 2026-10-18 Epic 605: Migration squash → tenant V1 / global V1 (Phase 86) (#1577)
+== backend/src/main/resources/db/migration/tenant/V2__add_project_template_work_type.sql
+  fcedcc011 2026-10-18 fix(templates): matters created from a template inherit its work type (first post-squash migration V2) (#1580)
+== backend/src/main/resources/db/migration/tenant/V3__normalise_work_types.sql
+  230f3ab14 2026-10-18 fix(work-type): normalise work type (trim + upper-case) and match field groups case-insensitively; suggest legal matter types (
+== backend/src/main/resources/db/migration/tenant/V4__phase88_demo_ready.sql
+  1b419d74d 2026-10-24 Slice 622B: balance model + PARTIALLY_PAID + V4 §3 (622.4–622.6) (#1662)
+  5656330d8 2026-10-23 feat(epic-620A): payment terms setting + due date stamped at approve + V4 §2 backfill (G-D11 b, G-D21, G-C7 c) (#1652)
+  9649cdb88 2026-10-23 Epic 619B: tenant V4 §1 canonical project-role migration + real-write-path read test (G-D11 a, G-D13, N-1) (#1647)
+== backend/src/main/resources/db/migration/tenant/V5__phase88_acceptance_decline.sql
+  15fe4a3b4 2026-10-24 Epic 624F: acceptance DECLINED end to end + tenant V5 (§6) (#1675)
+== backend/src/main/resources/db/migration/tenant/V6__phase88_audit_customer_index.sql
+  1631e4868 2026-10-27 Epic 625C: "Fee note" + legal audit labels, client three-branch activity feed, customer_id on checklist item events (#1681)
+== backend/src/main/resources/db/migration/tenant/V7__phase88_letterhead.sql
+  fc70aad69 2026-10-27 Epic 626A: LetterheadSettings embeddable + GET/PATCH /api/settings/letterhead + tenant V7 (#1685)
+== backend/src/main/resources/db/migration/tenant/V8__phase88_retention_comment_attachments.sql
+  f78b041f6 2026-10-28 Epic 627B: persisted matter retention end date (V8 §5), seeded 5-year default, closure no longer seeds firm-wide policy (#1694)
+== backend/src/main/resources/db/migration/tenant/V9__phase88_comment_attachments.sql
+  18082ab72 2026-10-28 Epic 627H: comment attachments backend (tenant V9 comment_attachments, Source.COMMENT, portal chips) (#1699)
+== modified (M) migration files since 50b88ed5c:
+1b419d74d 2026-10-24T03:51:00+02:00 Slice 622B: balance model + PARTIALLY_PAID + V4 §3 (622.4–622.6) (#1662)
+
+backend/src/main/resources/db/migration/tenant/V4__phase88_demo_ready.sql
+5656330d8 2026-10-23T16:11:28+02:00 feat(epic-620A): payment terms setting + due date stamped at approve + V4 §2 backfill (G-D11 b, G-D21, G-C7 c) (#1652)
+
+backend/src/main/resources/db/migration/tenant/V4__phase88_demo_ready.sql
+== DDL guards:
+backend/src/main/resources/db/migration/tenant/V4__phase88_demo_ready.sql current_schema=7 if_exists=9
+backend/src/main/resources/db/migration/tenant/V5__phase88_acceptance_decline.sql current_schema=2 if_exists=3
+backend/src/main/resources/db/migration/tenant/V6__phase88_audit_customer_index.sql current_schema=1 if_exists=2
+backend/src/main/resources/db/migration/tenant/V7__phase88_letterhead.sql current_schema=1 if_exists=17
+backend/src/main/resources/db/migration/tenant/V8__phase88_retention_comment_attachments.sql current_schema=1 if_exists=2
+backend/src/main/resources/db/migration/tenant/V9__phase88_comment_attachments.sql current_schema=1 if_exists=3
+backend/src/main/resources/db/migration/global/V2__portal_contact_directory.sql current_schema=0 if_exists=3
+== BASELINE next-free:
+70:- Add the next free version — tenant **V10**, global **V3** as of Phase 88 627H (confirm with `for s in tenant global; do ls src/main/resources/db/migration/$s/V*.sql | sort -V | tail -1; done` from `backend/`) — as `V<n>__<description>.sql` to `src/main/resources/db/migration/tenant/` or `global/`. Double underscore.
+71:- Tenant V4 exists: `V4__phase88_demo_ready.sql` (Phase 88, one section per unit). Later Phase 88 slices append their sections to V4 only while no persistent stack (Keycloak dev DB, the re-walk tenant, VPS) has applied it. V4 has been applied on the Keycloak dev DB since Phase 88 623A, so it is closed: every new tenant or global change takes the next free version stated above.
+== TASKS.md:5 (stale, orchestrator file):
+> Migration baseline: see [`backend/db/BASELINE.md`](backend/db/BASELINE.md) — tenant and global Flyway series squashed to `V1__baseline.sql` in Phase 86 (Epic 605); post-squash tenant migrations `V2`–`V3` have landed; next free tenant **V4**, global **V2**. Pre-squash history: tag `horizontal-platf
+== PR 1662 mergedAt:
+2026-10-24T01:51:00Z
+== KC dev DB flyway (read-only SELECT):
+-- tenant_5039f2d497cf
+ version |              description              |        installed_on        
+---------+---------------------------------------+----------------------------
+ 9       | phase88 comment attachments           | 2026-10-29 15:47:23.233025
+ 8       | phase88 retention comment attachments | 2026-10-29 15:47:23.223701
+(2 rows)
+
+-- tenant_56399d06a773
+ version |              description              |        installed_on        
+---------+---------------------------------------+----------------------------
+ 9       | phase88 comment attachments           | 2026-10-29 15:42:28.683291
+ 8       | phase88 retention comment attachments | 2026-10-28 12:23:09.308036
+(2 rows)
+
+-- public
+ version |       description        |        installed_on        
+---------+--------------------------+----------------------------
+ 2       | portal contact directory | 2026-10-24 19:13:06.756576
+ 1       | baseline                 | 2026-10-18 04:20:53.007533
+(2 rows)
+
+== tenant_5039f2d497cf full flyway history (read-only; schema re-provisioned by 629A Session 0 after the 13:42Z start — see full/README.md 'dropped by Session 0')
+ installed_rank | version |              description              |        installed_on        
+----------------+---------+---------------------------------------+----------------------------
+              1 | 1       | baseline                              | 2026-10-29 15:47:22.222833
+              2 | 2       | add project template work type        | 2026-10-29 15:47:23.126587
+              3 | 3       | normalise work types                  | 2026-10-29 15:47:23.1455
+              4 | 4       | phase88 demo ready                    | 2026-10-29 15:47:23.158085
+              5 | 5       | phase88 acceptance decline            | 2026-10-29 15:47:23.199413
+              6 | 6       | phase88 audit customer index          | 2026-10-29 15:47:23.207082
+              7 | 7       | phase88 letterhead                    | 2026-10-29 15:47:23.215524
+              8 | 8       | phase88 retention comment attachments | 2026-10-29 15:47:23.223701
+              9 | 9       | phase88 comment attachments           | 2026-10-29 15:47:23.233025
+(9 rows)
+

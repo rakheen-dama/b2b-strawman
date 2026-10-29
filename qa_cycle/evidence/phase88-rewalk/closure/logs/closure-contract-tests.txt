@@ -1,0 +1,42 @@
+# C.3 targeted backend pin run at HEAD 59aee8731 (inner-loop evidence, NOT a full ./mvnw verify)
+# Worktree backend had no target/ before the run (first compile included). Zombie check first: no surefire/ForkedBooter JVM for this worktree.
+# Command (from backend/): ./mvnw test -q -Dtest="EntityTypeLiteralStabilityTest,WireVocabularyContractTest,McpToolContractTest,LayerDependencyRulesTest,TenantScopeBindingTest,BaselineSchemaParityTest,PortalLinkBuilderArchTest,MatterScopedPublisherGuardTest,CollectionsSqlSourceScanTest,TerminologyRemnantScanTest,AuditEventTypeRegistryTest,TemplateCreatedMatterReadPathIntegrationTest,CollectionsReadApiTest,InvoiceLifecycleIntegrationTest,FicaOutstandingIntegrationTest,CustomerFicaStatusIntegrationTest,MatterFeedIntegrationTest,ClientActivityIntegrationTest"
+# Result line: EXIT=0 WALL=66s FINISHED=2026-10-29T23:37:43Z
+# Full log (ephemeral): /tmp/629D-pins.log
+# Ground truth = count of <testcase> elements per TEST-*.xml (not the <testsuite tests=> attribute)
+# report files: 18
+activity.MatterFeedIntegrationTest testcase=4 failure=0 error=0 skipped=0
+architecture.LayerDependencyRulesTest testcase=3 failure=0 error=0 skipped=0
+architecture.PortalLinkBuilderArchTest testcase=3 failure=0 error=0 skipped=0
+architecture.TenantScopeBindingTest testcase=5 failure=0 error=0 skipped=0
+architecture.TerminologyRemnantScanTest testcase=6 failure=0 error=0 skipped=0
+audit.AuditEventTypeRegistryTest testcase=19 failure=0 error=0 skipped=0
+audit.EntityTypeLiteralStabilityTest testcase=3 failure=0 error=0 skipped=0
+audit.MatterScopedPublisherGuardTest testcase=3 failure=0 error=0 skipped=0
+collections.CollectionsReadApiTest testcase=12 failure=0 error=0 skipped=0
+collections.CollectionsSqlSourceScanTest testcase=5 failure=0 error=0 skipped=0
+customer.ClientActivityIntegrationTest testcase=8 failure=0 error=0 skipped=0
+dashboard.FicaOutstandingIntegrationTest testcase=6 failure=0 error=0 skipped=0
+informationrequest.CustomerFicaStatusIntegrationTest testcase=6 failure=0 error=0 skipped=0
+invoice.InvoiceLifecycleIntegrationTest testcase=28 failure=0 error=0 skipped=0
+mcp.McpToolContractTest testcase=1 failure=0 error=0 skipped=0
+project.WireVocabularyContractTest testcase=2 failure=0 error=0 skipped=0
+projecttemplate.TemplateCreatedMatterReadPathIntegrationTest testcase=7 failure=0 error=0 skipped=0
+provisioning.BaselineSchemaParityTest testcase=6 failure=0 error=0 skipped=0
+TOTAL testcase=127 failure=0 error=0 skipped=0
+== WireVocabularyContractTest stdout:
+[WireVocabularyContractTest] DTO offenders in scope io.b2mash.b2b.b2bstrawman (excluding .mcp): 0
+[WireVocabularyContractTest] ROUTE offenders in scope io.b2mash.b2b.b2bstrawman (excluding .mcp): 0
+== wire ratchet baseline non-comment entries: 0
+== tool-contract.json history + counts:
+b0b234ae0 2026-10-19 Epic 607A: Phase 87 contract tests — wire-vocabulary ratchet, MCP tool contract, ADR-342 literal pins (#1588)
+{'outputRecords': 29, 'resourceTemplates': 2, 'resources': 1, 'tools': 21}
+== real-write-path cases named by checklist item 3:
+backend/src/test/java/io/b2mash/b2b/b2bstrawman/collections/CollectionsReadApiTest.java:603:  void realPath_feeNoteApprovedAndSentAppearsInDebtorBookAndSummary() throws Exception {
+backend/src/test/java/io/b2mash/b2b/b2bstrawman/invoice/InvoiceLifecycleIntegrationTest.java:258:  void approveWithoutDueDateStampsIssuePlusTerms() throws Exception {
+backend/src/test/java/io/b2mash/b2b/b2bstrawman/invoice/InvoiceLifecycleIntegrationTest.java:292:  void typedDueDatePreserved() throws Exception {
+collections.CollectionsReadApiTest.xml:testcase name="realPath_feeNoteApprovedAndSentAppearsInDebtorBookAndSummary"
+invoice.InvoiceLifecycleIntegrationTest.xml:testcase name="typedDueDatePreserved"
+invoice.InvoiceLifecycleIntegrationTest.xml:testcase name="approveWithoutDueDateStampsIssuePlusTerms"
+== TestChecklistHelper uses: Fica=4 CustomerFica=10
+== Note: the ERROR log line from AssignMemberActionExecutor (409 Member already on matter) is test-driven output of TemplateCreatedMatterReadPathIntegrationTest.assignMemberProjectOwnerResolvesToTheTemplateLead, which passed.

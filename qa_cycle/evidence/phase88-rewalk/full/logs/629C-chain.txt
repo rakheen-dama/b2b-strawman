@@ -1,0 +1,63 @@
+[2026-10-29T21:52:45Z] 629C e2e chain start; caffeinate pid=94703
+[2026-10-29T21:52:46Z] STEP provenance exit=0
+[2026-10-29T21:52:54Z] STEP install exit=0
+[2026-10-29T21:52:55Z] STEP builder-prune exit=0
+[2026-10-29T21:52:58Z] STEP e2e-down exit=0
+[2026-10-29T22:00:09Z] STEP e2e-up exit=0
+tokens_total=1 last5min=1 newest_age_s=3
+[2026-10-29T22:00:09Z] BEGIN lifecycle in /Users/rakheendama/Projects/2026/worktree-epic-629C/frontend: env E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 /opt/homebrew/bin/pnpm test:e2e:legal-lifecycle --update-snapshots=all --reporter=list
+[2026-10-29T22:03:28Z] lifecycle artefacts: 23 files listed (/tmp/629C-e2e/lifecycle.artefacts.txt), copied=1
+[2026-10-29T22:03:28Z] STEP lifecycle exit=1
+[2026-10-29T22:03:28Z] BEGIN depth-ii in /Users/rakheendama/Projects/2026/worktree-epic-629C/frontend: env E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 /opt/homebrew/bin/pnpm test:e2e:legal-depth-ii --update-snapshots=all --reporter=list
+[2026-10-29T22:05:25Z] depth-ii artefacts: 23 files listed (/tmp/629C-e2e/depth-ii.artefacts.txt), copied=1
+[2026-10-29T22:05:25Z] STEP depth-ii exit=0
+[2026-10-29T22:05:25Z] BEGIN default in /Users/rakheendama/Projects/2026/worktree-epic-629C/frontend: env E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 /opt/homebrew/bin/pnpm test:e2e --update-snapshots=all --reporter=list
+[2026-10-29T22:06:43Z] default artefacts: 0 files listed (/tmp/629C-e2e/default.artefacts.txt), copied=1
+[2026-10-29T22:06:43Z] STEP default exit=0
+
+=== svc.sh stop portal ===
+
+  portal: stopping (PID 71782)...
+  portal: stopped
+
+Done.
+[2026-10-29T22:06:47Z] KC portal stopped; :3002 free
+[2026-10-29T22:11:19Z] waittok: newest token age 316s (need >= 310)
+tokens_total=3 last5min=0 newest_age_s=316
+e2e-backend
+[2026-10-29T22:11:36Z] e2e-backend restarted: StartedAt=2026-10-29T22:11:20.827261509Z health=200
+[2026-10-29T22:11:36Z] BEGIN login-bare in /Users/rakheendama/Projects/2026/worktree-epic-629C/portal: env -u PLAYWRIGHT_BASE_URL -u E2E_AUTH_MODE -u BACKEND_URL -u PORTAL_CONTACT_EMAIL /opt/homebrew/bin/pnpm test:e2e:login-bare --reporter=list
+[2026-10-29T22:11:58Z] login-bare artefacts: 0 files listed (/tmp/629C-e2e/login-bare.artefacts.txt), copied=1
+[2026-10-29T22:11:58Z] STEP login-bare exit=0
+tokens_total=4 last5min=1 newest_age_s=4
+[2026-10-29T22:17:15Z] waittok: newest token age 321s (need >= 310)
+tokens_total=4 last5min=0 newest_age_s=322
+e2e-backend
+[2026-10-29T22:17:32Z] e2e-backend restarted: StartedAt=2026-10-29T22:17:16.571956382Z health=200
+[2026-10-29T22:17:32Z] BEGIN isolation in /Users/rakheendama/Projects/2026/worktree-epic-629C/frontend: env KGOSI_EMAIL=contact@acme.example.com BACKEND_URL=http://localhost:8081 PLAYWRIGHT_BASE_URL=http://localhost:3001 /opt/homebrew/bin/pnpm test:e2e e2e/tests/portal/ --reporter=list
+[2026-10-29T22:17:34Z] isolation artefacts: 0 files listed (/tmp/629C-e2e/isolation.artefacts.txt), copied=1
+[2026-10-29T22:17:34Z] STEP isolation exit=0
+tokens_total=6 last5min=2 newest_age_s=0
+[2026-10-29T22:22:51Z] waittok: newest token age 317s (need >= 310)
+tokens_total=6 last5min=0 newest_age_s=317
+e2e-backend
+[2026-10-29T22:23:07Z] e2e-backend restarted: StartedAt=2026-10-29T22:22:52.007086093Z health=200
+[2026-10-29T22:23:08Z] BEGIN portal in /Users/rakheendama/Projects/2026/worktree-epic-629C/portal: env -u PLAYWRIGHT_BASE_URL -u E2E_AUTH_MODE -u BACKEND_URL /opt/homebrew/bin/pnpm test:e2e:portal --update-snapshots=all --reporter=list
+[2026-10-29T22:23:51Z] portal artefacts: 32 files listed (/tmp/629C-e2e/portal.artefacts.txt), copied=1
+[2026-10-29T22:23:51Z] STEP portal exit=0
+tokens_total=8 last5min=2 newest_age_s=18
+
+=== svc.sh start portal ===
+
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+[2026-10-29T22:23:54Z] MAIN portal/next-env.d.ts restored
+[2026-10-29T22:23:55Z] KC portal restart requested: :3002 200
+[2026-10-29T22:23:55Z] STEP kc-portal-restore exit=0
+[2026-10-29T22:23:55Z] restore done; remaining git status (expect only the two untracked scout files):
+?? .629C-diag-rerun.sh
+?? .629C-e2e-chain.sh
+[2026-10-29T22:23:55Z] STEP restore exit=0
+[2026-10-29T22:23:56Z] ALL DONE — summary: /tmp/629C-e2e/summary.txt

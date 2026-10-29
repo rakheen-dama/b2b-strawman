@@ -1,0 +1,29 @@
+== lifecycle  exit=1  at=2026-10-29T22:03:28Z  log=/tmp/629C-e2e/lifecycle.txt
+  4 failed
+  1 skipped
+  17 did not run
+  82 passed (3.3m)
+  4 failed
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:167:7 › Day 7 — First Week of Work › Alice: My Work lists today's Moroka time entry 
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:306:7 › Day 14 — Trust Deposits & Conflict Detection › Carol: Log additional time on the Sipho matter (letter of demand) 
+    [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:96:7 › Day 60 — Interest Run & Investments › Alice: Interest run — create for the last 30 days and calculate allocations at the 6.5% LPFF rate 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:95:7 › Day 90 — Quarter Review › Alice: Fee notes list shows the run's five fee notes 
+
+== depth-ii  exit=0  at=2026-10-29T22:05:25Z  log=/tmp/629C-e2e/depth-ii.txt
+  4 skipped
+  39 passed (1.9m)
+
+== default  exit=0  at=2026-10-29T22:06:43Z  log=/tmp/629C-e2e/default.txt
+  18 skipped
+  159 passed (1.3m)
+
+== login-bare  exit=0  at=2026-10-29T22:11:58Z  log=/tmp/629C-e2e/login-bare.txt
+  1 passed (20.4s)
+
+== isolation  exit=0  at=2026-10-29T22:17:34Z  log=/tmp/629C-e2e/isolation.txt
+  2 passed (940ms)
+
+== portal  exit=0  at=2026-10-29T22:23:51Z  log=/tmp/629C-e2e/portal.txt
+  1 skipped
+  32 passed (42.4s)
+

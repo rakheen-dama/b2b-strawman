@@ -1,0 +1,49 @@
+start=2026-10-29T21:52:45Z
+worktree=/Users/rakheendama/Projects/2026/worktree-epic-629C
+HEAD=20559c3d6849d9575b706bf142ff75454dc35909  origin/main=20559c3d6849d9575b706bf142ff75454dc35909
+branch=phase88/12C-suites-markers-gaps
+--- git status --short (worktree, before)
+?? .629C-e2e-chain.sh
+--- code diff vs 628I gate head cb10c5d63 (expect empty)
+--- pmset -g batt
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=24379491)	100%; charged; 0:00 remaining present: true
+--- df -h /
+/dev/disk3s1s1   926Gi    12Gi   189Gi     6%    459k  2.0G    0%   /
+--- docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          176       11        25.31GB   21.38GB (84%)
+Containers      13        12        174.8MB   0B (0%)
+Local Volumes   25        5         1.062GB   868.4MB (81%)
+Build Cache     398       0         0B        0B
+--- :3002 listener before
+COMMAND   PID        USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+node    71826 rakheendama   17u  IPv6 0x5d083da7c6d92579      0t0  TCP *:3002 (LISTEN)
+--- svc.sh status (/Users/rakheendama/Projects/2026/b2b-strawman)
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      1293     yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     33245    yes      yes      3000
+  portal       71782    yes      yes      3002
+
+
+Done.
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-629C
+end=2026-10-29T22:23:55Z
+HEAD=49784f360b6ac7afdad040f99e9975d6bd2bc622
+--- pmset -g batt (end)
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=24379491)	100%; charged; 0:00 remaining present: true
+--- e2e stack left UP (fresh from HEAD + this run's data)
+NAME             IMAGE                     COMMAND                  SERVICE      CREATED          STATUS                        PORTS
+e2e-backend      docteams-e2e-backend      "java -jar app.jar"      backend      24 minutes ago   Up About a minute (healthy)   0.0.0.0:8081->8080/tcp, [::]:8081->8080/tcp
+e2e-frontend     docteams-e2e-frontend     "docker-entrypoint.s…"   frontend     24 minutes ago   Up 23 minutes (healthy)       0.0.0.0:3001->3000/tcp, [::]:3001->3000/tcp
+e2e-localstack   localstack/localstack:3   "docker-entrypoint.sh"   localstack   24 minutes ago   Up 24 minutes (healthy)       0.0.0.0:4567->4566/tcp, [::]:4567->4566/tcp
+e2e-mailpit      axllent/mailpit:latest    "/mailpit"               mailpit      24 minutes ago   Up 24 minutes (healthy)       0.0.0.0:1026->1025/tcp, [::]:1026->1025/tcp, 0.0.0.0:8026->8025/tcp, [::]:8026->8025/tcp
+e2e-mock-idp     docteams-e2e-mock-idp     "docker-entrypoint.s…"   mock-idp     24 minutes ago   Up 24 minutes (healthy)       0.0.0.0:8090->8090/tcp, [::]:8090->8090/tcp
+e2e-postgres     postgres:16-alpine        "docker-entrypoint.s…"   postgres     24 minutes ago   Up 24 minutes (healthy)       0.0.0.0:5433->5432/tcp, [::]:5433->5432/tcp

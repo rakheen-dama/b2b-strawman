@@ -1,0 +1,6 @@
+[2026-10-29T22:33:39Z] e2e-down exit=0
+[2026-10-29T22:34:17Z] e2e-up exit=0
+[2026-10-29T22:34:17Z] BEGIN lifecycle
+[2026-10-29T22:37:21Z] lifecycle exit=0
+?? .629C-diag-rerun.sh
+?? .629C-e2e-chain.sh

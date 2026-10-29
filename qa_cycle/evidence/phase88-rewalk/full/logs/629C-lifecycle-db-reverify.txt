@@ -1,0 +1,29 @@
+# 629C builder 2 — read-only re-verification of the lifecycle date split (e2e-postgres, tenant_7d218705360b), 2026-10-29T22:27:51Z
+# container clocks
+e2e-backend: Thu Oct 29 22:27:51 UTC 2026 TZ=
+e2e-frontend: Thu Oct 29 22:27:51 UTC 2026 TZ=
+host: Fri Oct 30 00:27:51 SAST 2026 / Thu Oct 29 22:27:51 UTC 2026
+# trust_transactions for the run-1 clients (transaction_date | created_at | type | amount | status | client)
+SET
+2026-10-30|2026-10-29 22:01:39.397212+00|DEPOSIT|250000.00|RECORDED|Moroka Family Trust mvu36zag0e84
+2026-10-30|2026-10-29 22:01:43.281989+00|DEPOSIT|45000.00|RECORDED|QuickCollect Services mvu36zag0e84
+2026-10-29|2026-10-29 22:02:21.49381+00|FEE_TRANSFER|8500.00|APPROVED|Moroka Family Trust mvu36zag0e84
+2026-10-29|2026-10-29 22:03:14.564356+00|FEE_TRANSFER|500.00|AWAITING_APPROVAL|Sipho Ndlovu mvu36zag0e84
+# interest_runs (period_start | period_end | status)
+SET
+2026-09-30|2026-10-30|DRAFT
+# interest_allocations (avg daily | days | gross | client)
+SET
+1451.61|31|8.01|QuickCollect Services mvu36zag0e84
+7516.13|31|41.49|Moroka Family Trust mvu36zag0e84
+# Moroka balance as of 2026-10-29, same CASE/status rules as TrustTransactionRepository.calculateClientBalanceAsOfDate (:135-153)
+SET
+-8500.00
+# time_entries logged in run 1 (date | created_at | member | description)
+SET
+2026-10-30|2026-10-29 22:01:09.116875+00|Carol Member|Research case law — personal injury precedents
+2026-10-30|2026-10-29 22:01:11.314869+00|Bob Admin|Draft letter of demand to Road Accident Fund
+2026-10-30|2026-10-29 22:01:20.704178+00|Alice Owner|Report to Master of the High Court — initial filing
+2026-10-30|2026-10-29 22:01:46.824597+00|Carol Member|Collate medical records for the letter of demand
+# db timezone
+UTC

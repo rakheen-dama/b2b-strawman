@@ -1,0 +1,218 @@
+#1643	## Verdict: APPROVE @a81e5fe39381acb385ef91d1d845bfe2dbff1f4d	bound
+#1643	## Verdict: APPROVE @a81e5fe39381acb385ef91d1d845bfe2dbff1f4d	bound
+#1643	## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1644	## Verdict: APPROVE @a599a6767fc4	bound
+#1644	## Verdict: APPROVE @a599a6767fc4	bound
+#1644	## CodeRabbit: REVIEWED — no actionable findings
+#1645	## Verdict: APPROVE @00d1bd42d4f2	bound
+#1645	## Verdict: APPROVE @00d1bd42d4f2	bound
+#1645	## CodeRabbit: REVIEWED — no actionable findings
+#1646	## Verdict: APPROVE @0e6ba31fb	bound
+#1646	## Verdict: APPROVE @0e6ba31fb	bound
+#1646	## CodeRabbit: REVIEWED — 1 finding, triaged in reply (no code change)
+#1647	## Verdict: APPROVE @b8fe6f0237705306049ee3aaefe0cb92de81a0a6	bound
+#1647	## Verdict: APPROVE @b8fe6f0237705306049ee3aaefe0cb92de81a0a6	bound
+#1647	## CodeRabbit: REVIEWED — no actionable findings
+#1648	## Verdict: APPROVE @ce2349b66	bound
+#1648	## Verdict: APPROVE @ce2349b66	bound
+#1648	## CodeRabbit: REVIEWED — 1 finding, triaged no-change (scope)
+#1649	## Verdict: APPROVE @e50f579d7	bound
+#1649	## Verdict: APPROVE @e50f579d7	bound
+#1649	## CodeRabbit: REVIEWED — 1 finding, triaged no-change (pre-existing `?tab=` URL precedence in `matter-tabs.tsx` — the URL tab outranks the user's click. Reproduced on main's build with `?tab=tasks` before this PR; the logic dates back to Epic 33B; it affects every deep link (notification `?tab=tasks`, setup `?tab=budget`, the old `?tab=members`), so it gets its own slice per the one-fix-per-PR rule → filed follow-up)
+#1650	## Verdict: APPROVE @0db240476	bound
+#1650	## Verdict: APPROVE @0db240476	bound
+#1650	## CodeRabbit: REVIEWED — 1 finding (Minor, Day-7 `/Ndlovu|Sipho|RAF/i` `.first()` lookup), triaged no-change with a reply on the thread: cross-file run-state is beyond 619.13's locator/flow scope, and the lookup is unambiguous on the fresh-stack gate. Follow-up → 628E.
+#1651	## Verdict: APPROVE @fe9451e93844c8fa72e082e9a7c12f861d28e9f8	bound
+#1651	## Verdict: APPROVE @fe9451e93844c8fa72e082e9a7c12f861d28e9f8	bound
+#1651	## CodeRabbit: REVIEWED
+#1652	## Verdict: APPROVE @b52f4727b52f	bound
+#1652	## Verdict: APPROVE @b52f4727b52f	bound
+#1652	## CodeRabbit: REVIEWED — no actionable findings
+#1653	## Verdict: APPROVE @b4d747701814edaf699c3d4cecd5f23e3d347c77	bound
+#1653	## Verdict: APPROVE @b4d747701814edaf699c3d4cecd5f23e3d347c77	bound
+#1653	## CodeRabbit: DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate
+#1654	## Verdict: APPROVE @3c07aa0f4	bound
+#1654	## Verdict: APPROVE @3c07aa0f4	bound
+#1654	## CodeRabbit: REVIEWED — 1 finding (Major), triaged no-change with reply on the thread
+#1655	## Verdict: APPROVE @24db61722408	bound
+#1655	## Verdict: APPROVE @24db61722408	bound
+#1655	## CodeRabbit: REVIEWED — no actionable findings
+#1656	## Verdict: APPROVE @6b9b2f6011608dcfe34414dd77989ed4bd451f60	bound
+#1656	## Verdict: APPROVE @6b9b2f6011608dcfe34414dd77989ed4bd451f60	bound
+#1656	## CodeRabbit: REVIEWED — no actionable findings
+#1657	## Verdict: APPROVE @eb988d2a32a0933501eb7db19859a3542f6e6824	bound
+#1657	## Verdict: APPROVE @eb988d2a32a0933501eb7db19859a3542f6e6824	bound
+#1657	## CodeRabbit: REVIEWED — 1 finding (Major, `TrustTransactionRepository.java:36` "keep the trust-link picker functional"), triaged no-change with evidence and a reply on the thread: the picker already returns `[]` on main (client-side `DISBURSEMENT_PAYMENT` filter; G-B11 reproduced), so this is not a regression; 621C switches it to `PAYMENT` + `excludeLinked`. First pass was rate-limited; the wait → `@coderabbitai review` recipe produced a real review.
+#1658	## Verdict: APPROVE @7233ffae7	bound
+#1658	## Verdict: APPROVE @7233ffae7	bound
+#1658	## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1659	## Verdict: APPROVE @4e05ce60e	bound
+#1659	## Verdict: APPROVE @4e05ce60e	bound
+#1659	## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1660	## Verdict: APPROVE @93566920a16c6cf98777cfbe294f72a6cd89b978	bound
+#1660	## Verdict: APPROVE @93566920a16c6cf98777cfbe294f72a6cd89b978	bound
+#1660	## CodeRabbit: REVIEWED — no actionable findings
+#1661	## Verdict: APPROVE @d981903ca	bound
+#1661	## Verdict: APPROVE @d981903ca	bound
+#1661	## CodeRabbit: REVIEWED — no actionable findings
+#1662	## Verdict: APPROVE @e828f562475c8d1a09998626de67298f6b82a444	bound
+#1662	## Verdict: APPROVE @e828f562475c8d1a09998626de67298f6b82a444	bound
+#1662	## CodeRabbit: REVIEWED — 4 findings, addressed in fixer pass
+#1663	## Verdict: APPROVE @450c6eee385760e9528656902f937ed711410252	bound
+#1663	## Verdict: APPROVE @450c6eee385760e9528656902f937ed711410252	bound
+#1663	## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1664	## Verdict: APPROVE @d0a139b12	bound
+#1664	## Verdict: APPROVE @d0a139b12	bound
+#1664	## CodeRabbit: REVIEWED — no actionable findings
+#1665	## Verdict: APPROVE @a4aa86b0b	bound
+#1665	## Verdict: APPROVE @a4aa86b0b	bound
+#1665	## CodeRabbit: REVIEWED — 2 Minor findings, both triaged no-change with evidence (thread replies)
+#1666	## Verdict: APPROVE @90a7695b9660f3402be834dacf6eed76337f0320	bound
+#1666	## Verdict: APPROVE @90a7695b9660f3402be834dacf6eed76337f0320	bound
+#1666	## CodeRabbit: REVIEWED — no actionable findings
+#1667	## Verdict: APPROVE @30e0fa37b67e	bound
+#1667	## Verdict: APPROVE @30e0fa37b67e	bound
+#1667	## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1668	## Verdict: APPROVE @0f5b68b763ea	bound
+#1668	## Verdict: APPROVE @0f5b68b763ea	bound
+#1668	## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1669	## Verdict: APPROVE @ff4c8bee49372cb8d83f431b508cd2e8dc960bdd	bound
+#1669	## Verdict: APPROVE @ff4c8bee49372cb8d83f431b508cd2e8dc960bdd	bound
+#1669	## CodeRabbit: REVIEWED — 1 finding, addressed in fixer pass
+#1670	## Verdict: APPROVE @c68529891	bound
+#1670	## Verdict: APPROVE @c68529891	bound
+#1670	## CodeRabbit: REVIEWED — 4 findings, addressed in fixer pass
+#1671	## Verdict: APPROVE @0e669d7d8	bound
+#1671	## Verdict: APPROVE @0e669d7d8	bound
+#1671	## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1672	## Verdict: APPROVE @54b98f25abe4	bound
+#1672	## Verdict: APPROVE @54b98f25abe4	bound
+#1672	## CodeRabbit: REVIEWED — no actionable findings
+#1673	## Verdict: APPROVE @a48eb885624012b457de6d7c197dba3cf358eb8e	bound
+#1673	## Verdict: APPROVE @a48eb885624012b457de6d7c197dba3cf358eb8e	bound
+#1673	## CodeRabbit: REVIEWED — 4 findings, addressed in fixer pass
+#1674	## Verdict: APPROVE @af4187510	bound
+#1674	## Verdict: APPROVE @af4187510	bound
+#1674	## CodeRabbit: REVIEWED — no actionable findings
+#1675	## Verdict: APPROVE @cdb1dbb0a	bound
+#1675	## Verdict: APPROVE @cdb1dbb0a	bound
+#1675	## CodeRabbit: REVIEWED — no actionable findings
+#1676	## Verdict: APPROVE @17834f000	bound
+#1676	## Verdict: APPROVE @17834f000	bound
+#1676	## CodeRabbit: REVIEWED — no actionable findings
+#1677	## Verdict: APPROVE @cd00b6ba4369c82b1a85834bd464d0b9ad4dc601	bound
+#1677	## Verdict: APPROVE @cd00b6ba4369c82b1a85834bd464d0b9ad4dc601	bound
+#1677	## CodeRabbit: REVIEWED — no actionable findings
+#1678	## Verdict: APPROVE @9cc0743ab18474439d3896104b359e236e39f993	bound
+#1678	## Verdict: APPROVE @9cc0743ab18474439d3896104b359e236e39f993	bound
+#1678	## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1679	## Verdict: APPROVE @69357616d181364bff1a81ec5097c6da83ca9b45	bound
+#1679	## Verdict: APPROVE @69357616d181364bff1a81ec5097c6da83ca9b45	bound
+#1679	## CodeRabbit: REVIEWED — no actionable findings
+#1680	## Verdict: APPROVE @46e4db845	bound
+#1680	## Verdict: APPROVE @46e4db845	bound
+#1680	## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1681	## Verdict: APPROVE @8bf8f0139	bound
+#1681	## Verdict: APPROVE @8bf8f0139	bound
+#1681	## CodeRabbit: REVIEWED — 1 finding (Trivial nitpick), evaluated and declined with evidence below; no actionable comments on 520f22eda
+#1682	## Verdict: APPROVE @0bf76bb35	bound
+#1682	## Verdict: APPROVE @0bf76bb35	bound
+#1682	## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1683	## Verdict: APPROVE @e7bf0e386	bound
+#1683	## Verdict: APPROVE @e7bf0e386	bound
+#1683	## CodeRabbit: REVIEWED — 1 finding, addressed in fixer pass
+#1684	## Verdict: APPROVE @84c2123b8	bound
+#1684	## Verdict: APPROVE @84c2123b8	bound
+#1684	## CodeRabbit: REVIEWED — no actionable findings
+#1685	## Verdict: APPROVE @99420af96	bound
+#1685	## Verdict: APPROVE @99420af96	bound
+#1685	## CodeRabbit: REVIEWED — 2 findings: 1 Minor (whitespace email → 400 before trim) addressed in fixer pass 99420af96 (CR marked "Addressed"); 1 Minor on an evidence transcript (`after/04c` echo shows a raw tab) triaged evidence-only with a thread reply, note appended in the post-merge docs commit.
+#1686	## Verdict: APPROVE @14f84b925	bound
+#1686	## Verdict: APPROVE @14f84b925	bound
+#1686	## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1687	## Verdict: APPROVE @c25867b72	bound
+#1687	## Verdict: APPROVE @c25867b72	bound
+#1687	## CodeRabbit: REVIEWED — no actionable findings
+#1688	## Verdict: APPROVE @2afd0e605	bound
+#1688	## Verdict: APPROVE @2afd0e605	bound
+#1688	## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1689	## Verdict: APPROVE @1070711c7	bound
+#1689	## Verdict: APPROVE @1070711c7	bound
+#1689	## CodeRabbit: REVIEWED — no actionable findings
+#1690	## Verdict: APPROVE @130bc3016	bound
+#1690	## Verdict: APPROVE @130bc3016	bound
+#1690	## CodeRabbit: REVIEWED — 0 actionable on cc59f005a; 1 trivial nitpick on 130bc3016 triaged no-change (scoped to 626H)
+#1691	## Verdict: APPROVE @8c9023427	bound
+#1691	## Verdict: APPROVE @8c9023427	bound
+#1691	## CodeRabbit: REVIEWED — 0 actionable on 330f385da; 1 Minor on 1f3b6cec6 (guard counted association entries with an unsupported `field`), fixed in 8c9023427 + thread reply
+#1692	## Verdict: APPROVE @c3279dfb7	bound
+#1692	## Verdict: APPROVE @c3279dfb7	bound
+#1692	## CodeRabbit: REVIEWED — 1 finding (Major: commit `:222` screenshot baseline), triaged no-change with thread reply (suite-wide convention, no baselines tracked); CodeRabbit withdrew it; incremental review of c3279dfb7 posted no new comments
+#1693	## Verdict: APPROVE @8e8c118d79bff732d6523f3280f16e09b0fa5d17	bound
+#1693	## Verdict: APPROVE @8e8c118d79bff732d6523f3280f16e09b0fa5d17	bound
+#1693	## CodeRabbit: REVIEWED — 6 findings across 4 heads; 5 addressed in fixer passes, 1 triaged no-change (pre-existing)
+#1694	## Verdict: APPROVE @fa0225e72	bound
+#1694	## Verdict: APPROVE @fa0225e72	bound
+#1694	## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1695	## Verdict: APPROVE @32425c851	bound
+#1695	## Verdict: APPROVE @32425c851	bound
+#1695	## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1696	## Verdict: APPROVE @0c9acf7b9	bound
+#1696	## Verdict: APPROVE @0c9acf7b9	bound
+#1696	## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1697	## Verdict: APPROVE @06f0337bd	bound
+#1697	## Verdict: APPROVE @06f0337bd	bound
+#1697	## CodeRabbit: REVIEWED — 3 findings; 2 addressed (arch acceptance wording; local paths/username in evidence), 1 triaged no-change with thread reply (export abort deadline: pre-existing parity, no budget defined → follow-up); final head review: no actionable comments
+#1698	## Verdict: APPROVE @37e4ae375	bound
+#1698	## Verdict: APPROVE @37e4ae375	bound
+#1698	## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1699	## Verdict: APPROVE @45107cec3	bound
+#1699	## Verdict: APPROVE @45107cec3	bound
+#1699	## CodeRabbit: REVIEWED — 3 findings, addressed in fixer pass
+#1700	## Verdict: APPROVE @f7206efe7	bound
+#1700	## Verdict: APPROVE @f7206efe7	bound
+#1700	## CodeRabbit: REVIEWED — 5 findings, addressed in fixer pass
+#1701	## Verdict: APPROVE @275a897a2	bound
+#1701	## Verdict: APPROVE @275a897a2	bound
+#1701	## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1702	## Verdict: APPROVE @04fbfdd2b	bound
+#1702	## Verdict: APPROVE @04fbfdd2b	bound
+#1702	## CodeRabbit: REVIEWED — 1 findings, addressed in fixer pass
+#1703	## Verdict: APPROVE @a1a368101	other-head
+#1703	## Verdict: APPROVE @a1a368101	other-head
+#1703	## CodeRabbit: DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate
+#1703	## Verdict: APPROVE @b1e4b56d2ab615e054ec82235b2b045040466022	bound
+#1703	## Verdict: APPROVE @b1e4b56d2ab615e054ec82235b2b045040466022	bound
+#1703	## CodeRabbit: DEFERRED — not arrived after full review cycle; paid on-demand only above 150 files; superpowers reviews are the merge gate
+#1704	## Verdict: APPROVE @5cd76cc68	bound
+#1704	## Verdict: APPROVE @5cd76cc68	bound
+#1704	## CodeRabbit: REVIEWED — 3 findings, 2 addressed in fixer pass, 1 triaged no-change
+#1705	## Verdict: APPROVE @5a8ef577b	bound
+#1705	## Verdict: APPROVE @5a8ef577b	bound
+#1705	## CodeRabbit: REVIEWED — 1 finding, triaged (out of scope → 628D; reply on the thread https://github.com/rakheen-dama/b2b-strawman/pull/1705#discussion_r4407416578)
+#1706	## Verdict: APPROVE @be1f543c1	bound
+#1706	## Verdict: APPROVE @be1f543c1	bound
+#1706	## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1707	## Verdict: APPROVE @1a00394ad	bound
+#1707	## Verdict: APPROVE @1a00394ad	bound
+#1707	## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass
+#1708	## Verdict: APPROVE @b7033ebc9	bound
+#1708	## Verdict: APPROVE @b7033ebc9	bound
+#1708	## CodeRabbit: REVIEWED — 5 findings, addressed in fixer pass
+#1709	## Verdict: APPROVE @7bdd51eaf	bound
+#1709	## Verdict: APPROVE @7bdd51eaf	bound
+#1709	## CodeRabbit: REVIEWED — 6 findings across 2 reviews; 4 fixed, 2 triaged no-change
+#1710	## Verdict: APPROVE @6b8fe1e53750	bound
+#1710	## Verdict: APPROVE @6b8fe1e53750	bound
+#1710	## CodeRabbit: REVIEWED — 3 Minor findings triaged, no change required (full review on 6b8fe1e53 after the rate-limit wait + `@coderabbitai review`)
+#1711	## Verdict: APPROVE @76aaa1be8b6ce14e6b2ef0b4af6f1b2827f6b9fa	bound
+#1711	## Verdict: APPROVE @76aaa1be8b6ce14e6b2ef0b4af6f1b2827f6b9fa	bound
+#1711	## CodeRabbit: REVIEWED — 6 findings (3 on d49f4b335, 1 actionable + 2 nits on 8fb0e2335), addressed in fixer pass
+#1712	## Verdict: APPROVE @8d33aab0ea450a560ff6938c7f5500eac6e61a41	other-head
+#1712	## Verdict: APPROVE @8d33aab0ea450a560ff6938c7f5500eac6e61a41	other-head
+#1712	## Verdict: APPROVE @4e8e0ecf47a7e94bc39b1758f9b5775cc1ff6d79	bound
+#1712	## Verdict: APPROVE @4e8e0ecf47a7e94bc39b1758f9b5775cc1ff6d79	bound
+#1712	## CodeRabbit: REVIEWED — 5 Minor findings, all addressed in 4e8e0ecf4
+#1713	## Verdict: APPROVE @140e97210	bound
+#1713	## Verdict: APPROVE @140e97210	bound
+#1713	## CodeRabbit: REVIEWED — 2 findings, addressed in fixer pass

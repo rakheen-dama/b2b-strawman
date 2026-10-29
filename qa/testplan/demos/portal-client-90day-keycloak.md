@@ -205,20 +205,20 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 85 — Update profile, change digest cadence to biweekly  `[all profiles]`
+## Day 85 — Update profile, check the firm's digest cadence (read-only)  `[all profiles]` (Phase 88, ADR-344 + register §5 row 15 — wording amendment, founder-authorised 2026-10-22: the portal shows the firm's digest cadence read-only; the firm sets it)
 
 **Actor**: Sipho Dlamini (all profiles exercise this)
 
 - [ ] **85.1** Navigate to `/profile` → verify profile form renders with editable fields (name, phone, preferred contact method, etc.)
 - [ ] **85.2** Update one field (e.g. append " (updated Day 85)" to display name) → Save → verify success toast + persisted value on reload
-- [ ] **85.3** Navigate to `/settings/notifications` → verify digest cadence control renders with current value = **"weekly"**
-- [ ] **85.4** Change digest cadence to **"biweekly"** → Save → verify success toast
-- [ ] **85.5** Reload → verify cadence persisted as "biweekly"
+- [ ] **85.3** Navigate to `/settings/notifications` → the **Email notifications** card states the firm's cadence as read-only text, e.g. "Your firm sends weekly digests." (or bi-weekly / turned off, per the firm's setting) (Phase 88, ADR-344 + register §5 row 15 — wording amendment, founder-authorised 2026-10-22: `portal/app/(authenticated)/settings/notifications/page.tsx:79-87,278-280`)
+- [ ] **85.4** Verify the client has no cadence control (only on/off switches such as **Weekly digest**); the firm sets the cadence under firm-side **Settings › Firm › General** → **Client Portal** → **Portal digest cadence** (Weekly / Bi-weekly / Off) (Phase 88, ADR-344 + register §5 row 15 — wording amendment, founder-authorised 2026-10-22: `frontend/components/settings/portal-settings-section.tsx:16-20,74`)
+- [ ] **85.5** Reload → the cadence line still matches the firm's setting (e.g. "Your firm sends bi-weekly digests." when the firm chose Bi-weekly) (Phase 88, ADR-344 + register §5 row 15 — wording amendment, founder-authorised 2026-10-22: read-only on the portal)
 - [ ] **85.6** 📸 **Screenshot**: `day-85-notifications-biweekly.png`
 
 **Day 85 checkpoints**
 - [ ] Profile update propagates to backend (firm-side contact record reflects the new display name)
-- [ ] Notification cadence persists across logout/login
+- [ ] The firm's cadence line reads the same after logout/login (read-only on the portal) (Phase 88, ADR-344 + register §5 row 15 — wording amendment, founder-authorised 2026-10-22: the cadence is a firm setting)
 
 ---
 

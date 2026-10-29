@@ -176,8 +176,107 @@ class FieldPackSeederReconcileTest {
         });
   }
 
+  /**
+   * R-18 LEFT_ALONE for {@code field_definition}: a firm-edited {@code category} description is
+   * kept while the group's entries in the same block still apply.
+   */
   @Test
-  void firmCreatedGroupWithTheOldName_isNeverTouched() {
+  void firmEditedDefinitionDescription_isLeftAlone_groupEntriesStillApply() {
+    simulateCommonV2(V2_GROUP_NAME, true);
+    inTenantTx(
+        () -> {
+          var category = definition("category");
+          category.updateMetadata(
+              category.getName(),
+              "Our firm's category notes",
+              category.isRequired(),
+              category.getValidation());
+          return fieldDefinitionRepository.save(category);
+        });
+
+    List<String> logs = captureLogs(() -> fieldPackSeeder.seedPacksForTenant(schema, ORG_ID));
+
+    inTenantTx(
+        () -> {
+          assertThat(definition("category").getDescription())
+              .isEqualTo("Our firm's category notes");
+          var group = group("project_info");
+          assertThat(group.getName()).isEqualTo(V3_GROUP_NAME);
+          assertThat(group.getDescription()).isEqualTo(V3_GROUP_DESC);
+          assertThat(ledgerVersion(COMMON_PACK)).isEqualTo("3");
+          return null;
+        });
+    assertThat(logs)
+        .anyMatch(
+            m ->
+                m.startsWith("Reconcile skipped (edited)")
+                    && m.contains("pack=common-project")
+                    && m.contains("field_definition 'category' field description"));
+  }
+
+  /**
+   * R-18 ownership by {@code pack_id}: rows that own the pack's slugs ({@code project_info} group,
+   * {@code category} definition) but carry no {@code pack_id} — a firm re-created row — are never
+   * written, even though their values equal every {@code from}. Removing the {@code pack_id} filter
+   * in {@code FieldPackSeeder.groupTarget} / {@code definitionTarget} turns this red.
+   */
+  @Test
+  void slugOwningRowsWithoutPackId_areNeverWritten() {
+    simulateCommonV2(V2_GROUP_NAME, true);
+    setPackOwnership(null, "category");
+    try {
+      List<String> logs = captureLogs(() -> fieldPackSeeder.seedPacksForTenant(schema, ORG_ID));
+
+      inTenantTx(
+          () -> {
+            var group = group("project_info");
+            assertThat(group.getName()).isEqualTo(V2_GROUP_NAME);
+            assertThat(group.getDescription()).isEqualTo(V2_GROUP_DESC);
+            assertThat(definition("category").getDescription()).isEqualTo(V2_CATEGORY_DESC);
+            assertThat(ledgerVersion(COMMON_PACK)).isEqualTo("3");
+            return null;
+          });
+      assertThat(logs)
+          .filteredOn(
+              m ->
+                  m.startsWith("Reconcile skipped (no pack-seeded row)")
+                      && m.contains("pack=common-project"))
+          .hasSize(3);
+    } finally {
+      setPackOwnership(COMMON_PACK, "category");
+    }
+  }
+
+  /**
+   * R-18 ownership by {@code pack_field_key}: a {@code category} definition carrying this pack's
+   * {@code pack_id} but a different {@code pack_field_key} is skipped. Removing the {@code
+   * pack_field_key} check in {@code FieldPackSeeder.definitionTarget} turns this red.
+   */
+  @Test
+  void definitionWithAnotherPackFieldKey_isSkipped() {
+    simulateCommonV2(V2_GROUP_NAME, true);
+    setPackOwnership(COMMON_PACK, "other_field_key");
+    try {
+      fieldPackSeeder.seedPacksForTenant(schema, ORG_ID);
+
+      inTenantTx(
+          () -> {
+            assertThat(definition("category").getDescription()).isEqualTo(V2_CATEGORY_DESC);
+            assertThat(group("project_info").getName()).isEqualTo(V3_GROUP_NAME);
+            return null;
+          });
+    } finally {
+      setPackOwnership(COMMON_PACK, "category");
+    }
+  }
+
+  /**
+   * A firm-created group under a different slug that carries the old pack strings is never touched:
+   * resolution is by the pack's own slug, so other slugs are never looked up. (The {@code pack_id}
+   * filter is proven by {@link #slugOwningRowsWithoutPackId_areNeverWritten()}.)
+   */
+  @Test
+  void firmCreatedGroupUnderAnotherSlug_withTheOldName_isNeverTouched() {
     simulateCommonV2(V2_GROUP_NAME, true);
     var firmGroupId =
         inTenantTx(
@@ -228,6 +327,10 @@ class FieldPackSeederReconcileTest {
    * targets the pack's group slug ({@code field_group}) or one of its field slugs ({@code
    * field_definition}), its {@code to} equals the value shipped in the same file, and {@code from}
    * differs — a later JSON edit without updating {@code to} fails here, not at a tenant's boot.
+   * Cumulative-chain convention ({@code backend/CLAUDE.md} › Pack reconcile contract): every {@code
+   * to} is the head (the shipped value) and every {@code from} a value of some prior version; when
+   * a field is re-edited, re-point every older entry's {@code to} to the new head and add one entry
+   * whose {@code from} is the previous head.
    */
   @Test
   void shippedFieldPackReconcileEntries_targetDeclaredKeysAndShippedValues() throws IOException {
@@ -301,6 +404,7 @@ class FieldPackSeederReconcileTest {
             shipped.fields(),
             List.of(
                 new PackReconcileEntry("field_option", "project_info", "name", "a", "Matter Info"),
+                new PackReconcileEntry("field_option", "project_info", "slug", "a", 42),
                 new PackReconcileEntry("field_group", "project_info", "slug", "a", "b"),
                 new PackReconcileEntry("field_group", "project_info", "name", "a", 42),
                 new PackReconcileEntry("field_group", "other_group", "name", "a", "Matter Info"),
@@ -312,7 +416,12 @@ class FieldPackSeederReconcileTest {
             () -> logs.addAll(captureLogs(() -> seeder.reconcileInstalledPack(pack, null, "t"))))
         .doesNotThrowAnyException();
 
-    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile entry ignored")).hasSize(6);
+    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile entry ignored")).hasSize(7);
+    // the entity is checked first, so an unsupported entity is reported as such even when its
+    // field / value are unsupported too
+    assertThat(logs)
+        .filteredOn(m -> m.contains("'field_option'") && m.endsWith("unsupported entity"))
+        .hasSize(2);
   }
 
   // --- helpers ---
@@ -337,6 +446,25 @@ class FieldPackSeederReconcileTest {
           if (rewind) {
             rewind(COMMON_PACK, "3", "2");
           }
+          return null;
+        });
+  }
+
+  /**
+   * Sets {@code pack_id} on the {@code project_info} group and {@code category} definition, and the
+   * definition's {@code pack_field_key}; {@code (COMMON_PACK, "category")} restores the seeded
+   * state.
+   */
+  private void setPackOwnership(String packId, String categoryPackFieldKey) {
+    inTenantTx(
+        () -> {
+          var group = group("project_info");
+          group.setPackId(packId);
+          fieldGroupRepository.save(group);
+          var category = definition("category");
+          category.setPackId(packId);
+          category.setPackFieldKey(categoryPackFieldKey);
+          fieldDefinitionRepository.save(category);
           return null;
         });
   }

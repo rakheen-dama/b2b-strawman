@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +26,8 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Unit test (mocked repository) for the edges of {@link
  * StandardReportPackSeeder#resolveReconcileTarget} the integration test cannot reach: a non-system
  * row carrying a pack slug is never a target, and unsupported entries are WARN-logged and skipped,
- * never thrown. The applied / edited / equal-version paths are {@code
- * StandardReportPackSeederReconcileTest}.
+ * never thrown, and a description write bumps {@code updatedAt} like a rename. The applied / edited
+ * / equal-version paths are {@code StandardReportPackSeederReconcileTest}.
  */
 class StandardReportPackSeederResolverTest {
 
@@ -66,6 +67,28 @@ class StandardReportPackSeederResolverTest {
     assertThat(logs)
         .filteredOn(m -> m.startsWith("Reconcile skipped (no pack-seeded row)"))
         .hasSize(StandardReportPackSeeder.RECONCILE.size());
+  }
+
+  /** F-4: the reconcile description write bumps {@code updatedAt}, like {@code rename}. */
+  @Test
+  void descriptionWrite_bumpsUpdatedAt() {
+    var row = StandardReportsV1.bySlug("invoice-aging");
+    ReflectionTestUtils.setField(row, "updatedAt", Instant.EPOCH);
+    when(repository.findBySlug("invoice-aging")).thenReturn(Optional.of(row));
+    var entry =
+        PackReconcileEntry.parse(
+                StandardReportPackSeeder.PACK_ID, StandardReportPackSeeder.RECONCILE)
+            .stream()
+            .filter(e -> "invoice-aging".equals(e.key()) && "description".equals(e.field()))
+            .findFirst()
+            .orElseThrow();
+
+    var target = seeder.resolveReconcileTarget(entry).orElseThrow();
+    assertThat(target.currentValue()).isEqualTo(entry.from());
+    target.apply(entry.to());
+
+    assertThat(row.getDescription()).isEqualTo(entry.to());
+    assertThat(row.getUpdatedAt()).isAfter(Instant.EPOCH);
   }
 
   @Test

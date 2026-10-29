@@ -209,7 +209,7 @@ public class StandardReportPackSeeder {
               to,
               shipped.getDescription(),
               ReportDefinition::getDescription,
-              d -> d::setDescription);
+              d -> d::updateDescription);
       case "parameterSchema" ->
           hashTarget(
               entry,

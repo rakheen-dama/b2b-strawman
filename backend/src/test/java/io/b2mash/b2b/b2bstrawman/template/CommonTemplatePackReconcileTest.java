@@ -96,8 +96,16 @@ class CommonTemplatePackReconcileTest {
 
   // --- shipped-pack guard ---
 
+  /**
+   * Guard for the cumulative-chain convention ({@code backend/CLAUDE.md} › Pack reconcile
+   * contract): every {@code to} is the head — the name / description / body hash shipped in the
+   * pack — because the resolver WARN-skips any other {@code to}; every {@code from} is the value of
+   * a prior version (today only v3, the first version with entries). When a field is re-edited,
+   * re-point every older entry's {@code to} to the new head and add one entry whose {@code from} is
+   * the previous head (legal-za v9, 626E, is the worked example).
+   */
   @Test
-  void shippedPack_reconcileBlock_takesV3ValuesToTheShippedValues() {
+  void shippedPack_reconcileBlock_everyToIsHead_everyFromIsV3() {
     assertThat(shippedPack.version()).isEqualTo(4);
     var entries = PackReconcileEntry.parse(PACK_ID, shippedPack.reconcile());
     assertThat(entries).hasSize(7);

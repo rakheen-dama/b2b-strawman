@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -9,14 +11,19 @@ import ch.qos.logback.core.read.ListAppender;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.packs.ContentHashUtil;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstallRepository;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
@@ -36,7 +44,9 @@ import tools.jackson.databind.ObjectMapper;
  * ruling R-1): the {@code legal-za-clauses} and {@code standard-clauses} v2 blocks take a pristine
  * v1 SYSTEM clause body (whole-body {@code sha256:} equality) to the shipped body through the
  * startup path {@code ClausePackSeeder.seedPacksForTenant} → version gate → {@code
- * resolveReconcileTarget}; clones carrying the same pack id are never targets.
+ * resolveReconcileTarget}. Ownership ({@code pack_id} + {@code source = SYSTEM} + active) is pinned
+ * by the mocked-repository cases {@code clonedOrInactiveRowUnderThePackSlug_*}, because a real
+ * clone can never share the SYSTEM clause's slug ({@code clauses.slug} is unique).
  *
  * <p>The v1 bodies come from fixtures copied from git ({@code fe579bdc9}) before the packs were
  * edited ({@code fixtures/clause-packs/*-v1/pack.json}).
@@ -99,8 +109,14 @@ class ClauseBodyReconcileTest {
         });
   }
 
+  /**
+   * A firm clone under its own slug carrying the pack id and the v1 body survives byte-identical
+   * while the SYSTEM clause is reconciled. Resolution is by the pack's clause slug, so the clone is
+   * never even looked up — this does NOT exercise the {@code source == SYSTEM} filter; that is
+   * {@link #clonedOrInactiveRowUnderThePackSlug_isNeverATarget()}.
+   */
   @Test
-  void cloneWithTheV1Body_isNeverTouched() {
+  void cloneUnderAnotherSlugWithTheV1Body_isNeverTouched() {
     simulateV1(true);
     UUID cloneId =
         inTenantTx(
@@ -196,33 +212,118 @@ class ClauseBodyReconcileTest {
   }
 
   /**
-   * Guard (no tenant needed): each shipped {@code clause} entry targets a clause of its pack, its
-   * {@code from} is the {@code sha256:} of the v1 fixture body and its {@code to} the hash of the
-   * body shipped on the classpath — a later body edit without re-computing {@code to} fails here.
+   * Every previously shipped version of the clause packs, oldest first, as the fixture suffix
+   * ({@code fixtures/clause-packs/<pack>-<suffix>/pack.json}). Today only v1; a v3 body edit copies
+   * the v2 pack to a {@code -v2} fixture and appends it here — a one-line change.
+   */
+  static final List<String> PRIOR_VERSIONS = List.of("v1");
+
+  /**
+   * Guard (no tenant needed) for the cumulative-chain convention ({@code backend/CLAUDE.md} › Pack
+   * reconcile contract): each shipped {@code clause} entry targets a reworded clause of its pack;
+   * every {@code to} is the head — the {@code sha256:} of the body shipped on the classpath —
+   * because the resolver WARN-skips any other {@code to}; every {@code from} is the hash of the
+   * body of SOME prior version in {@link #PRIOR_VERSIONS}. When a body is re-edited, re-point every
+   * older entry's {@code to} to the new head and add one entry whose {@code from} is the previous
+   * head. A body edit without re-computing {@code to} fails here, not at a tenant's boot.
    */
   @Test
-  void shippedClauseBodyEntries_fromIsV1_toIsShipped() {
+  void shippedClauseBodyEntries_everyToIsHead_everyFromIsAPriorVersion() {
     for (var reworded : REWORDED.entrySet()) {
       String packId = reworded.getKey();
       var pack = readPack("clause-packs/" + packId + "/pack.json");
-      assertThat(pack.version()).as(packId).isEqualTo(2);
+      assertThat(pack.version()).as(packId).isEqualTo(PRIOR_VERSIONS.size() + 1);
       var entries =
           PackReconcileEntry.parse(packId, pack.reconcile()).stream()
               .filter(e -> "clause".equals(e.entity()))
               .toList();
       assertThat(entries)
           .extracting(PackReconcileEntry::key)
-          .containsExactlyElementsOf(reworded.getValue());
+          .hasSameElementsAs(reworded.getValue());
       for (PackReconcileEntry e : entries) {
         assertThat(e.field()).as(e.key()).isEqualTo("body");
-        assertThat(e.from()).as(e.key()).isEqualTo(hashRef(v1Body(packId, e.key())));
-        assertThat(e.to()).as(e.key()).isEqualTo(hashRef(shippedBody(packId, e.key())));
+        assertThat(e.to())
+            .as("%s to is the head", e.key())
+            .isEqualTo(hashRef(shippedBody(packId, e.key())));
+        assertThat(e.from())
+            .as("%s from is a prior version's body", e.key())
+            .isIn(
+                PRIOR_VERSIONS.stream().map(v -> hashRef(priorBody(packId, v, e.key()))).toList());
         assertThat(e.to()).as(e.key()).isNotEqualTo(e.from());
       }
     }
   }
 
+  /**
+   * Mocked repository: the row {@code findBySlug(FEE_CLAUSE)} returns carries this pack's {@code
+   * pack_id}, the pack slug and the v1 body (so the one rule WOULD apply), but is a CLONED or an
+   * inactive SYSTEM row — never a target, nothing written. The active SYSTEM row is the positive
+   * control. Removing the {@code source == SYSTEM && isActive()} filter in {@code
+   * ClausePackSeeder.resolveReconcileTarget} turns this red.
+   */
+  @Test
+  void clonedOrInactiveRowUnderThePackSlug_isNeverATarget() {
+    var pack = readPack("clause-packs/" + LEGAL_PACK + "/pack.json");
+    var entry =
+        PackReconcileEntry.parse(LEGAL_PACK, pack.reconcile()).stream()
+            .filter(e -> "clause".equals(e.entity()) && FEE_CLAUSE.equals(e.key()))
+            .findFirst()
+            .orElseThrow();
+    var resource = new ClassPathResource("clause-packs/" + LEGAL_PACK + "/pack.json");
+
+    var system = systemRow();
+    var clone = Clause.cloneFrom(system, FEE_CLAUSE);
+    assertThat(clone.getSource()).isEqualTo(ClauseSource.CLONED);
+    assertThat(clone.getPackId()).isEqualTo(LEGAL_PACK);
+    var inactive = systemRow();
+    inactive.deactivate();
+
+    for (var row : List.of(clone, inactive)) {
+      var repository = mock(ClauseRepository.class);
+      when(repository.findBySlug(FEE_CLAUSE)).thenReturn(Optional.of(row));
+      var seeder = seederWith(repository);
+
+      assertThat(seeder.resolveReconcileTarget(pack, entry, resource))
+          .as("%s active=%s", row.getSource(), row.isActive())
+          .isEmpty();
+      var logs = captureLogs(() -> seeder.reconcileInstalledPack(pack, resource, "t"));
+      assertThat(ContentHashUtil.hashOf(row.getBody()))
+          .as("%s active=%s keeps the v1 body", row.getSource(), row.isActive())
+          .isEqualTo(ContentHashUtil.hashOf(v1Body(LEGAL_PACK, FEE_CLAUSE)));
+      assertThat(logs)
+          .anyMatch(
+              m ->
+                  m.startsWith("Reconcile skipped (no pack-seeded row)")
+                      && m.contains("'" + FEE_CLAUSE + "' field body"));
+    }
+
+    // positive control: the active SYSTEM row is resolved and reconciled
+    var repository = mock(ClauseRepository.class);
+    when(repository.findBySlug(FEE_CLAUSE)).thenReturn(Optional.of(system));
+    seederWith(repository).reconcileInstalledPack(pack, resource, "t");
+    assertThat(ContentHashUtil.hashOf(system.getBody()))
+        .isEqualTo(ContentHashUtil.hashOf(shippedBody(LEGAL_PACK, FEE_CLAUSE)));
+  }
+
   // --- helpers ---
+
+  /** An unpersisted active SYSTEM {@code legal-za-fees-hourly} clause carrying the v1 body. */
+  private static Clause systemRow() {
+    return Clause.createSystemClause(
+        "Fees (hourly)", FEE_CLAUSE, v1Body(LEGAL_PACK, FEE_CLAUSE), "Fees", null, LEGAL_PACK, 0);
+  }
+
+  private static ClausePackSeeder seederWith(ClauseRepository repository) {
+    return new ClausePackSeeder(
+        mock(ResourcePatternResolver.class),
+        JSON,
+        repository,
+        mock(TemplateClauseRepository.class),
+        mock(DocumentTemplateRepository.class),
+        mock(OrgSettingsRepository.class),
+        mock(TenantTransactionHelper.class),
+        mock(PackVersionGate.class));
+  }
 
   /** Writes the v1 bodies back onto the SYSTEM clauses; when {@code rewind}, ledgers 2 → 1. */
   private void simulateV1(boolean rewind) {
@@ -261,7 +362,11 @@ class ClauseBodyReconcileTest {
   }
 
   static Map<String, Object> v1Body(String packId, String slug) {
-    return body(readPack("fixtures/clause-packs/" + packId + "-v1/pack.json"), slug);
+    return priorBody(packId, "v1", slug);
+  }
+
+  static Map<String, Object> priorBody(String packId, String version, String slug) {
+    return body(readPack("fixtures/clause-packs/" + packId + "-" + version + "/pack.json"), slug);
   }
 
   static Map<String, Object> shippedBody(String packId, String slug) {

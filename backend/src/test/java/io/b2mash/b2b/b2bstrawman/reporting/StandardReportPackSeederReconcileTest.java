@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -164,14 +165,30 @@ class StandardReportPackSeederReconcileTest {
   }
 
   /**
-   * Guard (no tenant needed): the Java {@code RECONCILE} block parses; every {@code from} is the v1
-   * value (string) or the {@code sha256:} of the v1 value ({@link StandardReportsV1}); every {@code
-   * to} is the shipped value or its hash — a factory edit without updating {@code to} fails here,
-   * not at a tenant's boot.
+   * Every previously shipped version of the pack, oldest first, as a slug → definition factory.
+   * Today only v1 ({@link StandardReportsV1}); a v3 edit appends a verbatim copy of the v2
+   * factories here — a one-line change.
+   */
+  static final List<Function<String, ReportDefinition>> PRIOR_VERSIONS =
+      List.of(StandardReportsV1::bySlug);
+
+  static final List<String> FIELDS =
+      List.of("name", "description", "parameterSchema", "columnDefinitions", "templateBody");
+
+  /**
+   * Guard (no tenant needed) for the cumulative-chain convention ({@code backend/CLAUDE.md} › Pack
+   * reconcile contract): the Java {@code RECONCILE} block parses; every {@code to} is the head —
+   * the shipped value, or its {@code sha256:} — because the resolver WARN-skips any other {@code
+   * to}; every {@code from} is the value (or hash) of SOME prior version in {@link
+   * #PRIOR_VERSIONS}; and for each (slug, field) the {@code from}s are exactly the prior values
+   * that differ from the head, so no older tenant is left stale. When a field is re-edited,
+   * re-point every older entry's {@code to} to the new head and add one entry whose {@code from} is
+   * the previous head. A factory edit without updating {@code to} fails here, not at a tenant's
+   * boot.
    */
   @Test
-  void shippedReconcile_fromIsV1_toIsShipped() {
-    assertThat(StandardReportPackSeeder.PACK_VERSION).isEqualTo(2);
+  void shippedReconcile_everyToIsHead_everyFromIsAPriorVersion() {
+    assertThat(StandardReportPackSeeder.PACK_VERSION).isEqualTo(PRIOR_VERSIONS.size() + 1);
     var entries =
         PackReconcileEntry.parse(
             StandardReportPackSeeder.PACK_ID, StandardReportPackSeeder.RECONCILE);
@@ -180,71 +197,53 @@ class StandardReportPackSeederReconcileTest {
       String where = e.key() + "." + e.field();
       assertThat(e.entity()).as(where).isEqualTo("report_definition");
       assertThat(e.key()).as(where).isIn(SLUGS);
-      var v1 = StandardReportsV1.bySlug(e.key());
+      assertThat(e.field()).as(where).isIn(FIELDS);
       var shipped = StandardReportPackSeeder.shipped(e.key());
-      switch (e.field()) {
-        case "name" -> {
-          assertThat(e.from()).as(where).isEqualTo(v1.getName());
-          assertThat(e.to()).as(where).isEqualTo(shipped.getName());
-        }
-        case "description" -> {
-          assertThat(e.from()).as(where).isEqualTo(v1.getDescription());
-          assertThat(e.to()).as(where).isEqualTo(shipped.getDescription());
-        }
-        case "parameterSchema" -> {
-          assertThat(e.from()).as(where).isEqualTo(hashRef(v1.getParameterSchema()));
-          assertThat(e.to()).as(where).isEqualTo(hashRef(shipped.getParameterSchema()));
-        }
-        case "columnDefinitions" -> {
-          assertThat(e.from()).as(where).isEqualTo(hashRef(v1.getColumnDefinitions()));
-          assertThat(e.to()).as(where).isEqualTo(hashRef(shipped.getColumnDefinitions()));
-        }
-        case "templateBody" -> {
-          assertThat(e.from()).as(where).isEqualTo(hashRef(v1.getTemplateBody()));
-          assertThat(e.to()).as(where).isEqualTo(hashRef(shipped.getTemplateBody()));
-        }
-        default -> throw new AssertionError("Unexpected field " + where);
-      }
+      assertThat(e.to()).as("%s to is the head", where).isEqualTo(value(shipped, e.field()));
+      assertThat(e.from())
+          .as("%s from is a prior version's value", where)
+          .isIn(priorValues(e.key(), e.field()));
       assertThat(e.to()).as(where).isNotEqualTo(e.from());
     }
-    // every v1 -> shipped difference is covered by an entry (nothing left stale on old tenants)
     for (String slug : SLUGS) {
-      var v1 = StandardReportsV1.bySlug(slug);
       var shipped = StandardReportPackSeeder.shipped(slug);
-      assertCovered(entries, slug, "name", v1.getName(), shipped.getName());
-      assertCovered(entries, slug, "description", v1.getDescription(), shipped.getDescription());
-      assertCovered(
-          entries,
-          slug,
-          "parameterSchema",
-          hashRef(v1.getParameterSchema()),
-          hashRef(shipped.getParameterSchema()));
-      assertCovered(
-          entries,
-          slug,
-          "columnDefinitions",
-          hashRef(v1.getColumnDefinitions()),
-          hashRef(shipped.getColumnDefinitions()));
-      assertCovered(
-          entries,
-          slug,
-          "templateBody",
-          hashRef(v1.getTemplateBody()),
-          hashRef(shipped.getTemplateBody()));
-      assertThat(shipped.getSlug()).isEqualTo(v1.getSlug());
-      assertThat(shipped.getCategory()).isEqualTo(v1.getCategory());
+      for (String field : FIELDS) {
+        var stale =
+            priorValues(slug, field).stream()
+                .filter(v -> !v.equals(value(shipped, field)))
+                .toList();
+        assertThat(
+                entries.stream()
+                    .filter(e -> slug.equals(e.key()) && field.equals(e.field()))
+                    .map(PackReconcileEntry::from)
+                    .toList())
+            .as("%s.%s: one entry per prior value that differs from the head", slug, field)
+            .containsExactlyInAnyOrderElementsOf(stale);
+      }
+      for (var prior : PRIOR_VERSIONS) {
+        assertThat(shipped.getSlug()).isEqualTo(prior.apply(slug).getSlug());
+        assertThat(shipped.getCategory()).isEqualTo(prior.apply(slug).getCategory());
+      }
     }
   }
 
   // --- helpers ---
 
-  private static void assertCovered(
-      List<PackReconcileEntry> entries, String slug, String field, Object v1, Object shipped) {
-    boolean hasEntry =
-        entries.stream().anyMatch(e -> slug.equals(e.key()) && field.equals(e.field()));
-    assertThat(hasEntry)
-        .as("%s.%s changed v1 -> shipped, so it needs a reconcile entry", slug, field)
-        .isEqualTo(!v1.equals(shipped));
+  /** The distinct values (or hashes) of {@code field} across {@link #PRIOR_VERSIONS}. */
+  private static List<Object> priorValues(String slug, String field) {
+    return PRIOR_VERSIONS.stream().map(v -> value(v.apply(slug), field)).distinct().toList();
+  }
+
+  /** A reconcile-comparable value: the string for name / description, else the sha256: ref. */
+  private static Object value(ReportDefinition def, String field) {
+    return switch (field) {
+      case "name" -> def.getName();
+      case "description" -> def.getDescription();
+      case "parameterSchema" -> hashRef(def.getParameterSchema());
+      case "columnDefinitions" -> hashRef(def.getColumnDefinitions());
+      case "templateBody" -> hashRef(def.getTemplateBody());
+      default -> throw new AssertionError("Unexpected field " + field);
+    };
   }
 
   /**

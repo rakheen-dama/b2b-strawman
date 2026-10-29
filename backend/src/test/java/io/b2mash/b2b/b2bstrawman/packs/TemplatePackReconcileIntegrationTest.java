@@ -6,9 +6,13 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateSource;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -322,6 +326,78 @@ class TemplatePackReconcileIntegrationTest {
   }
 
   /**
+   * R-18 non-owned row for the 628C {@code name} / {@code description} path: a firm clone of {@code
+   * project-summary} (Clone &amp; Customize copies {@code pack_id} + {@code pack_template_key}),
+   * renamed back to the v3 name, keeps its v3 name and description while the pack row is renamed.
+   * Worst case like 626D's {@code cloneTaggedWithTheInstall_isNeverATarget}: the clone also carries
+   * the install tag, so only the JPQL source / clone predicates of {@code findPackSeededByInstall}
+   * keep it out.
+   */
+  @Test
+  void commonPackV3Names_firmCloneOfProjectSummary_keepsTheOldName() {
+    UUID cloneId =
+        runInTenantTx(
+            () -> {
+              var summary =
+                  documentTemplateRepository.findPackSeeded(COMMON_PACK_ID, SUMMARY_KEY).getFirst();
+              summary.updateContent(
+                  "Project Summary Report",
+                  "Project summary report template",
+                  summary.getContent(),
+                  summary.getCss());
+              documentTemplateRepository.save(summary);
+
+              var clone =
+                  new DocumentTemplate(
+                      summary.getPrimaryEntityType(),
+                      "Project Summary Report",
+                      summary.getSlug() + "-custom-628c",
+                      summary.getCategory(),
+                      summary.getContent());
+              clone.setDescription("Project summary report template");
+              clone.setCss(summary.getCss());
+              clone.setSourceTemplateId(summary.getId());
+              clone.setPackId(summary.getPackId());
+              clone.setPackTemplateKey(summary.getPackTemplateKey());
+              clone.setSourcePackInstallId(summary.getSourcePackInstallId());
+              UUID id = documentTemplateRepository.save(clone).getId();
+
+              assertThat(packInstallRepository.advancePackVersion(COMMON_PACK_ID, "4", "3", 3))
+                  .isEqualTo(1);
+              return id;
+            });
+    try {
+      packInstallService.internalInstall(COMMON_PACK_ID, tenantSchema);
+
+      runInTenantTx(
+          () -> {
+            assertThat(
+                    packInstallRepository
+                        .findByPackId(COMMON_PACK_ID)
+                        .orElseThrow()
+                        .getPackVersion())
+                .isEqualTo("4");
+            var summary =
+                documentTemplateRepository.findPackSeeded(COMMON_PACK_ID, SUMMARY_KEY).getFirst();
+            assertThat(summary.getName()).isEqualTo("Matter Summary Report");
+            assertThat(summary.getDescription()).isEqualTo("Matter summary report template");
+
+            var clone = documentTemplateRepository.findById(cloneId).orElseThrow();
+            assertThat(clone.getSource()).isEqualTo(TemplateSource.ORG_CUSTOM);
+            assertThat(clone.getName()).isEqualTo("Project Summary Report");
+            assertThat(clone.getDescription()).isEqualTo("Project summary report template");
+            return null;
+          });
+    } finally {
+      runInTenantTx(
+          () -> {
+            documentTemplateRepository.deleteById(cloneId);
+            return null;
+          });
+    }
+  }
+
+  /**
    * LZKC-007 (part 1): the legal-za pack is now also covered by the content-refresh reconcile path
    * (introduced with the v6 → v7 letterhead-logo template update; the pack is at v9 since 626E). A
    * tenant on an older pack version whose statement-of-account template is pristine (stored hash
@@ -386,6 +462,12 @@ class TemplatePackReconcileIntegrationTest {
                       .isEqualTo(
                           templatePackInstaller.computeContentHash(soa.getContent(), soa.getCss()));
                 }));
+  }
+
+  private <T> T runInTenantTx(Supplier<T> body) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .call(() -> transactionTemplate.execute(tx -> body.get()));
   }
 
   private void runInTenant(Runnable action) {

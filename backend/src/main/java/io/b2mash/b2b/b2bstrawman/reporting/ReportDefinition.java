@@ -102,6 +102,16 @@ public class ReportDefinition {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Re-describes this definition and bumps {@code updatedAt}, like {@link #rename} (ADR-356
+   * reconcile of the standard-reports pack). {@link #setDescription} stays a plain setter for the
+   * pack factories that build unsaved definitions.
+   */
+  public void updateDescription(String description) {
+    this.description = description;
+    this.updatedAt = Instant.now();
+  }
+
   // --- Getters ---
 
   public UUID getId() {

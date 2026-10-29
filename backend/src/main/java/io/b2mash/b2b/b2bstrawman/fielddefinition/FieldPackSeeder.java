@@ -187,16 +187,18 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
   @Override
   protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
       FieldPackDefinition pack, PackReconcileEntry entry, Resource packResource) {
+    boolean group = GROUP_ENTITY.equals(entry.entity());
+    if (!group && !DEFINITION_ENTITY.equals(entry.entity())) {
+      return unsupported(pack, entry, "unsupported entity");
+    }
     boolean nameField = "name".equals(entry.field());
     if (!(nameField || "description".equals(entry.field())) || !(entry.to() instanceof String to)) {
       return unsupported(pack, entry, "only name/description with a string 'to' are supported");
     }
     EntityType entityType = EntityType.valueOf(pack.entityType());
-    return switch (entry.entity()) {
-      case GROUP_ENTITY -> groupTarget(pack, entry, entityType, nameField, to);
-      case DEFINITION_ENTITY -> definitionTarget(pack, entry, entityType, nameField, to);
-      default -> unsupported(pack, entry, "unsupported entity");
-    };
+    return group
+        ? groupTarget(pack, entry, entityType, nameField, to)
+        : definitionTarget(pack, entry, entityType, nameField, to);
   }
 
   private Optional<PackReconcileEntry.Target> groupTarget(

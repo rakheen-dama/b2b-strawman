@@ -1,0 +1,8 @@
+2026-10-29T14:14:11Z tenant=tenant_5039f2d497cf
+-- SELECT id,name,lifecycle_status,email,customer_type,address_line1,city,postal_code,country,phone,custom_fields FROM customers
+fbfe7eba-53f6-4536-809d-2fc785628ef3|Sipho Dlamini|PROSPECT|sipho.dlamini@email.co.za|INDIVIDUAL|42 Commissioner St|Johannesburg|2001|ZA|+27-82-555-0101|{"id_passport_number": "8501015800083"}
+-- portal_contacts
+id org_id customer_id email display_name role status created_at updated_at 
+e118da4e-e11f-4bea-964a-6b63f17fee66|mathebula-partners|fbfe7eba-53f6-4536-809d-2fc785628ef3|sipho.dlamini@email.co.za|Sipho Dlamini|GENERAL|ACTIVE|2026-10-29 14:12:53.534539+00|2026-10-29 14:12:53.534539+00
+-- SELECT email_lower, org_id, tenant_schema, org_name FROM portal.portal_contact_directory
+sipho.dlamini@email.co.za|mathebula-partners|tenant_5039f2d497cf|Mathebula & Partners

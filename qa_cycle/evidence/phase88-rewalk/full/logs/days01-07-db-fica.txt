@@ -1,0 +1,18 @@
+2026-10-29T14:19:00Z tenant=tenant_5039f2d497cf
+-- SELECT ci.status, ci.started_at, ci.completed_at, t.name, t.pack_id? FROM checklist_instances ci JOIN checklist_templates t
+id,name,slug,description,customer_type,source,pack_id,pack_template_key,active,auto_instantiate,sort_order,created_at,updated_at
+82465500-4ea2-4e8d-b14b-8f482487d909|COMPLETED|2026-10-29 14:15:49.376837+00|2026-10-29 14:18:05.748428+00|Legal Individual Client Onboarding|legal-za-individual-client-onboarding|legal-za-individual-onboarding
+-- items: sort_order,name,required,requires_document,status,completed_at,document_id
+1|Proof of Identity|t|t|COMPLETED|2026-10-29 14:17:23.119763+00|t
+2|Proof of Address|t|t|COMPLETED|2026-10-29 14:17:36.123095+00|t
+3|Beneficial Ownership Declaration|t|t|COMPLETED|2026-10-29 14:17:40.705812+00|t
+4|Source of Funds Declaration|t|t|COMPLETED|2026-10-29 14:17:45.263062+00|t
+5|Engagement Letter Signed|t|t|COMPLETED|2026-10-29 14:17:49.839238+00|t
+6|Conflict Check Performed|t|f|COMPLETED|2026-10-29 14:17:53.61362+00|f
+7|Power of Attorney Signed|f|t|COMPLETED|2026-10-29 14:17:58.168505+00|t
+8|FICA Risk Assessment|t|f|COMPLETED|2026-10-29 14:18:01.960559+00|f
+9|Sanctions Screening|t|f|COMPLETED|2026-10-29 14:18:05.739652+00|f
+-- customer
+Sipho Dlamini|ACTIVE|2026-10-29 14:18:05.758183+00
+-- documents
+4c0e166a-b8dc-414a-ab4b-4aea745ff600|Sipho Dlamini — certified FICA pack.pdf|UPLOADED|INTERNAL|CUSTOMER|fbfe7eba-53f6-4536-809d-2fc785628ef3

@@ -15,7 +15,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
-import { apiOk, apiStatus } from "../../helpers/api";
+import { apiOk, apiStatus, type ApiEntity } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
@@ -44,7 +44,7 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
   test.beforeAll(async () => {
     // Create project
     // Phase 87 S1 (ADR-337): API path
-    const { data: project } = await apiStatus("/api/matters", {
+    const project = await apiOk<ApiEntity>("/api/matters", {
       method: "POST",
       body: {
         name: PROJECT_NAME,
@@ -69,7 +69,7 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
     // Create task for time logging
     // Phase 87 S1 (ADR-337): API path
-    const { data: task } = await apiStatus(`/api/matters/${projectId}/tasks`, {
+    const task = await apiOk<ApiEntity>(`/api/matters/${projectId}/tasks`, {
       method: "POST",
       body: {
         title: TASK_TITLE,

@@ -12,7 +12,10 @@ export default defineConfig({
   snapshotPathTemplate: "{testDir}/../../screenshots/legal-lifecycle/{arg}{ext}",
   globalTimeout: 600_000,
   timeout: 30_000,
-  retries: process.env.CI ? 1 : 0,
+  // No retries: the lifecycle is one serial chain whose records are named per run, not per
+  // attempt (helpers/legal-lifecycle.ts run state). A retried group would re-create the same
+  // clients/matters and break the "No Conflict" checks and exact-name lookups (628E).
+  retries: 0,
   workers: 1,
   expect: {
     toHaveScreenshot: {

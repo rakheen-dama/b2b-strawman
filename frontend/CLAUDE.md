@@ -191,6 +191,7 @@ Components started from Shadcn scaffolding but **have been customized** with pro
 - Flat config (`eslint.config.mjs`)
 - Extends `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`
 - `no-restricted-imports` bans the deleted terminology modules (ADR-338); keep all restricted paths in that one config object (a later flat-config object setting the same rule replaces, not merges)
+- Playwright: `kazi-frontend-local/no-isvisible-catch` (`e2e/eslint/no-isvisible-catch.mjs`) bans `.catch()` on `isVisible()` & co. and the ignored `isVisible({ timeout })` in the e2e files it is scoped to — use `expect(locator).toBeVisible()`; see `e2e/AUTOMATION-NOTES.md` › Assertion rules
 - Run with `pnpm run lint`
 
 ### Testing

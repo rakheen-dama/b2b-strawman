@@ -15,15 +15,15 @@ export async function loginAs(page: Page, email: string, password: string): Prom
 
   // Fill username — Keycloak may show a combined form or a split flow
   // (username-first, then password on a second page)
+  // (fill waits for the login form to render)
   await page.locator(KC_LOGIN.username).fill(email);
 
-  // Check if password field is visible (combined form) or needs a submit first (split flow)
-  const passwordVisible = await page
-    .locator(KC_LOGIN.password)
-    .isVisible()
-    .catch(() => false);
-
-  if (passwordVisible) {
+  // Bare state read on settled server-rendered state (the carve-out in e2e/AUTOMATION-NOTES.md ›
+  // Assertion rules): Keycloak server-renders the whole login form, so once the awaited `fill` on
+  // the username field resolves, the password field is either already on the page (combined form)
+  // or not (username-first split flow) and cannot appear later on this page — a deterministic
+  // branch, no wait needed.
+  if (await page.locator(KC_LOGIN.password).isVisible()) {
     // Combined login form — fill password and submit
     await page.locator(KC_LOGIN.password).fill(password);
     await page.locator(KC_LOGIN.submit).first().click();
@@ -65,11 +65,7 @@ export async function registerFromInvite(
 
   await page.locator(KC_REGISTER.firstName).fill(firstName);
   await page.locator(KC_REGISTER.lastName).fill(lastName);
-  // Email may be pre-filled from the invite — only fill if editable
-  const emailField = page.locator(KC_REGISTER.email);
-  if (await emailField.isEditable().catch(() => false)) {
-    // Pre-filled and editable — leave as-is (Keycloak sets it from invite)
-  }
+  // The email field is pre-filled from the invite (Keycloak sets it) and is left as-is.
   await page.locator(KC_REGISTER.password).fill(password);
   await page.locator(KC_REGISTER.passwordConfirm).fill(password);
   await page.locator(KC_REGISTER.submit).first().click();

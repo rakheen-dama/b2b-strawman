@@ -1,241 +1,228 @@
 /**
  * Day 60 — Interest Run & Investments
  *
- * Run interest calculation with LPFF split (6.5%) for Moroka trust balance.
- * Place investments: Moroka R200,000 Standard Bank Fixed Deposit (s86(3) Firm
- * Discretion) and QuickCollect R30,000 Nedbank Call Account (s86(4) Client
- * Instruction). Second billing cycle fee notes. Generate reports.
+ * Interest run on the trust account: create the run for the last 30 days and calculate the
+ * per-client allocations at the Day 0 LPFF rate (6.5%, 50% LPFF share); approval by a second member
+ * and posting are covered by the `628E-BLOCKER` test below. Investments: Moroka R200,000 Standard
+ * Bank fixed deposit (firm surplus funds, s86(3)) and QuickCollect R30,000 Nedbank call account
+ * (client instruction, s86(4)). Second billing cycle (new Sipho time → fee note), timesheet report
+ * and profitability report.
  *
- * Prerequisites:
- *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Day 45 tests completed (reconciliation, payments recorded)
+ * Records come from the lifecycle run (helpers/legal-lifecycle.ts): Days 0–45 must have run on the
+ * same stack (trust account + LPFF rate, deposits, Moroka's fee transfer, rated time).
+ *
+ * Phase 88 628E: rewritten strict — every step is real or asserted (no `isVisible().catch` guards).
  *
  * Run:
- *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle
+ *   E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { captureScreenshot } from "../../helpers/screenshot";
+import { BASE, clickThrough, isoDate, openMatter } from "../../helpers/legal-depth-ii";
+import {
+  clientId,
+  feeNoteTotalsRow,
+  generateFeeNoteDraft,
+  logTimeOnTask,
+  morokaClient,
+  openClientFeeNotes,
+  openTrustTransactions,
+  qcClient,
+  randPattern,
+  recordValue,
+  siphoClient,
+  siphoMatter,
+} from "../../helpers/legal-lifecycle";
 
-const ORG = "e2e-test-org";
-const BASE = `/org/${ORG}`;
+const SIPHO_SUMMONS_TIME = "Draft combined summons — RAF claim";
+
+async function openInvestments(page: Page): Promise<void> {
+  await page.goto(`${BASE}/trust-accounting/investments`);
+  await expect(page.getByTestId("investments-page")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { level: 1, name: "Investments" })).toBeVisible();
+}
+
+/** Places a trust investment for a client (the dialog takes the client's raw UUID). */
+async function placeInvestment(
+  page: Page,
+  opts: {
+    clientId: string;
+    institution: string;
+    accountNumber: string;
+    principal: string;
+    ratePercent: string;
+    maturityDate?: string;
+    basis: "Firm (surplus trust funds)" | "Client instruction";
+    notes: string;
+  }
+): Promise<void> {
+  await openInvestments(page);
+  await page.getByRole("button", { name: "Place Investment" }).click();
+  const dialog = page.getByTestId("place-investment-dialog");
+  await expect(dialog.getByRole("heading", { name: "Place Investment" })).toBeVisible();
+  await dialog.getByLabel("Client ID").fill(opts.clientId);
+  await dialog.getByLabel("Institution").fill(opts.institution);
+  await dialog.getByLabel("Account Number").fill(opts.accountNumber);
+  await dialog.getByLabel("Principal").fill(opts.principal);
+  await dialog.getByLabel("Interest Rate %").fill(opts.ratePercent);
+  if (opts.maturityDate) {
+    await dialog.getByLabel("Maturity Date (optional)").fill(opts.maturityDate);
+  }
+  await dialog.getByLabel("Notes (optional)").fill(opts.notes);
+  await dialog.getByRole("radio", { name: opts.basis }).check();
+  await expect(dialog.getByTestId("investment-basis-help")).toHaveText(
+    opts.basis === "Client instruction" ? /5%|statutory/i : /arrangement/i
+  );
+  // Pressed from the keyboard: on the suite's 1280×720 viewport the dialog is taller than the
+  // screen and does not scroll, so its "Place Investment" button sits off-screen (follow-up:
+  // components/ui/dialog.tsx:56-70 has no max-height / overflow-y-auto)
+  await dialog.getByRole("button", { name: "Place Investment" }).press("Enter");
+  await expect(dialog).toBeHidden({ timeout: 15_000 });
+}
 
 test.describe.serial("Day 60 — Interest Run & Investments", () => {
   // ── 60.1-60.10: Interest run with LPFF split ─────────────────────
   test("Alice: Navigate to Trust Interest page", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/trust-accounting/interest`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Trust interest page not accessible — feature may not be implemented");
-      return;
-    }
-
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await expect(page.getByTestId("interest-page")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { level: 1, name: "Interest" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "New Interest Run" })).toBeVisible();
+    // Day 0's LPFF rate is in force
+    await expect(page.getByTestId("lpff-rates-table")).toContainText("6.50%");
   });
 
-  test("Alice: Run interest calculation with LPFF split (6.5%)", async ({ page }) => {
+  test("Alice: Interest run — create for the last 30 days and calculate allocations at the 6.5% LPFF rate", async ({
+    page,
+  }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/trust-accounting/interest`);
+    await page.getByRole("button", { name: "New Interest Run" }).click();
+    const wizard = page.getByTestId("interest-run-wizard");
+    await expect(wizard).toContainText("Step 1 of 4");
+    const periodStart = isoDate(-30);
+    const periodEnd = isoDate();
+    await wizard.getByLabel("Period Start").fill(periodStart);
+    await wizard.getByLabel("Period End").fill(periodEnd);
+    await wizard.getByRole("button", { name: "Create Run" }).click();
 
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Trust interest page not accessible");
-      return;
+    await expect(wizard).toContainText("Step 2 of 4", { timeout: 15_000 });
+    await expect(wizard).toContainText(`Period: ${periodStart} to ${periodEnd}`);
+    await wizard.getByRole("button", { name: "Calculate Interest" }).click();
+
+    // One allocation per client with a trust balance in the period (31 days, both funded today):
+    // Moroka R241,500 and QuickCollect R45,000 for one day at 6.5% p.a. (actual/365), split with
+    // the LPFF under the firm's arrangement
+    const allocations = wizard.getByTestId("allocations-table");
+    await expect(allocations).toBeVisible({ timeout: 15_000 });
+    for (const header of ["Avg Daily Balance", "Gross Interest", "LPFF Share", "Client Share"]) {
+      await expect(allocations.getByRole("columnheader", { name: header })).toBeVisible();
+    }
+    for (const [key, avgDaily, gross] of [
+      ["moroka", "7 790,32", "43,01"],
+      ["qc", "1 451,61", "8,01"],
+    ] as const) {
+      const row = allocations.getByRole("row").filter({ hasText: clientId(key) });
+      await expect(row, `${key} allocation`).toHaveCount(1);
+      await expect(row).toContainText(randPattern(avgDaily));
+      await expect(row.getByRole("cell").nth(2)).toContainText(randPattern(gross));
+      await expect(row).toContainText("Arrangement");
     }
 
-    // Look for "Run Interest" or "Calculate Interest" button
-    const runBtn = page
-      .getByRole("button", { name: /run.*interest|calculate.*interest|new.*interest/i })
-      .first();
-    const hasRun = await runBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasRun) {
-      await runBtn.click();
-      await page.waitForTimeout(1000);
-
-      // Configure LPFF rate if there's a field
-      const lpffField = page.locator('input[name*="lpff"], input[name*="rate"]').first();
-      const hasLpff = await lpffField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasLpff) {
-        await lpffField.fill("6.5");
-      }
-
-      // Execute the interest run
-      const executeBtn = page
-        .getByRole("button", { name: /calculate|run|execute|confirm/i })
-        .first();
-      const hasExecute = await executeBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasExecute) {
-        await executeBtn.click();
-        await page.waitForTimeout(3000);
-      }
-
-      // Verify INTEREST_CREDIT and INTEREST_LPFF transactions posted
-      expect
-        .soft(
-          await page
-            .getByText(/interest.*credit|credit/i)
-            .isVisible({ timeout: 5000 })
-            .catch(() => false)
-        )
-        .toBeTruthy();
-      expect
-        .soft(
-          await page
-            .getByText(/lpff|legal.*practitioners/i)
-            .isVisible({ timeout: 5000 })
-            .catch(() => false)
-        )
-        .toBeTruthy();
-
-      // Screenshot: interest run with LPFF split
-      await captureScreenshot(page, "day-60-interest-lpff-calculated");
-      await captureScreenshot(page, "interest-run-lpff-split", { curated: true });
-    } else {
-      test.skip(true, "Interest run button not found");
+    await wizard.getByRole("button", { name: "Approve", exact: true }).click();
+    await expect(wizard).toContainText("Step 3 of 4");
+    await expect(wizard.getByRole("heading", { name: "Interest Run Totals" })).toBeVisible();
+    for (const total of ["Total Interest", "LPFF Share", "Client Share"]) {
+      await expect(wizard.getByText(total, { exact: true })).toBeVisible();
     }
+
+    // Screenshot: interest run with LPFF split
+    await captureScreenshot(page, "day-60-interest-lpff-calculated");
+    await captureScreenshot(page, "interest-run-lpff-split", { curated: true });
+
+    // The run's creator cannot approve it
+    await wizard.getByRole("button", { name: "Approve Run" }).click();
+    await expect(wizard).toContainText("The interest run creator cannot approve their own", {
+      timeout: 15_000,
+    });
+    await page.keyboard.press("Escape");
+    await expect(wizard).toBeHidden();
+
+    // The calculated run is listed as a DRAFT
+    await page.reload();
+    const run = page.getByTestId("interest-runs-table").locator('[data-testid^="run-row-"]');
+    await expect(run).toHaveCount(1, { timeout: 15_000 });
+    await expect(run).toContainText("DRAFT");
+  });
+
+  test("Bob: Approve and post the interest run to the client ledgers", async ({ page }) => {
+    test.fixme(
+      true,
+      "628E-BLOCKER: a DRAFT interest run cannot be approved by a second member — the run wizard is session-local (components/trust/InterestRunWizard.tsx:173) and the runs table has no actions (app/(app)/org/[slug]/trust-accounting/interest/page.tsx:135-186), while the creator's own approval is refused (backend/.../trustaccounting/interest/InterestService.java:455)"
+    );
+    // The intended flow once a second member can open a DRAFT run (the blocker above): Bob opens
+    // Alice's calculated run, approves it (Step 3) and posts it to the client ledgers (Step 4).
+    await loginAs(page, "bob");
+    await page.goto(`${BASE}/trust-accounting/interest`);
+    const run = page.getByTestId("interest-runs-table").locator('[data-testid^="run-row-"]');
+    await expect(run).toHaveCount(1, { timeout: 15_000 });
+    await expect(run).toContainText("DRAFT");
+    // No such control exists today — the product fix decides its name; adjust this locator then
+    await run.getByRole("button", { name: /Review|Open/ }).click();
+    const wizard = page.getByTestId("interest-run-wizard");
+    await expect(wizard).toContainText("Step 3 of 4", { timeout: 15_000 });
+    await wizard.getByRole("button", { name: "Approve Run" }).click();
+    await expect(wizard).toContainText("Step 4 of 4", { timeout: 15_000 });
+    await expect(wizard.getByRole("heading", { name: "Approved Interest Run" })).toBeVisible();
+    await wizard.getByRole("button", { name: "Post to Ledger" }).click();
+    await expect(wizard).toBeHidden({ timeout: 15_000 });
+
+    // The run is POSTED with a posted date …
+    await expect(run).toContainText("POSTED", { timeout: 15_000 });
+    await expect(run.getByRole("cell").last()).not.toHaveText("—");
+    // … and each allocated client (Moroka, QuickCollect) has an Interest Credit on the trust ledger
+    await openTrustTransactions(page);
+    await expect(
+      page.locator("main tbody tr").filter({ hasText: "Interest Credit" }),
+      "one Interest Credit per allocated client"
+    ).toHaveCount(2, { timeout: 15_000 });
   });
 
   // ── 60.11-60.17: Investment — Moroka R200,000 Fixed Deposit ───────
   test("Alice: Navigate to Investment Register", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/investments`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Investment register page not accessible — feature may not be implemented");
-      return;
-    }
-
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await openInvestments(page);
+    await expect(page.getByRole("button", { name: "Place Investment" })).toBeVisible();
+    await expect(page.getByTestId("empty-investments")).toBeVisible();
   });
 
   test("Alice: Place investment — Moroka R200,000 Standard Bank Fixed Deposit (s86(3))", async ({
     page,
   }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/investments`);
+    await placeInvestment(page, {
+      clientId: clientId("moroka"),
+      institution: "Standard Bank",
+      accountNumber: "FD-0987654321",
+      principal: "200000",
+      ratePercent: "8.5",
+      maturityDate: isoDate(90),
+      basis: "Firm (surplus trust funds)",
+      notes: "90-day fixed deposit — surplus estate funds",
+    });
+    const row = page.locator("main tbody tr").filter({ hasText: morokaClient() });
+    await expect(row).toHaveCount(1, { timeout: 15_000 });
+    await expect(row).toContainText("Firm");
+    await expect(row).toContainText("Standard Bank");
+    await expect(row).toContainText(randPattern("200 000,00"));
+    await expect(row).toContainText("8.50%");
+    await expect(row).toContainText("Arrangement");
+    await expect(row).toContainText("ACTIVE");
 
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Investment register page not accessible");
-      return;
-    }
-
-    const newBtn = page
-      .getByRole("button", { name: /new.*investment|place.*investment|add.*investment/i })
-      .first();
-    const hasNew = await newBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasNew) {
-      await newBtn.click();
-      await page.waitForTimeout(1000);
-
-      // Fill investment details
-      const amountField = page
-        .getByRole("textbox", { name: /amount/i })
-        .or(page.getByRole("spinbutton", { name: /amount/i }))
-        .first();
-      const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasAmount) {
-        await amountField.fill("200000");
-      }
-
-      // Bank/institution
-      const bankField = page.getByRole("textbox", { name: /bank|institution/i }).first();
-      const hasBank = await bankField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasBank) {
-        await bankField.fill("Standard Bank");
-      }
-
-      // Investment type
-      const typeField = page.getByRole("combobox", { name: /type/i }).first();
-      const hasType = await typeField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasType) {
-        await typeField.click();
-        await page.waitForTimeout(500);
-        const fixedOption = page.getByRole("option", { name: /fixed.*deposit/i }).first();
-        const hasFixed = await fixedOption.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasFixed) {
-          await fixedOption.click();
-        }
-      }
-
-      // Interest rate
-      const rateField = page
-        .getByRole("textbox", { name: /rate|interest/i })
-        .or(page.getByRole("spinbutton", { name: /rate|interest/i }))
-        .first();
-      const hasRate = await rateField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasRate) {
-        await rateField.fill("8.5");
-      }
-
-      // Term (90 days)
-      const termField = page
-        .getByRole("textbox", { name: /term|days|period/i })
-        .or(page.getByRole("spinbutton", { name: /term|days|period/i }))
-        .first();
-      const hasTerm = await termField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasTerm) {
-        await termField.fill("90");
-      }
-
-      // Section 86 basis — Firm Discretion (s86(3))
-      const basisField = page
-        .getByRole("combobox", { name: /basis|section.*86|authority/i })
-        .first();
-      const hasBasis = await basisField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasBasis) {
-        await basisField.click();
-        await page.waitForTimeout(500);
-        const s86Option = page.getByRole("option", { name: /firm.*discretion|86\(3\)/i }).first();
-        const hasS86 = await s86Option.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasS86) {
-          await s86Option.click();
-        }
-      }
-
-      // Select client (Moroka)
-      const clientField = page.getByRole("combobox", { name: /client|customer/i }).first();
-      const hasClient = await clientField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasClient) {
-        await clientField.click();
-        await page.waitForTimeout(500);
-        const morokaOption = page.getByRole("option", { name: /Moroka/i }).first();
-        const hasMoroka = await morokaOption.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasMoroka) {
-          await morokaOption.click();
-        }
-      }
-
-      const saveBtn = page.getByRole("button", { name: /save|create|place/i }).first();
-      const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasSave) {
-        await saveBtn.click();
-        await page.waitForTimeout(2000);
-      }
-
-      // Screenshot: investment placed
-      await captureScreenshot(page, "day-60-investment-s86-placed");
-      await captureScreenshot(page, "investment-s86-selection", { curated: true });
-    } else {
-      test.skip(true, "New investment button not found");
-    }
+    // Screenshot: investment placed
+    await captureScreenshot(page, "day-60-investment-s86-placed");
+    await captureScreenshot(page, "investment-s86-selection", { curated: true });
   });
 
   // ── 60.18-60.20: Investment — QuickCollect R30,000 Call Account ────
@@ -243,152 +230,86 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     page,
   }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/investments`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Investment register page not accessible");
-      return;
-    }
-
-    const newBtn = page
-      .getByRole("button", { name: /new.*investment|place.*investment|add.*investment/i })
-      .first();
-    const hasNew = await newBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasNew) {
-      await newBtn.click();
-      await page.waitForTimeout(1000);
-
-      // Fill investment details for QuickCollect
-      const amountField = page
-        .getByRole("textbox", { name: /amount/i })
-        .or(page.getByRole("spinbutton", { name: /amount/i }))
-        .first();
-      const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasAmount) {
-        await amountField.fill("30000");
-      }
-
-      const bankField = page.getByRole("textbox", { name: /bank|institution/i }).first();
-      const hasBank = await bankField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasBank) {
-        await bankField.fill("Nedbank");
-      }
-
-      // Section 86 basis — Client Instruction (s86(4))
-      const basisField = page
-        .getByRole("combobox", { name: /basis|section.*86|authority/i })
-        .first();
-      const hasBasis = await basisField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasBasis) {
-        await basisField.click();
-        await page.waitForTimeout(500);
-        const s86Option = page
-          .getByRole("option", { name: /client.*instruction|86\(4\)/i })
-          .first();
-        const hasS86 = await s86Option.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasS86) {
-          await s86Option.click();
-        }
-      }
-
-      // Select client (QuickCollect)
-      const clientField = page.getByRole("combobox", { name: /client|customer/i }).first();
-      const hasClient = await clientField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasClient) {
-        await clientField.click();
-        await page.waitForTimeout(500);
-        const qcOption = page.getByRole("option", { name: /QuickCollect/i }).first();
-        const hasQC = await qcOption.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasQC) {
-          await qcOption.click();
-        }
-      }
-
-      const saveBtn = page.getByRole("button", { name: /save|create|place/i }).first();
-      const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasSave) {
-        await saveBtn.click();
-        await page.waitForTimeout(2000);
-      }
-    }
+    await placeInvestment(page, {
+      clientId: clientId("qc"),
+      institution: "Nedbank",
+      accountNumber: "CALL-1122334455",
+      principal: "30000",
+      ratePercent: "7.25",
+      basis: "Client instruction",
+      notes: "Call account on QuickCollect's written instruction",
+    });
+    const row = page.locator("main tbody tr").filter({ hasText: qcClient() });
+    await expect(row).toHaveCount(1, { timeout: 15_000 });
+    await expect(row).toContainText("Client Instruction");
+    await expect(row).toContainText("Nedbank");
+    await expect(row).toContainText(randPattern("30 000,00"));
+    await expect(row).toContainText("5% (statutory)");
+    await expect(row).toContainText("Call deposit");
   });
 
   // ── 60.21-60.24: Second billing cycle fee notes ───────────────────
-  test("Alice: Create second billing cycle fee notes", async ({ page }) => {
+  test("Alice: Second billing cycle — log new Sipho time and generate its fee note", async ({
+    page,
+  }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/invoices`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+    await openMatter(page, siphoMatter());
+    await logTimeOnTask(page, {
+      task: "Issue summons / combined summons",
+      hours: 1,
+      minutes: 0,
+      date: isoDate(),
+      description: SIPHO_SUMMONS_TIME,
+      rate: "2 500,00",
+    });
 
-    // Create fee note #2 for Sipho
-    const newBtn = page.getByRole("button", { name: /New (Invoice|Fee Note)/i }).first();
-    const hasNew = await newBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasNew) {
-      await newBtn.click();
-      await page.waitForTimeout(1000);
-
-      const clientField = page.getByRole("combobox", { name: /customer|client/i }).first();
-      const hasClient = await clientField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasClient) {
-        await clientField.click();
-        await page.waitForTimeout(500);
-        const siphoOption = page.getByRole("option", { name: /Sipho|Ndlovu/i }).first();
-        const hasSipho = await siphoOption.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasSipho) {
-          await siphoOption.click();
-        }
-      }
-
-      const createBtn = page.getByRole("button", { name: /Create|Save|Generate/i }).first();
-      const hasCreate = await createBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasCreate) {
-        await createBtn.click();
-        await page.waitForTimeout(3000);
-      }
-
-      // Go back to create more
-      await page.goto(`${BASE}/invoices`);
-      await page.waitForTimeout(1000);
-    }
+    // Only the new entry is unbilled: Day 7–14 time is on the first (sent) fee note
+    await openClientFeeNotes(page, siphoClient());
+    const feeNoteId = await generateFeeNoteDraft(page, { matter: siphoMatter(), items: 1 });
+    recordValue("siphoFeeNote2", feeNoteId);
+    await expect(
+      page.locator("main").getByRole("row").filter({ hasText: SIPHO_SUMMONS_TIME })
+    ).toHaveCount(1);
+    await expect(feeNoteTotalsRow(page, "Subtotal")).toContainText(randPattern("2 500,00"));
+    await expect(feeNoteTotalsRow(page, "Total")).toContainText(randPattern("2 875,00"));
   });
 
   // ── 60.25-60.29: Reports ──────────────────────────────────────────
-  test("Alice: Generate time tracking report", async ({ page }) => {
+  test("Alice: Run the timesheet report for this month", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/reports`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Reports page not accessible");
-      return;
+    await clickThrough(
+      page.getByRole("link", { name: /Timesheet Report/ }),
+      page.getByRole("heading", { level: 1, name: "Timesheet Report" })
+    );
+    await expect(page).toHaveURL(/\/reports\/timesheet/);
+    await page.getByLabel(/^From/).fill(isoDate(-30));
+    await page.getByLabel(/^To/).fill(isoDate());
+    await page.getByRole("button", { name: "Run Report" }).click();
+    await expect(page.getByRole("button", { name: "Export CSV" })).toBeEnabled({
+      timeout: 15_000,
+    });
+    // The lifecycle's fee earners appear in the results
+    const results = page.locator("main table");
+    for (const member of ["Alice Owner", "Bob Admin", "Carol Member"]) {
+      await expect(results.getByText(member).first()).toBeVisible({ timeout: 15_000 });
     }
-
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
   });
 
   test("Alice: Check profitability report", async ({ page }) => {
     await loginAs(page, "alice");
     // Phase 87 S6a (ADR-344): route — /profitability 308s to /reports/profitability (612A)
-    await page.goto(`${BASE}/reports/profitability`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Profitability page not accessible");
-      return;
-    }
-
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await page.goto(`${BASE}/profitability`);
+    await expect(page).toHaveURL(/\/reports\/profitability/);
+    await expect(page.getByRole("heading", { level: 1, name: "Profitability" })).toBeVisible({
+      timeout: 15_000,
+    });
+    // (a second, hidden copy of the page renders outside #main-content)
+    await expect(
+      page.locator("#main-content").getByTestId("profitability-cost-note")
+    ).toBeVisible();
+    // This month's rated time puts Sipho's matter on the matter table
+    await expect(page.getByRole("row").filter({ hasText: siphoMatter() }).first()).toBeVisible();
 
     // Screenshot: profitability report
     await captureScreenshot(page, "day-60-profitability-loaded");

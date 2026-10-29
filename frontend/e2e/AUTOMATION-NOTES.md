@@ -617,6 +617,62 @@ Security           → (Coming soon — disabled)
 
 ---
 
+## Assertion rules (Phase 88 628E — lint-enforced)
+
+`kazi-frontend-local/no-isvisible-catch` (`e2e/eslint/no-isvisible-catch.mjs`) fails `pnpm lint` on:
+
+- `.catch(…)` (or a two-argument `.then(…, onRejected)`) on `isVisible`, `isHidden`, `isEnabled`,
+  `isDisabled`, `isChecked`, `isEditable` — directly or after one-argument `.then(…)` / `.finally(…)` links
+  (`x.isVisible().then(f).catch(r)`);
+- `isVisible({ timeout })` / `isHidden({ timeout })` — Playwright ignores the option.
+
+It is scoped (`eslint.config.mjs`) to the legal suites, `e2e/helpers/**` and `e2e/fixtures/**`; Phase 88
+628F widens it to `e2e/**` when it sweeps the default-config specs.
+
+Why (R10 §0 M1): these checks reject only when they cannot answer. `isVisible` / `isHidden` do not wait at
+all (no match → `false` / `true` immediately after a navigation) and reject only on a strict-mode violation —
+the locator matched two or more elements. `isEnabled` / `isDisabled` / `isChecked` / `isEditable` wait for
+the element to appear (up to their `timeout`) but not for the state, and also reject when it never appears
+or is the wrong kind of element. `getByText(/vat/i).isVisible().catch(() => false)` therefore returns
+`false` exactly when the text is on screen twice. In the legal lifecycle suite 272 such guards hid flows the
+product never had: the tests "passed" having done nothing.
+
+Write instead:
+
+| Intent                                                | Write                                                                                                                                                                                               |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| element must be there                                 | `await expect(page.getByRole("button", { name: "Add Line" })).toBeVisible()`                                                                                                                        |
+| text may match several nodes                          | `await expect(page.getByText("VAT").first()).toBeVisible()` — or scope it: `section.getByRole("row", { name: /VAT/ })`                                                                              |
+| element must be absent (RBAC)                         | `await expect(locator).toHaveCount(0)` / `.not.toBeVisible()` — never `expect(await x.isVisible()).toBe(false)`                                                                                     |
+| column/table check                                    | `getByRole("columnheader", { name: "Revenue", exact: true }).first()`                                                                                                                               |
+| dialog closes on success                              | `await expect(dialog).toBeHidden({ timeout: 15_000 })` — never "press Escape if still open"                                                                                                         |
+| genuinely optional UI (state may differ between runs) | wait for either state first, then branch: `await expect(a.or(b).first()).toBeVisible(); if (await a.isVisible()) { … }`                                                                             |
+| step depends on a feature that may be off             | it is not optional on the legal-za stack — assert it. `test.skip` only for an explicit opt-in (env flag) or a documented environment limitation; a reproduced product bug is a `test.fixme` (below) |
+
+Never guard a flow step with `if (visible) { act }`: a dead locator then turns the step into a silent no-op.
+A bare `if (await loc.isVisible())` is allowed only right after a deterministic wait for either state (the
+lint cannot see that — the reviewer checks it). The one other acceptable bare state read is on
+server-rendered state that a prior awaited action has already settled (e.g. `fixtures/keycloak-auth.ts`:
+once `fill` on the Keycloak username field resolves, the server-rendered form is complete, so the password
+field is either there or not); the code must carry a comment saying why the state cannot change after that
+point. Never use `waitForTimeout` to wait for UI — use a web-first `expect`.
+
+**Product blockers.** A flow blocked by a product defect you have reproduced is
+`test.fixme(true, "628E-BLOCKER: <short> — <product file:line>")` as the first statement of that test, with
+the intended real steps kept below it, so removing the fixme yields a real test. The reason string is the
+grep tag later slices use (`grep -rn 628E-BLOCKER e2e/tests`). The depth-ii precedent — a
+`// FIXME(<suite>:<tag>)` comment citing file:line above `test.fixme(...)` — is equivalent.
+
+### Lifecycle run state
+
+The legal-lifecycle spec files share entity names and ids through `helpers/legal-lifecycle.ts` (a JSON file
+in the OS temp dir, written by the first Day 0 test), the same way `helpers/legal-depth-ii.ts` does for
+depth-II. Look records up by their exact run-scoped name (`openMatter(page, siphoMatter())`) or recorded id
+(`clientId("moroka")`), never by a loose regex + `.first()` — on a reused stack that picks an older run's
+record.
+
+---
+
 ## Common UI Patterns for Automation
 
 ### Dialog Pattern
@@ -630,14 +686,19 @@ All create/edit dialogs follow the same pattern:
 5. Dialog auto-closes on success
 6. Close button (`button "Close"` with X icon) always top-right
 
-### Tab Navigation
+### Tab Navigation (grouped tabs — matter / client detail)
 
-Project detail and customer detail pages use tab panels:
+Only the group triggers are `role="tab"` (`data-testid="tab-group-<group>"`); sub-tabs are menu items
+(`tab-item-<tab>`) and the tab panel has no accessible name. Use the helper (group ids:
+`lib/constants/matter-tab-groups.ts`, `client-tab-groups.ts`):
 
 ```typescript
-await page.getByRole("tab", { name: "Tasks" }).click();
-await page.getByRole("tabpanel", { name: "Tasks" }).waitFor();
+import { openGroupedTab } from "../../helpers/grouped-tabs";
+await openGroupedTab(page, "work", "tasks"); // Work → Tasks
+const panel = page.getByRole("tabpanel"); // unnamed
 ```
+
+`getByRole("tab", { name: "Tasks" })` / `getByRole("tabpanel", { name: "Tasks" })` match nothing.
 
 ### Sidebar Navigation
 

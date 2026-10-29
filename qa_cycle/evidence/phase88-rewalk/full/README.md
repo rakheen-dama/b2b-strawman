@@ -77,21 +77,28 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | Session 0 (629.2) | 43–48 + master 115–152 | session-0.md | 18 | 15 / 2 / 0 / 0 / 1 |
 | Day 0 A–D (629.2, W1a) | 52–125 | day-00.md | 44 | 40 / 4 / 0 / 0 / 0 |
 | Day 0 E–K + LH + K-PRO + CP0.1–9 (629.2, W1b) | 129–206 | day-00.md | 46 | 41 / 3 / 0 / 2 / 0 |
-| **Day 0 total** | 52–206 | day-00.md | 90 | 81 / 7 / 0 / 2 / 0 |
+| **Day 0 total** | 52–206 | day-00.md | 90 | 83 / 7 / 0 / 0 / 0 (0.50 + CP0.5 closed PASS in place by W2a after 1.9; W1b snapshot was 81 / 7 / 0 / 2 / 0) |
+| Days 1–4 (629.3, W2a) | 209–266 | days-01-07.md | 46 | 42 / 4 / 0 / 0 / 0 |
 
 ## Wow-moment candidates shot in 629A
 | Wow | Step | File | Shows |
 |---|---|---|---|
 | 1 (Day 0) | after 0.40 / LH (ruling C-6) | screens/wow-1-candidate.png | Thandi's Home, six-zone legal nav, Mathebula logo tile + brand accent bar, 1440×900 light (brand colour visible only as logo + accent bar; empty Day-0 widgets) |
+| 2 (Day 4) | 4.3b | screens/wow-2-candidate.png | Portal acceptance page (prod build) with the engagement letter PDF inline (letterhead logo, firm block, navy headings) and the green "Sipho Dlamini accepted this document on 29 Oct 2026, 16:35." state, 1440×900 light |
+| 3 (Day 2 per the list; walked at 1.4) | 1.4 | screens/wow-3-candidate.png | Bob, Conflict check: green "No Conflict — Checked "Sipho Dlamini" at 29/10/2026, 16:11:17" card, 1440×900 light |
 
 ## Candidate gaps (629A) — index
 | ID | Severity | Step | Class | Owner | File |
 |---|---|---|---|---|---|
 | G88-M1 (existing) | LOW | 0.Aa, M.6a | scenario mismatch — §5a row 1 pending founder authorisation | 628H / founder | session-0.md |
-| G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a, 0.41a (later runs append) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md |
+| G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a (later runs append) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md, days-01-07.md |
 | G88-F2 | LOW | Team page (0.27 / CP-AD-2) | product bug — "Joined" column hard-coded "—" (`member-list.tsx:75,124`) | new | day-00.md |
 | G88-F3 | MEDIUM | 0.47b, 0.48b | product bug — Edit Field Group dialog opens with no member fields checked (`custom-fields-content.tsx:281-287` passes no `initialFieldIds`; save would send `[]`); membership invisible in the UI | new | day-00.md |
-| G88-F4 | LOW | 0.48a, 0.56 (side observations) | product bug — settings tables (Custom fields, Automations) overflow an 856 px wrapper at 1440; Status/Actions cut | 628B (628.5) class — ADD-ON; else new | day-00.md |
+| G88-F4 | LOW | 0.48a, 0.56, 4.5 (side observations) | product bug — settings tables (Custom fields, Automations) overflow an 856 px wrapper at 1440; Status/Actions cut; task-sheet Time Entries table 713 px in 525 px (4.5) | 628B (628.5) class — ADD-ON; else new | day-00.md, days-01-07.md |
+| G88-F5 | LOW | 1.8 (side observation) | product bug (copy) — New Client labels activation prerequisite "Address Line 1 (optional)" (`create-customer-dialog.tsx:440-441` vs `StructuralPrerequisiteCheck.java:65-70`) | new | days-01-07.md |
+| G88-F6 | LOW | 3.3b (side observation) | product bug (UI) — matter Custom fields shows "Field Groups" twice (`matter-fields-tab.tsx:53-54` + `FieldGroupSelector.tsx:101-102`) | new | days-01-07.md |
+| G88-F7 | LOW | TEAM-sipho (then TEAM-estate, TEAM-raf) | scenario mismatch needing authorisation — scenario lacks matter-team steps (ADR-346 / 619; ruling C-4) | new — founder §6 | days-01-07.md |
+| G88-F8 | LOW | 4.6b | product bug — matter Activity feed gives no portal-source marker for portal-contact events (DTO has `actorName` only, `activity-feed-client.tsx:38-39`) | U5 (625A/B) ADD-ON; else new | days-01-07.md |
 
 ## Stack state left for 629B
 <filled by W4>

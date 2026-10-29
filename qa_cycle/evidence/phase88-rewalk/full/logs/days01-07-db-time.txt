@@ -1,0 +1,3 @@
+2026-10-29T14:39:45Z tenant=tenant_5039f2d497cf
+-- SELECT m.email, te.duration_minutes, te.billable, te.billing_rate_snapshot, te.cost_rate_snapshot, te.description, t.title FROM time_entries te JOIN members m JOIN tasks t
+bob@mathebula-test.local|90|t|1200.00|500.00|Drafting particulars of claim|Initial consultation & case assessment

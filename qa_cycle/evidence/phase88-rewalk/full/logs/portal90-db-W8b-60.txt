@@ -1,0 +1,15 @@
+# 2026-10-29T20:53:40Z tenant=tenant_5039f2d497cf
++ SELECT id, file_name, visibility, size, s3_key, created_at FROM tenant_5039f2d497cf.documents WHERE file_name LIKE 'statement-of-account-sipho%' OR file_name LIKE 'fee-note-inv%' OR file_name LIKE 'matter-closure-letter-sipho%' ORDER BY created_at
+ebfe96bf-df4a-4054-a444-9ab8b8710ad4|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PORTAL|5855|org/tenant_5039f2d497cf/generated/statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|2026-10-29 18:49:29.772718+00
+2cbeccba-93d8-4f65-93e2-065bdcf2b1e0|fee-note-inv-0002-2026-10-29.pdf|INTERNAL|5765|org/tenant_5039f2d497cf/generated/fee-note-inv-0002-2026-10-29.pdf|2026-10-29 19:04:33.947277+00
+8544e6b4-245a-4fcc-a971-e1022ccba886|matter-closure-letter-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|INTERNAL|2334|org/tenant_5039f2d497cf/generated/matter-closure-letter-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|2026-10-29 19:44:17.143934+00
+b0c3c117-1e48-468b-a6cb-a412e8ee1666|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|INTERNAL|6086|org/tenant_5039f2d497cf/generated/statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|2026-10-29 19:44:17.255481+00
++ SELECT id, file_name, file_size, s3_key, document_id, generated_at FROM tenant_5039f2d497cf.generated_documents WHERE file_name LIKE 'statement-of-account-sipho%' ORDER BY generated_at
+c9d3482f-36c7-44b0-b203-f90ac0da06f8|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|5855|org/tenant_5039f2d497cf/generated/statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|ebfe96bf-df4a-4054-a444-9ab8b8710ad4|2026-10-29 18:49:29.771841+00
+cb8d81e4-019e-4483-be42-89a505322459|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|6086|org/tenant_5039f2d497cf/generated/statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|b0c3c117-1e48-468b-a6cb-a412e8ee1666|2026-10-29 19:44:17.255142+00
++ SELECT id, document_id, file_name, size, s3_key, project_id FROM portal.portal_documents WHERE org_id='mathebula-partners'
+ERROR:  column "document_id" does not exist
+LINE 1: SELECT id, document_id, file_name, size, s3_key, project_id ...
+                   ^
++ SELECT occurred_at, event_type, entity_type, entity_id, actor_type, details FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > '2026-10-29 20:52:00+00' ORDER BY occurred_at
+2026-10-29 20:52:39.940092+00|portal.document.downloaded|document|ebfe96bf-df4a-4054-a444-9ab8b8710ad4|PORTAL_CONTACT|{"scope": "PROJECT", "file_name": "statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf", "actor_name": "System", "project_id": "d42337ad-2c76-4a79-ac75-e3d9f4d36881", "customer_id": "fbfe7eba-53f6-4536-809d-2fc785628ef3"}

@@ -1,0 +1,49 @@
+# 2026-10-29T20:46:56Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, customer_name, issue_date, due_date, subtotal, tax_amount, total, amount_paid, paid_at, payment_url IS NOT NULL AS has_pay_url FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|PAID|Sipho Dlamini|2026-10-29|2026-11-28|4150.00|435.00|4585.00|4585.00|2026-10-29 19:11:47.237862+00|f
+2d84a43c-3e90-4455-b84e-32ae0c819915|INV-0002|SENT|Moroka Family Trust|2026-10-29|2026-11-28|31805.00|4770.75|36575.75|0.00||t
+cd0fc2eb-217d-4ece-aea2-835c7f38784e||DRAFT|Lerato Mthembu|||9500.00|1425.00|10925.00|0.00||f
+fc730aab-5f40-4e52-b919-a233fe3fe800|INV-0003|SENT|Nomvula Khoza|2026-10-29|2026-11-28|6137.50|920.63|7058.13|0.00||t
++ SELECT invoice_id, provider_slug, status, amount, payment_method, payment_reference, created_at FROM tenant_5039f2d497cf.payment_events ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|mock|CANCELLED|4585.00|||2026-10-29 18:55:39.656886+00
+2d84a43c-3e90-4455-b84e-32ae0c819915|mock|CREATED|36575.75|||2026-10-29 19:03:48.514255+00
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|manual|COMPLETED|4585.00|EFT|EFT/SIPHO-001|2026-10-29 19:11:47.237768+00
+fc730aab-5f40-4e52-b919-a233fe3fe800|mock|CREATED|7058.13|||2026-10-29 19:25:45.929648+00
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|0|1|3|2026-10-29 20:37:13.173354+00
++ SELECT id, name, status FROM tenant_5039f2d497cf.projects ORDER BY created_at
+d42337ad-2c76-4a79-ac75-e3d9f4d36881|Sipho Dlamini v. Standard Bank (civil)|CLOSED
+028d3901-e826-44a9-b6a6-b81328365629|Estate Late Peter Moroka|CLOSED
+aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|Khumalo Property Holdings — Erf 1234 Sandton Transfer|ACTIVE
+5c42e002-1218-48ac-9d74-a7e3aeff13e6|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|ACTIVE
+0b9656be-244d-48e3-aaf8-80bcb154266e|Nomvula Khoza — Debt Recovery (Mokoena Traders)|ACTIVE
++ SELECT file_name, scope, visibility, source, status, project_id, size, created_at FROM tenant_5039f2d497cf.documents ORDER BY created_at
+Sipho Dlamini — certified FICA pack.pdf|CUSTOMER|INTERNAL|MANUAL|UPLOADED||610|2026-10-29 14:16:19.60162+00
+engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|d42337ad-2c76-4a79-ac75-e3d9f4d36881|5510|2026-10-29 14:31:27.046925+00
+Particulars of Claim — draft v1.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|d42337ad-2c76-4a79-ac75-e3d9f4d36881|606|2026-10-29 14:56:16.374861+00
+Moroka Family Trust — FICA pack.pdf|CUSTOMER|INTERNAL|MANUAL|UPLOADED||606|2026-10-29 15:00:44.222577+00
+Trust Deed — Moroka Family Trust.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|607|2026-10-29 15:06:41.381074+00
+Master's appointment.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|595|2026-10-29 15:13:36.44608+00
+Master's appointment.pdf|PROJECT|INTERNAL|COMMENT|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|595|2026-10-29 15:13:49.977889+00
+Khumalo Property Holdings — FICA pack.pdf|CUSTOMER|INTERNAL|MANUAL|UPLOADED||612|2026-10-29 15:15:35.738923+00
+offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|4714|2026-10-29 15:18:57.704265+00
+Inventory draft.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|590|2026-10-29 15:25:39.25475+00
+Bank statements.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|590|2026-10-29 15:25:39.288166+00
+Lerato Mthembu — certified FICA pack.pdf|CUSTOMER|INTERNAL|MANUAL|UPLOADED||611|2026-10-29 15:29:23.978055+00
+RAF medical report — Dr Naidoo.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|5c42e002-1218-48ac-9d74-a7e3aeff13e6|605|2026-10-29 15:33:57.562307+00
+RAF medical report — hospital records.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|5c42e002-1218-48ac-9d74-a7e3aeff13e6|612|2026-10-29 15:33:57.606931+00
+statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|PORTAL|MANUAL|UPLOADED|d42337ad-2c76-4a79-ac75-e3d9f4d36881|5855|2026-10-29 18:49:29.772718+00
+fee-note-inv-0002-2026-10-29.pdf|ORG|INTERNAL|MANUAL|UPLOADED||5765|2026-10-29 19:04:33.947277+00
+Nomvula Khoza — certified FICA pack.pdf|CUSTOMER|INTERNAL|MANUAL|UPLOADED||610|2026-10-29 19:17:39.008654+00
+matter-closure-letter-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2334|2026-10-29 19:44:17.143934+00
+statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|d42337ad-2c76-4a79-ac75-e3d9f4d36881|6086|2026-10-29 19:44:17.255481+00
+matter-closure-letter-estate-late-peter-moroka-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|2332|2026-10-29 20:01:20.586401+00
+statement-of-account-estate-late-peter-moroka-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|028d3901-e826-44a9-b6a6-b81328365629|7192|2026-10-29 20:01:20.703132+00
+Sipho Dlamini — certified ID copy.pdf|CUSTOMER|SHARED|MANUAL|UPLOADED||608|2026-10-29 20:39:44.796863+00
++ SELECT * FROM portal.portal_documents WHERE org_id='mathebula-partners'
+ebfe96bf-df4a-4054-a444-9ab8b8710ad4|mathebula-partners|fbfe7eba-53f6-4536-809d-2fc785628ef3|d42337ad-2c76-4a79-ac75-e3d9f4d36881|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|application/pdf|5855|PROJECT|org/tenant_5039f2d497cf/generated/statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|2026-10-29 20:49:29.773111|2026-10-29 20:49:29.802103
++ SELECT brand_color, legal_matter_retention_years, portal_digest_cadence, digest_last_sent_at, default_currency FROM tenant_5039f2d497cf.org_settings
+#1B3A4B|5|||ZAR
++ SELECT c.name, l.* FROM tenant_5039f2d497cf.client_ledger_cards l JOIN tenant_5039f2d497cf.customers c ON c.id=l.customer_id
+Moroka Family Trust|c99fe538-485f-404c-a6e5-9eccd7f118d7|696ce2f0-0061-46bd-91f4-a95c8a23a009|acd36ca9-adc9-4a58-89bf-d36016febf49|38000.00|50000.00|12000.00|0.00|0.00|2026-10-29|2026-10-29 15:08:12.000412+00|2026-10-29 19:33:23.652093+00
+Sipho Dlamini|0733af1c-4be6-4d82-b3cd-6e0acb70cce8|696ce2f0-0061-46bd-91f4-a95c8a23a009|fbfe7eba-53f6-4536-809d-2fc785628ef3|0.00|5000.00|1250.00|0.00|0.00|2026-10-29|2026-10-29 14:47:05.859944+00|2026-10-29 19:42:44.465189+00

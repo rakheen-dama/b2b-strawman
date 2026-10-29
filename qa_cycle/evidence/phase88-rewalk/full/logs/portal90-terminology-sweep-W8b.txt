@@ -1,0 +1,19 @@
+# W8b portal terminology + console sweep, 2026-10-29T20:58Z, Sipho session (signed in 20:57:34Z via Mailpit 2gpDBUkRFfm5aWL8rQiw3b)
+# Method (ruling O-14): browser_run_code_unsafe, page.goto + innerText + console/pageerror listeners only; no clicks except the Activity "Firm actions" tab (read-only tab switch)
+# Regex: \b(projects?|customers?|invoices?|tasks?|engagements?|attachments?|clients?)\b  (case-insensitive) over document.body.innerText
+/home                                   -> hits: none
+/matters                                -> hits: none
+/matters/d42337ad-…                     -> hits: "Tasks", "Task" (section heading "Tasks" + column "Task" — legal-za keeps "Tasks", firm Work › Tasks), "attachment" (task NAME "Execution -- warrant / attachment" — legal term in data, not UI copy)
+/invoices                               -> hits: none   (page h1 "Fee notes")
+/invoices/4a10f00a-… (INV-0001)          -> hits: none
+/trust (→ /trust/d42337ad-…)            -> hits: "Client" (transaction description data "Client deposit — litigation disbursements")
+/deadlines                              -> hits: none
+/requests                               -> hits: none
+/requests/2c92a127-…                    -> hits: none
+/activity (Your actions)                -> hits: none
+/activity (Firm actions)                -> hits: none
+/profile                                -> hits: "Client" (dt "Client" = the client the contact belongs to — correct legal-za noun)
+/settings/notifications                 -> hits: none
+Project / Customer / Invoice / Engagement: 0 hits on all 13 surfaces.
+Console errors (console 'error' + pageerror) during the 13 navigations: 0
+Raw enums seen (not vocabulary; already filed): task badge "DONE" (G88-F20), request "SENT"/"IN_PROGRESS"/"SUBMITTED" (G88-F29), trust Type "DEPOSIT"/"PAYMENT"/"REFUND" + "Matter d42337ad" (G88-F31)

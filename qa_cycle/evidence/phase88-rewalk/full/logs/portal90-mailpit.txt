@@ -22,3 +22,6 @@ UJ3HXoAJ33jC9UjKzZs5hQ	2026-10-29T13:45:34.317Z	thandi@mathebula-test.local	Your
 HneqAesGSSPW6o56bgS5uG	2026-10-29T14:47:05.978Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity	(body: Date 29 Oct 2026 · Type DEPOSIT · Amount R 5 000,00 · "View trust ledger" → http://localhost:3002/trust/d42337ad-2c76-4a79-ac75-e3d9f4d36881?orgId=mathebula-partners)
 nDLyma4n2diVpufTjJVFDz	2026-10-29T14:48:00.288Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity	(deeds payment)
 eNAExg95qJRr3GH4M77Hik	2026-10-29T19:42:44.575Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity	(W6c refund approval)
+2026-10-29T20:47:47.945Z	dqaczwrbTuaX5m7YhLBNPn	moroka.trust@email.co.za	Your portal access link from Mathebula & Partners (W8b P-45 sign-in)
+2026-10-29T20:52:14.536Z	2fiFJFA35NKQdrWge3Qpie	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners (W8b P-60 sign-in)
+2026-10-29T20:57:34.34Z	2gpDBUkRFfm5aWL8rQiw3b	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners (W8b P-CP85.2 re-sign-in)

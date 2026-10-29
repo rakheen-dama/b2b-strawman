@@ -1,0 +1,16 @@
+# 2026-10-29T21:01:51Z tenant=tenant_5039f2d497cf
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|1|2|5|2026-10-29 20:57:34.283112+00
+moroka.trust@email.co.za|0|1|1|2026-10-29 20:47:47.856825+00
++ SELECT invoice_number, status, total, amount_paid, paid_at FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+INV-0001|PAID|4585.00|4585.00|2026-10-29 19:11:47.237862+00
+INV-0002|PAID|36575.75|36575.75|2026-10-29 20:48:53.315391+00
+|DRAFT|10925.00|0.00|
+INV-0003|SENT|7058.13|0.00|
++ SELECT count(*), min(occurred_at), max(occurred_at) FROM tenant_5039f2d497cf.audit_events
+288|2026-10-29 13:47:23.345482+00|2026-10-29 20:52:39.940092+00
++ SELECT occurred_at, event_type, entity_type, actor_type FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > '2026-10-29 20:46:00+00' ORDER BY occurred_at
+2026-10-29 20:48:53.328603+00|invoice.paid|invoice|SYSTEM
+2026-10-29 20:48:53.349865+00|payment.completed|invoice|SYSTEM
+2026-10-29 20:48:53.353752+00|portal.invoice.paid|invoice|PORTAL_CONTACT
+2026-10-29 20:52:39.940092+00|portal.document.downloaded|document|PORTAL_CONTACT

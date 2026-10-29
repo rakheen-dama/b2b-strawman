@@ -1,0 +1,31 @@
+# INFRA-11 restore 2026-10-29T21:01:18Z
+COMMAND   PID        USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+node    65083 rakheendama   16u  IPv6 0x5d083da7c6d92579      0t0  TCP *:3002 (LISTEN)
+  PID  PPID ELAPSED COMMAND
+65045     1   13:50 node /opt/homebrew/bin/pnpm run start
+65083 65045   13:50 next-server (v16.3.8)    
+:3002 free
+
+=== svc.sh start portal ===
+
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      1293     yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     33245    yes      yes      3000
+  portal       71782    yes      yes      3002
+
+
+Done.
+:3002/login 200
+:3000/ 200
+:3002 holder 71826 00:06 next-server (v16.3.8)  n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+main status portal/frontend:

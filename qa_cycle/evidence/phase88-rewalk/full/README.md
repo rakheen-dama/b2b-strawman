@@ -76,17 +76,22 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | KC-STACK (629.1) | — | README.md | 1 | PASS |
 | Session 0 (629.2) | 43–48 + master 115–152 | session-0.md | 18 | 15 / 2 / 0 / 0 / 1 |
 | Day 0 A–D (629.2, W1a) | 52–125 | day-00.md | 44 | 40 / 4 / 0 / 0 / 0 |
+| Day 0 E–K + LH + K-PRO + CP0.1–9 (629.2, W1b) | 129–206 | day-00.md | 46 | 41 / 3 / 0 / 2 / 0 |
+| **Day 0 total** | 52–206 | day-00.md | 90 | 81 / 7 / 0 / 2 / 0 |
 
 ## Wow-moment candidates shot in 629A
 | Wow | Step | File | Shows |
 |---|---|---|---|
+| 1 (Day 0) | after 0.40 / LH (ruling C-6) | screens/wow-1-candidate.png | Thandi's Home, six-zone legal nav, Mathebula logo tile + brand accent bar, 1440×900 light (brand colour visible only as logo + accent bar; empty Day-0 widgets) |
 
 ## Candidate gaps (629A) — index
 | ID | Severity | Step | Class | Owner | File |
 |---|---|---|---|---|---|
 | G88-M1 (existing) | LOW | 0.Aa, M.6a | scenario mismatch — §5a row 1 pending founder authorisation | 628H / founder | session-0.md |
-| G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a (later runs append) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md |
+| G88-F1 | LOW | 0.5a, 0.15a, 0.28a, 0.29a, 0.41a (later runs append) | scenario mismatch needing authorisation (wording drift outside §5/§5a, ruling C-5) | new — founder §6 | day-00.md |
 | G88-F2 | LOW | Team page (0.27 / CP-AD-2) | product bug — "Joined" column hard-coded "—" (`member-list.tsx:75,124`) | new | day-00.md |
+| G88-F3 | MEDIUM | 0.47b, 0.48b | product bug — Edit Field Group dialog opens with no member fields checked (`custom-fields-content.tsx:281-287` passes no `initialFieldIds`; save would send `[]`); membership invisible in the UI | new | day-00.md |
+| G88-F4 | LOW | 0.48a, 0.56 (side observations) | product bug — settings tables (Custom fields, Automations) overflow an 856 px wrapper at 1440; Status/Actions cut | 628B (628.5) class — ADD-ON; else new | day-00.md |
 
 ## Stack state left for 629B
 <filled by W4>

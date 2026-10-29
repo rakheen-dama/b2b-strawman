@@ -1,0 +1,11 @@
+# 2026-10-29T14:00:17Z read-only SELECTs (W1b 0.42/0.43)
+## billing_rates columns: id,member_id,project_id,customer_id,currency,hourly_rate,effective_from,effective_to,created_at,updated_at
+## cost_rates columns: id,member_id,currency,hourly_cost,effective_from,effective_to,created_at,updated_at
+SQL: SELECT m.email, br.hourly_rate, br.currency, br.effective_from, br.effective_to, br.project_id, br.customer_id FROM tenant_5039f2d497cf.billing_rates br JOIN tenant_5039f2d497cf.members m ON m.id=br.member_id ORDER BY 2 DESC
+thandi@mathebula-test.local|2500.00|ZAR|2026-10-29|||
+bob@mathebula-test.local|1200.00|ZAR|2026-10-29|||
+carol@mathebula-test.local|550.00|ZAR|2026-10-29|||
+SQL: SELECT m.email, cr.hourly_cost, cr.currency, cr.effective_from, cr.effective_to FROM tenant_5039f2d497cf.cost_rates cr JOIN tenant_5039f2d497cf.members m ON m.id=cr.member_id ORDER BY 2 DESC
+thandi@mathebula-test.local|1000.00|ZAR|2026-10-29|
+bob@mathebula-test.local|500.00|ZAR|2026-10-29|
+carol@mathebula-test.local|200.00|ZAR|2026-10-29|

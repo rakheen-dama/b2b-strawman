@@ -1,0 +1,4 @@
+# 2026-10-29T14:06:38Z read-only SELECTs (W1b 0.67)
+## public.subscriptions columns: id,organization_id,current_period_start,current_period_end,cancelled_at,created_at,updated_at,subscription_status,trial_ends_at,grace_ends_at,billing_method,admin_note
+SQL: SELECT s.* FROM public.subscriptions s JOIN public.organizations o ON o.id=s.organization_id WHERE o.external_org_id='mathebula-partners'
+ad43fada-3814-4798-be72-510898cc048c|e7943337-bd2a-4978-b57f-120ca65b8b3d||||2026-10-29 13:47:23.768402+00|2026-10-29 13:47:23.768402+00|TRIALING|2026-11-12 13:47:23.768383+00||MANUAL|

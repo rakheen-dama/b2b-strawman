@@ -1,0 +1,7 @@
+# 2026-10-29T14:54:18Z notifications for carol (13c678b8-…)
+id recipient_member_id type title body reference_entity_type reference_entity_id reference_project_id is_read created_at 
+7adf53ce-ad84-47e3-b27b-ae506a53d59b|MEMBER_INVITED|You were added to matter "Sipho Dlamini v. Standard Bank (civil)"|f|PROJECT|d42337ad-2c76-4a79-ac75-e3d9f4d36881|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 14:24:57.234009+00
+62aa3836-d60e-42a5-a874-acde956abe04|TASK_ASSIGNED|Bob Ndlovu assigned you to task "Letter of demand"|f|TASK|b55179b8-3ed5-46df-b731-b549c5c8a42b|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 14:26:26.068671+00
+9fa0dfe2-d57d-42e8-a16e-57ab4c314aed|COMMENT_ADDED|Bob Ndlovu commented on task "Initial consultation & case assessment"|f|TASK|dea6cf65-bc9e-455b-8b67-9646efe20489|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 14:54:00.57728+00
+# comments
+361b6bdc-85a4-436c-ab37-add2b12b732e|TASK|dea6cf65-bc9e-455b-8b67-9646efe20489|Need to confirm court date by Monday @Carol|INTERNAL|2026-10-29 14:54:00.540667+00

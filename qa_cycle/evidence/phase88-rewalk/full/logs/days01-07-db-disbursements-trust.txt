@@ -1,0 +1,8 @@
+# 2026-10-29T14:52:08Z
+## SELECT category, description, amount, vat_treatment, payment_source, trust_transaction_id, approval_status, approved_by, billing_status FROM tenant_5039f2d497cf.legal_disbursements ORDER BY created_at
+SHERIFF_FEES|Sheriff fee — service of process|750.00|ZERO_RATED_PASS_THROUGH|OFFICE_ACCOUNT||APPROVED|bob@mathebula-test.local|2026-10-29 14:51:13.682608+00|UNBILLED
+DEEDS_OFFICE_FEES|Deeds office search fee|1250.00|ZERO_RATED_PASS_THROUGH|TRUST_ACCOUNT|11288c1d-b866-4bd2-ac02-0b6047eff200|APPROVED|thandi@mathebula-test.local|2026-10-29 14:50:40.063882+00|UNBILLED
+## trust_transactions
+id trust_account_id transaction_type amount customer_id project_id counterparty_customer_id invoice_id reference description transaction_date status approved_by approved_at second_approved_by second_approved_at rejected_by rejected_at rejection_reason reversal_of reversed_by_id bank_statement_line_id recorded_by created_at 
+d37ebccd-34bb-401f-8f2c-91e122cfd115|DEPOSIT|5000.00|DEP/SIPHO-001|RECORDED|Client deposit — litigation disbursements|fbfe7eba-53f6-4536-809d-2fc785628ef3|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 14:47:05.872404+00
+11288c1d-b866-4bd2-ac02-0b6047eff200|PAYMENT|1250.00|DEEDS/SIPHO-001|APPROVED|Deeds office search fee — Deeds Office Pretoria|fbfe7eba-53f6-4536-809d-2fc785628ef3|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 14:47:40.895167+00

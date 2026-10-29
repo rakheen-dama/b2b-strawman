@@ -79,6 +79,8 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | Day 0 E–K + LH + K-PRO + CP0.1–9 (629.2, W1b) | 129–206 | day-00.md | 46 | 41 / 3 / 0 / 2 / 0 |
 | **Day 0 total** | 52–206 | day-00.md | 90 | 83 / 7 / 0 / 0 / 0 (0.50 + CP0.5 closed PASS in place by W2a after 1.9; W1b snapshot was 81 / 7 / 0 / 2 / 0) |
 | Days 1–4 (629.3, W2a) | 209–266 | days-01-07.md | 46 | 42 / 4 / 0 / 0 / 0 |
+| Days 5–7 (629.3, W2b) | 268–301 | days-01-07.md | 25 | 22 / 3 / 0 / 0 / 0 |
+| **Days 1–7 total** | 209–301 | days-01-07.md | 71 | 64 / 7 / 0 / 0 / 0 |
 
 ## Wow-moment candidates shot in 629A
 | Wow | Step | File | Shows |
@@ -86,6 +88,7 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | 1 (Day 0) | after 0.40 / LH (ruling C-6) | screens/wow-1-candidate.png | Thandi's Home, six-zone legal nav, Mathebula logo tile + brand accent bar, 1440×900 light (brand colour visible only as logo + accent bar; empty Day-0 widgets) |
 | 2 (Day 4) | 4.3b | screens/wow-2-candidate.png | Portal acceptance page (prod build) with the engagement letter PDF inline (letterhead logo, firm block, navy headings) and the green "Sipho Dlamini accepted this document on 29 Oct 2026, 16:35." state, 1440×900 light |
 | 3 (Day 2 per the list; walked at 1.4) | 1.4 | screens/wow-3-candidate.png | Bob, Conflict check: green "No Conflict — Checked "Sipho Dlamini" at 29/10/2026, 16:11:17" card, 1440×900 light |
+| 4 (Day 5) | 5.4 | screens/wow-4-candidate.png | Bob, Sipho's litigation matter Overview: "Active · LITIGATION", facts strip "Case no. JHB/CIV/2026/001 · Gauteng High Court, Johannesburg", grouped tabs, 0 Project/Customer/Invoice, 1440×900 light. Wow 4's text says "a RAF claim" — wrong for Day 5 (Sipho's matter); §5a row 3 pending founder authorisation — not re-shot on the RAF matter |
 
 ## Candidate gaps (629A) — index
 | ID | Severity | Step | Class | Owner | File |
@@ -99,6 +102,10 @@ The same start reconciled the 628C pack texts into both old tenants (common-proj
 | G88-F6 | LOW | 3.3b (side observation) | product bug (UI) — matter Custom fields shows "Field Groups" twice (`matter-fields-tab.tsx:53-54` + `FieldGroupSelector.tsx:101-102`) | new | days-01-07.md |
 | G88-F7 | LOW | TEAM-sipho (then TEAM-estate, TEAM-raf) | scenario mismatch needing authorisation — scenario lacks matter-team steps (ADR-346 / 619; ruling C-4) | new — founder §6 | days-01-07.md |
 | G88-F8 | LOW | 4.6b | product bug — matter Activity feed gives no portal-source marker for portal-contact events (DTO has `actorName` only, `activity-feed-client.tsx:38-39`) | U5 (625A/B) ADD-ON; else new | days-01-07.md |
+| G88-F9 | LOW | 5.9 (side observation) | product bug (UI) — disbursement detail shows the linked trust transaction as a raw UUID (`legal/disbursements/[id]/detail-client.tsx:270-284`) instead of its reference | new (U21 polish class) | days-01-07.md |
+| G88-F10 | LOW | 5.12 (side observation) | product bug (UI) — matter Fees › Disbursements keeps a MATTER column reading "—" (`project-disbursements-tab.tsx:82-88` passes no `projectNames`) | new (U21 polish class) | days-01-07.md |
+| G88-M4 (existing, residual) | MEDIUM | 5.12, 5.14 | product bug — page no longer overflows (scrollWidth 1440) but disbursement tables (1249/1257 px) hide BILLING/ACTIONS behind an inner scroll at 1440 | 628B (628.5) | days-01-07.md |
+| G88-M5 / G88-M6 (existing) | LOW / MEDIUM | 6.1 / 6.3b | still open — Member `security.access_denied` noise; comment notification lands on the task list | new unit — founder | days-01-07.md |
 
 ## Stack state left for 629B
 <filled by W4>

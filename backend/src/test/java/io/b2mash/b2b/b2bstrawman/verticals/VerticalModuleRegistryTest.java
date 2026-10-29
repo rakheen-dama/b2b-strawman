@@ -53,8 +53,7 @@ class VerticalModuleRegistryTest {
   void getModule_courtCalendarIsActiveCourtDatesWithNoNavItems() {
     // 628D (N-7, R-2): the id stays — it gates the Diary court rows, the matter Court dates tab,
     // the reminder job and the prescription tracker — but the dead /court-calendar page link is
-    // gone
-    // and the display name follows the product wording.
+    // gone and the display name follows the product wording.
     var module = registry.getModule("court_calendar");
 
     assertThat(module).isPresent();

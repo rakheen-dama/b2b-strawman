@@ -136,7 +136,10 @@ public class InformationRequestService {
                 customerId, PortalContact.ContactRole.PRIMARY)
             .or(() -> portalContactRepository.findByCustomerId(customerId).stream().findFirst())
             .orElseThrow(
-                () -> new ResourceNotFoundException("PortalContact", "customerId=" + customerId));
+                () ->
+                    ResourceNotFoundException.withDetail(
+                        "Portal contact not found",
+                        "No portal contact found for client " + customerId));
 
     // dueDays controls how long the customer has to respond; reminderIntervalDays controls
     // how often reminders are sent. Use a sensible default for reminders.

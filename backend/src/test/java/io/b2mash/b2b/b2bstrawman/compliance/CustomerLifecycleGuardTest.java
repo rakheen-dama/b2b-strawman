@@ -46,9 +46,8 @@ class CustomerLifecycleGuardTest {
     var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDED);
     assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
         .isInstanceOf(InvalidStateException.class)
-        // GAP-L-60 copy fix: error uses vertical-neutral "bill" (not "invoice")
-        // so legal-za tenants see a label that matches their fee-note UI.
-        .hasMessageContaining("bill")
+        // ADR-357 (628D): the label is legal copy, not "bill" / "invoice".
+        .hasMessageContaining("Cannot create fee note for client in OFFBOARDED lifecycle status")
         .hasMessageNotContaining("invoice");
   }
 
@@ -78,7 +77,8 @@ class CustomerLifecycleGuardTest {
   void createProjectBlockedForOffboarding() {
     var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
     assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT))
-        .isInstanceOf(InvalidStateException.class);
+        .isInstanceOf(InvalidStateException.class)
+        .hasMessageContaining("Cannot create matter for client in OFFBOARDING lifecycle status");
   }
 
   @Test

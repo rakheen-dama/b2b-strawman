@@ -474,7 +474,7 @@ public class ExpenseService {
     var access = projectAccessService.checkAccess(expense.getProjectId(), actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
-          "Cannot modify expense",
+          "Cannot modify disbursement",
           "Only the creator or a matter lead/admin/owner can modify this disbursement");
     }
   }

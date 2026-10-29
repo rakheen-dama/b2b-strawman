@@ -114,7 +114,7 @@ public class PrerequisiteService {
   public UUID resolveCustomerIdFromProject(UUID projectId) {
     return customerProjectRepository
         .findFirstCustomerByProjectId(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("CustomerProject", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT_MATTER_LINK, projectId));
   }
 
   /**

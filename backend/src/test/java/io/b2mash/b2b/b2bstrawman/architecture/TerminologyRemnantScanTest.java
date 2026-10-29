@@ -37,19 +37,29 @@ import org.junit.jupiter.api.Test;
  * <p>Not words (stripped before matching): {@code {customer.name}} / {@code {{project.name}}}
  * placeholders, dotted paths ({@code invoice.*}), route paths ({@code /invoices/…}), UPPER enum
  * tokens ({@code PROJECT}). A literal that is a single identifier token ({@code "project"}, {@code
- * "customer_tax_number"}, {@code "project-summary.json"}) is a key, not copy (ADR-342) — except the
- * noun argument of {@code DeleteGuard.forEntity} / {@code pluralize}, which IS copy.
+ * "customer_tax_number"}, {@code "project-summary.json"}) is a key, not copy (ADR-342) — except
+ * where a single word IS copy: the noun argument of {@code DeleteGuard.forEntity} / {@code
+ * pluralize}; an enum-constant argument ({@code CREATE_PROJECT("project")} — {@code
+ * LifecycleAction} labels are spliced into "Cannot create … for client"); and a {@code +} / ternary
+ * operand inside a message call ({@code "Cannot " + (x ? "invoice" : "bill")}). An enum whose
+ * constant argument is a genuine ADR-342 stored key containing a legacy noun must be allow-listed
+ * with reason "ADR-342 literal" (none exist today).
  *
  * <p>Not scanned on purpose: {@code IllegalArgumentException} / {@code IllegalStateException}
  * messages (programmer guards; the latter render as a generic 500), {@code log.*}, MCP
  * {@code @Tool} descriptions. Known blind spots (manual review; ADR-357 Cons): copy built in a
  * variable whose name is not message-like, {@code missing.add(…)}, {@code customer.anonymize(…)},
  * {@code TrustBoundaryDecision.refused(…)}, {@code SkillContext} descriptions, sync dead-letter
- * reasons. "project" as a verb is rewritten, not allow-listed (ADR-357).
+ * reasons, a single-token literal passed whole as a message argument ({@code new
+ * InvalidStateException("x", "project")} reads as a key). "project" as a verb is rewritten, not
+ * allow-listed (ADR-357).
  *
- * <p>Separately, {@link #notFoundTitlesUseEntityNounConstants()} bans the legacy {@code
- * ResourceNotFoundException} type literals (incl. the CamelCase compounds the word scan cannot see,
- * e.g. {@code "ProjectTemplate"}) — 404 titles come from {@code exception/EntityNoun}.
+ * <p>Separately, {@link #notFoundTitlesUseEntityNounConstants()} bans any literal {@code
+ * ResourceNotFoundException} / {@code withDetail} title containing project / customer / invoice /
+ * expense / legaldisbursement in any case — incl. the CamelCase compounds the word scan cannot see,
+ * e.g. {@code "CustomerProject"} — 404 titles come from {@code exception/EntityNoun}; and {@link
+ * #problemDetailExceptionsAreAllScanned()} fails when a new {@code ErrorResponseException} subclass
+ * is neither in {@link #MESSAGE_CALLEES} nor explicitly exempt.
  */
 class TerminologyRemnantScanTest {
 
@@ -90,12 +100,28 @@ class TerminologyRemnantScanTest {
 
   static final Set<String> MESSAGE_CALLEES =
       Set.of(
-          // ProblemDetail-rendering exceptions (GlobalExceptionHandler → title/detail → UI toast)
+          // ProblemDetail-rendering exceptions (GlobalExceptionHandler → title/detail → UI toast).
+          // Every ErrorResponseException subclass must be listed here or in
+          // EXEMPT_PROBLEM_EXCEPTIONS — see problemDetailExceptionsAreAllScanned().
           "ResourceNotFoundException",
           "ResourceConflictException",
           "InvalidStateException",
           "ForbiddenException",
           "PortalAuthException",
+          "PrerequisiteNotMetException",
+          "ModuleNotEnabledException",
+          "MissingRequiredClausesException",
+          "MissingOrganizationContextException",
+          "PlanLimitExceededException",
+          "TooManyRequestsException",
+          "ValidationWarningException",
+          "InvoiceValidationFailedException",
+          "CommentAttachmentNotAllowedException",
+          "IntegrationDisabledException",
+          "PdfGenerationException",
+          "DocxGenerationException",
+          "ClosureGateFailedException",
+          "RetentionElapsedException",
           "withDetail",
           "withType",
           "ProblemDetailFactory.create",
@@ -121,6 +147,17 @@ class TerminologyRemnantScanTest {
           "createNotificationsForRecipients",
           "pluralize");
 
+  /**
+   * {@code ErrorResponseException} subclasses deliberately NOT in {@link #MESSAGE_CALLEES}. Each
+   * entry needs a comment saying why its constructor arguments can never carry user-visible copy.
+   * (Empty: every subclass is scanned. The copy inside a subclass's own body is scanned anyway via
+   * {@code ProblemDetailFactory.create}.)
+   */
+  static final Set<String> EXEMPT_PROBLEM_EXCEPTIONS = Set.of();
+
+  private static final Pattern PROBLEM_EXCEPTION_CLASS =
+      Pattern.compile("\\bclass\\s+(\\w+Exception)\\s+extends\\s+ErrorResponseException\\b");
+
   /** Callees whose single-word noun argument is copy, not a key. */
   static final Set<String> NOUN_ARG_CALLEES = Set.of("forEntity", "pluralize");
 
@@ -142,19 +179,33 @@ class TerminologyRemnantScanTest {
           Pattern.CASE_INSENSITIVE);
   static final Pattern ENUM_CONSTANT = Pattern.compile("[A-Z][A-Z0-9_]*");
 
-  /** Legacy 404 type literals — must be {@code EntityNoun} constants (R-1, R-3). */
-  static final Pattern LEGACY_404 =
+  /**
+   * A string-literal 404 title (first argument of {@code new ResourceNotFoundException(} / {@code
+   * ResourceNotFoundException.withDetail(}).
+   */
+  static final Pattern NOT_FOUND_TITLE =
       Pattern.compile(
-          "ResourceNotFoundException\\(\\s*\"(Customer|Project|Invoice|Expense|ProjectTemplate"
-              + "|InvoiceLine|ProjectMember|ProjectBudget|CustomerProject link|LegalDisbursement)\"");
+          "(?:new\\s+ResourceNotFoundException|ResourceNotFoundException\\s*\\.\\s*withDetail)"
+              + "\\s*\\(\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+
+  /**
+   * Legacy nouns banned in a literal 404 title, any case, also inside CamelCase compounds ({@code
+   * "CustomerProject"}, {@code "ProjectTemplate"}) — such titles use {@code EntityNoun} (R-1, R-3).
+   */
+  static final Pattern LEGACY_404_NOUN =
+      Pattern.compile(
+          "project|customer|invoice|expense|legaldisbursement", Pattern.CASE_INSENSITIVE);
 
   private static final Pattern CALLEE =
       Pattern.compile("(?:new\\s+)?([A-Za-z_][\\w.]*)\\s*(?:<[^()]*>)?\\s*$");
   private static final Pattern DECLARATION =
       Pattern.compile(
           "\\s*(?:@\\w+\\s+)*(?:(?:final|private|static|public|protected)\\s+)*"
-              + "(?:[\\w<>\\[\\],.?]+\\s+)?([A-Za-z_]\\w*)\\s*=(?!=)");
+              + "(?:[\\w<>\\[\\],.?]+\\s+)?([A-Za-z_][\\w.]*)\\s*=(?!=)");
   private static final String BLOCK = "{";
+
+  /** Control headers: after their closing paren a new (unbraced) statement starts. */
+  private static final Set<String> CONTROL_HEADERS = Set.of("if", "for", "while", "switch");
 
   record Hit(String file, int line, String where, String text) {
     String render() {
@@ -165,7 +216,7 @@ class TerminologyRemnantScanTest {
   record AllowEntry(String file, String text, String reason) {}
 
   /** A string literal: offset, decoded text, enclosing calls innermost-first ("{" = block). */
-  record Literal(int offset, String text, List<String> calls, int statementStart) {}
+  record Literal(int offset, int end, String text, List<String> calls, int statementStart) {}
 
   // ---- word filter (mirror of the frontend prose()) ------------------------------------------
 
@@ -200,7 +251,7 @@ class TerminologyRemnantScanTest {
       }
       if (src.startsWith("\"\"\"", i)) {
         int j = src.indexOf("\"\"\"", i + 3);
-        out.add(new Literal(i, src.substring(i + 3, j), innermostFirst(calls), stmt));
+        out.add(new Literal(i, j + 3, src.substring(i + 3, j), innermostFirst(calls), stmt));
         i = j + 3;
         continue;
       }
@@ -211,7 +262,9 @@ class TerminologyRemnantScanTest {
           j++;
         }
         if (c == '"') {
-          out.add(new Literal(i, unescape(src.substring(i + 1, j)), innermostFirst(calls), stmt));
+          out.add(
+              new Literal(
+                  i, j + 1, unescape(src.substring(i + 1, j)), innermostFirst(calls), stmt));
         }
         i = j + 1;
         continue;
@@ -224,7 +277,12 @@ class TerminologyRemnantScanTest {
                 ? name
                 : name.substring(name.lastIndexOf('.') + 1));
       } else if (c == ')') {
-        if (!calls.isEmpty() && !BLOCK.equals(calls.getLast())) calls.removeLast();
+        if (!calls.isEmpty() && !BLOCK.equals(calls.getLast())) {
+          String closed = calls.removeLast();
+          // `if (cond) title = "…";` — the unbraced body is its own statement
+          if (CONTROL_HEADERS.contains(closed)
+              && (calls.isEmpty() || BLOCK.equals(calls.getLast()))) stmt = i + 1;
+        }
       } else if (c == '{') {
         calls.add(BLOCK);
         stmt = i + 1;
@@ -253,13 +311,18 @@ class TerminologyRemnantScanTest {
     String outer = null;
     List<String> calls = lit.calls();
     for (int k = 0; k < calls.size(); k++) {
-      if (PASS_THROUGH.contains(calls.get(k))) continue;
+      // a bare grouping/ternary parenthesis (callee "") is as transparent as a pass-through wrapper
+      if (calls.get(k).isEmpty() || PASS_THROUGH.contains(calls.get(k))) continue;
       callee = BLOCK.equals(calls.get(k)) ? null : calls.get(k);
       outer = k + 1 < calls.size() ? calls.get(k + 1) : null;
       break;
     }
     if (TOKEN.matcher(lit.text().strip()).matches()
-        && (callee == null || !NOUN_ARG_CALLEES.contains(callee))) {
+        && (callee == null
+            || !(NOUN_ARG_CALLEES.contains(callee)
+                || (MESSAGE_CALLEES.contains(callee) && isOperand(lit, src))
+                || (ENUM_CONSTANT.matcher(callee).matches()
+                    && (outer == null || BLOCK.equals(outer)))))) {
       return null;
     }
     if (callee != null) {
@@ -270,7 +333,19 @@ class TerminologyRemnantScanTest {
       return null;
     }
     Matcher m = DECLARATION.matcher(src.substring(lit.statementStart(), lit.offset()));
-    return m.lookingAt() && MESSAGE_VAR.matcher(m.group(1)).find() ? "var " + m.group(1) : null;
+    if (!m.lookingAt()) return null;
+    String target = m.group(1).substring(m.group(1).lastIndexOf('.') + 1); // this.title → title
+    return MESSAGE_VAR.matcher(target).find() ? "var " + m.group(1) : null;
+  }
+
+  /** The literal is a {@code +} / ternary operand, i.e. a word spliced into a sentence. */
+  static boolean isOperand(Literal lit, String src) {
+    int b = lit.offset() - 1;
+    while (b >= 0 && Character.isWhitespace(src.charAt(b))) b--;
+    int a = lit.end();
+    while (a < src.length() && Character.isWhitespace(src.charAt(a))) a++;
+    return (b >= 0 && "+?:".indexOf(src.charAt(b)) >= 0)
+        || (a < src.length() && "+:".indexOf(src.charAt(a)) >= 0);
   }
 
   static List<Hit> javaHits(String rel, String src) {
@@ -390,6 +465,13 @@ class TerminologyRemnantScanTest {
     return header + " — " + lines.size() + " hit(s):\n" + String.join("\n", lines);
   }
 
+  static List<String> legacyNotFoundTitles(String src) {
+    var out = new ArrayList<String>();
+    Matcher m = NOT_FOUND_TITLE.matcher(src);
+    while (m.find()) if (LEGACY_404_NOUN.matcher(m.group(1)).find()) out.add(m.group(1));
+    return out;
+  }
+
   // ---- tests -----------------------------------------------------------------------------------
 
   @Test
@@ -410,9 +492,16 @@ class TerminologyRemnantScanTest {
             "DeleteGuard.forEntity(\"project\", id);", // 11 hit noun arg
             "new InvalidStateException(\"Bad\", \"entityType must be TASK or PROJECT\");", // 12
             "new NavItem(\"/invoices/billing-runs\", \"Fee runs\", \"finance\");", // 13 route
-            "String reason = \"Linked to customer\";"); // 14 not a message var name
+            "String reason = \"Linked to customer\";", // 14 not a message var name
+            "this.title = \"Project not found\";", // 15 hit dotted target (CR-1)
+            "if (missing) title = \"Customer required\";", // 16 hit unbraced if body (CR-2)
+            "new InvalidStateException(\"x\", \"a \" + (c ? \"invoice\" : \"b\"));", // 17 hit
+            "throw new PlanLimitExceededException(\"Too many projects\");", // 18 hit
+            "CREATE_PROJECT(\"project\"),", // 19 hit: single-token enum label is copy
+            "new InvalidStateException(\"x\", \"project\");", // 20 whole-arg token = key
+            "x.put(\"customer\", \"a \" + (c ? \"project\" : \"b\"));"); // 21 not a message
     assertThat(javaHits("Sample.java", sample).stream().map(Hit::line).toList())
-        .containsExactly(1, 2, 5, 6, 10, 11);
+        .containsExactly(1, 2, 5, 6, 10, 11, 15, 16, 17, 18, 19);
     // json: reconcile `from` is skipped by rule, `to` and ordinary values are scanned
     var json =
         new ObjectMapper()
@@ -423,8 +512,15 @@ class TerminologyRemnantScanTest {
     var out = new ArrayList<Hit>();
     jsonHits("x.json", json, "", true, out);
     assertThat(out).extracting(Hit::text).containsExactly("Project Info");
-    assertThat(LEGACY_404.matcher("new ResourceNotFoundException(\n \"ProjectTemplate\", id)"))
-        .matches(Matcher::find);
+    assertThat(legacyNotFoundTitles("new ResourceNotFoundException(\n \"ProjectTemplate\", id)"))
+        .containsExactly("ProjectTemplate");
+    assertThat(
+            legacyNotFoundTitles(
+                "new ResourceNotFoundException(\"CustomerProject\", id);"
+                    + " ResourceNotFoundException.withDetail(\"Invoice not found\", \"x\");"
+                    + " new ResourceNotFoundException(EntityNoun.MATTER, id);"
+                    + " new ResourceNotFoundException(\"Task\", id);"))
+        .containsExactly("CustomerProject", "Invoice not found");
   }
 
   @Test
@@ -476,9 +572,12 @@ class TerminologyRemnantScanTest {
     var legacy = new ArrayList<String>();
     for (Path p : files(MAIN_JAVA, ".java")) {
       String src = read(p);
-      Matcher m = LEGACY_404.matcher(src);
-      while (m.find())
-        legacy.add(rel(p) + ":" + lineOf(src, m.start(1)) + "  \"" + m.group(1) + "\"");
+      Matcher m = NOT_FOUND_TITLE.matcher(src);
+      while (m.find()) {
+        if (LEGACY_404_NOUN.matcher(m.group(1)).find()) {
+          legacy.add(rel(p) + ":" + lineOf(src, m.start(1)) + "  \"" + m.group(1) + "\"");
+        }
+      }
     }
     assertThat(legacy)
         .withFailMessage(
@@ -486,6 +585,31 @@ class TerminologyRemnantScanTest {
                 "ADR-357: 404 titles use exception/EntityNoun (MATTER/CLIENT/FEE_NOTE/…), not a"
                     + " legacy type literal",
                 legacy))
+        .isEmpty();
+  }
+
+  @Test
+  void problemDetailExceptionsAreAllScanned() {
+    var found = new ArrayList<String>();
+    var unscanned = new ArrayList<String>();
+    for (Path p : files(MAIN_JAVA, ".java")) {
+      Matcher m = PROBLEM_EXCEPTION_CLASS.matcher(read(p));
+      while (m.find()) {
+        String name = m.group(1);
+        found.add(name);
+        if (!MESSAGE_CALLEES.contains(name) && !EXEMPT_PROBLEM_EXCEPTIONS.contains(name)) {
+          unscanned.add(rel(p) + "  " + name);
+        }
+      }
+    }
+    assertThat(found) // the class scan itself works (not vacuously green)
+        .contains("ResourceNotFoundException", "PlanLimitExceededException", "PortalAuthException");
+    assertThat(unscanned)
+        .withFailMessage(
+            report(
+                "ADR-357: a ProblemDetail-rendering exception the guard cannot see — add it to"
+                    + " MESSAGE_CALLEES (or to EXEMPT_PROBLEM_EXCEPTIONS with a reason)",
+                unscanned))
         .isEmpty();
   }
 }

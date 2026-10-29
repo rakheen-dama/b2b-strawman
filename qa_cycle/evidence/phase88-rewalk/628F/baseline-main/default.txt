@@ -1,0 +1,976 @@
+
+> frontend@0.1.0 test:e2e /Users/rakheendama/Projects/2026/worktree-628F-base/frontend
+> playwright test --config e2e/playwright.config.ts --update-snapshots=changed --reporter=list
+
+
+Running 326 tests using 5 workers
+
+  -    2 [chromium] › e2e/tests/auth/auth-change-password.spec.ts:35:7 › in-app change password (kc_action=UPDATE_PASSWORD) › keycloak: Account & Security renders the branded change-password page and returns to app
+  -    5 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:33:7 › Phase 69 capstone — Day 0 baseline + audit-log first render › Audit Log page renders for Owner with default view
+  -    6 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:52:7 › Phase 69 capstone — Day 5 permission denial / Security preset › Security preset renders for Owner (emission gap acknowledged)
+  ✓    3 [chromium] › e2e/tests/auth/auth-expiry.spec.ts:19:7 › graceful expiry funnel › expired session lands on branded /sign-in?reason=expired with reason banner (411ms)
+  -    8 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:70:7 › Phase 69 capstone — Day 10 trust approval / Financial approvals preset [legal-za] › Financial approvals preset surfaces trust_transaction.approved row
+  -   10 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:88:7 › Phase 69 capstone — Day 15 closure override (CRITICAL) + widget › Override row surfaces on Audit Log + matter detail + dashboard widget
+  -   11 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:108:7 › Phase 69 capstone — Day 20 per-entity customer Audit tab › Customer detail Audit tab renders for Admin and is scope-correct
+  ✓    7 [chromium] › e2e/tests/auth/auth-logout.spec.ts:17:7 › branded signed-out terminus › logout lands on the branded /signed-out page with a 'Sign in again' CTA (565ms)
+  -   12 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:125:7 › Phase 69 capstone — Day 22 PDF export + reflexive event › PDF export succeeds and emits audit.export.generated row
+  -   14 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:143:7 › Phase 69 capstone — Day 25 DSAR pack scope correctness › DSAR pack ships audit-trail/events.csv scoped to the subject
+  -   15 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:159:7 › Phase 69 capstone — Day 30 export-row hard cap probe › Wide window fails gracefully; narrowed window succeeds
+  ✓    9 [chromium] › e2e/tests/auth/auth-expiry.spec.ts:39:7 › graceful expiry funnel › return-to round-trips the original destination after re-login (1.8s)
+  -   16 [chromium] › e2e/tests/automations/automation-crud.spec.ts:22:7 › AUTO-01: Automation CRUD › View seeded automation rules
+  ✓   13 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:8:7 › AUTH-01: RBAC Capabilities › Owner can access all settings pages (1.8s)
+  ✓    1 [chromium] › e2e/tests/audit-log/audit-log-smoke.spec.ts:19:7 › Audit Log — Smoke (Epic 506B) › apply Sensitive preset shows events or empty-state (2.7s)
+  -   17 [chromium] › e2e/tests/automations/automation-triggers.spec.ts:30:7 › AUTO-02: Automation Triggers › Customer status change fires automation rule
+  -   18 [chromium] › e2e/tests/automations/automation-crud.spec.ts:44:7 › AUTO-01: Automation CRUD › Disable automation rule
+  ✓    4 [chromium] › e2e/tests/audit-log/matter-closure-audit-tab.spec.ts:94:7 › Epic 508B — Matter closure override audit surface › override row surfaces matter.closure.override_used CRITICAL event with justification (3.4s)
+  ✓   19 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:18:7 › AUTH-01: RBAC Capabilities › Admin can access general settings (756ms)
+  -   21 [chromium] › e2e/tests/automations/automation-triggers.spec.ts:65:7 › AUTO-02: Automation Triggers › Invoice payment fires automation rule
+  ✓   20 [chromium] › e2e/tests/compliance/compliance-overview.spec.ts:21:7 › COMPLY-01: Compliance Overview › Compliance dashboard loads (1.1s)
+  -   22 [chromium] › e2e/tests/automations/automation-crud.spec.ts:72:7 › AUTO-01: Automation CRUD › Enable automation rule
+  ✓   24 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:24:7 › AUTH-01: RBAC Capabilities › Member sees permission denied on profitability (718ms)
+  ✘   23 [chromium] › e2e/tests/customers/customer-crud.spec.ts:47:7 › CUST-01: Customer CRUD › Create customer with required fields (1.1s)
+  -   29 [chromium] › e2e/tests/customers/customer-crud.spec.ts:91:7 › CUST-01: Customer CRUD › Create customer with custom fields (step 2)
+  -   30 [chromium] › e2e/tests/customers/customer-crud.spec.ts:145:7 › CUST-01: Customer CRUD › Edit customer name
+  -   31 [chromium] › e2e/tests/customers/customer-crud.spec.ts:185:7 › CUST-01: Customer CRUD › Search customer list
+  -   32 [chromium] › e2e/tests/customers/customer-crud.spec.ts:207:7 › CUST-01: Customer CRUD › Customer list pagination
+  -   25 [chromium] › e2e/tests/automations/automation-triggers.spec.ts:85:7 › AUTO-02: Automation Triggers › Disabled rule does NOT fire
+  ✓   28 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:31:7 › AUTH-01: RBAC Capabilities › Member sees permission denied on reports (736ms)
+  -   27 [chromium] › e2e/tests/automations/automation-crud.spec.ts:99:7 › AUTO-01: Automation CRUD › View execution history
+Mailpit has 1 messages:
+  TO: thandi@mathebula-test.local | SUBJ: Your Kazi verification code
+  ✓   34 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:37:7 › AUTH-01: RBAC Capabilities › Member sees permission denied on customers (406ms)
+  ✓   26 [chromium] › e2e/tests/compliance/compliance-overview.spec.ts:30:7 › COMPLY-01: Compliance Overview › Compliance requests list (1.6s)
+  ✓   36 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:44:7 › AUTH-01: RBAC Capabilities › Member sees permission denied on roles settings (479ms)
+  ✓   33 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:83:7 › CUST-02: Customer Lifecycle › New customer defaults to PROSPECT (1.0s)
+  ✓   39 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:50:7 › AUTH-01: RBAC Capabilities › Member can access My Work (928ms)
+  ✓   41 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:56:7 › AUTH-01: RBAC Capabilities › Member can access Projects (293ms)
+  ✓   42 [chromium] › e2e/tests/documents/template-management.spec.ts:22:7 › DOC-01: Template Management › Template list shows seeded templates (327ms)
+  ✓   43 [chromium] › e2e/tests/documents/template-management.spec.ts:70:7 › DOC-01: Template Management › Create new template (1.1s)
+  ✓   38 [chromium] › e2e/tests/documents/document-generation.spec.ts:39:7 › DOC-02: Document Generation › Generate document from template on customer/project page (4.1s)
+  ✓   37 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:35:7 › DP-01: Customer Data Protection › Download customer data export (4.3s)
+  -   45 [chromium] › e2e/tests/documents/document-generation.spec.ts:138:7 › DOC-02: Document Generation › Preview shows resolved variables
+  -   47 [chromium] › e2e/tests/documents/document-generation.spec.ts:204:7 › DOC-02: Document Generation › Download PDF
+No Carol invite email found: Error: Timed out waiting for email to carol@mathebula-test.local with subject "invitation" (5000ms)
+  -   48 [chromium] › e2e/tests/documents/document-generation.spec.ts:261:7 › DOC-02: Document Generation › Generated documents list
+  ✓   49 [chromium] › e2e/tests/finance/profitability.spec.ts:22:7 › FIN-01: Profitability Dashboard › Page loads with data (306ms)
+  ✓   50 [chromium] › e2e/tests/finance/profitability.spec.ts:33:7 › FIN-01: Profitability Dashboard › Project profitability view (317ms)
+  ✓   51 [chromium] › e2e/tests/finance/profitability.spec.ts:53:7 › FIN-01: Profitability Dashboard › Customer profitability view (585ms)
+  ✓   44 [chromium] › e2e/tests/documents/template-management.spec.ts:115:7 › DOC-01: Template Management › Clone template (4.8s)
+  ✓   46 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:89:7 › DP-01: Customer Data Protection › Anonymize customer preview shows entity counts (4.1s)
+  ✓   52 [chromium] › e2e/tests/finance/profitability.spec.ts:72:7 › FIN-01: Profitability Dashboard › Utilization metrics (1.5s)
+  ✓   55 [chromium] › e2e/tests/finance/reports.spec.ts:22:7 › FIN-02: Reports › Reports hub loads (305ms)
+  -   54 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:143:7 › DP-01: Customer Data Protection › Execute anonymization
+  ✓   53 [chromium] › e2e/tests/documents/template-management.spec.ts:180:7 › DOC-01: Template Management › Edit template content (1.4s)
+  -   58 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:22:7 › IREQ-01: Information Request CRUD › View information requests list
+  -   57 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:213:7 › DP-01: Customer Data Protection › ANONYMIZED customer is read-only
+  -   59 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:36:7 › IREQ-01: Information Request CRUD › Create information request
+  ✓   60 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:246:7 › DP-01: Customer Data Protection › Cannot transition out of ANONYMIZED via API (107ms)
+  -   61 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:67:7 › IREQ-01: Information Request CRUD › Send information request
+  -   62 [chromium] › e2e/tests/invoices/billing-runs.spec.ts:21:7 › BR-01: Billing Runs › Billing runs page loads
+  -   63 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:98:7 › IREQ-01: Information Request CRUD › Portal view of information request
+  -   65 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:114:7 › IREQ-01: Information Request CRUD › Track completion status
+  -   64 [chromium] › e2e/tests/invoices/billing-runs.spec.ts:42:7 › BR-01: Billing Runs › New billing run wizard
+  ✓   66 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:117:7 › INV-03: Invoice Arithmetic › Single line: 3h x R450 (51ms)
+  ✓   68 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:132:7 › INV-03: Invoice Arithmetic › Multiple lines: (2 x R500) + (1 x R1,500) (58ms)
+  ✓   69 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:153:7 › INV-03: Invoice Arithmetic › Rounding: non-terminating decimal (1.5h x R333.33) (33ms)
+  ✓   70 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:170:7 › INV-03: Invoice Arithmetic › Zero quantity line (53ms)
+  ✓   71 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:200:7 › INV-03: Invoice Arithmetic › Fractional quantity: 0.25h x R1,200 (70ms)
+  ✓   72 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:213:7 › INV-03: Invoice Arithmetic › Rate snapshot immutability (50ms)
+  ✓   67 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:115:7 › INV-01: Invoice CRUD › Create draft invoice for customer (346ms)
+  ✓   74 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:128:7 › INV-01: Invoice CRUD › Add line item to draft (411ms)
+  ✓   56 [chromium] › e2e/tests/finance/reports.spec.ts:33:7 › FIN-02: Reports › Run a report with parameters (2.4s)
+  ✓   75 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:141:7 › INV-01: Invoice CRUD › Edit line item on draft (358ms)
+  -   76 [chromium] › e2e/tests/finance/reports.spec.ts:57:7 › FIN-02: Reports › Export report to CSV
+No Bob invite email either
+  ✓   77 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:178:7 › INV-01: Invoice CRUD › Remove line item from draft (596ms)
+  ✓   35 [chromium] › e2e/tests/debug-kc-invite.spec.ts:11:5 › debug: extract and inspect invite link (12.3s)
+  ✓   79 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:224:7 › INV-01: Invoice CRUD › Draft invoice shows correct totals (654ms)
+  ✘   81 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:138:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Billing rate override for Alice on Sipho's client (94ms)
+  -   82 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:163:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand
+  -   83 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:194:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Open Statements tab on oldest matter
+  -   84 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:209:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview
+  -   85 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:227:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab
+  -   86 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:292:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statements-tab Download fetches the PDF
+  -   87 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:307:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Write off one approved-UNBILLED disbursement
+  -   88 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:329:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify write-off audit event present in audit log
+  -   89 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:356:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify written-off disbursement excluded from next invoice draft
+  ✓   73 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:108:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (2.5s)
+  ✓   90 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:128:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (595ms)
+  ✓   78 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:98:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Create client Sipho Ndlovu and start FICA onboarding (3.7s)
+  ✓   92 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:165:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (2.0s)
+  ✓   80 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:88:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create client Khumalo Property Holdings and start FICA onboarding (4.8s)
+  ✓   91 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:96:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Create client Apex Holdings and start FICA onboarding (3.2s)
+  ✓   93 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:115:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Open Sipho's litigation matter from the Litigation template (2.1s)
+  ✓   94 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:250:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (2.8s)
+  ✓   98 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:292:7 › INV-02: Invoice Lifecycle › VOID releases time entries (54ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts-snapshots/day-05-disbursements-list-empty-chromium-darwin.png, writing actual.
+  ✓   97 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:140:7 › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page (1.3s)
+  ✓   99 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:319:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (502ms)
+  ✓  101 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:352:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (55ms)
+  ✓  102 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:368:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (18ms)
+  -  103 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Matters list -> matter (projects/[id]): 120 fresh-session clicks render the destination
+  -  104 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Reports -> report detail (reports/[reportSlug]): 120 fresh-session clicks render the destination
+  -  105 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination
+  ✓  106 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:92:7 › Day 0 — Firm Setup › Alice: Home loads after login (342ms)
+  ✓   96 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:111:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Open a clean commercial matter for Apex Holdings (2.7s)
+  ✓  107 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:102:7 › Day 0 — Firm Setup › Alice: Legal-za profile active — sidebar shows legal terms (536ms)
+  ✓  109 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:119:7 › Day 0 — Firm Setup › Alice: Settings — currency is ZAR (545ms)
+  ✓  110 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:127:7 › Day 0 — Firm Setup › Alice: Settings — set brand colour #1B3A4B (963ms)
+  ✓  111 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:143:7 › Day 0 — Firm Setup › Alice: Settings — rate cards page loads (284ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts-snapshots/day-05-disbursement-sheriff-fee-created-chromium-darwin.png, writing actual.
+  ✓  100 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:7 › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit (3.4s)
+  ✓  112 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:150:7 › Day 0 — Firm Setup › Alice: Settings — create billing rates Alice R2,500, Bob R1,200, Carol R550 (555ms)
+  ✓  108 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:135:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Bob: Record + approve counsel's fee disbursement on the Apex matter (3.1s)
+  ✓  114 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:159:7 › Day 0 — Firm Setup › Alice: Settings — create cost rates for Alice R1000, Bob R500, Carol R200 (584ms)
+  ✓  116 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:171:7 › Day 0 — Firm Setup › Alice: Settings — tax rates page loads (406ms)
+  ✓  117 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:178:7 › Day 0 — Firm Setup › Alice: Settings — VAT 15% is seeded as the default tax rate (413ms)
+  ✓  118 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:193:7 › Day 0 — Firm Setup › Alice: Team page shows Alice, Bob, Carol (401ms)
+  ✓  119 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:202:7 › Day 0 — Firm Setup › Alice: Custom fields — SA Legal matter fields loaded (case number, court, opposing party) (305ms)
+  ✓  120 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:221:7 › Day 0 — Firm Setup › Alice: 6 legal matter templates listed (305ms)
+  ✓  121 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:242:7 › Day 0 — Firm Setup › Alice: Trust account — Mathebula & Partners Trust Account (GENERAL, Standard Bank) exists (767ms)
+  ✓  122 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:262:7 › Day 0 — Firm Setup › Alice: LPFF rate 6.5% — added on Trust › Interest, listed on the trust settings tab (573ms)
+  ✓  123 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:303:7 › Day 0 — Firm Setup › Alice: Legal modules enabled (trust, court, conflict, tariff) (626ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts-snapshots/day-00-dashboard-legal-nav-active-chromium-darwin.png, writing actual.
+  ✓  124 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:324:7 › Day 0 — Firm Setup › Alice: Capture dashboard with legal navigation (971ms)
+  ✓  115 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:173:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Bill the Apex matter — fee note drafted, approved and sent (5.2s)
+  ✓  113 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:197:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment (6.6s)
+  ✓   95 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:130:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE (12.9s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts-snapshots/day-75-closure-dialog-opened-chromium-darwin.png, writing actual.
+  ✓  126 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:229:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Open Close Matter dialog on clean matter (2.2s)
+  ✘   40 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:99:7 › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING (30.1s)
+  -  130 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:129:7 › CUST-02: Customer Lifecycle › ONBOARDING -> ACTIVE (via checklist completion)
+  -  131 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:193:7 › CUST-02: Customer Lifecycle › PROSPECT blocked from creating project
+  -  132 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:227:7 › CUST-02: Customer Lifecycle › PROSPECT blocked from creating invoice
+  -  133 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:253:7 › CUST-02: Customer Lifecycle › ACTIVE -> DORMANT
+  -  134 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:305:7 › CUST-02: Customer Lifecycle › DORMANT -> OFFBOARDING
+  -  135 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:337:7 › CUST-02: Customer Lifecycle › OFFBOARDING -> OFFBOARDED
+  -  136 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:368:7 › CUST-02: Customer Lifecycle › OFFBOARDED blocked from project creation
+  -  137 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:389:7 › CUST-02: Customer Lifecycle › Invalid: PROSPECT -> ACTIVE (skip) rejected via API
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts-snapshots/day-75-closure-gate-report-all-green-chromium-darwin.png, writing actual.
+  ✓  138 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:54:7 › Day 7 — First Week of Work › Carol: Navigate to My Work page (476ms)
+  ✓  129 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:239:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Step 1 gate report renders all-green (happy path) (1.8s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts-snapshots/day-14-conveyancing-matter-created-chromium-darwin.png, writing actual.
+  ✓  128 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:168:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create matter using Property Transfer template (2.4s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts-snapshots/day-05-disbursement-deeds-office-trust-linked-chromium-darwin.png, writing actual.
+  ✓  127 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:272:7 › Day 5 — Disbursements (Phase 67) › Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link (4.3s)
+  ✘  125 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR (5.7s)
+  -  143 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:108:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Create client Sipho Ndlovu (Individual)
+  -  144 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:130:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Transition Sipho to ONBOARDING
+  -  145 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:136:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Complete FICA checklist for Sipho — auto-transitions to ACTIVE
+  -  146 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:197:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Create Litigation matter for Sipho from template
+  -  147 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:222:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Add Carol to the Sipho matter team (Team tab)
+  -  148 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:248:7 › Day 1 — Sipho Ndlovu Onboarding › Day 5 — Alice: Matter header shows case number, court and opposing party
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts-snapshots/day-05-disbursement-approved-detail-chromium-darwin.png, writing actual.
+  ✓  142 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:315:7 › Day 5 — Disbursements (Phase 67) › Alice (Thandi): Approve trust-linked disbursement (2.0s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts-snapshots/day-75-matter-closed-success-chromium-darwin.png, writing actual.
+  ✓  140 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:262:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Advance to Step 2 + confirm close with CONCLUDED reason (4.3s)
+  ✓  150 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:335:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve sheriff-fee OFFICE_ACCOUNT disbursement (1.9s)
+  ✓  151 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:305:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Closed matter's retention card shows the deletion date (closure + 5 years) (2.0s)
+  ✘  149 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR (5.7s)
+  -  154 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:308:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Apex Holdings (Company) and start onboarding
+  -  155 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:322:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Commercial matter for Apex from template
+  -  156 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:339:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Moroka Family Trust — CLEAR
+  -  157 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:344:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Moroka Family Trust (Trust) and start onboarding
+  -  158 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:355:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Deceased Estate matter for Moroka from template
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts-snapshots/day-85-admin-cannot-close-step-3-chromium-darwin.png, writing actual.
+  ✓  153 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:334:7 › Day 75-85 — Matter Closure (Phase 67) › Bob (Admin): Close Matter on failing-gates matter routes to Step 3 (no override) (2.3s)
+  ✓  152 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:360:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve dialog opened right after navigating to a disbursement stays open (4.1s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts-snapshots/day-85-override-justification-entered-chromium-darwin.png, writing actual.
+  ✓  141 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:201:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Clicking into a matter (route with a loading skeleton) renders its content (10 fresh sessions) (10.8s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts-snapshots/day-05-matter-unbilled-disbursements-summary-chromium-darwin.png, writing actual.
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts-snapshots/day-85-matter-closed-via-override-chromium-darwin.png, writing actual.
+  ✓  159 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:359:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Override close with justification ≥20 chars (3.2s)
+  ✓  161 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:411:7 › Day 5 — Disbursements (Phase 67) › Alice: Sipho's matter Finance → Disbursements tab lists the disbursements (3.3s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts-snapshots/day-14-conveyancing-matter-custom-fields-chromium-darwin.png, writing actual.
+  ✓  162 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:226:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Verify 10 conveyancing custom fields present on matter detail (3.0s)
+  ✘  160 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR (5.8s)
+  -  166 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:382:7 › Day 3 — QuickCollect Services Onboarding › Bob: Create client QuickCollect Services (Company) and start onboarding
+  -  167 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:394:7 › Day 3 — QuickCollect Services Onboarding › Alice: Create initial Collections matter for QuickCollect from template
+  -  168 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:413:7 › Day 3 — QuickCollect Services Onboarding › Alice: Verify 4 clients on client list
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts-snapshots/day-85-audit-log-override-event-chromium-darwin.png, writing actual.
+  ✓  163 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:391:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Verify override audit event captures override_used=true + justification (3.0s)
+  ✓  169 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:40:7 › Day 45 — Reconciliation & Prescription › Alice: Navigate to Trust Reconciliation page (250ms)
+  ✘  139 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:62:7 › Day 7 — First Week of Work › Carol: Log 90min time on Sipho matter (15.2s)
+  -  172 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:78:7 › Day 7 — First Week of Work › Bob: Log 120min on Sipho — letter of demand
+  -  173 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:98:7 › Day 7 — First Week of Work › Bob: Add internal comment on the Sipho letter-of-demand task
+  -  174 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:119:7 › Day 7 — First Week of Work › Alice: Create court date for Sipho (Motion, 30 days out)
+  -  175 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:153:7 › Day 7 — First Week of Work › Alice: Log 60min on Moroka estate matter
+  -  176 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:167:7 › Day 7 — First Week of Work › Alice: My Work lists today's Moroka time entry
+  ✓  170 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:80:7 › Day 30 — First Billing Cycle › Alice: Navigate to fee notes page (616ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts-snapshots/day-45-reconciliation-upload-step-chromium-darwin.png, writing actual.
+  ✓  171 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:50:7 › Day 45 — Reconciliation & Prescription › Alice: Start a bank reconciliation — select the trust account and period end, reach the statement upload step (844ms)
+  ✓  178 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:186:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Navigate to Trust Accounting (545ms)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts-snapshots/day-14-conveyancing-fields-populated-chromium-darwin.png, writing actual.
+  ✓  165 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:264:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office (3.9s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts-snapshots/day-14-otp-document-generated-chromium-darwin.png, writing actual.
+  ✓  181 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:289:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document and save it to the matter (3.7s)
+  ✓  182 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:327:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document with conveyancing clauses (2.3s)
+A snapshot doesn't exist at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts-snapshots/day-14-otp-acceptance-request-sent-chromium-darwin.png, writing actual.
+  ✘  164 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:448:7 › Day 5 — Disbursements (Phase 67) › Alice: Verify Unbilled Disbursements summary on Sipho's matter (15.3s)
+  ✓  184 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:86:7 › Day 60 — Interest Run & Investments › Alice: Navigate to Trust Interest page (337ms)
+  ✘  179 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:96:7 › Day 45 — Reconciliation & Prescription › Alice: Create prescription tracker for Sipho (Delict, 3 years) (15.5s)
+  -  186 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:132:7 › Day 45 — Reconciliation & Prescription › Alice: Court date lifecycle — Sipho's motion SCHEDULED → POSTPONED, the new date SCHEDULED
+  -  187 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:160:7 › Day 45 — Reconciliation & Prescription › Alice: Record payment on Apex fee note (R40,250) → PAID
+  ✘  185 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:96:7 › Day 60 — Interest Run & Investments › Alice: Interest run — create for the last 30 days and calculate allocations at the 6.5% LPFF rate (15.8s)
+  -  189 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:159:7 › Day 60 — Interest Run & Investments › Bob: Approve and post the interest run to the client ledgers
+  -  190 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:193:7 › Day 60 — Interest Run & Investments › Alice: Navigate to Investment Register
+  -  191 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:200:7 › Day 60 — Interest Run & Investments › Alice: Place investment — Moroka R200,000 Standard Bank Fixed Deposit (s86(3))
+  -  192 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:229:7 › Day 60 — Interest Run & Investments › Alice: Place investment — QuickCollect R30,000 Nedbank Call Account (s86(4))
+  -  193 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:252:7 › Day 60 — Interest Run & Investments › Alice: Second billing cycle — log new Sipho time and generate its fee note
+  -  194 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:278:7 › Day 60 — Interest Run & Investments › Alice: Run the timesheet report for this month
+  -  195 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:299:7 › Day 60 — Interest Run & Investments › Alice: Check profitability report
+  ✘  177 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:90:7 › Day 30 — First Billing Cycle › Alice: Generate Sipho's fee note from unbilled time, add an LSSA tariff item and a sheriff disbursement line (VAT 15%) (30.1s)
+  -  197 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:141:7 › Day 30 — First Billing Cycle › Alice: Create Apex fee note — fixed fee R35,000 + VAT = R40,250
+  -  198 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:175:7 › Day 30 — First Billing Cycle › Alice: Create, approve and send Moroka's estate fee note (R8,625)
+  -  199 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:195:7 › Day 30 — First Billing Cycle › Alice: Record trust FEE_TRANSFER R8,500 for Moroka — awaits approval, her own approval is refused
+  -  200 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:223:7 › Day 30 — First Billing Cycle › Bob: Approve Moroka's fee transfer — Moroka trust balance R241,500
+  -  201 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:256:7 › Day 30 — First Billing Cycle › Bob logs QuickCollect collections time; Alice creates its fee note with a court-filing line
+  -  202 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:282:7 › Day 30 — First Billing Cycle › Alice: Fee note lifecycle — Sipho's and Apex's fee notes DRAFT → APPROVED → SENT
+  -  203 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:315:7 › Day 30 — First Billing Cycle › Alice: Set fee estimate on Apex matter (R150,000)
+  ✘  180 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:197:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R250,000 into trust for Moroka estate (30.1s)
+  -  205 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:211:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Moroka trust deposit is RECORDED — no approval step
+  -  206 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:221:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Verify Moroka trust ledger balance
+  -  207 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:245:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R45,000 into trust for QuickCollect
+  -  208 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:258:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Add adverse party "Road Accident Fund" to registry
+  -  209 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:284:7 › Day 14 — Trust Deposits & Conflict Detection › Bob: Conflict check "Road Accident Fund" — adverse party match (Conflict Found)
+  -  210 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:306:7 › Day 14 — Trust Deposits & Conflict Detection › Carol: Log additional time on the Sipho matter (letter of demand)
+  -  211 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:330:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Trust dashboard overview
+  ✘  188 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:91:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Create 2nd litigation matter for Sipho from template (16.0s)
+  -  213 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:115:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Add adverse parties Mokoena and Pillay; link RAF, Mokoena and Pillay to Sipho's matters
+  -  214 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:148:7 › Day 75 — Complex Engagement & Adverse Parties › Bob: Conflict stress test — search "Ndlovu" flags Sipho's two matters (Potential Conflict)
+  -  215 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:161:7 › Day 75 — Complex Engagement & Adverse Parties › Bob: Conflict stress test — search "Road Accident Fund" finds the adverse party on the RAF matter
+  -  216 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:173:7 › Day 75 — Complex Engagement & Adverse Parties › Bob: Conflict stress test — search "Mokoena" finds the adverse party on the property matter
+  -  217 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:191:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Progress Moroka estate — claim and complete two estate tasks
+  -  218 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:224:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Log 360min on Moroka estate matter
+  -  219 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:243:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Send information request to Moroka (beneficiary details)
+  -  220 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:270:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Create 2nd Commercial matter for Apex (annual returns)
+  ✓  212 [chromium] › e2e/tests/navigation/command-palette.spec.ts:24:7 › CMD-01: Command Palette › Cmd+K opens palette (907ms)
+  ✓  222 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Home page loads (373ms)
+  ✓  223 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › My work page loads (299ms)
+  ✓  224 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Diary page loads (297ms)
+  ✓  221 [chromium] › e2e/tests/navigation/command-palette.spec.ts:58:7 › CMD-01: Command Palette › Search navigates to page (1.7s)
+  ✓  225 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Matters page loads (529ms)
+  ✓  204 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:56:7 › Matter team — Team tab (add, transfer, remove) › Alice: template matter auto-adds her as lead; she adds Carol (3.8s)
+  ✘  196 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:69:7 › Day 90 — Quarter Review › Alice: Client list shows the four lifecycle clients (5.4s)
+  -  229 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:83:7 › Day 90 — Quarter Review › Alice: Matters list shows the lifecycle's six matters
+  -  230 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:95:7 › Day 90 — Quarter Review › Alice: Fee notes list shows the run's five fee notes
+  -  231 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:118:7 › Day 90 — Quarter Review › Alice: Generate Section 35 Data Pack report
+  -  232 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:149:7 › Day 90 — Quarter Review › Alice: Trust reports — Client Trust Balances
+  -  233 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:160:7 › Day 90 — Quarter Review › Alice: Trust reports — Investment Register with s86 basis
+  -  234 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:173:7 › Day 90 — Quarter Review › Alice: Trust reports — Receipts & Payments
+  -  235 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:192:7 › Day 90 — Quarter Review › Alice: Profitability report — revenue, cost and margin columns for this month's matters
+  -  236 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:218:7 › Day 90 — Quarter Review › Alice: Home shows the owner dashboard
+  -  237 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:232:7 › Day 90 — Quarter Review › Alice: Generate an engagement letter for Sipho's matter
+  -  238 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:256:7 › Day 90 — Quarter Review › Alice: Compliance overview page
+  -  239 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:269:7 › Day 90 — Quarter Review › Alice: Sipho's diary shows the POSTPONED motion, its rescheduled SCHEDULED date and the prescription tracker
+  ✓  227 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Clients page loads (619ms)
+  ✓  240 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › FICA & compliance page loads (351ms)
+  ✓  226 [chromium] › e2e/tests/navigation/command-palette.spec.ts:100:7 › CMD-01: Command Palette › Escape closes palette (1.5s)
+  ✓  241 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:296:7 › Day 90 — Role-Based Access › Carol: Blocked from rate card settings (369ms)
+  ✓  242 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Fee notes page loads (464ms)
+  ✓  243 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:18:7 › NOTIF-01: Notification Bell › Bell shows unread count (614ms)
+  ✓  244 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:313:7 › Day 90 — Role-Based Access › Carol: Blocked from trust account configuration (738ms)
+  ✓  245 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Profitability page loads (640ms)
+  ✘  247 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:327:7 › Day 90 — Role-Based Access › Alice: Record a R500 trust fee transfer for Sipho — awaiting approval (133ms)
+  -  249 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:340:7 › Day 90 — Role-Based Access › Carol: Blocked from recording or approving trust transactions
+  -  250 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:352:7 › Day 90 — Role-Based Access › Bob: Has admin access to rate cards
+  -  251 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:363:7 › Day 90 — Role-Based Access › Bob: Has admin access to trust accounting
+  -  252 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:380:7 › Day 90 — Role-Based Access › Alice: Has full owner access to all areas
+  ✓  228 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:87:7 › Matter team — Team tab (add, transfer, remove) › Carol (Member): sees the matter and its team, but no management controls (2.3s)
+  ✓  248 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Reports page loads (371ms)
+  ✓  254 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Team page loads (461ms)
+  ✓  256 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Notifications page loads (331ms)
+  ✓  246 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:40:7 › NOTIF-01: Notification Bell › Click bell opens dropdown (1.6s)
+  -  255 [chromium] › e2e/tests/notifications/notification-preferences.spec.ts:22:7 › NOTIF-02: Notification Preferences › View preference categories
+  ✓  257 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Settings page loads (565ms)
+  ✘  183 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:350:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow (30.1s)
+  -  261 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:36:7 › PORTAL-01: Data Isolation › Kgosi sees only Kgosi matters via API
+  -  262 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:48:7 › PORTAL-01: Data Isolation › Portal JWT blocked from org API
+  ✓  260 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:73:7 › NAV-02: Sidebar zones › six zones in order with 28 items in order (1.2s)
+  ✓  258 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:75:7 › NOTIF-01: Notification Bell › Mark notification as read (1.8s)
+  ✓  259 [chromium] › e2e/tests/notifications/notification-preferences.spec.ts:59:7 › NOTIF-02: Notification Preferences › Disable email for a category (1.9s)
+  ✓  265 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:108:7 › NOTIF-01: Notification Bell › Navigate to notifications page (391ms)
+  ✓  263 [chromium] › e2e/tests/projects/project-budget.spec.ts:121:7 › BUDGET-01: Project Budget › 1. View budget tab on project (2.1s)
+  ✓  267 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:120:7 › NOTIF-01: Notification Bell › Mark all as read (1.6s)
+  ✓  264 [chromium] › e2e/tests/projects/project-crud.spec.ts:78:7 › PROJ-01: Project CRUD › 1. Create project with customer (2.4s)
+  ✓  253 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:98:7 › Matter team — Team tab (add, transfer, remove) › Bob (Admin, not on the matter): transfers the lead to Carol (5.1s)
+  ✓  268 [chromium] › e2e/tests/projects/project-budget.spec.ts:151:7 › BUDGET-01: Project Budget › 2. Set project budget via API and verify in UI (809ms)
+  ✓  266 [chromium] › e2e/tests/notifications/notification-preferences.spec.ts:96:7 › NOTIF-02: Notification Preferences › Re-enable email for a category (2.2s)
+  ✓  272 [chromium] › e2e/tests/projects/project-budget.spec.ts:190:7 › BUDGET-01: Project Budget › 3. Budget shows usage after logging time (1.5s)
+  ✓  270 [chromium] › e2e/tests/projects/project-crud.spec.ts:127:7 › PROJ-01: Project CRUD › 2. Create project without customer (internal) (2.1s)
+  -  274 [chromium] › e2e/tests/settings/custom-fields.spec.ts:22:7 › CF-01: Custom Fields › View custom field definitions
+  -  276 [chromium] › e2e/tests/settings/custom-fields.spec.ts:40:7 › CF-01: Custom Fields › Create text custom field
+  -  275 [chromium] › e2e/tests/projects/project-crud.spec.ts:152:7 › PROJ-01: Project CRUD › 3. Edit project name
+  ✓  278 [chromium] › e2e/tests/projects/project-crud.spec.ts:190:7 › PROJ-01: Project CRUD › 4. Project detail tabs load (1.3s)
+  ✓  271 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:126:7 › Matter team — Team tab (add, transfer, remove) › Carol (now lead): adds Bob, then removes him (4.8s)
+  ✓  279 [chromium] › e2e/tests/projects/project-crud.spec.ts:227:7 › PROJ-01: Project CRUD › 4b. Legacy expenses URL redirects to the Disbursements tab (1.0s)
+  ✓  277 [chromium] › e2e/tests/settings/custom-fields.spec.ts:89:7 › CF-01: Custom Fields › Custom field appears on entity form (2.7s)
+  -  282 [chromium] › e2e/tests/settings/custom-fields.spec.ts:134:7 › CF-01: Custom Fields › Custom field value persists
+  ✓  281 [chromium] › e2e/tests/projects/project-crud.spec.ts:250:7 › PROJ-01: Project CRUD › 5. Archive project (Complete then Archive) (1.2s)
+  ✓  284 [chromium] › e2e/tests/projects/project-crud.spec.ts:288:7 › PROJ-01: Project CRUD › 6. Archived project blocks task creation (75ms)
+  ✓  285 [chromium] › e2e/tests/projects/project-crud.spec.ts:304:7 › PROJ-01: Project CRUD › 7. Archived project blocks time logging via API (12ms)
+  ✓  280 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:47:7 › DP-02: Data Protection Settings › View data protection tab (1.4s)
+  ✓  283 [chromium] › e2e/tests/settings/general-settings.spec.ts:22:7 › SET-01: General Settings › View org name and currency (972ms)
+  ✘  286 [chromium] › e2e/tests/settings/packs.spec.ts:94:7 › PACK-01: Pack Lifecycle › Seeded legal-za pack is installed and its templates are present (775ms)
+  -  289 [chromium] › e2e/tests/settings/packs.spec.ts:124:7 › PACK-01: Pack Lifecycle › Uninstall blocked when template edited, edit block cleared after revert
+  ✓  290 [chromium] › e2e/tests/settings/rate-cards.spec.ts:7:7 › SET-02: Rate Cards › Rates page loads without crash (AvatarCircle regression) (327ms)
+  ✓  291 [chromium] › e2e/tests/settings/rate-cards.spec.ts:18:7 › SET-02: Rate Cards › Rates page loads for Admin (307ms)
+  ✓  292 [chromium] › e2e/tests/settings/rate-cards.spec.ts:25:7 › SET-02: Rate Cards › Member sees permission denied on rates (248ms)
+  ✓  288 [chromium] › e2e/tests/settings/general-settings.spec.ts:37:7 › SET-01: General Settings › Update brand colour (2.0s)
+  -  293 [chromium] › e2e/tests/settings/roles-capabilities.spec.ts:22:7 › ROLE-01: Roles & Capabilities › View roles list
+  -  295 [chromium] › e2e/tests/settings/roles-capabilities.spec.ts:41:7 › ROLE-01: Roles & Capabilities › View role capabilities
+  -  296 [chromium] › e2e/tests/settings/roles-capabilities.spec.ts:75:7 › ROLE-01: Roles & Capabilities › Edit role capability
+  ✓  287 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:77:7 › DP-02: Data Protection Settings › Set jurisdiction to South Africa (3.1s)
+  -  298 [chromium] › e2e/tests/settings/tags.spec.ts:22:7 › TAG-01: Tags › View tags
+  -  299 [chromium] › e2e/tests/settings/tags.spec.ts:38:7 › TAG-01: Tags › Create tag
+  ✓  294 [chromium] › e2e/tests/settings/general-settings.spec.ts:67:7 › SET-01: General Settings › Update document footer (1.8s)
+  -  301 [chromium] › e2e/tests/settings/tax-settings.spec.ts:22:7 › SET-03: Tax Settings › View tax rates
+  -  302 [chromium] › e2e/tests/settings/tax-settings.spec.ts:48:7 › SET-03: Tax Settings › Create tax rate
+  ✓  297 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:104:7 › DP-02: Data Protection Settings › Set information officer (1.7s)
+  -  303 [chromium] › e2e/tests/settings/tax-settings.spec.ts:87:7 › SET-03: Tax Settings › Tax applies to invoices
+  ✓  305 [chromium] › e2e/tests/smoke.spec.ts:4:5 › mock login redirects to dashboard (333ms)
+  -  300 [chromium] › e2e/tests/settings/tags.spec.ts:78:7 › TAG-01: Tags › Apply tag to entity
+  -  304 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:141:7 › DP-02: Data Protection Settings › View retention policies
+  ✓  306 [chromium] › e2e/tests/smoke.spec.ts:11:5 › owner can create a project (1.6s)
+  ✓  309 [chromium] › e2e/tests/smoke.spec.ts:27:5 › member cannot access admin settings (254ms)
+  -  307 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:180:7 › DP-02: Data Protection Settings › Edit retention period
+  -  311 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:226:7 › DP-02: Data Protection Settings › View processing register
+  ✓  312 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:266:7 › DP-02: Data Protection Settings › Generate PAIA manual (1.6s)
+  ✓  313 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:297:7 › DP-02: Data Protection Settings › View DSAR list (2.5s)
+  ✓  314 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:337:7 › DP-02: Data Protection Settings › Create DSAR (3.5s)
+  ✘  310 [chromium] › e2e/tests/demo-recording.spec.ts:23:5 › Legal-ZA 90-day demo walkthrough (15.4s)
+  ✘  269 [chromium] › e2e/tests/projects/project-tasks.spec.ts:119:7 › PROJ-02: Project Tasks › 1. Create task on project via UI (30.0s)
+  -  315 [chromium] › e2e/tests/projects/project-tasks.spec.ts:160:7 › PROJ-02: Project Tasks › 2. Edit task title via API and verify in UI
+  -  316 [chromium] › e2e/tests/projects/project-tasks.spec.ts:193:7 › PROJ-02: Project Tasks › 3. Change task status: OPEN -> IN_PROGRESS
+  -  317 [chromium] › e2e/tests/projects/project-tasks.spec.ts:223:7 › PROJ-02: Project Tasks › 4. Change task status: IN_PROGRESS -> DONE
+  -  318 [chromium] › e2e/tests/projects/project-tasks.spec.ts:244:7 › PROJ-02: Project Tasks › 5. Reopen completed task
+  -  319 [chromium] › e2e/tests/projects/project-tasks.spec.ts:260:7 › PROJ-02: Project Tasks › 6. Cancel task
+  -  320 [chromium] › e2e/tests/projects/project-tasks.spec.ts:273:7 › PROJ-02: Project Tasks › 7. Assign member to task
+  ✘  273 [chromium] › e2e/tests/projects/project-time.spec.ts:131:7 › PROJ-03: Time Entries › 1. Log time on task via UI (30.1s)
+  -  321 [chromium] › e2e/tests/projects/project-time.spec.ts:174:7 › PROJ-03: Time Entries › 2. Edit time entry via API and verify
+  -  322 [chromium] › e2e/tests/projects/project-time.spec.ts:209:7 › PROJ-03: Time Entries › 3. Delete time entry via API and verify
+  -  323 [chromium] › e2e/tests/projects/project-time.spec.ts:223:7 › PROJ-03: Time Entries › 4. Time entry captures rate snapshot
+  -  324 [chromium] › e2e/tests/projects/project-time.spec.ts:249:7 › PROJ-03: Time Entries › 5. Billable flag defaults to checked in UI
+  -  325 [chromium] › e2e/tests/projects/project-time.spec.ts:268:7 › PROJ-03: Time Entries › 6. Mark time entry non-billable
+  -  326 [chromium] › e2e/tests/projects/project-time.spec.ts:299:7 › PROJ-03: Time Entries › 7. My Work shows cross-project entries
+  ✘  308 [chromium] › e2e/tests/demo-full-90day.spec.ts:151:5 › Legal-ZA 90-Day Demo — Zero to Hero (39.9s)
+
+
+  1) [chromium] › e2e/tests/customers/customer-crud.spec.ts:47:7 › CUST-01: Customer CRUD › Create customer with required fields 
+
+    Error: locator.fill: Error: strict mode violation: getByLabel('Name') resolved to 2 elements:
+        1) <input value="" name="name" maxlength="255" id="_r_3_-form-item" aria-invalid="false" data-slot="form-control" placeholder="Client name" aria-describedby="_r_3_-form-item-description" class="file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium…/> aka getByRole('textbox', { name: 'Name', exact: true })
+        2) <input value="" maxlength="255" name="contactName" id="_r_f_-form-item" aria-invalid="false" data-slot="form-control" aria-describedby="_r_f_-form-item-description" class="file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-s…/> aka getByRole('textbox', { name: 'Contact Name' })
+
+    Call log:
+    [2m  - waiting for getByLabel('Name')[22m
+
+
+      59 |
+      60 |     // Fill Step 1 — basic info (FormLabel-based fields)
+    > 61 |     await page.getByLabel("Name").fill(CUSTOMER_NAME);
+         |                                   ^
+      62 |     await page.getByLabel("Email").fill(CUSTOMER_EMAIL);
+      63 |     await page.getByLabel(/Phone/).fill(CUSTOMER_PHONE);
+      64 |
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/customers/customer-crud.spec.ts:61:35
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/customers-customer-crud-CU-cbe77-stomer-with-required-fields-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/customers-customer-crud-CU-cbe77-stomer-with-required-fields-chromium/error-context.md
+
+  2) [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:99:7 › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'Change Status' })[22m
+
+
+      104 |
+      105 |     // Click "Change Status" button (LifecycleTransitionDropdown trigger)
+    > 106 |     await page.getByRole("button", { name: "Change Status" }).click();
+          |                                                               ^
+      107 |
+      108 |     // Click "Start Onboarding" in the dropdown menu
+      109 |     // DropdownMenuItem renders as [role="menuitem"]
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/customers/customer-lifecycle.spec.ts:106:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/customers-customer-lifecyc-818c9-cycle-PROSPECT---ONBOARDING-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/customers-customer-lifecyc-818c9-cycle-PROSPECT---ONBOARDING-chromium/error-context.md
+
+  3) [chromium] › e2e/tests/demo-full-90day.spec.ts:151:5 › Legal-ZA 90-Day Demo — Zero to Hero ────
+
+    Error: Timed out waiting for email to thandi@mathebula-test.local with subject "verification" (30000ms)
+
+       at ../helpers/mailpit.ts:86
+
+      84 |   }
+      85 |
+    > 86 |   throw new Error(
+         |         ^
+      87 |     `Timed out waiting for email to ${recipient}${subject ? ` with subject "${subject}"` : ""} (${timeout}ms)`
+      88 |   );
+      89 | }
+        at waitForEmail (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/mailpit.ts:86:9)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/demo-full-90day.spec.ts:193:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/demo-full-90day-Legal-ZA-90-Day-Demo-—-Zero-to-Hero-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/demo-full-90day-Legal-ZA-90-Day-Demo-—-Zero-to-Hero-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/demo-full-90day-Legal-ZA-90-Day-Demo-—-Zero-to-Hero-chromium/error-context.md
+
+  4) [chromium] › e2e/tests/demo-recording.spec.ts:23:5 › Legal-ZA 90-day demo walkthrough ─────────
+
+    TimeoutError: page.waitForURL: Timeout 15000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation until "load"
+    ============================================================
+
+       at ../fixtures/keycloak-auth.ts:14
+
+      12 |
+      13 |   // Wait for Keycloak login page to load (URL contains /realms/)
+    > 14 |   await page.waitForURL(/\/realms\//, { timeout: 15_000 });
+         |              ^
+      15 |
+      16 |   // Fill username — Keycloak may show a combined form or a split flow
+      17 |   // (username-first, then password on a second page)
+        at loginAs (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/fixtures/keycloak-auth.ts:14:14)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/demo-recording.spec.ts:27:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/demo-recording-Legal-ZA-90-day-demo-walkthrough-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/demo-recording-Legal-ZA-90-day-demo-walkthrough-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/demo-recording-Legal-ZA-90-day-demo-walkthrough-chromium/error-context.md
+
+  5) [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:448:7 › Day 5 — Disbursements (Phase 67) › Alice: Verify Unbilled Disbursements summary on Sipho's matter 
+
+    Error: matter "Ndlovu v RAF — Depth II mvt4wst6fc9a" should be listed
+
+    [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('link', { name: /Ndlovu v RAF — Depth II mvt4wst6fc9a/ }).first()
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - matter "Ndlovu v RAF — Depth II mvt4wst6fc9a" should be listed with timeout 15000ms[22m
+    [2m  - waiting for getByRole('link', { name: /Ndlovu v RAF — Depth II mvt4wst6fc9a/ }).first()[22m
+
+
+       at ../helpers/legal-depth-ii.ts:145
+
+      143 |   }
+      144 |   const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName)) }).first();
+    > 145 |   await expect(link, `matter "${matterName}" should be listed`).toBeVisible({ timeout: 15_000 });
+          |                                                                 ^
+      146 |   await clickThrough(link, page.getByRole("heading", { level: 1, name: matterName }));
+      147 |   // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+      148 |   await expect(page).toHaveURL(/\/matters\/[0-9a-f-]{36}/);
+        at openMatter (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/legal-depth-ii.ts:145:65)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:450:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-depth-ii-day-05-disb-58a92-s-summary-on-Sipho-s-matter-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-depth-ii-day-05-disb-58a92-s-summary-on-Sipho-s-matter-chromium/error-context.md
+
+  6) [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:350:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    attachment #1: day-14-otp-acceptance-request-sent (image/png) ──────────────────────────────────
+    Expected: e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts-snapshots/day-14-otp-acceptance-request-sent-chromium-darwin.png
+    Received: test-results/legal-depth-ii-day-14-conv-5a00f-cceptance-via-Phase-28-flow-chromium/day-14-otp-acceptance-request-sent-actual.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-depth-ii-day-14-conv-5a00f-cceptance-via-Phase-28-flow-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-depth-ii-day-14-conv-5a00f-cceptance-via-Phase-28-flow-chromium/error-context.md
+
+  7) [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:138:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Billing rate override for Alice on Sipho's client 
+
+    Error: Sipho's client was not recorded — run day-05 first
+
+       at ../helpers/legal-depth-ii.ts:80
+
+      78 | export function siphoClientName(): string {
+      79 |   const name = readRunState().siphoClient;
+    > 80 |   if (!name) throw new Error("Sipho's client was not recorded — run day-05 first");
+         |                    ^
+      81 |   return name;
+      82 | }
+      83 |
+        at siphoClientName (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/legal-depth-ii.ts:80:20)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:142:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-depth-ii-day-30-45-s-068d7-for-Alice-on-Sipho-s-client-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-depth-ii-day-30-45-s-068d7-for-Alice-on-Sipho-s-client-chromium/error-context.md
+
+  8) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:102:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-01-03--1d963-ck-for-Sipho-Ndlovu-—-CLEAR-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-01-03--1d963-ck-for-Sipho-Ndlovu-—-CLEAR-chromium/error-context.md
+
+  9) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:305:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-01-03--238ba-k-for-Apex-Holdings-—-CLEAR-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-01-03--238ba-k-for-Apex-Holdings-—-CLEAR-chromium/error-context.md
+
+  10) [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('conflict-check-result').getByRole('heading', { level: 3 })
+    Expected: [32m"[7mNo[27m Conflict"[39m
+    Received: [31m"[7mPotential[27m Conflict"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('conflict-check-result').getByRole('heading', { level: 3 })[22m
+    [2m    9 × locator resolved to <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Potential Conflict</h3>[22m
+    [2m      - unexpected value "Potential Conflict"[22m
+
+
+      56 | async function expectNoConflict(page: Page, name: string): Promise<void> {
+      57 |   const result = await runConflictCheck(page, name);
+    > 58 |   await expect(result.getByRole("heading", { level: 3 })).toHaveText("No Conflict");
+         |                                                           ^
+      59 | }
+      60 |
+      61 | /**
+        at expectNoConflict (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:58:59)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:379:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-01-03--85371-ickCollect-Services-—-CLEAR-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-01-03--85371-ickCollect-Services-—-CLEAR-chromium/error-context.md
+
+  11) [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:62:7 › Day 7 — First Week of Work › Carol: Log 90min time on Sipho matter 
+
+    Error: matter "Ndlovu v RAF mvt4wyos1322" should be listed
+
+    [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('link', { name: /Ndlovu v RAF mvt4wyos1322/ }).first()
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - matter "Ndlovu v RAF mvt4wyos1322" should be listed with timeout 15000ms[22m
+    [2m  - waiting for getByRole('link', { name: /Ndlovu v RAF mvt4wyos1322/ }).first()[22m
+
+
+       at ../helpers/legal-depth-ii.ts:145
+
+      143 |   }
+      144 |   const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName)) }).first();
+    > 145 |   await expect(link, `matter "${matterName}" should be listed`).toBeVisible({ timeout: 15_000 });
+          |                                                                 ^
+      146 |   await clickThrough(link, page.getByRole("heading", { level: 1, name: matterName }));
+      147 |   // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+      148 |   await expect(page).toHaveURL(/\/matters\/[0-9a-f-]{36}/);
+        at openMatter (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/legal-depth-ii.ts:145:65)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:66:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-07-14--e6b9c--90min-time-on-Sipho-matter-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-07-14--e6b9c--90min-time-on-Sipho-matter-chromium/error-context.md
+
+  12) [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:197:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R250,000 into trust for Moroka estate 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('option', { name: /^Moroka Family Trust mvt4wyos1322(\s|$)/ })[22m
+
+
+       at ../helpers/legal-lifecycle.ts:348
+
+      346 |   await page
+      347 |     .getByRole("option", { name: new RegExp(`^${escapeRegExp(opts.client)}(\\s|$)`) })
+    > 348 |     .click();
+          |      ^
+      349 |   if (opts.matter) {
+      350 |     await dialog.getByTestId("trust-deposit-matter-trigger").click();
+      351 |     await page.getByRole("option", { name: new RegExp(escapeRegExp(opts.matter)) }).click();
+        at recordTrustDeposit (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/legal-lifecycle.ts:348:6)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:199:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-07-14--9dd2b-nto-trust-for-Moroka-estate-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-07-14--9dd2b-nto-trust-for-Moroka-estate-chromium/error-context.md
+
+  13) [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:90:7 › Day 30 — First Billing Cycle › Alice: Generate Sipho's fee note from unbilled time, add an LSSA tariff item and a sheriff disbursement line (VAT 15%) 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('option', { name: /^Sipho Ndlovu mvt4wyos1322/ })[22m
+
+
+       96 |     await page.getByRole("button", { name: "New fee note" }).click();
+       97 |     await page.getByPlaceholder("Search clients...").fill(siphoClient());
+    >  98 |     await page.getByRole("option", { name: new RegExp(`^${escapeRegExp(siphoClient())}`) }).click();
+          |                                                                                             ^
+       99 |     await page.waitForURL(new RegExp(`/clients/${clientId("sipho")}\\?tab=invoices`), {
+      100 |       timeout: 15_000,
+      101 |     });
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-30-billing.spec.ts:98:93
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-30-bil-b1f2d-f-disbursement-line-VAT-15--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-30-bil-b1f2d-f-disbursement-line-VAT-15--chromium/error-context.md
+
+  14) [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:96:7 › Day 45 — Reconciliation & Prescription › Alice: Create prescription tracker for Sipho (Delict, 3 years) 
+
+    Error: matter "Ndlovu v RAF mvt4wyos1322" should be listed
+
+    [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('link', { name: /Ndlovu v RAF mvt4wyos1322/ }).first()
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - matter "Ndlovu v RAF mvt4wyos1322" should be listed with timeout 15000ms[22m
+    [2m  - waiting for getByRole('link', { name: /Ndlovu v RAF mvt4wyos1322/ }).first()[22m
+
+
+       at ../helpers/legal-depth-ii.ts:145
+
+      143 |   }
+      144 |   const link = page.getByRole("link", { name: new RegExp(escapeRegExp(matterName)) }).first();
+    > 145 |   await expect(link, `matter "${matterName}" should be listed`).toBeVisible({ timeout: 15_000 });
+          |                                                                 ^
+      146 |   await clickThrough(link, page.getByRole("heading", { level: 1, name: matterName }));
+      147 |   // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+      148 |   await expect(page).toHaveURL(/\/matters\/[0-9a-f-]{36}/);
+        at openMatter (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/legal-depth-ii.ts:145:65)
+        at openSiphoDiary (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:32:3)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:98:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-45-rec-1c23b-r-for-Sipho-Delict-3-years--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-45-rec-1c23b-r-for-Sipho-Delict-3-years--chromium/error-context.md
+
+  15) [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:96:7 › Day 60 — Interest Run & Investments › Alice: Interest run — create for the last 30 days and calculate allocations at the 6.5% LPFF rate 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: getByTestId('interest-run-wizard')
+    Expected substring: [32m"Step [7m2[27m of 4"[39m
+    Received string:    [31m"[7mNew Interest Run[27mStep [7m1[27m of 4[7m — Create1Create2Calculate3Approve4PostPeriod StartPeriod EndAn interest run already exists that overlaps the requested periodCancelCreate RunClose[27m"[39m
+    Timeout: 15000ms
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 15000ms[22m
+    [2m  - waiting for getByTestId('interest-run-wizard')[22m
+    [2m    2 × locator resolved to <div role="dialog" tabindex="-1" data-state="open" data-slot="dialog-content" id="radix-_R_abav5ubt9iv5ubtb_" data-testid="interest-run-wizard" aria-labelledby="radix-_R_abav5ubt9iv5ubtbH1_" aria-describedby="radix-_R_abav5ubt9iv5ubtbH2_" class="data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] duration-150 outline-none sm:max-w-lg">…</div>[22m
+    [2m      - unexpected value "New Interest RunStep 1 of 4 — Create1Create2Calculate3Approve4PostPeriod StartPeriod EndCancelCreating...Close"[22m
+    [2m    17 × locator resolved to <div role="dialog" tabindex="-1" data-state="open" data-slot="dialog-content" id="radix-_R_abav5ubt9iv5ubtb_" data-testid="interest-run-wizard" aria-labelledby="radix-_R_abav5ubt9iv5ubtbH1_" aria-describedby="radix-_R_abav5ubt9iv5ubtbH2_" class="data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] duration-150 outline-none sm:max-w-lg">…</div>[22m
+    [2m       - unexpected value "New Interest RunStep 1 of 4 — Create1Create2Calculate3Approve4PostPeriod StartPeriod EndAn interest run already exists that overlaps the requested periodCancelCreate RunClose"[22m
+
+
+      108 |     await wizard.getByRole("button", { name: "Create Run" }).click();
+      109 |
+    > 110 |     await expect(wizard).toContainText("Step 2 of 4", { timeout: 15_000 });
+          |                          ^
+      111 |     await expect(wizard).toContainText(`Period: ${periodStart} to ${periodEnd}`);
+      112 |     await wizard.getByRole("button", { name: "Calculate Interest" }).click();
+      113 |
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-60-interest.spec.ts:110:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-60-int-da0ac-ations-at-the-6-5-LPFF-rate-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-60-int-da0ac-ations-at-the-6-5-LPFF-rate-chromium/error-context.md
+
+  16) [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:91:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Create 2nd litigation matter for Sipho from template 
+
+    Error: option Sipho Ndlovu mvt4wyos1322 should load
+
+    [2mexpect([22m[31mlocator[39m[2m).[22mtoBeAttached[2m([22m[2m)[22m failed
+
+    Locator: getByRole('dialog', { name: /New from Template/ }).getByLabel(/^Client/).locator('option').filter({ hasText: 'Sipho Ndlovu mvt4wyos1322' }).first()
+    Expected: attached
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - option Sipho Ndlovu mvt4wyos1322 should load with timeout 15000ms[22m
+    [2m  - waiting for getByRole('dialog', { name: /New from Template/ }).getByLabel(/^Client/).locator('option').filter({ hasText: 'Sipho Ndlovu mvt4wyos1322' }).first()[22m
+
+
+       at ../helpers/legal-depth-ii.ts:109
+
+      107 | export async function selectNativeOption(select: Locator, label: string | RegExp): Promise<string> {
+      108 |   const option = select.locator("option", { hasText: label }).first();
+    > 109 |   await expect(option, `option ${String(label)} should load`).toBeAttached({ timeout: 15_000 });
+          |                                                               ^
+      110 |   const value = await option.getAttribute("value");
+      111 |   expect(value, `option ${String(label)} should have a value`).toBeTruthy();
+      112 |   await select.selectOption(value!);
+        at selectNativeOption (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/legal-depth-ii.ts:109:63)
+        at createTemplateMatter (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/legal-lifecycle.ts:214:27)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-75-complex.spec.ts:93:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-75-com-4d975-ter-for-Sipho-from-template-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-75-com-4d975-ter-for-Sipho-from-template-chromium/error-context.md
+
+  17) [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:69:7 › Day 90 — Quarter Review › Alice: Client list shows the four lifecycle clients 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('#main-content').getByTestId('clients-table').getByRole('link', { name: 'Sipho Ndlovu mvt4wyos1322', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#main-content').getByTestId('clients-table').getByRole('link', { name: 'Sipho Ndlovu mvt4wyos1322', exact: true })[22m
+
+
+      77 |       await expect(
+      78 |         table.getByRole("link", { name: lifecycleClientName(key), exact: true })
+    > 79 |       ).toBeVisible();
+         |         ^
+      80 |     }
+      81 |   });
+      82 |
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:79:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-90-rev-45ddc--the-four-lifecycle-clients-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-90-rev-45ddc--the-four-lifecycle-clients-chromium/error-context.md
+
+  18) [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:327:7 › Day 90 — Role-Based Access › Alice: Record a R500 trust fee transfer for Sipho — awaiting approval 
+
+    Error: Client "sipho" was not recorded — run day-01-03-onboarding first
+
+       at ../helpers/legal-lifecycle.ts:140
+
+      138 | export function clientId(key: LifecycleClient): string {
+      139 |   const id = readRunState().clients[key];
+    > 140 |   if (!id) throw new Error(`Client "${key}" was not recorded — run day-01-03-onboarding first`);
+          |                  ^
+      141 |   return id;
+      142 | }
+      143 |
+        at clientId (/Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/helpers/legal-lifecycle.ts:140:18)
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:332:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/legal-lifecycle-day-90-rev-f239f-r-Sipho-—-awaiting-approval-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/legal-lifecycle-day-90-rev-f239f-r-Sipho-—-awaiting-approval-chromium/error-context.md
+
+  19) [chromium] › e2e/tests/projects/project-tasks.spec.ts:119:7 › PROJ-02: Project Tasks › 1. Create task on project via UI 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('tab', { name: 'Tasks' })[22m
+
+
+      126 |
+      127 |     // Click Tasks tab
+    > 128 |     await page.getByRole("tab", { name: "Tasks" }).click();
+          |                                                    ^
+      129 |     await expect(page.getByRole("tabpanel", { name: "Tasks" })).toBeVisible({ timeout: 5000 });
+      130 |
+      131 |     // Click "New Task"
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/projects/project-tasks.spec.ts:128:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/projects-project-tasks-PRO-b7783-eate-task-on-project-via-UI-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/projects-project-tasks-PRO-b7783-eate-task-on-project-via-UI-chromium/error-context.md
+
+  20) [chromium] › e2e/tests/projects/project-time.spec.ts:131:7 › PROJ-03: Time Entries › 1. Log time on task via UI 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('tab', { name: 'Tasks' })[22m
+
+
+      138 |
+      139 |     // Click Tasks tab
+    > 140 |     await page.getByRole("tab", { name: "Tasks" }).click();
+          |                                                    ^
+      141 |     await expect(page.getByRole("tabpanel", { name: "Tasks" })).toBeVisible({ timeout: 5000 });
+      142 |
+      143 |     // Click "Log Time" on the task row
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/projects/project-time.spec.ts:140:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/projects-project-time-PROJ-12929-s-1-Log-time-on-task-via-UI-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/projects-project-time-PROJ-12929-s-1-Log-time-on-task-via-UI-chromium/error-context.md
+
+  21) [chromium] › e2e/tests/settings/packs.spec.ts:94:7 › PACK-01: Pack Lifecycle › Seeded legal-za pack is installed and its templates are present 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Power of Attorney')
+    Expected: visible
+    Error: strict mode violation: getByText('Power of Attorney') resolved to 4 elements:
+        1) <a href="/org/e2e-test-org/settings/documents/templates/a056a7cf-6be9-44fd-a4d0-de39160bf641/edit" class="font-medium text-slate-950 hover:text-teal-600 hover:underline dark:text-slate-50 dark:hover:text-teal-400">Power of Attorney</a> aka getByRole('link', { name: 'Power of Attorney', exact: true })
+        2) <p class="text-xs text-slate-500 dark:text-slate-400">Standard power of attorney template for authorisi…</p> aka getByText('Standard power of attorney')
+        3) <a href="/org/e2e-test-org/settings/documents/templates/ce7161e1-b3dc-4730-a39e-470980bd20bb/edit" class="font-medium text-slate-950 hover:text-teal-600 hover:underline dark:text-slate-50 dark:hover:text-teal-400">Power of Attorney to Pass Transfer</a> aka getByRole('link', { name: 'Power of Attorney to Pass' })
+        4) <p class="text-xs text-slate-500 dark:text-slate-400">Power of attorney authorising the conveyancer to …</p> aka getByText('Power of attorney authorising')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for getByText('Power of Attorney')[22m
+
+
+      118 |     });
+      119 |     await expect(page.locator("body")).not.toContainText("Something went wrong");
+    > 120 |     await expect(page.getByText(LEGAL_TEMPLATE_NAME)).toBeVisible({ timeout: 10000 });
+          |                                                       ^
+      121 |   });
+      122 |
+      123 |   // ---- Test 2: Edit blocks uninstall, revert clears the edit block (479.3) ----
+        at /Users/rakheendama/Projects/2026/worktree-628F-base/frontend/e2e/tests/settings/packs.spec.ts:120:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/settings-packs-PACK-01-Pac-2f414-d-its-templates-are-present-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/settings-packs-PACK-01-Pac-2f414-d-its-templates-are-present-chromium/error-context.md
+
+    Error Context: test-results/settings-packs-PACK-01-Pac-2f414-d-its-templates-are-present-chromium/error-context.md
+
+  21 failed
+    [chromium] › e2e/tests/customers/customer-crud.spec.ts:47:7 › CUST-01: Customer CRUD › Create customer with required fields 
+    [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:99:7 › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING 
+    [chromium] › e2e/tests/demo-full-90day.spec.ts:151:5 › Legal-ZA 90-Day Demo — Zero to Hero ─────
+    [chromium] › e2e/tests/demo-recording.spec.ts:23:5 › Legal-ZA 90-day demo walkthrough ──────────
+    [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:448:7 › Day 5 — Disbursements (Phase 67) › Alice: Verify Unbilled Disbursements summary on Sipho's matter 
+    [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:350:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow 
+    [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:138:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Billing rate override for Alice on Sipho's client 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR 
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:62:7 › Day 7 — First Week of Work › Carol: Log 90min time on Sipho matter 
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:197:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R250,000 into trust for Moroka estate 
+    [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:90:7 › Day 30 — First Billing Cycle › Alice: Generate Sipho's fee note from unbilled time, add an LSSA tariff item and a sheriff disbursement line (VAT 15%) 
+    [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:96:7 › Day 45 — Reconciliation & Prescription › Alice: Create prescription tracker for Sipho (Delict, 3 years) 
+    [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:96:7 › Day 60 — Interest Run & Investments › Alice: Interest run — create for the last 30 days and calculate allocations at the 6.5% LPFF rate 
+    [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:91:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Create 2nd litigation matter for Sipho from template 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:69:7 › Day 90 — Quarter Review › Alice: Client list shows the four lifecycle clients 
+    [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:327:7 › Day 90 — Role-Based Access › Alice: Record a R500 trust fee transfer for Sipho — awaiting approval 
+    [chromium] › e2e/tests/projects/project-tasks.spec.ts:119:7 › PROJ-02: Project Tasks › 1. Create task on project via UI 
+    [chromium] › e2e/tests/projects/project-time.spec.ts:131:7 › PROJ-03: Time Entries › 1. Log time on task via UI 
+    [chromium] › e2e/tests/settings/packs.spec.ts:94:7 › PACK-01: Pack Lifecycle › Seeded legal-za pack is installed and its templates are present 
+  52 skipped
+  97 did not run
+  156 passed (2.5m)
+ ELIFECYCLE  Command failed with exit code 1.

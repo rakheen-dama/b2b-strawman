@@ -1,0 +1,34 @@
+
+> frontend@0.1.0 test:e2e:projects /Users/rakheendama/Projects/2026/worktree-epic-628F/frontend
+> playwright test --config e2e/playwright.config.ts e2e/tests/projects/ --reporter=list
+
+
+Running 25 tests using 4 workers
+
+  ✓   2 [chromium] › e2e/tests/projects/project-budget.spec.ts:81:7 › BUDGET-01: Project Budget › 1. View budget tab on project (3.1s)
+  ✓   4 [chromium] › e2e/tests/projects/project-crud.spec.ts:36:7 › PROJ-01: Project CRUD › 1. Create project with customer (3.5s)
+  ✓   1 [chromium] › e2e/tests/projects/project-time.spec.ts:88:7 › PROJ-03: Time Entries › 1. Log time on task via UI (3.7s)
+  ✓   6 [chromium] › e2e/tests/projects/project-crud.spec.ts:71:7 › PROJ-01: Project CRUD › 2. Create project without customer (internal) (1.5s)
+  ✓   5 [chromium] › e2e/tests/projects/project-budget.spec.ts:91:7 › BUDGET-01: Project Budget › 2. Set project budget via API and verify in UI (2.1s)
+  ✓   3 [chromium] › e2e/tests/projects/project-tasks.spec.ts:105:7 › PROJ-02: Project Tasks › 1. Create task on project via UI (5.5s)
+  ✓   7 [chromium] › e2e/tests/projects/project-time.spec.ts:119:7 › PROJ-03: Time Entries › 2. Edit time entry via API and verify (1.8s)
+  ✓  11 [chromium] › e2e/tests/projects/project-time.spec.ts:147:7 › PROJ-03: Time Entries › 3. Delete time entry via API and verify (28ms)
+  ✓  12 [chromium] › e2e/tests/projects/project-time.spec.ts:165:7 › PROJ-03: Time Entries › 4. Time entry captures rate snapshot (39ms)
+  ✓   9 [chromium] › e2e/tests/projects/project-budget.spec.ts:121:7 › BUDGET-01: Project Budget › 3. Budget shows usage after logging time (1.8s)
+  ✓  10 [chromium] › e2e/tests/projects/project-tasks.spec.ts:135:7 › PROJ-02: Project Tasks › 2. Edit task title via API and verify in UI (1.8s)
+  ✓   8 [chromium] › e2e/tests/projects/project-crud.spec.ts:94:7 › PROJ-01: Project CRUD › 3. Edit project name (2.5s)
+  ✓  13 [chromium] › e2e/tests/projects/project-time.spec.ts:190:7 › PROJ-03: Time Entries › 5. Billable flag defaults to checked in UI (2.0s)
+  ✓  16 [chromium] › e2e/tests/projects/project-time.spec.ts:204:7 › PROJ-03: Time Entries › 6. Mark time entry non-billable (72ms)
+  ✓  17 [chromium] › e2e/tests/projects/project-time.spec.ts:238:7 › PROJ-03: Time Entries › 7. My Work lists today's time entries (454ms)
+  ✓  14 [chromium] › e2e/tests/projects/project-tasks.spec.ts:163:7 › PROJ-02: Project Tasks › 3. Change task status: OPEN -> IN_PROGRESS (1.7s)
+  ✓  18 [chromium] › e2e/tests/projects/project-tasks.spec.ts:189:7 › PROJ-02: Project Tasks › 4. Change task status: IN_PROGRESS -> DONE (1.6s)
+  ✓  15 [chromium] › e2e/tests/projects/project-crud.spec.ts:122:7 › PROJ-01: Project CRUD › 4. Project detail tabs load (3.7s)
+  ✓  19 [chromium] › e2e/tests/projects/project-tasks.spec.ts:204:7 › PROJ-02: Project Tasks › 5. Reopen completed task (1.4s)
+  ✓  20 [chromium] › e2e/tests/projects/project-crud.spec.ts:157:7 › PROJ-01: Project CRUD › 4b. Legacy expenses URL redirects to the Disbursements tab (1.0s)
+  ✓  22 [chromium] › e2e/tests/projects/project-crud.spec.ts:178:7 › PROJ-01: Project CRUD › 5. Archive project (Complete then Archive) (892ms)
+  ✓  23 [chromium] › e2e/tests/projects/project-crud.spec.ts:231:7 › PROJ-01: Project CRUD › 6. Archived project blocks task creation (15ms)
+  ✓  24 [chromium] › e2e/tests/projects/project-crud.spec.ts:245:7 › PROJ-01: Project CRUD › 7. Archived project blocks time logging via API (13ms)
+  ✓  21 [chromium] › e2e/tests/projects/project-tasks.spec.ts:216:7 › PROJ-02: Project Tasks › 6. Cancel task (1.6s)
+  ✓  25 [chromium] › e2e/tests/projects/project-tasks.spec.ts:230:7 › PROJ-02: Project Tasks › 7. Assign member to task (1.5s)
+
+  25 passed (15.8s)

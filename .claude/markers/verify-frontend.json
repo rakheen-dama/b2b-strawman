@@ -1,7 +1,7 @@
 {
-  "commit": "1a00394ad",
-  "command": "cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build; then e2e-down/up + pnpm test:e2e:legal-lifecycle + pnpm test:e2e:legal-depth-ii --update-snapshots=changed",
+  "commit": "b7033ebc9",
+  "command": "cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build; then e2e-down/up (from the 628F worktree, seed rebuilt) + pnpm test:e2e:legal-lifecycle + pnpm test:e2e:legal-depth-ii + pnpm test:e2e (default config), --update-snapshots=changed",
   "exit": 0,
-  "ts": "2026-10-29T05:50:18Z",
-  "summary": "628E FE-GATE on 1a00394ad (final head, detached gate worktree): lint 0 errors, format clean, vitest 434 files / 3535 passed / 2 skipped, build OK; fresh-stack (e2e-down/up from 1a00394ad) E2E-LEGAL lifecycle 101 passed / 0 failed / 3 skipped (3 cited 628E-BLOCKER fixmes: conflict-check-result.tsx:141, interest-run approval, Section 35 seeder unwired), depth-ii 39/0/4. Baseline main 2b442c0b8: lifecycle 75/4/5/14, depth-ii 38/0/5. Logs /tmp/628E/gate/."
+  "ts": "2026-10-29T08:47:58Z",
+  "summary": "628F FE-GATE on 1563e023e (final head): lint 0 errors, format clean, vitest 434 files / 3551 passed / 2 skipped, build OK; fresh stack seed 'E2E Boot-Seed Complete!' in ~3.8 s (trust account, INV-0001 SENT + draft, REQ SENT, shared SoA, BIWEEKLY); E2E-LEGAL lifecycle 101/0/3, depth-ii 39/0/4; E2E-DEFAULT 159 passed / 0 failed / 18 skipped / 0 did not run (8 admin-audit SKIP_REASON, 1 KC-only, 2 portal no KGOSI_EMAIL, 7 reproduced 628F-BLOCKER fixmes). Baseline main 43e8fddb2 default: 156 passed / 21 failed / 52 skipped / 97 did not run. Logs /tmp/628F/gate/. Final head b7033ebc9 = 1563e023e + a 31-line BUDGET-01 setup fix (apiStatus -> apiOk): pnpm lint 0 errors + format:check clean on b7033ebc9, pnpm test:e2e:projects 25/0/0 on the stack (/tmp/628F/cr2-projects.log); vitest/build unaffected (e2e spec only)."
 }

@@ -1,0 +1,25 @@
+    at Function.navigate (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameNavigator.js:202:36)
+    at DetachedBrowserFrame.goto (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:152:38)
+    at HTMLIFrameElement.#loadPage (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:345:14)
+    at HTMLIFrameElement.[connectedToDocument] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:794:53)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[appendChild] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:413:45)
+DOMException [NotSupportedError]: Failed to fetch from "blob:http://localhost/fake-pdf-url": URL scheme "blob" is not supported.
+    at Function.validateSchema (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/utilities/FetchRequestValidationUtility.js:90:19)
+    at Fetch.send (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:126:39)
+    at Function.navigate (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameNavigator.js:202:36)
+    at DetachedBrowserFrame.goto (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:152:38)
+    at HTMLIFrameElement.#loadPage (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:345:14)
+    at HTMLIFrameElement.[connectedToDocument] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:794:53)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[appendChild] (file:///Users/rakheendama/Projects/2026/worktree-epic-628F/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:413:45)
+
+ Test Files  434 passed (434)
+      Tests  3551 passed | 2 skipped (3553)
+   Start at  10:14:28
+   Duration  62.61s (transform 21.44s, setup 37.05s, import 207.64s, tests 136.29s, environment 110.23s)
+

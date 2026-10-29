@@ -1,0 +1,22 @@
+# 2026-10-29T19:43:10Z tenant=tenant_5039f2d497cf
++ SELECT id, transaction_type, amount, reference, transaction_date, status, recorded_by, approved_by, approved_at FROM tenant_5039f2d497cf.trust_transactions WHERE customer_id='fbfe7eba-53f6-4536-809d-2fc785628ef3' ORDER BY created_at
+d37ebccd-34bb-401f-8f2c-91e122cfd115|DEPOSIT|5000.00|DEP/SIPHO-001|2026-10-29|RECORDED|09e0e796-37a0-4fe5-8e36-df92f7d1b3fd||
+11288c1d-b866-4bd2-ac02-0b6047eff200|PAYMENT|1250.00|DEEDS/SIPHO-001|2026-10-29|APPROVED|bd26a345-8cff-4745-8c20-55a1f5bc4786|09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|2026-10-29 14:48:00.248623+00
+27234b0c-88b6-4253-bc82-05ff8cc13d85|REFUND|3750.00|REF/SIPHO-001|2026-10-29|APPROVED|09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|bd26a345-8cff-4745-8c20-55a1f5bc4786|2026-10-29 19:42:44.463487+00
+# 2026-10-29T19:43:10Z tenant=tenant_5039f2d497cf
++ SELECT c.name, l.balance, l.total_deposits, l.total_payments, l.total_fee_transfers, l.updated_at FROM tenant_5039f2d497cf.client_ledger_cards l JOIN tenant_5039f2d497cf.customers c ON c.id=l.customer_id
+Moroka Family Trust|38000.00|50000.00|12000.00|0.00|2026-10-29 19:33:23.652093+00
+Sipho Dlamini|0.00|5000.00|1250.00|0.00|2026-10-29 19:42:44.465189+00
+# 2026-10-29T19:43:10Z tenant=tenant_5039f2d497cf
++ SELECT sum(balance) FROM tenant_5039f2d497cf.client_ledger_cards
+38000.00
+# 2026-10-29T19:43:11Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > now() - interval '3 minutes' ORDER BY occurred_at
+2026-10-29 19:40:12.566097+00|task.updated|task
+2026-10-29 19:40:18.073691+00|task.updated|task
+2026-10-29 19:40:19.888654+00|task.updated|task
+2026-10-29 19:40:25.646561+00|task.updated|task
+2026-10-29 19:40:27.431458+00|task.updated|task
+2026-10-29 19:40:40.795088+00|project.completed|project
+2026-10-29 19:41:26.394787+00|trust_refund.recorded|trust_transaction
+2026-10-29 19:42:44.464608+00|trust_refund.approved|trust_transaction

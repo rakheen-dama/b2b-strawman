@@ -213,23 +213,59 @@ else
   fi
 fi
 
-# -- Step 7: Create project -------------------------------------------------
+# -- Step 7: Create matter (GET-first: e2e-reseed.sh re-runs this script on a populated tenant) --
 echo ""
-echo "==> Step 7: Create project"
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-  -X POST "${BACKEND_URL}/api/matters" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${ALICE_JWT}" \
-  -d "{
-    \"name\": \"Website Redesign\",
-    \"description\": \"E2E seed project for testing\",
-    \"clientId\": \"${CUSTOMER_ID}\"
-  }")
-check_status "Create project" "$STATUS"
+echo "==> Step 7: Create matter"
+MATTER_ID=$(curl -sf "${BACKEND_URL}/api/matters" -H "Authorization: Bearer ${ALICE_JWT}" \
+  | jq -r '.[] | select(.name == "Website Redesign") | .id' | head -1)
+if [ -z "$MATTER_ID" ] || [ "$MATTER_ID" = "null" ]; then
+  MATTER_RESPONSE=$(curl -s -w "\n%{http_code}" \
+    -X POST "${BACKEND_URL}/api/matters" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${ALICE_JWT}" \
+    -d "{
+      \"name\": \"Website Redesign\",
+      \"description\": \"E2E seed project for testing\",
+      \"clientId\": \"${CUSTOMER_ID}\"
+    }")
+  check_status "Create matter" "$(echo "$MATTER_RESPONSE" | tail -1)"
+  MATTER_ID=$(echo "$MATTER_RESPONSE" | sed '$d' | jq -r '.id')
+else
+  echo "    [skip] Website Redesign exists"
+fi
+if [ -z "$MATTER_ID" ] || [ "$MATTER_ID" = "null" ]; then
+  echo "    [FAIL] Could not resolve matter ID"
+  exit 1
+fi
+echo "    Matter ID: ${MATTER_ID}"
 
-# -- Step 8: Sync portal read model -----------------------------------------
+# -- Steps 8-12: Phase 88 628F rows (APIs only — never SQL) ----------------
+# Consumers: the legal-lifecycle / depth-ii trust steps, the default-config specs (frontend/e2e/helpers/
+# seed.ts) and the portal 90-day suite (628G). From here on check_status / check_2xx are common.sh's
+# (stderr, `return 1`; `set -e` exits on a failed step).
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "${SCRIPT_DIR}/lib/common.sh"
+_ALICE_JWT="$ALICE_JWT"   # prime get_jwt's cache
+ACME_ID="$CUSTOMER_ID"
+WEBSITE_REDESIGN_ID="$MATTER_ID"
+. "${SCRIPT_DIR}/lib/trust.sh"
+. "${SCRIPT_DIR}/lib/invoices.sh"
+. "${SCRIPT_DIR}/lib/information-requests.sh"
+. "${SCRIPT_DIR}/lib/statements.sh"
+
+seed_trust_account         # Step 8
+seed_boot_fee_notes        # Step 9
+seed_information_request   # Step 10 (portal Day 3)
+seed_statement             # Step 11 (portal Day 60; after the fee notes so the SoA lists them)
+
 echo ""
-echo "==> Step 8: Sync portal read model"
+echo "==> Step 12: Portal digest cadence BIWEEKLY (portal Day 85)"
+api_patch_json "/api/settings/portal-digest-cadence" '{"portalDigestCadence": "BIWEEKLY"}' "$ALICE_JWT" > /dev/null
+check_2xx "Portal digest cadence BIWEEKLY"
+
+# -- Step 13: Sync portal read model (last, so the read model sees every row) --
+echo ""
+echo "==> Step 13: Sync portal read model"
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -X POST "${BACKEND_URL}/internal/portal/resync/${ORG_ID}" \
   -H "X-API-KEY: ${API_KEY}")
@@ -243,5 +279,10 @@ echo ""
 echo "  Org:      ${ORG_NAME} (${ORG_ID})"
 echo "  Members:  alice (owner), bob (admin), carol (member)"
 echo "  Customer: Acme Corp (${CUSTOMER_ID})"
-echo "  Project:  Website Redesign"
+echo "  Matter:   Website Redesign (${MATTER_ID})"
+echo "  Trust:    ${TRUST_ACCOUNT_NAME} (${TRUST_ACCOUNT_ID})"
+echo "  Fees:     draft ${FEE_NOTE_DRAFT_ID}; sent ${FEE_NOTE_SENT_NUMBER} (${FEE_NOTE_SENT_ID})"
+echo "  Request:  ${INFO_REQUEST_NUMBER} SENT to ${SEED_PORTAL_CONTACT_EMAIL}"
+echo "  SoA:      Website Redesign (shared with client)"
+echo "  Digest:   BIWEEKLY"
 echo ""

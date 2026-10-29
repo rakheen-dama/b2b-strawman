@@ -1,7 +1,10 @@
 /**
  * CUST-02: Customer Lifecycle — Playwright E2E Tests
  *
- * Full state machine testing: PROSPECT default, transitions, guards, checklist completion.
+ * Lifecycle state machine: PROSPECT default, the firm-UI transitions that exist (header "Start
+ * Onboarding", Compliance › dormancy check "Mark as Dormant"), checklist auto-activation and the
+ * lifecycle guards. DORMANT → OFFBOARDING and OFFBOARDING → OFFBOARDED have no working firm UI
+ * (628F-BLOCKER fixmes below).
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
@@ -14,62 +17,107 @@
  */
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { seedToken } from "../../helpers/seed";
+import { startClientOnboarding } from "../../helpers/legal-depth-ii";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 
 const RUN_ID = Date.now().toString(36).slice(-4);
 
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: ORG }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
+interface Client {
+  id: string;
+  name: string;
+  lifecycleStatus: string;
 }
 
-async function createCustomerViaApi(
-  name: string,
-  email: string,
-  token: string
-): Promise<Record<string, unknown>> {
-  // Phase 87 S2 (ADR-337): API path
-  const res = await fetch(`${BACKEND_URL}/api/clients`, {
-    method: "POST",
+async function api(path: string, init: RequestInit = {}): Promise<Response> {
+  const token = await seedToken("alice");
+  return fetch(`${BACKEND_URL}${path}`, {
+    ...init,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      ...init.headers,
     },
-    body: JSON.stringify({ name, email, phone: "+27-11-555-9999" }),
+  });
+}
+
+/**
+ * Creates a client via the API. With a billing address by default — LIFECYCLE_ACTIVATION needs
+ * address line 1 / city / country (the tax number is exempt for an INDIVIDUAL, the default type).
+ */
+async function createCustomerViaApi(
+  name: string,
+  email: string,
+  { withAddress = true } = {}
+): Promise<Client> {
+  // Phase 87 S2 (ADR-337): API path
+  const res = await api("/api/clients", {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      email,
+      phone: "+27-11-555-9999",
+      ...(withAddress
+        ? { addressLine1: "1 Long Street", city: "Cape Town", postalCode: "8001", country: "ZA" }
+        : {}),
+    }),
   });
   expect(res.status).toBe(201);
   return res.json();
 }
 
-async function transitionViaApi(
-  customerId: string,
-  targetStatus: string,
-  token: string
-): Promise<Response> {
+async function transitionViaApi(customerId: string, targetStatus: string): Promise<Response> {
   // Phase 87 S2 (ADR-337): API path
-  return fetch(`${BACKEND_URL}/api/clients/${customerId}/transition`, {
+  return api(`/api/clients/${customerId}/transition`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify({ targetStatus, notes: "E2E test transition" }),
   });
+}
+
+async function statusOf(customerId: string): Promise<string> {
+  const res = await api(`/api/clients/${customerId}`);
+  expect(res.ok).toBe(true);
+  return ((await res.json()) as Client).lifecycleStatus;
+}
+
+/**
+ * Settles every onboarding checklist item through the API: complete it, or — when the item needs a
+ * linked document or depends on a skipped item — skip it (the boot seed does the same). Settling the
+ * last item auto-activates a client whose activation prerequisites are on file.
+ */
+async function settleChecklists(customerId: string): Promise<void> {
+  const res = await api(`/api/clients/${customerId}/checklists`);
+  expect(res.ok).toBe(true);
+  const checklists = (await res.json()) as { items?: { id: string; status: string }[] }[];
+  expect(checklists.length, "an onboarding checklist was instantiated").toBeGreaterThan(0);
+  for (const checklist of checklists) {
+    for (const item of checklist.items ?? []) {
+      if (item.status === "COMPLETED" || item.status === "SKIPPED") continue;
+      const complete = await api(`/api/checklist-items/${item.id}/complete`, {
+        method: "PUT",
+        body: JSON.stringify({ notes: "E2E auto-complete" }),
+      });
+      if (!complete.ok) {
+        const skip = await api(`/api/checklist-items/${item.id}/skip`, {
+          method: "PUT",
+          body: JSON.stringify({ reason: "E2E: no document to link" }),
+        });
+        expect(skip.ok, `skip checklist item ${item.id}`).toBe(true);
+      }
+    }
+  }
+}
+
+/** A fresh ACTIVE client (PROSPECT → ONBOARDING → checklist auto-activation), via the API. */
+async function createActiveCustomer(name: string, email: string): Promise<Client> {
+  const client = await createCustomerViaApi(name, email);
+  expect((await transitionViaApi(client.id, "ONBOARDING")).ok).toBe(true);
+  await settleChecklists(client.id);
+  await expect.poll(() => statusOf(client.id)).toBe("ACTIVE");
+  return client;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -81,138 +129,56 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
   let customerId: string;
 
   test("New customer defaults to PROSPECT", async ({ page }) => {
-    const token = await getToken("alice");
-    const customer = await createCustomerViaApi(LIFECYCLE_NAME, LIFECYCLE_EMAIL, token);
+    const customer = await createCustomerViaApi(LIFECYCLE_NAME, LIFECYCLE_EMAIL);
     customerId = customer.id;
-
-    // Verify via API
     expect(customer.lifecycleStatus).toBe("PROSPECT");
 
-    // Verify in UI
     await loginAs(page, "alice");
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients/${customerId}`);
-    await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/Prospect/).first()).toBeVisible({ timeout: 5000 });
+    await expect(
+      page.getByRole("heading", { level: 1, name: LIFECYCLE_NAME, exact: true })
+    ).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Prospect");
   });
 
   test("PROSPECT -> ONBOARDING", async ({ page }) => {
     await loginAs(page, "bob");
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients/${customerId}`);
-    await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByRole("heading", { level: 1, name: LIFECYCLE_NAME, exact: true })
+    ).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Click "Change Status" button (LifecycleTransitionDropdown trigger)
-    await page.getByRole("button", { name: "Change Status" }).click();
+    // The header smart action of a PROSPECT is "Start Onboarding" (confirm dialog → ONBOARDING)
+    await expect(page.getByTestId("smart-primary-action")).toHaveText("Start Onboarding");
+    await startClientOnboarding(page);
 
-    // Click "Start Onboarding" in the dropdown menu
-    // DropdownMenuItem renders as [role="menuitem"]
-    const startOnboarding = page.getByRole("menuitem", { name: "Start Onboarding" });
-    await expect(startOnboarding).toBeVisible({ timeout: 5000 });
-    await startOnboarding.click();
-
-    // A TransitionConfirmDialog (AlertDialog) opens — confirm it
-    const confirmDialog = page.getByRole("alertdialog").or(page.getByRole("dialog"));
-    await expect(confirmDialog.first()).toBeVisible({ timeout: 5000 });
-    // Confirm button text matches the transition: "Start Onboarding"
-    const confirmBtn = confirmDialog.first().getByRole("button", { name: /Start Onboarding/i });
-    await expect(confirmBtn).toBeVisible({ timeout: 3000 });
-    await confirmBtn.click();
-
-    await page.waitForTimeout(3000);
-
-    // Verify badge updates to Onboarding
     await page.reload();
-    await expect(page.getByText(/Onboarding/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Onboarding", { timeout: 10_000 });
+    expect(await statusOf(customerId)).toBe("ONBOARDING");
   });
 
   test("ONBOARDING -> ACTIVE (via checklist completion)", async () => {
-    const token = await getToken("alice");
-
-    // Get checklists for this customer
-    // Phase 87 S2 (ADR-337): API path
-    const checklistRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}/checklists`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    // Checklists API may return 404 if no checklists exist — handle gracefully
-    if (checklistRes.ok) {
-      const checklists = await checklistRes.json();
-
-      if (Array.isArray(checklists) && checklists.length > 0) {
-        // Complete all checklist items
-        for (const checklist of checklists) {
-          for (const item of checklist.items || []) {
-            if (item.status !== "COMPLETED" && item.status !== "SKIPPED") {
-              await fetch(`${BACKEND_URL}/api/checklist-items/${item.id}/complete`, {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ notes: "E2E auto-complete" }),
-              });
-            }
-          }
-        }
-      }
-    }
-
-    // Check current status and transition to ACTIVE
-    // Phase 87 S2 (ADR-337): API path
-    const customerRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const customer = await customerRes.json();
-
-    if (customer.lifecycleStatus === "ONBOARDING") {
-      // Try transition to ACTIVE
-      const transRes = await transitionViaApi(customerId, "ACTIVE", token);
-      if (!transRes.ok) {
-        // May have already auto-transitioned or prerequisites not met
-        // Phase 87 S2 (ADR-337): API path
-        const refreshRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const refreshed = await refreshRes.json();
-        // Accept either ACTIVE or ONBOARDING (if prerequisites block transition)
-        expect(["ACTIVE", "ONBOARDING"]).toContain(refreshed.lifecycleStatus);
-        return;
-      }
-    }
-
-    // Verify ACTIVE via API
-    // Phase 87 S2 (ADR-337): API path
-    const verifyRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const verified = await verifyRes.json();
-    expect(["ACTIVE", "ONBOARDING"]).toContain(verified.lifecycleStatus);
+    expect(await statusOf(customerId)).toBe("ONBOARDING");
+    await settleChecklists(customerId);
+    // Settling the last item auto-transitions the client (its billing address is on file)
+    await expect.poll(() => statusOf(customerId)).toBe("ACTIVE");
   });
 
-  test("PROSPECT blocked from creating project", async ({ page }) => {
-    // Create a new prospect customer for this test
-    const token = await getToken("alice");
+  test("PROSPECT blocked from creating project", async () => {
     const prospect = await createCustomerViaApi(
       `Prospect Guard ${RUN_ID}`,
-      `prospect-guard-${RUN_ID}@example.com`,
-      token
+      `prospect-guard-${RUN_ID}@example.com`
     );
 
-    await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/clients/${prospect.id}`);
-    await expect(page.getByText(/Prospect/).first()).toBeVisible({ timeout: 10000 });
-
-    // The Projects tab may exist but creating projects should be blocked.
-    // Check via API — attempting to create a project for a PROSPECT should fail.
     // Phase 87 S1 (ADR-337): API path
-    const projectRes = await fetch(`${BACKEND_URL}/api/matters`, {
+    const projectRes = await api("/api/matters", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         name: `Should Fail ${RUN_ID}`,
         description: "This should be blocked by lifecycle guard",
@@ -220,25 +186,22 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
         clientId: prospect.id,
       }),
     });
-    // Expect either 400, 409, or 422 — project creation blocked for PROSPECT
-    expect([400, 409, 422].includes(projectRes.status) || projectRes.ok).toBeTruthy();
+    // CustomerLifecycleGuard: CREATE_PROJECT is blocked for PROSPECT (InvalidStateException → 400)
+    expect(projectRes.status).toBe(400);
+    expect(await projectRes.text()).toContain("PROSPECT");
   });
 
-  test("PROSPECT blocked from creating invoice", async () => {
-    const token = await getToken("alice");
+  test("Fee note blocked for a client without a billing address", async () => {
+    // A PROSPECT may be billed (GAP-L-60); what blocks the fee note is the missing billing address
+    // (INVOICE_GENERATION structural prerequisites → 422 with an address_line1 violation)
     const prospect = await createCustomerViaApi(
       `ProspectInv ${RUN_ID}`,
       `prospect-inv-${RUN_ID}@example.com`,
-      token
+      { withAddress: false }
     );
 
-    // Attempt to create an invoice for a PROSPECT customer
-    const invoiceRes = await fetch(`${BACKEND_URL}/api/invoices`, {
+    const invoiceRes = await api("/api/invoices", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         // Phase 87 S3 (ADR-337): request body
         clientId: prospect.id,
@@ -246,156 +209,104 @@ test.describe.serial("CUST-02: Customer Lifecycle", () => {
         timeEntryIds: [],
       }),
     });
-    // Should be blocked — lifecycle guard prevents invoice creation for PROSPECT
-    expect([400, 409, 422].includes(invoiceRes.status)).toBeTruthy();
+    expect(invoiceRes.status).toBe(422);
+    expect(await invoiceRes.text()).toContain("address_line1");
   });
 
   test("ACTIVE -> DORMANT", async ({ page }) => {
-    // First ensure customer is ACTIVE via API
-    const token = await getToken("alice");
-    // Phase 87 S2 (ADR-337): API path
-    const customerRes = await fetch(`${BACKEND_URL}/api/clients/${customerId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const customer = await customerRes.json();
+    expect(await statusOf(customerId)).toBe("ACTIVE");
 
-    // If still ONBOARDING, transition to ACTIVE first via API
-    if (customer.lifecycleStatus === "ONBOARDING") {
-      const res = await transitionViaApi(customerId, "ACTIVE", token);
-      if (!res.ok) {
-        test.skip(true, "Cannot transition to ACTIVE — prerequisites may block it");
-        return;
-      }
-    } else if (customer.lifecycleStatus !== "ACTIVE") {
-      test.skip(true, `Customer is in ${customer.lifecycleStatus} — cannot test ACTIVE -> DORMANT`);
-      return;
-    }
-
+    // The firm-UI ACTIVE → DORMANT path: Compliance › dormancy check › "Mark as Dormant". The client
+    // has no matters, documents, fee notes or time, so it is always a dormancy candidate.
     await loginAs(page, "alice");
+    await page.goto(`${BASE}/compliance`);
+    await page.getByRole("button", { name: "Check for Dormant Clients" }).click();
+    const row = page
+      .getByRole("row")
+      .filter({ has: page.getByRole("link", { name: LIFECYCLE_NAME, exact: true }) });
+    await expect(row).toBeVisible({ timeout: 15_000 });
+    const markDormant = row.getByRole("button", { name: "Mark as Dormant" });
+    await markDormant.click();
+    // The candidate list is client state and is not re-fetched after marking: assert on the client
+    await expect.poll(() => statusOf(customerId), { timeout: 15_000 }).toBe("DORMANT");
+
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients/${customerId}`);
-    await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
-
-    // The "Change Status" button may not appear if customer is not ACTIVE
-    const changeStatusBtn = page.getByRole("button", { name: "Change Status" });
-    const hasChangeStatus = await changeStatusBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasChangeStatus) {
-      test.skip(true, "Change Status button not visible — customer may not be in ACTIVE status");
-      return;
-    }
-
-    await changeStatusBtn.click();
-    const dormantOption = page.getByRole("menuitem", { name: /Mark as Dormant/i });
-    await expect(dormantOption).toBeVisible({ timeout: 5000 });
-    await dormantOption.click();
-
-    // Confirm AlertDialog — button text: "Mark as Dormant"
-    const confirmDialog = page.getByRole("alertdialog").or(page.getByRole("dialog"));
-    await expect(confirmDialog.first()).toBeVisible({ timeout: 5000 });
-    const confirmBtn = confirmDialog.first().getByRole("button", { name: /Mark as Dormant/i });
-    await expect(confirmBtn).toBeVisible({ timeout: 3000 });
-    await confirmBtn.click();
-
-    await page.waitForTimeout(3000);
-    await page.reload();
-    await expect(page.getByText(/Dormant/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Dormant", { timeout: 10_000 });
   });
 
   test("DORMANT -> OFFBOARDING", async ({ page }) => {
+    test.fixme(
+      true,
+      "628F-BLOCKER: no firm-UI DORMANT→OFFBOARDING transition (header action 'Edit' has no handler, overflow menu has no lifecycle items; LifecycleTransitionDropdown orphaned since #1395) — components/customers/client-header-card-with-lifecycle.tsx:70, app/(app)/org/[slug]/clients/[id]/page.tsx:434-470, components/customers/client-overflow-menu.tsx:101-177"
+    );
+    // Intended real steps (run once the product exposes the transition):
     await loginAs(page, "alice");
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients/${customerId}`);
-    await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
-
-    const changeStatusBtn = page.getByRole("button", { name: "Change Status" });
-    const hasChangeStatus = await changeStatusBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasChangeStatus) {
-      test.skip(true, "Change Status button not visible");
-      return;
-    }
-
-    await changeStatusBtn.click();
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Dormant", { timeout: 10_000 });
+    await page.getByTestId("client-overflow-trigger").click();
     // Phase 88 628A (ADR-357): label → "Offboard Client"
-    const offboardingOption = page.getByRole("menuitem", { name: /Offboard Client/i });
-    await expect(offboardingOption).toBeVisible({ timeout: 5000 });
-    await offboardingOption.click();
-
-    // Confirm AlertDialog — button text: "Begin Offboarding"
-    const confirmDialog = page.getByRole("alertdialog").or(page.getByRole("dialog"));
-    await expect(confirmDialog.first()).toBeVisible({ timeout: 5000 });
-    const confirmBtn = confirmDialog.first().getByRole("button", { name: /Begin Offboarding/i });
-    await expect(confirmBtn).toBeVisible({ timeout: 3000 });
-    await confirmBtn.click();
-
-    await page.waitForTimeout(3000);
-    await page.reload();
-    await expect(page.getByText(/Offboarding/i).first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole("menuitem", { name: "Offboard Client" }).click();
+    const confirm = page.getByRole("alertdialog");
+    await confirm.getByRole("button", { name: "Begin Offboarding" }).click();
+    await expect(confirm).toBeHidden({ timeout: 15_000 });
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Offboarding", {
+      timeout: 15_000,
+    });
   });
 
   test("OFFBOARDING -> OFFBOARDED", async ({ page }) => {
+    test.fixme(
+      true,
+      "628F-BLOCKER: header 'Complete Offboarding' button has no onClick (no target status computed for OFFBOARDING) — components/customers/client-header-card-with-lifecycle.tsx:70, app/(app)/org/[slug]/clients/[id]/page.tsx:434-470"
+    );
+    // Intended real steps (run once the product wires the header action):
     await loginAs(page, "alice");
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients/${customerId}`);
-    await expect(page.getByText(LIFECYCLE_NAME).first()).toBeVisible({ timeout: 10000 });
-
-    const changeStatusBtn = page.getByRole("button", { name: "Change Status" });
-    const hasChangeStatus = await changeStatusBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasChangeStatus) {
-      test.skip(true, "Change Status button not visible");
-      return;
-    }
-
-    await changeStatusBtn.click();
-    const offboardedOption = page.getByRole("menuitem", { name: /Complete Offboarding/i });
-    await expect(offboardedOption).toBeVisible({ timeout: 5000 });
-    await offboardedOption.click();
-
-    // Confirm AlertDialog — button text: "Complete Offboarding"
-    const confirmDialog = page.getByRole("alertdialog").or(page.getByRole("dialog"));
-    await expect(confirmDialog.first()).toBeVisible({ timeout: 5000 });
-    const confirmBtn = confirmDialog.first().getByRole("button", { name: /Complete Offboarding/i });
-    await expect(confirmBtn).toBeVisible({ timeout: 3000 });
-    await confirmBtn.click();
-
-    await page.waitForTimeout(3000);
-    await page.reload();
-    await expect(page.getByText(/Offboarded/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Offboarding", {
+      timeout: 10_000,
+    });
+    await page.getByTestId("smart-primary-action").click();
+    const confirm = page.getByRole("alertdialog", { name: "Complete Offboarding" });
+    await confirm.getByRole("button", { name: "Complete Offboarding" }).click();
+    await expect(confirm).toBeHidden({ timeout: 15_000 });
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Offboarded", {
+      timeout: 15_000,
+    });
   });
 
   test("OFFBOARDED blocked from project creation", async () => {
-    const token = await getToken("alice");
+    // Self-contained (the UI path to OFFBOARDED is blocked above): ACTIVE → OFFBOARDING → OFFBOARDED
+    const offboarded = await createActiveCustomer(
+      `Offboarded Guard ${RUN_ID}`,
+      `offboarded-guard-${RUN_ID}@example.com`
+    );
+    expect((await transitionViaApi(offboarded.id, "OFFBOARDING")).ok).toBe(true);
+    expect((await transitionViaApi(offboarded.id, "OFFBOARDED")).ok).toBe(true);
+    expect(await statusOf(offboarded.id)).toBe("OFFBOARDED");
 
-    // Attempt to create a project for the OFFBOARDED customer
     // Phase 87 S1 (ADR-337): API path
-    const projectRes = await fetch(`${BACKEND_URL}/api/matters`, {
+    const projectRes = await api("/api/matters", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({
         name: `Should Fail Offboarded ${RUN_ID}`,
         description: "Blocked by lifecycle guard",
         // Phase 87 S1 (ADR-337): API field (CreateMatterRequest.clientId)
-        clientId: customerId,
+        clientId: offboarded.id,
       }),
     });
-    expect([400, 409, 422].includes(projectRes.status) || projectRes.ok).toBeTruthy();
+    expect(projectRes.status).toBe(400);
+    expect(await projectRes.text()).toContain("OFFBOARDED");
   });
 
   test("Invalid: PROSPECT -> ACTIVE (skip) rejected via API", async () => {
-    const token = await getToken("alice");
-    const prospect = await createCustomerViaApi(
-      `SkipTest ${RUN_ID}`,
-      `skip-${RUN_ID}@example.com`,
-      token
-    );
+    const prospect = await createCustomerViaApi(`SkipTest ${RUN_ID}`, `skip-${RUN_ID}@example.com`);
 
-    // Attempt to skip directly from PROSPECT to ACTIVE
-    const res = await transitionViaApi(prospect.id, "ACTIVE", token);
-    expect([400, 409].includes(res.status)).toBeTruthy();
+    // PROSPECT may only move to ONBOARDING (LifecycleStatus.ALLOWED_TRANSITIONS)
+    const res = await transitionViaApi(prospect.id, "ACTIVE");
+    expect(res.status).toBe(400);
+    expect(await statusOf(prospect.id)).toBe("PROSPECT");
   });
 });

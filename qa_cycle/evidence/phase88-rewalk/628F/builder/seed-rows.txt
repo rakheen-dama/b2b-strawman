@@ -1,0 +1,26 @@
+# 628F B1 seed-row reads — fresh e2e-down && e2e-up from the worktree, 2026-10-29T06:30:37Z
+# Acme Corp = 85c7e299-a5e0-4ac3-82d9-9684e05d7073 ; Website Redesign = 58e3f1dc-8c15-40d7-b8b8-7d0b58d28fd2
+
+## GET /api/trust-accounts
+{"accountName":"Mathebula & Partners Trust Account","bankName":"Standard Bank","branchCode":"051001","accountNumber":"0123456789","accountType":"GENERAL","isPrimary":true,"status":"ACTIVE"}
+
+## GET /api/invoices?clientId=<acme>
+{"invoiceNumber":"INV-0001","status":"SENT","notes":"E2E seed fee note — sent","total":8625.00}
+{"invoiceNumber":null,"status":"DRAFT","notes":"E2E seed fee note — draft","total":3450.00}
+
+## GET /api/information-requests?customerId=<acme>
+{"requestNumber":"REQ-0001","status":"SENT","matterName":"Website Redesign","portalContactEmail":"contact@acme.example.com","items":["Certified ID copy"]}
+
+## GET /api/matters/<wr>/statements
+{"totalElements":1,"content":[{"id":"3aab24d9-e1fd-4889-be53-72abeab702b4","periodStart":null,"periodEnd":null}]}
+
+## GET /api/settings (portalDigestCadence)
+{"portalDigestCadence":"BIWEEKLY"}
+
+## GET /api/matters (Website Redesign count)
+1
+
+## Seed duration (seed container log, first → last timestamp)
+2026-10-29T06:30:12.859415971Z
+2026-10-29T06:30:16.693136000Z
+=> 3.83 s (06:30:12.859 → 06:30:16.693, includes wait-for-backend); R-9 threshold 90 s

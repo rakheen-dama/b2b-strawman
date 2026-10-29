@@ -13,8 +13,9 @@
  * Run:
  *   cd frontend && PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test projects/project-tasks --reporter=list
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { openGroupedTab } from "../../helpers/grouped-tabs";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
@@ -75,6 +76,36 @@ async function apiPatch(path: string, token: string, body?: object) {
   return { status: res.status, data: await res.json().catch(() => null) };
 }
 
+/** Opens the matter's Work → Tasks sub-tab and returns the (unnamed) tab panel. */
+async function openTasksTab(page: Page, projectId: string) {
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/matters/${projectId}`);
+  await openGroupedTab(page, "work", "tasks");
+  const panel = page.getByRole("tabpanel");
+  await expect(panel.getByRole("button", { name: "New Task" })).toBeVisible({ timeout: 10_000 });
+  return panel;
+}
+
+/** The task-list row of the task titled `title`. */
+function taskRow(page: Page, title: string) {
+  return page
+    .getByRole("tabpanel")
+    .getByRole("row")
+    .filter({
+      has: page.getByRole("button", { name: `Open task detail for ${title}`, exact: true }),
+    });
+}
+
+/** Toggles a task-list status filter chip and waits for the refetch to settle. */
+async function toggleFilterChip(page: Page, label: string) {
+  const chip = page
+    .getByRole("group", { name: "Task filters" })
+    .getByRole("button", { name: label });
+  await chip.click();
+  await expect(chip).toHaveAttribute("aria-pressed", "true");
+  await expect(chip).toBeEnabled();
+}
+
 // ═══════════════════════════════════════════════════════════════════
 //  PROJ-02: Project Tasks
 // ═══════════════════════════════════════════════════════════════════
@@ -83,13 +114,18 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
   const PROJECT_NAME = `Task Test Project ${RUN_ID}`;
   const TASK_TITLE = `Test Task ${RUN_ID}`;
   const EDITED_TITLE = `Edited Task ${RUN_ID}`;
+  const ASSIGNABLE_TITLE = `Assignable Task ${RUN_ID}`;
+  // Keeps the default (Open + In Progress) list non-empty: with zero visible tasks the panel shows
+  // the "No tasks yet" empty state without the filter chips (task-list-panel.tsx:304), so a DONE /
+  // CANCELLED task could not be revealed. Product follow-up: that empty state hides existing tasks.
+  const COMPANION_TITLE = `Companion Task ${RUN_ID}`;
   let projectId: string;
   let taskId: string;
 
-  // Setup: create a project via API for task testing
+  // Setup: create a project via API for task testing, with Carol as a member (assignable)
   test.beforeAll(async () => {
     const token = await getToken("alice");
-    const { data } = await apiPost(
+    const { status, data } = await apiPost(
       // Phase 87 S1 (ADR-337): API path
       "/api/matters",
       {
@@ -98,52 +134,48 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
       },
       token
     );
+    expect(status).toBe(201);
     projectId = data.id;
 
-    // Add Carol as a project member so she can be assigned tasks
     const members = (await apiGet("/api/members", token)) as Array<{ id: string; name: string }>;
     const carol = members.find((m) => m.name?.includes("Carol"));
-    if (carol) {
-      await apiPost(
-        // Phase 87 S1 (ADR-337): API path
-        `/api/matters/${projectId}/members`,
-        {
-          memberId: carol.id,
-          projectRole: "contributor",
-        },
-        token
-      );
-    }
+    expect(carol, "seed member Carol").toBeDefined();
+    const added = await apiPost(
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/members`,
+      {
+        memberId: carol!.id,
+        projectRole: "contributor",
+      },
+      token
+    );
+    expect(added.status).toBeLessThan(300);
+
+    const companion = await apiPost(
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/tasks`,
+      { title: COMPANION_TITLE },
+      token
+    );
+    expect(companion.status).toBe(201);
   });
 
   test("1. Create task on project via UI", async ({ page }) => {
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-    await expect(page.getByRole("heading", { name: PROJECT_NAME, level: 1 })).toBeVisible({
-      timeout: 10000,
-    });
+    const panel = await openTasksTab(page, projectId);
+    await expect(page.getByRole("heading", { name: PROJECT_NAME, level: 1 })).toBeVisible();
 
-    // Click Tasks tab
-    await page.getByRole("tab", { name: "Tasks" }).click();
-    await expect(page.getByRole("tabpanel", { name: "Tasks" })).toBeVisible({ timeout: 5000 });
+    await panel.getByRole("button", { name: "New Task" }).click();
+    const dialog = page.getByRole("dialog", { name: "Create Task" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("textbox", { name: "Title" }).fill(TASK_TITLE);
+    await dialog.getByRole("button", { name: "Create Task" }).click();
+    await expect(dialog).toBeHidden({ timeout: 10_000 });
 
-    // Click "New Task"
-    await page.getByRole("button", { name: "New Task" }).click();
-    await expect(page.getByRole("dialog", { name: "Create Task" })).toBeVisible({ timeout: 5000 });
-
-    // Fill title
-    await page.getByRole("textbox", { name: "Title" }).fill(TASK_TITLE);
-
-    // Submit
-    await page.getByRole("button", { name: "Create Task" }).click();
-    await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 10000 });
-
-    // Reload and verify task appears
-    await page.waitForTimeout(1000);
+    // Persisted: listed again after a reload
     await page.reload();
-    await page.getByRole("tab", { name: "Tasks" }).click();
-    await expect(page.getByText(TASK_TITLE).first()).toBeVisible({ timeout: 10000 });
+    await openGroupedTab(page, "work", "tasks");
+    await expect(taskRow(page, TASK_TITLE)).toBeVisible({ timeout: 10_000 });
 
     // Get the task ID via API for subsequent tests
     const token = await getToken("alice");
@@ -169,8 +201,7 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
       type: string | null;
     };
 
-    // Update title
-    await apiPut(
+    const { status } = await apiPut(
       `/api/tasks/${taskId}`,
       {
         title: EDITED_TITLE,
@@ -181,13 +212,12 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
       },
       token
     );
+    expect(status).toBe(200);
 
-    // Verify in UI
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-    await page.getByRole("tab", { name: "Tasks" }).click();
-    await expect(page.getByText(EDITED_TITLE).first()).toBeVisible({ timeout: 10000 });
+    await openTasksTab(page, projectId);
+    await expect(taskRow(page, EDITED_TITLE)).toBeVisible({ timeout: 10_000 });
+    await expect(taskRow(page, TASK_TITLE)).toHaveCount(0);
   });
 
   test("3. Change task status: OPEN -> IN_PROGRESS", async ({ page }) => {
@@ -212,12 +242,10 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     expect(status).toBe(200);
     expect(data.status).toBe("IN_PROGRESS");
 
-    // Verify in UI
+    // The row's status badge (not the "In Progress" filter chip)
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-    await page.getByRole("tab", { name: "Tasks" }).click();
-    await expect(page.getByText(/In Progress/i).first()).toBeVisible({ timeout: 10000 });
+    await openTasksTab(page, projectId);
+    await expect(taskRow(page, EDITED_TITLE)).toContainText("In Progress", { timeout: 10_000 });
   });
 
   test("4. Change task status: IN_PROGRESS -> DONE", async ({ page }) => {
@@ -229,16 +257,12 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     expect(status).toBe(200);
     expect(data.status).toBe("DONE");
 
-    // Verify in UI — completed tasks may be filtered out by default, use status filter
+    // DONE tasks are hidden by the default filter (Open + In Progress); the "Done" chip shows them
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-    await page.getByRole("tab", { name: "Tasks" }).click();
-
-    // The task list may filter DONE tasks — check if there's a way to show all
-    // or verify via API that the status is DONE
-    const updatedTask = (await apiGet(`/api/tasks/${taskId}`, token)) as { status: string };
-    expect(updatedTask.status).toBe("DONE");
+    await openTasksTab(page, projectId);
+    await expect(taskRow(page, EDITED_TITLE)).toHaveCount(0);
+    await toggleFilterChip(page, "Done");
+    await expect(taskRow(page, EDITED_TITLE)).toContainText("Done", { timeout: 10_000 });
   });
 
   test("5. Reopen completed task", async ({ page }) => {
@@ -249,12 +273,10 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     expect(status).toBe(200);
     expect(data.status).toBe("OPEN");
 
-    // Verify in UI
+    // Back in the default (Open + In Progress) list
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-    await page.getByRole("tab", { name: "Tasks" }).click();
-    await expect(page.getByText(EDITED_TITLE).first()).toBeVisible({ timeout: 10000 });
+    await openTasksTab(page, projectId);
+    await expect(taskRow(page, EDITED_TITLE)).toContainText("Open", { timeout: 10_000 });
   });
 
   test("6. Cancel task", async ({ page }) => {
@@ -265,23 +287,27 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     expect(status).toBe(200);
     expect(data.status).toBe("CANCELLED");
 
-    // Verify via API
-    const updatedTask = (await apiGet(`/api/tasks/${taskId}`, token)) as { status: string };
-    expect(updatedTask.status).toBe("CANCELLED");
+    // Hidden by the default filter; listed as Cancelled under the "Cancelled" chip
+    await loginAs(page, "alice");
+    await openTasksTab(page, projectId);
+    await expect(taskRow(page, EDITED_TITLE)).toHaveCount(0);
+    await toggleFilterChip(page, "Cancelled");
+    await expect(taskRow(page, EDITED_TITLE)).toContainText("Cancelled", { timeout: 10_000 });
   });
 
   test("7. Assign member to task", async ({ page }) => {
     const token = await getToken("alice");
 
     // Create a fresh task to assign (cancelled task cannot be edited)
-    const { data: newTask } = await apiPost(
+    const { status: created, data: newTask } = await apiPost(
       // Phase 87 S1 (ADR-337): API path
       `/api/matters/${projectId}/tasks`,
       {
-        title: `Assignable Task ${RUN_ID}`,
+        title: ASSIGNABLE_TITLE,
       },
       token
     );
+    expect(created).toBe(201);
     const newTaskId = newTask.id;
 
     // Get Carol's member ID
@@ -310,11 +336,9 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     expect(status).toBe(200);
     expect(updatedTask.assigneeId).toBe(carol!.id);
 
-    // Verify in UI — Carol's name should appear on the task
+    // The assignee column of that task's row names Carol
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-    await page.getByRole("tab", { name: "Tasks" }).click();
-    await expect(page.getByText(/Carol/).first()).toBeVisible({ timeout: 10000 });
+    await openTasksTab(page, projectId);
+    await expect(taskRow(page, ASSIGNABLE_TITLE)).toContainText(carol!.name, { timeout: 10_000 });
   });
 });

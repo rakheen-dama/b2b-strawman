@@ -1,18 +1,31 @@
 /**
  * CF-01: Custom Fields — Playwright E2E Tests
  *
- * Tests custom field management: view definitions, create text field,
- * verify appears on entity form, verify value persists.
+ * Tests custom field management: view definitions, create a text field, the legal-za intake field
+ * on the New Client form, and a client custom-field value persisting across a reload.
  *
  * Prerequisites:
- *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Seed data present
+ *   1. E2E stack running: bash compose/scripts/e2e-up.sh (legal-za: "SA Legal — Client Details"
+ *      field group, auto-applied to clients)
  */
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { openGroupedTab } from "../../helpers/grouped-tabs";
+import { apiGet, seedToken } from "../../helpers/seed";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
+const RUN_ID = Date.now().toString(36).slice(-4);
+const ID_FIELD = "ID / Passport Number"; // legal-za-customer field pack, slug id_passport_number
+
+async function openCustomFieldSettings(page: import("@playwright/test").Page) {
+  // Phase 87 S9 (ADR-344): /settings/custom-fields → /settings/matters?tab=custom-fields
+  await page.goto(`${base}/settings/matters?tab=custom-fields`);
+  await expect(page.getByRole("heading", { level: 1, name: /^Custom Fields/ })).toBeVisible({
+    timeout: 10_000,
+  });
+}
 
 test.describe("CF-01: Custom Fields", () => {
   test.beforeEach(async ({ page }) => {
@@ -20,145 +33,93 @@ test.describe("CF-01: Custom Fields", () => {
   });
 
   test("View custom field definitions", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/custom-fields → /settings/matters?tab=custom-fields
-    await page.goto(`${base}/settings/matters?tab=custom-fields`);
-    const body = page.locator("body");
-    const bodyText = await body.textContent();
-
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      test.skip(true, "Custom fields settings page not implemented");
-      return;
-    }
-
-    const content = page.locator('main, [role="main"], .flex-1').first();
-    const text = await content.textContent({ timeout: 10000 });
-
-    // Should show field definitions or empty state
-    expect(text?.length).toBeGreaterThan(0);
+    await openCustomFieldSettings(page);
+    // Per-entity tabs; the legal-za pack seeds client fields
+    // Phase 88 628A (ADR-357): label — entity "Customers" → "Clients"
+    await page.getByRole("tab", { name: "Clients" }).click();
+    await expect(page.getByRole("heading", { name: "Field Definitions" })).toBeVisible();
+    await expect(page.getByTestId("field-row").filter({ hasText: ID_FIELD })).toBeVisible();
   });
 
   test("Create text custom field", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/custom-fields → /settings/matters?tab=custom-fields
-    await page.goto(`${base}/settings/matters?tab=custom-fields`);
-    const bodyText = await page.locator("body").textContent();
+    const fieldName = `Test Field ${RUN_ID}`;
+    await openCustomFieldSettings(page);
+    await page.getByRole("tab", { name: "Clients" }).click();
 
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      test.skip(true, "Custom fields settings page not implemented");
-      return;
-    }
+    await page.getByRole("button", { name: "Add Field" }).click();
+    const dialog = page.getByRole("dialog", { name: "Add Field Definition" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Entity Type").selectOption("CUSTOMER");
+    await dialog.getByLabel("Name", { exact: true }).fill(fieldName);
+    await dialog.getByLabel("Field Type").selectOption("TEXT");
+    await dialog.getByRole("button", { name: "Create Field" }).click();
+    await expect(dialog).toBeHidden({ timeout: 10_000 });
 
-    const createBtn = page.getByRole("button", { name: /new|create|add/i }).first();
-    if (!(await createBtn.isVisible().catch(() => false))) {
-      test.skip(true, "Create custom field button not found");
-      return;
-    }
-
-    await createBtn.click();
-    await page.waitForTimeout(1000);
-
-    const dialog = page.getByRole("dialog").first();
-    if (await dialog.isVisible().catch(() => false)) {
-      // Fill field name
-      const nameInput = dialog.getByRole("textbox", { name: /name|label/i }).first();
-      if (await nameInput.isVisible().catch(() => false)) {
-        await nameInput.fill(`Test Field ${Date.now().toString(36).slice(-4)}`);
-      }
-
-      // Select type = text if there's a type selector
-      const typeSelect = dialog.locator('select[name*="type"]').first();
-      if (await typeSelect.isVisible().catch(() => false)) {
-        await typeSelect.selectOption({ label: /text/i });
-      }
-
-      // Select entity = customer if there's an entity selector
-      const entitySelect = dialog.locator('select[name*="entity"]').first();
-      if (await entitySelect.isVisible().catch(() => false)) {
-        // Phase 88 628A (ADR-357): label — entity option "Customers" → "Clients"
-        await entitySelect.selectOption({ label: /client/i });
-      }
-
-      // Submit
-      const submitBtn = dialog.getByRole("button", { name: /create|save|add/i }).last();
-      if (await submitBtn.isVisible().catch(() => false)) {
-        await submitBtn.click();
-        await page.waitForTimeout(1000);
-      }
-    }
+    // Listed under Clients
+    await page.getByRole("tab", { name: "Clients" }).click();
+    await expect(page.getByTestId("field-row").filter({ hasText: fieldName })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("Custom field appears on entity form", async ({ page }) => {
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${base}/clients`);
-    const bodyText = await page.locator("body").textContent();
-
-    if (bodyText?.includes("Something went wrong")) {
-      test.skip(true, "Customers page not accessible");
-      return;
-    }
-
-    // Open new customer dialog
     // Phase 87 S5 (ADR-344): label
-    const newBtn = page.getByRole("button", { name: /new.*client/i }).first();
-    if (!(await newBtn.isVisible({ timeout: 10000 }).catch(() => false))) {
-      test.skip(true, "New Client button not found");
-      return;
-    }
+    await page.getByRole("button", { name: "New Client" }).click();
+    const dialog = page.getByRole("dialog", { name: /^(Create Client|Additional Information)$/ });
+    await expect(dialog).toBeVisible();
 
-    await newBtn.click();
-    await page.waitForTimeout(1000);
+    // Step 1 requires a name and an email to advance
+    await dialog.getByRole("textbox", { name: "Name", exact: true }).fill(`CF Temp ${RUN_ID}`);
+    await dialog
+      .getByRole("textbox", { name: "Email", exact: true })
+      .fill(`cf-${RUN_ID}@example.com`);
+    await dialog.getByRole("button", { name: "Next" }).click();
 
-    // Navigate to step 2 (custom fields) if multi-step
-    const nextBtn = page.getByRole("button", { name: /next/i }).first();
-    if (await nextBtn.isVisible().catch(() => false)) {
-      // Fill required fields first
-      const nameInput = page.getByRole("textbox", { name: /name/i }).first();
-      if (await nameInput.isVisible().catch(() => false)) {
-        await nameInput.fill("Temp Customer");
-      }
-      await nextBtn.click();
-      await page.waitForTimeout(1000);
-    }
+    // Step 2 renders the auto-applied legal-za intake field
+    await expect(dialog.getByText("Step 2 of 2")).toBeVisible();
+    await expect(dialog.getByLabel(ID_FIELD)).toBeVisible();
 
-    // Check if custom fields are shown
-    const dialog = page.getByRole("dialog").first();
-    if (await dialog.isVisible().catch(() => false)) {
-      const dialogText = await dialog.textContent();
-      // Should have some fields visible
-      expect(dialogText?.length).toBeGreaterThan(0);
-    }
-
-    // Close without saving
+    // Abandon without creating the client
     await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
   });
 
   test("Custom field value persists", async ({ page }) => {
-    // Navigate to an existing customer's detail
+    // Own client (seed rows are read-only for specs)
+    const name = `CF Persist ${RUN_ID}`;
+    const token = await seedToken("alice");
+    // Phase 87 S2 (ADR-337): API path
+    const created = await fetch(`${BACKEND_URL}/api/clients`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, email: `cf-persist-${RUN_ID}@example.com` }),
+    });
+    expect(created.status).toBe(201);
+    const clientId = ((await created.json()) as { id: string }).id;
+    const value = `E2E-${RUN_ID}-7001015009087`;
+
     // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${base}/clients`);
-    const bodyText = await page.locator("body").textContent();
+    await page.goto(`${base}/clients/${clientId}`);
+    await expect(page.getByRole("heading", { level: 1, name, exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
+    await openGroupedTab(page, "details", "fields");
+    const panel = page.getByRole("tabpanel");
+    await panel.getByLabel(ID_FIELD).fill(value);
+    await panel.getByRole("button", { name: "Save Custom Fields" }).click();
+    await expect(panel.getByText("Saved successfully")).toBeVisible({ timeout: 10_000 });
 
-    if (bodyText?.includes("Something went wrong")) {
-      test.skip(true, "Customers page not accessible");
-      return;
-    }
-
-    const customerLink = page
-      .getByRole("link")
-      .filter({ hasText: /Kgosi|Naledi/i })
-      .first();
-    if (!(await customerLink.isVisible({ timeout: 10000 }).catch(() => false))) {
-      test.skip(true, "No seeded customers found");
-      return;
-    }
-
-    await customerLink.click();
-    await page.waitForTimeout(2000);
-
-    // Look for custom fields section
-    const content = page.locator('main, [role="main"], .flex-1').first();
-    await expect(content).toBeVisible();
-
-    // Verify page loaded without error
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    // Persisted: shown again after a reload, and stored on the client
+    await page.reload();
+    await openGroupedTab(page, "details", "fields");
+    await expect(page.getByRole("tabpanel").getByLabel(ID_FIELD)).toHaveValue(value, {
+      timeout: 10_000,
+    });
+    const client = await apiGet<{ customFields?: Record<string, unknown> }>(
+      `/api/clients/${clientId}`
+    );
+    expect(client.customFields?.id_passport_number).toBe(value);
   });
 });

@@ -1,0 +1,11 @@
+628F-BLOCKER: client "Export Data" → "Export Ready" has no download link (reproduced 2026-10-29, fresh e2e stack, Alice/owner, Acme Corp)
+Steps: client page → overflow "More actions" → "Export Data" → "Export Now"
+Observed (error-context aria snapshot, data-export-ready-no-href.png):
+  - dialog "Export Ready": paragraph "files · NaN undefined"; "Download Archive" rendered as plain text (an <a> without href,
+    so no link role); backend log: "Compliance export generated for customer 85c7e299… s3Key=…zip, size=7503 bytes, files=12"
+Cause: POST /api/clients/{id}/data-export answers 202 ExportResult(exportId, status, estimatedFiles)
+(backend/.../datarequest/ExportResult.java:6, DataExportController.java:22-27) but
+components/customers/data-export-dialog.tsx:129-139 renders exportResult.fileCount / totalSizeBytes / downloadUrl
+(frontend/lib/types/data-protection.ts:116-123 StandaloneExportResult) — fields the backend never sends.
+DIALOG: "Export Ready\n\nfiles · NaN undefined\n\nDownload Archive\n\nLink expires in 24 hours\n\nClose\nClose"
+ANCHOR: [

@@ -12,8 +12,9 @@
  * Run:
  *   cd frontend && PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test projects/project-budget --reporter=list
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { openGroupedTab } from "../../helpers/grouped-tabs";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
@@ -65,6 +66,15 @@ async function apiPut(path: string, body: object, token: string) {
   return { status: res.status, data: await res.json().catch(() => null) };
 }
 
+/** Opens the matter's Fees → Fee estimate sub-tab and returns the (unnamed) tab panel. */
+async function openFeeEstimateTab(page: Page, projectId: string) {
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/matters/${projectId}`);
+  // Phase 87 S8 (ADR-344): label — Budget → Fee estimate (§12.6.5); a sub-tab of the Fees group
+  await openGroupedTab(page, "finance", "budget");
+  return page.getByRole("tabpanel");
+}
+
 // ═══════════════════════════════════════════════════════════════════
 //  BUDGET-01: Project Budget
 // ═══════════════════════════════════════════════════════════════════
@@ -94,17 +104,17 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
     // Add Carol as a project member for time logging
     const members = (await apiGet("/api/members", token)) as Array<{ id: string; name: string }>;
     const carol = members.find((m) => m.name?.includes("Carol"));
-    if (carol) {
-      await apiPost(
-        // Phase 87 S1 (ADR-337): API path
-        `/api/matters/${projectId}/members`,
-        {
-          memberId: carol.id,
-          projectRole: "contributor",
-        },
-        token
-      );
-    }
+    expect(carol, "seed member Carol").toBeDefined();
+    const added = await apiPost(
+      // Phase 87 S1 (ADR-337): API path
+      `/api/matters/${projectId}/members`,
+      {
+        memberId: carol!.id,
+        projectRole: "contributor",
+      },
+      token
+    );
+    expect(added.status).toBeLessThan(300);
 
     // Create task for time logging
     const { data: task } = await apiPost(
@@ -120,32 +130,12 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
   test("1. View budget tab on project", async ({ page }) => {
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-    await expect(page.getByText(PROJECT_NAME).first()).toBeVisible({ timeout: 10000 });
+    const panel = await openFeeEstimateTab(page, projectId);
+    await expect(page.getByRole("heading", { level: 1, name: PROJECT_NAME })).toBeVisible();
 
-    // Click Budget tab
-    // Phase 87 S8 (ADR-344): label — Budget → Fee estimate (§12.6.5)
-    const budgetTab = page.getByRole("tab", { name: "Fee estimate" });
-    const hasTab = await budgetTab.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasTab) {
-      // Budget tab might have a different name or not be visible
-      const anyBudgetTab = page.getByText("Budget").first();
-      const hasBudgetText = await anyBudgetTab.isVisible({ timeout: 3000 }).catch(() => false);
-      if (!hasBudgetText) {
-        test.skip(true, "Budget tab not visible on project detail page");
-        return;
-      }
-      await anyBudgetTab.click();
-    } else {
-      await budgetTab.click();
-    }
-
-    await page.waitForTimeout(1000);
-
-    // Budget tab should render (may show empty state or configuration form)
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    // A fresh matter has no fee estimate: the empty state offers to set one
+    await expect(panel.getByText("No fee estimate set")).toBeVisible();
+    await expect(panel.getByRole("button", { name: "Set fee estimate" })).toBeVisible();
   });
 
   test("2. Set project budget via API and verify in UI", async ({ page }) => {
@@ -170,21 +160,15 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
     expect(Number(data.budgetAmount)).toBe(50000);
     expect(data.budgetCurrency).toBe("ZAR");
 
-    // Verify in UI
+    // Verify in UI: the Hours and Amount sections render the estimate
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-
-    // Phase 87 S8 (ADR-344): label — Budget → Fee estimate (§12.6.5)
-    const budgetTab = page.getByRole("tab", { name: "Fee estimate" });
-    const hasTab = await budgetTab.isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasTab) {
-      await budgetTab.click();
-      await page.waitForTimeout(1000);
-    }
-
-    // Should see budget information (hours, amount, or status)
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    const panel = await openFeeEstimateTab(page, projectId);
+    await expect(panel.getByRole("heading", { name: "Hours", exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(panel.getByRole("heading", { name: "Amount", exact: true })).toBeVisible();
+    await expect(panel).toContainText("100h");
+    await expect(panel.getByText("No fee estimate set")).toHaveCount(0);
   });
 
   test("3. Budget shows usage after logging time", async ({ page }) => {
@@ -192,7 +176,7 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
     const token = await getToken("carol");
     const today = new Date().toISOString().split("T")[0];
 
-    await apiPost(
+    const logged = await apiPost(
       `/api/tasks/${taskId}/time-entries`,
       {
         date: today,
@@ -202,6 +186,7 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
       },
       token
     );
+    expect(logged.status).toBe(201);
 
     // Verify budget status via API — should show consumed hours
     const aliceToken = await getToken("alice");
@@ -211,20 +196,12 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
     expect(Number(budgetStatus.hoursConsumed)).toBeGreaterThanOrEqual(2);
     expect(Number(budgetStatus.hoursRemaining)).toBeLessThanOrEqual(98);
 
-    // Verify in UI — budget tab should show consumed/remaining
+    // Verify in UI: 2h of the 100h estimate consumed → 98h remaining
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters/${projectId}`);
-
-    // Phase 87 S8 (ADR-344): label — Budget → Fee estimate (§12.6.5)
-    const budgetTab = page.getByRole("tab", { name: "Fee estimate" });
-    const hasTab = await budgetTab.isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasTab) {
-      await budgetTab.click();
-      await page.waitForTimeout(1000);
-    }
-
-    // The budget panel should show usage information — just verify no crash
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    const panel = await openFeeEstimateTab(page, projectId);
+    await expect(panel.getByRole("heading", { name: "Hours", exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(panel).toContainText("98h");
   });
 });

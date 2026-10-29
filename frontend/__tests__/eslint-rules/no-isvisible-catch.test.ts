@@ -148,17 +148,23 @@ describe("no-isvisible-catch — eslint.config.mjs wiring", { timeout: 30_000 },
     "e2e/tests/legal-depth-ii/__probe__.spec.ts",
     "e2e/helpers/__probe__.ts",
     "e2e/fixtures/__probe__.ts",
+    "e2e/tests/customers/__probe__.spec.ts",
+    "e2e/tests/projects/__probe__.spec.ts",
+    "e2e/tests/settings/__probe__.spec.ts",
+    "e2e/tests/navigation/__probe__.spec.ts",
   ])("is enforced in %s", async (file) => {
     expect(await ruleMessages(file)).toEqual(["swallowed"]);
   });
 
-  // Deliberate scope (Phase 88 628E R-2 / OD-2 (b)): the rule covers the two legal suites, helpers
-  // and fixtures; 628F widens it to e2e/** when it sweeps the default-config specs. Flip these
-  // assertions when widening.
-  it.each(["e2e/tests/settings/__probe__.spec.ts", "components/__probe__.tsx"])(
-    "is not (yet) enforced in %s",
-    async (file) => {
-      expect(await ruleMessages(file)).toEqual([]);
-    }
-  );
+  // Interim scope (Phase 88 628F, builder 1 of 2): the rule covers the legal suites, helpers,
+  // fixtures and the customers/projects/settings/navigation suites. Builder 2 widens it to e2e/**
+  // and moves the e2e pins below into the list above. The KC-only demo scripts stay ignored (R-2).
+  it.each([
+    "e2e/tests/documents/__probe__.spec.ts",
+    "e2e/tests/demo-full-90day.spec.ts",
+    "e2e/tests/demo-recording.spec.ts",
+    "components/__probe__.tsx",
+  ])("is not (yet) enforced in %s", async (file) => {
+    expect(await ruleMessages(file)).toEqual([]);
+  });
 });

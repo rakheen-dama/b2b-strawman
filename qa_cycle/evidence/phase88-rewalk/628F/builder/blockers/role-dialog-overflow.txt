@@ -1,0 +1,5 @@
+628F-BLOCKER: Create Role dialog overflows a 1280x720 viewport (reproduced 2026-10-29, fresh e2e stack, Alice/owner)
+Steps: /org/e2e-test-org/settings/firm?tab=roles → New Role
+VIEWPORT {"width":1280,"height":720} DIALOG BOX {"x":396.43109130859375,"y":-59.585479736328125,"width":487.13775634765625,"height":839.1709289550781} CREATE BTN BOX {"x":787.4287109375,"y":721.547607421875,"width":72.3541259765625,"height":34.2518310546875} DIALOG SCROLL {"scrollHeight":882,"clientHeight":882,"overflowY":"visible"}
+  1 passed (1.1s)
+The dialog is 839px tall and positioned at y=-59 (title clipped), overflow-y visible, so the 'Create' submit at y=721 is below the viewport and cannot be scrolled to; Playwright: 'element is outside of the viewport' (settings-1.log). Cause: components/roles/role-dialog.tsx:105 <DialogContent> has no max-h / overflow-y-auto (cf. FieldDefinitionDialog's max-h-[85vh] overflow-y-auto) while the capability checklist grew to 11+ items.

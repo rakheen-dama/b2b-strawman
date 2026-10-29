@@ -62,16 +62,20 @@ const CONVEYANCING_FIELDS: Record<string, string> = {
 };
 
 /** FICA checklist items of the "Legal Individual Client Onboarding" checklist (dependency order). */
-const FICA_ITEMS = [
-  "Proof of Identity",
-  "Proof of Address",
-  "Beneficial Ownership Declaration",
-  "Source of Funds Declaration",
-  "Engagement Letter Signed",
-  "Conflict Check Performed",
-  "Power of Attorney Signed",
-  "FICA Risk Assessment",
-  "Sanctions Screening",
+/**
+ * FICA checklist items of "Legal Individual Client Onboarding" (dependency order; pack.json) and
+ * whether each needs a linked document — same pack and flags as the legal-lifecycle Day 1-3 table.
+ */
+const FICA_ITEMS: { name: string; requiresDocument: boolean }[] = [
+  { name: "Proof of Identity", requiresDocument: true },
+  { name: "Proof of Address", requiresDocument: true },
+  { name: "Beneficial Ownership Declaration", requiresDocument: true },
+  { name: "Source of Funds Declaration", requiresDocument: true },
+  { name: "Engagement Letter Signed", requiresDocument: true },
+  { name: "Conflict Check Performed", requiresDocument: false },
+  { name: "Power of Attorney Signed", requiresDocument: true },
+  { name: "FICA Risk Assessment", requiresDocument: false },
+  { name: "Sanctions Screening", requiresDocument: false },
 ];
 
 async function openMatterFieldsTab(page: Page) {
@@ -135,12 +139,15 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await openGroupedTab(page, "compliance", "onboarding");
     const panel = page.getByRole("tabpanel");
     await expect(panel).toContainText("Legal Individual Client Onboarding", { timeout: 15_000 });
-    for (const itemName of FICA_ITEMS) {
+    for (const { name: itemName, requiresDocument } of FICA_ITEMS) {
       const item = panel
         .locator("div.rounded-lg.border.p-3")
         .filter({ has: page.getByText(itemName, { exact: true }) });
+      // "Requires document:" is static row content (rendered before the click): pin it per item
+      // (Phase 88 628F R-7) instead of probing it after "Mark Complete"
+      await expect(item.getByText(/^Requires document:/)).toHaveCount(requiresDocument ? 1 : 0);
       await item.getByRole("button", { name: "Mark Complete" }).click();
-      if (await item.getByText(/^Requires document:/).isVisible()) {
+      if (requiresDocument) {
         // Link the certified FICA pack uploaded in part 1
         const documentPicker = item.getByRole("combobox");
         await documentPicker.click();

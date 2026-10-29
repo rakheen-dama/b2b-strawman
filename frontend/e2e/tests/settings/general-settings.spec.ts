@@ -8,87 +8,82 @@
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
  *   2. Seed data present
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { apiGet } from "../../helpers/seed";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
 
+async function openGeneralSettings(page: Page) {
+  // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general (General is the Firm family's first tab; /settings redirects to /settings/firm)
+  await page.goto(`${base}/settings/firm?tab=general`);
+  await expect(page.getByRole("heading", { level: 1, name: /^General/ })).toBeVisible({
+    timeout: 10_000,
+  });
+}
+
+/** Saves the General form and waits for the confirmation. */
+async function saveSettings(page: Page) {
+  await page.getByRole("button", { name: "Save Settings" }).click();
+  await expect(page.getByText("Settings saved successfully.")).toBeVisible({ timeout: 10_000 });
+}
+
 test.describe("SET-01: General Settings", () => {
+  // Brand colour and footer are tenant-wide (portal, PDFs): restore them after the file (R-5)
+  let original: { brandColor: string; documentFooterText: string };
+
+  test.beforeAll(async () => {
+    const settings = await apiGet<{ brandColor: string | null; documentFooterText: string | null }>(
+      "/api/settings"
+    );
+    original = {
+      brandColor: settings.brandColor ?? "",
+      documentFooterText: settings.documentFooterText ?? "",
+    };
+  });
+
+  test.afterAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await loginAs(page, "alice");
+    await openGeneralSettings(page);
+    await page.getByLabel("Brand Color", { exact: true }).fill(original.brandColor);
+    await page.getByLabel("Document Footer Text").fill(original.documentFooterText);
+    await saveSettings(page);
+    await page.close();
+  });
+
   test.beforeEach(async ({ page }) => {
     await loginAs(page, "alice");
   });
 
   test("View org name and currency", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general (General is the Firm family's first tab; /settings redirects to /settings/firm)
-    await page.goto(`${base}/settings/firm?tab=general`);
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
-
-    // General settings page heading is "General"
-    await expect(page.locator("h1").filter({ hasText: "General" })).toBeVisible({ timeout: 10000 });
-
-    // Settings page should show currency section (h2: "Currency")
-    await expect(page.locator("h2").filter({ hasText: "Currency" })).toBeVisible({
-      timeout: 10000,
-    });
+    await openGeneralSettings(page);
+    await expect(page.getByRole("heading", { level: 2, name: "Currency" })).toBeVisible();
   });
 
   test("Update brand colour", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general
-    await page.goto(`${base}/settings/firm?tab=general`);
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await openGeneralSettings(page);
+    // The hex text input (the native colour swatch next to it is unlabelled)
+    const colour = page.getByLabel("Brand Color", { exact: true });
+    await colour.fill("#1a8f6e");
+    await saveSettings(page);
 
-    // Look for "Brand Color" label in the Branding section
-    const colourLabel = page.getByLabel("Brand Color");
-    const colourVisible = await colourLabel.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!colourVisible) {
-      test.skip(true, "Brand Color input not visible on settings page");
-      return;
-    }
-
-    // Fill the hex input
-    await colourLabel.fill("#1a8f6e");
-
-    // Look for "Save Settings" button
-    const saveBtn = page.getByRole("button", { name: /Save Settings/i });
-    const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-
-    if (hasSave) {
-      await saveBtn.click();
-      await page.waitForTimeout(1000);
-      // Reload and verify persistence
-      await page.reload();
-      await expect(page.locator("body")).not.toContainText("Something went wrong");
-    }
+    await page.reload();
+    await expect(page.getByLabel("Brand Color", { exact: true })).toHaveValue("#1a8f6e", {
+      timeout: 10_000,
+    });
   });
 
   test("Update document footer", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/general → /settings/firm?tab=general
-    await page.goto(`${base}/settings/firm?tab=general`);
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
-
-    // Look for "Document Footer Text" label (textarea with id="footer-text")
-    const footerInput = page.getByLabel("Document Footer Text");
-    const footerVisible = await footerInput.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!footerVisible) {
-      test.skip(true, "Document footer setting not visible on settings page");
-      return;
-    }
-
     const testFooter = `Test Footer ${Date.now()}`;
-    await footerInput.fill(testFooter);
+    await openGeneralSettings(page);
+    await page.getByLabel("Document Footer Text").fill(testFooter);
+    await saveSettings(page);
 
-    const saveBtn = page.getByRole("button", { name: /Save Settings/i });
-    const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-
-    if (hasSave) {
-      await saveBtn.click();
-      await page.waitForTimeout(1000);
-      await page.reload();
-      await expect(page.locator("body")).not.toContainText("Something went wrong");
-    }
+    await page.reload();
+    await expect(page.getByLabel("Document Footer Text")).toHaveValue(testFooter, {
+      timeout: 10_000,
+    });
   });
 });

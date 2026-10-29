@@ -1,18 +1,29 @@
 /**
  * SET-03: Tax Settings — Playwright E2E Tests
  *
- * Tests tax rate management: view rates, create new rate,
- * verify tax applies to invoices.
+ * Tests tax rate management: view rates (legal-za VAT 15%), create a rate, and the VAT line on
+ * the boot seed's sent fee note (read-only).
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
  *   2. Seed data present
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { SEED, acmeId, apiGet } from "../../helpers/seed";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
+
+const RUN_ID = Date.now().toString(36).slice(-4);
+
+async function openTaxSettings(page: Page) {
+  // Phase 87 S9 (ADR-344): /settings/tax → /settings/fees?tab=tax
+  await page.goto(`${base}/settings/fees?tab=tax`);
+  await expect(page.getByRole("heading", { level: 1, name: "Tax Settings" })).toBeVisible({
+    timeout: 10_000,
+  });
+}
 
 test.describe("SET-03: Tax Settings", () => {
   test.beforeEach(async ({ page }) => {
@@ -20,97 +31,48 @@ test.describe("SET-03: Tax Settings", () => {
   });
 
   test("View tax rates", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/tax → /settings/fees?tab=tax
-    await page.goto(`${base}/settings/fees?tab=tax`);
-    const body = page.locator("body");
-
-    // Phase 87 S9 (ADR-344): the page is Settings › Fees & Trust › Tax (/settings/fees?tab=tax)
-    const hasError = await body.textContent().then((t) => t?.includes("Something went wrong"));
-    if (hasError) {
-      // Try settings page directly — tax might be a tab
-      // Phase 87 S9 (ADR-344): fallback lands on the Fees & Trust family
-      await page.goto(`${base}/settings/fees`);
-      await expect(body).not.toContainText("Something went wrong");
-    }
-
-    // Should show tax rate information (e.g., VAT 15%)
-    const content = page.locator('main, [role="main"], .flex-1').first();
-    const contentText = await content.textContent({ timeout: 10000 });
-
-    if (!contentText?.match(/tax|vat/i)) {
-      test.skip(true, "Tax settings page not implemented");
-      return;
-    }
-
-    await expect(content).toContainText(/tax|vat/i);
+    await openTaxSettings(page);
+    // legal-za seeds "VAT — Standard" at 15% (exact cell: a row's "Deactivate" also contains "vat")
+    const vat = page
+      .getByRole("row")
+      .filter({ has: page.getByRole("cell", { name: "VAT — Standard", exact: true }) });
+    await expect(vat).toContainText("15.00%");
+    await expect(page.getByRole("button", { name: "Add Tax Rate" })).toBeVisible();
   });
 
   test("Create tax rate", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/tax → /settings/fees?tab=tax
-    await page.goto(`${base}/settings/fees?tab=tax`);
-    const body = page.locator("body");
+    const rateName = `E2E Rate ${RUN_ID}`;
+    await openTaxSettings(page);
 
-    const is404 = await body
-      .textContent()
-      .then((t) => t?.includes("Something went wrong") || t?.includes("404"));
-    if (is404) {
-      test.skip(true, "Tax settings page not implemented");
-      return;
-    }
+    await page.getByRole("button", { name: "Add Tax Rate" }).click();
+    const dialog = page.getByRole("dialog", { name: "Add Tax Rate" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Name", { exact: true }).fill(rateName);
+    await dialog.getByLabel("Rate (%)").fill("10");
+    await dialog.getByRole("button", { name: "Create", exact: true }).click();
+    await expect(dialog).toBeHidden({ timeout: 10_000 });
 
-    // Look for a "New" or "Add" button for tax rates
-    const addBtn = page.getByRole("button", { name: /new|add|create/i }).first();
-    const btnVisible = await addBtn.isVisible().catch(() => false);
-
-    if (!btnVisible) {
-      test.skip(true, "Add tax rate button not found");
-      return;
-    }
-
-    await addBtn.click();
-    await page.waitForTimeout(1000);
-
-    // Fill tax rate form if dialog appeared
-    const dialog = page.getByRole("dialog").first();
-    if (await dialog.isVisible().catch(() => false)) {
-      const nameInput = dialog.getByRole("textbox", { name: /name/i }).first();
-      if (await nameInput.isVisible().catch(() => false)) {
-        await nameInput.fill("Test Tax Rate");
-      }
-      const rateInput = dialog.locator('input[name*="rate"], input[name*="percentage"]').first();
-      if (await rateInput.isVisible().catch(() => false)) {
-        await rateInput.fill("10");
-      }
-    }
+    await expect(
+      page.getByRole("row").filter({ has: page.getByRole("cell", { name: rateName, exact: true }) })
+    ).toContainText("10.00%", { timeout: 10_000 });
   });
 
   test("Tax applies to invoices", async ({ page }) => {
-    // Navigate to invoices and verify tax calculation
+    // The boot seed's approved + sent fee note (Acme Corp / Website Redesign) carries VAT
+    const notes = await apiGet<{ notes: string; invoiceNumber: string | null }[]>(
+      `/api/invoices?clientId=${await acmeId()}`
+    );
+    const sent = notes.find((n) => n.notes === SEED.feeNoteSentNotes);
+    expect(sent?.invoiceNumber, "seeded sent fee note").toMatch(/^INV-\d{4}$/);
+
     await page.goto(`${base}/invoices`);
-    const body = page.locator("body");
-    await expect(body).not.toContainText("Something went wrong");
-
-    const content = page.locator('main, [role="main"], .flex-1').first();
-    const contentText = await content.textContent({ timeout: 10000 });
-
-    // Phase 87 S5 (ADR-344): label
-    if (!contentText?.match(/fee note/i)) {
-      test.skip(true, "Invoices page not available for tax verification");
-      return;
-    }
-
-    // Click on a seeded invoice to check for tax line
-    const invoiceLink = page.getByRole("link", { name: /INV-/i }).first();
-    const hasInvoice = await invoiceLink.isVisible().catch(() => false);
-
-    if (!hasInvoice) {
-      test.skip(true, "No seeded invoices available to verify tax");
-      return;
-    }
-
-    await invoiceLink.click();
-    await page.waitForTimeout(2000);
-    // Invoice detail should show tax/VAT line
-    await expect(page.locator("body")).toContainText(/tax|vat/i);
+    const link = page.getByRole("link", { name: sent!.invoiceNumber!, exact: true });
+    await expect(link).toBeVisible({ timeout: 10_000 });
+    await link.click();
+    await expect(page).toHaveURL(/\/invoices\/[0-9a-f-]{36}/);
+    // Per-line tax breakdown: "<rate name> (<percent>%)" — legal-za's "VAT — Standard" at 15%
+    await expect(page.getByText(/^VAT — Standard \(15(\.0+)?%\)$/).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });

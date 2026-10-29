@@ -32,10 +32,12 @@ test.describe("NAV-01: Sidebar Navigation", () => {
   for (const item of NAV_ITEMS) {
     test(`${item.name} page loads`, async ({ page }) => {
       await page.goto(item.path);
-      await expect(page.locator("body")).not.toContainText("Something went wrong");
-      // Page should have some content (not blank)
-      const bodyText = await page.locator('main, [role="main"], .flex-1').first().textContent();
-      expect(bodyText?.length).toBeGreaterThan(0);
+      // The page's own content renders in the org layout's <main> (not the error boundary)
+      const main = page.locator("#main-content");
+      await expect(main.getByRole("heading", { level: 1 }).first()).toBeVisible({
+        timeout: 15_000,
+      });
+      await expect(main).not.toContainText("Something went wrong");
     });
   }
 });

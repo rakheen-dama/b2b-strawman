@@ -2,7 +2,7 @@
  * PACK-01: Pack Lifecycle -- Playwright E2E Tests
  *
  * Tests: seeded pack is installed with its templates, editing a pack template blocks
- *        uninstall, reverting the template clears the "edited" block.
+ *        uninstall, reverting the template's content clears the "edited" block.
  *
  * Phase 86 (Epic 604): the e2e seed provisions legal-za, so the legal-za template pack (like
  * every other pack in the catalogue — common, compliance-za) is auto-installed. There is no
@@ -58,16 +58,27 @@ async function findTemplateByName(
   return detailRes.json();
 }
 
+/** Marker the edit step adds to the template content (the pack hash then no longer matches). */
+const E2E_EDIT_MARKER = "_e2e_modified";
+
 /**
- * Reset a template to its pack original via API (best-effort cleanup).
+ * Reverts the pack template to its pack content by PUT-ing the content back without the e2e edit
+ * marker, so its content hash matches the pack again. (POST /api/templates/{id}/reset only resets
+ * ORG_CUSTOM clones — a pack template answers 400 "Only ORG_CUSTOM templates can be reset".)
+ * Returns the PUT status, or null when the template carried no e2e edit.
  */
-async function resetTemplateViaApi(token: string, name: string): Promise<void> {
+async function revertTemplateViaApi(token: string, name: string): Promise<number | null> {
   const template = await findTemplateByName(token, name);
-  if (!template) return;
-  await fetch(`${BACKEND_URL}/api/templates/${template.id}/reset`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
+  expect(template, `template "${name}"`).toBeTruthy();
+  if (!(E2E_EDIT_MARKER in template!.content)) return null;
+  const { [E2E_EDIT_MARKER]: _marker, ...content } = template!.content;
+  void _marker;
+  const res = await fetch(`${BACKEND_URL}/api/templates/${template!.id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ name: template!.name, content, css: template!.css ?? undefined }),
   });
+  return res.status;
 }
 
 /**
@@ -87,7 +98,7 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
   // Cleanup: never leave the pack template edited, so reruns start clean
   test.afterAll(async () => {
     const token = await getApiToken("alice");
-    await resetTemplateViaApi(token, LEGAL_TEMPLATE_NAME);
+    await revertTemplateViaApi(token, LEGAL_TEMPLATE_NAME);
   });
 
   // ---- Test 1: Seeded pack is installed and its templates exist ----
@@ -117,7 +128,10 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
       timeout: 10000,
     });
     await expect(page.locator("body")).not.toContainText("Something went wrong");
-    await expect(page.getByText(LEGAL_TEMPLATE_NAME)).toBeVisible({ timeout: 10000 });
+    // Each template row is a link named after it (plus a description that may repeat the words)
+    await expect(page.getByRole("link", { name: LEGAL_TEMPLATE_NAME, exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   // ---- Test 2: Edit blocks uninstall, revert clears the edit block (479.3) ----
@@ -128,7 +142,7 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
 
     // Step 1: Edit a pack template via the backend API to trigger hash mismatch
     const token = await getApiToken("alice");
-    await resetTemplateViaApi(token, LEGAL_TEMPLATE_NAME);
+    await revertTemplateViaApi(token, LEGAL_TEMPLATE_NAME);
     const template = await findTemplateByName(token, LEGAL_TEMPLATE_NAME);
     expect(template).toBeTruthy();
     const templateId = template!.id;
@@ -141,7 +155,7 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
       },
       body: JSON.stringify({
         name: template!.name,
-        content: { ...template!.content, _e2e_modified: true },
+        content: { ...template!.content, [E2E_EDIT_MARKER]: true },
         css: template!.css ?? undefined,
       }),
     });
@@ -160,19 +174,16 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     await expect(uninstallBtn).toBeDisabled({ timeout: 10000 });
 
     // The button is wrapped in a <span> with TooltipTrigger
-    const tooltipTrigger = installedCard.locator("span").filter({ has: uninstallBtn });
+    // (its parent: a focusable span, since a disabled button fires no pointer events)
+    const tooltipTrigger = uninstallBtn.locator("..");
     await tooltipTrigger.hover();
 
     const tooltipContent = page.locator("[data-radix-popper-content-wrapper]");
     await expect(tooltipContent).toBeVisible({ timeout: 3000 });
     await expect(tooltipContent).toContainText(/edited|modified/i);
 
-    // Step 3: Revert the template via the reset API endpoint
-    const resetRes = await fetch(`${BACKEND_URL}/api/templates/${templateId}/reset`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    expect(resetRes.ok).toBeTruthy();
+    // Step 3: Revert the template to its pack content (the hash matches the pack again)
+    expect(await revertTemplateViaApi(token, LEGAL_TEMPLATE_NAME)).toBe(200);
 
     // Step 4: The "edited" gate is cleared. Other gates (documents generated from, or clones
     // of, legal templates by sibling specs) may still legitimately block uninstall, so assert

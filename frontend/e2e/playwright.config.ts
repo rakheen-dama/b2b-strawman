@@ -2,6 +2,15 @@ import { defineConfig, devices } from "@playwright/test";
 
 const authMode = process.env.E2E_AUTH_MODE || "mock";
 
+// Phase 88 628F (P-1, U22): the legal suites run under their own configs
+// (playwright.legal-*.config.ts) with run state and serial chains; the default config must never
+// re-run them against a populated tenant. A project-level testIgnore replaces the config-level one,
+// so both chromium projects list them.
+const LEGAL_SUITES = ["**/legal-lifecycle/**", "**/legal-depth-ii/**"];
+// KC-only demo recording scripts: they cannot run on the mock stack; not converted (628F R-2).
+// Follow-up: convert under KC-STACK or delete.
+const KC_ONLY_SCRIPTS = ["**/demo-full-90day.spec.ts", "**/demo-recording.spec.ts"];
+
 export default defineConfig({
   testDir: "./tests",
   globalTimeout: 600_000,
@@ -27,7 +36,7 @@ export default defineConfig({
           {
             name: "chromium",
             use: { ...devices["Desktop Chrome"] },
-            testIgnore: /keycloak\/onboarding\.spec\.ts/,
+            testIgnore: [/keycloak\/onboarding\.spec\.ts/, ...LEGAL_SUITES],
             dependencies: ["kc-setup"],
           },
         ]
@@ -35,7 +44,7 @@ export default defineConfig({
           {
             name: "chromium",
             use: { ...devices["Desktop Chrome"] },
-            testIgnore: ["**/keycloak/**"],
+            testIgnore: ["**/keycloak/**", ...LEGAL_SUITES, ...KC_ONLY_SCRIPTS],
           },
         ],
 });

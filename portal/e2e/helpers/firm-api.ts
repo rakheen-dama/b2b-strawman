@@ -13,7 +13,11 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 const ORG_SLUG = process.env.PORTAL_ORG_SLUG || "e2e-test-org";
 
-/** The boot seed (compose/seed/seed.sh; names = frontend/e2e/helpers/seed.ts). */
+/**
+ * The boot seed, HAND-COPIED (the portal cannot import frontend/e2e — 628B R-1). Source of truth:
+ * frontend/e2e/helpers/seed.ts (the names) and the compose/seed/** scripts that create the rows
+ * (compose/seed/seed.sh and the scripts it runs). A rename or new row there MUST be mirrored here.
+ */
 export const SEED = {
   org: "e2e-test-org",
   orgName: "E2E Test Organization",

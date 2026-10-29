@@ -12,7 +12,12 @@ const ORG_SLUG = process.env.PORTAL_ORG_SLUG || "e2e-test-org";
  * (PortalLoginRateLimiter; in-memory, cleared only by restarting the backend;
  * a 4th call is a 429 before any lookup). Playwright restarts the worker after
  * each failed test, so a per-worker exchange runs out of links on any run
- * with 3+ failures. Exchanging here (once, in the
+ * with 3+ failures. Budget across invocations: the isolation spec
+ * (frontend/e2e/tests/portal/portal-data-isolation.spec.ts) spends 2 per-email
+ * requests and this exchange 1, so a second `test:e2e:portal` within 15 min
+ * fails HERE with the 429 unless `docker restart e2e-backend` runs first (on
+ * top of the 5-min per-contact token wait) — see the run order in
+ * playwright.portal.config.ts. Exchanging here (once, in the
  * runner process) and passing the session through the environment lets every
  * worker reuse it. Env vars set in globalSetup are inherited by the workers.
  *

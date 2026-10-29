@@ -56,6 +56,17 @@ import { defineConfig, devices } from "@playwright/test";
  * The boot seed's request send spends 1 token; each `test:e2e:portal*` run
  * spends 1 request + 1 token in globalSetup and 1 token in the 90-day Day 0
  * setup (a run-unique request send).
+ * E2E-PORTAL run order and its per-email budget (3 / 15 min, in-memory):
+ *   1. frontend/e2e/tests/portal/portal-data-isolation.spec.ts with
+ *      KGOSI_EMAIL=contact@acme.example.com — 2 request-link calls (one per
+ *      test) = 2 per-email requests + 2 per-contact tokens;
+ *   2. `pnpm test:e2e:portal` — globalSetup = the 3rd per-email request.
+ *   A SECOND `test:e2e:portal` (re-runnability) within 15 min of step 1 is a
+ *   4th request: globalSetup fails with the 429. Before it, run
+ *   `docker restart e2e-backend` (or wait 15 min) — IN ADDITION to waiting
+ *   out the 5-min per-contact token window (a restart does not clear that).
+ *   Observed in the 628G fresh-stack gate: the second run failed in
+ *   globalSetup, and passed after the backend restart.
  *
  * Per-suite scripts (package.json; select by --project, never by a
  * positional path filter — a checkout path containing "Projects" would match):

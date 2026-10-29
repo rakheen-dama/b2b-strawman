@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
 import { SEED, portalApiGet } from "../../helpers/firm-api";
 
@@ -21,8 +21,9 @@ import { SEED, portalApiGet } from "../../helpers/firm-api";
  * from the e2e boot seed (web-first; no settle delay) before the snapshot, so
  * a capture of /login or a loading skeleton fails instead of passing.
  *
- * Future work: mask dynamic timestamps/counts via selectors once the pages
- * expose `data-testid` markers for them.
+ * Run-dependent regions (the trust balance, the trust transactions and the
+ * home "Last trust movement" card change with every 90-day Day 21 deposit) are
+ * masked in the capture; the strict assertions in `ready` run before it.
  */
 
 type Breakpoint = {
@@ -48,6 +49,12 @@ async function sessionJwt(): Promise<string> {
   return jwt;
 }
 
+/** A home-page card by its title (the @b2mash/ui Card root is `data-slot="card"`). */
+const homeCard = (page: Page, title: string) =>
+  page.locator('[data-slot="card"]').filter({
+    has: page.locator('[data-slot="card-title"]', { hasText: title }),
+  });
+
 const h1 = (page: Page, name: string) =>
   expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
 
@@ -61,16 +68,46 @@ const PAGES: Array<{
   path: string;
   name: string;
   ready: (page: Page) => Promise<void>;
+  /** Run-dependent regions to mask in the capture (asserted in `ready` first). */
+  mask?: (page: Page) => Locator[];
 }> = [
   {
     path: "/home",
     name: "home-populated",
     ready: async (page) => {
       await h1(page, "Home");
+      // Positive count: the card falls back to 0 when /portal/requests fails
+      // (app/(authenticated)/home/page.tsx), and seeded REQ-0001 (SENT, read-only)
+      // keeps at least one request pending.
       await expect(
         page.getByRole("link", { name: /Pending info requests/ }).locator("p"),
-      ).toHaveText(/^\d+$/);
+      ).toHaveText(/^[1-9]\d*$/);
+      // Fee-note card past "Loading...": the seed's SENT INV-0001 means it
+      // lists at least one fee note.
+      await expect(
+        homeCard(page, "Recent fee notes")
+          .locator('a[href^="/invoices/"]')
+          .first(),
+      ).toBeVisible();
+      // Trust card past "Loading...", in the state the portal API reports
+      // (the card also falls back to "No recent activity" on a failed fetch).
+      const movements = await portalApiGet<unknown[]>(
+        "/portal/trust/movements?limit=1",
+        await sessionJwt(),
+      );
+      const trust = homeCard(page, "Last trust movement");
+      if (movements.length > 0) {
+        await expect(trust).toContainText(/\d/);
+        await expect(trust).not.toContainText("No recent activity");
+      } else {
+        await expect(trust).toContainText("No recent activity");
+      }
     },
+    mask: (page) => [
+      homeCard(page, "Last trust movement").locator(
+        '[data-slot="card-content"]',
+      ),
+    ],
   },
   {
     path: "/trust",
@@ -97,6 +134,13 @@ const PAGES: Array<{
         }
       }
     },
+    // Balance + transactions grow with every Day 21 deposit. By label, not by
+    // table role: below md the list renders as a <ul aria-label="Trust
+    // transactions"> (components/trust/transaction-list.tsx).
+    mask: (page) => [
+      page.getByLabel("Current balance"),
+      page.getByLabel("Trust transactions"),
+    ],
   },
   {
     path: "/deadlines",
@@ -147,9 +191,7 @@ const PAGES: Array<{
     name: "profile",
     ready: async (page) => {
       await h1(page, "Profile");
-      await expect(
-        page.getByText(SEED.contactEmail, { exact: true }),
-      ).toBeVisible();
+      await expect(page.getByText(PORTAL_EMAIL, { exact: true })).toBeVisible();
     },
   },
 ];
@@ -196,8 +238,7 @@ for (const bp of BREAKPOINTS) {
           fullPage: true,
           maxDiffPixelRatio: 0.01,
           animations: "disabled",
-          // Future work: add `mask: [page.locator('[data-dynamic="timestamp"]'), ...]`
-          // once portal pages tag volatile regions with data-dynamic selectors.
+          mask: p.mask?.(page) ?? [],
         });
       });
     }

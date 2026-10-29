@@ -13,6 +13,11 @@ const eslintConfig = defineConfig([
   // Playwright strict assertions (Phase 88 628G, R-8; frontend twin 628E/628F): no `.catch()` on
   // isVisible & co. and no ignored `isVisible({ timeout })` in any portal e2e file. See
   // frontend/e2e/AUTOMATION-NOTES.md › Assertion rules.
+  // e2e/eslint/no-isvisible-catch.mjs is INTENTIONALLY a byte-identical copy of
+  // frontend/e2e/eslint/no-isvisible-catch.mjs (the drift test in
+  // __tests__/eslint-rules/no-isvisible-catch.test.ts enforces it), so its text says
+  // "e2e/AUTOMATION-NOTES.md" and plugin "kazi-frontend-local": from the portal those mean
+  // frontend/e2e/AUTOMATION-NOTES.md and this file's "kazi-portal-local". Do not edit the copy.
   {
     files: ["e2e/**/*.ts"],
     plugins: { "kazi-portal-local": localRules },

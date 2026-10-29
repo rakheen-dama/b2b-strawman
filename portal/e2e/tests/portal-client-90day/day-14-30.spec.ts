@@ -3,6 +3,7 @@ import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
 import {
   RUN_ID,
   SEED,
+  portalApiGet,
   recordAcmeDeposit,
   websiteRedesignId,
 } from "../../helpers/firm-api";
@@ -35,6 +36,7 @@ test.describe
   .serial("Day 14–30 — Portal Client Lifecycle (Checkpoint 5)", () => {
   let matterId: string;
   let mailBaseline: string[];
+  let jwt: string;
 
   test.beforeAll(async () => {
     test.skip(
@@ -53,13 +55,14 @@ test.describe
   });
 
   test.beforeEach(async ({ page }) => {
-    const jwt = await getPortalJwt(PORTAL_EMAIL);
+    const sessionJwt = await getPortalJwt(PORTAL_EMAIL);
     expect(
-      jwt,
+      sessionJwt,
       `portal JWT for ${PORTAL_EMAIL}: stack up, contact seeded, and neither magic-link cap hit ` +
         `(3 tokens per contact per 5 min, DB; 3 request-link calls per email per 15 min, in-memory)`,
     ).toBeTruthy();
-    await loginAsPortalContact(page, jwt!);
+    jwt = sessionJwt!;
+    await loginAsPortalContact(page, jwt);
   });
 
   // ── Checkpoint 5 — Day 21: trust balance (legal-za) ────────────────────
@@ -92,9 +95,25 @@ test.describe
     await expect(row).toContainText("DEPOSIT");
     await expect(row).toContainText(/1\s?500,00/);
 
-    // /trust itself lands on the same matter: Acme has exactly one trust matter.
+    // /trust reaches the same matter: it redirects when the client has exactly one trust matter
+    // (app/(authenticated)/trust/page.tsx), else it lists them. Expect the state the portal API
+    // reports — other suites on a shared stack may give Acme more trust matters.
+    const { matters } = await portalApiGet<{
+      matters: { matterId: string }[];
+    }>("/portal/trust/summary", jwt);
+    expect(matters.map((m) => m.matterId)).toContain(matterId);
     await page.goto("/trust");
-    await expect(page).toHaveURL(new RegExp(`/trust/${matterId}$`));
+    if (matters.length === 1) {
+      await expect(page).toHaveURL(new RegExp(`/trust/${matterId}$`));
+    } else {
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Trust statement" }),
+      ).toBeVisible();
+      const matterLink = page.locator(`main a[href="/trust/${matterId}"]`);
+      await expect(matterLink).toBeVisible();
+      await matterLink.click();
+      await expect(page).toHaveURL(new RegExp(`/trust/${matterId}$`));
+    }
     await expect(
       page
         .getByRole("table", { name: "Trust transactions" })
@@ -102,9 +121,15 @@ test.describe
         .filter({ hasText: DESCRIPTION }),
     ).toBeVisible();
 
+    // Balance + transactions grow with every run's deposit: masked (asserted above). By label:
+    // below md the transactions render as a <ul aria-label="Trust transactions">.
     await expect(page).toHaveScreenshot("day-21-trust-balance.png", {
       fullPage: true,
       animations: "disabled",
+      mask: [
+        page.getByLabel("Current balance"),
+        page.getByLabel("Trust transactions"),
+      ],
     });
   });
 });

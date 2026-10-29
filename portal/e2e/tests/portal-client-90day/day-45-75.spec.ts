@@ -131,8 +131,9 @@ test.describe
       page.getByRole("heading", { level: 2, name: "Documents" }),
     ).toBeVisible();
 
+    // The button is "Download <file name>"; SEED.statementFile is anchored at both ends.
     const download = page.getByRole("button", {
-      name: /^Download statement-of-account-website-redesign-\d{4}-\d{2}-\d{2}\.pdf$/,
+      name: new RegExp(`^Download ${SEED.statementFile.source.slice(1)}`),
     });
     // `.first()`: a reseeded stack may carry an older statement too; the newest is listed first.
     await expect(download.first()).toBeVisible();

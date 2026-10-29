@@ -1,0 +1,12 @@
+# 2026-10-29T20:40:07Z tenant=tenant_5039f2d497cf
++ SELECT id, request_number, status, customer_id, project_id, sent_at, completed_at FROM tenant_5039f2d497cf.information_requests
+2c92a127-3187-4f2f-997d-2a772e8598f6|REQ-0001|IN_PROGRESS|fbfe7eba-53f6-4536-809d-2fc785628ef3||2026-10-29 20:30:34.548762+00|
++ SELECT id, request_id, name, response_type, status, document_id, submitted_at, reviewed_at FROM tenant_5039f2d497cf.request_items
+0da32133-b860-4936-b669-864b799b3be9|2c92a127-3187-4f2f-997d-2a772e8598f6|Certified copy of ID document|FILE_UPLOAD|SUBMITTED|95db5674-36ae-4822-ace2-db48aa55099d|2026-10-29 20:39:44.843912+00|
++ SELECT id, file_name, scope, visibility, source, status, project_id, customer_id, size, created_at FROM tenant_5039f2d497cf.documents WHERE id=(SELECT document_id FROM tenant_5039f2d497cf.request_items LIMIT 1)
+95db5674-36ae-4822-ace2-db48aa55099d|Sipho Dlamini — certified ID copy.pdf|CUSTOMER|SHARED|MANUAL|UPLOADED||fbfe7eba-53f6-4536-809d-2fc785628ef3|608|2026-10-29 20:39:44.796863+00
++ SELECT occurred_at, event_type, entity_type, actor_type FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > now() - interval '15 minutes' ORDER BY occurred_at
+2026-10-29 20:30:34.337839+00|information_request.created|information_request|USER
+2026-10-29 20:30:34.551093+00|information_request.sent|information_request|USER
+2026-10-29 20:39:44.803636+00|portal.document.upload_initiated|document|PORTAL_CONTACT
+2026-10-29 20:39:44.845747+00|portal.request_item.submitted|request_item|PORTAL_CONTACT

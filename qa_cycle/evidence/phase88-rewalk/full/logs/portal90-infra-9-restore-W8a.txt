@@ -1,0 +1,30 @@
+# 2026-10-29T20:42:07Z INFRA-9 restore
+  PID  PPID ELAPSED COMMAND
+58048     1   13:10 node /opt/homebrew/bin/pnpm run start
+58086 58048   13:10 next-server (v16.3.8)    
+:3002 free
+
+=== svc.sh start portal ===
+
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      1293     yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     33245    yes      yes      3000
+  portal       62740    yes      yes      3002
+
+
+Done.
+:3002/login 200
+:3000/ 200
+:3002 holder 62783 00:05 n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+main portal/frontend status:
+2026-10-29T20:42:16Z

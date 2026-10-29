@@ -1,0 +1,5 @@
+# 2026-10-29T20:30:45Z tenant=tenant_5039f2d497cf
++ SELECT id, request_number, status, customer_id, project_id, portal_contact_id, sent_at, completed_at FROM tenant_5039f2d497cf.information_requests
+2c92a127-3187-4f2f-997d-2a772e8598f6|REQ-0001|SENT|fbfe7eba-53f6-4536-809d-2fc785628ef3||e118da4e-e11f-4bea-964a-6b63f17fee66|2026-10-29 20:30:34.548762+00|
++ SELECT request_id, name, response_type, status, document_id IS NOT NULL, submitted_at, reviewed_at FROM tenant_5039f2d497cf.request_items
+2c92a127-3187-4f2f-997d-2a772e8598f6|Certified copy of ID document|FILE_UPLOAD|PENDING|f||

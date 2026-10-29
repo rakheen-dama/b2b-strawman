@@ -1,0 +1,10 @@
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|1|1|2|2026-10-29 20:30:34.58198+00
+# W8a magic-link ledger (links redacted)
+# 2026-10-29T20:30:34Z sipho.dlamini@email.co.za — token created as a side effect of PRE-P-request "Send Now" (information-request email carries a "View Request" CTA → http://localhost:3002/auth/exchange?[REDACTED]; InformationRequestEmailService.java:63-67) — Mailpit jE7fJPHjJTMCzHK7sTmMc2 — NOT a walker magic-link request; counts against the per-contact DB cap (3 / 5 min)
+# 2026-10-29T20:37:10Z pre-request budget check
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|0|1|2|2026-10-29 20:30:34.58198+00
+59iKpM2sQrTS8H9sStaUG7	2026-10-29T20:37:13.225Z	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners
+jE7fJPHjJTMCzHK7sTmMc2	2026-10-29T20:30:34.633Z	sipho.dlamini@email.co.za	Information request REQ-0001 from Mathebula & Partners
+# 2026-10-29T20:37:13Z sipho.dlamini@email.co.za — WALKER REQUEST (P-0.1b): /login Send Magic Link → POST /portal/auth/request-link 200 (browser network panel) → Mailpit 59iKpM2sQrTS8H9sStaUG7 "Your portal access link from Mathebula & Partners"

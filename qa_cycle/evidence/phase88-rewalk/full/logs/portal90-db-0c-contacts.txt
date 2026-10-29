@@ -1,0 +1,20 @@
+# 2026-10-29T20:29:27Z tenant=tenant_5039f2d497cf
++ SELECT string_agg(column_name, ',' ORDER BY ordinal_position) FROM information_schema.columns WHERE table_schema='tenant_5039f2d497cf' AND table_name='portal_contacts'
+id,org_id,customer_id,email,display_name,role,status,created_at,updated_at
++ SELECT pc.email, pc.status, c.name FROM tenant_5039f2d497cf.portal_contacts pc JOIN tenant_5039f2d497cf.customers c ON c.id=pc.customer_id ORDER BY pc.created_at
+sipho.dlamini@email.co.za|ACTIVE|Sipho Dlamini
+moroka.trust@email.co.za|ACTIVE|Moroka Family Trust
+khumalo.holdings@email.co.za|ACTIVE|Khumalo Property Holdings
+lerato.mthembu@email.co.za|ACTIVE|Lerato Mthembu
+nomvula.khoza@email.co.za|ACTIVE|Nomvula Khoza
++ SELECT count(*) FROM tenant_5039f2d497cf.portal_contacts WHERE email IN ('sipho.portal@example.com','moroka.portal@example.com')
+0
++ SELECT email_lower, org_id FROM portal.portal_contact_directory WHERE org_id='mathebula-partners' ORDER BY 1
+khumalo.holdings@email.co.za|mathebula-partners
+lerato.mthembu@email.co.za|mathebula-partners
+moroka.trust@email.co.za|mathebula-partners
+nomvula.khoza@email.co.za|mathebula-partners
+sipho.dlamini@email.co.za|mathebula-partners
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|0|0|1|2026-10-29 19:27:09.209459+00
++ SELECT id, request_number, status, customer_id, project_id, portal_contact_id, sent_at, completed_at FROM tenant_5039f2d497cf.information_requests

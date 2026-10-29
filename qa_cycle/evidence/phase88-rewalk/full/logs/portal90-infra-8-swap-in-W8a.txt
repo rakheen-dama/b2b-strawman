@@ -1,0 +1,21 @@
+# 2026-10-29T20:28:34Z INFRA-8 swap-in
+
+=== svc.sh stop portal ===
+
+  portal: stopping (PID 30035)...
+  portal: stopped
+
+Done.
+:3002 free
+2026-10-29T20:28:36Z
+2026-10-29T20:28:51Z build exit 0
+:8080 files        4  :8081 files        0
+:3002/login 200
+COMMAND   PID        USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+node    58086 rakheendama   16u  IPv6 0xb4b968175015946c      0t0  TCP *:3002 (LISTEN)
+  PID  PPID ELAPSED COMMAND
+58086 58048   00:02 next-server (v16.3.8)    
+  PID  PPID ELAPSED COMMAND
+58048 58047   00:02 node /opt/homebrew/bin/pnpm run start
+n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+2026-10-29T20:28:59Z

@@ -76,16 +76,16 @@ Scenario-step totals (the headline). Rows added by rulings or the brief (LH, K-P
 
 | Section | Doc lines | File | Scenario rows | P / F / PARTIAL / D / N/A |
 |---|---|---|---|---|
-| Session 0 (629.2) | 43–48 + master 115–152 | session-0.md | 18 | 15 / 2 / 0 / 0 / 1 |
+| Session 0 (629.2) | 43–48 + master 115–152 | session-0.md | 18 | 13 / 2 / 2 / 0 / 1 |
 | Day 0 (629.2, W1a + W1b; 0.50 / CP0.5 closed by W2a after 1.9) | 52–206 | day-00.md | 88 | 81 / 7 / 0 / 0 / 0 |
 | Days 1–7 (629.3, W2a + W2b) | 209–301 | days-01-07.md | 70 | 61 / 9 / 0 / 0 / 0 |
 | Days 8–21 (629.3, W3a + W3b) | 304–366 | days-08-21.md | 47 | 39 / 8 / 0 / 0 / 0 |
 | Days 22–35 + Day 33 (629.3, W4) | 369–409 (Day 30 SoA 414–424 → 629B) | days-22-35.md | 26 | 22 / 3 / 0 / 0 / 1 |
-| **629A scenario total** | — | 5 day files | **249** | **218 / 29 / 0 / 0 / 2** |
+| **629A scenario total** | — | 5 day files | **249** | **216 / 29 / 2 / 0 / 2** |
 
 Unscored rows (status `NOTE`, not in the totals above): **10** — `day-00.md` LH, K-PRO; `days-01-07.md` TEAM-sipho, INFRA-1, INFRA-2; `days-08-21.md` TEAM-estate, INFRA-3, INFRA-4, INFRA-5 (**incident**: the walker's `pkill -9 -f next-server` killed the svc frontend; it was restarted and no state was lost — not a PASS); `days-22-35.md` TEAM-raf. Slice gate 629.1 (KC-STACK, this file) PASS — reported on its own, not a scenario row.
 
-Per-file totals (scenario rows: P / F / PARTIAL / D / N/A; + unscored `NOTE`): `session-0.md` 18: 15 / 2 / 0 / 0 / 1 (+0) · `day-00.md` 88: 81 / 7 / 0 / 0 / 0 (+2) · `days-01-07.md` 70: 61 / 9 / 0 / 0 / 0 (+3) · `days-08-21.md` 47: 39 / 8 / 0 / 0 / 0 (+4) · `days-22-35.md` 26: 22 / 3 / 0 / 0 / 1 (+1). Recount with `for f in session-0.md day-00.md days-01-07.md days-08-21.md days-22-35.md; do for s in PASS FAIL PARTIAL DEFERRED N/A NOTE; do printf "%s %s %s\n" $f $s $(grep -cE "^\| [^|]+ \| $s \|" $f); done; done`.
+Per-file totals (scenario rows: P / F / PARTIAL / D / N/A; + unscored `NOTE`): `session-0.md` 18: 13 / 2 / 2 / 0 / 1 (+0; PARTIAL = M.9, CP-5 — observed, no artefact captured) · `day-00.md` 88: 81 / 7 / 0 / 0 / 0 (+2) · `days-01-07.md` 70: 61 / 9 / 0 / 0 / 0 (+3) · `days-08-21.md` 47: 39 / 8 / 0 / 0 / 0 (+4) · `days-22-35.md` 26: 22 / 3 / 0 / 0 / 1 (+1). Recount with `for f in session-0.md day-00.md days-01-07.md days-08-21.md days-22-35.md; do for s in PASS FAIL PARTIAL DEFERRED N/A NOTE; do printf "%s %s %s\n" $f $s $(grep -cE "^\| [^|]+ \| $s \|" $f); done; done`.
 
 FAILs by source (29): **16 × G88-F1** LOW wording/behaviour drift (0.5a, 0.15a, 0.28a, 0.29a, 0.41a, 1.3a, 3.8a, 4.1a, 6.5a, 8.1a, 12.1a, 12.2a, 14.7a, 22.1a, 23.3a, 35.1a); **6 × §5a** pending founder authorisation (0.Aa + M.6a row 1 / G88-M1, 3.3a row 2, 6.2a row 4, 6.3a row 5, 14.13a row 6); **2 × G88-F3** MEDIUM product bug (0.47b, 0.48b); **1 × G-B8** incomplete fix (4.6b; U5 625A/B → follow-up); **1 × G88-M6** MEDIUM (6.3b); **1 × G88-F11** LOW (12.3a); **1 × G88-F14** LOW (15.3b); **1 × G88-F12 HIGH** (14.8b — OTP voetstoots clause names the firm, Seller line empty; 14.8 split by the orchestrator ruling on PR #1711 because clause injection includes variable binding: 14.8a PASS clauses present / 14.8b FAIL binding) — the walk's only HIGH so far, routed to a follow-up phase.
 

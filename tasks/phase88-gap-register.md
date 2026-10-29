@@ -148,6 +148,8 @@ Recommendations are mine; the dossiers give the trade-offs.
 
 ## 5. Scenario amendments requiring §6 authorisation
 
+Citation convention: rows are cited as "§5 row 1–15" in table order (top to bottom); see §5a.
+
 All in `qa/testplan/demos/legal-za-90day-keycloak.md` unless noted. Classified per the LZKC-029 style: **W** = wording (product unchanged), **O** = step order, **P** = product decision to keep behaviour.
 
 | Step / line | Class | Change | Basis |
@@ -170,7 +172,7 @@ All in `qa/testplan/demos/legal-za-90day-keycloak.md` unless noted. Classified p
 
 ### 5a. Proposed amendments awaiting founder authorisation (routed by 628H)
 
-Not authorised. These scenario-versus-product differences surfaced during Phase 88 (walk hand-offs, slice follow-ups, the 628H scout). Under CLAUDE.md §6 none of them may change a scenario file until the founder authorises the row. 628H applied only the 15 rows of §5 above (cited in the scenario annotations as "register §5 row 1–15", numbered in table order) and task 628.18's 61.2 (ADR-350). Step ids are primary; line numbers are `main` @ `ebbd97884`, before 628H (628H inserts steps 5.8a–5.8c in the 90-day file, so later 90-day lines move by +3).
+Not authorised. These scenario-versus-product differences surfaced during Phase 88 (walk hand-offs, slice follow-ups, the 628H scout). Under CLAUDE.md §6 none of them may change a scenario file until the founder authorises the row. 628H applied only the 15 rows of §5 above (cited in the scenario annotations as "register §5 row 1–15", numbered in table order) and task 628.18's 61.2 (ADR-350). §5 row 14 was applied for E.3 and the closing "If any checkpoint fails" paragraph only; the "302 vs 307" count appears in no scenario file (only in agent briefs), so there is nothing to change for the count (orchestrator ruling F-3). §5a row 3 (5.4 / wow moment 4 "promoted fields") should be authorised together with §5 row 4 so the file reads consistently. Step ids are primary; line numbers are `main` @ `ebbd97884`, before 628H (628H inserts steps 5.8a–5.8c in the 90-day file, so later 90-day lines move by +3).
 
 | # | Step / line | Proposed change | Class | Evidence (file:line) | Originating slice |
 |---|---|---|---|---|---|

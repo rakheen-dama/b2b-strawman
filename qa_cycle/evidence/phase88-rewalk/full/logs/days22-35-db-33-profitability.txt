@@ -1,0 +1,24 @@
+Thu Oct 29 15:39:06 UTC 2026
+> SELECT p.name, m.email, te.duration_minutes, te.billing_rate_snapshot, te.cost_rate_snapshot, te.description FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id WHERE p.id='5c42e002-1218-48ac-9d74-a7e3aeff13e6' ORDER BY te.created_at
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|bob@mathebula-test.local|240|1200.00|500.00|Medical records collation
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|bob@mathebula-test.local|180|1200.00|500.00|Expert witness statements
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|carol@mathebula-test.local|120|550.00|200.00|Legal research — RAF tariff
+> SELECT p.name, sum(te.duration_minutes)/60.0 h, sum(te.duration_minutes*te.billing_rate_snapshot/60) rev, sum(te.duration_minutes*te.cost_rate_snapshot/60) cost, round(100*(sum(te.duration_minutes*te.billing_rate_snapshot/60)-sum(te.duration_minutes*te.cost_rate_snapshot/60))/sum(te.duration_minutes*te.billing_rate_snapshot/60),3) margin_pct FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id GROUP BY p.name ORDER BY 1
+Estate Late Peter Moroka|18.0000000000000000|31025.0000000000000000|12500.0000000000000000|59.710
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|9.0000000000000000|9500.0000000000000000|3900.0000000000000000|58.947
+Sipho Dlamini v. Standard Bank (civil)|3.5000000000000000|2900.0000000000000000|1150.0000000000000000|60.345
+> SELECT m.email, sum(te.duration_minutes)/60.0 FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id GROUP BY 1
+thandi@mathebula-test.local|8.5000000000000000
+carol@mathebula-test.local|6.5000000000000000
+bob@mathebula-test.local|15.5000000000000000
+> SELECT name, status FROM tenant_5039f2d497cf.projects ORDER BY created_at
+Sipho Dlamini v. Standard Bank (civil)|ACTIVE
+Estate Late Peter Moroka|ACTIVE
+Khumalo Property Holdings — Erf 1234 Sandton Transfer|ACTIVE
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|ACTIVE
+> SELECT t.title, t.status FROM tenant_5039f2d497cf.tasks t WHERE t.project_id='5c42e002-1218-48ac-9d74-a7e3aeff13e6' AND t.status='DONE'
+Initial RAF claim assessment & instructions|DONE
+File RAF1 claim form + supporting documents (within 3-year prescription)|DONE
+Statutory medical reports & assessments|DONE
+Insurer correspondence -- RAF tariff schedule|DONE
+13|13|13

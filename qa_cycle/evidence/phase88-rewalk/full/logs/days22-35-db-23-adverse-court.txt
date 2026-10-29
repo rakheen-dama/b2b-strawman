@@ -1,0 +1,7 @@
+Thu Oct 29 15:33:12 UTC 2026
+> SELECT id, name, party_type, created_at FROM tenant_5039f2d497cf.adverse_parties
+0bbeb335-6a59-4c3b-bf9f-ca86fe541279|Road Accident Fund|GOVERNMENT|2026-10-29 15:31:31.302678+00
+> SELECT * FROM tenant_5039f2d497cf.adverse_party_links
+cbf3914d-7fc5-48fd-bcb9-67764ed614ac|0bbeb335-6a59-4c3b-bf9f-ca86fe541279|5c42e002-1218-48ac-9d74-a7e3aeff13e6|d3f6be49-b1d3-4de7-96e8-62e5481dad37|OPPOSING_PARTY||2026-10-29 15:31:46.207549+00
+> SELECT id, project_id, date_type, scheduled_date, scheduled_time, court_name, description, status, created_by FROM tenant_5039f2d497cf.court_dates ORDER BY created_at DESC LIMIT 1
+fcbd7e7b-ebe3-41f1-9485-3e42efc9cd01|5c42e002-1218-48ac-9d74-a7e3aeff13e6|CASE_MANAGEMENT|2026-12-13|10:00:00|Gauteng High Court|Case Management Conference|SCHEDULED|bd26a345-8cff-4745-8c20-55a1f5bc4786

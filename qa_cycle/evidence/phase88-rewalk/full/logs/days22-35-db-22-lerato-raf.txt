@@ -1,0 +1,23 @@
+Thu Oct 29 15:30:46 UTC 2026
+> SELECT id, name, customer_type, lifecycle_status, email, address_line1, city, country, custom_fields, lifecycle_status_changed_at FROM tenant_5039f2d497cf.customers WHERE name='Lerato Mthembu'
+d3f6be49-b1d3-4de7-96e8-62e5481dad37|Lerato Mthembu|INDIVIDUAL|ACTIVE|lerato.mthembu@email.co.za|3 Church Square|Pretoria|ZA|{"id_passport_number": "9203150123087"}|2026-10-29 15:30:03.901665+00
+> SELECT ci.status, ci.completed_at FROM tenant_5039f2d497cf.checklist_instances ci JOIN tenant_5039f2d497cf.customers c ON c.id=ci.customer_id WHERE c.name='Lerato Mthembu'
+COMPLETED|2026-10-29 15:30:03.896301+00
+> SELECT count(*), count(cii.document_id) FROM tenant_5039f2d497cf.checklist_instance_items cii JOIN tenant_5039f2d497cf.checklist_instances ci ON ci.id=cii.instance_id JOIN tenant_5039f2d497cf.customers c ON c.id=ci.customer_id WHERE c.name='Lerato Mthembu' AND cii.status='COMPLETED'
+9|6
+> SELECT email_lower, org_id FROM portal.portal_contact_directory WHERE email_lower like 'lerato%'
+lerato.mthembu@email.co.za|mathebula-partners
+> SELECT id, name, status, work_type, custom_fields FROM tenant_5039f2d497cf.projects WHERE id='5c42e002-1218-48ac-9d74-a7e3aeff13e6'
+5c42e002-1218-48ac-9d74-a7e3aeff13e6|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|ACTIVE|LITIGATION|{"case_number": "RAF/2026/0042"}
+> SELECT pm.project_role, m.email FROM tenant_5039f2d497cf.project_members pm JOIN tenant_5039f2d497cf.members m ON m.id=pm.member_id WHERE pm.project_id='5c42e002-1218-48ac-9d74-a7e3aeff13e6'
+lead|bob@mathebula-test.local
+> SELECT t.title, m.email FROM tenant_5039f2d497cf.tasks t LEFT JOIN tenant_5039f2d497cf.members m ON m.id=t.assignee_id WHERE t.project_id='5c42e002-1218-48ac-9d74-a7e3aeff13e6' ORDER BY t.created_at
+Initial RAF claim assessment & instructions|bob@mathebula-test.local
+File RAF1 claim form + supporting documents (within 3-year prescription)|bob@mathebula-test.local
+Statutory medical reports & assessments|bob@mathebula-test.local
+Insurer correspondence -- RAF tariff schedule|
+Settlement negotiation with RAF|bob@mathebula-test.local
+Court action if no settlement (Section 24 RAF Act)|bob@mathebula-test.local
+Trial / hearing attendance|bob@mathebula-test.local
+Settlement / judgment payout & costs|bob@mathebula-test.local
+Prescription monitoring (3-year claim, 5-year for damages)|

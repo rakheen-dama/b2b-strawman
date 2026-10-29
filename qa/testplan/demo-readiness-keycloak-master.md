@@ -134,7 +134,11 @@ Each lifecycle script starts with "Prep & Reset — Session 0". This master doc 
   ```bash
   docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
   ```
-  For each tenant schema belonging to the vertical being tested (the org's `schema_name` in `public.org_schema_mapping`, a `tenant_<12 hex>` name — never one named after the firm), drop it:
+  Then resolve the tested vertical's organisation to its schema with a read-only lookup (filter by the firm's `organizations.name`; it must return exactly one `schema_name`, a `tenant_<12 hex>` name — never one named after the firm):
+  ```bash
+  docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT o.name, m.schema_name FROM public.organizations o JOIN public.org_schema_mapping m ON m.external_org_id = o.external_org_id WHERE o.name = '<firm name>';"
+  ```
+  Drop only that returned schema:
   ```bash
   docker exec b2b-postgres psql -U postgres -d docteams -c "DROP SCHEMA tenant_<12 hex> CASCADE;"
   ```

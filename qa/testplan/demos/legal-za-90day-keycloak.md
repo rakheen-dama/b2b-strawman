@@ -44,7 +44,7 @@
 
 Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack startup & teardown" for shared steps (M.1–M.9). In addition, for this vertical specifically:
 
-- [ ] **0.A** Confirm no tenant schema is left over from a previous Mathebula run: tenant schemas are named `tenant_<12 hex>`, not after the firm, so look up the previous org's `schema_name` in `public.org_schema_mapping` and drop that schema if present (Phase 88, register §5a row 1 — wording amendment, founder-authorised 2026-10-29: schema names are `"tenant_"` + 12 hex characters, `SchemaNameGenerator.java:19`; no `tenant_mathebula*` schema ever exists)
+- [ ] **0.A** Confirm no tenant schema is left over from a previous Mathebula run: tenant schemas are named `tenant_<12 hex>`, not after the firm, so look up the previous org's `schema_name` with `SELECT o.name, m.schema_name FROM public.organizations o JOIN public.org_schema_mapping m ON m.external_org_id = o.external_org_id WHERE o.name = 'Mathebula & Partners';` (run against `-d docteams`; expect exactly one row) and drop only that schema if present (Phase 88, register §5a row 1 — wording amendment, founder-authorised 2026-10-29: schema names are `"tenant_"` + 12 hex characters, `SchemaNameGenerator.java:19`; no `tenant_mathebula*` schema ever exists)
 - [ ] **0.B** Delete any Keycloak users with `@mathebula-test.local` emails from the `docteams` realm
 
 ---

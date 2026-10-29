@@ -341,7 +341,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] Three uploaded documents retrievable firm-side
 - [ ] Sipho ONBOARDING with the individual checklist instantiated
 - [ ] Info request lifecycle: `Sent → IN_PROGRESS → Completed` (envelope closes when the last per-item Accept lands; no separate "Mark as Reviewed" button)
-- [ ] Matter FICA / KYC status indicator updated; FICA card link routes to the client's `?tab=onboarding` (**View checklist**, checklist-driven FICA) or to `/information-requests/{id}` (**View request**, request-only FICA — OBS-501 fix verification) (§5a row 15, founder-authorised 2026-10-29)
+- [ ] Matter FICA / KYC status indicator updated; FICA card link routes to the client's `?tab=onboarding` (**View checklist**, checklist-driven FICA) or to `/org/{slug}/information-requests/{requestId}` (**View request**, request-only FICA — OBS-501 fix verification) (§5a row 15, founder-authorised 2026-10-29)
 - [ ] Portal-side post-completion spot-check (still authenticated as Sipho on `:3002`): `/requests` row for REQ-0001 shows status badge **COMPLETED** AND counter **`3/3 accepted`** (NOT `0/3 submitted` — OBS-502 fix verification); detail page header reads `3/3 accepted • status COMPLETED`
 
 ---

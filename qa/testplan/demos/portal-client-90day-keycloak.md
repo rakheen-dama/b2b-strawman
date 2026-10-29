@@ -113,7 +113,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **7.1** Open Mailpit → verify weekly digest email arrived with subject containing "Your weekly update" (or similar). Body includes an **Open portal** button (links to `/home`) (Phase 88, register §5a row 16 — wording amendment, founder-authorised 2026-10-29: the digest's only CTA is Open portal → `/home`, `portal-weekly-digest.html:72-73`, `PortalDigestScheduler.java:305`)
 - [ ] **7.2** Click **Open portal** in the digest → lands on portal `/home`; open **Diary dates** (`/deadlines`) from the portal nav `[legal-za]` (§5a row 16, founder-authorised 2026-10-29)
 - [ ] **7.3** Verify `/deadlines` renders: list of upcoming deadlines with title, due date, matter/engagement context, urgency indicator — court dates and prescriptions do not yet sync to the portal, so until that sync is built the list is empty unless a portal-visible custom-field date exists (Phase 88, register §5a row 16 — wording amendment, founder-authorised 2026-10-29: those `DeadlinePortalSyncService` sources are dormant, only `CUSTOM_FIELD_DATE` is wired, `DeadlinePortalSyncService.java:36-49`)
-- [ ] **7.4** Click into one deadline → verify detail view renders with description and any attached document(s)
+- [ ] **7.4** Click into one deadline → verify detail view renders with description and any attached document(s) — **N/A** when 7.3's list is empty (no portal-visible custom-field date exists) (§5a row 16, founder-authorised 2026-10-29)
 - [ ] **7.5** 📸 **Screenshot**: `day-07-deadlines-list.png`
 
 **Day 7 checkpoints**
@@ -152,7 +152,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Sipho Dlamini (or profile-specific narrator)
 
-- [ ] **45.1** Navigate to `/invoices` → verify at least one invoice in **"Sent"** or **"Due"** state
+- [ ] **45.1** Navigate to `/invoices` → verify at least one invoice in **"Sent"** state with a payment URL (there is no "Due" status; **Pay** shows only for SENT / PARTIALLY_PAID invoices with a `paymentUrl`) (§5a row 17, founder-authorised 2026-10-29)
 - [ ] **45.2** Click into an invoice → `/invoices/[id]` renders: line items, subtotal, VAT, total, due date, Pay button
 - [ ] **45.3** 📸 **Screenshot**: `day-45-invoice-detail.png`
 - [ ] **45.4** Click **Pay** → redirects to the mock payment gateway's checkout page (`/portal/dev/mock-payment`; local/keycloak profiles) (Phase 88, register §5a row 17 — wording amendment, founder-authorised 2026-10-29: the local/keycloak profiles run `MockPaymentGateway` (`MockPaymentGateway.java:34`) and `MockPaymentController` (`MockPaymentController.java:40`); the portal shows Pay only for a SENT note with a payment URL, `invoices/[id]/page.tsx:90-92`; Payments mandate exemption)
@@ -162,9 +162,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **45.8** Navigate back to `/invoices` → verify invoice no longer in "Due" filter, now in "Paid" (N/A on the e2e stack — no PSP) (§5a row 17, founder-authorised 2026-10-29)
 
 **Day 45 checkpoints**
-- [ ] Payment recorded firm-side (firm-side invoice page reflects PAID within 60 s)
-- [ ] No tier / upsell interstitial in the pay flow
-- [ ] Receipt download works (PDF opens or downloads cleanly)
+- [ ] Payment recorded firm-side (firm-side invoice page reflects PAID within 60 s) (N/A on the e2e stack — no PSP; §5a row 17)
+- [ ] No tier / upsell interstitial in the pay flow (N/A on the e2e stack — no PSP; §5a row 17)
+- [ ] Receipt download works (PDF opens or downloads cleanly) (N/A on the e2e stack — no PSP; §5a row 17)
 
 ---
 

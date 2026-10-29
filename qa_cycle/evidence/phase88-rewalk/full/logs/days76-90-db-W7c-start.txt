@@ -1,0 +1,35 @@
+# 2026-10-29T20:08:53Z tenant=tenant_5039f2d497cf
++ SELECT id, name, status, lifecycle_status, created_at FROM tenant_5039f2d497cf.customers ORDER BY created_at
+fbfe7eba-53f6-4536-809d-2fc785628ef3|Sipho Dlamini|ACTIVE|ACTIVE|2026-10-29 14:12:53.516979+00
+acd36ca9-adc9-4a58-89bf-d36016febf49|Moroka Family Trust|ACTIVE|ACTIVE|2026-10-29 14:59:52.504404+00
+30aa3450-f3d4-46ec-8403-8f4cab5bf877|Khumalo Property Holdings|ACTIVE|ACTIVE|2026-10-29 15:15:13.623701+00
+d3f6be49-b1d3-4de7-96e8-62e5481dad37|Lerato Mthembu|ACTIVE|ACTIVE|2026-10-29 15:29:08.809271+00
+a5a35926-eaeb-4e9b-a1f1-50e822f1d846|Nomvula Khoza|ACTIVE|ACTIVE|2026-10-29 19:17:13.671216+00
++ SELECT id, name, status, completed_at, closed_at, retention_ends_on FROM tenant_5039f2d497cf.projects ORDER BY created_at
+d42337ad-2c76-4a79-ac75-e3d9f4d36881|Sipho Dlamini v. Standard Bank (civil)|CLOSED|2026-10-29 19:40:40.792831+00|2026-10-29 19:44:16.89476+00|2031-10-29
+028d3901-e826-44a9-b6a6-b81328365629|Estate Late Peter Moroka|CLOSED||2026-10-29 20:01:20.394519+00|2031-10-29
+aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|Khumalo Property Holdings — Erf 1234 Sandton Transfer|ACTIVE|||
+5c42e002-1218-48ac-9d74-a7e3aeff13e6|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|ACTIVE|||
+0b9656be-244d-48e3-aaf8-80bcb154266e|Nomvula Khoza — Debt Recovery (Mokoena Traders)|ACTIVE|||
++ SELECT p.name, t.status, count(*) FROM tenant_5039f2d497cf.tasks t JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id GROUP BY 1,2 ORDER BY 1,2
+Estate Late Peter Moroka|DONE|3
+Estate Late Peter Moroka|OPEN|6
+Khumalo Property Holdings — Erf 1234 Sandton Transfer|OPEN|12
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|DONE|4
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|OPEN|5
+Nomvula Khoza — Debt Recovery (Mokoena Traders)|OPEN|9
+Sipho Dlamini v. Standard Bank (civil)|DONE|9
++ SELECT invoice_number, status, customer_name, total, amount_paid FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+INV-0001|PAID|Sipho Dlamini|4585.00|4585.00
+INV-0002|SENT|Moroka Family Trust|36575.75|0.00
+|DRAFT|Lerato Mthembu|10925.00|0.00
+INV-0003|SENT|Nomvula Khoza|7058.13|0.00
++ SELECT c.name, l.* FROM tenant_5039f2d497cf.client_ledger_cards l JOIN tenant_5039f2d497cf.customers c ON c.id=l.customer_id
+Moroka Family Trust|c99fe538-485f-404c-a6e5-9eccd7f118d7|696ce2f0-0061-46bd-91f4-a95c8a23a009|acd36ca9-adc9-4a58-89bf-d36016febf49|38000.00|50000.00|12000.00|0.00|0.00|2026-10-29|2026-10-29 15:08:12.000412+00|2026-10-29 19:33:23.652093+00
+Sipho Dlamini|0733af1c-4be6-4d82-b3cd-6e0acb70cce8|696ce2f0-0061-46bd-91f4-a95c8a23a009|fbfe7eba-53f6-4536-809d-2fc785628ef3|0.00|5000.00|1250.00|0.00|0.00|2026-10-29|2026-10-29 14:47:05.859944+00|2026-10-29 19:42:44.465189+00
++ SELECT count(*) FROM tenant_5039f2d497cf.time_entries
+18
++ SELECT count(*), min(occurred_at), max(occurred_at) FROM tenant_5039f2d497cf.audit_events
+280|2026-10-29 13:47:23.345482+00|2026-10-29 20:01:20.70333+00
++ SELECT count(*) FROM tenant_5039f2d497cf.documents
+21

@@ -1,0 +1,54 @@
+# 2026-10-29T20:24:00Z W7c 90.6 Mailpit sweep (Mailpit API GETs only, R-3)
++ GET http://localhost:8025/api/v1/info
+{"Messages":16,"Unread":3,"SMTPAccepted":64,"SMTPRejected":0,"SMTPIgnored":0}
++ GET /api/v1/messages?limit=100  (ID, Created, From, To, Subject)
+eNAExg95qJRr3GH4M77Hik	2026-10-29T19:42:44.575Z	noreply@kazi.app	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+V3jqAKMKSBZctH3RUbEJ5X	2026-10-29T19:33:23.752Z	noreply@kazi.app	moroka.trust@email.co.za	Mathebula & Partners: Trust account activity
+bdm3MjpDgj9RNXdRwqmHkT	2026-10-29T19:27:09.26Z	noreply@kazi.app	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners
+RBSMMPsErGDX9t99kZwjST	2026-10-29T19:25:46.324Z	noreply@kazi.app	nomvula.khoza@email.co.za	Fee Note INV-0003 from Mathebula & Partners
+4EHa3SRfspVnUxc4RNmJ9S	2026-10-29T19:03:48.743Z	noreply@kazi.app	moroka.trust@email.co.za	Fee Note INV-0002 from Mathebula & Partners
+9aX7RFWMCyBQLGF6oadfDw	2026-10-29T18:55:40.05Z	noreply@kazi.app	sipho.dlamini@email.co.za	Fee Note INV-0001 from Mathebula & Partners
+2eLfLXG6siubpr6BZYZmEC	2026-10-29T15:19:34.232Z	noreply@kazi.app	khumalo.holdings@email.co.za	Mathebula & Partners -- Please review offer to purchase for acceptance: offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf
+9x7Bvomc5iozoQ84iqA98X	2026-10-29T15:08:12.092Z	noreply@kazi.app	moroka.trust@email.co.za	Mathebula & Partners: Trust account activity
+nDLyma4n2diVpufTjJVFDz	2026-10-29T14:48:00.288Z	noreply@kazi.app	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+HneqAesGSSPW6o56bgS5uG	2026-10-29T14:47:05.978Z	noreply@kazi.app	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+42gqzT8eeBNS9eYUpMTkJW	2026-10-29T14:35:02.733Z	noreply@kazi.app	sipho.dlamini@email.co.za	Confirmed: You have accepted engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf
+8KMEefXcNrHvxHXDpkZLT6	2026-10-29T14:32:59.955Z	noreply@kazi.app	sipho.dlamini@email.co.za	Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf
+d3nSx8DmRagLZxJL3SJTdP	2026-10-29T13:50:14.875Z	noreply@docteams.local	carol@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+7DA8LpsXnky4Htky8EtxDu	2026-10-29T13:50:11.726Z	noreply@docteams.local	bob@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+S3TJcWLLFayunZhfL6cEa9	2026-10-29T13:47:23.877Z	noreply@docteams.local	thandi@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+UJ3HXoAJ33jC9UjKzZs5hQ	2026-10-29T13:45:34.317Z	noreply@kazi.app	thandi@mathebula-test.local	Your Kazi verification code
++ GET /api/v1/search?query=subject:undelivered
+{"messages_count":0,"total":16}
++ GET /api/v1/search?query=subject:failure
+{"messages_count":0,"total":16}
++ GET /api/v1/search?query=subject:failed
+{"messages_count":0,"total":16}
++ GET /api/v1/search?query=subject:returned
+{"messages_count":0,"total":16}
++ GET /api/v1/search?query=subject:bounce
+{"messages_count":0,"total":16}
++ GET /api/v1/search?query=from:mailer-daemon
+{"messages_count":0,"total":16}
++ GET /api/v1/search?query=from:postmaster
+{"messages_count":0,"total":16}
+# 2026-10-29T20:24:08Z tenant=tenant_5039f2d497cf
++ SELECT status, count(*) FROM tenant_5039f2d497cf.email_delivery_log GROUP BY 1
+SENT|9
+# 2026-10-29T20:24:08Z tenant=tenant_5039f2d497cf
++ SELECT created_at, recipient_email, template_name, status, provider_slug, error_message FROM tenant_5039f2d497cf.email_delivery_log ORDER BY created_at
+2026-10-29 14:32:59.962484+00|sipho.dlamini@email.co.za|acceptance-request|SENT|smtp|
+2026-10-29 14:35:02.739099+00|sipho.dlamini@email.co.za|acceptance-confirmation|SENT|smtp|
+2026-10-29 14:47:05.98411+00|sipho.dlamini@email.co.za|portal-trust-activity|SENT|smtp|
+2026-10-29 14:48:00.293453+00|sipho.dlamini@email.co.za|portal-trust-activity|SENT|smtp|
+2026-10-29 15:08:12.100826+00|moroka.trust@email.co.za|portal-trust-activity|SENT|smtp|
+2026-10-29 15:19:34.237447+00|khumalo.holdings@email.co.za|acceptance-request|SENT|smtp|
+2026-10-29 19:27:09.265251+00|sipho.dlamini@email.co.za|portal-magic-link|SENT|smtp|
+2026-10-29 19:33:23.756884+00|moroka.trust@email.co.za|portal-trust-activity|SENT|smtp|
+2026-10-29 19:42:44.579507+00|sipho.dlamini@email.co.za|portal-trust-activity|SENT|smtp|
++ grep -ciE 'MailSendException|MailException|Failed to send|SMTP.*(error|fail)|bounce' $MAIN/.svc/logs/backend.log
+0
++ wc -l backend.log; first line timestamp
+    1796
+[INFO] Scanning for projects...
+[INFO] 

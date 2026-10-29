@@ -1,0 +1,158 @@
+# W7c Day 90 sweeps (90.1 terminology, 90.5 console) — Thandi (Owner) on KC :3000, 1440x900 light
+# Method (ruling O-14): browser_run_code_unsafe navigation-only batches — page.goto(url, waitUntil 'load') + 2.5 s settle,
+#   document.body.innerText read, page.on('console') errors/warnings + page.on('pageerror') collected per URL.
+#   No fetch/request, no clicks. Dialogs opened by hand (separate rows below).
+# cs = case-sensitive hits of /\bProjects?\b|\bCustomers?\b|\bInvoices?\b|agency|retainer|engagement/ (brief §7.8 list, with 40-char context)
+# ci = case-insensitive hits of /project|customer|invoice|agency|retainer|accountant|bookkeep/i (stricter superset)
+# columns: url | final url | HTTP | h1 | innerText length | cs hits | ci hits | console errors | page errors | console warnings
+## Batch 1 — 2026-10-29T20:09:1xZ (sidebar TODAY / MATTERS / CLIENTS)
+/dashboard | /dashboard | 200 | Home | 3451 | 0 | 0 | 0 | 0 | 0
+/my-work | /my-work | 200 | My Work | 3565 | 0 | 0 | 0 | 0 | 0
+/diary | /diary | 200 | Diary | 767 | 0 | 0 | 0 | 0 | 0
+/matters | /matters | 200 | Matters | 1057 | 0 | 0 | 0 | 0 | 0
+/matters/new | /matters/new | 200 | New Matter | 978 | 0 | 0 | 0 | 0 | 0
+/conflict-check | /conflict-check | 200 | Conflict Check | 885 | 0 | 0 | 0 | 0 | 0
+/legal/adverse-parties | /legal/adverse-parties | 200 | Adverse Parties | 679 | 0 | 0 | 0 | 0 | 0
+/ai/reviews | /ai/reviews | 200 | AI Reviews | 615 | 0 | 0 | 0 | 0 | 0
+/clients | /clients | 200 | Clients | 1236 | 0 | 0 | 0 | 0 | 0
+/compliance | /compliance | 200 | Compliance | 644 | 0 | 0 | 0 | 0 | 0
+## Batch 2 — 2026-10-29T20:10–20:12Z (sidebar CLIENTS / FEES / TRUST / FIRM + Notifications bell page)
+/compliance/requests | /compliance/requests | 200 | Data Requests | 556 | 0 | 0 | 0 | 0 | 0
+/invoices/unbilled | /invoices/unbilled | 200 | Unbilled work | 812 | 0 | 0 | 0 | 0 | 0
+/invoices | /invoices | 200 | Fee notes | 910 | 0 | 0 | 0 | 0 | 0
+/invoices/billing-runs | /invoices/billing-runs | 200 | Fee runs | 536 | 0 | 0 | 0 | 0 | 0
+/invoices/collections | /invoices/collections | 200 | Debtors | 1078 | 0 | 0 | 0 | 0 | 0
+/legal/disbursements | /legal/disbursements | 200 | Disbursements | 1239 | 0 | 0 | 0 | 0 | 0
+/legal/tariffs | /legal/tariffs | 200 | Tariff Schedules | 550 | 0 | 0 | 0 | 0 | 0
+/trust-accounting | /trust-accounting | 200 | Trust Accounting | 1149 | 0 | 0 | 0 | 0 | 0
+/trust-accounting/transactions | /trust-accounting/transactions | 200 | Transactions | 1078 | 0 | 0 | 0 | 0 | 0
+/trust-accounting/client-ledgers | /trust-accounting/client-ledgers | 200 | Client Ledgers | 745 | 0 | 0 | 0 | 0 | 0
+/trust-accounting/reconciliation | /trust-accounting/reconciliation | 200 | Reconciliation | 533 | 0 | 0 | 0 | 0 | 0
+/trust-accounting/interest | /trust-accounting/interest | 200 | Interest | 646 | 0 | 0 | 0 | 0 | 0
+/trust-accounting/investments | /trust-accounting/investments | 200 | Investments | 571 | 0 | 0 | 0 | 0 | 0
+/trust-accounting/reports | /trust-accounting/reports | 200 | Trust Reports | 541 | 0 | 0 | 0 | 0 | 0
+/team | /team | 200 | Team | 720 | 0 | 0 | 0 | 0 | 0
+/reports | /reports | 200 | Reports | 821 | 0 | 0 | 0 | 0 | 0
+/settings/firm?tab=audit-trail | /settings/firm?tab=audit-trail | 200 | Audit log | 5904 | 0 | 7 | 0 | 0 | 0
+   ci: " Oct 2026, 21:40 INFO Matter completed project.completed Thandi Mathebula Matter d423" | "1c2 29 Oct 2026, 21:25 INFO Fee note invoice.sent Thandi Mathebula Fee note INV-000" | "aab 29 Oct 2026, 21:25 INFO Fee note invoice.approved Thandi Mathebula Fee note INV" | "003 29 Oct 2026, 21:24 INFO Fee note invoice.created Thandi Mathebula Fee note fc73" | "6, 21:19 INFO Matter team member added project_member.added Thandi Mathebula Matter t" | "1:18 INFO Matter created from template project.created_from_template Thandi Mathebula" | ":18 INFO Client lifecycle transitioned customer.lifecycle.transitioned Thandi Mathebul"
+   judged: the legal LABEL line is clean ("Matter completed", "Fee note", "Client lifecycle transitioned"); the lowercase line under it is the stored event KEY (font-mono 10 px, audit-log-client.tsx:1025) -> 90.1b hit class (G88-F27)
+/settings/firm | /settings/firm | 200 | General | 2154 | 1 | 0 | 0 | 0 | 0
+   cs: " printed on generated documents such as engagement letters and fee notes. Address The fi"
+   judged: "engagement letters" = legal mandate document (ADR-336), not agency leakage -> not a leak
+/notifications | /notifications | 200 | Notifications | 909 | 0 | 0 | 0 | 0 | 0
+## Batch 3 — 2026-10-29T20:12–20:15Z (all 31 settings tabs, frontend/lib/settings-nav.ts:6 "31 tabs addressed by ?tab=<id>")
+/settings/firm?tab=general | 200 | General | 2154 | cs 1 | ci 0 | err 0 | perr 0 | warn 1
+   cs: "engagement letters and fee notes" (legal term, not a leak); warn: Next <Image> warning for the letterhead logo src http://localhost:4566/… (dev warning, not an error)
+/settings/firm?tab=roles | 200 | Roles & Permissions | 1155 | 0 | 0 | 0 | 0 | 0
+/settings/firm?tab=audit-trail | 200 | Audit log | 5904 | 0 | 7 | 0 | 0 | 0   (same 7 event-key hits as batch 2)
+/settings/firm?tab=data-protection | 200 | Data Protection | 2091 | 0 | 0 | 0 | 0 | 0
+/settings/firm?tab=data-requests | 200 | DSAR Requests | 764 | 0 | 0 | 0 | 0 | 0
+/settings/firm?tab=compliance | 200 | Compliance | 2060 | 0 | 0 | 0 | 0 | 0
+/settings/firm?tab=features | 200 | Features | 939 | 0 | 0 | 0 | 0 | 0
+/settings/firm?tab=subscription | 200 | Billing | 697 | 0 | 0 | 0 | 0 | 0
+/settings/matters?tab=templates | 200 | Matter Templates | 2584 | 0 | 0 | 0 | 0 | 0
+/settings/matters?tab=naming | 200 | Matter Naming | 994 | 0 | 1 | 0 | 0 | 0
+   ci: " — The matter name entered at creation {customer.name} — The linked client's name {field"
+   judged: placeholder TOKEN "{customer.name}" shown as a code chip + in the Pattern input placeholder (project-naming-settings.tsx:68,86) -> 90.1b hit class (G88-F27)
+/settings/matters?tab=custom-fields | 200 | Custom Fields | 2875 | 0 | 0 | 0 | 0 | 0
+/settings/matters?tab=tags | 200 | Tags | 807 | 0 | 0 | 0 | 0 | 0
+/settings/matters?tab=checklists | 200 | Checklists | 2200 | 3 | 0 | 0 | 0 | 0
+   cs: "Covers engagement confirmation, contact verification, billing arrangements, and engagement letter." | "source of funds, engagement formalities, and risk assessment per FI[CA]" -> legal terms, not leaks
+/settings/matters?tab=request-templates | 200 | Request Templates | 1832 | 0 | 0 | 0 | 0 | 0
+/settings/matters?tab=request-settings | 200 | Request Settings | 898 | 0 | 0 | 0 | 0 | 0
+/settings/documents?tab=templates | 200 | Templates | 4228 | 5 | 0 | 0 | 0 | 0
+   cs: "Manage document templates for engagement letters, statements of work, and more." | "Standard litigation engagement letter …" | "Standard Engagement Letter Client engagement letter template" | "Conveyancing engagement letter for property transfer matters." | "General legal engagement letter …" -> legal terms, not leaks
+/settings/documents?tab=clauses | 200 | Clause Library | 4125 | 3 | 0 | 0 | 0 | 0
+   cs: "Client acceptance of engagement terms" | "Terms for ending the engagement" | "…if raised pre-transfer engagement" -> legal terms, not leaks
+/settings/documents?tab=acceptance | 200 | Document Acceptance | 806 | 0 | 0 | 0 | 0 | 0
+/settings/documents?tab=email | 200 | Email | 669 | 0 | 0 | 0 | 0 | 0
+/settings/fees?tab=tariffs | 200 | Rates & Currency | 1231 | 0 | 0 | 0 | 0 | 0
+/settings/fees?tab=tax | 200 | Tax Settings | 1189 | 0 | 0 | 0 | 0 | 0
+/settings/fees?tab=time-recording | 200 | Time Tracking | 1290 | 0 | 0 | 0 | 0 | 0
+/settings/fees?tab=fee-runs | 200 | Batch Billing | 1333 | 0 | 0 | 0 | 0 | 0
+/settings/fees?tab=collections | 200 | Collections | 990 | 0 | 0 | 0 | 0 | 0
+/settings/fees?tab=trust-accounting | 200 | Trust Accounting Settings | 1605 | 0 | 0 | 0 | 0 | 0
+/settings/connections?tab=xero | 200 | Integrations | 1624 | 0 | 0 | 0 | 0 | 0
+/settings/connections?tab=mcp | 200 | Claude / MCP Connector | 954 | 0 | 0 | 0 | 0 | 0
+/settings/connections?tab=ai | 200 | Set Up AI | 2848 | 0 | 1 | 0 | 0 | 0
+   ci: "fee estimates and cost projections" -> English word "projections", not a leak
+/settings/connections?tab=notifications | 200 | Notification Preferences | 1660 | 0 | 0 | 0 | 0 | 0
+/settings/connections?tab=packs | 200 | Packs | 1315 | 1 | 0 | 0 | 0 | 0
+   cs: "templates for South African law firms: engagement letters, court filings, and correspondence" -> legal term, not a leak
+/settings/connections?tab=automations | 200 | Automations | 2174 | 0 | 0 | 0 | 0 | 0
+## Batch 4 — 2026-10-29T20:15–20:17Z (CLOSED matter: Matters ?status=CLOSED list + all 22 sub-tabs of Sipho's CLOSED matter d42337ad; breadcrumb = nav[aria-label=breadcrumb] text)
+/matters?status=CLOSED | 200 | Matters | bc "Mathebula & Partners Matters" | 888 | 0 | 0 | 0 | 0 | 0
+/matters/<sipho CLOSED>?tab=details | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=fields | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=team | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=overview | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=tasks | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=documents | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 2 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=correspondence | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=generated | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=time | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=disbursements | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=budget | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=rates | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=financials | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=statements | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=trust | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=clients | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=requests | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=customer-comments | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=adverse-parties | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=court-dates | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=activity | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/matters/<sipho CLOSED>?tab=audit | 200 | h1 'Sipho Dlamini v. Standard Bank (civil)' | bc 'Mathebula & Partners Matters Sipho Dlamini v. Standard Bank (civil)' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+   (documents tab cs 2: file name "engagement-letter-litigation-sipho-dlamini-v-stand…" -> legal document name, not a leak)
+   innerText lengths: details 939, fields 1028, team 1049, overview 1206, tasks 878, documents 1774, correspondence 982, generated 1156, time 1097, disbursements 1168, budget 935, rates 893, financials 907, statements 991, trust 953, clients 880, requests 839, customer-comments 893, adverse-parties 855, court-dates 931, activity 2908, audit 1001
+## Batch 5 — 2026-10-29T20:17–20:18Z (client Sipho all 15 sub-tabs; fee notes INV-0001/0002/0003 + RAF draft; disbursements Deeds/Sheriff; Estate (CLOSED) / Nomvula / Khumalo / RAF matter pages; Moroka client ledger; Profitability + 3 report pages)
+/clients/<sipho>?tab=details | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=fields | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=tags | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=overview | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=matters | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=documents | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=generated | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=invoices | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=rates | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=financials | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=trust | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=onboarding | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=requests | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=activity | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/clients/<sipho>?tab=audit | 200 | h1 'Sipho Dlamini' | bc 'Mathebula & Partners Clients Sipho Dlamini' | cs 0 | ci 0 | err 0 | perr 0 | warn 0
+/invoices/4a10f00a-… (INV-0001 PAID) | 200 | INV-0001 | bc 'Mathebula & Partners Fee notes INV-0001' | 2081 | 0 | 0 | 0 | 0 | 0
+/invoices/2d84a43c-… (INV-0002 SENT) | 200 | INV-0002 | bc 'Mathebula & Partners Fee notes INV-0002' | 2820 | 0 | 0 | 0 | 0 | 0
+/invoices/fc730aab-… (INV-0003 SENT) | 200 | INV-0003 | bc 'Mathebula & Partners Fee notes INV-0003' | 2081 | 0 | 0 | 0 | 0 | 0
+/invoices/cd0fc2eb-… (RAF DRAFT) | 200 | Draft fee note | bc 'Mathebula & Partners Fee notes Fee note' | 1603 | 0 | 0 | 0 | 0 | 0
+/legal/disbursements/adee383d-… (Deeds, BILLED) | 200 | Deeds Office Fees | bc 'Mathebula & Partners Legal Disbursements Deeds office search fee' | 826 | 0 | 1 | 0 | 0 | 0
+   ci: "…on 11288c1d-b866-4bd2-ac02-0b6047eff200 Invoiced Yes Description & receipt…"
+   judged: LEAK — row label "Invoiced" (value "Yes") on the disbursement detail, frontend/app/(app)/org/[slug]/legal/disbursements/[id]/detail-client.tsx:291; same page's status badge says "Billed" -> 90.1b, new G88-F27. (UUID before it = G88-F9, cited.)
+/legal/disbursements/30e55eca-… (Sheriff, WRITTEN_OFF) | 200 | Sheriff Fees | bc 'Mathebula & Partners Legal Disbursements Sheriff fee — service of process' | 889 | 0 | 0 | 0 | 0 | 0
+/matters/028d3901-… (Estate, CLOSED) | 200 | Estate Late Peter Moroka | bc '… Matters Estate Late Peter Moroka' | 1267 | 0 | 0 | 0 | 0 | 0
+/matters/0b9656be-… (Nomvula, ACTIVE) | 200 | Nomvula Khoza — Debt Recovery (Mokoena Traders) | 892 | 0 | 0 | 0 | 0 | 0
+/matters/aa61195f-… (Khumalo, ACTIVE) | 200 | Khumalo Property Holdings — Erf 1234 Sandton Transfer | 916 | 0 | 0 | 0 | 0 | 0
+/matters/5c42e002-… (RAF, ACTIVE) | 200 | Lerato Mthembu — RAF Claim (MVA 2025-11-03) | 903 | 0 | 0 | 0 | 0 | 0
+/trust-accounting/client-ledgers/acd36ca9-… | 200 | Moroka Family Trust | bc '… Trust accounting Client ledgers Client ledger' | 1157 | 0 | 0 | 0 | 0 | 0
+/reports/profitability | 200 | Profitability | bc '… Reports Profitability' | 1638 | 0 | 0 | 0 | 0 | 0
+/reports/invoice-aging | 200 | Fee Note Aging Report | 558 | 0 | 0 | 0 | 0 | 0
+/reports/project-profitability | 200 | Matter Profitability Report | 606 | 0 | 0 | 0 | 0 | 0
+/reports/timesheet | 200 | Timesheet Report | 641 | 0 | 0 | 0 | 0 | 0
+## Totals of the five navigation batches: 113 page loads (29 sidebar/top-level incl. the Notifications page, +1 repeat of /settings/firm; 31 settings tabs; 23 closed-matter surfaces; 15 client tabs; 4 fee notes; 2 disbursements; 4 matter pages; 1 client ledger; 4 report pages), every HTTP 200, 0 console errors, 0 page errors, 1 console warning (Next <Image> on the letterhead logo, settings Firm › General).
+## Breadcrumbs observed (nav[aria-label=Breadcrumb]): "Mathebula & Partners › Matters", "… › Matters › New", "… › Matters › <matter name>", "… › Clients › <client name>", "… › Fee notes › INV-000n" / "› Fee note" (draft), "… › Legal › Disbursements › <description>", "… › Trust accounting › Transactions", "… › Trust accounting › Client ledgers › Client ledger", "… › Reports › <report>", "… › Settings › Firm|Matters", "… › Home", "… › Team" — no raw route slugs (617C "Matters › new", "Fee notes › billing-runs" closed), 0 hits.
+
+## Dialogs opened by hand (browser_click), text read with browser_evaluate on [role=dialog], closed with Cancel / Escape (no submit) — 2026-10-29T20:19–20:22Z
+regex per dialog: /project|customer|invoice|agency|retainer|accountant|bookkeep|engagement/gi
+- Clients › New Client step 1 "Create Client — Step 1 of 2 — Add a new client to your organization." labels Name · Type · Email · Phone (optional) · Tax Number (required to send a fee note; collectable later) · Notes · ADDRESS (Address Line 1/2, City, State / Province, Postal Code, Country (required for activation)) · CONTACT (Contact Name/Email/Phone) · BUSINESS DETAILS (Registration Number, Entity Type, Financial Year End) — hits 0
+- New Client step 2 (Name/Email filled with a probe value, Next = client-side validation + intake-field GET, create-customer-dialog.tsx:121-155; closed with Back → Cancel, nothing created — clients still 5 by SELECT) "Additional Information — Step 2 of 2 — Fill in any required intake fields. SA Legal — Client Details": ID / Passport Number · Postal Address · Preferred Correspondence · Referred By — hits 0
+- /matters/new page "New Matter — Matter Details": Client · Description (min 20 chars for AI) · Template · Matter Name · Reference Number (optional) · Priority (optional) · Work Type (optional) · Create Matter · AI Matter Intake — hits 0
+- Matters › New Matter dialog "Create Matter — Add a new matter to your organization.": Name · Description · Due Date · Client · Reference Number · Priority · Work Type · Conflict Check "Run a conflict of interest check before creating this matter." — hits 0
+- Matters › New from Template: "New from Template — Select Template" (6 templates, task counts) → Next → "New from Template — Configure — Creating from: Litigation (Personal Injury / General)": Matter name · Description · Client · Matter lead · Reference Number · Priority · Work Type — hits 0
+- Nomvula › Tasks › New Task "Create Task — Add a new task to this matter.": Title · Description · Priority · Type · Due Date · Estimated Hours · Recurrence · Assign to — hits 0 (617C "…to this project." closed)
+- Nomvula › Team › Add Member "Add Member — Search and select an organization member to add to this matter. All organization members are already on this matter." — hits 0
+- RAF › Court dates › New Court Date "Schedule Court Date — Add a new court date to the calendar.": Matter · Type · Date · Time · Court Name · Court Reference · Judge / Magistrate · Description · Reminder (days before) — hits 0 (side: "calendar" wording vs the Diary zone, not a step word, not filed)
+- Trust › Transactions › Record Transaction menu (Record Deposit · Payment · Transfer · Fee Transfer · Refund) → Record Deposit "Record a trust deposit from a client into the trust account.": Client · Matter (Optional) · Amount · Reference · Description · Transaction Date — hits 0; → Record Fee Transfer "Transfer fees from trust to the office account against an unpaid fee note.": Client ID · Fee note ID · Amount · Reference — hits 0
+- Moroka › Fees › Fee notes › New fee note "Generate fee note — Create a new fee note for Moroka Family Trust from unbilled time entries and disbursements.": From Date · To Date · Currency — hits 0 (617C "…and expenses" closed)
+- RAF (ACTIVE) › Close Matter (closure dialog) Step 1 "Close matter — Review closure gates …" 9 gate lines — hits 0; Continue → Step 2: Reason (Concluded / Client terminated / Referred out / Other) · Notes · Generate closure letter · Generate Statement of Account · Share on the client portal · Email the client now · intent summary · "Override failing gates" — hits 0; closed with Escape (matter still "Active", dialog gone — evaluate)
+- Sipho (CLOSED) › Reopen Matter "Reopen matter — Reopen Sipho Dlamini v. Standard Bank (civil). Provide a brief note explaining why this matter is being reopened. Reopen notes (≥ 10 characters)" — hits 0; Escape

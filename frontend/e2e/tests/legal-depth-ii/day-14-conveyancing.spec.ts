@@ -122,22 +122,12 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   });
 
   // ── 14.2 (part 2): FICA checklist complete → client auto-transitions to ACTIVE ──
-  // FIXME(depth-ii:checklist-stale-after-complete) PRODUCT BUG (reproduced, intermittent):
-  // completing a checklist item persists it but the Onboarding tab can keep rendering it as
-  // "Pending" with "Mark Complete" until the page is reloaded. The row
-  // (components/compliance/ChecklistInstanceItemRow.tsx) renders `item.status` from server
-  // props and relies solely on `revalidatePath` in completeChecklistItem
-  // (customers/[id]/checklist-actions.ts) to refresh them. Instrumented runs on a ready page
-  // (client opened by click-through, tab rendered; 5 runs x 9 items): 6/45 completions stayed
-  // stale for 10s. In every stale case the server action returned 200 — in at least one with
-  // an RSC payload already carrying the item as COMPLETED — but the router never applied it
-  // (no client re-render / `framenavigated`), while every fresh case showed that commit
-  // ~150ms after the action; a reload always showed the item COMPLETED. This is NOT the
-  // disbursement "act right after a client-side navigation" race (see the PR notes): the
-  // disbursement detail renders the action's return value from local state and passed 14/14
-  // click-through runs without any reload.
+  // Phase 88 628E (OD-7): was test.fixme FIXME(depth-ii:checklist-stale-after-complete) — the item
+  // row kept rendering "Pending" after a 200 server action until reload — the symptom of the
+  // next@16.2.6 lost React ping (frontend/CLAUDE.md › Patched dependencies; next 16.3.8, #1651).
+  // Re-probed 5/5 green on the whole depth-II config (2026-10-29), so the test runs again.
   // Matter creation, OTP generation and acceptance below do not require an ACTIVE client.
-  test.fixme("Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE", async ({
+  test("Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE", async ({
     page,
   }) => {
     await loginAs(page, "alice");

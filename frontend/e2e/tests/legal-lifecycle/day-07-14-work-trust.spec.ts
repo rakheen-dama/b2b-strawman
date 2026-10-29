@@ -1,24 +1,50 @@
 /**
  * Days 7-14 — First Work + Trust Deposits
  *
- * Day 7: Log time as 3 users on various matters, create court dates,
- * add comments, check My Work.
- * Day 14: Trust deposits (R250,000 Moroka, R45,000 QuickCollect),
- * conflict detection with adverse party match, trust dashboard.
+ * Day 7: Carol, Bob and Alice log billable time on the tasks of the Sipho and Moroka matters (the
+ * Day 0 rate cards apply), Bob comments on a task, Alice schedules Sipho's motion in the Diary.
+ * Day 14: trust deposits for Moroka (R250,000) and QuickCollect (R45,000), Moroka's client ledger,
+ * the Road Accident Fund adverse party and the conflict check that finds it, more of Carol's time,
+ * and the trust dashboard.
+ *
+ * Records come from the lifecycle run (helpers/legal-lifecycle.ts): Days 0–3 must have run on the
+ * same stack. Days 30–90 bill the unbilled time logged here and draw on these trust balances.
+ *
+ * Phase 88 628E: rewritten strict — every step is real or asserted (no `isVisible().catch` guards).
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Days 1-3 tests completed (4 clients, initial matters created)
+ *   2. Days 0-3 tests completed (rates, trust account, 4 clients, template matters)
  *
  * Run:
- *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle
+ *   E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle
  */
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { captureScreenshot } from "../../helpers/screenshot";
+import { openGroupedTab } from "../../helpers/grouped-tabs";
+import { BASE, isoDate, openMatter, selectNativeOption } from "../../helpers/legal-depth-ii";
+import {
+  clientId,
+  currentLifecycleRun,
+  logTimeOnTask,
+  morokaClient,
+  morokaMatter,
+  openTrustTransactions,
+  qcClient,
+  qcMatter,
+  randPattern,
+  recordTrustDeposit,
+  recordValue,
+  runConflictCheck,
+  siphoMatter,
+  TRUST_ACCOUNT,
+  trustTransactionRow,
+} from "../../helpers/legal-lifecycle";
 
-const ORG = "e2e-test-org";
-const BASE = `/org/${ORG}`;
+const ADVERSE_PARTY = "Road Accident Fund";
+const morokaDepositRef = () => `DEP/MOROKA/${currentLifecycleRun()}`;
+const qcDepositRef = () => `DEP/QC/${currentLifecycleRun()}`;
 
 // ═══════════════════════════════════════════════════════════════════
 //  DAY 7 — First Week of Work
@@ -28,187 +54,95 @@ test.describe.serial("Day 7 — First Week of Work", () => {
   test("Carol: Navigate to My Work page", async ({ page }) => {
     await loginAs(page, "carol");
     await page.goto(`${BASE}/my-work`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await expect(page.getByRole("heading", { level: 1, name: "My Work" })).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("Carol: Log 90min time on Sipho matter", async ({ page }) => {
     await loginAs(page, "carol");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
-
-    // Navigate to Sipho's litigation matter. Carol (Member) sees it because Day 1 added her to
-    // its team (Phase 88 619E, ADR-346: Members see only matters they are on).
-    const matterLink = page.getByRole("link", { name: /Ndlovu|Sipho|RAF/i }).first();
-    await expect(
-      matterLink,
-      "Carol should see the Sipho matter she was added to on Day 1"
-    ).toBeVisible({ timeout: 15_000 });
-    await matterLink.click();
-
-    await page.waitForTimeout(2000);
-
-    // Look for time logging button
-    const logTimeBtn = page
-      .getByRole("button", { name: /Log Time|New Time|Add Time|Time Recording/i })
-      .first();
-    const hasLogTime = await logTimeBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasLogTime) {
-      await logTimeBtn.click();
-      await page.waitForTimeout(1000);
-
-      // Fill time entry
-      const durationField = page
-        .getByRole("textbox", { name: /duration|hours|minutes/i })
-        .or(page.getByRole("spinbutton", { name: /duration|hours|minutes/i }))
-        .first();
-      const hasDuration = await durationField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasDuration) {
-        await durationField.fill("90");
-      }
-
-      const descField = page.getByRole("textbox", { name: /description|notes|activity/i }).first();
-      const hasDesc = await descField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasDesc) {
-        await descField.fill("Research case law — personal injury precedents");
-      }
-
-      const saveBtn = page.getByRole("button", { name: /save|create|log/i }).first();
-      const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasSave) {
-        await saveBtn.click();
-        await page.waitForTimeout(2000);
-      }
-    } else {
-      // Time tab may need to be selected first
-      const timeTab = page.getByRole("tab", { name: /time/i }).first();
-      const hasTimeTab = await timeTab.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasTimeTab) {
-        await timeTab.click();
-        await page.waitForTimeout(1000);
-      }
-    }
+    // Carol (Member) sees the matter because Day 1 added her to its team (Phase 88 619E,
+    // ADR-346: Members see only matters they are on).
+    await openMatter(page, siphoMatter());
+    await logTimeOnTask(page, {
+      task: "Initial consultation & case assessment",
+      hours: 1,
+      minutes: 30,
+      date: isoDate(),
+      description: "Research case law — personal injury precedents",
+      rate: "550,00",
+    });
   });
 
-  // ── Bob: Log time on Sipho (letter of demand) + Apex (due diligence)
+  // ── Bob: Log time on Sipho (letter of demand) ─────────────────────
   test("Bob: Log 120min on Sipho — letter of demand", async ({ page }) => {
     await loginAs(page, "bob");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+    await openMatter(page, siphoMatter());
+    await logTimeOnTask(page, {
+      task: "Letter of demand",
+      hours: 2,
+      minutes: 0,
+      date: isoDate(),
+      description: "Draft letter of demand to Road Accident Fund",
+      rate: "1 200,00",
+    });
 
-    const matterLink = page.getByRole("link", { name: /Ndlovu|Sipho|RAF/i }).first();
-    const hasMatter = await matterLink.isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasMatter) {
-      await matterLink.click();
-      await page.waitForTimeout(2000);
-
-      const logTimeBtn = page
-        .getByRole("button", { name: /Log Time|New Time|Add Time|Time Recording/i })
-        .first();
-      const hasLogTime = await logTimeBtn.isVisible({ timeout: 5000 }).catch(() => false);
-      if (hasLogTime) {
-        await logTimeBtn.click();
-        await page.waitForTimeout(1000);
-
-        const descField = page
-          .getByRole("textbox", { name: /description|notes|activity/i })
-          .first();
-        const hasDesc = await descField.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasDesc) {
-          await descField.fill("Draft letter of demand to Road Accident Fund");
-        }
-
-        const saveBtn = page.getByRole("button", { name: /save|create|log/i }).first();
-        const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasSave) {
-          await saveBtn.click();
-          await page.waitForTimeout(2000);
-        }
-      }
-    }
+    // Fees → Time recording summarises the matter's time by member: Carol's and Bob's entries
+    await openGroupedTab(page, "finance", "time");
+    const timePanel = page.getByRole("tabpanel");
+    await expect(timePanel).toContainText("Carol Member", { timeout: 15_000 });
+    await expect(timePanel).toContainText("Bob Admin");
+    await expect(timePanel).toContainText("Letter of demand");
   });
 
-  test("Bob: Add comment on Sipho matter", async ({ page }) => {
+  test("Bob: Add internal comment on the Sipho letter-of-demand task", async ({ page }) => {
+    const comment = `Reviewed claim documents — need additional medical records from Dr. Nkosi (${currentLifecycleRun()})`;
     await loginAs(page, "bob");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
-
-    const matterLink = page.getByRole("link", { name: /Ndlovu|Sipho|RAF/i }).first();
-    const hasMatter = await matterLink.isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasMatter) {
-      await matterLink.click();
-      await page.waitForTimeout(2000);
-
-      // Look for comments/activity tab
-      const commentTab = page.getByRole("tab", { name: /comment|activity|discussion/i }).first();
-      const hasTab = await commentTab.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasTab) {
-        await commentTab.click();
-        await page.waitForTimeout(1000);
-      }
-
-      // Add a comment
-      const commentInput = page
-        .getByRole("textbox", { name: /comment|message/i })
-        .or(page.locator('textarea, [contenteditable="true"]'))
-        .first();
-      const hasInput = await commentInput.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasInput) {
-        await commentInput.fill(
-          "Reviewed claim documents — need additional medical records from Dr. Nkosi"
-        );
-        const submitBtn = page.getByRole("button", { name: /send|post|submit|comment/i }).first();
-        const hasSubmit = await submitBtn.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasSubmit) {
-          await submitBtn.click();
-          await page.waitForTimeout(2000);
-        }
-      }
-    }
+    await openMatter(page, siphoMatter());
+    await openGroupedTab(page, "work", "tasks");
+    // Internal comments live on the task detail sheet (Comments tab)
+    await page
+      .getByRole("tabpanel")
+      .getByRole("button", { name: "Open task detail for Letter of demand" })
+      .click();
+    const sheet = page.getByRole("dialog", { name: "Task Detail" });
+    await expect(sheet).toBeVisible({ timeout: 15_000 });
+    await sheet.getByRole("tab", { name: "Comments" }).click();
+    await sheet.getByLabel("Add a comment").fill(comment);
+    await sheet.getByLabel("Visibility").selectOption("INTERNAL");
+    await sheet.getByRole("button", { name: "Post Comment" }).click();
+    await expect(sheet.getByText(comment)).toBeVisible({ timeout: 15_000 });
+    await expect(sheet.getByLabel("Add a comment")).toHaveValue("");
   });
 
   // ── Alice: Create court date for Sipho ────────────────────────────
   test("Alice: Create court date for Sipho (Motion, 30 days out)", async ({ page }) => {
     await loginAs(page, "alice");
     // Phase 87 S6b (ADR-344): /court-calendar → /diary
-    await page.goto(`${BASE}/diary?types=COURT_DATE,PRESCRIPTION`);
+    await page.goto(`${BASE}/diary`);
+    await page.getByRole("button", { name: "New court date" }).click();
+    const dialog = page.getByRole("dialog", { name: "Schedule Court Date" });
+    await expect(dialog).toBeVisible();
+    await selectNativeOption(dialog.getByLabel("Matter"), siphoMatter());
+    await dialog.getByLabel("Type").selectOption("MOTION");
+    await dialog.getByLabel("Date").fill(isoDate(30));
+    await dialog.getByLabel("Court Name").fill("Gauteng Division, Pretoria");
+    await dialog.getByLabel(/^Description/).fill("Motion — Ndlovu v RAF");
+    await dialog.getByRole("button", { name: "Schedule Court Date" }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
 
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Diary page not accessible — feature may not be implemented");
-      return;
-    }
-
-    const newBtn = page
-      .getByRole("button", { name: /new.*date|add.*date|new.*event|schedule/i })
-      .first();
-    const hasNew = await newBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasNew) {
-      await newBtn.click();
-      await page.waitForTimeout(1000);
-
-      // Fill court date details
-      const titleField = page.getByRole("textbox", { name: /title|name|description/i }).first();
-      const hasTitle = await titleField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasTitle) {
-        await titleField.fill("Motion — Ndlovu v RAF");
-      }
-
-      const saveBtn = page.getByRole("button", { name: /save|create|schedule/i }).first();
-      const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasSave) {
-        await saveBtn.click();
-        await page.waitForTimeout(2000);
-      }
-    }
+    // The matter's Diary tab lists the motion as Scheduled
+    await openMatter(page, siphoMatter());
+    // "Diary" is a single-tab group: a plain tab trigger, no sub-tab menu (grouped-tab-bar.tsx)
+    const diaryTab = page.getByTestId("tab-group-schedule");
+    await diaryTab.click();
+    await expect(diaryTab).toHaveAttribute("aria-selected", "true");
+    const motion = page.getByTestId("court-date-list").getByRole("row").filter({
+      hasText: "Motion",
+    });
+    await expect(motion).toHaveCount(1, { timeout: 15_000 });
+    await expect(motion).toContainText("Scheduled");
+    await expect(motion).toContainText("Gauteng Division, Pretoria");
 
     // Screenshot: court calendar entry
     await captureScreenshot(page, "day-07-court-calendar-entry-scheduled");
@@ -218,48 +152,27 @@ test.describe.serial("Day 7 — First Week of Work", () => {
   // ── Alice: Log time on Moroka estate ──────────────────────────────
   test("Alice: Log 60min on Moroka estate matter", async ({ page }) => {
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/matters`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
-
-    const matterLink = page.getByRole("link", { name: /Moroka|Estate/i }).first();
-    const hasMatter = await matterLink.isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasMatter) {
-      await matterLink.click();
-      await page.waitForTimeout(2000);
-
-      const logTimeBtn = page
-        .getByRole("button", { name: /Log Time|New Time|Add Time|Time Recording/i })
-        .first();
-      const hasLogTime = await logTimeBtn.isVisible({ timeout: 5000 }).catch(() => false);
-      if (hasLogTime) {
-        await logTimeBtn.click();
-        await page.waitForTimeout(1000);
-
-        const descField = page
-          .getByRole("textbox", { name: /description|notes|activity/i })
-          .first();
-        const hasDesc = await descField.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasDesc) {
-          await descField.fill("Report to Master of the High Court — initial filing");
-        }
-
-        const saveBtn = page.getByRole("button", { name: /save|create|log/i }).first();
-        const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasSave) {
-          await saveBtn.click();
-          await page.waitForTimeout(2000);
-        }
-      }
-    }
+    await openMatter(page, morokaMatter());
+    await logTimeOnTask(page, {
+      task: "Report estate to Master of High Court",
+      hours: 1,
+      minutes: 0,
+      date: isoDate(),
+      description: "Report to Master of the High Court — initial filing",
+      rate: "2 500,00",
+    });
   });
 
-  // ── Verify My Work shows recent activity ──────────────────────────
-  test("Alice: My Work page shows active items", async ({ page }) => {
+  // ── My Work lists today's entry ───────────────────────────────────
+  test("Alice: My Work lists today's Moroka time entry", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/my-work`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await expect(page.getByRole("heading", { level: 1, name: "My Work" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByText(`${morokaMatter()} — Report to Master of the High Court — initial filing`)
+    ).toBeVisible({ timeout: 15_000 });
 
     await captureScreenshot(page, "day-07-my-work-legal-active");
   });
@@ -273,285 +186,157 @@ test.describe.serial("Day 14 — Trust Deposits & Conflict Detection", () => {
   test("Alice: Navigate to Trust Accounting", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/trust-accounting`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Trust Accounting page not accessible — feature may not be implemented");
-      return;
-    }
-
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await expect(page.getByRole("heading", { level: 1, name: "Trust Accounting" })).toBeVisible({
+      timeout: 15_000,
+    });
+    // Day 0 created the account, so the overview offers its actions
+    await expect(page.getByRole("link", { name: "Client Ledgers" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Record Transaction" })).toBeVisible();
   });
 
   test("Alice: Deposit R250,000 into trust for Moroka estate", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/transactions`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Trust transactions page not accessible");
-      return;
-    }
-
-    const depositBtn = page
-      .getByRole("button", { name: /new.*deposit|add.*deposit|record.*deposit/i })
-      .first();
-    const hasDeposit = await depositBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasDeposit) {
-      await depositBtn.click();
-      await page.waitForTimeout(1000);
-
-      // Fill deposit details
-      const amountField = page
-        .getByRole("textbox", { name: /amount/i })
-        .or(page.getByRole("spinbutton", { name: /amount/i }))
-        .first();
-      const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasAmount) {
-        await amountField.fill("250000");
-      }
-
-      const descField = page.getByRole("textbox", { name: /description|reference|note/i }).first();
-      const hasDesc = await descField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasDesc) {
-        await descField.fill("Estate Late Peter Moroka — transfer from executor");
-      }
-
-      // Select client (Moroka)
-      const clientField = page.getByRole("combobox", { name: /client|customer/i }).first();
-      const hasClient = await clientField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasClient) {
-        await clientField.click();
-        await page.waitForTimeout(500);
-        const morokaOption = page.getByRole("option", { name: /Moroka/i }).first();
-        const hasMoroka = await morokaOption.isVisible({ timeout: 3000 }).catch(() => false);
-        if (hasMoroka) {
-          await morokaOption.click();
-        }
-      }
-
-      const saveBtn = page.getByRole("button", { name: /save|create|submit|deposit/i }).first();
-      const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasSave) {
-        await saveBtn.click();
-        await page.waitForTimeout(2000);
-      }
-    } else {
-      test.skip(true, "Deposit button not found — trust deposit UI may not be implemented");
-      return;
-    }
+    await recordTrustDeposit(page, {
+      client: morokaClient(),
+      matter: morokaMatter(),
+      amount: "250000.00",
+      reference: morokaDepositRef(),
+      description: "Estate Late Peter Moroka — transfer from executor",
+    });
+    recordValue("morokaDepositRef", morokaDepositRef());
   });
 
-  test("Alice: Approve Moroka trust deposit", async ({ page }) => {
+  // Deposits land RECORDED; only payments and fee transfers wait for approval (the approval
+  // path is the Day 30 fee transfer, approved by a second user).
+  test("Alice: Moroka trust deposit is RECORDED — no approval step", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/transactions`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Trust transactions page not accessible");
-      return;
-    }
-
-    // Look for pending deposit to approve
-    const approveBtn = page.getByRole("button", { name: /approve/i }).first();
-    const hasApprove = await approveBtn.isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasApprove) {
-      await approveBtn.click();
-      await page.waitForTimeout(2000);
-    }
+    await openTrustTransactions(page);
+    const row = trustTransactionRow(page, morokaDepositRef());
+    await expect(row).toHaveCount(1, { timeout: 15_000 });
+    await expect(row).toContainText("RECORDED");
+    await expect(row).toContainText(randPattern("250 000,00"));
+    await expect(row.getByRole("button", { name: "Approve" })).toHaveCount(0);
   });
 
   test("Alice: Verify Moroka trust ledger balance", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/trust-accounting/client-ledgers`);
+    await expect(page.getByTestId("client-ledgers-page")).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId("client-search").fill(morokaClient());
+    await page.getByRole("button", { name: "Search", exact: true }).click();
 
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Client ledgers page not accessible");
-      return;
-    }
+    const ledgerRow = page.getByTestId(`ledger-row-${clientId("moroka")}`);
+    await expect(ledgerRow).toContainText(randPattern("250 000,00"), { timeout: 15_000 });
+    await ledgerRow.getByRole("link", { name: morokaClient() }).click();
+    await expect(page.getByRole("heading", { level: 1, name: morokaClient() })).toBeVisible({
+      timeout: 15_000,
+    });
+    const summary = page.getByTestId("client-summary");
+    await expect(summary).toContainText("Trust Balance");
+    await expect(summary).toContainText(randPattern("250 000,00"));
 
-    // Look for Moroka in ledger list
-    const morokaLedger = page.getByText(/Moroka/i).first();
-    const hasMoroka = await morokaLedger.isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasMoroka) {
-      await morokaLedger.click();
-      await page.waitForTimeout(2000);
-
-      // Verify balance shows R250,000
-      const balance = await page
-        .getByText(/250[\s,.]?000/i)
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-      if (balance) {
-        // Screenshot: trust deposit ledger
-        await captureScreenshot(page, "day-14-trust-deposit-ledger-posted");
-        await captureScreenshot(page, "trust-deposit-form", { curated: true });
-        await captureScreenshot(page, "client-ledger-balance", { curated: true });
-      }
-    }
+    // Screenshot: trust deposit ledger
+    await captureScreenshot(page, "day-14-trust-deposit-ledger-posted");
+    await captureScreenshot(page, "trust-deposit-form", { curated: true });
+    await captureScreenshot(page, "client-ledger-balance", { curated: true });
   });
 
   // ── 14.9-14.11: Trust deposit R45,000 for QuickCollect ────────────
   test("Alice: Deposit R45,000 into trust for QuickCollect", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/transactions`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Trust transactions page not accessible");
-      return;
-    }
-
-    const depositBtn = page
-      .getByRole("button", { name: /new.*deposit|add.*deposit|record.*deposit/i })
-      .first();
-    const hasDeposit = await depositBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasDeposit) {
-      await depositBtn.click();
-      await page.waitForTimeout(1000);
-
-      const amountField = page
-        .getByRole("textbox", { name: /amount/i })
-        .or(page.getByRole("spinbutton", { name: /amount/i }))
-        .first();
-      const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasAmount) {
-        await amountField.fill("45000");
-      }
-
-      const descField = page.getByRole("textbox", { name: /description|reference|note/i }).first();
-      const hasDesc = await descField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasDesc) {
-        await descField.fill("QuickCollect Services — collections deposit");
-      }
-
-      const saveBtn = page.getByRole("button", { name: /save|create|submit|deposit/i }).first();
-      const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasSave) {
-        await saveBtn.click();
-        await page.waitForTimeout(2000);
-      }
-    }
+    await recordTrustDeposit(page, {
+      client: qcClient(),
+      matter: qcMatter(),
+      amount: "45000.00",
+      reference: qcDepositRef(),
+      description: "QuickCollect Services — collections deposit",
+    });
+    recordValue("qcDepositRef", qcDepositRef());
   });
 
-  // ── 14.12-14.15: Conflict check "Mokoena" -> adverse match ────────
-  test('Bob: Conflict check "Mokoena" — expect adverse party match', async ({ page }) => {
-    await loginAs(page, "bob");
-    await page.goto(`${BASE}/conflict-check`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Conflict check page not accessible");
-      return;
-    }
-
-    const searchInput = page.locator('input[type="search"], input[type="text"]').first();
-    const hasSearch = await searchInput.isVisible({ timeout: 5000 }).catch(() => false);
-    if (hasSearch) {
-      await searchInput.fill("Mokoena");
-
-      const searchBtn = page.getByRole("button", { name: /search|check|run/i }).first();
-      const hasBtn = await searchBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasBtn) {
-        await searchBtn.click();
-      } else {
-        await searchInput.press("Enter");
-      }
-      await page.waitForTimeout(2000);
-
-      // Expect AMBER/RED match result
-      const matchResult = await page
-        .getByText(/match|conflict|amber|red|found/i)
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-      if (matchResult) {
-        await captureScreenshot(page, "day-14-conflict-match-found");
-        await captureScreenshot(page, "conflict-check-adverse-match", { curated: true });
-      }
-    }
-  });
-
-  // ── 14.16-14.18: Add adverse party "Road Accident Fund" ───────────
+  // ── 14.12-14.15: Adverse party "Road Accident Fund" ───────────────
   test('Alice: Add adverse party "Road Accident Fund" to registry', async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/legal/adverse-parties`);
+    const registry = page.getByTestId("adverse-party-registry");
+    await expect(registry).toBeVisible({ timeout: 15_000 });
+    // The registry allows duplicate names, so count this party's rows before and after
+    const rows = page
+      .getByTestId("adverse-party-table")
+      .getByRole("row")
+      .filter({ hasText: ADVERSE_PARTY });
+    const countText = registry.getByText(/^\d+ part(y|ies)$/);
+    await expect(countText).toBeVisible();
+    const before = await rows.count();
 
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Adverse parties page not accessible — feature may not be implemented");
-      return;
-    }
+    await page.getByTestId("create-adverse-party-trigger").click();
+    const dialog = page.getByTestId("adverse-party-dialog");
+    await expect(dialog.getByRole("heading", { name: "Add Adverse Party" })).toBeVisible();
+    await dialog.getByLabel(/^Name/).fill(ADVERSE_PARTY);
+    await dialog.getByLabel(/^Party Type/).selectOption("GOVERNMENT");
+    await dialog.getByRole("button", { name: "Create Party" }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    await expect(rows).toHaveCount(before + 1, { timeout: 15_000 });
+    await expect(rows.first()).toContainText("Government");
+  });
 
-    const addBtn = page.getByRole("button", { name: /add|new|create/i }).first();
-    const hasAdd = await addBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasAdd) {
-      await addBtn.click();
-      await page.waitForTimeout(1000);
-
-      const nameField = page.getByRole("textbox", { name: /name/i }).first();
-      const hasName = await nameField.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasName) {
-        await nameField.fill("Road Accident Fund");
-      }
-
-      const saveBtn = page.getByRole("button", { name: /save|create|add/i }).first();
-      const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (hasSave) {
-        await saveBtn.click();
-        await page.waitForTimeout(2000);
-      }
-    }
+  // ── 14.16-14.18: Conflict check finds the adverse party ───────────
+  test('Bob: Conflict check "Road Accident Fund" — adverse party match (Conflict Found)', async ({
+    page,
+  }) => {
+    // 628E-BLOCKER (reproduced 2026-10-29 on :3001, Playwright MCP + this test): a conflict check
+    // that matches an adverse party with no matter link crashes the page ("Something went wrong";
+    // console "TypeError: Cannot read properties of null (reading 'replace')"). The backend sends
+    // `relationship: null` for an unlinked party (ConflictCheckService.buildAdversePartyConflict,
+    // link == null) and the result table calls `match.relationship.replace(…)`.
+    test.fixme(
+      true,
+      "628E-BLOCKER: conflict result crashes on an unlinked adverse-party match — components/legal/conflict-check-result.tsx:141"
+    );
+    await loginAs(page, "bob");
+    const result = await runConflictCheck(page, ADVERSE_PARTY);
+    // An exact name match on the adverse-party registry scores above the conflict threshold
+    await expect(result.getByRole("heading", { level: 3 })).toHaveText("Conflict Found");
+    await expect(result).toContainText(ADVERSE_PARTY);
+    await captureScreenshot(page, "day-14-conflict-match-found");
+    await captureScreenshot(page, "conflict-check-adverse-match", { curated: true });
   });
 
   // ── 14.19-14.21: More time logging ────────────────────────────────
-  test("Carol: Log additional time entries", async ({ page }) => {
+  test("Carol: Log additional time on the Sipho matter (letter of demand)", async ({ page }) => {
     await loginAs(page, "carol");
+    await openMatter(page, siphoMatter());
+    await logTimeOnTask(page, {
+      task: "Letter of demand",
+      hours: 0,
+      minutes: 45,
+      date: isoDate(),
+      description: "Collate medical records for the letter of demand",
+      rate: "550,00",
+    });
+    // Her My Work lists both of today's Sipho entries
     await page.goto(`${BASE}/my-work`);
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
-    // Verify My Work page is accessible and showing items
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    for (const description of [
+      "Research case law — personal injury precedents",
+      "Collate medical records for the letter of demand",
+    ]) {
+      await expect(page.getByText(`${siphoMatter()} — ${description}`)).toBeVisible({
+        timeout: 15_000,
+      });
+    }
   });
 
   // ── 14.22-14.24: Trust dashboard check + screenshot ───────────────
   test("Alice: Trust dashboard overview", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/trust-accounting`);
-
-    const mainVisible = await page
-      .locator("main")
-      .isVisible({ timeout: 10_000 })
-      .catch(() => false);
-    if (!mainVisible) {
-      test.skip(true, "Trust Accounting dashboard not accessible");
-      return;
-    }
-
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await expect(page.getByRole("heading", { level: 1, name: "Trust Accounting" })).toBeVisible({
+      timeout: 15_000,
+    });
+    const cards = page.getByTestId("summary-cards");
+    await expect(cards).toContainText("Trust Balance");
+    await expect(cards).toContainText(`${TRUST_ACCOUNT.name} cashbook balance`);
+    await expect(cards).toContainText("Active Clients");
 
     // Screenshot: trust dashboard overview
     await captureScreenshot(page, "day-14-trust-dashboard-loaded");

@@ -152,19 +152,28 @@ describe("no-isvisible-catch — eslint.config.mjs wiring", { timeout: 30_000 },
     "e2e/tests/projects/__probe__.spec.ts",
     "e2e/tests/settings/__probe__.spec.ts",
     "e2e/tests/navigation/__probe__.spec.ts",
+    "e2e/tests/documents/__probe__.spec.ts",
+    "e2e/tests/information-requests/__probe__.spec.ts",
+    "e2e/tests/invoices/__probe__.spec.ts",
+    "e2e/tests/automations/__probe__.spec.ts",
+    "e2e/tests/compliance/__probe__.spec.ts",
+    "e2e/tests/finance/__probe__.spec.ts",
+    "e2e/tests/notifications/__probe__.spec.ts",
+    "e2e/tests/__probe__.spec.ts",
+    "e2e/__probe__.ts",
   ])("is enforced in %s", async (file) => {
     expect(await ruleMessages(file)).toEqual(["swallowed"]);
   });
 
-  // Interim scope (Phase 88 628F, builder 1 of 2): the rule covers the legal suites, helpers,
-  // fixtures and the customers/projects/settings/navigation suites. Builder 2 widens it to e2e/**
-  // and moves the e2e pins below into the list above. The KC-only demo scripts stay ignored (R-2).
+  // 628F: the rule covers every file under e2e/; product code is out of scope. The two KC-only demo
+  // recording scripts are the one authorised exception (explicit `ignores`, 628F R-2).
   it.each([
-    "e2e/tests/documents/__probe__.spec.ts",
     "e2e/tests/demo-full-90day.spec.ts",
     "e2e/tests/demo-recording.spec.ts",
     "components/__probe__.tsx",
-  ])("is not (yet) enforced in %s", async (file) => {
+    "app/__probe__.tsx",
+    "lib/__probe__.ts",
+  ])("is not enforced outside e2e/ (or in the R-2 exception) in %s", async (file) => {
     expect(await ruleMessages(file)).toEqual([]);
   });
 });

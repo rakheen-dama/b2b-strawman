@@ -31,6 +31,22 @@ bash compose/scripts/reseed-mock-dev.sh  # Re-seed without rebuild
 PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e
 ```
 
+### Running a subset
+
+Playwright's positional filters are **regexes matched against the absolute file path**, not directory names.
+`pnpm test:e2e projects` matches every spec, because the checkout path contains `/Projects/` (Phase 88
+628F P-1). Anchor the filter on the path, or use a per-suite script:
+
+```bash
+pnpm test:e2e e2e/tests/projects/              # one directory
+pnpm test:e2e e2e/tests/documents/template-management   # one file
+pnpm test:e2e:projects                         # also :customers, :settings, :navigation
+```
+
+The default config ignores the two legal suites (they run under their own configs —
+`pnpm test:e2e:legal-lifecycle` / `test:e2e:legal-depth-ii`) and, on the mock stack, the KC-only demo
+recording scripts.
+
 ---
 
 ## Authentication
@@ -69,22 +85,32 @@ test("example", async ({ page }) => {
 
 ## Seed Data State After Stack Start
 
-| Entity               | State                       | Notes                                                        |
-| -------------------- | --------------------------- | ------------------------------------------------------------ |
-| Org                  | `e2e-test-org` (Pro plan)   | 3 members synced                                             |
-| Customer "Acme Corp" | **ONBOARDING** (not ACTIVE) | Seed fails to auto-transition; checklist items 0/4 completed |
-| Projects             | **None**                    | Must be created in tests                                     |
-| Tasks                | **None**                    | Must be created in tests                                     |
-| Rates                | **Not set**                 | All members show "Not set"                                   |
-| Invoices             | **None**                    |                                                              |
-| Retainers            | **None**                    |                                                              |
+`compose/seed/seed.sh` (APIs only, idempotent — `e2e-reseed.sh` re-runs it on a populated tenant). Specs reach
+these rows through `e2e/helpers/seed.ts` (`SEED`, `acmeId()`, `websiteRedesignId()`).
 
-### CRITICAL: Customer Lifecycle
+| Entity                        | State                                                                                                      |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Org                           | `e2e-test-org`, vertical profile `legal-za`; members Alice (owner), Bob (admin), Carol (member)            |
+| Client "Acme Corp"            | **ACTIVE**; `contact@acme.example.com` (auto-provisioned portal contact); 1 Long Street, Cape Town 8001 ZA |
+| Matter "Website Redesign"     | Acme Corp's matter (exactly one — resolved GET-first on reseed)                                            |
+| Fee notes (Acme / Website R.) | 2: one **SENT** (`INV-` numbered, notes "E2E seed fee note — sent"), one **DRAFT** ("… — draft")           |
+| Trust account                 | "Mathebula & Partners Trust Account", Standard Bank 051001 / 0123456789, GENERAL, primary                  |
+| Information request           | 1 **SENT** (`REQ-` numbered) on Website Redesign to the Acme contact, item "Certified ID copy"             |
+| Statement of Account          | 1 on Website Redesign, shared with the client (a saved generated document on the matter)                   |
+| Portal digest cadence         | `BIWEEKLY`                                                                                                 |
+| Rates, tasks, time entries    | none — tests create their own                                                                              |
 
-The seed creates Acme Corp and transitions to ONBOARDING, but **cannot auto-transition to ACTIVE** because the 4 checklist items are not completed. Tests that need an ACTIVE customer must either:
+**The seed rows are read-only for specs** (Phase 88 628F R-5): the legal suites, the portal 90-day suite and
+`scripts/regression-test.sh` read them, and default-config spec files run in parallel workers.
 
-1. Complete all 4 checklist items via the UI (see Onboarding Checklist below), OR
-2. Use the backend API directly to complete checklist items
+- A test that changes state creates its own run-unique entity — its own client (`createActiveClient` in
+  `e2e/helpers/api.ts`), matter, fee note, information request, tag, template.
+- A shared setting a test must change (a notification preference, an automation rule, brand colour) is restored
+  in `afterAll`.
+- Never assert global counts, and never pick "the first ACTIVE client" — sibling files create ACTIVE clients.
+  Look seed rows up by exact name.
+- Sending to `contact@acme.example.com` mints a portal magic link (cap 3 per 5 minutes per contact): the seed's
+  information request already spends one, so specs send to their own clients' contacts.
 
 ---
 
@@ -626,8 +652,10 @@ Security           → (Coming soon — disabled)
   (`x.isVisible().then(f).catch(r)`);
 - `isVisible({ timeout })` / `isHidden({ timeout })` — Playwright ignores the option.
 
-It is scoped (`eslint.config.mjs`) to the legal suites, `e2e/helpers/**` and `e2e/fixtures/**`; Phase 88
-628F widens it to `e2e/**` when it sweeps the default-config specs.
+It applies to every file under `e2e/**` (`eslint.config.mjs`; Phase 88 628F). The one exception is the two
+KC-only demo recording scripts (`e2e/tests/demo-full-90day.spec.ts`, `demo-recording.spec.ts`) — an explicit
+`ignores` entry, since they cannot run on the mock stack (628F R-2; follow-up: convert under KC-STACK or
+delete).
 
 Why (R10 §0 M1): these checks reject only when they cannot answer. `isVisible` / `isHidden` do not wait at
 all (no match → `false` / `true` immediately after a navigation) and reject only on a strict-mode violation —
@@ -660,7 +688,9 @@ point. Never use `waitForTimeout` to wait for UI — use a web-first `expect`.
 **Product blockers.** A flow blocked by a product defect you have reproduced is
 `test.fixme(true, "628E-BLOCKER: <short> — <product file:line>")` as the first statement of that test, with
 the intended real steps kept below it, so removing the fixme yields a real test. The reason string is the
-grep tag later slices use (`grep -rn 628E-BLOCKER e2e/tests`). The depth-ii precedent — a
+grep tag later slices use (`grep -rnE "628[EF]-BLOCKER" e2e/tests`): `628E-BLOCKER` for the legal suites,
+`628F-BLOCKER` for the default-config sweep — new blockers take the tag of the slice that reproduced them.
+Reproduce first (a run, with a screenshot/log as evidence), then fixme. The depth-ii precedent — a
 `// FIXME(<suite>:<tag>)` comment citing file:line above `test.fixme(...)` — is equivalent.
 
 ### Lifecycle run state

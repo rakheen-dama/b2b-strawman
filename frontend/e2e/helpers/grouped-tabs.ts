@@ -16,8 +16,10 @@ import { expect, type Page } from "@playwright/test";
  * opened by clicking the (now active) group trigger.
  */
 export async function openGroupedTab(page: Page, groupId: string, tabId: string): Promise<void> {
-  const group = page.getByTestId(`tab-group-${groupId}`);
-  const item = page.getByTestId(`tab-item-${tabId}`);
+  // `visible: true`: for a moment after load the page can hold a second, hidden (display:none)
+  // copy of the tab bar — a test-id locator (unlike getByRole) would then match both (628F)
+  const group = page.getByTestId(`tab-group-${groupId}`).filter({ visible: true });
+  const item = page.getByTestId(`tab-item-${tabId}`).filter({ visible: true });
   await expect(group).toBeVisible({ timeout: 15_000 });
   // The group trigger toggles its sub-tab menu; whether the first click opens the
   // menu depends on whether the group was already active, so click until it is open.

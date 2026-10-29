@@ -13,7 +13,16 @@
  *   cd frontend/e2e
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test invoices/invoice-lifecycle --reporter=list
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+import {
+  apiOk,
+  createActiveClient,
+  createMatter,
+  createMatterRate,
+  createTask,
+  logTime,
+  memberNamed,
+} from "../../helpers/api";
 import { loginAs } from "../../fixtures/auth";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
@@ -22,6 +31,7 @@ const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 
 const RUN_ID = Date.now().toString(36).slice(-4);
+const CLIENT_PREFIX = "InvLife Client";
 
 async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
   const users = {
@@ -39,18 +49,16 @@ async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
   return access_token;
 }
 
-async function findActiveCustomer(token: string): Promise<string> {
-  // Phase 87 S2 (ADR-337): API path
-  const res = await fetch(`${BACKEND_URL}/api/clients`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const customers = await res.json();
-  const active = customers.find(
-    (c: { lifecycleStatus: string; status: string; id: string }) =>
-      c.lifecycleStatus === "ACTIVE" && c.status === "ACTIVE"
+/**
+ * This file's own ACTIVE client (628F R-5): fee notes are never raised on the boot seed's Acme Corp,
+ * whose fee notes the portal suite and REGRESSION read — and "the first ACTIVE client" is not
+ * deterministic while sibling spec files create clients in parallel.
+ */
+async function createOwnClient(): Promise<string> {
+  return createActiveClient(
+    `${CLIENT_PREFIX} ${RUN_ID}`,
+    `${CLIENT_PREFIX.toLowerCase().replace(/ /g, "-")}-${RUN_ID}@example.com`
   );
-  if (!active) throw new Error("No ACTIVE customer found in seed data");
-  return active.id;
 }
 
 async function createDraftWithLine(
@@ -93,6 +101,40 @@ async function createDraftWithLine(
   return lineRes.json();
 }
 
+async function approveAndSend(token: string, invoiceId: string): Promise<void> {
+  const approve = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/approve`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  expect(approve.ok, `approve ${invoiceId}: ${approve.status}`).toBeTruthy();
+  const send = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ overrideWarnings: false }),
+  });
+  expect(send.ok, `send ${invoiceId}: ${send.status} ${await send.text()}`).toBeTruthy();
+}
+
+/** Voids the open (SENT) fee note through the header button and its native confirm(). */
+async function voidInUi(page: Page): Promise<void> {
+  // Void confirms with window.confirm (components/invoices/use-invoice-detail.ts) — accept it
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Void", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Void", exact: true })).toHaveCount(0, {
+    timeout: 15_000,
+  });
+  await expect(page.getByText("Void", { exact: true }).first()).toBeVisible();
+}
+
+async function timeEntry(taskId: string, entryId: string): Promise<{ invoiceId: string | null }> {
+  const entries = await apiOk<{ id: string; invoiceId: string | null }[]>(
+    `/api/tasks/${taskId}/time-entries`
+  );
+  const entry = entries.find((e) => e.id === entryId);
+  expect(entry, `time entry ${entryId}`).toBeDefined();
+  return entry!;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 //  INV-02: Invoice Lifecycle Transitions
 // ═══════════════════════════════════════════════════════════════════
@@ -101,8 +143,7 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
   let invoiceId: string;
 
   test.beforeAll(async () => {
-    const token = await getToken("alice");
-    customerId = await findActiveCustomer(token);
+    customerId = await createOwnClient();
   });
 
   test("DRAFT -> APPROVED", async ({ page }) => {
@@ -112,92 +153,63 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
 
     await loginAs(page, "alice");
     await page.goto(`${BASE}/invoices/${invoiceId}`);
-    await expect(page.getByText(/Draft/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Draft", { exact: true }).first()).toBeVisible({
+      timeout: 10000,
+    });
 
     // Click Approve button
     const approveBtn = page.getByRole("button", { name: "Approve" });
     await expect(approveBtn).toBeVisible({ timeout: 5000 });
     await approveBtn.click();
-
-    await page.waitForTimeout(2000);
+    // APPROVED offers Send fee note instead of Approve (invoice-header-actions.tsx)
+    await expect(page.getByRole("button", { name: "Send fee note" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(approveBtn).toHaveCount(0);
 
     // Verify invoice number assigned (INV-XXXX)
     await expect(page.getByText(/INV-\d+/).first()).toBeVisible({ timeout: 10000 });
   });
 
   test("APPROVED -> SENT", async ({ page }) => {
-    // Use API to send (the UI button may need portal contacts setup)
-    const token = await getToken("alice");
-    const sendRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/send`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ overrideWarnings: true }),
-    });
-
-    if (!sendRes.ok) {
-      // Try via UI fallback
-      await loginAs(page, "alice");
-      await page.goto(`${BASE}/invoices/${invoiceId}`);
-      await expect(page.getByText(/Approved/i).first()).toBeVisible({ timeout: 10000 });
-
-      // Phase 87 S5 (ADR-344): label
-      const sendBtn = page.getByRole("button", { name: /Send fee note/i });
-      const hasSendBtn = await sendBtn.isVisible({ timeout: 5000 }).catch(() => false);
-
-      if (!hasSendBtn) {
-        test.skip(true, "Send fee note button not visible and API send failed");
-        return;
-      }
-
-      await sendBtn.click();
-      await page.waitForTimeout(2000);
-    }
-
-    // Verify status shows Sent
     await loginAs(page, "alice");
     await page.goto(`${BASE}/invoices/${invoiceId}`);
-    await expect(page.getByText(/Sent/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Approved", { exact: true }).first()).toBeVisible({
+      timeout: 10_000,
+    });
+
+    // Phase 87 S5 (ADR-344): label
+    await page.getByRole("button", { name: "Send fee note" }).click();
+    // Once SENT the header offers Record Payment and no longer Send (invoice-header-actions.tsx)
+    await expect(page.getByRole("button", { name: "Record Payment" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByRole("button", { name: "Send fee note" })).toHaveCount(0);
+    await expect(page.getByText("Sent", { exact: true }).first()).toBeVisible();
+
+    const token = await getToken("alice");
+    const res = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(res.ok).toBeTruthy();
+    expect((await res.json()).status).toBe("SENT");
   });
 
   test("SENT -> PAID (record payment)", async ({ page }) => {
     // Verify the invoice is actually in SENT status via API first
     const token = await getToken("alice");
 
-    // Re-fetch the invoice to check current status (previous test may have changed it)
+    // The previous test left the fee note SENT (serial chain)
     const invoiceRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!invoiceRes.ok) {
-      test.skip(true, "Invoice not found");
-      return;
-    }
+    expect(invoiceRes.ok).toBeTruthy();
     const invoice = await invoiceRes.json();
-
-    // If not SENT, try to send it via API
-    if (invoice.status === "APPROVED") {
-      const sendRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ overrideWarnings: true }),
-      });
-      if (!sendRes.ok) {
-        test.skip(true, "Could not send invoice via API");
-        return;
-      }
-    } else if (invoice.status !== "SENT") {
-      test.skip(true, `Invoice is in ${invoice.status} status, not SENT or APPROVED`);
-      return;
-    }
+    expect(invoice.status).toBe("SENT");
 
     await loginAs(page, "alice");
     await page.goto(`${BASE}/invoices/${invoiceId}`);
-    await expect(page.getByText(/Sent/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Sent", { exact: true }).first()).toBeVisible({ timeout: 10000 });
 
     // Click "Record Payment" button (in the header actions)
     const paymentBtn = page.getByRole("button", { name: /Record Payment/i });
@@ -227,7 +239,7 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
 
     // Verify status shows Paid
     await page.reload();
-    await expect(page.getByText(/Paid/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Paid", { exact: true }).first()).toBeVisible({ timeout: 10000 });
 
     // (Phase 88, ADR-347) A full payment marks PAID: amount_paid = total, balance due 0, one
     // EFT payment for the whole total carrying the reference.
@@ -250,70 +262,44 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
   test("VOID a sent invoice", async ({ page }) => {
     const token = await getToken("alice");
 
-    // Create a separate invoice for voiding
+    // Create a separate invoice for voiding, approved and sent via the API
     const invoice = await createDraftWithLine(token, customerId);
+    await approveAndSend(token, invoice.id as string);
 
-    // Approve and send via API
-    await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}/approve`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}/send`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ overrideWarnings: true }),
-    });
-
-    // Void via UI
     await loginAs(page, "alice");
     await page.goto(`${BASE}/invoices/${invoice.id}`);
-    await expect(page.getByText(/Sent/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Sent", { exact: true }).first()).toBeVisible({ timeout: 10000 });
+    await voidInUi(page);
 
-    const voidBtn = page.getByRole("button", { name: /Void/i });
-    await expect(voidBtn).toBeVisible({ timeout: 5000 });
-    await voidBtn.click();
-
-    // Confirm void if dialog appears
-    const dialog = page.getByRole("dialog");
-    const dialogVisible = await dialog.isVisible({ timeout: 3000 }).catch(() => false);
-    if (dialogVisible) {
-      const confirmBtn = dialog.getByRole("button", { name: /Void|Confirm/i });
-      await confirmBtn.click();
-    }
-
-    await page.waitForTimeout(2000);
-    await page.reload();
-    await expect(page.getByText(/Void/i).first()).toBeVisible({ timeout: 10000 });
-  });
-
-  test("VOID releases time entries", async () => {
-    // This test verifies via API that voiding an invoice with time entries
-    // makes those entries unbilled again
-    const token = await getToken("alice");
-
-    // Get the voided invoice's details
-    const invoiceRes = await fetch(`${BACKEND_URL}/api/invoices`, {
+    const res = await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const invoices = await invoiceRes.json();
-    const voidedInvoice = invoices.find(
-      (i: { status: string; lines?: Array<{ lineType: string; timeEntryId?: string }> }) =>
-        i.status === "VOID"
-    );
+    expect((await res.json()).status).toBe("VOID");
+  });
 
-    // If a voided invoice exists and had time entries, they should be unbilled
-    if (voidedInvoice && voidedInvoice.lines) {
-      const timeLines = voidedInvoice.lines?.filter((l) => l.lineType === "TIME" && l.timeEntryId);
-      // If there were time-based lines, the entries should now be unbilled
-      // This is a structural verification — the time entries are released
-      expect(voidedInvoice.status).toBe("VOID");
-    } else {
-      // No voided invoice with time entries found — pass with note
-      expect(true).toBeTruthy();
-    }
+  test("VOID releases time entries", async ({ page }) => {
+    // A fee note billed from logged time: voiding it returns the entry to unbilled
+    const alice = await memberNamed("Alice");
+    const matterId = await createMatter(`Void Matter ${RUN_ID}`, customerId);
+    await createMatterRate(matterId, alice.id, 1500);
+    const taskId = await createTask(matterId, `Void Task ${RUN_ID}`);
+    const entryId = await logTime(taskId, 60, `Void release ${RUN_ID}`);
+
+    const feeNote = await apiOk<{ id: string; status: string }>("/api/invoices", {
+      method: "POST",
+      body: { clientId: customerId, currency: "ZAR", timeEntryIds: [entryId] },
+    });
+    const token = await getToken("alice");
+    await approveAndSend(token, feeNote.id);
+    expect((await timeEntry(taskId, entryId)).invoiceId).toBe(feeNote.id);
+
+    await loginAs(page, "alice");
+    await page.goto(`${BASE}/invoices/${feeNote.id}`);
+    await expect(page.getByText(`Void release ${RUN_ID}`).first()).toBeVisible({ timeout: 10_000 });
+    await voidInUi(page);
+
+    // The entry is unbilled again: no fee note linked
+    await expect.poll(async () => (await timeEntry(taskId, entryId)).invoiceId).toBeNull();
   });
 
   test("Cannot edit approved invoice", async ({ page }) => {
@@ -321,15 +307,19 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
 
     // Create and approve an invoice
     const invoice = await createDraftWithLine(token, customerId);
-    await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}/approve`, {
+    const approve = await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}/approve`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
+    expect(approve.ok).toBeTruthy();
 
-    // Navigate to the approved invoice
+    // The approved fee note is read-only in the UI: no draft actions
     await loginAs(page, "alice");
     await page.goto(`${BASE}/invoices/${invoice.id}`);
-    await expect(page.getByText(/Approved|INV-\d+/).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Approved", { exact: true }).first()).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByRole("button", { name: "Delete Draft" })).toHaveCount(0);
 
     // Attempt to add a line item via API — should fail
     const lineRes = await fetch(`${BACKEND_URL}/api/invoices/${invoice.id}/lines`, {

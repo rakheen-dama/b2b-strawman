@@ -63,6 +63,16 @@ Or to run a specific test file:
 pnpm test:e2e e2e/tests/smoke.spec.ts
 ```
 
+Or one suite directory — path-anchored (filters are regexes on the absolute path, so a bare `projects` matches
+the `/Projects/` in the checkout path and runs everything):
+
+```bash
+pnpm test:e2e:projects      # also test:e2e:customers, test:e2e:settings, test:e2e:navigation
+pnpm test:e2e e2e/tests/invoices/
+```
+
+The legal suites run under their own configs: `pnpm test:e2e:legal-lifecycle`, `pnpm test:e2e:legal-depth-ii`.
+
 ## 4. Stop the Stack
 
 ```bash

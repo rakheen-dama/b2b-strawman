@@ -14,12 +14,14 @@
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test invoices/invoice-arithmetic --reporter=list
  */
 import { test, expect } from "@playwright/test";
+import { createActiveClient } from "../../helpers/api";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 const ORG = "e2e-test-org";
 
 const RUN_ID = Date.now().toString(36).slice(-4);
+const CLIENT_PREFIX = "Arith Client";
 
 async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
   const users = {
@@ -37,18 +39,16 @@ async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
   return access_token;
 }
 
-async function findActiveCustomer(token: string): Promise<string> {
-  // Phase 87 S2 (ADR-337): API path
-  const res = await fetch(`${BACKEND_URL}/api/clients`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const customers = await res.json();
-  const active = customers.find(
-    (c: { lifecycleStatus: string; status: string; id: string }) =>
-      c.lifecycleStatus === "ACTIVE" && c.status === "ACTIVE"
+/**
+ * This file's own ACTIVE client (628F R-5): fee notes are never raised on the boot seed's Acme Corp,
+ * whose fee notes the portal suite and REGRESSION read — and "the first ACTIVE client" is not
+ * deterministic while sibling spec files create clients in parallel.
+ */
+async function createOwnClient(): Promise<string> {
+  return createActiveClient(
+    `${CLIENT_PREFIX} ${RUN_ID}`,
+    `${CLIENT_PREFIX.toLowerCase().replace(/ /g, "-")}-${RUN_ID}@example.com`
   );
-  if (!active) throw new Error("No ACTIVE customer found in seed data");
-  return active.id;
 }
 
 async function createDraft(token: string, customerId: string): Promise<Record<string, unknown>> {
@@ -111,7 +111,7 @@ test.describe("INV-03: Invoice Arithmetic", () => {
 
   test.beforeAll(async () => {
     token = await getToken("alice");
-    customerId = await findActiveCustomer(token);
+    customerId = await createOwnClient();
   });
 
   test("Single line: 3h x R450", async () => {

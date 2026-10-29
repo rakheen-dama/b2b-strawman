@@ -89,7 +89,7 @@ test.describe("DP-01: Customer Data Protection", () => {
     );
   });
 
-  test("Anonymize customer preview", async ({ page }) => {
+  test("Anonymize customer preview shows entity counts", async ({ page }) => {
     test.fixme(
       true,
       "628F-BLOCKER: Anonymize preview crashes the client page (TypeError reading 'portalContacts') — components/customers/anonymize-customer-dialog.tsx:148-154 reads preview.affectedEntities.* (lib/types/data-protection.ts:100-114) but GET /api/clients/{id}/anonymize/preview answers a flat record (backend datarequest/AnonymizationPreview.java:11-22)"
@@ -177,7 +177,7 @@ test.describe("DP-01: Customer Data Protection", () => {
     await expect(page.getByRole("menuitem", { name: "Anonymize" })).toHaveCount(0);
   });
 
-  test("Cannot transition out of ANONYMIZED", async () => {
+  test("Cannot transition out of ANONYMIZED via API", async () => {
     const id = await createAnonymizedClient(`DP Terminal ${RUN_ID}`);
 
     // Phase 87 S2 (ADR-337): API path — ANONYMIZED is terminal (LifecycleStatus.ALLOWED_TRANSITIONS)

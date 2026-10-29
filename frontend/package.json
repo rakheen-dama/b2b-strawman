@@ -13,7 +13,11 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test --config e2e/playwright.config.ts",
     "test:e2e:legal-lifecycle": "playwright test --config e2e/playwright.legal-lifecycle.config.ts",
-    "test:e2e:legal-depth-ii": "playwright test --config e2e/playwright.legal-depth-ii.config.ts"
+    "test:e2e:legal-depth-ii": "playwright test --config e2e/playwright.legal-depth-ii.config.ts",
+    "test:e2e:projects": "playwright test --config e2e/playwright.config.ts e2e/tests/projects/",
+    "test:e2e:customers": "playwright test --config e2e/playwright.config.ts e2e/tests/customers/",
+    "test:e2e:settings": "playwright test --config e2e/playwright.config.ts e2e/tests/settings/",
+    "test:e2e:navigation": "playwright test --config e2e/playwright.config.ts e2e/tests/navigation/"
   },
   "dependencies": {
     "@b2mash/shared": "workspace:*",

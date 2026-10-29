@@ -1,11 +1,11 @@
 /**
  * BR-01: Billing Runs — Playwright E2E Tests
  *
- * Tests billing runs page: page loads, new billing run wizard.
+ * Tests the fee runs page (Fee notes › Fee runs) and opening the new fee run wizard.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Seed data with invoices present
+ *   2. Seed data present (bulk_billing is on for legal-za)
  */
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
@@ -16,62 +16,35 @@ const base = `/org/${ORG}`;
 test.describe("BR-01: Billing Runs", () => {
   test.beforeEach(async ({ page }) => {
     await loginAs(page, "alice");
+    await page.goto(`${base}/invoices/billing-runs`);
+    await expect(page.getByRole("heading", { level: 1, name: "Fee runs" })).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("Billing runs page loads", async ({ page }) => {
-    await page.goto(`${base}/invoices/billing-runs`);
-    const body = page.locator("body");
-    const bodyText = await body.textContent();
-
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      // Try alternative path under invoices
-      await page.goto(`${base}/billing-runs`);
-      const retryText = await body.textContent();
-      if (retryText?.includes("Something went wrong") || retryText?.includes("404")) {
-        test.skip(true, "Billing runs page not implemented");
-        return;
-      }
-    }
-
-    await expect(body).not.toContainText("Something went wrong");
-    const content = page.locator('main, [role="main"], .flex-1').first();
-    const text = await content.textContent({ timeout: 10000 });
-    expect(text?.length).toBeGreaterThan(0);
+    const main = page.locator("#main-content");
+    // Fee notes / Fee runs sub-navigation
+    await expect(main.getByRole("link", { name: "Fee notes", exact: true })).toBeVisible();
+    await expect(main.getByRole("link", { name: "Fee runs", exact: true })).toBeVisible();
+    // The header action (the empty state, when no run exists yet, repeats it)
+    await expect(main.getByRole("link", { name: "New Billing Run" }).first()).toBeVisible();
   });
 
   test("New billing run wizard", async ({ page }) => {
-    await page.goto(`${base}/invoices/billing-runs`);
-    let bodyText = await page.locator("body").textContent();
-
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      await page.goto(`${base}/billing-runs`);
-      bodyText = await page.locator("body").textContent();
-      if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-        test.skip(true, "Billing runs page not implemented");
-        return;
-      }
-    }
-
-    // Look for new billing run button
-    const newBtn = page.getByRole("button", { name: /new|create|start/i }).first();
-    if (!(await newBtn.isVisible().catch(() => false))) {
-      test.skip(true, "New billing run button not found");
-      return;
-    }
-
-    await newBtn.click();
-    await page.waitForTimeout(1000);
-
-    // Wizard dialog or page should appear
-    const dialog = page.getByRole("dialog").first();
-    const wizardContent = page.locator('main, [role="main"], .flex-1').first();
-
-    if (await dialog.isVisible().catch(() => false)) {
-      const dialogText = await dialog.textContent();
-      expect(dialogText?.length).toBeGreaterThan(0);
-    } else {
-      const text = await wizardContent.textContent();
-      expect(text?.length).toBeGreaterThan(0);
-    }
+    // "New Billing Run" is a link to the wizard page, not a dialog
+    await page
+      .locator("#main-content")
+      .getByRole("link", { name: "New Billing Run" })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/invoices\/billing-runs\/new/);
+    await expect(page.getByRole("heading", { level: 1, name: "New fee run" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByRole("heading", { level: 2, name: "Configure Billing Run" })
+    ).toBeVisible();
+    await expect(page.getByLabel("Period From")).toBeVisible();
   });
 });

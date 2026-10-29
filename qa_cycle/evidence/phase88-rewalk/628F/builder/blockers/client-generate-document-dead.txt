@@ -1,0 +1,11 @@
+628F-BLOCKER (B2) — client page "Generate Document" is a dead navigation (OD-4 #3)
+Reproduced 2026-10-29 on the B1 stack (worktree build), temporary probe spec (not committed):
+  Alice → /clients/<Acme Corp id> → heading "Acme Corp" visible
+  buttons named /Generate/ on the page: 0
+  client-overflow-trigger → menu items: ["Edit Client","Generate Document","Run Conflict Check","Export Data","Anonymize","Archive"]
+  click "Generate Document" → URL becomes /clients/<id>?action=generate-document
+  after 5 s: dialogs 0, menus 0, buttons /Generate/ 0 (screenshot client-generate-document-dead.png)
+Product source: components/customers/client-overflow-menu.tsx:117-126 (router.push(`...?action=generate-document`) at :120);
+  no consumer of the `action` search param in app/ components/ lib/ hooks/ (grep); the client page no longer mounts
+  GenerateDocumentDropdown (Epic 560A, #1395).
+Spec: e2e/tests/documents/document-generation.spec.ts "Generate a document from the client page" → test.fixme(628F-BLOCKER).

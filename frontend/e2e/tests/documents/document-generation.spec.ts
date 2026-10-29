@@ -1,311 +1,124 @@
 /**
  * DOC-02: Document Generation — Playwright E2E Tests
  *
- * Tests: generate from template, preview shows resolved vars, download PDF,
- *        generated documents list.
+ * Tests: generate a document from a template on the matter page (preview with resolved
+ * variables, save to the matter's generated documents), the client-page path (product blocker),
+ * downloading the generated PDF, and the generated documents list.
+ *
+ * Generation runs on this run's own ACTIVE client + matter (628F R-5). The list check reads the
+ * boot seed's Statement of Account on Website Redesign (compose/seed/lib/statements.sh) — read-only. There is no /documents page (removed in #814): generated documents
+ * live on the matter's Work → Generated Docs tab.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Seed data present: bash compose/seed/seed.sh (legal-za; run by e2e-up.sh). The accounting
- *      compose/seed/lifecycle-test.sh was removed in Phase 86 (Epic 604)
+ *   2. Seed data present: bash compose/seed/seed.sh (legal-za; run by e2e-up.sh)
  *
  * Run:
- *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test documents/document-generation
+ *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e e2e/tests/documents/document-generation
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { openGroupedTab } from "../../helpers/grouped-tabs";
+import { createActiveClient, createMatter } from "../../helpers/api";
+import { websiteRedesignId } from "../../helpers/seed";
 
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
+const RUN_ID = Date.now().toString(36).slice(-4);
+const CLIENT = `DocGen Client ${RUN_ID}`;
+const MATTER = `DocGen Matter ${RUN_ID}`;
+/** A matter template without clause associations (one-step dialog: preview → save). */
+const TEMPLATE = "Matter Summary Report";
 
-async function getAliceJwt(): Promise<string> {
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userId: "user_e2e_alice",
-      orgId: ORG,
-      orgSlug: ORG,
-      orgRole: "owner",
-    }),
+/** Opens the matter's Generate Document menu and picks `TEMPLATE`; returns the dialog. */
+async function openGenerateDialog(page: Page, matterId: string) {
+  await page.goto(`${BASE}/matters/${matterId}`);
+  await expect(page.getByRole("heading", { level: 1, name: MATTER })).toBeVisible({
+    timeout: 15_000,
   });
-  const { access_token } = await res.json();
-  return access_token;
+  // A dropdown of the active matter templates (components/templates/GenerateDocumentDropdown.tsx)
+  await page.getByRole("button", { name: "Generate Document" }).click();
+  await page.getByRole("menuitem", { name: TEMPLATE, exact: true }).click();
+  // The prerequisite check passes for an ACTIVE client's matter, so the dialog opens
+  const dialog = page.getByRole("dialog", { name: `Generate: ${TEMPLATE}` });
+  await expect(dialog).toBeVisible({ timeout: 15_000 });
+  return dialog;
 }
 
-test.describe("DOC-02: Document Generation", () => {
-  test("Generate document from template on customer/project page", async ({ page }) => {
-    // Find a customer via API first
-    const jwt = await getAliceJwt();
-    // Phase 87 S2 (ADR-337): API path
-    const custRes = await fetch(`${BACKEND_URL}/api/clients`, {
-      headers: { Authorization: `Bearer ${jwt}` },
-    });
-    const customers = await custRes.json();
-    const activeCustomer = customers.find(
-      (c: { lifecycleStatus: string; id: string }) => c.lifecycleStatus === "ACTIVE"
-    );
+test.describe.serial("DOC-02: Document Generation", () => {
+  let matterId: string;
 
-    if (!activeCustomer) {
-      test.skip(true, "No active customers available for document generation");
-      return;
-    }
+  test.beforeAll(async () => {
+    const clientId = await createActiveClient(CLIENT, `docgen-${RUN_ID}@example.com`);
+    matterId = await createMatter(MATTER, clientId);
+  });
 
+  test.beforeEach(async ({ page }) => {
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/clients/${activeCustomer.id}`);
-    await page.waitForLoadState("networkidle");
-
-    // Look for a "Generate Document" button or dropdown
-    const generateButton = page
-      .getByRole("button", { name: /Generate Document|Generate/i })
-      .first();
-    const hasGenerate = await generateButton.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasGenerate) {
-      // Try project detail page instead
-      // Phase 87 S4 (ADR-344): route rename
-      await page.goto(`${BASE}/matters`);
-      // Phase 87 S5 (ADR-344): label
-      await expect(page.getByRole("heading", { name: "Matters", level: 1 })).toBeVisible({
-        timeout: 10000,
-      });
-
-      const projectLink = page
-        .getByRole("link")
-        .filter({ hasText: /Annual|Tax|Audit/i })
-        .first();
-      const hasProject = await projectLink.isVisible({ timeout: 5000 }).catch(() => false);
-
-      if (!hasProject) {
-        test.skip(true, "No Generate Document button found on customer or project pages");
-        return;
-      }
-
-      await projectLink.click();
-      await page.waitForLoadState("networkidle");
-
-      const projectGenerate = page
-        .getByRole("button", { name: /Generate Document|Generate/i })
-        .first();
-      const hasProjectGenerate = await projectGenerate
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-
-      if (!hasProjectGenerate) {
-        test.skip(true, "Generate Document button not available on any entity page");
-        return;
-      }
-
-      await projectGenerate.click();
-    } else {
-      await generateButton.click();
-    }
-
-    // A dialog or dropdown should appear with template selection
-    await page.waitForTimeout(1000);
-
-    const dialog = page.getByRole("dialog");
-    const hasDialog = await dialog.isVisible({ timeout: 3000 }).catch(() => false);
-
-    if (hasDialog) {
-      // Select a template from the dialog
-      const templateSelect = dialog
-        .getByRole("combobox")
-        .first()
-        .or(dialog.locator("select").first());
-      const hasSelect = await templateSelect.isVisible({ timeout: 3000 }).catch(() => false);
-
-      if (hasSelect) {
-        await templateSelect.click();
-        await page.getByRole("option").first().click();
-      }
-
-      // Submit generation
-      const generateSubmit = dialog.getByRole("button", { name: /Generate|Create/i });
-      if (await generateSubmit.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await generateSubmit.click();
-        await page.waitForTimeout(3000);
-      }
-    }
-
-    // Verify no errors
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
   });
 
   test("Preview shows resolved variables", async ({ page }) => {
-    // Find a customer via API first
-    const jwt = await getAliceJwt();
-    // Phase 87 S2 (ADR-337): API path
-    const custRes = await fetch(`${BACKEND_URL}/api/clients`, {
-      headers: { Authorization: `Bearer ${jwt}` },
+    const dialog = await openGenerateDialog(page, matterId);
+    // The preview renders into an iframe (components/documents/a4-preview-wrapper.tsx)
+    const preview = dialog.frameLocator('iframe[title="Document Preview"]').locator("body");
+    await expect(preview).toContainText(MATTER, { timeout: 15_000 });
+    await expect(preview).toContainText(CLIENT);
+    await expect(preview).not.toContainText("{{");
+  });
+
+  test("Generate document from template on the matter page", async ({ page }) => {
+    const dialog = await openGenerateDialog(page, matterId);
+    const save = dialog.getByRole("button", { name: /^(Save to Documents|Save anyway)$/ });
+    await expect(save).toBeEnabled({ timeout: 15_000 });
+    await save.click();
+    await expect(dialog.getByText("Document saved successfully")).toBeVisible({ timeout: 15_000 });
+
+    // Listed on the matter's Work → Generated Docs tab
+    await page.goto(`${BASE}/matters/${matterId}`);
+    await openGroupedTab(page, "work", "generated");
+    const list = page.getByTestId("generated-documents-list");
+    await expect(list.getByRole("row").filter({ hasText: TEMPLATE })).toHaveCount(1, {
+      timeout: 15_000,
     });
-    const customers = await custRes.json();
-    const activeCustomer = customers.find(
-      (c: { lifecycleStatus: string; id: string }) => c.lifecycleStatus === "ACTIVE"
+  });
+
+  test("Generate a document from the client page", async ({ page }) => {
+    test.fixme(
+      true,
+      "628F-BLOCKER: client overflow 'Generate Document' pushes ?action=generate-document and nothing reads `action` (the client page no longer mounts GenerateDocumentDropdown, Epic 560A) — components/customers/client-overflow-menu.tsx:120"
     );
-
-    if (!activeCustomer) {
-      test.skip(true, "No active customers available");
-      return;
-    }
-
-    await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/clients/${activeCustomer.id}`);
-    await page.waitForLoadState("networkidle");
-
-    // Look for generate document or any preview functionality
-    const generateButton = page
-      .getByRole("button", { name: /Generate Document|Generate/i })
-      .first();
-    const hasGenerate = await generateButton.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasGenerate) {
-      test.skip(true, "Generate Document button not available");
-      return;
-    }
-
-    await generateButton.click();
-    await page.waitForTimeout(1000);
-
-    const dialog = page.getByRole("dialog");
-    const hasDialog = await dialog.isVisible({ timeout: 3000 }).catch(() => false);
-
-    if (hasDialog) {
-      // Generate a document to see the preview
-      const templateSelect = dialog.getByRole("combobox").first();
-      if (await templateSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await templateSelect.click();
-        await page.getByRole("option").first().click();
-      }
-
-      const generateSubmit = dialog.getByRole("button", { name: /Generate|Create|Preview/i });
-      if (await generateSubmit.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await generateSubmit.click();
-        await page.waitForTimeout(3000);
-      }
-    }
-
-    // After generation, check the preview content for resolved variables
-    // The preview should NOT contain {{ }} template literals
-    const bodyText = await page.locator("body").innerText();
-    const hasUnresolved = /\{\{.*?\}\}/.test(bodyText);
-
-    // If a preview is visible, it should have resolved variables
-    // Otherwise the test passes vacuously (no preview to check)
-    if (bodyText.includes("Customer") || bodyText.includes("Organization")) {
-      expect(hasUnresolved).toBe(false);
-    }
+    await page.goto(`${BASE}/clients`);
+    await page.getByRole("link", { name: CLIENT, exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1, name: CLIENT })).toBeVisible();
+    await page.getByTestId("client-overflow-trigger").click();
+    await page.getByRole("menuitem", { name: "Generate Document" }).click();
+    // Intended: a template choice for the client, then the Generate dialog
+    await expect(page.getByRole("dialog", { name: /^Generate: / })).toBeVisible();
   });
 
   test("Download PDF", async ({ page }) => {
-    await loginAs(page, "alice");
-
-    // Navigate to documents page
-    await page.goto(`${BASE}/documents`);
-    const hasDocumentsPage = await page
-      .getByRole("heading", { name: /Documents/i, level: 1 })
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    if (!hasDocumentsPage) {
-      test.skip(
-        true,
-        "Standalone documents page not available — generated docs accessible via entity pages"
-      );
-      return;
-    }
-
-    await page.waitForLoadState("networkidle");
-
-    // Check if there are any documents with download capability
-    const downloadLink = page
-      .getByRole("link", { name: /Download/i })
-      .first()
-      .or(page.getByRole("button", { name: /Download/i }).first());
-
-    const hasDownload = await downloadLink.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasDownload) {
-      // Try to find generated documents via API
-      const jwt = await getAliceJwt();
-      const res = await fetch(`${BACKEND_URL}/api/generated-documents`, {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-
-      if (!res.ok || (await res.json()).length === 0) {
-        test.skip(true, "No generated documents available for download");
-        return;
-      }
-    }
-
-    if (hasDownload) {
-      // Set up download listener
-      const downloadPromise = page.waitForEvent("download", { timeout: 10000 }).catch(() => null);
-      await downloadLink.click();
-
-      const download = await downloadPromise;
-      if (download) {
-        // Verify the download has a non-zero file size
-        const path = await download.path();
-        expect(path).toBeTruthy();
-      }
-    }
-
-    // Verify the page is functional
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    // The Generate dialog renders the PDF on the fly and downloads it as "<template>.pdf".
+    // (Not used: the generated-documents list's per-row download — on the e2e stack it follows a
+    // presigned S3 URL on the browser-facing host port (AWS_S3_PRESIGNER_ENDPOINT=localhost:4567)
+    // from inside the frontend container and fails; environment follow-up, evidence
+    // qa_cycle/evidence/phase88-rewalk/628F/builder/blockers/generated-doc-download-env.txt)
+    const dialog = await openGenerateDialog(page, matterId);
+    const downloadButton = dialog.getByRole("button", { name: /^(Download PDF|Download anyway)$/ });
+    await expect(downloadButton).toBeEnabled({ timeout: 15_000 });
+    const download = page.waitForEvent("download");
+    await downloadButton.click();
+    expect((await download).suggestedFilename()).toBe(`${TEMPLATE}.pdf`);
   });
 
   test("Generated documents list", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/documents`);
-
-    // Verify documents page loads
-    const hasDocumentsPage = await page
-      .getByRole("heading", { name: /Documents/i, level: 1 })
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    if (!hasDocumentsPage) {
-      test.skip(
-        true,
-        "Standalone documents page not available — generated docs accessible via entity pages"
-      );
-      return;
+    await page.goto(`${BASE}/matters/${await websiteRedesignId()}`);
+    await openGroupedTab(page, "work", "generated");
+    const list = page.getByTestId("generated-documents-list");
+    const table = list.getByRole("table");
+    await expect(table).toBeVisible({ timeout: 15_000 });
+    for (const header of ["Template Name", "Generated By", "Date", "File Size", "Format"]) {
+      await expect(table.getByRole("columnheader", { name: header, exact: true })).toBeVisible();
     }
-
-    // Verify the page loads without errors
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
-
-    // Check for document table or empty state
-    const hasTable = await page
-      .getByRole("table")
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    const hasEmptyState = await page
-      .getByText(/No.*documents/i)
-      .first()
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-
-    // Should show either documents or empty state
-    expect(hasTable || hasEmptyState).toBeTruthy();
-
-    // If table exists, verify it has expected columns
-    if (hasTable) {
-      const hasFileColumn = await page
-        .getByText("File")
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false);
-      const hasStatusColumn = await page
-        .getByText("Status")
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false);
-      expect(hasFileColumn || hasStatusColumn).toBeTruthy();
-    }
+    await expect(table.getByRole("cell", { name: /Statement of Account/ }).first()).toBeVisible();
   });
 });

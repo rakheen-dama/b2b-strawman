@@ -24,17 +24,14 @@ const eslintConfig = defineConfig([
       "kazi-frontend-local/no-aschild-adjacency": "error",
     },
   },
-  // Playwright strict assertions (Phase 88 628E, U22, R10 §0 M1): no `.catch()` on isVisible & co.,
-  // no ignored `isVisible({ timeout })`. See e2e/AUTOMATION-NOTES.md › Assertion rules. Scoped to the
-  // two legal suites + shared helpers/fixtures (R-2 / OD-2 (b)); 628F widens it to e2e/** with the
-  // default-config sweep.
+  // Playwright strict assertions (Phase 88 628E/628F, U22, R10 §0 M1): no `.catch()` on isVisible &
+  // co., no ignored `isVisible({ timeout })`, in every e2e file. See e2e/AUTOMATION-NOTES.md ›
+  // Assertion rules.
   {
-    files: [
-      "e2e/tests/legal-lifecycle/**/*.ts",
-      "e2e/tests/legal-depth-ii/**/*.ts",
-      "e2e/helpers/**/*.ts",
-      "e2e/fixtures/**/*.ts",
-    ],
+    files: ["e2e/**/*.ts"],
+    // KC-only demo recording scripts; cannot run on the mock stack; not converted (628F R-2) —
+    // follow-up: convert under KC-STACK or delete.
+    ignores: ["e2e/tests/demo-full-90day.spec.ts", "e2e/tests/demo-recording.spec.ts"],
     rules: {
       "kazi-frontend-local/no-isvisible-catch": "error",
     },

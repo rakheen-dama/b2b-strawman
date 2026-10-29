@@ -1,30 +1,42 @@
 /**
  * DP-01: Customer Data Protection — Playwright E2E Tests
  *
- * Tests customer data protection actions: download data export,
- * anonymize preview, execute anonymization, verify read-only state,
- * verify cannot transition out of ANONYMIZED.
+ * Tests customer data protection actions: download data export (seed client Acme Corp), anonymize
+ * preview (Acme Corp, cancelled), execute anonymization (own client), the read-only ANONYMIZED
+ * client page and the API refusing a transition out of ANONYMIZED.
+ *
+ * Seed rows are read-only (Phase 88 628F R-5): only this file's own clients are anonymized.
  *
  * Prerequisites:
- *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Seed data with customers present
+ *   1. E2E stack running: bash compose/scripts/e2e-up.sh (boot seed: Acme Corp)
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { api, apiOk, createClient } from "../../helpers/api";
+import { SEED, acmeId } from "../../helpers/seed";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
+const RUN_ID = Date.now().toString(36).slice(-4);
 
-async function getAuthToken(): Promise<string> {
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
+/** A fresh PROSPECT client without a billing address; returns its id. */
+async function createOwnClient(name: string): Promise<string> {
+  const email = `${name.replace(/\W+/g, "-").toLowerCase()}@example.com`;
+  return (await createClient(name, email, { withAddress: false })).id;
+}
+
+/** Creates a client and anonymizes it through the API; returns its id. */
+async function createAnonymizedClient(name: string): Promise<string> {
+  const id = await createOwnClient(name);
+  await apiOk(`/api/clients/${id}/anonymize`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId: "user_e2e_alice", orgSlug: "e2e-test-org" }),
+    body: { confirmationName: name, reason: "E2E" },
   });
-  const { access_token } = await res.json();
-  return access_token;
+  return id;
+}
+
+async function openClientOverflow(page: Page) {
+  await page.getByTestId("client-overflow-trigger").click();
 }
 
 test.describe("DP-01: Customer Data Protection", () => {
@@ -33,252 +45,130 @@ test.describe("DP-01: Customer Data Protection", () => {
   });
 
   test("Download customer data export", async ({ page }) => {
+    test.fixme(
+      true,
+      "628F-BLOCKER: client data export 'Export Ready' shows 'files · NaN undefined' and 'Download Archive' has no href — POST /api/clients/{id}/data-export answers ExportResult(exportId, status, estimatedFiles) (backend datarequest/ExportResult.java:6) but components/customers/data-export-dialog.tsx:131-137 reads fileCount/totalSizeBytes/downloadUrl (lib/types/data-protection.ts:116-123)"
+    );
     // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${base}/clients`);
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await page.goto(`${base}/clients/${await acmeId()}`);
+    await expect(
+      page.getByRole("heading", { level: 1, name: SEED.client, exact: true })
+    ).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Click on first customer to go to detail
-    const customerLink = page
-      .getByRole("link")
-      .filter({ hasText: /Kgosi|Naledi|Vukani|Moroka/i })
-      .first();
-    const hasCustomer = await customerLink.isVisible({ timeout: 10000 }).catch(() => false);
-
-    if (!hasCustomer) {
-      test.skip(true, "No seeded customers found");
-      return;
-    }
-
-    await customerLink.click();
-    await page.waitForTimeout(2000);
-
-    // Look for data protection actions — could be in a menu, tab, or button
-    const downloadBtn = page
-      .getByRole("button", { name: /download.*data|export.*data|data.*export/i })
-      .first();
-    const moreMenu = page.getByRole("button", { name: /more|actions|menu/i }).first();
-
-    let found = await downloadBtn.isVisible().catch(() => false);
-
-    if (!found && (await moreMenu.isVisible().catch(() => false))) {
-      await moreMenu.click();
-      await page.waitForTimeout(500);
-      const downloadMenuItem = page
-        .getByRole("menuitem", { name: /download.*data|export.*data/i })
-        .first();
-      found = await downloadMenuItem.isVisible().catch(() => false);
-      if (found) {
-        await downloadMenuItem.click();
-        await page.waitForTimeout(1000);
-      }
-    }
-
-    if (!found) {
-      // Try data protection tab
-      const dpTab = page.getByRole("tab", { name: /data.*protection|privacy/i }).first();
-      if (await dpTab.isVisible().catch(() => false)) {
-        await dpTab.click();
-        await page.waitForTimeout(1000);
-      } else {
-        test.skip(true, "Data export button not found on customer detail");
-        return;
-      }
-    }
+    await openClientOverflow(page);
+    await page.getByRole("menuitem", { name: "Export Data" }).click();
+    // The dialog title follows the step: "Download All Data" → "Generating Export" → "Export Ready"
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("heading", { name: "Download All Data" })).toBeVisible();
+    await dialog.getByRole("button", { name: "Export Now" }).click();
+    await expect(dialog.getByRole("heading", { name: "Export Ready" })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(dialog.getByRole("link", { name: "Download Archive" })).toHaveAttribute(
+      "href",
+      /^https?:\/\/.+/
+    );
   });
 
   test("Anonymize customer preview shows entity counts", async ({ page }) => {
+    test.fixme(
+      true,
+      "628F-BLOCKER: Anonymize preview crashes the client page (TypeError reading 'portalContacts') — components/customers/anonymize-customer-dialog.tsx:148-154 reads preview.affectedEntities.* (lib/types/data-protection.ts:100-114) but GET /api/clients/{id}/anonymize/preview answers a flat record (backend datarequest/AnonymizationPreview.java:11-22)"
+    );
     // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${base}/clients`);
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await page.goto(`${base}/clients/${await acmeId()}`);
+    await expect(
+      page.getByRole("heading", { level: 1, name: SEED.client, exact: true })
+    ).toBeVisible({
+      timeout: 10_000,
+    });
 
-    const customerLink = page
-      .getByRole("link")
-      .filter({ hasText: /Kgosi|Naledi|Vukani|Moroka/i })
-      .first();
-    const hasCustomer = await customerLink.isVisible({ timeout: 10000 }).catch(() => false);
+    await openClientOverflow(page);
+    await page.getByRole("menuitem", { name: "Anonymize" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Anonymize Client" });
+    await expect(dialog).toBeVisible();
+    // The preview lists the affected entities (Acme Corp has the seeded matter and fee notes)
+    await expect(dialog).toContainText(/Matters: \d+/, { timeout: 15_000 });
+    await expect(dialog).toContainText(/Fee notes: [1-9]\d*/);
+    await expect(dialog.getByRole("button", { name: "Continue" })).toBeEnabled();
 
-    if (!hasCustomer) {
-      test.skip(true, "No seeded customers found");
-      return;
-    }
-
-    await customerLink.click();
-    await page.waitForTimeout(2000);
-
-    // Look for anonymize/delete personal data button
-    const anonBtn = page
-      .getByRole("button", { name: /anonymi|delete.*personal|remove.*data/i })
-      .first();
-    const moreMenu = page.getByRole("button", { name: /more|actions|menu/i }).first();
-
-    let found = await anonBtn.isVisible().catch(() => false);
-
-    if (!found && (await moreMenu.isVisible().catch(() => false))) {
-      await moreMenu.click();
-      await page.waitForTimeout(500);
-      const anonMenuItem = page
-        .getByRole("menuitem", { name: /anonymi|delete.*personal/i })
-        .first();
-      found = await anonMenuItem.isVisible().catch(() => false);
-      if (found) {
-        await anonMenuItem.click();
-        await page.waitForTimeout(1000);
-      }
-    }
-
-    if (!found) {
-      test.skip(true, "Anonymize button not found on customer detail");
-      return;
-    }
-
-    // Preview dialog should show entity counts
-    const dialog = page.getByRole("dialog").first();
-    if (await dialog.isVisible().catch(() => false)) {
-      const dialogText = await dialog.textContent();
-      // Should mention counts of affected entities
-      expect(dialogText?.length).toBeGreaterThan(0);
-    }
+    // Preview only — the seed client must stay intact
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(
+      page.getByRole("heading", { level: 1, name: SEED.client, exact: true })
+    ).toBeVisible();
   });
 
   test("Execute anonymization", async ({ page }) => {
-    // Create a fresh customer to anonymize (don't destroy seeded data)
-    const RUN_ID = Date.now().toString(36).slice(-4);
-    const CUSTOMER_NAME = `Anon Test ${RUN_ID}`;
+    // The UI flow passes through the preview step, which crashes (same blocker as the preview test)
+    test.fixme(
+      true,
+      "628F-BLOCKER: Anonymize preview crashes the client page (TypeError reading 'portalContacts') — components/customers/anonymize-customer-dialog.tsx:148-154 reads preview.affectedEntities.* (lib/types/data-protection.ts:100-114) but GET /api/clients/{id}/anonymize/preview answers a flat record (backend datarequest/AnonymizationPreview.java:11-22)"
+    );
+    const name = `DP Anon ${RUN_ID}`;
+    const id = await createOwnClient(name);
 
-    // Create customer via API
-    const token = await getAuthToken();
-    // Phase 87 S2 (ADR-337): API path
-    const createRes = await fetch(`${BACKEND_URL}/api/clients`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name: CUSTOMER_NAME, email: `anon-${RUN_ID}@test.com` }),
+    // Phase 87 S4 (ADR-344): route rename
+    await page.goto(`${base}/clients/${id}`);
+    await expect(page.getByRole("heading", { level: 1, name, exact: true })).toBeVisible({
+      timeout: 10_000,
     });
 
-    if (!createRes.ok) {
-      test.skip(true, "Could not create test customer via API for anonymization test");
-      return;
-    }
+    await openClientOverflow(page);
+    await page.getByRole("menuitem", { name: "Anonymize" }).click();
+    // The dialog title follows the step: "Anonymize Client" → "Confirm Anonymization" → "… Complete"
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog.getByRole("heading", { name: "Anonymize Client" })).toBeVisible();
+    const proceed = dialog.getByRole("button", { name: "Continue" });
+    await expect(proceed).toBeEnabled({ timeout: 15_000 });
+    await proceed.click();
 
-    const customer = await createRes.json();
+    await expect(dialog.getByRole("heading", { name: "Confirm Anonymization" })).toBeVisible();
+    await dialog.getByPlaceholder(name).fill(name);
+    await dialog.getByRole("button", { name: "Execute Anonymization" }).click();
+    await expect(dialog.getByRole("heading", { name: "Anonymization Complete" })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(dialog).toContainText("Client anonymized: Yes");
+    await dialog.getByRole("button", { name: "Close" }).click();
+    await expect(dialog).toBeHidden();
 
-    // Navigate to the customer
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${base}/clients/${customer.id}`);
-    const bodyText = await page.locator("body").textContent();
-
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      test.skip(true, "Customer detail page not accessible");
-      return;
-    }
-
-    // Look for anonymize action
-    const moreMenu = page.getByRole("button", { name: /more|actions|menu/i }).first();
-    if (await moreMenu.isVisible().catch(() => false)) {
-      await moreMenu.click();
-      await page.waitForTimeout(500);
-    }
-
-    const anonBtn = page
-      .getByRole("button", { name: /anonymi|delete.*personal/i })
-      .first()
-      .or(page.getByRole("menuitem", { name: /anonymi|delete.*personal/i }).first());
-
-    if (!(await anonBtn.isVisible().catch(() => false))) {
-      test.skip(true, "Anonymize action not available on customer detail");
-      return;
-    }
-
-    await anonBtn.click();
-    await page.waitForTimeout(1000);
-
-    // Type customer name to confirm if needed
-    const confirmInput = page
-      .getByRole("textbox", { name: /confirm|customer.*name|type.*name/i })
-      .first();
-    if (await confirmInput.isVisible().catch(() => false)) {
-      await confirmInput.fill(CUSTOMER_NAME);
-    }
-
-    // Click confirm/execute button
-    const confirmBtn = page.getByRole("button", { name: /confirm|anonymi|execute|delete/i }).last();
-    if (await confirmBtn.isVisible().catch(() => false)) {
-      await confirmBtn.click();
-      await page.waitForTimeout(2000);
-    }
+    await page.reload();
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Anonymized", {
+      timeout: 10_000,
+    });
+    await expect(
+      page.getByRole("heading", { level: 1, name: /^Anonymized Client / })
+    ).toBeVisible();
   });
 
   test("ANONYMIZED customer is read-only", async ({ page }) => {
-    // This test checks if anonymized customers have edit controls disabled
+    const id = await createAnonymizedClient(`DP ReadOnly ${RUN_ID}`);
+
     // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${base}/clients`);
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
-
-    // Look for an anonymized customer badge
-    const anonBadge = page.locator("text=/anonymi/i").first();
-    const hasAnon = await anonBadge.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasAnon) {
-      test.skip(true, "No anonymized customers found in list");
-      return;
-    }
-
-    // Click the anonymized customer row/link
-    const anonRow = anonBadge.locator("..").locator("a").first();
-    if (await anonRow.isVisible().catch(() => false)) {
-      await anonRow.click();
-    } else {
-      // Try clicking the badge's parent row
-      await anonBadge.click();
-    }
-    await page.waitForTimeout(2000);
-
-    // Edit controls should be disabled or hidden
-    const editBtn = page.getByRole("button", { name: /edit/i }).first();
-    if (await editBtn.isVisible().catch(() => false)) {
-      // Edit button should be disabled
-      await expect(editBtn).toBeDisabled();
-    }
+    await page.goto(`${base}/clients/${id}`);
+    await expect(page.getByText("Client data anonymized")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Anonymized");
+    // The product hides (does not disable) the edit paths of an anonymized client
+    await expect(page.getByTestId("smart-primary-action")).toHaveCount(0);
+    await openClientOverflow(page);
+    await expect(page.getByRole("menuitem", { name: "Export Data" })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Edit Client" })).toHaveCount(0);
+    await expect(page.getByRole("menuitem", { name: "Anonymize" })).toHaveCount(0);
   });
 
-  test("Cannot transition out of ANONYMIZED via API", async ({ page }) => {
-    // This is an API-level test — verify the backend rejects status changes
-    const token = await getAuthToken();
+  test("Cannot transition out of ANONYMIZED via API", async () => {
+    const id = await createAnonymizedClient(`DP Terminal ${RUN_ID}`);
 
-    // Find an anonymized customer via API
-    // Phase 87 S2 (ADR-337): API path
-    const listRes = await fetch(`${BACKEND_URL}/api/clients?status=ANONYMIZED`, {
-      headers: { Authorization: `Bearer ${token}` },
+    // Phase 87 S2 (ADR-337): API path — ANONYMIZED is terminal (LifecycleStatus.ALLOWED_TRANSITIONS)
+    const res = await api(`/api/clients/${id}/transition`, {
+      method: "POST",
+      body: { targetStatus: "ACTIVE", notes: "E2E: must be refused" },
     });
-
-    if (!listRes.ok) {
-      test.skip(true, "Could not query anonymized customers via API");
-      return;
-    }
-
-    const data = await listRes.json();
-    const customers = data.content || data;
-    const anonCustomer = Array.isArray(customers) ? customers[0] : null;
-
-    if (!anonCustomer) {
-      test.skip(true, "No anonymized customers found via API");
-      return;
-    }
-
-    // Attempt to change status — should fail with 400 or 409
-    // Phase 87 S2 (ADR-337): API path
-    const transitionRes = await fetch(`${BACKEND_URL}/api/clients/${anonCustomer.id}/status`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status: "ACTIVE" }),
-    });
-
-    expect(transitionRes.status).toBeGreaterThanOrEqual(400);
-    expect(transitionRes.status).toBeLessThan(500);
+    expect(res.status).toBe(400);
+    expect(await res.text()).toContain("ANONYMIZED");
   });
 });

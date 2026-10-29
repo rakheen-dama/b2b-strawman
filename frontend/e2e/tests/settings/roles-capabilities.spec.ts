@@ -1,18 +1,27 @@
 /**
  * ROLE-01: Roles & Capabilities — Playwright E2E Tests
  *
- * Tests role management: view roles list, view role capabilities,
- * edit a capability toggle.
+ * Tests role management: the system roles list, the system role cards + Capability Reference, and
+ * custom-role CRUD (create with a capability → edit the capability → delete). System roles are
+ * read-only in the product ("Built-in roles that cannot be modified or deleted"), so capability
+ * edits are exercised on a run-unique custom role.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Seed data present
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
+const RUN_ID = Date.now().toString(36).slice(-4);
+
+async function openRoles(page: Page) {
+  await page.goto(`${base}/settings/firm?tab=roles`);
+  await expect(page.getByRole("heading", { level: 1, name: "Roles & Permissions" })).toBeVisible({
+    timeout: 10_000,
+  });
+}
 
 test.describe("ROLE-01: Roles & Capabilities", () => {
   test.beforeEach(async ({ page }) => {
@@ -20,109 +29,70 @@ test.describe("ROLE-01: Roles & Capabilities", () => {
   });
 
   test("View roles list", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/roles → /settings/firm?tab=roles
-    await page.goto(`${base}/settings/firm?tab=roles`);
-    const body = page.locator("body");
-    const bodyText = await body.textContent();
-
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      test.skip(true, "Roles settings page not implemented");
-      return;
+    await openRoles(page);
+    await expect(page.getByRole("heading", { name: "System Roles" })).toBeVisible();
+    for (const role of ["Owner", "Admin", "Member"]) {
+      await expect(page.getByRole("heading", { level: 3, name: role, exact: true })).toBeVisible();
     }
-
-    const content = page.locator('main, [role="main"], .flex-1').first();
-    const text = await content.textContent({ timeout: 10000 });
-
-    // Should show role names (Owner, Admin, Member)
-    const hasRoles = text?.match(/owner|admin|member/i);
-    expect(hasRoles).toBeTruthy();
   });
 
-  test("View role capabilities", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/roles → /settings/firm?tab=roles
-    await page.goto(`${base}/settings/firm?tab=roles`);
-    const bodyText = await page.locator("body").textContent();
+  test("View system role cards and the capability reference", async ({ page }) => {
+    await openRoles(page);
+    await expect(
+      page.getByText("Built-in roles that cannot be modified or deleted.")
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "Admin", exact: true })).toBeVisible();
 
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      test.skip(true, "Roles settings page not implemented");
-      return;
-    }
-
-    // Click on a role to view its capabilities
-    const roleLink = page.getByRole("link", { name: /admin/i }).first();
-    const roleBtn = page.getByRole("button", { name: /admin/i }).first();
-    const roleRow = page.locator('tr, [role="row"]').filter({ hasText: /admin/i }).first();
-
-    if (await roleLink.isVisible().catch(() => false)) {
-      await roleLink.click();
-    } else if (await roleBtn.isVisible().catch(() => false)) {
-      await roleBtn.click();
-    } else if (await roleRow.isVisible().catch(() => false)) {
-      await roleRow.click();
-    } else {
-      test.skip(true, "Could not find Admin role to click");
-      return;
-    }
-
-    await page.waitForTimeout(1000);
-
-    // Should show capabilities (checkboxes or toggles)
-    const content = page.locator('main, [role="main"], .flex-1, [role="dialog"]').first();
-    const text = await content.textContent();
-    expect(text?.length).toBeGreaterThan(0);
+    // The collapsible reference table lists every capability
+    await page.getByRole("button", { name: "Capability Reference" }).click();
+    await expect(
+      page.getByRole("cell", { name: "Financial Visibility", exact: true })
+    ).toBeVisible();
   });
 
-  test("Edit role capability", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/roles → /settings/firm?tab=roles
-    await page.goto(`${base}/settings/firm?tab=roles`);
-    const bodyText = await page.locator("body").textContent();
+  test("Create, edit and delete a custom role", async ({ page }) => {
+    test.fixme(
+      true,
+      "628F-BLOCKER: Create Role dialog is 839px tall on a 1280x720 viewport with no scroll — title and 'Create' button unreachable — components/roles/role-dialog.tsx:105 (DialogContent without max-h / overflow-y-auto)"
+    );
+    const roleName = `E2E Role ${RUN_ID}`;
+    await openRoles(page);
 
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      test.skip(true, "Roles settings page not implemented");
-      return;
-    }
+    // Create with one capability
+    await page.getByRole("button", { name: "New Role" }).click();
+    const create = page.getByRole("dialog", { name: "Create Role" });
+    await expect(create).toBeVisible();
+    await create.getByLabel("Name", { exact: true }).fill(roleName);
+    await create.getByRole("checkbox", { name: "Financial Visibility" }).check();
+    await create.getByRole("button", { name: "Create", exact: true }).click();
+    await expect(create).toBeHidden({ timeout: 10_000 });
+    const editBtn = page.getByRole("button", { name: `Edit ${roleName}`, exact: true });
+    await expect(editBtn).toBeVisible({ timeout: 10_000 });
 
-    // Navigate to a role's capabilities
-    const roleLink = page.getByRole("link", { name: /admin/i }).first();
-    const roleBtn = page.getByRole("button", { name: /admin/i }).first();
-    const roleRow = page.locator('tr, [role="row"]').filter({ hasText: /admin/i }).first();
+    // Edit: the capability is on; turn it off and save
+    await editBtn.click();
+    const edit = page.getByRole("dialog", { name: "Edit Role" });
+    await expect(edit).toBeVisible();
+    const cap = edit.getByRole("checkbox", { name: "Financial Visibility" });
+    await expect(cap).toBeChecked();
+    await cap.uncheck();
+    await edit.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(edit).toBeHidden({ timeout: 10_000 });
 
-    if (await roleLink.isVisible().catch(() => false)) {
-      await roleLink.click();
-    } else if (await roleBtn.isVisible().catch(() => false)) {
-      await roleBtn.click();
-    } else if (await roleRow.isVisible().catch(() => false)) {
-      await roleRow.click();
-    } else {
-      test.skip(true, "Could not find Admin role to edit");
-      return;
-    }
+    // Persisted
+    await page.reload();
+    await page.getByRole("button", { name: `Edit ${roleName}`, exact: true }).click();
+    await expect(edit.getByRole("checkbox", { name: "Financial Visibility" })).not.toBeChecked();
+    await page.keyboard.press("Escape");
+    await expect(edit).toBeHidden();
 
-    await page.waitForTimeout(1000);
-
-    // Toggle a capability
-    const toggles = page.locator('button[role="switch"], input[type="checkbox"]');
-    const toggleCount = await toggles.count();
-
-    if (toggleCount === 0) {
-      test.skip(true, "No capability toggles found");
-      return;
-    }
-
-    // Toggle first capability
-    const firstToggle = toggles.first();
-    await firstToggle.click();
-    await page.waitForTimeout(500);
-
-    // Toggle it back to restore state
-    await firstToggle.click();
-    await page.waitForTimeout(500);
-
-    // Save if there's a save button
-    const saveBtn = page.getByRole("button", { name: /save|update/i }).first();
-    if (await saveBtn.isVisible().catch(() => false)) {
-      await saveBtn.click();
-      await page.waitForTimeout(1000);
-    }
+    // Delete (cleanup)
+    await page.getByRole("button", { name: `Delete ${roleName}`, exact: true }).click();
+    const confirm = page.getByRole("alertdialog", { name: "Delete Role" });
+    await confirm.getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(confirm).toBeHidden({ timeout: 10_000 });
+    await expect(page.getByRole("button", { name: `Edit ${roleName}`, exact: true })).toHaveCount(
+      0
+    );
   });
 });

@@ -1,18 +1,29 @@
 /**
  * TAG-01: Tags — Playwright E2E Tests
  *
- * Tests tag management: view tags, create tag with colour,
- * apply tag to entity.
+ * Tests tag management: view tags, create tag with colour, apply a tag to a matter.
+ *
+ * Seed rows are read-only (Phase 88 628F R-5): the tag is applied to this file's own matter.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Seed data present
  */
 import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { openGroupedTab } from "../../helpers/grouped-tabs";
+import { createMatter } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
+const RUN_ID = Date.now().toString(36).slice(-4);
+
+async function openTagSettings(page: import("@playwright/test").Page) {
+  // Phase 87 S9 (ADR-344): /settings/tags → /settings/matters?tab=tags
+  await page.goto(`${base}/settings/matters?tab=tags`);
+  await expect(page.getByRole("heading", { level: 1, name: /^Tags/ })).toBeVisible({
+    timeout: 10_000,
+  });
+}
 
 test.describe("TAG-01: Tags", () => {
   test.beforeEach(async ({ page }) => {
@@ -20,100 +31,56 @@ test.describe("TAG-01: Tags", () => {
   });
 
   test("View tags", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/tags → /settings/matters?tab=tags
-    await page.goto(`${base}/settings/matters?tab=tags`);
-    const body = page.locator("body");
-    const bodyText = await body.textContent();
-
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      test.skip(true, "Tags settings page not implemented");
-      return;
-    }
-
-    const content = page.locator('main, [role="main"], .flex-1').first();
-    const text = await content.textContent({ timeout: 10000 });
-    expect(text?.length).toBeGreaterThan(0);
+    await openTagSettings(page);
+    // "Add Tag" in the header (plus the empty-state CTA when the org has no tags yet)
+    await expect(page.getByRole("button", { name: "Add Tag" }).first()).toBeVisible();
   });
 
   test("Create tag", async ({ page }) => {
-    // Phase 87 S9 (ADR-344): /settings/tags → /settings/matters?tab=tags
-    await page.goto(`${base}/settings/matters?tab=tags`);
-    const bodyText = await page.locator("body").textContent();
+    const tagName = `E2E Tag ${RUN_ID}`;
+    await openTagSettings(page);
 
-    if (bodyText?.includes("Something went wrong") || bodyText?.includes("404")) {
-      test.skip(true, "Tags settings page not implemented");
-      return;
-    }
+    await page.getByRole("button", { name: "Add Tag" }).first().click();
+    const dialog = page.getByRole("dialog", { name: "Create Tag" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Name", { exact: true }).fill(tagName);
+    // The colour field is a text input (hex)
+    await dialog.getByLabel("Color (optional)").fill("#3B82F6");
+    await dialog.getByRole("button", { name: "Create", exact: true }).click();
+    await expect(dialog).toBeHidden({ timeout: 10_000 });
 
-    const createBtn = page.getByRole("button", { name: /new|create|add/i }).first();
-    if (!(await createBtn.isVisible().catch(() => false))) {
-      test.skip(true, "Create tag button not found");
-      return;
-    }
-
-    await createBtn.click();
-    await page.waitForTimeout(1000);
-
-    const dialog = page.getByRole("dialog").first();
-    if (await dialog.isVisible().catch(() => false)) {
-      const nameInput = dialog.getByRole("textbox", { name: /name|label/i }).first();
-      if (await nameInput.isVisible().catch(() => false)) {
-        await nameInput.fill(`Test Tag ${Date.now().toString(36).slice(-4)}`);
-      }
-
-      // Set colour if available
-      const colourInput = dialog.locator('input[type="color"]').first();
-      if (await colourInput.isVisible().catch(() => false)) {
-        await colourInput.fill("#3b82f6");
-      }
-
-      const submitBtn = dialog.getByRole("button", { name: /create|save|add/i }).last();
-      if (await submitBtn.isVisible().catch(() => false)) {
-        await submitBtn.click();
-        await page.waitForTimeout(1000);
-      }
-    }
+    await expect(page.getByRole("cell", { name: tagName, exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("Apply tag to entity", async ({ page }) => {
-    // Navigate to a project or customer to apply a tag
+    const matterName = `Tag Matter ${RUN_ID}`;
+    const tagName = `Applied Tag ${RUN_ID}`;
+    const matterId = await createMatter(matterName);
+
     // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${base}/matters`);
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await page.goto(`${base}/matters/${matterId}`);
+    await expect(page.getByRole("heading", { level: 1, name: matterName })).toBeVisible({
+      timeout: 10_000,
+    });
+    // Tags live on Details → Details (the default matter tab is Overview)
+    await openGroupedTab(page, "details", "details");
+    const panel = page.getByRole("tabpanel");
+    await panel.getByRole("button", { name: "Add Tag" }).click();
 
-    // Click on first project
-    const projectLink = page
-      .getByRole("link")
-      .filter({ hasText: /project/i })
-      .first();
-    if (!(await projectLink.isVisible({ timeout: 10000 }).catch(() => false))) {
-      // Try any link in the main content area
-      const anyLink = page.locator('main a, [role="main"] a').first();
-      if (!(await anyLink.isVisible().catch(() => false))) {
-        test.skip(true, "No projects found to apply tag");
-        return;
-      }
-      await anyLink.click();
-    } else {
-      await projectLink.click();
-    }
-    await page.waitForTimeout(2000);
+    // Inline-create a run-unique tag from the picker (owner may create tags inline)
+    await page.getByPlaceholder("Search tags...").fill(tagName);
+    await page.getByRole("option", { name: `Create "${tagName}"` }).click();
+    await expect(panel.getByRole("button", { name: `Remove ${tagName}` })).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Look for tag/label button or section
-    const tagBtn = page.getByRole("button", { name: /tag|label/i }).first();
-    if (!(await tagBtn.isVisible().catch(() => false))) {
-      test.skip(true, "Tag/label button not found on entity detail");
-      return;
-    }
-
-    await tagBtn.click();
-    await page.waitForTimeout(500);
-
-    // Select a tag from dropdown
-    const tagOption = page.getByRole("option").first();
-    if (await tagOption.isVisible().catch(() => false)) {
-      await tagOption.click();
-      await page.waitForTimeout(1000);
-    }
+    // Persisted on the matter
+    await page.reload();
+    await openGroupedTab(page, "details", "details");
+    await expect(
+      page.getByRole("tabpanel").getByRole("button", { name: `Remove ${tagName}` })
+    ).toBeVisible({ timeout: 10_000 });
   });
 });

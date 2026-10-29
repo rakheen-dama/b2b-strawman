@@ -1,8 +1,9 @@
 /**
  * INV-01: Invoice CRUD — Playwright E2E Tests
  *
- * Tests: create draft, add/edit/remove line items, verify totals.
- * Requires an ACTIVE customer (created via API).
+ * Tests: a draft created via the API opens as a Draft; a line is added, edited and removed through
+ * the fee-note line editor (Add Line / Edit / Delete); the draft's totals. Requires an ACTIVE client
+ * (created via the API).
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
@@ -13,236 +14,146 @@
  *   cd frontend/e2e
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test invoices/invoice-crud --reporter=list
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+import {
+  addFeeNoteLineViaApi,
+  apiOk,
+  createActiveClient,
+  createDraftFeeNote,
+  type FeeNote,
+} from "../../helpers/api";
+import {
+  addFeeNoteLine,
+  feeNoteTotalsRow,
+  openFeeNote,
+  randPattern,
+} from "../../helpers/legal-lifecycle";
 import { loginAs } from "../../fixtures/auth";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
-const ORG = "e2e-test-org";
-const BASE = `/org/${ORG}`;
-
 const RUN_ID = Date.now().toString(36).slice(-4);
+const CLIENT_PREFIX = "InvCrud Client";
 
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: ORG }),
-  });
-  const { access_token } = await res.json();
-  return access_token;
-}
-
-// Find an ACTIVE customer from seed data via API
-async function findActiveCustomer(token: string): Promise<{ id: string; name: string }> {
-  // Phase 87 S2 (ADR-337): API path
-  const res = await fetch(`${BACKEND_URL}/api/clients`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const customers = await res.json();
-  const active = customers.find(
-    (c: { lifecycleStatus: string; status: string; id: string; name: string }) =>
-      c.lifecycleStatus === "ACTIVE" && c.status === "ACTIVE"
+/**
+ * This file's own ACTIVE client (628F R-5): fee notes are never raised on the boot seed's Acme Corp,
+ * whose fee notes the portal suite and REGRESSION read — and "the first ACTIVE client" is not
+ * deterministic while sibling spec files create clients in parallel.
+ */
+async function createOwnClient(): Promise<string> {
+  return createActiveClient(
+    `${CLIENT_PREFIX} ${RUN_ID}`,
+    `${CLIENT_PREFIX.toLowerCase().replace(/ /g, "-")}-${RUN_ID}@example.com`
   );
-  if (!active) throw new Error("No ACTIVE customer found in seed data");
-  return { id: active.id, name: active.name };
 }
 
-// Create a draft invoice via API
-async function createDraftInvoice(
-  customerId: string,
-  token: string
-): Promise<Record<string, unknown>> {
-  const res = await fetch(`${BACKEND_URL}/api/invoices`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      // Phase 87 S3 (ADR-337): request body
-      clientId: customerId,
-      currency: "ZAR",
-      timeEntryIds: [],
-      notes: `E2E test invoice ${RUN_ID}`,
-    }),
-  });
-  expect(res.status).toBe(201);
-  return res.json();
+/** The fee note's status badge (the header also has a "Delete Draft" button). */
+function draftBadge(page: Page) {
+  return page.getByText("Draft", { exact: true }).first();
 }
 
-// Add a line item via API
-async function addLineItem(
-  invoiceId: string,
-  description: string,
-  quantity: number,
-  unitPrice: number,
-  token: string
-): Promise<Record<string, unknown>> {
-  const res = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/lines`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      description,
-      quantity,
-      unitPrice,
-      sortOrder: 0,
-    }),
-  });
-  expect(res.status).toBe(201);
-  return res.json();
+/** The open fee note's line-table row for `description`. */
+function lineRow(page: Page, description: string) {
+  return page.locator("main").getByRole("row").filter({ hasText: description });
 }
 
-test.describe("INV-01: Invoice CRUD", () => {
+function getFeeNote(id: string): Promise<FeeNote> {
+  return apiOk<FeeNote>(`/api/invoices/${id}`);
+}
+
+test.describe.serial("INV-01: Invoice CRUD", () => {
   let activeCustomerId: string;
   let invoiceId: string;
 
   test.beforeAll(async () => {
-    const token = await getToken("alice");
-    const customer = await findActiveCustomer(token);
-    activeCustomerId = customer.id;
+    activeCustomerId = await createOwnClient();
   });
 
-  test("Create draft invoice for customer", async ({ page }) => {
-    const token = await getToken("alice");
-    const invoice = await createDraftInvoice(activeCustomerId, token);
-    invoiceId = invoice.id;
-
-    // Verify in UI — navigate to invoice detail
+  test.beforeEach(async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/invoices/${invoiceId}`);
+  });
 
-    // Should show "Draft" status
-    await expect(page.getByText(/Draft/i).first()).toBeVisible({ timeout: 10000 });
+  test("Draft created via the API opens as a Draft", async ({ page }) => {
+    invoiceId = (await createDraftFeeNote(activeCustomerId, `E2E test invoice ${RUN_ID}`)).id;
+
+    await openFeeNote(page, invoiceId);
+    await expect(draftBadge(page)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("button", { name: "Delete Draft" })).toBeVisible();
   });
 
   test("Add line item to draft", async ({ page }) => {
-    const token = await getToken("alice");
-    const invoice = await addLineItem(invoiceId, "Consulting services", 3, 450, token);
+    await openFeeNote(page, invoiceId);
+    await addFeeNoteLine(page, {
+      description: "Consulting services",
+      quantity: "3",
+      unitPrice: "450",
+    });
 
-    // Verify totals via API response
-    expect(invoice.subtotal).toBeGreaterThan(0);
-
-    // Verify in UI
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/invoices/${invoiceId}`);
-    await expect(page.getByText("Consulting services").first()).toBeVisible({ timeout: 10000 });
+    // Persisted: listed after a reload, and 3 × 450 on the fee note
+    await page.reload();
+    await expect(lineRow(page, "Consulting services")).toHaveCount(1, { timeout: 10_000 });
+    const invoice = await getFeeNote(invoiceId);
+    expect(invoice.lines).toHaveLength(1);
+    expect(invoice.subtotal).toBe(1350);
   });
 
   test("Edit line item on draft", async ({ page }) => {
-    const token = await getToken("alice");
-
-    // Get current invoice to find line ID
-    const getRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+    await openFeeNote(page, invoiceId);
+    await lineRow(page, "Consulting services")
+      .getByRole("button", { name: "Edit Consulting services" })
+      .click();
+    // The editor has no role / test id and its labels have no htmlFor (product follow-up, see
+    // helpers/legal-lifecycle.ts addFeeNoteLine): the innermost div holding its heading, inputs by type
+    const editor = page
+      .locator("main")
+      .locator("div")
+      .filter({ has: page.getByRole("heading", { level: 3, name: "Edit Line Item" }) })
+      .last();
+    await expect(editor).toBeVisible();
+    await editor.locator('input[type="text"]').fill("Updated consulting");
+    const numbers = editor.locator('input[type="number"]');
+    await numbers.nth(0).fill("5");
+    await numbers.nth(1).fill("500");
+    await editor.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 3, name: "Edit Line Item" })).toBeHidden({
+      timeout: 15_000,
     });
-    const invoice = await getRes.json();
-    const line = invoice.lines[0];
-    expect(line).toBeDefined();
 
-    // Update the line item
-    const updateRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/lines/${line.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        description: "Updated consulting",
-        quantity: 5,
-        unitPrice: 500,
-        sortOrder: 0,
-      }),
-    });
-    expect(updateRes.ok).toBeTruthy();
-    const updated = await updateRes.json();
-
-    // Verify totals recalculated
-    expect(updated.subtotal).toBe(2500);
-
-    // Verify in UI
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/invoices/${invoiceId}`);
-    await expect(page.getByText("Updated consulting").first()).toBeVisible({ timeout: 10000 });
+    // Persisted: the edited line after a reload, and the subtotal recalculated (5 × 500)
+    await page.reload();
+    await expect(lineRow(page, "Updated consulting")).toHaveCount(1, { timeout: 10_000 });
+    await expect(lineRow(page, "Consulting services")).toHaveCount(0);
+    expect((await getFeeNote(invoiceId)).subtotal).toBe(2500);
   });
 
   test("Remove line item from draft", async ({ page }) => {
-    const token = await getToken("alice");
+    await openFeeNote(page, invoiceId);
+    await addFeeNoteLine(page, { description: "Line to remove", quantity: "1", unitPrice: "100" });
+    await expect.poll(async () => (await getFeeNote(invoiceId)).subtotal).toBe(2600);
 
-    // Add a second line to then remove it
-    await addLineItem(invoiceId, "Line to remove", 1, 100, token);
+    await lineRow(page, "Line to remove")
+      .getByRole("button", { name: "Delete Line to remove" })
+      .click();
+    await expect(lineRow(page, "Line to remove")).toHaveCount(0, { timeout: 15_000 });
 
-    // Get invoice with both lines
-    const getRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const invoice = await getRes.json();
-    const removeTarget = (invoice.lines as Array<{ description: string; id: string }>).find(
-      (l) => l.description === "Line to remove"
-    );
-    expect(removeTarget).toBeDefined();
-
-    const subtotalBefore = invoice.subtotal;
-
-    // Delete the line
-    const delRes = await fetch(
-      `${BACKEND_URL}/api/invoices/${invoiceId}/lines/${removeTarget.id}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    expect(delRes.status).toBe(204);
-
-    // Verify totals updated
-    const verifyRes = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const verified = await verifyRes.json();
-    expect(verified.subtotal).toBeLessThan(subtotalBefore);
-
-    // Verify in UI
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/invoices/${invoiceId}`);
-    // The removed line should not appear
-    const removedLineVisible = await page
-      .getByText("Line to remove")
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-    expect(removedLineVisible).toBeFalsy();
+    // Persisted: after a reload the kept line renders and the removed one is gone
+    await page.reload();
+    await expect(lineRow(page, "Updated consulting")).toHaveCount(1, { timeout: 10_000 });
+    await expect(lineRow(page, "Line to remove")).toHaveCount(0);
+    const invoice = await getFeeNote(invoiceId);
+    expect(invoice.lines.map((l) => l.description)).toEqual(["Updated consulting"]);
+    expect(invoice.subtotal).toBe(2500);
   });
 
   test("Draft invoice shows correct totals", async ({ page }) => {
-    const token = await getToken("alice");
-
-    // Create a clean invoice with known line items
-    const freshInvoice = await createDraftInvoice(activeCustomerId, token);
-    await addLineItem(freshInvoice.id, "Service A", 2, 500, token);
-    await addLineItem(freshInvoice.id, "Service B", 1, 1500, token);
-
-    // Verify totals via API: (2 * 500) + (1 * 1500) = 2500
-    const getRes = await fetch(`${BACKEND_URL}/api/invoices/${freshInvoice.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const invoice = await getRes.json();
+    // A clean draft with known lines: (2 × 500) + (1 × 1500) = 2500
+    const fresh = await createDraftFeeNote(activeCustomerId, `E2E totals ${RUN_ID}`);
+    await addFeeNoteLineViaApi(fresh.id, "Service A", 2, 500);
+    const invoice = await addFeeNoteLineViaApi(fresh.id, "Service B", 1, 1500);
     expect(invoice.subtotal).toBe(2500);
 
-    // Verify in UI
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/invoices/${freshInvoice.id}`);
-    await expect(page.getByText(/Draft/i).first()).toBeVisible({ timeout: 10000 });
-
-    // Check that both line items are visible
-    await expect(page.getByText("Service A").first()).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("Service B").first()).toBeVisible({ timeout: 5000 });
+    await openFeeNote(page, fresh.id);
+    await expect(draftBadge(page)).toBeVisible({ timeout: 10_000 });
+    await expect(lineRow(page, "Service A")).toHaveCount(1);
+    await expect(lineRow(page, "Service B")).toHaveCount(1);
+    await expect(feeNoteTotalsRow(page, "Subtotal")).toContainText(randPattern("2 500,00"));
   });
 });

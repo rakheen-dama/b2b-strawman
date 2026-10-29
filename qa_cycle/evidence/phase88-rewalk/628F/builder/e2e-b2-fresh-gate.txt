@@ -1,0 +1,36 @@
+# 628F B2 — fresh e2e-down && e2e-up from the worktree (B1+B2 tree, before commit), 2026-10-29
+## seed: 'E2E Boot-Seed Complete!' count = 1; first/last seed log timestamps:
+2026-10-29T07:24:15.717652097Z
+2026-10-29T07:24:19.511455834Z
+## legal-lifecycle (pnpm test:e2e:legal-lifecycle)
+  3 skipped
+  101 passed (2.8m)
+## legal-depth-ii (pnpm test:e2e:legal-depth-ii)
+  4 skipped
+  39 passed (1.9m)
+## default config (pnpm test:e2e), same stack, after the legal suites
+  18 skipped
+  159 passed (48.7s)
+## skipped / fixme (18)
+e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:33:7 › Phase 69 capstone — Day 0 baseline + audit-log first render › Audit Log page renders for Owner with default view
+e2e/tests/auth/auth-change-password.spec.ts:35:7 › in-app change password (kc_action=UPDATE_PASSWORD) › keycloak: Account & Security renders the branded change-password page and returns to app
+e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:52:7 › Phase 69 capstone — Day 5 permission denial / Security preset › Security preset renders for Owner (emission gap acknowledged)
+e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:70:7 › Phase 69 capstone — Day 10 trust approval / Financial approvals preset [legal-za] › Financial approvals preset surfaces trust_transaction.approved row
+e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:88:7 › Phase 69 capstone — Day 15 closure override (CRITICAL) + widget › Override row surfaces on Audit Log + matter detail + dashboard widget
+e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:108:7 › Phase 69 capstone — Day 20 per-entity customer Audit tab › Customer detail Audit tab renders for Admin and is scope-correct
+e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:125:7 › Phase 69 capstone — Day 22 PDF export + reflexive event › PDF export succeeds and emits audit.export.generated row
+e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:143:7 › Phase 69 capstone — Day 25 DSAR pack scope correctness › DSAR pack ships audit-trail/events.csv scoped to the subject
+e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:159:7 › Phase 69 capstone — Day 30 export-row hard cap probe › Wide window fails gracefully; narrowed window succeeds
+e2e/tests/customers/customer-data-protection.spec.ts:64:7 › DP-01: Customer Data Protection › Download customer data export
+e2e/tests/customers/customer-data-protection.spec.ts:92:7 › DP-01: Customer Data Protection › Anonymize customer preview shows entity counts
+e2e/tests/customers/customer-data-protection.spec.ts:122:7 › DP-01: Customer Data Protection › Execute anonymization
+e2e/tests/customers/customer-lifecycle.spec.ts:238:7 › CUST-02: Customer Lifecycle › DORMANT -> OFFBOARDING
+e2e/tests/customers/customer-lifecycle.spec.ts:259:7 › CUST-02: Customer Lifecycle › OFFBOARDING -> OFFBOARDED
+e2e/tests/documents/document-generation.spec.ts:85:7 › DOC-02: Document Generation › Generate a document from the client page
+e2e/tests/portal/portal-data-isolation.spec.ts:36:7 › PORTAL-01: Data Isolation › Kgosi sees only Kgosi matters via API
+e2e/tests/portal/portal-data-isolation.spec.ts:48:7 › PORTAL-01: Data Isolation › Portal JWT blocked from org API
+e2e/tests/settings/roles-capabilities.spec.ts:53:7 › ROLE-01: Roles & Capabilities › Create, edit and delete a custom role
+
+## default config on the reused B1 stack (earlier, same tree)
+  18 skipped
+  159 passed (55.3s)

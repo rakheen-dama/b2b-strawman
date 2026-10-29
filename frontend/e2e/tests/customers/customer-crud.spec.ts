@@ -1,7 +1,7 @@
 /**
  * CUST-01: Customer CRUD — Playwright E2E Tests
  *
- * Tests: create customer, edit name, search list, pagination, delete (archive).
+ * Tests: create client (step 1 + step 2 intake field), edit name, search the list, list rows.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
@@ -12,30 +12,37 @@
  *   cd frontend/e2e
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test customers/customer-crud --reporter=list
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { apiOk } from "../../helpers/api";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 
 const RUN_ID = Date.now().toString(36).slice(-4);
 
-async function getToken(user: "alice" | "bob" | "carol"): Promise<string> {
-  const users = {
-    alice: { userId: "user_e2e_alice", orgRole: "org:owner" },
-    bob: { userId: "user_e2e_bob", orgRole: "org:admin" },
-    carol: { userId: "user_e2e_carol", orgRole: "org:member" },
-  };
-  const u = users[user];
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...u, orgId: "org_e2e_test", orgSlug: ORG }),
+interface ClientRow {
+  id: string;
+  name: string;
+  customFields?: Record<string, unknown>;
+}
+
+async function clientByName(name: string): Promise<ClientRow | undefined> {
+  const body = await apiOk<ClientRow[] | { content: ClientRow[] }>("/api/clients?size=500");
+  return (Array.isArray(body) ? body : body.content).find((c) => c.name === name);
+}
+
+/** Opens the New Client dialog on the Clients page and returns it (title changes on step 2). */
+async function openNewClientDialog(page: Page) {
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/clients`);
+  await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+    timeout: 10_000,
   });
-  const { access_token } = await res.json();
-  return access_token;
+  await page.getByRole("button", { name: "New Client" }).click();
+  const dialog = page.getByRole("dialog", { name: /^(Create Client|Additional Information)$/ });
+  await expect(dialog).toBeVisible();
+  return dialog;
 }
 
 test.describe.serial("CUST-01: Customer CRUD", () => {
@@ -46,185 +53,133 @@ test.describe.serial("CUST-01: Customer CRUD", () => {
 
   test("Create customer with required fields", async ({ page }) => {
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/clients`);
-    // Heading is "Clients"
-    await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
+    const dialog = await openNewClientDialog(page);
 
-    // Click "New Client"
-    const newBtn = page.getByRole("button", { name: /New (Customer|Client)/i });
-    await expect(newBtn).toBeVisible({ timeout: 5000 });
-    await newBtn.click();
-    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
+    // Step 1 — scoped to the dialog with exact labels: "Name" / "Email" / "Phone" are substrings
+    // of the "Contact Name" / "Contact Email" / "Contact Phone" fields further down the form.
+    await dialog.getByLabel("Name", { exact: true }).fill(CUSTOMER_NAME);
+    await dialog.getByLabel("Email", { exact: true }).fill(CUSTOMER_EMAIL);
+    await dialog.getByLabel(/^Phone/).fill(CUSTOMER_PHONE);
+    await dialog.getByRole("button", { name: "Next" }).click();
 
-    // Fill Step 1 — basic info (FormLabel-based fields)
-    await page.getByLabel("Name").fill(CUSTOMER_NAME);
-    await page.getByLabel("Email").fill(CUSTOMER_EMAIL);
-    await page.getByLabel(/Phone/).fill(CUSTOMER_PHONE);
-
-    // Click Next to go to step 2 (intake fields)
-    await page.getByRole("button", { name: "Next" }).click();
-    await page.waitForTimeout(2000);
-
-    // Submit — button text is "Create Client"
+    // Step 2 — intake fields; creating the client closes the dialog and opens the client page
+    await expect(dialog.getByText("Step 2 of 2")).toBeVisible();
     // Phase 87 S5 (ADR-344): label
-    const createBtn = page.getByRole("button", { name: "Create Client" });
-    await createBtn.evaluate((el: HTMLElement) => el.click());
-    await page.waitForTimeout(3000);
+    await dialog.getByRole("button", { name: "Create Client" }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    await expect(page).toHaveURL(/\/clients\/[0-9a-f-]{36}/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: CUSTOMER_NAME, exact: true })
+    ).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Close dialog if still open (validation may have blocked it)
-    const dialogStillOpen = await page
-      .getByRole("dialog")
-      .isVisible()
-      .catch(() => false);
-    if (dialogStillOpen) {
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(500);
-    }
-
-    // Reload and verify customer appears
-    // Phase 87 S4 (ADR-344): route rename
+    // Listed on the Clients page
     await page.goto(`${BASE}/clients`);
-    await expect(page.getByText(CUSTOMER_NAME).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("link", { name: CUSTOMER_NAME, exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("Create customer with custom fields (step 2)", async ({ page }) => {
     const name2 = `TestCust2 ${RUN_ID}`;
     const email2 = `testcust2-${RUN_ID}@example.com`;
+    const idNumber = `E2E-ID-${RUN_ID}`;
 
     await loginAs(page, "alice");
-    // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/clients`);
-    await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
+    const dialog = await openNewClientDialog(page);
 
-    const newBtn = page.getByRole("button", { name: /New (Customer|Client)/i });
-    await newBtn.click();
-    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
+    await dialog.getByLabel("Name", { exact: true }).fill(name2);
+    await dialog.getByLabel("Email", { exact: true }).fill(email2);
+    await dialog.getByRole("button", { name: "Next" }).click();
 
-    // Fill Step 1
-    await page.getByLabel("Name").fill(name2);
-    await page.getByLabel("Email").fill(email2);
-
-    // Advance to Step 2
-    await page.getByRole("button", { name: "Next" }).click();
-    await page.waitForTimeout(2000);
-
-    // Step 2 shows "Additional Information" as dialog title
-    const step2Visible = await page
-      .getByText(/Additional Information/i)
-      .isVisible()
-      .catch(() => false);
-    expect(step2Visible || true).toBeTruthy(); // Step 2 may or may not have custom fields
-
-    // Submit
+    // Step 2: the legal-za "SA Legal — Client Details" intake field
+    await expect(dialog.getByText("Step 2 of 2")).toBeVisible();
+    await dialog.getByLabel(/ID \/ Passport Number/).fill(idNumber);
     // Phase 87 S5 (ADR-344): label
-    const createBtn = page.getByRole("button", { name: "Create Client" });
-    await createBtn.evaluate((el: HTMLElement) => el.click());
-    await page.waitForTimeout(3000);
-
-    const dialogStillOpen = await page
-      .getByRole("dialog")
-      .isVisible()
-      .catch(() => false);
-    if (dialogStillOpen) {
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(500);
-    }
-
-    // Verify customer created via API
-    const token = await getToken("alice");
-    // Phase 87 S2 (ADR-337): API path
-    const res = await fetch(`${BACKEND_URL}/api/clients`, {
-      headers: { Authorization: `Bearer ${token}` },
+    await dialog.getByRole("button", { name: "Create Client" }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { level: 1, name: name2, exact: true })).toBeVisible({
+      timeout: 10_000,
     });
-    const customers = await res.json();
-    const created = customers.find((c: { name: string }) => c.name === name2);
-    expect(created).toBeDefined();
+
+    // The custom field value was saved with the client
+    const created = await clientByName(name2);
+    expect(created, `client "${name2}" should exist`).toBeDefined();
+    expect(created?.customFields?.id_passport_number).toBe(idNumber);
   });
 
   test("Edit customer name", async ({ page }) => {
-    // First find the customer via API
-    const token = await getToken("alice");
-    // Phase 87 S2 (ADR-337): API path
-    const listRes = await fetch(`${BACKEND_URL}/api/clients`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const customers = await listRes.json();
-    const target = customers.find((c: { name: string; id: string }) => c.name === CUSTOMER_NAME);
-
-    if (!target) {
-      test.skip(true, "Customer not found in API — creation may have failed");
-      return;
-    }
+    const target = await clientByName(CUSTOMER_NAME);
+    expect(target, `client "${CUSTOMER_NAME}" created by test 1`).toBeDefined();
 
     await loginAs(page, "alice");
     // Phase 87 S4 (ADR-344): route rename
-    await page.goto(`${BASE}/clients/${target.id}`);
-    // Customer detail heading is text-2xl — just check the name appears
-    await expect(page.getByText(CUSTOMER_NAME).first()).toBeVisible({ timeout: 10000 });
+    await page.goto(`${BASE}/clients/${target!.id}`);
+    await expect(
+      page.getByRole("heading", { level: 1, name: CUSTOMER_NAME, exact: true })
+    ).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Click Edit button (has Pencil icon + "Edit" text)
-    await page.getByRole("button", { name: /Edit/i }).click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible({ timeout: 5000 });
+    // Editing lives in the client overflow menu (the header action of a PROSPECT is "Start Onboarding")
+    await page.getByTestId("client-overflow-trigger").click();
+    await page.getByRole("menuitem", { name: "Edit Client" }).click();
+    const dialog = page.getByRole("dialog", { name: "Edit Client" });
+    await expect(dialog).toBeVisible();
 
-    // Clear and fill new name — scope to dialog to avoid matching other Name fields on page
-    const nameInput = dialog.getByRole("textbox", { name: "Name" });
-    await nameInput.clear();
+    // Exact: "Contact Name" further down the form also contains "Name"
+    const nameInput = dialog.getByRole("textbox", { name: "Name", exact: true });
     await nameInput.fill(EDITED_NAME);
+    await dialog.getByRole("button", { name: "Save Changes" }).click();
+    await expect(dialog).toBeHidden({ timeout: 10_000 });
 
-    // Submit — button text is "Save Changes"
-    await dialog.getByRole("button", { name: /Save Changes/ }).click();
-    await page.waitForTimeout(2000);
-
-    // Verify name updated — reload page
     await page.reload();
-    await expect(page.getByText(EDITED_NAME).first()).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByRole("heading", { level: 1, name: EDITED_NAME, exact: true })
+    ).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("Search customer list", async ({ page }) => {
     await loginAs(page, "alice");
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients`);
-    await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // The customer list page does not have a search input — it uses lifecycle filter pills.
-    // Verify the edited customer appears in the full list.
-    // (If edit test was skipped, look for original name instead)
-    const hasEdited = await page
-      .getByText(EDITED_NAME)
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    const hasOriginal = await page
-      .getByText(CUSTOMER_NAME)
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    expect(hasEdited || hasOriginal).toBeTruthy();
+    // Role queries skip the hidden copy of the page a re-render can leave in the DOM
+    await page
+      .getByRole("search", { name: "Search clients" })
+      .getByRole("textbox")
+      .fill(`Edited ${RUN_ID}`);
+    await expect(page).toHaveURL(new RegExp(`[?&]search=Edited`));
+    await expect(page.getByRole("link", { name: EDITED_NAME, exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
+    // The search narrows the list: this run's other client is filtered out
+    await expect(page.getByRole("link", { name: `TestCust2 ${RUN_ID}`, exact: true })).toHaveCount(
+      0
+    );
   });
 
-  test("Customer list pagination", async ({ page }) => {
+  test("Client list renders rows", async ({ page }) => {
     await loginAs(page, "alice");
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${BASE}/clients`);
-    await expect(page.locator("h1").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Wait for data to load
-    await page.waitForTimeout(2000);
-
-    // Verify the customer table or grid renders
-    // The page renders a <table> when customers exist, or EmptyState when empty
-    const table = page.locator("table");
-    const hasTable = await table.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasTable) {
-      const rows = table.locator("tbody tr");
-      const rowCount = await rows.count();
-      expect(rowCount).toBeGreaterThan(0);
-    } else {
-      // EmptyState shown — no customers, still a valid page state
-      await expect(page.locator("body")).not.toContainText("Something went wrong");
-    }
+    // The seed client and this run's clients exist, so the table (not the empty state) renders
+    await expect(page.getByTestId("client-row").filter({ visible: true }).first()).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByRole("link", { name: "Acme Corp", exact: true })).toBeVisible();
+    await expect(page.getByTestId("clients-footer").filter({ visible: true })).toContainText(
+      /Showing \d+/
+    );
   });
 });

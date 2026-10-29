@@ -1,0 +1,71 @@
+# pnpm test:e2e:customers --reporter=list — run 1 of 2 (consecutive), fresh-stack-seeded e2e (after E2E-LEGAL)
+  -   2 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:64:7 › DP-01: Customer Data Protection › Download customer data export
+  -   4 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:92:7 › DP-01: Customer Data Protection › Anonymize customer preview
+  -   5 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:122:7 › DP-01: Customer Data Protection › Execute anonymization
+  ✓   3 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:131:7 › CUST-02: Customer Lifecycle › New customer defaults to PROSPECT (1.0s)
+  ✓   6 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:165:7 › DP-01: Customer Data Protection › ANONYMIZED customer is read-only (1.1s)
+  ✓   8 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:180:7 › DP-01: Customer Data Protection › Cannot transition out of ANONYMIZED (131ms)
+  ✓   1 [chromium] › e2e/tests/customers/customer-crud.spec.ts:54:7 › CUST-01: Customer CRUD › Create customer with required fields (2.5s)
+  ✓   7 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:147:7 › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING (2.2s)
+  ✓  10 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:166:7 › CUST-02: Customer Lifecycle › ONBOARDING -> ACTIVE (via checklist completion) (243ms)
+  ✓  11 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:173:7 › CUST-02: Customer Lifecycle › PROSPECT blocked from creating project (29ms)
+  ✓  12 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:194:7 › CUST-02: Customer Lifecycle › Fee note blocked for a client without a billing address (34ms)
+  ✓   9 [chromium] › e2e/tests/customers/customer-crud.spec.ts:84:7 › CUST-01: Customer CRUD › Create customer with custom fields (step 2) (1.5s)
+  ✓  13 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:216:7 › CUST-02: Customer Lifecycle › ACTIVE -> DORMANT (1.0s)
+  -  15 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:238:7 › CUST-02: Customer Lifecycle › DORMANT -> OFFBOARDING
+  -  16 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:259:7 › CUST-02: Customer Lifecycle › OFFBOARDING -> OFFBOARDED
+  ✓  17 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:280:7 › CUST-02: Customer Lifecycle › OFFBOARDED blocked from project creation (278ms)
+  ✓  18 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:304:7 › CUST-02: Customer Lifecycle › Invalid: PROSPECT -> ACTIVE (skip) rejected via API (39ms)
+  ✓  14 [chromium] › e2e/tests/customers/customer-crud.spec.ts:112:7 › CUST-01: Customer CRUD › Edit customer name (3.0s)
+  ✓  19 [chromium] › e2e/tests/customers/customer-crud.spec.ts:145:7 › CUST-01: Customer CRUD › Search customer list (1.2s)
+  ✓  20 [chromium] › e2e/tests/customers/customer-crud.spec.ts:168:7 › CUST-01: Customer CRUD › Client list renders rows (335ms)
+  5 skipped
+  15 passed (9.2s)
+
+# pnpm test:e2e:customers --reporter=list — run 2 of 2 (consecutive), fresh-stack-seeded e2e (after E2E-LEGAL)
+  -   2 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:64:7 › DP-01: Customer Data Protection › Download customer data export
+  -   4 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:92:7 › DP-01: Customer Data Protection › Anonymize customer preview
+  -   5 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:122:7 › DP-01: Customer Data Protection › Execute anonymization
+  ✓   3 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:131:7 › CUST-02: Customer Lifecycle › New customer defaults to PROSPECT (1.1s)
+  ✓   6 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:165:7 › DP-01: Customer Data Protection › ANONYMIZED customer is read-only (1.1s)
+  ✓   8 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:180:7 › DP-01: Customer Data Protection › Cannot transition out of ANONYMIZED (200ms)
+  ✓   1 [chromium] › e2e/tests/customers/customer-crud.spec.ts:54:7 › CUST-01: Customer CRUD › Create customer with required fields (2.6s)
+  ✓   7 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:147:7 › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING (2.0s)
+  ✓  10 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:166:7 › CUST-02: Customer Lifecycle › ONBOARDING -> ACTIVE (via checklist completion) (320ms)
+  ✓  11 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:173:7 › CUST-02: Customer Lifecycle › PROSPECT blocked from creating project (29ms)
+  ✓  12 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:194:7 › CUST-02: Customer Lifecycle › Fee note blocked for a client without a billing address (30ms)
+  ✓   9 [chromium] › e2e/tests/customers/customer-crud.spec.ts:84:7 › CUST-01: Customer CRUD › Create customer with custom fields (step 2) (1.7s)
+  ✓  13 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:216:7 › CUST-02: Customer Lifecycle › ACTIVE -> DORMANT (964ms)
+  -  15 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:238:7 › CUST-02: Customer Lifecycle › DORMANT -> OFFBOARDING
+  -  16 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:259:7 › CUST-02: Customer Lifecycle › OFFBOARDING -> OFFBOARDED
+  ✓  17 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:280:7 › CUST-02: Customer Lifecycle › OFFBOARDED blocked from project creation (281ms)
+  ✓  18 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:304:7 › CUST-02: Customer Lifecycle › Invalid: PROSPECT -> ACTIVE (skip) rejected via API (34ms)
+  ✓  14 [chromium] › e2e/tests/customers/customer-crud.spec.ts:112:7 › CUST-01: Customer CRUD › Edit customer name (2.4s)
+  ✓  19 [chromium] › e2e/tests/customers/customer-crud.spec.ts:145:7 › CUST-01: Customer CRUD › Search customer list (1.2s)
+  ✓  20 [chromium] › e2e/tests/customers/customer-crud.spec.ts:168:7 › CUST-01: Customer CRUD › Client list renders rows (340ms)
+  5 skipped
+  15 passed (8.8s)
+
+# run 3 (after restoring two DP-01 titles to their original wording — title-only change)
+  -   2 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:64:7 › DP-01: Customer Data Protection › Download customer data export
+  -   4 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:92:7 › DP-01: Customer Data Protection › Anonymize customer preview shows entity counts
+  -   5 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:122:7 › DP-01: Customer Data Protection › Execute anonymization
+  ✓   3 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:131:7 › CUST-02: Customer Lifecycle › New customer defaults to PROSPECT (1.6s)
+  ✓   6 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:165:7 › DP-01: Customer Data Protection › ANONYMIZED customer is read-only (1.4s)
+  ✓   8 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:180:7 › DP-01: Customer Data Protection › Cannot transition out of ANONYMIZED via API (200ms)
+  ✓   1 [chromium] › e2e/tests/customers/customer-crud.spec.ts:54:7 › CUST-01: Customer CRUD › Create customer with required fields (3.3s)
+  ✓   7 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:147:7 › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING (2.1s)
+  ✓  10 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:166:7 › CUST-02: Customer Lifecycle › ONBOARDING -> ACTIVE (via checklist completion) (285ms)
+  ✓  11 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:173:7 › CUST-02: Customer Lifecycle › PROSPECT blocked from creating project (27ms)
+  ✓  12 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:194:7 › CUST-02: Customer Lifecycle › Fee note blocked for a client without a billing address (31ms)
+  ✓  13 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:216:7 › CUST-02: Customer Lifecycle › ACTIVE -> DORMANT (967ms)
+  ✓   9 [chromium] › e2e/tests/customers/customer-crud.spec.ts:84:7 › CUST-01: Customer CRUD › Create customer with custom fields (step 2) (1.8s)
+  -  14 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:238:7 › CUST-02: Customer Lifecycle › DORMANT -> OFFBOARDING
+  -  16 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:259:7 › CUST-02: Customer Lifecycle › OFFBOARDING -> OFFBOARDED
+  ✓  17 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:280:7 › CUST-02: Customer Lifecycle › OFFBOARDED blocked from project creation (355ms)
+  ✓  18 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:304:7 › CUST-02: Customer Lifecycle › Invalid: PROSPECT -> ACTIVE (skip) rejected via API (39ms)
+  ✓  15 [chromium] › e2e/tests/customers/customer-crud.spec.ts:112:7 › CUST-01: Customer CRUD › Edit customer name (2.4s)
+  ✓  19 [chromium] › e2e/tests/customers/customer-crud.spec.ts:145:7 › CUST-01: Customer CRUD › Search customer list (822ms)
+  ✓  20 [chromium] › e2e/tests/customers/customer-crud.spec.ts:168:7 › CUST-01: Customer CRUD › Client list renders rows (444ms)
+  5 skipped
+  15 passed (9.5s)

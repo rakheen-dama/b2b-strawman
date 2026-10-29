@@ -1,0 +1,18 @@
+# 628F B2 — seven B2 dirs, three consecutive runs on the B1 stack (documents information-requests invoices automations compliance finance notifications)
+## seven-a
+  1 skipped
+  58 passed (21.9s)
+## seven-b
+  1 skipped
+  58 passed (20.5s)
+## seven-c
+  1 skipped
+  58 passed (19.8s)
+## per-dir (run seven-c)
+documents: 8 passed / 0 failed / 1 skipped
+information-requests: 5 passed / 0 failed / 0 skipped
+invoices: 21 passed / 0 failed / 0 skipped
+automations: 7 passed / 0 failed / 0 skipped
+compliance: 2 passed / 0 failed / 0 skipped
+finance: 7 passed / 0 failed / 0 skipped
+notifications: 8 passed / 0 failed / 0 skipped

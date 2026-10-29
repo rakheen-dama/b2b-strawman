@@ -1,0 +1,15 @@
+628F B2 — stored generated-document download fails on the E2E mock stack (ENVIRONMENT, not fixme'd)
+Reproduced 2026-10-29 on the B1 stack (worktree build), probe spec (temporary, not committed):
+  Website Redesign → Work → Generated Docs → row "Statement of Account" → button "Download PDF"
+  → no download event; the list shows "Failed to download document."
+Root cause (observed):
+  GET :8081/api/generated-documents/<id>/download → 302
+    Location: http://localhost:4567/docteams-dev/org/tenant_.../generated/statement-of-account-website-redesign-<date>.pdf?X-Amz-...
+  The download runs in a Next server action (app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions.ts
+  downloadGeneratedDocumentAction → lib/api/generated-documents.ts downloadGeneratedDocument, fetch redirect:"follow").
+  The presigned URL uses AWS_S3_PRESIGNER_ENDPOINT=http://localhost:4567 (compose/docker-compose.e2e.yml:88) — the
+  browser-facing host port — which the frontend container cannot reach, so the server-side follow fails.
+  On real S3 the presigned URL is public and the path works.
+Disposition: document-generation "Download PDF" now downloads through the Generate dialog's "Download PDF"
+  (rendered on the fly, no S3 round-trip). Follow-up: make stored-document download reachable on the e2e stack
+  (presigner host resolvable from the frontend container, or stream the download server-side via AWS_S3_ENDPOINT).

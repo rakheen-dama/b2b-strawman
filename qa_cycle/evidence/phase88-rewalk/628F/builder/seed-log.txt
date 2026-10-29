@@ -1,0 +1,80 @@
+e2e-seed  | 2026-10-29T06:30:12.859415971Z ============================================
+e2e-seed  | 2026-10-29T06:30:12.859437012Z   E2E Boot-Seed
+e2e-seed  | 2026-10-29T06:30:12.859438554Z ============================================
+e2e-seed  | 2026-10-29T06:30:12.860371054Z ==> Waiting for backend at http://backend:8080/actuator/health (timeout: 120s)
+e2e-seed  | 2026-10-29T06:30:12.882583138Z ==> Backend is healthy (0s elapsed)
+e2e-seed  | 2026-10-29T06:30:12.882667971Z 
+e2e-seed  | 2026-10-29T06:30:12.882684846Z ==> Step 1: Provision organization
+e2e-seed  | 2026-10-29T06:30:14.374319763Z     [ok] Provision org (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:14.374327555Z 
+e2e-seed  | 2026-10-29T06:30:14.374328430Z ==> Step 3: Sync members
+e2e-seed  | 2026-10-29T06:30:14.410399097Z     [ok] Sync Alice Owner (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:14.424753305Z     [ok] Sync Bob Admin (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:14.438538722Z     [ok] Sync Carol Member (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:14.438560388Z 
+e2e-seed  | 2026-10-29T06:30:14.438561513Z ==> Step 3b: Remove orphaned members (legacy IDs)
+e2e-seed  | 2026-10-29T06:30:14.504674097Z     [ok] No orphaned members found
+e2e-seed  | 2026-10-29T06:30:14.504694222Z 
+e2e-seed  | 2026-10-29T06:30:14.504695430Z ==> Step 4: Get Alice's JWT from mock IDP
+e2e-seed  | 2026-10-29T06:30:14.524717930Z     [ok] Got Alice's JWT
+e2e-seed  | 2026-10-29T06:30:14.524740972Z 
+e2e-seed  | 2026-10-29T06:30:14.524742180Z ==> Step 5: Create customer
+e2e-seed  | 2026-10-29T06:30:14.715178930Z     [ok] Create customer (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:14.717358763Z     Customer ID: 85c7e299-a5e0-4ac3-82d9-9684e05d7073
+e2e-seed  | 2026-10-29T06:30:14.717367722Z 
+e2e-seed  | 2026-10-29T06:30:14.717368847Z ==> Step 6: Transition customer PROSPECT -> ONBOARDING -> ACTIVE
+e2e-seed  | 2026-10-29T06:30:14.809464972Z     [ok] Transition to ONBOARDING (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:15.142111305Z     [ok] Checklists completed
+e2e-seed  | 2026-10-29T06:30:15.158905305Z     [ok] Auto-transitioned to ACTIVE
+e2e-seed  | 2026-10-29T06:30:15.158930222Z 
+e2e-seed  | 2026-10-29T06:30:15.158931722Z ==> Step 7: Create matter
+e2e-seed  | 2026-10-29T06:30:15.228470555Z     [ok] Create matter (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:15.230740347Z     Matter ID: 58e3f1dc-8c15-40d7-b8b8-7d0b58d28fd2
+e2e-seed  | 2026-10-29T06:30:15.252465389Z 
+e2e-seed  | 2026-10-29T06:30:15.252487680Z ==> Step 8: Trust account
+e2e-seed  | 2026-10-29T06:30:15.270154139Z     [ok] List trust accounts (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:15.294359555Z     [ok] Create trust account (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:15.296429514Z     Trust account: Mathebula & Partners Trust Account (ec13e552-0341-4df7-bcf0-1dcb1e640aa9)
+e2e-seed  | 2026-10-29T06:30:15.296438764Z 
+e2e-seed  | 2026-10-29T06:30:15.296440180Z ==> Step 9: Fee notes (1 draft, 1 sent)
+e2e-seed  | 2026-10-29T06:30:15.316691847Z     [ok] List Acme fee notes (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:15.368562680Z     [ok] Create draft fee note (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:15.407952847Z     [ok]   Line: consultation (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:15.437279472Z     [ok] Create fee note to send (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:15.468506972Z     [ok]   Line: drafting (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:15.528497805Z     [ok] Approve fee note (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:16.321400167Z     [ok] Send fee note (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:16.342950458Z     Fee notes: draft db5d1173-f5d9-44e6-82e8-d7f256b9a2ce, sent INV-0001 (2a0b20bf-a817-4e74-a347-b249a11c84bd)
+e2e-seed  | 2026-10-29T06:30:16.342967333Z 
+e2e-seed  | 2026-10-29T06:30:16.342968667Z ==> Step 10: Information request (Day 3)
+e2e-seed  | 2026-10-29T06:30:16.360397042Z     [ok] List Acme information requests (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:16.381341458Z     [ok] List Acme portal contacts (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:16.435140333Z     [ok] Create information request (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:16.491819125Z     [ok] Send information request (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:16.494134042Z     Information request: REQ-0001 (9156e039-1fd5-401d-8c4e-f84de16c7e8d) SENT
+e2e-seed  | 2026-10-29T06:30:16.494147708Z 
+e2e-seed  | 2026-10-29T06:30:16.494148833Z ==> Step 11: Statement of Account (Day 60)
+e2e-seed  | 2026-10-29T06:30:16.523611750Z     [ok] List Website Redesign statements (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:16.626962667Z     [ok] Generate Statement of Account (HTTP 201)
+e2e-seed  | 2026-10-29T06:30:16.629082125Z     Statement of Account: 3aab24d9-e1fd-4889-be53-72abeab702b4 (2026-01-01 → 2026-10-29, shared with client)
+e2e-seed  | 2026-10-29T06:30:16.629094125Z 
+e2e-seed  | 2026-10-29T06:30:16.629095250Z ==> Step 12: Portal digest cadence BIWEEKLY (portal Day 85)
+e2e-seed  | 2026-10-29T06:30:16.660867583Z 
+e2e-seed  | 2026-10-29T06:30:16.660886875Z ==> Step 13: Sync portal read model
+e2e-seed  | 2026-10-29T06:30:16.660886250Z     [ok] Portal digest cadence BIWEEKLY (HTTP 200)
+e2e-seed  | 2026-10-29T06:30:16.693110792Z 
+e2e-seed  | 2026-10-29T06:30:16.693120125Z ============================================
+e2e-seed  | 2026-10-29T06:30:16.693121625Z   E2E Boot-Seed Complete!
+e2e-seed  | 2026-10-29T06:30:16.693122667Z ============================================
+e2e-seed  | 2026-10-29T06:30:16.693123708Z 
+e2e-seed  | 2026-10-29T06:30:16.693124750Z   Org:      E2E Test Organization (e2e-test-org)
+e2e-seed  | 2026-10-29T06:30:16.693125833Z   Members:  alice (owner), bob (admin), carol (member)
+e2e-seed  | 2026-10-29T06:30:16.693126875Z   Customer: Acme Corp (85c7e299-a5e0-4ac3-82d9-9684e05d7073)
+e2e-seed  | 2026-10-29T06:30:16.693127958Z   Matter:   Website Redesign (58e3f1dc-8c15-40d7-b8b8-7d0b58d28fd2)
+e2e-seed  | 2026-10-29T06:30:16.693129083Z   Trust:    Mathebula & Partners Trust Account (ec13e552-0341-4df7-bcf0-1dcb1e640aa9)
+e2e-seed  | 2026-10-29T06:30:16.693133458Z   Fees:     draft db5d1173-f5d9-44e6-82e8-d7f256b9a2ce; sent INV-0001 (2a0b20bf-a817-4e74-a347-b249a11c84bd)
+e2e-seed  | 2026-10-29T06:30:16.693143167Z   Request:  REQ-0001 SENT to contact@acme.example.com
+e2e-seed  | 2026-10-29T06:30:16.693144208Z   SoA:      Website Redesign (shared with client)
+e2e-seed  | 2026-10-29T06:30:16.693145125Z   Digest:   BIWEEKLY
+e2e-seed  | 2026-10-29T06:30:16.693145958Z 
+e2e-seed  | 2026-10-29T06:30:16.693136000Z     [ok] Portal resync (HTTP 200)

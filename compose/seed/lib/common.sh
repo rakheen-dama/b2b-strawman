@@ -104,6 +104,25 @@ api_put() {
   cat "$_API_TMPFILE.body"
 }
 
+# api_patch_json <path> <body> [jwt] — PATCH with a JSON body (Phase 88 628F). Named so it cannot
+# collide with scripts/regression-test.sh's own body-less `api_patch(path, jwt)`.
+api_patch_json() {
+  _p="$1"; _b="$2"; _j="${3:-}"
+  if [ -n "$_j" ]; then
+    curl -s -o "$_API_TMPFILE.body" -w "%{http_code}" \
+      -X PATCH "${BACKEND_URL}${_p}" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${_j}" \
+      -d "$_b" > "$_API_TMPFILE"
+  else
+    curl -s -o "$_API_TMPFILE.body" -w "%{http_code}" \
+      -X PATCH "${BACKEND_URL}${_p}" \
+      -H "Content-Type: application/json" \
+      -d "$_b" > "$_API_TMPFILE"
+  fi
+  cat "$_API_TMPFILE.body"
+}
+
 last_status() {
   cat "$_API_TMPFILE"
 }
@@ -116,6 +135,22 @@ check_status() {
   case "$status" in
     2[0-9][0-9]|409) echo "    [ok] ${step} (HTTP ${status})" >&2 ;;
     *) echo "    [FAIL] ${step} (HTTP ${status})" >&2; return 1 ;;
+  esac
+}
+
+# check_2xx <step> [status] — strict variant for state transitions (approve, send, …): only 2xx is
+# OK. check_status accepts 409 ("already exists"), which would silently pass a refused transition.
+# On failure the last response body is echoed to stderr so the seed log shows the reason.
+check_2xx() {
+  _c2_step="$1"
+  _c2_status="${2:-$(last_status)}"
+  case "$_c2_status" in
+    2[0-9][0-9]) echo "    [ok] ${_c2_step} (HTTP ${_c2_status})" >&2 ;;
+    *)
+      echo "    [FAIL] ${_c2_step} (HTTP ${_c2_status})" >&2
+      [ -f "$_API_TMPFILE.body" ] && head -c 2000 "$_API_TMPFILE.body" >&2 && echo "" >&2
+      return 1
+      ;;
   esac
 }
 

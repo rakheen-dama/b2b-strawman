@@ -11,7 +11,9 @@ seed_invoices() {
   existing=$(api_get "/api/invoices?size=200" "$jwt")
 
   # ── Invoice 1: Acme Corp (manual lines) ─────────────────────────
-  acme_invoice=$(echo "$existing" | jq -r '.[] | select(.clientName == "Acme Corp") | .id' 2>/dev/null | head -1)
+  # Matched on rich-seed's own notes marker, not the client name: the boot seed (seed_boot_fee_notes)
+  # and the e2e specs also create Acme Corp fee notes, and rich-seed must not adopt one of those.
+  acme_invoice=$(echo "$existing" | jq -r '.[] | select(.clientName == "Acme Corp" and .notes == "Legacy migration completed work") | .id' 2>/dev/null | head -1)
   if [ -n "$acme_invoice" ] && [ "$acme_invoice" != "null" ]; then
     echo "    [skip] Acme Corp invoice exists (${acme_invoice})"
     ACME_INVOICE_ID="$acme_invoice"
@@ -98,4 +100,86 @@ seed_invoices() {
   echo "    Invoices seeded:"
   echo "      Acme Corp:        ${ACME_INVOICE_ID}"
   echo "      Bright Solutions: ${BRIGHT_INVOICE_ID}"
+}
+
+# ── Boot-seed fee notes (Phase 88 628F, U22) ────────────────────────
+# seed_boot_fee_notes — two fee notes for Acme Corp on Website Redesign, both via the API:
+#   A "E2E seed fee note — draft": DRAFT, one line.
+#   B "E2E seed fee note — sent":  one line, approved (gets an INV-#### number) and sent.
+# Requires: ACME_ID, WEBSITE_REDESIGN_ID. Idempotent by notes marker; B is advanced from whatever
+# state a previous run left it in. Transitions use check_2xx (409 = refused transition, not "exists").
+# Send uses overrideWarnings:false — a 422 means the seed client data is incomplete; fix the data.
+SEED_FEE_NOTE_DRAFT="E2E seed fee note — draft"
+SEED_FEE_NOTE_SENT="E2E seed fee note — sent"
+
+seed_boot_fee_notes() {
+  echo ""
+  echo "==> Step 9: Fee notes (1 draft, 1 sent)"
+  _fn_jwt=$(get_jwt user_e2e_alice owner)
+
+  _fn_list=$(api_get "/api/invoices?clientId=${ACME_ID}" "$_fn_jwt")
+  check_2xx "List Acme fee notes" || return 1
+
+  # ── A: draft ──
+  FEE_NOTE_DRAFT_ID=$(echo "$_fn_list" | jq -r --arg n "$SEED_FEE_NOTE_DRAFT" \
+    '.[] | select(.notes == $n) | .id' | head -1)
+  if [ -n "$FEE_NOTE_DRAFT_ID" ] && [ "$FEE_NOTE_DRAFT_ID" != "null" ]; then
+    echo "    [skip] Draft fee note exists (${FEE_NOTE_DRAFT_ID})"
+  else
+    _fn_body=$(api_post "/api/invoices" "{
+      \"clientId\": \"${ACME_ID}\",
+      \"currency\": \"ZAR\",
+      \"notes\": \"${SEED_FEE_NOTE_DRAFT}\",
+      \"paymentTerms\": \"Net 30\"
+    }" "$_fn_jwt")
+    check_2xx "Create draft fee note" || return 1
+    FEE_NOTE_DRAFT_ID=$(echo "$_fn_body" | jq -r '.id')
+    api_post "/api/invoices/${FEE_NOTE_DRAFT_ID}/lines" "{
+      \"matterId\": \"${WEBSITE_REDESIGN_ID}\",
+      \"description\": \"Consultation — website redesign mandate\",
+      \"quantity\": 2,
+      \"unitPrice\": 1500.00,
+      \"sortOrder\": 0
+    }" "$_fn_jwt" > /dev/null
+    check_2xx "  Line: consultation" || return 1
+  fi
+
+  # ── B: approved + sent ──
+  FEE_NOTE_SENT_ID=$(echo "$_fn_list" | jq -r --arg n "$SEED_FEE_NOTE_SENT" \
+    '.[] | select(.notes == $n) | .id' | head -1)
+  if [ -z "$FEE_NOTE_SENT_ID" ] || [ "$FEE_NOTE_SENT_ID" = "null" ]; then
+    _fn_body=$(api_post "/api/invoices" "{
+      \"clientId\": \"${ACME_ID}\",
+      \"currency\": \"ZAR\",
+      \"notes\": \"${SEED_FEE_NOTE_SENT}\",
+      \"paymentTerms\": \"Net 30\"
+    }" "$_fn_jwt")
+    check_2xx "Create fee note to send" || return 1
+    FEE_NOTE_SENT_ID=$(echo "$_fn_body" | jq -r '.id')
+    api_post "/api/invoices/${FEE_NOTE_SENT_ID}/lines" "{
+      \"matterId\": \"${WEBSITE_REDESIGN_ID}\",
+      \"description\": \"Drafting — services agreement\",
+      \"quantity\": 3,
+      \"unitPrice\": 2500.00,
+      \"sortOrder\": 0
+    }" "$_fn_jwt" > /dev/null
+    check_2xx "  Line: drafting" || return 1
+  fi
+
+  _fn_json=$(api_get "/api/invoices/${FEE_NOTE_SENT_ID}" "$_fn_jwt")
+  check_2xx "Fetch fee note to send" || return 1
+  _fn_status=$(echo "$_fn_json" | jq -r '.status')
+  if [ "$_fn_status" = "DRAFT" ]; then
+    api_post "/api/invoices/${FEE_NOTE_SENT_ID}/approve" '{}' "$_fn_jwt" > /dev/null
+    check_2xx "Approve fee note" || return 1
+    _fn_status="APPROVED"
+  fi
+  if [ "$_fn_status" = "APPROVED" ]; then
+    api_post "/api/invoices/${FEE_NOTE_SENT_ID}/send" '{"overrideWarnings": false}' "$_fn_jwt" > /dev/null
+    check_2xx "Send fee note" || return 1
+  else
+    echo "    [skip] Fee note already ${_fn_status} (${FEE_NOTE_SENT_ID})"
+  fi
+  FEE_NOTE_SENT_NUMBER=$(api_get "/api/invoices/${FEE_NOTE_SENT_ID}" "$_fn_jwt" | jq -r '.invoiceNumber')
+  echo "    Fee notes: draft ${FEE_NOTE_DRAFT_ID}, sent ${FEE_NOTE_SENT_NUMBER} (${FEE_NOTE_SENT_ID})"
 }

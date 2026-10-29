@@ -1,0 +1,13 @@
+628F follow-up (NOT a blocker): Create Information Request dialog overflows a 1280x720 viewport once an ad-hoc item row is added
+(reproduced 2026-10-29, reused e2e stack, Alice/owner, run-unique ACTIVE client + matter; temporary measure spec, not committed)
+Steps: /org/e2e-test-org/matters/<id> → Client › Information requests → New Request
+  ad-hoc, 0 items  : viewport 1280x720 dialog y=33  h=655 bottom=687  "Save as Draft" bottom=664  → reachable
+  ad-hoc, 1 item   : viewport 1280x720 dialog y=-91 h=902 bottom=811  "Save as Draft" y=750-786  → title clipped above, footer below the fold, no scroll
+  template (FICA)  : viewport 1280x720 dialog y=46  h=628 bottom=674  "Save as Draft" bottom=649  → reachable (trial click OK)
+Cause: components/ui/dialog.tsx:54-71 DialogContent has no max-h / overflow-y-auto, and components/information-requests/create-request-dialog.tsx:226
+<DialogContent className="sm:max-w-lg"> adds none; each ad-hoc item row (name + description textarea + response type + required) adds ~250px.
+Same class as role-dialog-overflow.txt (components/roles/role-dialog.tsx:105).
+Resolution in 628F (R-15): information-request-crud "Create information request" now creates from the "FICA Onboarding Pack" request template
+with real mouse clicks (the dialog fits). The ad-hoc-item path stays uncovered by the default config; the legal suites' keyboard-Enter
+submits (legal-lifecycle day-60 / day-75) are a follow-up, out of 628F scope.
+Screenshots: ireq-dialog-adhoc-item-overflow.png (1 ad-hoc item), ireq-dialog-template-fits.png (template selected).

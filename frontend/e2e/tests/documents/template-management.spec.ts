@@ -1,234 +1,160 @@
 /**
  * DOC-01: Template Management — Playwright E2E Tests
  *
- * Tests: template list, create new, clone, edit content.
+ * Tests: template list, create a custom template, clone a platform template, edit the clone.
+ *
+ * Templates this run creates are deactivated in `afterAll` (DELETE /api/templates/{id} is a soft
+ * deactivate) so they never linger in Generate Document menus (628F R-5). A platform template can be
+ * cloned once per tenant (DocumentTemplateService.cloneTemplate: 409 "Clone exists", inactive
+ * clones included), so the clone test picks a platform template no earlier run has cloned — read
+ * from the audit log's `template.cloned` events — making a reused stack good for one run per
+ * platform template.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
- *   2. Seed data present: bash compose/seed/seed.sh (legal-za; run by e2e-up.sh). The accounting
- *      compose/seed/lifecycle-test.sh was removed in Phase 86 (Epic 604)
+ *   2. Seed data present: bash compose/seed/seed.sh (legal-za; run by e2e-up.sh)
  *
  * Run:
- *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test documents/template-management
+ *   PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e e2e/tests/documents/template-management
  */
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
+import { apiOk } from "../../helpers/api";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 const RUN_ID = Date.now().toString(36).slice(-4);
+const CREATED_NAME = `E2E Cover Letter ${RUN_ID}`;
 
-test.describe("DOC-01: Template Management", () => {
-  test("Template list shows seeded templates", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/templates`);
+interface TemplateRow {
+  id: string;
+  name: string;
+  source: "PLATFORM" | "ORG_CUSTOM";
+}
 
-    // Heading is "Templates" (h1 with a HelpTip beside it)
-    const heading = page.locator("h1").filter({ hasText: "Templates" });
-    const hasPage = await heading.isVisible({ timeout: 10000 }).catch(() => false);
+/** A platform template that has never been cloned on this tenant. */
+async function notYetClonedPlatformTemplate(): Promise<TemplateRow> {
+  const templates = await apiOk<TemplateRow[]>("/api/templates");
+  const audit = await apiOk<{ content: { details: { original_id?: string } }[] }>(
+    "/api/audit-events?eventType=template.cloned&size=200"
+  );
+  const cloned = new Set(audit.content.map((e) => e.details.original_id));
+  const candidate = templates.find((t) => t.source === "PLATFORM" && !cloned.has(t.id));
+  expect(candidate, "a platform template not yet cloned on this stack").toBeDefined();
+  return candidate!;
+}
 
-    if (!hasPage) {
-      test.skip(true, "Templates settings page does not exist at /settings/templates");
-      return;
+/** Settings › Documents › Templates (/settings/templates is a legacy redirect to it). */
+async function openTemplates(page: Page) {
+  await page.goto(`${BASE}/settings/templates`);
+  await expect(page).toHaveURL(/\/settings\/documents\?tab=templates/);
+  await expect(page.getByRole("heading", { level: 1, name: /^Templates/ })).toBeVisible({
+    timeout: 15_000,
+  });
+}
+
+/** The template-list row whose name link is exactly `name`. */
+function templateRow(page: Page, name: string) {
+  return page
+    .getByTestId("template-list-item")
+    .filter({ has: page.getByRole("link", { name, exact: true }) });
+}
+
+test.describe.serial("DOC-01: Template Management", () => {
+  const created: string[] = [];
+  let cloneName: string;
+
+  test.afterAll(async () => {
+    for (const id of created) {
+      await apiOk(`/api/templates/${id}`, { method: "DELETE" });
     }
+  });
 
-    // Verify the page loads without errors
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+  test.beforeEach(async ({ page }) => {
+    await loginAs(page, "alice");
+  });
 
-    // Check for template table or empty state
-    const hasTable = await page
-      .getByRole("table")
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    const hasEmptyState = await page
-      .getByText(/No templates/i)
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-    const hasTemplateNames = await page
-      // Phase 88 628A (ADR-357): label — category "Project Summary" → "Matter Summary"
-      .getByText(/Engagement Letter|Statement of Work|Cover Letter|NDA|Matter Summary/i)
-      .first()
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-
-    // Should show templates or empty state
-    expect(hasTable || hasEmptyState || hasTemplateNames).toBeTruthy();
-
-    // Check for "New Template" button (Link wrapping a Button)
-    const newTemplateButton = page
-      .getByRole("link", { name: /New Template/i })
-      .or(page.getByRole("button", { name: /New Template/i }));
-    await expect(newTemplateButton.first()).toBeVisible({ timeout: 5000 });
-
-    // Verify format filter is present (data-testid="format-filter")
-    const formatFilter = page.locator('[data-testid="format-filter"]');
-    const hasFilter = await formatFilter.isVisible({ timeout: 3000 }).catch(() => false);
-    expect(hasFilter).toBeTruthy();
+  test("Template list shows seeded templates", async ({ page }) => {
+    await openTemplates(page);
+    await expect(page.getByRole("heading", { level: 2, name: "Engagement Letter" })).toBeVisible();
+    const row = templateRow(page, "Engagement Letter — General");
+    await expect(row).toHaveCount(1);
+    await expect(row).toContainText("Platform");
+    await expect(row).toContainText("Active");
+    await expect(page.getByRole("link", { name: "New Template" })).toBeVisible();
+    await expect(page.getByTestId("format-filter")).toBeVisible();
   });
 
   test("Create new template", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/templates`);
-
-    const heading = page.locator("h1").filter({ hasText: "Templates" });
-    const hasPage = await heading.isVisible({ timeout: 10000 }).catch(() => false);
-    if (!hasPage) {
-      test.skip(true, "Templates settings page does not exist");
-      return;
-    }
-
-    // Click "New Template" link/button
-    const newTemplateLink = page.getByRole("link", { name: /New Template/i }).first();
-    const hasLink = await newTemplateLink.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasLink) {
-      test.skip(true, "New Template button not visible");
-      return;
-    }
-
-    await newTemplateLink.click();
-    await page.waitForLoadState("networkidle");
-
-    // Should navigate to /settings/documents/templates/new
+    await openTemplates(page);
+    await page.getByRole("link", { name: "New Template" }).click();
     await expect(page).toHaveURL(new RegExp(`${BASE}/settings/documents/templates/new`));
+    await expect(page.getByRole("heading", { level: 1, name: "New Template" })).toBeVisible({
+      timeout: 15_000,
+    });
 
-    // Verify the new template form loads
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    // Form defaults: an engagement letter for a matter
+    const category = page.getByLabel("Category", { exact: true });
+    const entityType = page.getByLabel("Primary Entity Type");
+    await expect(category).toHaveValue("ENGAGEMENT_LETTER");
+    await expect(entityType).toHaveValue("PROJECT");
 
-    // Look for template name input field
-    const nameInput = page
-      .getByLabel(/Name/i)
-      .first()
-      .or(page.getByRole("textbox", { name: /Name/i }).first())
-      .or(page.getByPlaceholder(/template name/i).first());
-    const hasNameInput = await nameInput.isVisible({ timeout: 5000 }).catch(() => false);
+    await page.getByLabel("Name", { exact: true }).fill(CREATED_NAME);
+    await category.selectOption({ label: "Cover Letter" });
+    await entityType.selectOption({ label: "Fee note" });
+    await page.getByRole("button", { name: "Create Template" }).click();
 
-    if (hasNameInput) {
-      await nameInput.fill(`Test Template ${RUN_ID}`);
-    }
+    // Creating opens the new template's editor
+    await expect(page).toHaveURL(/\/settings\/documents\/templates\/[0-9a-f-]{36}\/edit/, {
+      timeout: 15_000,
+    });
+    created.push(page.url().match(/templates\/([0-9a-f-]{36})\/edit/)![1]);
+    await expect(page.getByLabel("Template name")).toHaveValue(CREATED_NAME);
 
-    // The template editor page should be functional
-    await expect(page.locator("main")).toBeVisible();
+    await openTemplates(page);
+    const row = templateRow(page, CREATED_NAME);
+    await expect(row).toContainText("Custom");
+    await expect(row).toContainText("Fee note");
   });
 
   test("Clone template", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/templates`);
+    const source = await notYetClonedPlatformTemplate();
+    cloneName = `${source.name} (Custom)`;
+    await openTemplates(page);
+    // The row's last button opens its actions menu (TemplateActionsMenu — an unnamed icon button)
+    await templateRow(page, source.name).getByRole("button").last().click();
+    await page.getByRole("menuitem", { name: "Clone & Customize" }).click();
 
-    const heading = page.locator("h1").filter({ hasText: "Templates" });
-    const hasPage = await heading.isVisible({ timeout: 10000 }).catch(() => false);
-    if (!hasPage) {
-      test.skip(true, "Templates settings page does not exist");
-      return;
-    }
+    // Cloning opens the clone's editor — a custom template, so editable
+    await expect(page).toHaveURL(/\/settings\/documents\/templates\/[0-9a-f-]{36}\/edit/, {
+      timeout: 15_000,
+    });
+    const cloneId = page.url().match(/templates\/([0-9a-f-]{36})\/edit/)![1];
+    expect(cloneId).not.toBe(source.id);
+    created.push(cloneId);
+    await expect(page.getByLabel("Template name")).toHaveValue(cloneName);
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeVisible();
 
-    // Wait for templates to load
-    await page.waitForLoadState("networkidle");
-
-    const hasTable = await page
-      .getByRole("table")
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    if (!hasTable) {
-      test.skip(true, "No templates available to clone");
-      return;
-    }
-
-    // Find a template actions menu (TemplateActionsMenu — three-dot button in the last column)
-    const templateRows = page.locator("table tbody tr");
-    const rowCount = await templateRows.count();
-
-    if (rowCount === 0) {
-      test.skip(true, "No template rows available");
-      return;
-    }
-
-    // Click the actions menu on the first template row
-    const firstRowActions = templateRows.first().getByRole("button").last();
-    const hasActionsBtn = await firstRowActions.isVisible({ timeout: 3000 }).catch(() => false);
-
-    if (!hasActionsBtn) {
-      test.skip(true, "No actions button found on template rows");
-      return;
-    }
-
-    await firstRowActions.click();
-
-    // Look for "Clone" option in the dropdown menu
-    const cloneOption = page.getByRole("menuitem", { name: /Clone/i });
-    const hasClone = await cloneOption.isVisible({ timeout: 3000 }).catch(() => false);
-
-    if (!hasClone) {
-      test.skip(true, "Clone option not available in actions menu");
-      return;
-    }
-
-    await cloneOption.click();
-    await page.waitForTimeout(2000);
-
-    // Verify the clone was created — page should reload with new template
-    await page.goto(`${BASE}/settings/templates`);
-    await page.waitForLoadState("networkidle");
-
-    // Clone may use a different naming convention — verify the page is functional
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
+    await openTemplates(page);
+    await expect(templateRow(page, cloneName)).toContainText("Custom");
+    await expect(templateRow(page, source.name)).toContainText("Platform");
   });
 
   test("Edit template content", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/settings/templates`);
+    const renamed = `${cloneName} ${RUN_ID}`;
+    await openTemplates(page);
+    await page.getByRole("link", { name: cloneName, exact: true }).click();
+    await expect(page).toHaveURL(/\/settings\/documents\/templates\/[0-9a-f-]{36}\/edit/);
 
-    const heading = page.locator("h1").filter({ hasText: "Templates" });
-    const hasPage = await heading.isVisible({ timeout: 10000 }).catch(() => false);
-    if (!hasPage) {
-      test.skip(true, "Templates settings page does not exist");
-      return;
-    }
+    // Custom templates are editable: name input, editable Tiptap body, Save
+    const nameInput = page.getByLabel("Template name");
+    await expect(nameInput).toHaveValue(cloneName, { timeout: 15_000 });
+    await expect(page.locator(".ProseMirror").first()).toHaveAttribute("contenteditable", "true");
+    await nameInput.fill(renamed);
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByText("Template saved successfully.")).toBeVisible({ timeout: 15_000 });
 
-    await page.waitForLoadState("networkidle");
-
-    // Click on the first template name link to open editor
-    // Template names in the table are links to /settings/documents/templates/{id}/edit
-    // Scope to within a table to avoid matching sidebar links
-    const table = page.getByRole("table").first();
-    const templateLink = table.getByRole("link").first();
-    const hasTemplate = await templateLink.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!hasTemplate) {
-      test.skip(true, "No templates available to edit");
-      return;
-    }
-
-    await templateLink.click();
-    await page.waitForLoadState("networkidle");
-
-    // Should navigate to the template editor page
-    await expect(page).toHaveURL(/\/settings\/documents\/templates\/.*\/edit/);
-
-    // Verify the editor page loads
-    await expect(page.locator("body")).not.toContainText("Something went wrong");
-    await expect(page.locator("main")).toBeVisible({ timeout: 10000 });
-
-    // Look for a save button or form elements
-    const saveButton = page.getByRole("button", { name: /Save/i }).first();
-    const hasSave = await saveButton.isVisible({ timeout: 5000 }).catch(() => false);
-
-    // The editor should have either a save button or editable content area
-    // (Tiptap editor or form inputs)
-    const hasEditor = await page
-      .locator(".ProseMirror, .tiptap, [contenteditable]")
-      .first()
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-    const hasFormInputs = await page
-      .getByLabel(/Name|Content/i)
-      .first()
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-
-    expect(hasSave || hasEditor || hasFormInputs).toBeTruthy();
+    await page.reload();
+    await expect(page.getByLabel("Template name")).toHaveValue(renamed, { timeout: 15_000 });
   });
 });

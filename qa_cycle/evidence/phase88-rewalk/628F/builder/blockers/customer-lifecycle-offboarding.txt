@@ -1,0 +1,15 @@
+628F-BLOCKERs CUST-02 tests 7-8 (reproduced 2026-10-29, fresh e2e stack, Alice/owner; clients driven to DORMANT / OFFBOARDING via the API, then the UI probed)
+Repro spec (temporary, not committed): e2e/tests/__repro__/offboard.spec.ts
+
+Running 2 tests using 1 worker
+HEADER ACTION: Edit
+OVERFLOW MENU ITEMS: ["Edit Client","Generate Document","Run Conflict Check","Export Data","Anonymize","Archive"]
+STATUS AFTER: DORMANT
+  ✓  1 [chromium] › e2e/tests/__repro__/offboard.spec.ts:22:5 › repro DORMANT has no offboard path (1.3s)
+ALERTDIALOGS AFTER CLICK: 0
+STATUS AFTER: OFFBOARDING
+  ✓  2 [chromium] › e2e/tests/__repro__/offboard.spec.ts:41:5 › repro OFFBOARDING Complete Offboarding is dead (1.2s)
+  2 passed (3.1s)
+
+DORMANT: header smart action is 'Edit'; clicking it opens nothing (onPrimaryAction undefined — client-header-card-with-lifecycle.tsx:70); the overflow menu has no lifecycle item (client-overflow-menu.tsx:101-177) → no firm-UI DORMANT→OFFBOARDING (dormant-no-offboard.png)
+OFFBOARDING: header 'Complete Offboarding' click → 0 alertdialogs, status stays OFFBOARDING (page.tsx:434-470 computes no target for OFFBOARDING) (offboarding-dead-button.png)

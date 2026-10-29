@@ -1,0 +1,20 @@
+628F-BLOCKER: Anonymize preview crashes the client page (reproduced 2026-10-29, fresh e2e stack, Alice/owner, seed client Acme Corp)
+Steps: /org/e2e-test-org/clients/<acme> → overflow "More actions" → "Anonymize"
+Observed: alertdialog "Anonymize Client" opens; when the preview resolves the page throws and renders the
+client error boundary "Something went wrong — Unable to load client data. Please try again." (anonymize-preview-crash.png)
+Browser console: TypeError: Cannot read properties of undefined (reading 'portalContacts')
+Cause: components/customers/anonymize-customer-dialog.tsx:148-154 reads preview.affectedEntities.* and
+frontend/lib/types/data-protection.ts:100-114 declares a nested affectedEntities object, but
+GET /api/clients/{id}/anonymize/preview answers the FLAT record backend/.../datarequest/AnonymizationPreview.java:11-22:
+{"clientId":"85c7e299-a5e0-4ac3-82d9-9684e05d7073","clientName":"Acme Corp","portalContacts":1,"projects":1,"documents":0,"timeEntries":0,"invoices":2,"comments":0,"customFieldValues":0,"financialRecordsRetained":2,"financialRetentionExpiresAt":"2031-10-29"}
+Earlier spec run (customers-1): "Anonymize customer preview" + "Execute anonymization" both stuck on a disabled
+"Continue" before the crash (customers-1.log excerpt below).
+32:    Error: locator.fill: Error: strict mode violation: getByPlaceholder('Search clients…') resolved to 2 elements:
+57:    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+62:    Error: element(s) not found
+86:    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+91:    Error: element(s) not found
+97:    [2m      - unexpected value "Anonymize ClientReview the data that will be affected by anonymizing Acme Corp.CancelContinue"[22m
+117:    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+122:    Error: element(s) not found
+128:    [2m      - unexpected value "disabled"[22m

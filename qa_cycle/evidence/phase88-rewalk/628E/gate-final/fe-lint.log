@@ -1,0 +1,315 @@
+
+> frontend@0.1.0 lint /Users/rakheendama/Projects/2026/worktree-628E-base/frontend
+> eslint
+
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/DocxTemplateManagement.test.tsx
+  1:36  warning  'beforeEach' is defined but never used  @typescript-eslint/no-unused-vars
+  2:35  warning  'within' is defined but never used      @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/clauses/clauses-content.test.tsx
+  46:21  warning  'opts' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/compliance/ChecklistInstancePanel.test.tsx
+  3:8  warning  'userEvent' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/customer-profitability.test.tsx
+  2:35  warning  'within' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/customers/customer-tabs-audit-capability.test.tsx
+  81:25  warning  '_unused' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/rates-settings.test.tsx
+  44:7  warning  'today' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/role-dialog.test.tsx
+  12:15  warning  'initial' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:24  warning  'animate' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:33  warning  'transition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/settings/data-protection.test.tsx
+  21:15  warning  'initial' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  21:24  warning  'animate' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  21:33  warning  'transition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/settings/org-documents-section.test.tsx
+  26:23  warning  '_props' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/settings/packs-page.test.tsx
+   3:44  warning  'within' is defined but never used               @typescript-eslint/no-unused-vars
+  16:15  warning  'initial' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  16:24  warning  'animate' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  16:33  warning  'transition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/__tests__/team/member-role-management.test.tsx
+  12:15  warning  'initial' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:24  warning  'animate' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:33  warning  'transition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/clients/[id]/error.tsx
+  4:10  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/clients/error.tsx
+  4:10  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/compliance/actions.ts
+  47:3  warning  'orgSlug' is defined but never used  @typescript-eslint/no-unused-vars
+  81:3  warning  'orgSlug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/invoices/collections/reminder-queue.tsx
+  249:25  warning  Unused eslint-disable directive (no problems were reported from 'react/no-danger')
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/invoices/error.tsx
+  8:47  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/legal/disbursements/disbursements-list-client.tsx
+  59:9  warning  The 'refetch' function makes the dependencies of useEffect Hook (at line 100) change on every render. To fix this, wrap the definition of 'refetch' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/matters/error.tsx
+  3:41  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/settings/connections/_tabs/packs-page-client.tsx
+  41:10  warning  'isPending' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/settings/connections/_tabs/xero-actions.ts
+  31:3   warning  'slug' is defined but never used   @typescript-eslint/no-unused-vars
+  63:47  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/settings/connections/xero/sync-log/actions.ts
+  48:3  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/settings/error.tsx
+  4:10  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions.ts
+   45:46  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+   85:3   warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+  141:49  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+  225:3   warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/settings/firm/_tabs/data-requests-actions.ts
+  24:41  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/team/invitation-actions.ts
+   5:15  warning  'ApiError' is defined but never used              @typescript-eslint/no-unused-vars
+  47:10  warning  'mapBffInvitation' is defined but never used      @typescript-eslint/no-unused-vars
+  80:3   warning  '_capabilityOverrides' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/trust-accounting/interest/page.tsx
+  26:17  warning  '_slug' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/(app)/org/[slug]/trust-accounting/investments/page.tsx
+  52:17  warning  '_slug' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/app/accept/[token]/page.tsx
+  152:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/activity/activity-item.tsx
+  42:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/audit/audit-timeline.tsx
+  81:16  warning  '_showFilters' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/billing-runs/billing-run-wizard.tsx
+  4:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/billing-runs/cherry-pick-step.tsx
+  64:36  warning  The ref value 'debounceTimers.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'debounceTimers.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/clauses/clause-editor-sheet.tsx
+  83:3  warning  'onError' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/customers/client-overflow-menu.tsx
+  52:3  warning  'customerStatus' is defined but never used   @typescript-eslint/no-unused-vars
+  53:3  warning  'lifecycleStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/customers/create-customer-dialog.tsx
+  244:32  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/customers/create-customer-dialog.tsx:244:32
+  242 |
+  243 |   // Filter out trust-variant groups when the selected customer type is not TRUST
+> 244 |   const selectedCustomerType = form.watch("customerType");
+      |                                ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  245 |   const filteredIntakeGroups =
+  246 |     selectedCustomerType === "TRUST"
+  247 |       ? intakeGroups  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/dashboard/recent-activity-widget.tsx
+  49:56  warning  '_orgSlug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/field-definitions/CustomFieldSection.tsx
+  42:11  warning  'ValidationError' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/invoices/XeroStatusChip.tsx
+  62:12  warning  'handleResync' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/invoices/unbilled-summary.tsx
+  200:58  warning  '_projectId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/legal/create-disbursement-dialog.tsx
+  107:28  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/legal/create-disbursement-dialog.tsx:107:28
+  105 |   });
+  106 |
+> 107 |   const selectedCategory = form.watch("category");
+      |                            ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  108 |   const selectedPaymentSource = form.watch("paymentSource");
+  109 |   const selectedProjectId = form.watch("projectId");
+  110 |  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/legal/edit-disbursement-dialog.tsx
+  66:28  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/legal/edit-disbursement-dialog.tsx:66:28
+  64 |   });
+  65 |
+> 66 |   const selectedCategory = form.watch("category");
+     |                            ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  67 |
+  68 |   useEffect(() => {
+  69 |     if (open) {  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/legal/matter-closure-dialog.tsx
+  122:25  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/legal/matter-closure-dialog.tsx:122:25
+  120 |   });
+  121 |
+> 122 |   const overrideValue = form.watch("override");
+      |                         ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  123 |   const letterValue = useWatch({ control: form.control, name: "generateClosureLetter" });
+  124 |   const soaValue = useWatch({ control: form.control, name: "generateStatementOfAccount" });
+  125 |   const notifyValue = useWatch({ control: form.control, name: "notifyClient" });  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/legal/project-disbursements-tab.tsx
+  29:14  warning  '_canManage' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/projects/kpi-dashboard.tsx
+    1:16  warning  'CardContent' is defined but never used   @typescript-eslint/no-unused-vars
+    1:29  warning  'CardHeader' is defined but never used    @typescript-eslint/no-unused-vars
+    1:41  warning  'CardTitle' is defined but never used     @typescript-eslint/no-unused-vars
+  114:16  warning  '_projectName' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/projects/project-customers-panel.tsx
+  10:10  warning  'formatDate' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/projects/project-members-panel.tsx
+  26:29  warning  'MatterRole' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/tasks/__tests__/task-recurrence.test.tsx
+  2:35  warning  'waitFor' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/tasks/log-time-dialog.tsx
+   98:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  100:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/team/invite-member-form.tsx
+  133:27  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/team/invite-member-form.tsx:133:27
+  131 |   const [success, setSuccess] = useState<string | null>(null);
+  132 |
+> 133 |   const roleSelectValue = form.watch("roleSelectValue");
+      |                           ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  134 |   const suppressRoleChangeClearRef = useRef(false);
+  135 |
+  136 |   // Reset overrides + status messages when role selection changes  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/templates/GenerateDocumentDropdown.tsx
+  65:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/time-entries/billing-status-badge.tsx
+  14:3  warning  'invoiceNumber' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/trust/RecordDepositDialog.tsx
+  80:22  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/trust/RecordDepositDialog.tsx:80:22
+  78 |   });
+  79 |
+> 80 |   const customerId = form.watch("customerId");
+     |                      ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  81 |
+  82 |   function handleOpenChange(newOpen: boolean) {
+  83 |     onOpenChange(newOpen);  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/trust/RecordPaymentDialog.tsx
+  77:22  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/trust/RecordPaymentDialog.tsx:77:22
+  75 |   });
+  76 |
+> 77 |   const customerId = form.watch("customerId");
+     |                      ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  78 |
+  79 |   function handleOpenChange(newOpen: boolean) {
+  80 |     onOpenChange(newOpen);  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/trust/RecordRefundDialog.tsx
+  77:22  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/trust/RecordRefundDialog.tsx:77:22
+  75 |   });
+  76 |
+> 77 |   const customerId = form.watch("customerId");
+     |                      ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  78 |
+  79 |   function handleOpenChange(newOpen: boolean) {
+  80 |     onOpenChange(newOpen);  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/components/views/CreateViewDialog.tsx
+  78:3  warning  'slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/automations/automation-triggers.spec.ts
+  16:7   warning  'BACKEND_URL' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  19:16  warning  'getAuthToken' is defined but never used          @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/customers/customer-data-protection.spec.ts
+  246:64  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/debug-kc-invite.spec.ts
+   1:16  warning  'expect' is defined but never used             @typescript-eslint/no-unused-vars
+   2:10  warning  'clearMailbox' is defined but never used       @typescript-eslint/no-unused-vars
+  39:11  warning  'snapshot' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/demo-full-90day.spec.ts
+  1:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/demo-recording.spec.ts
+  1:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/invoices/invoice-lifecycle.spec.ts
+  309:13  warning  'timeLines' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/projects/project-crud.spec.ts
+  288:61  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/projects/project-tasks.spec.ts
+  260:35  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/worktree-628E-base/frontend/e2e/tests/projects/project-time.spec.ts
+  209:60  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+  223:57  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+  268:52  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 91 problems (0 errors, 91 warnings)
+  0 errors and 4 warnings potentially fixable with the `--fix` option.
+

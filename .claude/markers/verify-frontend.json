@@ -1,7 +1,7 @@
 {
-  "commit": "5a8ef577b",
-  "command": "cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
+  "commit": "1a00394ad",
+  "command": "cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build; then e2e-down/up + pnpm test:e2e:legal-lifecycle + pnpm test:e2e:legal-depth-ii --update-snapshots=changed",
   "exit": 0,
-  "ts": "2026-10-29T00:39:55Z",
-  "summary": "628C FE-GATE on 5a8ef577b: lint 0 errors / 91 warnings, format clean, vitest 433 files / 3486 passed / 2 skipped (+1 report-parameter-form optionLabels case), build OK. The build failed in the slice worktree while backend/target (left by the Maven verify) was present (Turbopack next/font/google: 'queries have exactly one entry'). It passed with backend/target moved aside, and on the same commit in a clean detached worktree. main fe579bdc9 also passes in a clean worktree, so this is local worktree state, not PR code. CI Frontend pass."
+  "ts": "2026-10-29T05:50:18Z",
+  "summary": "628E FE-GATE on 1a00394ad (final head, detached gate worktree): lint 0 errors, format clean, vitest 434 files / 3535 passed / 2 skipped, build OK; fresh-stack (e2e-down/up from 1a00394ad) E2E-LEGAL lifecycle 101 passed / 0 failed / 3 skipped (3 cited 628E-BLOCKER fixmes: conflict-check-result.tsx:141, interest-run approval, Section 35 seeder unwired), depth-ii 39/0/4. Baseline main 2b442c0b8: lifecycle 75/4/5/14, depth-ii 38/0/5. Logs /tmp/628E/gate/."
 }

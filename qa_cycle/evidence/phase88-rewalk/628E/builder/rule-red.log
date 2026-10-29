@@ -1,0 +1,34 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-628E/frontend
+
+ ❯ __tests__/eslint-rules/no-isvisible-catch.test.ts (49 tests | 4 failed) 1188ms
+       × const v = await loc.isVisible().then((x) => x).catch(() => false); 3ms
+       × loc.isChecked().finally(() => {}).catch(() => false); 1ms
+       × loc.isHidden().then((h) => !h).then((v) => v, () => false); 1ms
+       × loc?.isVisible()?.then((x) => x)?.catch(() => false); 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > const v = await loc.isVisible().then((x) => x).catch(() => false);
+ FAIL  __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isChecked().finally(() => {}).catch(() => false);
+ FAIL  __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc.isHidden().then((h) => !h).then((v) => v, () => false);
+ FAIL  __tests__/eslint-rules/no-isvisible-catch.test.ts > no-isvisible-catch > invalid > loc?.isVisible()?.then((x) => x)?.catch(() => false);
+AssertionError: Should have 1 error but had 0: []
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ testInvalidTemplate ../node_modules/.pnpm/eslint@9.39.4_jiti@2.6.1/node_modules/eslint/lib/rule-tester/rule-tester.js:1116:12
+ ❯ ../node_modules/.pnpm/eslint@9.39.4_jiti@2.6.1/node_modules/eslint/lib/rule-tester/rule-tester.js:1564:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 45 passed (49)
+   Start at  06:43:04
+   Duration  1.52s (transform 38ms, setup 87ms, import 134ms, tests 1.19s, environment 0ms)
+

@@ -1,0 +1,103 @@
+
+> frontend@0.1.0 build /Users/rakheendama/Projects/2026/worktree-628E-base/frontend
+> next build
+
+▲ Next.js 16.3.8 (Turbopack)
+✓ Running next.config.ts took 63ms
+- Experiments (use with caution):
+  ⨯ useTypeScriptCli
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 8.9s
+  Running TypeScript ...
+  Finished TypeScript in 15.9s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/14) ...
+  Generating static pages using 9 workers (3/14) 
+  Generating static pages using 9 workers (6/14) 
+  Generating static pages using 9 workers (10/14) 
+✓ Generating static pages using 9 workers (14/14) in 233ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /accept-invite
+├ ○ /accept-invite/complete
+├ ƒ /accept-invite/continue
+├ ƒ /accept/[token]
+├ ƒ /api/clients
+├ ƒ /api/invoices/[id]/preview
+├ ƒ /create-org
+├ ƒ /dashboard
+├ ○ /mock-login
+├ ƒ /org/[slug]/ai/reviews
+├ ƒ /org/[slug]/clients
+├ ƒ /org/[slug]/clients/[id]
+├ ƒ /org/[slug]/compliance
+├ ƒ /org/[slug]/compliance/requests
+├ ƒ /org/[slug]/compliance/requests/[id]
+├ ƒ /org/[slug]/conflict-check
+├ ƒ /org/[slug]/dashboard
+├ ƒ /org/[slug]/diary
+├ ƒ /org/[slug]/information-requests/[id]
+├ ƒ /org/[slug]/invoices
+├ ƒ /org/[slug]/invoices/[id]
+├ ƒ /org/[slug]/invoices/billing-runs
+├ ƒ /org/[slug]/invoices/billing-runs/[id]
+├ ƒ /org/[slug]/invoices/billing-runs/new
+├ ƒ /org/[slug]/invoices/collections
+├ ƒ /org/[slug]/invoices/unbilled
+├ ƒ /org/[slug]/legal/adverse-parties
+├ ƒ /org/[slug]/legal/disbursements
+├ ƒ /org/[slug]/legal/disbursements/[id]
+├ ƒ /org/[slug]/legal/tariffs
+├ ƒ /org/[slug]/matters
+├ ƒ /org/[slug]/matters/[id]
+├ ƒ /org/[slug]/matters/new
+├ ƒ /org/[slug]/my-work
+├ ƒ /org/[slug]/my-work/timesheet
+├ ƒ /org/[slug]/notifications
+├ ƒ /org/[slug]/reports
+├ ƒ /org/[slug]/reports/[reportSlug]
+├ ƒ /org/[slug]/reports/profitability
+├ ƒ /org/[slug]/settings
+├ ƒ /org/[slug]/settings/connections
+├ ƒ /org/[slug]/settings/connections/ai/history
+├ ƒ /org/[slug]/settings/connections/automations/executions
+├ ƒ /org/[slug]/settings/connections/xero/sync-log
+├ ƒ /org/[slug]/settings/documents
+├ ƒ /org/[slug]/settings/documents/templates/[id]/edit
+├ ƒ /org/[slug]/settings/documents/templates/new
+├ ƒ /org/[slug]/settings/fees
+├ ƒ /org/[slug]/settings/firm
+├ ƒ /org/[slug]/settings/matters
+├ ƒ /org/[slug]/settings/matters/checklists/[id]
+├ ƒ /org/[slug]/settings/matters/checklists/[id]/edit
+├ ƒ /org/[slug]/settings/matters/checklists/new
+├ ƒ /org/[slug]/settings/matters/request-templates/[id]
+├ ƒ /org/[slug]/settings/matters/request-templates/new
+├ ƒ /org/[slug]/settings/matters/templates/[id]
+├ ƒ /org/[slug]/team
+├ ƒ /org/[slug]/trust-accounting
+├ ƒ /org/[slug]/trust-accounting/client-ledgers
+├ ƒ /org/[slug]/trust-accounting/client-ledgers/[clientId]
+├ ƒ /org/[slug]/trust-accounting/interest
+├ ƒ /org/[slug]/trust-accounting/investments
+├ ƒ /org/[slug]/trust-accounting/reconciliation
+├ ƒ /org/[slug]/trust-accounting/reconciliation/new
+├ ƒ /org/[slug]/trust-accounting/reports
+├ ƒ /org/[slug]/trust-accounting/transactions
+├ ƒ /platform-admin/access-requests
+├ ƒ /platform-admin/billing
+├ ƒ /platform-admin/demo
+├ ○ /request-access
+├ ƒ /sign-in
+└ ○ /signed-out
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

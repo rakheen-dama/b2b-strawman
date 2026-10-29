@@ -1,0 +1,25 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-628E/frontend
+
+ ❯ __tests__/eslint-rules/no-isvisible-catch.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/eslint-rules/no-isvisible-catch.test.ts [ __tests__/eslint-rules/no-isvisible-catch.test.ts ]
+Error: Cannot find module '../../e2e/eslint/no-isvisible-catch.mjs' imported from /Users/rakheendama/Projects/2026/worktree-epic-628E/frontend/__tests__/eslint-rules/no-isvisible-catch.test.ts
+ ❯ __tests__/eslint-rules/no-isvisible-catch.test.ts:5:1
+      3| import { describe, it, expect } from "vitest";
+      4| import { ESLint, RuleTester } from "eslint";
+      5| import rule from "../../e2e/eslint/no-isvisible-catch.mjs";
+       | ^
+      6|
+      7| // Phase 88 628E (U22, R10 §0 M1): Playwright locator state checks (is…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  05:27:11
+   Duration  380ms (transform 43ms, setup 115ms, import 0ms, tests 0ms, environment 0ms)
+

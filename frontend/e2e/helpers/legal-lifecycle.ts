@@ -16,10 +16,11 @@
  * the Day 1–3 conflict checks expect "No Conflict", which holds only on a fresh stack
  * (`e2e-down.sh && e2e-up.sh`) — earlier runs' clients and matters fuzzy-match the same names.
  *
- * NOT retry-safe: names are per run, not per attempt. A Playwright retry of a serial group re-runs
- * its creates with the same names, so the records then exist twice and the "No Conflict" checks
- * and exact-name lookups break. If retries are ever enabled for this suite, scope names per attempt
- * the way depth-ii does (`attemptRunId()` in `legal-depth-ii.ts`).
+ * NOT retry-safe, so retries are disabled: `playwright.legal-lifecycle.config.ts` sets `retries: 0`
+ * (also on CI). Names are per run, not per attempt, so a retry of a serial group would re-run its
+ * creates with the same names; the records would then exist twice and the "No Conflict" checks
+ * and exact-name lookups would break. To enable retries, first scope names per attempt the way
+ * depth-ii does (`attemptRunId()` in `legal-depth-ii.ts`).
  */
 import { expect, type Locator, type Page } from "@playwright/test";
 import { randomBytes } from "node:crypto";

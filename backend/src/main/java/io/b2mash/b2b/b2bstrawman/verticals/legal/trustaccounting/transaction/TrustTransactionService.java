@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -232,7 +233,8 @@ public class TrustTransactionService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -320,17 +322,19 @@ public class TrustTransactionService {
 
     if (request.sourceClientId().equals(request.targetClientId())) {
       throw new InvalidStateException(
-          "Invalid transfer", "Source and target customer cannot be the same");
+          "Invalid transfer", "Source and target client cannot be the same");
     }
 
     var sourceCustomer =
         customerRepository
             .findById(request.sourceClientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.sourceClientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.sourceClientId()));
 
     customerRepository
         .findById(request.targetClientId())
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", request.targetClientId()));
+        .orElseThrow(
+            () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.targetClientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -499,7 +503,8 @@ public class TrustTransactionService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -570,16 +575,18 @@ public class TrustTransactionService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     var invoice =
         invoiceRepository
             .findById(request.invoiceId())
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", request.invoiceId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, request.invoiceId()));
 
     if (!invoice.getCustomerId().equals(request.clientId())) {
       throw new InvalidStateException(
-          "Invalid fee transfer", "Invoice does not belong to the specified customer");
+          "Invalid fee transfer", "Fee note does not belong to the specified client");
     }
 
     // A remainder transfer can be recorded against a part-paid fee note (Phase 88 U15, ADR-347).
@@ -588,7 +595,7 @@ public class TrustTransactionService {
         && invoice.getStatus() != InvoiceStatus.PARTIALLY_PAID) {
       throw new InvalidStateException(
           "Invalid fee transfer",
-          "Invoice must be in APPROVED, SENT or PARTIALLY_PAID status, current status: "
+          "Fee note must be in APPROVED, SENT or PARTIALLY_PAID status, current status: "
               + invoice.getStatus());
     }
 
@@ -671,7 +678,8 @@ public class TrustTransactionService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -842,7 +850,9 @@ public class TrustTransactionService {
           customerRepository
               .findById(transaction.getCustomerId())
               .orElseThrow(
-                  () -> new ResourceNotFoundException("Customer", transaction.getCustomerId()));
+                  () ->
+                      new ResourceNotFoundException(
+                          EntityNoun.CLIENT, transaction.getCustomerId()));
 
       var ledgerCard =
           ledgerCardRepository
@@ -892,11 +902,13 @@ public class TrustTransactionService {
             invoiceRepository
                 .findByIdForUpdate(transaction.getInvoiceId())
                 .orElseThrow(
-                    () -> new ResourceNotFoundException("Invoice", transaction.getInvoiceId()));
+                    () ->
+                        new ResourceNotFoundException(
+                            EntityNoun.FEE_NOTE, transaction.getInvoiceId()));
         if (invoice.getStatus() == InvoiceStatus.PAID) {
           throw new InvalidStateException(
-              "Invoice already paid",
-              "Cannot complete fee transfer — invoice is already in PAID status");
+              "Fee note already paid",
+              "Cannot complete fee transfer — fee note is already in PAID status");
         }
         invoiceService.postPayment(
             transaction.getInvoiceId(),

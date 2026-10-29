@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -210,12 +211,14 @@ public class AdversePartyService {
     var project =
         projectRepository
             .findById(request.matterId())
-            .orElseThrow(() -> new ResourceNotFoundException("Project", request.matterId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.MATTER, request.matterId()));
 
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     // Check for duplicate link
     adversePartyLinkRepository
@@ -226,7 +229,7 @@ public class AdversePartyService {
                   "Duplicate link",
                   "Adverse party "
                       + adversePartyId
-                      + " is already linked to project "
+                      + " is already linked to matter "
                       + request.matterId());
             });
 

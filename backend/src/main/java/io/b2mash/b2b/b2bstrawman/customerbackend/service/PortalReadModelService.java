@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestItemView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTaskView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
@@ -68,7 +69,7 @@ public class PortalReadModelService {
   public PortalProjectView getProjectDetail(UUID projectId, UUID customerId, String orgId) {
     return readModelRepository
         .findProjectDetail(projectId, customerId, orgId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
   }
 
   /**
@@ -80,7 +81,7 @@ public class PortalReadModelService {
     // Verify customer is linked to the project
     readModelRepository
         .findProjectDetail(projectId, customerId, orgId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     return readModelRepository.findCommentsByProject(projectId, orgId);
   }
@@ -91,7 +92,7 @@ public class PortalReadModelService {
     // Verify customer is linked to the project
     readModelRepository
         .findProjectDetail(projectId, customerId, orgId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     return readModelRepository.findProjectSummary(projectId, customerId, orgId);
   }
@@ -107,7 +108,8 @@ public class PortalReadModelService {
     var customer =
         customerRepository
             .findById(contact.getCustomerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", contact.getCustomerId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, contact.getCustomerId()));
 
     return new ContactProfile(
         contact.getId(),
@@ -131,7 +133,7 @@ public class PortalReadModelService {
     // Verify customer is linked to the project
     readModelRepository
         .findProjectDetail(projectId, customerId, orgId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     return readModelRepository.findTasksByProject(projectId, orgId);
   }
@@ -148,11 +150,11 @@ public class PortalReadModelService {
     var invoice =
         readModelRepository
             .findInvoiceById(invoiceId, orgId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     // Verify the invoice belongs to this customer
     if (!invoice.customerId().equals(customerId)) {
-      throw new ResourceNotFoundException("Invoice", invoiceId);
+      throw new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId);
     }
 
     var lines = readModelRepository.findInvoiceLinesByInvoice(invoiceId);
@@ -183,10 +185,10 @@ public class PortalReadModelService {
     var invoice =
         readModelRepository
             .findInvoiceById(invoiceId, orgId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (!invoice.customerId().equals(customerId)) {
-      throw new ResourceNotFoundException("Invoice", invoiceId);
+      throw new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId);
     }
 
     return new PaymentStatusResponse(

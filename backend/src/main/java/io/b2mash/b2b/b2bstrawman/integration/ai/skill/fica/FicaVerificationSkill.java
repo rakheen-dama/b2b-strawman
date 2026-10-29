@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
@@ -99,7 +100,7 @@ public class FicaVerificationSkill implements AiSkill {
     Customer customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Pre-flight: customer must have uploaded documents
     List<Document> allDocs =
@@ -108,7 +109,7 @@ public class FicaVerificationSkill implements AiSkill {
         allDocs.stream().filter(d -> d.getStatus() == Document.Status.UPLOADED).toList();
     if (uploadedDocs.isEmpty()) {
       throw new InvalidStateException(
-          "No documents", "Customer has no uploaded documents for FICA verification");
+          "No documents", "Client has no uploaded documents for FICA verification");
     }
 
     // Pre-flight: customer must have an active checklist with PENDING items
@@ -121,7 +122,7 @@ public class FicaVerificationSkill implements AiSkill {
                 () ->
                     new InvalidStateException(
                         "No active checklist",
-                        "Customer has no active compliance checklist with PENDING items"));
+                        "Client has no active compliance checklist with PENDING items"));
 
     List<ChecklistInstanceItem> allItems =
         checklistInstanceItemRepository.findByInstanceIdOrderBySortOrder(activeInstance.getId());
@@ -129,7 +130,7 @@ public class FicaVerificationSkill implements AiSkill {
         allItems.stream().filter(i -> "PENDING".equals(i.getStatus())).toList();
     if (pendingItems.isEmpty()) {
       throw new InvalidStateException(
-          "No active checklist", "Customer has no active compliance checklist with PENDING items");
+          "No active checklist", "Client has no active compliance checklist with PENDING items");
     }
 
     // Read documents (text extraction + vision fallback)

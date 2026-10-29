@@ -1,0 +1,12 @@
+[
+  {
+    "file": "src/main/resources/template-packs/legal-za/fee-note-za.json",
+    "text": "Where the practice is registered for VAT, this fee note constitutes a tax invoice as defined in section 20 of the Value-Added Tax Act 89 of 1991.",
+    "reason": "statutory tax invoice — VAT Act 89 of 1991 s20 wording on the fee note"
+  },
+  {
+    "file": "src/main/resources/clause-packs/conveyancing-za-clauses/pack.json",
+    "text": "to comply with its customer due diligence obligations under FICA.",
+    "reason": "statutory term — FIC Act 38 of 2001 'customer due diligence' (R-6)"
+  }
+]

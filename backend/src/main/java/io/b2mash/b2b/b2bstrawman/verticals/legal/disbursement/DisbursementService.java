@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -116,10 +117,10 @@ public class DisbursementService {
 
     projectRepository
         .findById(req.matterId())
-        .orElseThrow(() -> new ResourceNotFoundException("Project", req.matterId()));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, req.matterId()));
     customerRepository
         .findById(req.clientId())
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", req.clientId()));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, req.clientId()));
 
     validateTrustLink(req.paymentSource(), req.trustTransactionId(), req.matterId());
 
@@ -390,7 +391,7 @@ public class DisbursementService {
     } catch (IllegalStateException e) {
       throw new ResourceConflictException("Cannot bill disbursement", e.getMessage());
     } catch (IllegalArgumentException e) {
-      throw new InvalidStateException("Invalid invoice line", e.getMessage());
+      throw new InvalidStateException("Invalid fee note line", e.getMessage());
     }
     var saved = disbursementRepository.save(entity);
 
@@ -559,7 +560,7 @@ public class DisbursementService {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
     UUID customerId = project.getCustomerId();
     if (customerId == null) {
       return List.of();
@@ -582,7 +583,7 @@ public class DisbursementService {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
     UUID customerId = project.getCustomerId();
     List<UnbilledDisbursementDto> items =
         customerId == null
@@ -695,8 +696,8 @@ public class DisbursementService {
     }
     if (tx.getProjectId() == null || !tx.getProjectId().equals(projectId)) {
       throw new InvalidStateException(
-          "Trust transaction project mismatch",
-          "Linked trust transaction belongs to a different project");
+          "Trust transaction matter mismatch",
+          "Linked trust transaction belongs to a different matter");
     }
   }
 
@@ -707,6 +708,6 @@ public class DisbursementService {
   private LegalDisbursement requireDisbursement(UUID id) {
     return disbursementRepository
         .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("LegalDisbursement", id));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, id));
   }
 }

@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -175,7 +176,7 @@ public class UnbilledTimeService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     String sql =
         """

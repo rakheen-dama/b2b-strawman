@@ -82,7 +82,7 @@ class DormancyScheduledJobTest {
         .createNotification(
             any(),
             eq("CUSTOMER_DORMANCY"),
-            eq("2 customers marked as dormant"),
+            eq("2 clients marked as dormant"),
             any(),
             any(),
             any(),
@@ -115,7 +115,7 @@ class DormancyScheduledJobTest {
         .createNotification(
             any(),
             eq("CUSTOMER_DORMANCY"),
-            eq("1 customer marked as dormant"),
+            eq("1 client marked as dormant"),
             any(),
             any(),
             any(),

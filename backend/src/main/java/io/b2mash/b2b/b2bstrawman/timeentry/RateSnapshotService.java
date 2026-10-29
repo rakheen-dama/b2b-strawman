@@ -39,7 +39,7 @@ class RateSnapshotService {
     String rateWarning = null;
     if (billable && billingRate.isEmpty()) {
       rateWarning =
-          "No rate card found. This time entry will generate a zero-amount invoice line item.";
+          "No rate card found. This time entry will generate a zero-amount fee note line item.";
     }
 
     // Snapshot cost rate

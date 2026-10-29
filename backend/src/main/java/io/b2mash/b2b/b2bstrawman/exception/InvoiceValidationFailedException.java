@@ -17,8 +17,8 @@ public class InvoiceValidationFailedException extends ErrorResponseException {
         HttpStatus.UNPROCESSABLE_ENTITY,
         ProblemDetailFactory.create(
             HttpStatus.UNPROCESSABLE_ENTITY,
-            "Invoice validation failed",
-            "Invoice has validation issues that must be resolved or overridden before sending.",
+            "Fee note validation failed",
+            "Fee note has validation issues that must be resolved or overridden before sending.",
             Map.of("canOverride", true, "validationChecks", checks)),
         null);
   }

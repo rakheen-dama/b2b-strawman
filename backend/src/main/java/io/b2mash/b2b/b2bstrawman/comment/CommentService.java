@@ -188,12 +188,12 @@ public class CommentService {
       String resolvedVis = visibility != null ? visibility : "INTERNAL";
       if (!"SHARED".equals(resolvedVis)) {
         throw new InvalidStateException(
-            "Invalid visibility for project comment",
+            "Invalid visibility for matter comment",
             "PROJECT-level comments must have SHARED visibility");
       }
       if (!entityId.equals(projectId)) {
         throw new InvalidStateException(
-            "Invalid entity for project comment",
+            "Invalid entity for matter comment",
             "entityId must match projectId for PROJECT-level comments");
       }
     } else if (!"TASK".equals(entityType) && !"DOCUMENT".equals(entityType)) {

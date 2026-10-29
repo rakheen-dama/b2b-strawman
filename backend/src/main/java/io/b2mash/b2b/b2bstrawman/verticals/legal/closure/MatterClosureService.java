@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
@@ -445,7 +446,7 @@ public class MatterClosureService {
               : project.getRetentionClockStartedAt();
       if (anchor == null) {
         throw new InvalidStateException(
-            "Cannot reopen matter", "Project has no retention anchor — it was never closed.");
+            "Cannot reopen matter", "Matter has no retention anchor — it was never closed.");
       }
       int retentionYears =
           orgSettingsService
@@ -522,7 +523,7 @@ public class MatterClosureService {
   private Project requireProject(UUID projectId) {
     return projectRepository
         .findById(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
   }
 
   private List<GateReportItem> runGates(Project project) {

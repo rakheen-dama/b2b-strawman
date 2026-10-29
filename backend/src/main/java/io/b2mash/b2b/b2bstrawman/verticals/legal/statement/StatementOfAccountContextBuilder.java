@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
@@ -173,7 +174,7 @@ public class StatementOfAccountContextBuilder {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     Customer customer =
         project.getCustomerId() != null
@@ -242,7 +243,7 @@ public class StatementOfAccountContextBuilder {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
     Customer customer =
         project.getCustomerId() != null
             ? customerRepository.findById(project.getCustomerId()).orElse(null)

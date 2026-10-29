@@ -341,7 +341,7 @@ class ProjectCustomerLinkIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner")))
         .andExpect(status().isConflict())
         .andExpect(
-            jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("linked projects")));
+            jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("linked matters")));
   }
 
   @Test

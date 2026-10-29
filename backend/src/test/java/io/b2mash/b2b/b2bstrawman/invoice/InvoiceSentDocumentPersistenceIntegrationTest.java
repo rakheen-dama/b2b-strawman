@@ -248,8 +248,8 @@ class InvoiceSentDocumentPersistenceIntegrationTest {
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
-        .andExpect(jsonPath("$.title").value("Invoice not found"))
-        .andExpect(jsonPath("$.detail").value("No invoice found with id " + invoiceId));
+        .andExpect(jsonPath("$.title").value("Fee note not found"))
+        .andExpect(jsonPath("$.detail").value("No fee note found with id " + invoiceId));
 
     // Approve, then send — sending projects the invoice into the portal read model
     // (InvoiceSyncEvent)

@@ -23,14 +23,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * LZKC-031 PR-2 (class D) — stored invoice-notification titles must use the tenant's vertical
- * vocabulary at creation time. Legal-za tenants store "Fee Note … has been sent/paid"; tenants
- * without a vertical profile keep "Invoice …" (identity fallback). Mirrors the LZKC-004/009
- * mechanism: {@code EmailTerminology} resolved from the tenant's {@code OrgSettings} vertical
- * profile (PR #1518), not a blind string replace.
+ * LZKC-031 PR-2 (class D) — stored fee-note notification titles use the single legal vocabulary at
+ * creation time: "Fee Note … has been sent/paid". Since 628D (R-4, ADR-330/ADR-338) {@code
+ * EmailTerminology} returns the legal map for every tenant, with or without a vertical profile —
+ * there is one vocabulary and no "Invoice" fallback, so the generic (no-profile) tenant is asserted
+ * to store the same legal copy.
  *
  * <p>Titles are generated once and stored — existing notification rows keep their original copy;
- * only notifications created after this fix pick up the vertical vocabulary.
+ * only notifications created after this fix carry the legal wording.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -148,7 +148,7 @@ class InvoiceNotificationTerminologyTest {
   }
 
   @Test
-  void invoiceSent_genericTenant_titleKeepsInvoice() {
+  void invoiceSent_genericTenant_titleUsesFeeNote() {
     var notifications =
         ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
             .where(RequestScopes.ORG_ID, GENERIC_ORG_ID)
@@ -161,11 +161,12 @@ class InvoiceNotificationTerminologyTest {
     assertThat(notifications)
         .allSatisfy(
             n ->
-                assertThat(n.getTitle()).isEqualTo("Invoice INV-2001 for Acme Corp has been sent"));
+                assertThat(n.getTitle())
+                    .isEqualTo("Fee Note INV-2001 for Acme Corp has been sent"));
   }
 
   @Test
-  void invoicePaid_genericTenant_titleKeepsInvoice() {
+  void invoicePaid_genericTenant_titleUsesFeeNote() {
     var notifications =
         ScopedValue.where(RequestScopes.TENANT_ID, genericSchema)
             .where(RequestScopes.ORG_ID, GENERIC_ORG_ID)
@@ -178,6 +179,7 @@ class InvoiceNotificationTerminologyTest {
     assertThat(notifications)
         .allSatisfy(
             n ->
-                assertThat(n.getTitle()).isEqualTo("Invoice INV-2002 for Acme Corp has been paid"));
+                assertThat(n.getTitle())
+                    .isEqualTo("Fee Note INV-2002 for Acme Corp has been paid"));
   }
 }

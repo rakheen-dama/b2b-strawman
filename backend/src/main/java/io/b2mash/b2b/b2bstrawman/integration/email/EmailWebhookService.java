@@ -222,14 +222,14 @@ public class EmailWebhookService {
       }
 
       String title =
-          "Invoice email bounced"
+          "Fee note email bounced"
               + (reason != null ? ": " + reason : "")
               + (recipientEmail != null ? " (" + recipientEmail + ")" : "");
 
       notificationService.notifyAdminsAndOwners(
           "INVOICE_EMAIL_BOUNCED",
           title,
-          "An invoice email could not be delivered. Please check the email address and resend.",
+          "A fee note email could not be delivered. Please check the email address and resend.",
           "EMAIL_DELIVERY_LOG",
           deliveryLog.getId());
     } catch (Exception e) {

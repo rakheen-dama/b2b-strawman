@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
@@ -113,12 +114,13 @@ public class AccountingSyncService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
     var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
     var customer =
         customerRepository
             .findById(invoice.getCustomerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", invoice.getCustomerId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, invoice.getCustomerId()));
 
     // Currency mismatch check — block when orgSettings is absent (fail-closed) or currency differs
     var orgSettings = orgSettingsRepository.findForCurrentTenant();
@@ -132,7 +134,7 @@ public class AccountingSyncService {
               trigger,
               "KAZI-INV-" + invoiceId);
       entry.markDeadLetter(
-          "MULTI_CURRENCY", "Org settings not configured; cannot verify invoice currency");
+          "MULTI_CURRENCY", "Org settings not configured; cannot verify fee note currency");
       syncEntryRepository.save(entry);
       log.warn("Invoice {} dead-lettered: org settings absent, cannot verify currency", invoiceId);
       return;
@@ -148,7 +150,7 @@ public class AccountingSyncService {
               "KAZI-INV-" + invoiceId);
       entry.markDeadLetter(
           "MULTI_CURRENCY",
-          "Invoice currency %s does not match org default %s"
+          "Fee note currency %s does not match org default %s"
               .formatted(invoice.getCurrency(), orgSettings.get().getDefaultCurrency()));
       syncEntryRepository.save(entry);
       log.warn(
@@ -360,7 +362,7 @@ public class AccountingSyncService {
                 event.externalInvoiceReference());
         currencyDriftEntry.markReconcileDrift(
             "CURRENCY_MISMATCH",
-            "Xero payment currency %s does not match Kazi invoice currency %s"
+            "Xero payment currency %s does not match Kazi fee note currency %s"
                 .formatted(event.currency(), invoice.getCurrency()));
         syncEntryRepository.save(currencyDriftEntry);
 

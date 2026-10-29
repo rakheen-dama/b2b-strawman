@@ -109,7 +109,7 @@ class DataAnonymizationServiceTest {
     runInTenant(
         () -> {
           var customer = customerRepository.findById(ids.customerId).orElseThrow();
-          assertThat(customer.getName()).startsWith("Anonymized Customer ");
+          assertThat(customer.getName()).startsWith("Anonymized Client ");
           assertThat(customer.getEmail()).contains("@anonymized.invalid");
           assertThat(customer.getPhone()).isNull();
           assertThat(customer.getIdNumber()).isNull();
@@ -360,7 +360,7 @@ class DataAnonymizationServiceTest {
           // Lifecycle status
           assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ANONYMIZED);
           // PII anonymized
-          assertThat(customer.getName()).startsWith("Anonymized Customer ");
+          assertThat(customer.getName()).startsWith("Anonymized Client ");
           assertThat(customer.getEmail()).contains("@anonymized.invalid");
           assertThat(customer.getPhone()).isNull();
           assertThat(customer.getIdNumber()).isNull();
@@ -466,7 +466,7 @@ class DataAnonymizationServiceTest {
                         dataAnonymizationService.anonymizeCustomer(
                             customerId, "Wrong Name", null, memberId)))
         .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("Confirmation name does not match customer name");
+        .hasMessageContaining("Confirmation name does not match client name");
   }
 
   @Test
@@ -482,7 +482,7 @@ class DataAnonymizationServiceTest {
 
     // Second anonymization should fail
     String hash = customerId.toString().substring(0, 6);
-    String anonymizedName = "Anonymized Customer " + hash;
+    String anonymizedName = "Anonymized Client " + hash;
 
     assertThatThrownBy(
             () ->

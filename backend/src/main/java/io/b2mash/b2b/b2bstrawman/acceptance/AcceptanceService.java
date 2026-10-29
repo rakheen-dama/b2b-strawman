@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestDeclinedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestRevokedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestViewedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -151,8 +152,8 @@ public class AcceptanceService {
 
     if (!contact.getCustomerId().equals(customerId)) {
       throw new InvalidStateException(
-          "Portal contact does not belong to customer",
-          "The selected contact is not associated with the document's customer");
+          "Portal contact does not belong to client",
+          "The selected contact is not associated with the document's client");
     }
 
     // 4. Auto-revoke existing active request for same doc-contact pair
@@ -1095,14 +1096,15 @@ public class AcceptanceService {
               .orElseThrow(
                   () ->
                       new InvalidStateException(
-                          "No customer linked to project",
-                          "Cannot send acceptance: project has no linked customer"));
+                          "No client linked to matter",
+                          "Cannot send acceptance: matter has no linked client"));
       case INVOICE ->
           invoiceRepository
               .findById(doc.getPrimaryEntityId())
               .map(invoice -> invoice.getCustomerId())
               .orElseThrow(
-                  () -> new ResourceNotFoundException("Invoice", doc.getPrimaryEntityId()));
+                  () ->
+                      new ResourceNotFoundException(EntityNoun.FEE_NOTE, doc.getPrimaryEntityId()));
       case ORGANIZATION ->
           throw new InvalidStateException(
               "Unsupported entity type",

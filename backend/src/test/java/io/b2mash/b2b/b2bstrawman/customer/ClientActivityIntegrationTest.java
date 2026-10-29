@@ -307,8 +307,8 @@ class ClientActivityIntegrationTest extends AbstractIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
-        .andExpect(jsonPath("$.title").value("Customer not found"))
-        .andExpect(jsonPath("$.detail").value("No customer found with id " + unknown));
+        .andExpect(jsonPath("$.title").value("Client not found"))
+        .andExpect(jsonPath("$.detail").value("No client found with id " + unknown));
   }
 
   // ---- helpers ----

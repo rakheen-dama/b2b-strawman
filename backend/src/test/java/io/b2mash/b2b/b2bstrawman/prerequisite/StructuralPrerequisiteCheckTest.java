@@ -61,7 +61,7 @@ class StructuralPrerequisiteCheckTest {
     assertThat(violations.getFirst().code()).isEqualTo("STRUCTURAL");
     assertThat(violations.getFirst().fieldSlug()).isEqualTo("address_line1");
     assertThat(violations.getFirst().message()).contains("Address Line 1");
-    assertThat(violations.getFirst().message()).contains("Invoice Generation");
+    assertThat(violations.getFirst().message()).contains("Fee note generation");
   }
 
   @Test
@@ -115,7 +115,7 @@ class StructuralPrerequisiteCheckTest {
     assertThat(violations.getFirst().code()).isEqualTo("STRUCTURAL");
     assertThat(violations.getFirst().fieldSlug()).isEqualTo("tax_number");
     assertThat(violations.getFirst().message()).contains("Tax Number");
-    assertThat(violations.getFirst().message()).contains("send an invoice");
+    assertThat(violations.getFirst().message()).contains("send a fee note");
   }
 
   @Test

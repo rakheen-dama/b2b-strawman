@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -295,12 +296,12 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new InvalidStateException(
-          "Invoice not editable",
-          "Disbursement lines can only be added to draft invoices (current status="
+          "Fee note not editable",
+          "Disbursement lines can only be added to draft fee notes (current status="
               + invoice.getStatus()
               + ")");
     }
@@ -342,13 +343,13 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (request.taxAmount() != null
         && lineRepository.existsByInvoiceIdAndTaxRateIdIsNotNull(invoiceId)) {
       throw new InvalidStateException(
           "Tax amount cannot be manually set",
-          "Tax amount cannot be manually set when invoice lines have tax rates applied."
+          "Tax amount cannot be manually set when fee note lines have tax rates applied."
               + " Edit individual line tax rates instead.");
     }
 
@@ -365,7 +366,7 @@ public class InvoiceCreationService {
           request.billingPeriodStart(),
           request.billingPeriodEnd());
     } catch (IllegalStateException e) {
-      throw new ResourceConflictException("Invoice not editable", e.getMessage());
+      throw new ResourceConflictException("Fee note not editable", e.getMessage());
     }
 
     invoice = invoiceRepository.save(invoice);
@@ -392,11 +393,11 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
-          "Invoice not deletable", "Only draft invoices can be deleted");
+          "Fee note not deletable", "Only draft fee notes can be deleted");
     }
 
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
@@ -472,11 +473,11 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
-          "Invoice not editable", "Line items can only be added to draft invoices");
+          "Fee note not editable", "Line items can only be added to draft fee notes");
     }
 
     InvoiceLine line;
@@ -570,20 +571,20 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
-          "Invoice not editable", "Line items can only be updated on draft invoices");
+          "Fee note not editable", "Line items can only be updated on draft fee notes");
     }
 
     var line =
         lineRepository
             .findById(lineId)
-            .orElseThrow(() -> new ResourceNotFoundException("InvoiceLine", lineId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId));
 
     if (!line.getInvoiceId().equals(invoiceId)) {
-      throw new ResourceNotFoundException("InvoiceLine", lineId);
+      throw new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId);
     }
 
     int sortOrder = request.sortOrder() != null ? request.sortOrder() : line.getSortOrder();
@@ -626,20 +627,20 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
-          "Invoice not editable", "Line items can only be removed from draft invoices");
+          "Fee note not editable", "Line items can only be removed from draft fee notes");
     }
 
     var line =
         lineRepository
             .findById(lineId)
-            .orElseThrow(() -> new ResourceNotFoundException("InvoiceLine", lineId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId));
 
     if (!line.getInvoiceId().equals(invoiceId)) {
-      throw new ResourceNotFoundException("InvoiceLine", lineId);
+      throw new ResourceNotFoundException(EntityNoun.FEE_NOTE_LINE, lineId);
     }
 
     if (line.getTimeEntryId() != null) {
@@ -711,11 +712,11 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
-          "Invoice not editable", "Custom fields can only be updated on draft invoices");
+          "Fee note not editable", "Custom fields can only be updated on draft fee notes");
     }
 
     Map<String, Object> validatedFields =
@@ -749,11 +750,11 @@ public class InvoiceCreationService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (invoice.getStatus() != InvoiceStatus.DRAFT) {
       throw new ResourceConflictException(
-          "Invoice not editable", "Field groups can only be updated on draft invoices");
+          "Fee note not editable", "Field groups can only be updated on draft fee notes");
     }
 
     appliedFieldGroups =
@@ -794,11 +795,11 @@ public class InvoiceCreationService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     if (!"ACTIVE".equals(customer.getStatus())) {
       throw new InvalidStateException(
-          "Customer not active", "Customer must be in ACTIVE status to create an invoice");
+          "Client not active", "Client must be in ACTIVE status to create a fee note");
     }
 
     customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
@@ -836,7 +837,7 @@ public class InvoiceCreationService {
       if (timeEntry.getInvoiceId() != null) {
         throw new ResourceConflictException(
             "Time entry already invoiced",
-            "Time entry " + timeEntryId + " is already linked to an invoice");
+            "Time entry " + timeEntryId + " is already linked to a fee note");
       }
 
       if (timeEntry.getBillingRateCurrency() != null
@@ -847,7 +848,7 @@ public class InvoiceCreationService {
                 + timeEntryId
                 + " has currency "
                 + timeEntry.getBillingRateCurrency()
-                + " but invoice currency is "
+                + " but fee note currency is "
                 + currency);
       }
 
@@ -856,7 +857,7 @@ public class InvoiceCreationService {
             "Time entry has no task",
             "Time entry "
                 + timeEntryId
-                + " is not linked to a task and cannot be invoiced for a customer");
+                + " is not linked to a task and cannot be billed to a client");
       }
 
       UUID projectId = null;
@@ -867,10 +868,10 @@ public class InvoiceCreationService {
         taskTitle = task.get().getTitle();
         if (!customerProjectRepository.existsByCustomerIdAndProjectId(customerId, projectId)) {
           throw new InvalidStateException(
-              "Time entry not linked to customer",
+              "Time entry not linked to client",
               "Time entry "
                   + timeEntryId
-                  + " belongs to a project not linked to customer "
+                  + " belongs to a matter not linked to client "
                   + customerId);
         }
       }
@@ -897,7 +898,7 @@ public class InvoiceCreationService {
                       + timeEntryId
                       + " resolves to currency "
                       + resolvedCurrency
-                      + " but invoice currency is "
+                      + " but fee note currency is "
                       + currency);
             }
           }
@@ -942,7 +943,7 @@ public class InvoiceCreationService {
       var expense =
           expenseRepository
               .findById(expenseId)
-              .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+              .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
       if (!expense.isBillable()) {
         throw new InvalidStateException(
@@ -950,14 +951,17 @@ public class InvoiceCreationService {
       }
       if (expense.getInvoiceId() != null) {
         throw new ResourceConflictException(
-            "Expense already invoiced",
-            "Expense " + expenseId + " is already linked to an invoice");
+            "Disbursement already billed",
+            "Disbursement " + expenseId + " is already linked to a fee note");
       }
       if (!customerProjectRepository.existsByCustomerIdAndProjectId(
           customerId, expense.getProjectId())) {
         throw new InvalidStateException(
-            "Expense not linked to customer",
-            "Expense " + expenseId + " belongs to a project not linked to customer " + customerId);
+            "Disbursement not linked to client",
+            "Disbursement "
+                + expenseId
+                + " belongs to a matter not linked to client "
+                + customerId);
       }
 
       BigDecimal billableAmount = expense.computeBillableAmount(orgMarkup);
@@ -1006,7 +1010,7 @@ public class InvoiceCreationService {
           disbursementRepository
               .findById(disbursementId)
               .orElseThrow(
-                  () -> new ResourceNotFoundException("LegalDisbursement", disbursementId));
+                  () -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, disbursementId));
 
       if (!DisbursementApprovalStatus.APPROVED.name().equals(disbursement.getApprovalStatus())) {
         throw new InvalidStateException(
@@ -1028,12 +1032,12 @@ public class InvoiceCreationService {
       }
       if (!disbursement.getCustomerId().equals(customerId)) {
         throw new InvalidStateException(
-            "Disbursement not linked to customer",
+            "Disbursement not linked to client",
             "Disbursement "
                 + disbursementId
-                + " belongs to customer "
+                + " belongs to client "
                 + disbursement.getCustomerId()
-                + " but invoice customer is "
+                + " but the fee note client is "
                 + customerId);
       }
 

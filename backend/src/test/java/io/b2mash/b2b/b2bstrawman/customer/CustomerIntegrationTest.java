@@ -208,7 +208,7 @@ class CustomerIntegrationTest {
                     {"name": "Second", "email": "duplicate@test.com"}
                     """));
     ProblemDetailAssertions.assertProblemWithDetail(
-        result, HttpStatus.CONFLICT, "Customer email conflict", "duplicate@test.com");
+        result, HttpStatus.CONFLICT, "Client email conflict", "duplicate@test.com");
   }
 
   @Test
@@ -353,7 +353,7 @@ class CustomerIntegrationTest {
         mockMvc.perform(
             get("/api/clients/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")));
-    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Customer not found");
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Client not found");
   }
 
   // --- Capability Tests (added in Epic 315A) ---

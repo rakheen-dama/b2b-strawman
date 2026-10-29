@@ -102,7 +102,7 @@ public class InvoiceValidationService {
         severity,
         passed,
         passed
-            ? "All customer required fields are filled"
+            ? "All client required fields are filled"
             : reqFields.filled() + " of " + reqFields.total() + " required fields filled");
   }
 
@@ -125,7 +125,7 @@ public class InvoiceValidationService {
   private ValidationCheck checkCustomerTaxNumber(UUID customerId, Severity severity) {
     var customerOpt = customerRepository.findById(customerId);
     if (customerOpt.isEmpty()) {
-      return new ValidationCheck("customer_tax_number", severity, true, "Customer not found");
+      return new ValidationCheck("customer_tax_number", severity, true, "Client not found");
     }
     var customer = customerOpt.get();
     // LZKC-008: INDIVIDUAL customers are never hard-blocked on tax number — cap at WARNING.
@@ -136,7 +136,7 @@ public class InvoiceValidationService {
         "customer_tax_number",
         effectiveSeverity,
         !missing,
-        missing ? missingTaxNumberMessage(individual) : "Customer tax number is set");
+        missing ? missingTaxNumberMessage(individual) : "Client tax number is set");
   }
 
   private String missingTaxNumberMessage(boolean individual) {

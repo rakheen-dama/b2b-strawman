@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.collections;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
@@ -96,7 +97,8 @@ public class CollectionReminderSendService {
     Invoice invoice =
         invoiceRepository
             .findById(action.invoiceId())
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", action.invoiceId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, action.invoiceId()));
 
     String recipientEmail = invoice.getCustomerEmail();
     if (recipientEmail == null || recipientEmail.isBlank()) {

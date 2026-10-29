@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.budget;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
@@ -50,7 +51,7 @@ public class ProjectBudgetService {
     var budget =
         projectBudgetRepository
             .findByProjectId(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectBudget", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_ESTIMATE, projectId));
 
     return computeStatus(budget);
   }
@@ -149,7 +150,7 @@ public class ProjectBudgetService {
     var budget =
         projectBudgetRepository
             .findByProjectId(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("ProjectBudget", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_ESTIMATE, projectId));
 
     projectBudgetRepository.delete(budget);
     log.info("Deleted budget {} for project {}", budget.getId(), projectId);

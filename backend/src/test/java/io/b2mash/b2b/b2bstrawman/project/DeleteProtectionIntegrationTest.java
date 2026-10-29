@@ -114,7 +114,7 @@ class DeleteProtectionIntegrationTest {
             delete("/api/matters/" + projectId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.detail", containsString("invoice(s)")));
+        .andExpect(jsonPath("$.detail", containsString("fee note(s)")));
   }
 
   @Test
@@ -277,7 +277,7 @@ class DeleteProtectionIntegrationTest {
             delete("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.detail", containsString("invoice")));
+        .andExpect(jsonPath("$.detail", containsString("fee note")));
   }
 
   // ---- Helpers ----

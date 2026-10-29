@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.correspondence.dto.CorrespondenceListResponse;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceCommand;
 import io.b2mash.b2b.b2bstrawman.correspondence.dto.FileCorrespondenceResult;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpPagination;
@@ -169,7 +170,7 @@ public class CorrespondenceService {
   public Page<CorrespondenceListResponse> listForCustomer(UUID customerId, Pageable pageable) {
     customerRepository
         .findById(customerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     return listByCustomer(customerId, clamp(pageable));
   }
 

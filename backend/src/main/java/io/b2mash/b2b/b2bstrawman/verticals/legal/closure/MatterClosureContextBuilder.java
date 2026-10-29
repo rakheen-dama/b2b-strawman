@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
@@ -96,7 +97,7 @@ public class MatterClosureContextBuilder {
     var project =
         projectRepository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     Map<String, Object> context = new HashMap<>();
 

@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustStatementDocumen
 import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustTransactionResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -171,9 +172,8 @@ public class PortalTrustLedgerService {
   private void requireMatterVisibleToCustomer(UUID customerId, UUID matterId) {
     portalTrustRepo
         .findBalance(customerId, matterId)
-        // GAP-L-55: match the sibling portal endpoints' "Project not found" wording. The
-        // tenant-side entity is a matter in legal-za terminology, but the portal API uses the
-        // canonical "Project" resource name to avoid terminology drift across the portal contract.
-        .orElseThrow(() -> new ResourceNotFoundException("Project", matterId));
+        // GAP-L-55: match the sibling portal endpoints' 404 wording — every portal matter lookup
+        // renders the same EntityNoun.MATTER title ("Matter not found", ADR-357).
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, matterId));
   }
 }

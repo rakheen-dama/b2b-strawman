@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.project;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -122,7 +123,7 @@ class ProjectFieldService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
     return customer.getName();
   }
@@ -147,7 +148,8 @@ class ProjectFieldService {
     var customer =
         customerRepository
             .findById(incomingCustomerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", incomingCustomerId));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, incomingCustomerId));
     boolean linkUnchanged =
         existingCustomerId != null && existingCustomerId.equals(incomingCustomerId);
     LifecycleAction action =

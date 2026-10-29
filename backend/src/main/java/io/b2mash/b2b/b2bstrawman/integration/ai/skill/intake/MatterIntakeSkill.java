@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill.intake;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
@@ -107,7 +108,7 @@ public class MatterIntakeSkill implements AiSkill {
     Customer customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Load active templates
     List<ProjectTemplate> templates = projectTemplateRepository.findByActiveOrderByNameAsc(true);

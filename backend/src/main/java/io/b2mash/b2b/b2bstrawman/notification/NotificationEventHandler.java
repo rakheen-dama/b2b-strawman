@@ -405,7 +405,7 @@ public class NotificationEventHandler {
                 "%s completed — %s generated"
                     .formatted(
                         billingRunLabel(event.runName(), event.periodFrom(), event.periodTo()),
-                        pluralize(event.totalInvoices(), "invoice"));
+                        pluralize(event.totalInvoices(), "fee note"));
             var notifications =
                 notificationService.notifyAdminsAndOwners(
                     "BILLING_RUN_COMPLETED", title, null, "BILLING_RUN", event.billingRunId());
@@ -455,7 +455,7 @@ public class NotificationEventHandler {
                 "%s — %s sent"
                     .formatted(
                         billingRunLabel(event.runName(), event.periodFrom(), event.periodTo()),
-                        pluralize(event.totalSent(), "invoice"));
+                        pluralize(event.totalSent(), "fee note"));
             var notifications =
                 notificationService.notifyAdminsAndOwners(
                     "BILLING_RUN_SENT", title, null, "BILLING_RUN", event.billingRunId());
@@ -490,7 +490,7 @@ public class NotificationEventHandler {
     return "Billing run";
   }
 
-  /** Count-aware phrase for simple s-plural nouns: "1 invoice", "2 invoices". */
+  /** Count-aware phrase for simple s-plural nouns: "1 fee note", "2 fee notes". */
   private static String pluralize(int count, String noun) {
     return count == 1 ? "1 " + noun : count + " " + noun + "s";
   }

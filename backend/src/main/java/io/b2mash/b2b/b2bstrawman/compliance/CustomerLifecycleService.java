@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.DormancyCandidate;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.DormancyCheckResult;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -112,7 +113,7 @@ public class CustomerLifecycleService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     LifecycleStatus target;
     try {
@@ -352,7 +353,7 @@ public class CustomerLifecycleService {
     if (anyNotComplete) {
       throw new InvalidStateException(
           "Onboarding incomplete",
-          "Cannot activate customer — one or more onboarding checklists are not yet completed");
+          "Cannot activate client — one or more onboarding checklists are not yet completed");
     }
   }
 }

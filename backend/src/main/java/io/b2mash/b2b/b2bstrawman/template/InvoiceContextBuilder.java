@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
@@ -51,7 +52,7 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
     var invoice =
         invoiceRepository
             .findById(entityId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", entityId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, entityId));
 
     var context = new HashMap<String, Object>();
     contextHelper.populateLocale(context);

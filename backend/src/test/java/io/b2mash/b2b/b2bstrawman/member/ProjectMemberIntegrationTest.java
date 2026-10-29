@@ -358,8 +358,8 @@ class ProjectMemberIntegrationTest {
                 .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
-        .andExpect(jsonPath("$.title").value("Project not found"))
-        .andExpect(jsonPath("$.detail").value("No project found with id " + projectId));
+        .andExpect(jsonPath("$.title").value("Matter not found"))
+        .andExpect(jsonPath("$.detail").value("No matter found with id " + projectId));
   }
 
   @Test
@@ -559,7 +559,7 @@ class ProjectMemberIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.title").value("Cannot remove project lead"))
+        .andExpect(jsonPath("$.title").value("Cannot remove matter lead"))
         .andExpect(
             jsonPath("$.detail")
                 .value("Transfer lead role to another member before removing the current lead"));

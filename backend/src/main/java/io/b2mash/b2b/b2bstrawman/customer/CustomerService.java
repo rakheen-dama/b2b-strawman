@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.DeleteGuard;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -377,7 +378,9 @@ public class CustomerService {
 
   @Transactional(readOnly = true)
   public Customer getCustomer(UUID id) {
-    return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+    return repository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, id));
   }
 
   @Transactional
@@ -462,7 +465,7 @@ public class CustomerService {
       java.time.LocalDate financialYearEnd) {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
-          "Customer email conflict", "A customer with email " + email + " already exists");
+          "Client email conflict", "A client with email " + email + " already exists");
     }
 
     // Reject unknown field slugs before validation
@@ -613,12 +616,14 @@ public class CustomerService {
       String entityType,
       java.time.LocalDate financialYearEnd) {
     var customer =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, id));
 
     // Check email uniqueness if changed
     if (!customer.getEmail().equals(email) && repository.existsByEmail(email)) {
       throw new ResourceConflictException(
-          "Customer email conflict", "A customer with email " + email + " already exists");
+          "Client email conflict", "A client with email " + email + " already exists");
     }
 
     // Validate and set custom fields
@@ -725,7 +730,9 @@ public class CustomerService {
   @Transactional
   public List<FieldDefinitionResponse> setFieldGroups(UUID id, List<UUID> appliedFieldGroups) {
     var customer =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, id));
 
     appliedFieldGroups =
         fieldGroupResolver.resolveAndValidate(appliedFieldGroups, EntityType.CUSTOMER);
@@ -764,7 +771,7 @@ public class CustomerService {
     var customer =
         repository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     customer.setCollectionsExempt(exempt);
     var saved = repository.save(customer);
     return new CollectionsExemptionResponse(saved.getId(), saved.isCollectionsExempt());
@@ -773,19 +780,21 @@ public class CustomerService {
   @Transactional
   public Customer archiveCustomer(UUID id) {
     var customer =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, id));
 
-    DeleteGuard.forEntity("customer", id, "archive")
+    DeleteGuard.forEntity("client", id, "archive")
         .checkNotExists(
-            "linked projects",
+            "linked matters",
             () ->
                 projectRepository.countByCustomerId(id) > 0
                     || customerProjectRepository.existsByCustomerId(id),
-            "Unlink all projects first.")
+            "Unlink all matters first.")
         .checkCountZero(
-            "invoice(s)",
+            "fee note(s)",
             invoiceRepository.countByCustomerId(id),
-            "Void or delete all invoices first.")
+            "Void or delete all fee notes first.")
         .execute();
 
     customer.archive();
@@ -822,12 +831,14 @@ public class CustomerService {
   @Transactional
   public Customer unarchiveCustomer(UUID id) {
     var customer =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, id));
 
     if (!"ARCHIVED".equals(customer.getStatus())) {
       throw new InvalidStateException(
           "Cannot unarchive",
-          "Customer is not archived (current status: " + customer.getStatus() + ")");
+          "Client is not archived (current status: " + customer.getStatus() + ")");
     }
 
     customer.unarchive();

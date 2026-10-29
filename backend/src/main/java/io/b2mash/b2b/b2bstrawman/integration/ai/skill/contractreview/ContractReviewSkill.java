@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview;
 
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
@@ -111,7 +112,7 @@ public class ContractReviewSkill implements AiSkill {
       Project project =
           projectRepository
               .findById(projectId)
-              .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+              .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
       matterContext = buildMatterContext(project);
       matterType = project.getWorkType() != null ? project.getWorkType() : "";
     }

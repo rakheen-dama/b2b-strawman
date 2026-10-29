@@ -4,36 +4,33 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
- * Java-side mirror of the portal's {@code TERMINOLOGY} TS map, scoped to the user-visible nouns
- * that appear in transactional email templates (GAP-L-65). Keyed by vertical-profile id (e.g.
- * {@code "legal-za"}) -- the same key feeds the portal {@code <TerminologyProvider>}, so a single
- * customer record renders with one consistent vocabulary across firm UI, portal UI, and email.
+ * The user-visible nouns that appear in transactional email templates and stored notification
+ * titles (GAP-L-65, LZKC-031). Kazi is a legal-only product (ADR-330) with one vocabulary for every
+ * tenant (ADR-338), so the fee-note nouns apply whether or not a tenant carries a vertical profile
+ * (628D: an unknown or absent profile used to fall back to "Invoice").
  *
- * <p>Invoice nouns were mapped in slice 19. Field names like {@code invoiceNumber} are
- * intentionally NOT translated -- only the user-visible nouns.
+ * <p>Field names like {@code invoiceNumber} are intentionally NOT translated -- only the
+ * user-visible nouns.
  */
 @Component
 public class EmailTerminology {
 
-  private static final Map<String, Map<String, String>> MAP =
+  /** Legal-only product (ADR-330, ADR-338): one vocabulary for every tenant, profile or not. */
+  private static final Map<String, String> LEGAL =
       Map.of(
-          "legal-za",
-          Map.of(
-              "invoice", "fee note",
-              "invoices", "fee notes",
-              "Invoice", "Fee Note",
-              "Invoices", "Fee Notes"));
+          "invoice", "fee note",
+          "invoices", "fee notes",
+          "Invoice", "Fee Note",
+          "Invoices", "Fee Notes");
 
   /**
-   * Returns the term-overrides map for the given namespace. An empty map (identity translation) is
-   * returned for {@code null} or unknown namespaces -- callers can safely use {@code
-   * map.getOrDefault("Invoice", "Invoice")} without null-guarding.
+   * Returns the term-overrides map. The {@code namespace} (vertical-profile id) is kept for the
+   * callers' signature but no longer selects a vocabulary: every namespace, including {@code null},
+   * gets the legal nouns. Callers' {@code map.getOrDefault("Invoice", "Invoice")} fallbacks are
+   * therefore never taken.
    */
   public Map<String, String> resolve(String namespace) {
-    if (namespace == null) {
-      return Map.of();
-    }
-    return MAP.getOrDefault(namespace, Map.of());
+    return LEGAL;
   }
 
   /**

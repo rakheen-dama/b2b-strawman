@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -97,7 +98,8 @@ public class PrescriptionTrackerService {
     var project =
         projectRepository
             .findById(request.matterId())
-            .orElseThrow(() -> new ResourceNotFoundException("Project", request.matterId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.MATTER, request.matterId()));
 
     validatePrescriptionType(request.prescriptionType());
 

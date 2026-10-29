@@ -66,11 +66,11 @@ class VariableMetadataEndpointTest {
         // At least 6 static + 2 custom field groups
         .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(8)))
         // Static groups in order
-        .andExpect(jsonPath("$.groups[0].label").value("Project"))
+        .andExpect(jsonPath("$.groups[0].label").value("Matter"))
         .andExpect(jsonPath("$.groups[0].prefix").value("project"))
         .andExpect(jsonPath("$.groups[0].variables[0].key").value("project.id"))
         .andExpect(jsonPath("$.groups[0].variables[1].key").value("project.name"))
-        .andExpect(jsonPath("$.groups[1].label").value("Customer"))
+        .andExpect(jsonPath("$.groups[1].label").value("Client"))
         .andExpect(jsonPath("$.groups[2].label").value("Lead"))
         .andExpect(jsonPath("$.groups[3].label").value("Budget"))
         .andExpect(jsonPath("$.groups[4].label").value("Organization"))
@@ -82,7 +82,7 @@ class VariableMetadataEndpointTest {
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].label",
-                hasItem("Customer Custom Fields")));
+                hasItem("Client Custom Fields")));
   }
 
   @Test
@@ -100,11 +100,11 @@ class VariableMetadataEndpointTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
         .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(5)))
-        .andExpect(jsonPath("$.groups[0].label").value("Customer"))
+        .andExpect(jsonPath("$.groups[0].label").value("Client"))
         .andExpect(jsonPath("$.groups[0].variables.length()").value(18))
         .andExpect(jsonPath("$.groups[0].variables[3].key").value("customer.phone"))
         .andExpect(jsonPath("$.groups[0].variables[4].key").value("customer.status"))
-        .andExpect(jsonPath("$.groups[1].label").value("Invoice Summary"))
+        .andExpect(jsonPath("$.groups[1].label").value("Fee note summary"))
         .andExpect(jsonPath("$.groups[1].variables[0].key").value("totalOutstanding"))
         .andExpect(jsonPath("$.groups[1].variables[0].type").value("currency"))
         .andExpect(jsonPath("$.groups[2].label").value("Organization"))
@@ -131,23 +131,23 @@ class VariableMetadataEndpointTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
         .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(7)))
-        .andExpect(jsonPath("$.groups[0].label").value("Invoice"))
+        .andExpect(jsonPath("$.groups[0].label").value("Fee note"))
         .andExpect(jsonPath("$.groups[0].variables.length()").value(14))
         .andExpect(jsonPath("$.groups[0].variables[0].key").value("invoice.id"))
         .andExpect(jsonPath("$.groups[0].variables[1].key").value("invoice.invoiceNumber"))
-        .andExpect(jsonPath("$.groups[1].label").value("Customer"))
-        .andExpect(jsonPath("$.groups[2].label").value("Project"))
+        .andExpect(jsonPath("$.groups[1].label").value("Client"))
+        .andExpect(jsonPath("$.groups[2].label").value("Matter"))
         .andExpect(jsonPath("$.groups[3].label").value("Organization"))
         .andExpect(jsonPath("$.groups[4].label").value("Generated"))
         // No invoice custom fields (no seeded pack), but customer + project present
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].label",
-                hasItem("Customer Custom Fields")))
+                hasItem("Client Custom Fields")))
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'project.customFields')].label",
-                hasItem("Project Custom Fields")));
+                hasItem("Matter Custom Fields")));
   }
 
   @Test
@@ -163,7 +163,7 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.loopSources").isArray())
         .andExpect(jsonPath("$.loopSources.length()").value(2))
         .andExpect(jsonPath("$.loopSources[0].key").value("members"))
-        .andExpect(jsonPath("$.loopSources[0].label").value("Project Members"))
+        .andExpect(jsonPath("$.loopSources[0].label").value("Matter Members"))
         .andExpect(jsonPath("$.loopSources[0].fields.length()").value(4))
         .andExpect(jsonPath("$.loopSources[1].key").value("tags"));
 
@@ -177,7 +177,7 @@ class VariableMetadataEndpointTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.loopSources.length()").value(1))
         .andExpect(jsonPath("$.loopSources[0].key").value("lines"))
-        .andExpect(jsonPath("$.loopSources[0].label").value("Invoice Lines"))
+        .andExpect(jsonPath("$.loopSources[0].label").value("Fee note lines"))
         .andExpect(jsonPath("$.loopSources[0].fields.length()").value(4));
 
     // CUSTOMER has projects, invoices, and tags loop sources
@@ -191,7 +191,7 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.loopSources.length()").value(3))
         .andExpect(jsonPath("$.loopSources[0].key").value("projects"))
         .andExpect(jsonPath("$.loopSources[1].key").value("invoices"))
-        .andExpect(jsonPath("$.loopSources[1].label").value("Invoices"))
+        .andExpect(jsonPath("$.loopSources[1].label").value("Fee notes"))
         .andExpect(jsonPath("$.loopSources[1].fields.length()").value(7))
         .andExpect(jsonPath("$.loopSources[2].key").value("tags"));
   }
@@ -321,7 +321,7 @@ class VariableMetadataEndpointTest {
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].label",
-                hasItem("Customer Custom Fields")))
+                hasItem("Client Custom Fields")))
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].variables[*]",
@@ -368,11 +368,11 @@ class VariableMetadataEndpointTest {
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].label",
-                hasItem("Customer Custom Fields")))
+                hasItem("Client Custom Fields")))
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'project.customFields')].label",
-                hasItem("Project Custom Fields")));
+                hasItem("Matter Custom Fields")));
   }
 
   @Test

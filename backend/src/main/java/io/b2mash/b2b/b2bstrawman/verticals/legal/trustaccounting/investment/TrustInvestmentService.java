@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -114,7 +115,8 @@ public class TrustInvestmentService {
     var customer =
         customerRepository
             .findById(request.clientId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.clientId()));
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     // Check client has sufficient balance
     var ledgerCard =

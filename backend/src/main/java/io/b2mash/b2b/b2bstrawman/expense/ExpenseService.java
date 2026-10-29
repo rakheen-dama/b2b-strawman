@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.ExpenseCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ExpenseDeletedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -167,10 +168,10 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId);
     }
 
     return expense;
@@ -213,7 +214,7 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     validateExpenseUpdate(expense, projectId, actor);
     validateExpenseReferences(projectId, taskId, receiptDocumentId, amount, markupPercent);
@@ -253,16 +254,17 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId);
     }
 
     // Guard: not BILLED
     if (expense.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Expense is billed", "Expense is part of an invoice. Void the invoice to unlock.");
+          "Disbursement is billed",
+          "Disbursement is part of a fee note. Void the fee note to unlock.");
     }
 
     // Permission: creator OR ADMIN+
@@ -296,10 +298,10 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId);
     }
 
     // ADMIN+ only
@@ -308,7 +310,8 @@ public class ExpenseService {
     // Guard: not BILLED (entity.writeOff() checks this too, but give better error)
     if (expense.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Expense is billed", "Cannot write off a billed expense. Void the invoice first.");
+          "Disbursement is billed",
+          "Cannot write off a billed disbursement. Void the fee note first.");
     }
 
     try {
@@ -339,10 +342,10 @@ public class ExpenseService {
     var expense =
         expenseRepository
             .findById(expenseId)
-            .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId));
 
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expenseId);
     }
 
     // ADMIN+ only
@@ -388,13 +391,14 @@ public class ExpenseService {
   /** Validates that an expense can be updated: belongs to project, not billed, has permission. */
   private void validateExpenseUpdate(Expense expense, UUID projectId, ActorContext actor) {
     if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expense.getId());
+      throw new ResourceNotFoundException(EntityNoun.DISBURSEMENT, expense.getId());
     }
 
     // Guard: must not be BILLED
     if (expense.getInvoiceId() != null) {
       throw new ResourceConflictException(
-          "Expense is billed", "Expense is part of an invoice. Void the invoice to unlock.");
+          "Disbursement is billed",
+          "Disbursement is part of a fee note. Void the fee note to unlock.");
     }
 
     // Permission: creator OR ADMIN+
@@ -470,8 +474,8 @@ public class ExpenseService {
     var access = projectAccessService.checkAccess(expense.getProjectId(), actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
-          "Cannot modify expense",
-          "Only the creator or a project lead/admin/owner can modify this expense");
+          "Cannot modify disbursement",
+          "Only the creator or a matter lead/admin/owner can modify this disbursement");
     }
   }
 

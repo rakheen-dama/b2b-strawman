@@ -320,7 +320,7 @@ class ProjectIntegrationTest {
         mockMvc.perform(
             get("/api/matters/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")));
-    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Project not found");
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Matter not found");
   }
 
   @Test
@@ -334,7 +334,7 @@ class ProjectIntegrationTest {
                     """
                     {"name": "Ghost", "description": "nope"}
                     """));
-    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Project not found");
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Matter not found");
   }
 
   @Test
@@ -343,7 +343,7 @@ class ProjectIntegrationTest {
         mockMvc.perform(
             delete("/api/matters/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")));
-    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Project not found");
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Matter not found");
   }
 
   // --- RBAC ---

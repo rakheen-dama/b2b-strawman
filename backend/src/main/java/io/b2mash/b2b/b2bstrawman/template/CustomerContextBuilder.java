@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
@@ -56,7 +57,7 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
     var customer =
         customerRepository
             .findById(entityId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", entityId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, entityId));
 
     var context = new HashMap<String, Object>();
     contextHelper.populateLocale(context);

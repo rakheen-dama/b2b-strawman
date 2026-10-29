@@ -79,10 +79,10 @@ public class DormancyScheduledJob {
       var admins = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
       String title =
           transitioned == 1
-              ? "1 customer marked as dormant"
-              : transitioned + " customers marked as dormant";
+              ? "1 client marked as dormant"
+              : transitioned + " clients marked as dormant";
       String body =
-          transitioned + " customer(s) were automatically marked as dormant due to inactivity.";
+          transitioned + " client(s) were automatically marked as dormant due to inactivity.";
 
       for (Member admin : admins) {
         notificationService.createNotification(

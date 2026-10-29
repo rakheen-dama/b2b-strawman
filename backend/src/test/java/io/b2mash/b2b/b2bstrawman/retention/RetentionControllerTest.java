@@ -351,7 +351,7 @@ class RetentionControllerTest {
             get("/api/clients/" + customerId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value("Anonymized Customer " + customerId.substring(0, 6)));
+        .andExpect(jsonPath("$.name").value("Anonymized Client " + customerId.substring(0, 6)));
   }
 
   @Test

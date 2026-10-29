@@ -237,7 +237,7 @@ class EmailNotificationChannelIntegrationTest {
                   savedNotification(
                       memberId,
                       "BUDGET_ALERT",
-                      "Project \"Website Redesign\" has reached 85% of its time budget");
+                      "Matter \"Website Redesign\" has reached 85% of its time budget");
 
               emailChannel.deliver(notification, RECIPIENT_EMAIL);
 

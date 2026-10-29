@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.prerequisite;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldUtils;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -113,7 +114,7 @@ public class PrerequisiteService {
   public UUID resolveCustomerIdFromProject(UUID projectId) {
     return customerProjectRepository
         .findFirstCustomerByProjectId(projectId)
-        .orElseThrow(() -> new ResourceNotFoundException("CustomerProject", projectId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT_MATTER_LINK, projectId));
   }
 
   /**
@@ -135,7 +136,7 @@ public class PrerequisiteService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     Map<String, Object> customFields = customer.getCustomFields();
 
@@ -185,13 +186,13 @@ public class PrerequisiteService {
             violations.add(
                 new PrerequisiteViolation(
                     "STRUCTURAL",
-                    "Customer must have an email address or portal contact for invoice delivery",
+                    "Client must have an email address or portal contact for fee note delivery",
                     entityType.name(),
                     entityId,
                     null,
                     null,
-                    "Add a portal contact with email on the customer detail page,"
-                        + " or set the customer email"));
+                    "Add a portal contact with email on the client detail page,"
+                        + " or set the client email"));
           }
         }
       }
@@ -229,7 +230,7 @@ public class PrerequisiteService {
   private Customer loadCustomer(UUID entityId) {
     return customerRepository
         .findById(entityId)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", entityId));
+        .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, entityId));
   }
 
   private Map<String, Object> loadCustomFields(EntityType entityType, UUID entityId) {
@@ -237,7 +238,7 @@ public class PrerequisiteService {
       var customer =
           customerRepository
               .findById(entityId)
-              .orElseThrow(() -> new ResourceNotFoundException("Customer", entityId));
+              .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, entityId));
       return customer.getCustomFields();
     }
     throw new UnsupportedOperationException(
@@ -272,6 +273,6 @@ public class PrerequisiteService {
         entityId,
         fd.getSlug(),
         null,
-        "Fill the " + fd.getName() + " field on the customer profile");
+        "Fill the " + fd.getName() + " field on the client profile");
   }
 }

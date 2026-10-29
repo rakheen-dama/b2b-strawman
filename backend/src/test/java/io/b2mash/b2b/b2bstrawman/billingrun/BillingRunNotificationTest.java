@@ -196,8 +196,8 @@ class BillingRunNotificationTest {
     assertThat(completedTitles).isNotEmpty();
     assertThat(completedTitles.getFirst())
         .contains("Notif Test Run")
-        .contains("1 invoice generated")
-        .doesNotContain("1 invoices");
+        .contains("1 fee note generated")
+        .doesNotContain("1 fee notes");
   }
 
   @Test
@@ -392,9 +392,9 @@ class BillingRunNotificationTest {
     var expectedFallback =
         "%s – %s".formatted(periodFormat.format(periodFrom), periodFormat.format(periodTo));
     // Spec acceptance (LZKC-032.md:31): the period fallback renders UNQUOTED —
-    // e.g. `Billing run 01 Jul 2026 – 31 Jul 2026 completed — 1 invoice generated`
+    // e.g. `Billing run 01 Jul 2026 – 31 Jul 2026 completed — 1 fee note generated`
     assertThat(titles.getFirst())
-        .isEqualTo("Billing run %s completed — 1 invoice generated".formatted(expectedFallback))
+        .isEqualTo("Billing run %s completed — 1 fee note generated".formatted(expectedFallback))
         .doesNotContain("\"");
   }
 

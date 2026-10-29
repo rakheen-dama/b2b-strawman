@@ -785,7 +785,7 @@ class TimeEntryIntegrationTest {
     // GAP-L-56: PROSPECT customers must allow time-entry creation — time entries are
     // record-keeping on work already performed (e.g. consultation hours logged before
     // client activation). Previously the PROSPECT lifecycle blocked submits with
-    // "Cannot create time entry for customer in PROSPECT lifecycle status".
+    // "Cannot create time entry for client in PROSPECT lifecycle status".
     var prospectTaskId = seedMatterWithCustomerInStatus(LifecycleStatus.PROSPECT);
 
     mockMvc

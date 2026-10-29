@@ -69,7 +69,7 @@ class EmailContextBuilderTest {
   }
 
   @Test
-  void buildBaseContext_genericTenant_fallsBackToInvoice() {
+  void buildBaseContext_genericTenant_usesLegalVocabulary() {
     stubVerticalProfile(null);
 
     Map<String, Object> context =
@@ -79,12 +79,13 @@ class EmailContextBuilderTest {
 
     @SuppressWarnings("unchecked")
     Map<String, String> terminology = (Map<String, String>) context.get("terminology");
-    assertThat(terminology).isEmpty();
+    // 628D (R-4): no profile no longer means "Invoice" — the product has one vocabulary.
+    assertThat(terminology).containsEntry("Invoice", "Fee Note");
 
-    assertThat(context).containsEntry("invoiceTerm", "Invoice");
-    assertThat(context).containsEntry("invoiceTermLower", "invoice");
-    assertThat(context).containsEntry("invoiceTermPlural", "Invoices");
-    assertThat(context).containsEntry("invoiceTermPluralLower", "invoices");
+    assertThat(context).containsEntry("invoiceTerm", "Fee Note");
+    assertThat(context).containsEntry("invoiceTermLower", "fee note");
+    assertThat(context).containsEntry("invoiceTermPlural", "Fee Notes");
+    assertThat(context).containsEntry("invoiceTermPluralLower", "fee notes");
   }
 
   @Test
@@ -114,9 +115,9 @@ class EmailContextBuilderTest {
   }
 
   @Test
-  void buildBaseContext_unknownVerticalProfile_fallsBackToIdentity() {
-    // An unknown vertical profile -- EmailTerminology should return an empty map and the
-    // convenience keys should fall back to identity.
+  void buildBaseContext_unknownVerticalProfile_usesLegalVocabulary() {
+    // An unknown vertical profile -- since 628D (R-4) EmailTerminology returns the legal map for
+    // every namespace, so the convenience keys carry the fee-note nouns.
     stubVerticalProfile("retail-uk");
 
     Map<String, Object> context =
@@ -126,8 +127,8 @@ class EmailContextBuilderTest {
 
     @SuppressWarnings("unchecked")
     Map<String, String> terminology = (Map<String, String>) context.get("terminology");
-    assertThat(terminology).isEmpty();
-    assertThat(context).containsEntry("invoiceTerm", "Invoice");
-    assertThat(context).containsEntry("invoiceTermLower", "invoice");
+    assertThat(terminology).containsEntry("Invoice", "Fee Note");
+    assertThat(context).containsEntry("invoiceTerm", "Fee Note");
+    assertThat(context).containsEntry("invoiceTermLower", "fee note");
   }
 }

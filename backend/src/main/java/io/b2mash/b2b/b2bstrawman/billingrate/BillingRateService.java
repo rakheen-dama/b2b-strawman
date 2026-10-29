@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -365,7 +366,7 @@ public class BillingRateService {
 
     throw new ForbiddenException(
         "Insufficient permissions",
-        "Only admins, owners, or project leads can manage billing rates");
+        "Only admins, owners, or matter leads can manage billing rates");
   }
 
   /**
@@ -374,7 +375,7 @@ public class BillingRateService {
    */
   private void validateProjectExists(UUID projectId) {
     if (projectId != null && projectRepository.findById(projectId).isEmpty()) {
-      throw new ResourceNotFoundException("Project", projectId);
+      throw new ResourceNotFoundException(EntityNoun.MATTER, projectId);
     }
   }
 
@@ -384,7 +385,7 @@ public class BillingRateService {
    */
   private void validateCustomerExists(UUID customerId) {
     if (customerId != null && customerRepository.findById(customerId).isEmpty()) {
-      throw new ResourceNotFoundException("Customer", customerId);
+      throw new ResourceNotFoundException(EntityNoun.CLIENT, customerId);
     }
   }
 

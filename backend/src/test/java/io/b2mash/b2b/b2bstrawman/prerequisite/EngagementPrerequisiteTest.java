@@ -197,7 +197,7 @@ class EngagementPrerequisiteTest {
                 templateService.updateRequiredCustomerFields(
                     TEMPLATE_ID, List.of(projectField.getId())))
         .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("not a customer field");
+        .hasMessageContaining("not a client field");
   }
 
   // --- Test 8: field deactivation removes from templates ---

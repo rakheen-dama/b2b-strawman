@@ -16,7 +16,7 @@ public enum CustomerType {
       return valueOf(value);
     } catch (IllegalArgumentException | NullPointerException e) {
       throw new IllegalArgumentException(
-          "Invalid customer type: '" + value + "'. Valid values: INDIVIDUAL, COMPANY, TRUST");
+          "Invalid client type: '" + value + "'. Valid values: INDIVIDUAL, COMPANY, TRUST");
     }
   }
 }

@@ -197,7 +197,7 @@ class ClientLedgerControllerTest {
             get("/api/trust-accounts/" + trustAccountId + "/client-ledgers/" + unknownCustomerId)
                 .with(ownerJwt))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.title").value("Customer not found"));
+        .andExpect(jsonPath("$.title").value("Client not found"));
   }
 
   @Test

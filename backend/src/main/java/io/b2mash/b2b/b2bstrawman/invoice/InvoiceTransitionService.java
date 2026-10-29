@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentPartiallyReversedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentReversedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.InvoiceValidationFailedException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -106,12 +107,12 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
     if (lines.isEmpty()) {
       throw new InvalidStateException(
-          "No line items", "Invoice must have at least one line item before approval");
+          "No line items", "Fee note must have at least one line item before approval");
     }
 
     for (var line : lines) {
@@ -124,7 +125,7 @@ public class InvoiceTransitionService {
         if (timeEntry.getInvoiceId() != null && !timeEntry.getInvoiceId().equals(invoiceId)) {
           throw new ResourceConflictException(
               "Time entry already billed",
-              "Time entry " + line.getTimeEntryId() + " is already linked to another invoice");
+              "Time entry " + line.getTimeEntryId() + " is already linked to another fee note");
         }
       }
     }
@@ -162,11 +163,14 @@ public class InvoiceTransitionService {
         var expense =
             expenseRepository
                 .findById(line.getExpenseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Expense", line.getExpenseId()));
+                .orElseThrow(
+                    () ->
+                        new ResourceNotFoundException(
+                            EntityNoun.DISBURSEMENT, line.getExpenseId()));
         if (expense.getInvoiceId() != null && !expense.getInvoiceId().equals(invoiceId)) {
           throw new ResourceConflictException(
-              "Expense already billed",
-              "Expense " + line.getExpenseId() + " is already linked to another invoice");
+              "Disbursement already billed",
+              "Disbursement " + line.getExpenseId() + " is already linked to another fee note");
         }
         if (expense.getInvoiceId() == null) {
           expense.markBilled(invoiceId);
@@ -228,7 +232,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findById(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     var validationChecks = invoiceValidationService.validateInvoiceSend(invoice);
     if (invoiceValidationService.hasCriticalFailures(validationChecks) && !overrideWarnings) {
@@ -337,7 +341,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
     try {
       invoice.requireStatus(Invoice.PAYABLE, "take a payment");
     } catch (IllegalStateException e) {
@@ -372,7 +376,7 @@ public class InvoiceTransitionService {
                       invoiceId,
                       posting.amount(),
                       invoice.getCurrency(),
-                      "Payment for invoice " + invoice.getInvoiceNumber()));
+                      "Payment for fee note " + invoice.getInvoiceNumber()));
       if (!paymentResult.success()) {
         throw new InvalidStateException("Payment failed", paymentResult.errorMessage());
       }
@@ -514,7 +518,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
     return postPayment(
         invoiceId, PaymentPosting.manual(invoice.getBalanceDue(), method, reference));
   }
@@ -564,7 +568,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (!invoice.isPayable()) {
       throw new ResourceConflictException(
@@ -604,12 +608,12 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     if (!Invoice.REVERSIBLE.contains(invoice.getStatus())) {
       throw new InvalidStateException(
           "Invalid status for payment reversal",
-          "Only paid or partially paid invoices can have a payment reversed (current status: "
+          "Only paid or partially paid fee notes can have a payment reversed (current status: "
               + invoice.getStatus()
               + ")");
     }
@@ -622,7 +626,7 @@ public class InvoiceTransitionService {
     if (!paymentEvent.getInvoiceId().equals(invoiceId)) {
       throw new InvalidStateException(
           "Mismatched payment event",
-          "Payment event " + paymentEventId + " does not belong to invoice " + invoiceId);
+          "Payment event " + paymentEventId + " does not belong to fee note " + invoiceId);
     }
 
     if (paymentEvent.getStatus() != PaymentEventStatus.COMPLETED) {
@@ -785,7 +789,7 @@ public class InvoiceTransitionService {
     var invoice =
         invoiceRepository
             .findByIdForUpdate(invoiceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId));
 
     try {
       invoice.voidInvoice();

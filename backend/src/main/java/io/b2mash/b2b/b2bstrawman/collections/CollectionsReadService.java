@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.collections;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.OutstandingSummaryResponse;
@@ -195,7 +196,7 @@ public class CollectionsReadService {
     Customer customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     var outstanding = queryOutstandingInvoices(customerId);
     Page<ActivityResponse> activities =
         activityRepository.findByCustomerId(customerId, activitiesPageable).map(this::toActivity);
@@ -211,7 +212,7 @@ public class CollectionsReadService {
   @Transactional(readOnly = true)
   public List<ActivityResponse> getInvoiceActivities(UUID invoiceId) {
     if (!invoiceRepository.existsById(invoiceId)) {
-      throw new ResourceNotFoundException("Invoice", invoiceId);
+      throw new ResourceNotFoundException(EntityNoun.FEE_NOTE, invoiceId);
     }
     return activityRepository.findByInvoiceId(invoiceId).stream()
         .sorted(

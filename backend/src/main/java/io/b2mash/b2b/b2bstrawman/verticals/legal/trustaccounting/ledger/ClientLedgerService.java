@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -101,7 +102,8 @@ public class ClientLedgerService {
               Customer customer =
                   customerRepository
                       .findById(customerId)
-                      .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+                      .orElseThrow(
+                          () -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
               return emptyLedgerCardResponse(customer, trustAccountId);
             });
   }

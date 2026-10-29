@@ -85,11 +85,11 @@ public class NotificationService {
   }
 
   /**
-   * Resolves the tenant's user-visible term for "Invoice" (LZKC-031 class D). Notification titles
-   * are generated once and stored, so the vertical vocabulary must be applied at creation time —
-   * via the same {@link EmailTerminology} map that drives transactional-email copy (GAP-L-65 / PR
-   * #1518). Tenants without a vertical profile (or without an {@code OrgSettings} row) fall back to
-   * "Invoice". Existing notification rows keep their original copy.
+   * Resolves the user-visible term for "Invoice" (LZKC-031 class D). Notification titles are
+   * generated once and stored, so the vocabulary must be applied at creation time — via the same
+   * {@link EmailTerminology} map that drives transactional-email copy (GAP-L-65 / PR #1518). Since
+   * 628D the map is the legal vocabulary for every tenant, profile or not ("Fee Note"). Existing
+   * notification rows keep their original copy.
    */
   private String invoiceTerm() {
     String namespace =
@@ -286,7 +286,7 @@ public class NotificationService {
       recipients.add(doc.getUploadedBy());
       title = "%s commented on document \"%s\"".formatted(event.actorName(), doc.getFileName());
     } else if ("PROJECT".equals(event.targetEntityType())) {
-      title = "%s commented on project".formatted(event.actorName());
+      title = "%s commented on matter".formatted(event.actorName());
     } else {
       log.warn("Unknown target entity type for comment: {}", event.targetEntityType());
       return List.of();
@@ -496,7 +496,7 @@ public class NotificationService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public List<Notification> handleMemberAddedToProject(MemberAddedToProjectEvent event) {
-    var title = "You were added to project \"%s\"".formatted(event.projectName());
+    var title = "You were added to matter \"%s\"".formatted(event.projectName());
 
     var notification =
         createIfEnabled(
@@ -536,7 +536,7 @@ public class NotificationService {
     var consumedPct = event.details().get("consumed_pct");
 
     var title =
-        "Project \"%s\" has reached %s%% of its %s budget"
+        "Matter \"%s\" has reached %s%% of its %s budget"
             .formatted(projectName, consumedPct, dimension);
 
     var created = new ArrayList<Notification>();
@@ -564,8 +564,8 @@ public class NotificationService {
     if (event.createdByMemberId() != null) recipients.add(event.createdByMemberId());
     recipients.remove(event.actorMemberId());
     var title =
-        "Invoice %s for %s has been approved"
-            .formatted(event.invoiceNumber(), event.customerName());
+        "%s %s for %s has been approved"
+            .formatted(invoiceTerm(), event.invoiceNumber(), event.customerName());
     return createNotificationsForRecipients(
         recipients, "INVOICE_APPROVED", title, event.entityId());
   }
@@ -610,7 +610,8 @@ public class NotificationService {
     }
     recipients.remove(event.actorMemberId());
     var title =
-        "Invoice %s for %s has been voided".formatted(event.invoiceNumber(), event.customerName());
+        "%s %s for %s has been voided"
+            .formatted(invoiceTerm(), event.invoiceNumber(), event.customerName());
     return createNotificationsForRecipients(recipients, "INVOICE_VOIDED", title, event.entityId());
   }
 
@@ -744,7 +745,7 @@ public class NotificationService {
   public List<Notification> handleProjectCompleted(ProjectCompletedEvent event) {
     var members = projectMemberRepository.findByProjectId(event.projectId());
 
-    var title = "%s completed project \"%s\"".formatted(event.actorName(), event.projectName());
+    var title = "%s completed matter \"%s\"".formatted(event.actorName(), event.projectName());
 
     var created = new ArrayList<Notification>();
     for (var member : members) {
@@ -771,7 +772,7 @@ public class NotificationService {
   public List<Notification> handleProjectArchived(ProjectArchivedEvent event) {
     var members = projectMemberRepository.findByProjectId(event.projectId());
 
-    var title = "%s archived project \"%s\"".formatted(event.actorName(), event.projectName());
+    var title = "%s archived matter \"%s\"".formatted(event.actorName(), event.projectName());
 
     var created = new ArrayList<Notification>();
     for (var member : members) {

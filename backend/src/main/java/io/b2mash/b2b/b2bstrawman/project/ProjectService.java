@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.diary.NextDiaryDateRepository;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -290,8 +291,8 @@ public class ProjectService {
                 return ProjectStatus.valueOf(s.toUpperCase());
               } catch (IllegalArgumentException e) {
                 throw new InvalidStateException(
-                    "Invalid project status",
-                    "Invalid project status: '"
+                    "Invalid matter status",
+                    "Invalid matter status: '"
                         + s
                         + "'. Valid values: "
                         + Arrays.toString(ProjectStatus.values()));
@@ -556,7 +557,9 @@ public class ProjectService {
   @Transactional(readOnly = true)
   public MatterWithRole getProject(UUID id, ActorContext actor) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, id));
     var access = projectAccessService.requireViewAccess(id, actor);
     return new MatterWithRole(project, access.projectRole());
   }
@@ -769,7 +772,9 @@ public class ProjectService {
       ProjectPriority priority,
       String workType) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, id));
     var access = projectAccessService.requireEditAccess(id, actor);
 
     // Validate customer link if provided. GAP-L-35: pass the existing customerId so the
@@ -858,7 +863,9 @@ public class ProjectService {
   public List<FieldDefinitionResponse> setFieldGroups(
       UUID id, List<UUID> appliedFieldGroups, ActorContext actor) {
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, id));
     projectAccessService.requireEditAccess(id, actor);
 
     var result = projectFieldService.setFieldGroups(project, appliedFieldGroups);
@@ -871,14 +878,17 @@ public class ProjectService {
   public void deleteProject(UUID id) {
     RequestScopes.requireOwner();
     var project =
-        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, id));
 
     // Guard 1: Status check — only ACTIVE projects can be deleted
     if (project.getStatus() != ProjectStatus.ACTIVE) {
+      String status = project.getStatus().name().toLowerCase();
+      String article = "aeiou".indexOf(status.charAt(0)) >= 0 ? "an" : "a";
       throw new ResourceConflictException(
-          "Cannot delete project",
-          "Cannot delete a %s project. Reopen the project first."
-              .formatted(project.getStatus().name().toLowerCase()));
+          "Cannot delete matter",
+          "Cannot delete %s %s matter. Reopen the matter first.".formatted(article, status));
     }
 
     projectDeletionGuard.checkAndExecute(id);
@@ -907,7 +917,7 @@ public class ProjectService {
     var project =
         repository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     projectAccessService.requireEditAccess(projectId, actor);
 
@@ -917,8 +927,8 @@ public class ProjectService {
             projectId, List.of(TaskStatus.DONE, TaskStatus.CANCELLED));
     if (openTaskCount > 0) {
       throw new InvalidStateException(
-          "Cannot complete project",
-          "Project has %d open task(s). Complete or cancel all tasks before completing the project."
+          "Cannot complete matter",
+          "Matter has %d open task(s). Complete or cancel all tasks before completing the matter."
               .formatted(openTaskCount));
     }
 
@@ -929,7 +939,7 @@ public class ProjectService {
     if (unbilledCount > 0 && !acknowledgeUnbilledTime) {
       throw new ResourceConflictException(
           "Unbilled time entries",
-          "Project has %d unbilled time entry/entries (%.1f hours). Acknowledge to proceed."
+          "Matter has %d unbilled time entry/entries (%.1f hours). Acknowledge to proceed."
               .formatted(unbilledCount, unbilledHours));
     }
 
@@ -988,7 +998,7 @@ public class ProjectService {
     var project =
         repository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     projectAccessService.requireEditAccess(projectId, actor);
 
@@ -1038,7 +1048,7 @@ public class ProjectService {
     var project =
         repository
             .findById(projectId)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
     projectAccessService.requireEditAccess(projectId, actor);
 

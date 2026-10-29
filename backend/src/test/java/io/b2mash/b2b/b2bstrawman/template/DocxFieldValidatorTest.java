@@ -35,12 +35,12 @@ class DocxFieldValidatorTest {
     var customerName = results.get(0);
     assertThat(customerName.path()).isEqualTo("customer.name");
     assertThat(customerName.status()).isEqualTo("VALID");
-    assertThat(customerName.label()).isEqualTo("Customer Name");
+    assertThat(customerName.label()).isEqualTo("Client Name");
 
     var projectName = results.get(1);
     assertThat(projectName.path()).isEqualTo("project.name");
     assertThat(projectName.status()).isEqualTo("VALID");
-    assertThat(projectName.label()).isEqualTo("Project Name");
+    assertThat(projectName.label()).isEqualTo("Matter Name");
 
     var unknown = results.get(2);
     assertThat(unknown.path()).isEqualTo("nonexistent.field");

@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldUtils;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -50,7 +51,7 @@ public class CustomerReadinessService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Null-safe guard for lifecycleStatus (Task 110.9)
     LifecycleStatus lifecycle = customer.getLifecycleStatus();
@@ -187,7 +188,7 @@ public class CustomerReadinessService {
     var customer =
         customerRepository
             .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     Map<String, Object> customFields = customer.getCustomFields();
     // OBS-5004: build effective values map including promoted structural field

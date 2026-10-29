@@ -532,7 +532,7 @@ public class InterestService {
                     () ->
                         new InvalidStateException(
                             "Ledger card not found",
-                            "No client ledger card found for customer "
+                            "No client ledger card found for client "
                                 + allocation.getCustomerId()));
         ledgerCard.addInterestCredit(allocation.getClientShare(), transactionDate);
         clientLedgerCardRepository.save(ledgerCard);

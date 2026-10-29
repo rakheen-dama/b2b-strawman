@@ -315,7 +315,7 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
                 .content(body)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_append_owner")))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Invoice not editable"))
+        .andExpect(jsonPath("$.title").value("Fee note not editable"))
         .andExpect(jsonPath("$.detail").exists())
         .andExpect(jsonPath("$.status").value(400));
   }

@@ -96,7 +96,7 @@ class TimeEntryRateWarningIntegrationTest {
         .andExpect(
             jsonPath("$.rateWarning")
                 .value(
-                    "No rate card found. This time entry will generate a zero-amount invoice line"
+                    "No rate card found. This time entry will generate a zero-amount fee note line"
                         + " item."));
   }
 

@@ -333,7 +333,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.2** FICA Onboarding Pack row shows envelope status = **In Progress** (per OBS-403: there is no `SUBMITTED` envelope status; firm review is mandatory before closure) with `0/3 accepted` counter; clicking the row link in the table navigates to `/org/{slug}/information-requests/{id}` (NOT `/requests/{id}` — see OBS-501). Reach the request detail page and confirm 3 items render with `Submitted` per-item status and the 3 PDFs (`fica-id.pdf`, `fica-address.pdf`, `fica-bank.pdf`) attached.
 - [ ] **5.3** Verify each per-item **Download** button is operational (no console errors on click; headless Playwright won't persist the file but the handler is wired).
 - [ ] **5.4** Click **Accept** on each item in turn (per-item Accept replaces a separate envelope-level "Mark as Reviewed" — refines OBS-403 lifecycle understanding). Counter advances 0/3 → 1/3 → 2/3 → 3/3 accepted; on the third Accept, envelope status auto-transitions `In Progress → Completed` with a "Completed on …" stamp.
-- [ ] **5.5** Verify matter Overview shows FICA status — Activity feed renders the full audit trail (`REQ-0001 completed — all items accepted`, three accept events, three submit events). The matter Overview tab also renders a **FICA Status Card** (`<FicaStatusCard>`); confirm its "View request" link emits the canonical `/org/{slug}/information-requests/{requestId}` route — NOT `/requests/{id}` (OBS-501 verification).
+- [ ] **5.5** Verify matter Overview shows FICA status — Activity feed renders the full audit trail (`REQ-0001 completed — all items accepted`, three accept events, three submit events). The matter Overview tab also renders a **FICA Status Card** (`<FicaStatusCard>`); confirm its link: **View checklist** → the client's `?tab=onboarding` when the client's onboarding checklist drives FICA; **View request** only for request-only FICA, and it emits the canonical `/org/{slug}/information-requests/{requestId}` route — NOT `/requests/{id}` (OBS-501 verification) (Phase 88, register §5a row 15 — wording amendment, founder-authorised 2026-10-29: the card links to whichever decided, checklist first (ADR-348), `FicaStatusCard.tsx:90-107`).
 - [ ] **5.6** Mailpit → notification emails to Sipho during firm review: 3× per-item-accepted (`Item accepted — {name} (Mathebula & Partners)`) + 1× envelope-completed (`Request REQ-0001 completed (Mathebula & Partners)`).
 - [ ] **5.7** On Sipho's client detail the lifecycle badge (`data-testid="lifecycle-badge"`) reads **PROSPECT**. Click the header card's **Start Onboarding** → confirm in the alert dialog → badge **ONBOARDING**; **FICA & compliance** group → **FICA onboarding** sub-tab shows **Legal Individual Client Onboarding**, 0/9 completed (9 items, 8 required; six show "Requires document") (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §4.2: the deleted Day 10 deal-win was the only scripted PROSPECT→ONBOARDING step) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 
@@ -341,7 +341,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] Three uploaded documents retrievable firm-side
 - [ ] Sipho ONBOARDING with the individual checklist instantiated
 - [ ] Info request lifecycle: `Sent → IN_PROGRESS → Completed` (envelope closes when the last per-item Accept lands; no separate "Mark as Reviewed" button)
-- [ ] Matter FICA / KYC status indicator updated; FICA card "View request" link routes to `/information-requests/{id}` (OBS-501 fix verification)
+- [ ] Matter FICA / KYC status indicator updated; FICA card link routes to the client's `?tab=onboarding` (**View checklist**, checklist-driven FICA) or to `/org/{slug}/information-requests/{requestId}` (**View request**, request-only FICA — OBS-501 fix verification) (§5a row 15, founder-authorised 2026-10-29)
 - [ ] Portal-side post-completion spot-check (still authenticated as Sipho on `:3002`): `/requests` row for REQ-0001 shows status badge **COMPLETED** AND counter **`3/3 accepted`** (NOT `0/3 submitted` — OBS-502 fix verification); detail page header reads `3/3 accepted • status COMPLETED`
 
 ---
@@ -826,9 +826,9 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **60.18** Click **Continue** → Step 2 — Close form
 - [ ] **60.19** Reason: **CONCLUDED** (settlement reached)
 - [ ] **60.20** Leave **Generate closure letter** checked, and also check **Generate Statement of Account** (Phase 67 Epic 491) if surfaced as a separate flag — then tick **Email the client now** (which also shares on the client portal; both default off) (Phase 88, ADR-350 + register §5a row 14 — wording amendment, founder-authorised 2026-10-29: the closure dialog's share/email intents default to INTERNAL, so Day 61's client email and 61.2's portal listing exist only when this box is ticked)
-- [ ] **60.21** Click **Confirm Close** → matter status = **CLOSED**
+- [ ] **60.21** Click **Close matter** → matter status = **CLOSED** (Phase 88, register §5a row 12 — wording amendment, founder-authorised 2026-10-29: the Step 2 submit button reads "Close matter", `matter-closure-dialog.tsx:520-528`)
 - [ ] **60.22** Closure letter + Statement of Account documents both attached to matter **Work** > **Documents** sub-tab
-- [ ] **60.23** Retention policy row inserted with `end_date = today + 5 years` (ADR-249 verify)
+- [ ] **60.23** The matter's **Retention** card reads "Scheduled deletion: <close date + the firm's retention years>" (5 years by default → today + 5 years), persisted as `projects.retention_ends_on`; no `retention_policies` row is written per matter (ADR-249 verify) (Phase 88, register §5a row 13 — wording amendment, founder-authorised 2026-10-29: closure sets `retention_ends_on`, `Project.java:318`; tenant `V8__phase88_retention_comment_attachments.sql:15`; `retention-card.tsx:181-193`)
 
 **Day 60 checkpoints**
 - [ ] All 4 closure gates resolved before closure attempt (trust dual-approval, court date, tasks, info requests)
@@ -845,7 +845,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 **Actor**: Sipho Dlamini
 
 - [ ] **61.1** Mailpit → open "Statement of Account ready" email → click link → lands on portal `/matters/[matterId]` (matter detail; the email link still carries `/projects/…`, which 308s here) OR directly at `/documents/[docId]` (Phase 87, ADR-344 — URL amendment, Epic 617B, PR #1640: portal route /matters (617A); the email link is a backend follow-up (PortalDocumentNotificationHandler.java:300))
-- [ ] **61.2** Navigate to Documents tab on matter → verify **Statement of Account — RAF-2026-001** is listed with today's date + file size. It is listed only because the firm chose to share it at closure (closure dialog Step 2 **Share on the client portal**, or **Email the client now**, which also shares): generated documents stay internal until the firm shares them (Phase 88, ADR-344 + ADR-350, task 628.18 — wording amendment: the SoA reaches the portal on explicit firm intent, not system-auto-shared; `matter-closure-dialog.tsx:381-443`; prerequisite: 60.20 does not yet tick Share/Email — see gap-register §5a row 14, pending founder authorisation)
+- [ ] **61.2** Scroll to the **Documents** section of the matter page → verify **Statement of Account — RAF-2026-001** is listed with today's date + file size. It is listed only because the firm chose to share it at closure (closure dialog Step 2 **Share on the client portal**, or **Email the client now**, which also shares): generated documents stay internal until the firm shares them (Phase 88, ADR-344 + ADR-350, task 628.18 — wording amendment: the SoA reaches the portal on explicit firm intent, not system-auto-shared; `matter-closure-dialog.tsx:381-443`; prerequisite: 60.20 ticks **Email the client now** — gap-register §5a row 14, founder-authorised 2026-10-29 and applied in `7ea0175ac`) (Phase 88, register §5a row 18 — wording amendment, founder-authorised 2026-10-29: the portal matter page has no tabs; documents are a section headed Documents, `portal/app/(authenticated)/matters/[id]/page.tsx:196-202`)
 - [ ] **61.3** Click **Download** → PDF downloads cleanly
 - [ ] **61.4** Open downloaded PDF → verify contents:
   - Mathebula letterhead + contact details
@@ -856,10 +856,10 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
   - Closing balance: R 0.00
   - Fee note: INV-0001 R 1,250 (Day 28, PAID Day 30 via mock payment gateway)
   - VAT line summary
-- [ ] **61.5** 📸 **Screenshot**: `day-61-portal-soa-download.png` — Documents tab with SoA + download indicator
+- [ ] **61.5** 📸 **Screenshot**: `day-61-portal-soa-download.png` — Documents section of the matter page with SoA + download indicator (§5a row 18, founder-authorised 2026-10-29)
 - [ ] **61.6** File byte-size matches firm-side preview byte-size (±5%)
 - [ ] **61.7** Document title exactly matches firm-side copy — no "Untitled document" leak
-- [ ] **61.8** Also visible: matter closure letter in Documents tab — verify it renders correctly too
+- [ ] **61.8** Also visible: matter closure letter in the Documents section of the matter page — verify it renders correctly too (§5a row 18, founder-authorised 2026-10-29)
 - [ ] **61.9** Firm-side audit: switch briefly to firm session → audit log shows portal contact accessed the SoA document with timestamp matching Day 61
 
 **Day 61 checkpoints**
@@ -899,14 +899,14 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 - [ ] **85.1** On RAF-2026-001 matter (CLOSED status) → verify closure letter attached Day 60
 - [ ] **85.2** If tenant workflow requires it, generate a final closing letter / thank-you correspondence via the doc-template pack → attach
-- [ ] **85.3** Verify matter retention policy (Day 60 created) still shows `end_date ≈ today + 5 years - 25 days` (days elapsed since closure)
+- [ ] **85.3** Verify the matter's **Retention** card still reads the Day-60 "Scheduled deletion" date (≈ today + 5 years - 25 days, the days elapsed since closure) — `projects.retention_ends_on` unchanged (Phase 88, register §5a row 13 — wording amendment, founder-authorised 2026-10-29: the retention end is a persisted matter column, `Project.java:318`, shown by `retention-card.tsx:181-193`; there is no per-matter retention policy row)
 - [ ] **85.4** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) (or platform admin view — requires Phase 69 if shipped, else firm-side activity feed): (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Audit Log → Firm zone › Audit trail)
   - Filter by matter = RAF-2026-001 → full 85-day history present
   - Filter by actor = Sipho (portal actor) → portal actions (FICA upload, fee-note pay, doc downloads) all recorded
 - [ ] **85.5** 📸 Optional: `day-85-firm-audit-filtered.png`
 
 **Day 85 checkpoints**
-- [ ] Matter retention row persists correctly
+- [ ] Matter retention end date (`projects.retention_ends_on`, shown on the Retention card) persists correctly (§5a row 13, founder-authorised 2026-10-29)
 - [ ] Audit log filters by actor work for BOTH firm users AND portal contacts (Phase 50 + Phase 69 readiness)
 
 ---

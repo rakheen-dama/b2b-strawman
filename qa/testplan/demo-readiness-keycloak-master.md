@@ -130,13 +130,17 @@ Each lifecycle script starts with "Prep & Reset — Session 0". This master doc 
   - `curl -sf -o /dev/null -w '%{http_code}' http://localhost:3002/login` → 200
   - `curl -sf http://localhost:8180/realms/docteams` → realm JSON
 - [ ] **M.5** Open Mailpit (`http://localhost:8025`) — inbox should be empty
-- [ ] **M.6** Drop any leftover tenant schemas from a previous run:
+- [ ] **M.6** Drop any leftover tenant schemas from a previous run (Phase 88, register §5a row 1 — wording amendment, founder-authorised 2026-10-29: the Keycloak dev stack's database is `docteams` (`app` is the E2E stack's); tenant schemas are named `tenant_<12 hex>`, `SchemaNameGenerator.java:19`):
   ```bash
-  docker exec b2b-postgres psql -U postgres -d app -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
+  docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%';"
   ```
-  For each tenant schema belonging to the vertical being tested (e.g. `tenant_mathebula_partners`), drop it:
+  Then resolve the tested vertical's organisation to its schema with a read-only lookup (filter by the firm's `organizations.name`; it must return exactly one `schema_name`, a `tenant_<12 hex>` name — never one named after the firm):
   ```bash
-  docker exec b2b-postgres psql -U postgres -d app -c "DROP SCHEMA tenant_mathebula_partners CASCADE;"
+  docker exec b2b-postgres psql -U postgres -d docteams -c "SELECT o.name, m.schema_name FROM public.organizations o JOIN public.org_schema_mapping m ON m.external_org_id = o.external_org_id WHERE o.name = '<firm name>';"
+  ```
+  Drop only that returned schema:
+  ```bash
+  docker exec b2b-postgres psql -U postgres -d docteams -c "DROP SCHEMA tenant_<12 hex> CASCADE;"
   ```
 - [ ] **M.7** Confirm Keycloak admin console (`http://localhost:8180/admin`) shows **only** `padmin@docteams.local` under Users in the `docteams` realm. Delete any lingering test users (`thandi@*-test.local`, `bob@*-test.local`, `carol@*-test.local`) from previous runs.
 - [ ] **M.8** Clear Mailpit inbox (if not already empty).

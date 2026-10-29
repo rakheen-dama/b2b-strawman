@@ -110,16 +110,16 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Sipho Dlamini — portal contact on a legal-za tenant
 
-- [ ] **7.1** Open Mailpit → verify weekly digest email arrived with subject containing "Your weekly update" (or similar). Body includes a link labelled "View deadlines" or similar
-- [ ] **7.2** Click the "Deadlines" link in the digest → lands on portal `/deadlines` `[legal-za]`
-- [ ] **7.3** Verify `/deadlines` renders: list of upcoming deadlines with title, due date, matter/engagement context, urgency indicator
-- [ ] **7.4** Click into one deadline → verify detail view renders with description and any attached document(s)
+- [ ] **7.1** Open Mailpit → verify weekly digest email arrived with subject containing "Your weekly update" (or similar). Body includes an **Open portal** button (links to `/home`) (Phase 88, register §5a row 16 — wording amendment, founder-authorised 2026-10-29: the digest's only CTA is Open portal → `/home`, `portal-weekly-digest.html:72-73`, `PortalDigestScheduler.java:305`)
+- [ ] **7.2** Click **Open portal** in the digest → lands on portal `/home`; open **Diary dates** (`/deadlines`) from the portal nav `[legal-za]` (§5a row 16, founder-authorised 2026-10-29)
+- [ ] **7.3** Verify `/deadlines` renders: list of upcoming deadlines with title, due date, matter/engagement context, urgency indicator — court dates and prescriptions do not yet sync to the portal, so until that sync is built the list is empty unless a portal-visible custom-field date exists (Phase 88, register §5a row 16 — wording amendment, founder-authorised 2026-10-29: those `DeadlinePortalSyncService` sources are dormant, only `CUSTOM_FIELD_DATE` is wired, `DeadlinePortalSyncService.java:36-49`)
+- [ ] **7.4** Click into one deadline → verify detail view renders with description and any attached document(s) — **N/A** when 7.3's list is empty (no portal-visible custom-field date exists) (§5a row 16, founder-authorised 2026-10-29)
 - [ ] **7.5** 📸 **Screenshot**: `day-07-deadlines-list.png`
 
 **Day 7 checkpoints**
 - [ ] Digest email generated and delivered via Mailpit
-- [ ] Deep-link from email → `/deadlines` preserves auth (no re-login loop)
-- [ ] `/deadlines` renders non-empty for the prerequisite-seeded tenants
+- [ ] Link from email → `/home` preserves auth (no re-login loop); `/deadlines` reached from the nav (§5a row 16, founder-authorised 2026-10-29)
+- [ ] `/deadlines` renders (empty unless a portal-visible custom-field date exists, until the portal deadline sync is built) (§5a row 16, founder-authorised 2026-10-29)
 
 ---
 
@@ -152,19 +152,19 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Sipho Dlamini (or profile-specific narrator)
 
-- [ ] **45.1** Navigate to `/invoices` → verify at least one invoice in **"Sent"** or **"Due"** state
+- [ ] **45.1** Navigate to `/invoices` → verify at least one invoice in **"Sent"** state with a payment URL (there is no "Due" status; **Pay** shows only for SENT / PARTIALLY_PAID invoices with a `paymentUrl`) (§5a row 17, founder-authorised 2026-10-29)
 - [ ] **45.2** Click into an invoice → `/invoices/[id]` renders: line items, subtotal, VAT, total, due date, Pay button
 - [ ] **45.3** 📸 **Screenshot**: `day-45-invoice-detail.png`
-- [ ] **45.4** Click **Pay** → portal payment flow opens (PSP redirect OR embedded payment sheet — depends on implementation)
-- [ ] **45.5** Complete payment flow using the seeded sandbox PSP credentials (e.g. "4242 4242 4242 4242" for Stripe-like test card, or the test flag for the portal's current PSP)
-- [ ] **45.6** Payment succeeds → invoice status transitions to **"Paid"** → receipt available for download
-- [ ] **45.7** 📸 **Screenshot**: `day-45-invoice-paid.png` — success / receipt state
-- [ ] **45.8** Navigate back to `/invoices` → verify invoice no longer in "Due" filter, now in "Paid"
+- [ ] **45.4** Click **Pay** → redirects to the mock payment gateway's checkout page (`/portal/dev/mock-payment`; local/keycloak profiles) (Phase 88, register §5a row 17 — wording amendment, founder-authorised 2026-10-29: the local/keycloak profiles run `MockPaymentGateway` (`MockPaymentGateway.java:34`) and `MockPaymentController` (`MockPaymentController.java:40`); the portal shows Pay only for a SENT note with a payment URL, `invoices/[id]/page.tsx:90-92`; Payments mandate exemption)
+- [ ] **45.5** Complete payment on the mock payment gateway (**Simulate Successful Payment**) — there are no seeded sandbox PSP credentials; on the e2e stack (no PSP) mark 45.4–45.8 **N/A** (Payments mandate exemption) (§5a row 17, founder-authorised 2026-10-29)
+- [ ] **45.6** Payment succeeds → invoice status transitions to **"Paid"** → receipt available for download (N/A on the e2e stack — no PSP) (§5a row 17, founder-authorised 2026-10-29)
+- [ ] **45.7** 📸 **Screenshot**: `day-45-invoice-paid.png` — success / receipt state (N/A on the e2e stack — no PSP) (§5a row 17, founder-authorised 2026-10-29)
+- [ ] **45.8** Navigate back to `/invoices` → verify invoice no longer in "Due" filter, now in "Paid" (N/A on the e2e stack — no PSP) (§5a row 17, founder-authorised 2026-10-29)
 
 **Day 45 checkpoints**
-- [ ] Payment recorded firm-side (firm-side invoice page reflects PAID within 60 s)
-- [ ] No tier / upsell interstitial in the pay flow
-- [ ] Receipt download works (PDF opens or downloads cleanly)
+- [ ] Payment recorded firm-side (firm-side invoice page reflects PAID within 60 s) (N/A on the e2e stack — no PSP; §5a row 17)
+- [ ] No tier / upsell interstitial in the pay flow (N/A on the e2e stack — no PSP; §5a row 17)
+- [ ] Receipt download works (PDF opens or downloads cleanly) (N/A on the e2e stack — no PSP; §5a row 17)
 
 ---
 
@@ -174,12 +174,12 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **60.1** Firm-side has generated:
   - `[legal-za]` Statement of Account (Phase 67 Epic 487) for Sipho's matter
-- [ ] **60.2** Navigate to `/matters/[matterId]` (legal) → Documents tab (Phase 87, ADR-344 — URL amendment, Epic 617B, PR #1640: portal route /matters (617A))
+- [ ] **60.2** Navigate to `/matters/[matterId]` (legal) → **Documents** section of the matter page (Phase 87, ADR-344 — URL amendment, Epic 617B, PR #1640: portal route /matters (617A)) (Phase 88, register §5a row 18 — wording amendment, founder-authorised 2026-10-29: the portal matter page has no tabs; documents are a section headed Documents, `matters/[id]/page.tsx:196-202`)
 - [ ] **60.3** Verify the generated document appears in the document list with correct title, date, size
 - [ ] **60.4** Click **Download** → verify PDF downloads successfully and opens without error
 - [ ] **60.5** Open the downloaded PDF → verify it contains:
   - `[legal-za]` Firm letterhead (Mathebula), matter reference, SoA opening balance, line items, closing balance, VAT 15%
-- [ ] **60.6** 📸 **Screenshot**: `day-60-document-downloaded.png` — portal document list with download success indicator
+- [ ] **60.6** 📸 **Screenshot**: `day-60-document-downloaded.png` — the Documents section of the matter page with download success indicator (§5a row 18, founder-authorised 2026-10-29)
 
 **Day 60 checkpoints**
 - [ ] Download byte-size matches firm-side preview byte-size (±5%)
@@ -249,7 +249,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **E.5** **Auth flow** — every portal interaction authenticated via magic-link → JWT (cookie + localStorage); zero Keycloak-form usage, zero firm-side user bleed-through
 - [ ] **E.6** **Terminology sweep** — zero firm-side vocabulary leaks on portal pages ("matter" / "project" / "engagement" consistent per tenant profile; no "customer" / "client" inversion)
 - [ ] **E.8** **Email linkage** — every email-driven checkpoint (Day 0, Day 7, Day 21, Day 75, Day 90) successfully authenticates the follow-through click without re-login
-- [ ] **E.9** **Payment flow** (Day 45) completes end-to-end with a sandbox PSP credential; receipt downloads cleanly
+- [ ] **E.9** **Payment flow** (Day 45) completes end-to-end through the mock payment gateway (local/keycloak profiles); receipt downloads cleanly — N/A on the e2e stack (no PSP; Payments mandate exemption) (Phase 88, register §5a row 17 — wording amendment, founder-authorised 2026-10-29: `MockPaymentGateway.java:34` is profile-gated to local/dev/keycloak/test; there are no sandbox PSP credentials)
 - [ ] **E.10** **Visual regression** (once baselines exist in 500B) — diff pixel-ratio ≤ 1% across all 🗎 captured shots at `lg` viewport
 - [ ] **E.11** **Test suite gate** (mandatory — see master doc "Test suite gate" section):
   - [ ] `cd portal && pnpm lint` → zero lint errors

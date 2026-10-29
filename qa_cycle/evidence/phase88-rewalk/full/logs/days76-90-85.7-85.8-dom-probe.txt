@@ -1,0 +1,15 @@
+# 2026-10-29T19:59:32Z — W7b, Bob (Admin), Estate matter 028d3901-…, Close matter dialog after clicking Continue (testid matter-closure-next-btn)
+# browser_evaluate (read-only DOM probe):
+#   () => { const d=document.querySelector('[role=dialog]'); return { step3: document.querySelectorAll('[data-testid="matter-closure-step-3"]').length, step2: ...('[data-testid="matter-closure-step-2"]').length, overrideToggle: ...('[data-testid="matter-closure-override-toggle"]').length, justification: ...('[data-testid="matter-closure-override-justification-input"]').length, confirmBtn: ...('[data-testid="matter-closure-confirm-close-btn"]').length, buttons: [...d.querySelectorAll('button')].map(b=>b.innerText.trim()), text: d.innerText } }
+{
+  "step3": 1,
+  "step2": 0,
+  "overrideToggle": 0,
+  "justification": 0,
+  "confirmBtn": 0,
+  "buttons": ["Close", "Back to report", "Close"],
+  "text": "Close matter\n\nReview closure gates and confirm closure of Estate Late Peter Moroka.\n\nCannot close — resolve gates\n\nThis matter has failing closure gates and you do not have permission to override them. Resolve the failing items and try again.\n\nClose\nBack to report\nClose"
+}
+# ("Close" ×2 = the footer dismiss button + the dialog's X, aria-label "Close"; neither is matter-closure-confirm-close-btn.)
+# 19:59:4xZ — browser_run_code_unsafe: page.on('request') collector for non-GET requests, then clicked the dialog's "Close" button, waited 1.5 s:
+{"dialogsOpen":0,"header":"Estate Late Peter Moroka\nActive\nESTATES\nMoroka Family Trust","nonGetRequestsAfterClose":[]}

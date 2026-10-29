@@ -1,0 +1,30 @@
+# 2026-10-29T19:29:04Z
++ SELECT name, status, assignee_name, synced_at FROM portal.portal_tasks WHERE org_id='mathebula-partners' AND portal_project_id='d42337ad-2c76-4a79-ac75-e3d9f4d36881' ORDER BY sort_order
+Initial consultation & case assessment|OPEN|Bob Ndlovu|2026-10-29 16:25:50.61506
+Letter of demand|OPEN|Carol Mokoena|2026-10-29 16:26:26.070874
++ SELECT t.title, t.status, m.email FROM tenant_5039f2d497cf.tasks t LEFT JOIN tenant_5039f2d497cf.members m ON m.id=t.assignee_id WHERE t.project_id='d42337ad-2c76-4a79-ac75-e3d9f4d36881' ORDER BY t.created_at
+Initial consultation & case assessment|OPEN|bob@mathebula-test.local
+Letter of demand|OPEN|carol@mathebula-test.local
+Issue summons / combined summons|OPEN|thandi@mathebula-test.local
+File plea / exception / counterclaim|OPEN|thandi@mathebula-test.local
+Discovery -- request & exchange documents|OPEN|
+Pre-trial conference preparation|OPEN|thandi@mathebula-test.local
+Trial / hearing attendance|OPEN|thandi@mathebula-test.local
+Post-judgment -- taxation of costs / appeal|OPEN|thandi@mathebula-test.local
+Execution -- warrant / attachment|OPEN|
++ SELECT id, name, status FROM portal.portal_projects WHERE org_id='mathebula-partners' ORDER BY name
+028d3901-e826-44a9-b6a6-b81328365629|Estate Late Peter Moroka|ACTIVE
+aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|Khumalo Property Holdings — Erf 1234 Sandton Transfer|ACTIVE
+5c42e002-1218-48ac-9d74-a7e3aeff13e6|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|ACTIVE
+0b9656be-244d-48e3-aaf8-80bcb154266e|Nomvula Khoza — Debt Recovery (Mokoena Traders)|ACTIVE
+d42337ad-2c76-4a79-ac75-e3d9f4d36881|Sipho Dlamini v. Standard Bank (civil)|ACTIVE
++ SELECT invoice_number, status, total FROM portal.portal_invoices WHERE org_id='mathebula-partners' ORDER BY invoice_number
+INV-0001|PAID|4585.00
+INV-0002|SENT|36575.75
+INV-0003|SENT|7058.13
+# 2026-10-29T19:36:14Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, details->>'title' FROM tenant_5039f2d497cf.audit_events WHERE entity_type='task' AND occurred_at BETWEEN '2026-10-29 16:25:00+00' AND '2026-10-29 16:27:00+00' ORDER BY occurred_at
+# 2026-10-29T19:36:18Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, details->>'title' FROM tenant_5039f2d497cf.audit_events WHERE entity_type='task' AND occurred_at BETWEEN '2026-10-29 14:25:00+00' AND '2026-10-29 14:27:00+00' ORDER BY occurred_at
+2026-10-29 14:25:50.605009+00|task.updated|Initial consultation & case assessment
+2026-10-29 14:26:26.057569+00|task.updated|Letter of demand

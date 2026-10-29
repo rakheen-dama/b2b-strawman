@@ -1,0 +1,31 @@
+# 2026-10-29T19:40:32Z tenant=tenant_5039f2d497cf
++ SELECT id, title, status, completed_at, updated_at FROM tenant_5039f2d497cf.tasks WHERE project_id='d42337ad-2c76-4a79-ac75-e3d9f4d36881' ORDER BY created_at
+dea6cf65-bc9e-455b-8b67-9646efe20489|Initial consultation & case assessment|DONE|2026-10-29 19:40:27.429376+00|2026-10-29 19:40:27.429377+00
+b55179b8-3ed5-46df-b731-b549c5c8a42b|Letter of demand|DONE|2026-10-29 19:40:19.887126+00|2026-10-29 19:40:19.887126+00
+1c8cffa1-6e4a-4a53-97d9-f3b886bad5ce|Issue summons / combined summons|DONE|2026-10-29 19:40:12.564366+00|2026-10-29 19:40:12.564366+00
+b5f5f430-e2b2-4ca2-958a-52da8187af12|File plea / exception / counterclaim|DONE|2026-10-29 19:40:04.833848+00|2026-10-29 19:40:04.833848+00
+3acf11d9-cd86-4fea-9883-a61da72a8971|Discovery -- request & exchange documents|DONE|2026-10-29 19:39:57.580243+00|2026-10-29 19:39:57.580243+00
+d956f1d3-2701-4bf6-9e81-168a35429f6b|Pre-trial conference preparation|DONE|2026-10-29 19:39:50.235562+00|2026-10-29 19:39:50.235563+00
+31c1923e-dc51-473e-9dea-875778f443e6|Trial / hearing attendance|DONE|2026-10-29 19:39:43.038201+00|2026-10-29 19:39:43.038201+00
+1340435e-cdf7-46ca-9b4a-b9bcba5f67e7|Post-judgment -- taxation of costs / appeal|DONE|2026-10-29 19:39:33.180599+00|2026-10-29 19:39:33.1806+00
+9b3066f4-c4d5-492a-b62d-e805efa5c22b|Execution -- warrant / attachment|DONE|2026-10-29 19:39:18.739368+00|2026-10-29 19:39:18.739368+00
+# 2026-10-29T19:40:32Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type, details->>'title' FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > now() - interval '3 minutes' ORDER BY occurred_at
+2026-10-29 19:39:15.341356+00|task.updated|task|Execution -- warrant / attachment
+2026-10-29 19:39:18.740519+00|task.updated|task|Execution -- warrant / attachment
+2026-10-29 19:39:31.393507+00|task.updated|task|Post-judgment -- taxation of costs / appeal
+2026-10-29 19:39:33.181456+00|task.updated|task|Post-judgment -- taxation of costs / appeal
+2026-10-29 19:39:41.091535+00|task.updated|task|Trial / hearing attendance
+2026-10-29 19:39:43.039238+00|task.updated|task|Trial / hearing attendance
+2026-10-29 19:39:48.401195+00|task.updated|task|Pre-trial conference preparation
+2026-10-29 19:39:50.23715+00|task.updated|task|Pre-trial conference preparation
+2026-10-29 19:39:55.757047+00|task.updated|task|Discovery -- request & exchange documents
+2026-10-29 19:39:57.581067+00|task.updated|task|Discovery -- request & exchange documents
+2026-10-29 19:40:03.042426+00|task.updated|task|File plea / exception / counterclaim
+2026-10-29 19:40:04.834632+00|task.updated|task|File plea / exception / counterclaim
+2026-10-29 19:40:10.219908+00|task.updated|task|Issue summons / combined summons
+2026-10-29 19:40:12.566097+00|task.updated|task|Issue summons / combined summons
+2026-10-29 19:40:18.073691+00|task.updated|task|Letter of demand
+2026-10-29 19:40:19.888654+00|task.updated|task|Letter of demand
+2026-10-29 19:40:25.646561+00|task.updated|task|Initial consultation & case assessment
+2026-10-29 19:40:27.431458+00|task.updated|task|Initial consultation & case assessment

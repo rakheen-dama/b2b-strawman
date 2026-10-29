@@ -1,0 +1,11 @@
+# 2026-10-29T19:59:47Z tenant=tenant_5039f2d497cf
++ SELECT id, name, status, completed_at, closed_at FROM tenant_5039f2d497cf.projects WHERE id='028d3901-e826-44a9-b6a6-b81328365629'
+028d3901-e826-44a9-b6a6-b81328365629|Estate Late Peter Moroka|ACTIVE||
+# 2026-10-29T19:59:47Z tenant=tenant_5039f2d497cf
++ SELECT count(*) FROM tenant_5039f2d497cf.matter_closure_log WHERE project_id='028d3901-e826-44a9-b6a6-b81328365629'
+0
+# 2026-10-29T19:59:47Z tenant=tenant_5039f2d497cf
++ SELECT count(*), max(occurred_at) FROM tenant_5039f2d497cf.audit_events
+276|2026-10-29 19:44:49.093634+00
+# 2026-10-29T19:59:47Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type, actor_id FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > '2026-10-29 19:44:50+00' ORDER BY occurred_at

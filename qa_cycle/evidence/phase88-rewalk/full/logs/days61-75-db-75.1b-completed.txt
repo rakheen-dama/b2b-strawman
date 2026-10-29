@@ -1,0 +1,6 @@
+# 2026-10-29T19:40:53Z tenant=tenant_5039f2d497cf
++ SELECT id, name, status, completed_at, completed_by, closed_at, retention_clock_started_at, retention_ends_on FROM tenant_5039f2d497cf.projects WHERE id='d42337ad-2c76-4a79-ac75-e3d9f4d36881'
+d42337ad-2c76-4a79-ac75-e3d9f4d36881|Sipho Dlamini v. Standard Bank (civil)|COMPLETED|2026-10-29 19:40:40.792831+00|09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|||
+# 2026-10-29T19:40:53Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > now() - interval '2 minutes' AND event_type NOT LIKE 'task.%' ORDER BY occurred_at
+2026-10-29 19:40:40.795088+00|project.completed|project

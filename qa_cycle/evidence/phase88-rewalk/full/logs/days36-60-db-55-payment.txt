@@ -1,0 +1,10 @@
+# 2026-10-29T19:11:57Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, total, amount_paid, paid_at, payment_reference FROM tenant_5039f2d497cf.invoices WHERE id='4a10f00a-600b-42d8-944a-a4f1697b4c7e'
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|PAID|4585.00|4585.00|2026-10-29 19:11:47.237862+00|EFT/SIPHO-001
++ SELECT invoice_id, provider_slug, status, amount, payment_method, payment_reference, created_at FROM tenant_5039f2d497cf.payment_events ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|mock|CANCELLED|4585.00|||2026-10-29 18:55:39.656886+00
+2d84a43c-3e90-4455-b84e-32ae0c819915|mock|CREATED|36575.75|||2026-10-29 19:03:48.514255+00
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|manual|COMPLETED|4585.00|EFT|EFT/SIPHO-001|2026-10-29 19:11:47.237768+00
++ SELECT occurred_at, event_type, entity_type, entity_id, actor_type, details FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > '2026-10-29 19:11:00' ORDER BY occurred_at
+2026-10-29 19:11:47.236534+00|payment.session.cancelled|invoice|4a10f00a-600b-42d8-944a-a4f1697b4c7e|SYSTEM|{"action": "session_cancelled", "actor_name": "System"}
+2026-10-29 19:11:47.240657+00|invoice.paid|invoice|4a10f00a-600b-42d8-944a-a4f1697b4c7e|USER|{"total": "4585.00", "amount": "4585", "paid_at": "2026-10-29T19:11:47.237862Z", "actor_name": "Thandi Mathebula", "project_id": "d42337ad-2c76-4a79-ac75-e3d9f4d36881", "balance_due": "0.00", "customer_id": "fbfe7eba-53f6-4536-809d-2fc785628ef3", "invoice_number": "INV-0001", "payment_method": "EFT", "payment_reference": "EFT/SIPHO-001"}

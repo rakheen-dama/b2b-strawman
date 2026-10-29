@@ -1,0 +1,12 @@
+# 2026-10-29T19:55:21Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_id, actor_type FROM tenant_5039f2d497cf.audit_events WHERE entity_type='project' ORDER BY occurred_at
+2026-10-29 14:21:19.716159+00|project.created_from_template|d42337ad-2c76-4a79-ac75-e3d9f4d36881|USER
+2026-10-29 14:22:12.32395+00|project.updated|d42337ad-2c76-4a79-ac75-e3d9f4d36881|USER
+2026-10-29 15:03:38.891673+00|project.created_from_template|028d3901-e826-44a9-b6a6-b81328365629|USER
+2026-10-29 15:17:05.934051+00|project.created_from_template|aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|USER
+2026-10-29 15:17:44.427996+00|project.updated|aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|USER
+2026-10-29 15:30:17.17982+00|project.created_from_template|5c42e002-1218-48ac-9d74-a7e3aeff13e6|USER
+2026-10-29 15:30:32.190038+00|project.updated|5c42e002-1218-48ac-9d74-a7e3aeff13e6|USER
+2026-10-29 19:18:50.579928+00|project.created_from_template|0b9656be-244d-48e3-aaf8-80bcb154266e|USER
+2026-10-29 19:40:40.795088+00|project.completed|d42337ad-2c76-4a79-ac75-e3d9f4d36881|USER
+2026-10-29 19:44:16.901144+00|matter_closure.closed|d42337ad-2c76-4a79-ac75-e3d9f4d36881|USER

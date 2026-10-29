@@ -1,0 +1,8 @@
+# 2026-10-29T20:42:32Z tenant=tenant_5039f2d497cf
++ SELECT t.transaction_type, t.amount, c.name, t.reference, t.status, t.created_at FROM tenant_5039f2d497cf.trust_transactions t LEFT JOIN tenant_5039f2d497cf.customers c ON c.id=t.customer_id WHERE c.name='Sipho Dlamini' ORDER BY t.created_at
+DEPOSIT|5000.00|Sipho Dlamini|DEP/SIPHO-001|RECORDED|2026-10-29 14:47:05.872404+00
+PAYMENT|1250.00|Sipho Dlamini|DEEDS/SIPHO-001|APPROVED|2026-10-29 14:47:40.895167+00
+REFUND|3750.00|Sipho Dlamini|REF/SIPHO-001|APPROVED|2026-10-29 19:41:26.393174+00
++ SELECT c.name, l.* FROM tenant_5039f2d497cf.client_ledger_cards l JOIN tenant_5039f2d497cf.customers c ON c.id=l.customer_id
+Moroka Family Trust|c99fe538-485f-404c-a6e5-9eccd7f118d7|696ce2f0-0061-46bd-91f4-a95c8a23a009|acd36ca9-adc9-4a58-89bf-d36016febf49|38000.00|50000.00|12000.00|0.00|0.00|2026-10-29|2026-10-29 15:08:12.000412+00|2026-10-29 19:33:23.652093+00
+Sipho Dlamini|0733af1c-4be6-4d82-b3cd-6e0acb70cce8|696ce2f0-0061-46bd-91f4-a95c8a23a009|fbfe7eba-53f6-4536-809d-2fc785628ef3|0.00|5000.00|1250.00|0.00|0.00|2026-10-29|2026-10-29 14:47:05.859944+00|2026-10-29 19:42:44.465189+00

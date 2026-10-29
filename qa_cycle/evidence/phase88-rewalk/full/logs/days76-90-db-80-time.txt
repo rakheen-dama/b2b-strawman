@@ -1,0 +1,23 @@
+# 2026-10-29T19:49:52Z tenant=tenant_5039f2d497cf
++ SELECT p.name, m.email, sum(te.duration_minutes) AS mins, sum(round(te.duration_minutes/60.0*te.billing_rate_snapshot,2)) AS rev, sum(round(te.duration_minutes/60.0*te.cost_rate_snapshot,2)) AS cost, bool_and(te.billable) AS all_billable FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id GROUP BY 1,2 ORDER BY 1,2
+Estate Late Peter Moroka|bob@mathebula-test.local|420|8400.00|3500.00|t
+Estate Late Peter Moroka|carol@mathebula-test.local|210|1925.00|700.00|t
+Estate Late Peter Moroka|thandi@mathebula-test.local|510|21250.00|8500.00|t
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|bob@mathebula-test.local|420|8400.00|3500.00|t
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|carol@mathebula-test.local|120|1100.00|400.00|t
+Nomvula Khoza — Debt Recovery (Mokoena Traders)|bob@mathebula-test.local|120|2400.00|1000.00|t
+Nomvula Khoza — Debt Recovery (Mokoena Traders)|carol@mathebula-test.local|135|1237.50|450.00|t
+Nomvula Khoza — Debt Recovery (Mokoena Traders)|thandi@mathebula-test.local|60|2500.00|1000.00|t
+Sipho Dlamini v. Standard Bank (civil)|bob@mathebula-test.local|90|1800.00|750.00|t
+Sipho Dlamini v. Standard Bank (civil)|carol@mathebula-test.local|120|1100.00|400.00|t
++ SELECT p.name, sum(te.duration_minutes)/60.0 AS hours, sum(round(te.duration_minutes/60.0*te.billing_rate_snapshot,2)) AS rev, sum(round(te.duration_minutes/60.0*te.cost_rate_snapshot,2)) AS cost FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id GROUP BY 1 ORDER BY 1
+Estate Late Peter Moroka|19.0000000000000000|31575.00|12700.00
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|9.0000000000000000|9500.00|3900.00
+Nomvula Khoza — Debt Recovery (Mokoena Traders)|5.2500000000000000|6137.50|2450.00
+Sipho Dlamini v. Standard Bank (civil)|3.5000000000000000|2900.00|1150.00
++ SELECT m.email, sum(te.duration_minutes)/60.0 AS hours, sum(te.duration_minutes) FILTER (WHERE te.billable)/60.0 AS billable_h FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id GROUP BY 1 ORDER BY 1
+bob@mathebula-test.local|17.5000000000000000|17.5000000000000000
+carol@mathebula-test.local|9.7500000000000000|9.7500000000000000
+thandi@mathebula-test.local|9.5000000000000000|9.5000000000000000
++ SELECT min(te.date), max(te.date) FROM tenant_5039f2d497cf.time_entries te
+2026-10-29|2026-10-29

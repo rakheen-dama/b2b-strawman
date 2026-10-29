@@ -1,0 +1,10 @@
+# 2026-10-29T18:55:11Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, customer_name, issue_date, due_date, subtotal, tax_amount, total, amount_paid, paid_at FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e||DRAFT|Sipho Dlamini|||4150.00|435.00|4585.00|0.00|
++ SELECT i.invoice_number, l.line_type, l.sort_order, l.description, l.quantity, l.unit_price, l.amount, l.tax_rate_percent, l.tax_amount, l.time_entry_id IS NOT NULL AS te, l.disbursement_id, l.tariff_item_id FROM tenant_5039f2d497cf.invoice_lines l JOIN tenant_5039f2d497cf.invoices i ON i.id=l.invoice_id ORDER BY i.created_at, l.sort_order
+|TIME|0|2026-10-29 · Bob Ndlovu · Drafting particulars of claim|1.5000|1200.00|1800.00|15.00|270.00|t||
+|TIME|1|2026-10-29 · Carol Mokoena · Legal research — precedent review|2.0000|550.00|1100.00|15.00|165.00|t||
+|DISBURSEMENT|2|Deeds office fees: Deeds office search fee (Deeds Office Pretoria, 2026-10-29)|1.0000|1250.00|1250.00|0.00|0.00|f|adee383d-e115-451a-b144-9e7b04663685|
++ SELECT id, category, amount, approval_status, billing_status, invoice_line_id FROM tenant_5039f2d497cf.legal_disbursements ORDER BY created_at
+30e55eca-d598-4cdd-9171-ab938e9a911e|SHERIFF_FEES|750.00|APPROVED|UNBILLED|
+adee383d-e115-451a-b144-9e7b04663685|DEEDS_OFFICE_FEES|1250.00|APPROVED|BILLED|062c8d85-2983-42f0-b2b0-1bef94cd0d36

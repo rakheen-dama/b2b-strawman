@@ -1,0 +1,54 @@
+
+> portal@0.1.0 build /Users/rakheendama/Projects/2026/b2b-strawman/portal
+> next build
+
+▲ Next.js 16.3.8 (Turbopack)
+✓ Running next.config.ts took 48ms
+- Experiments (use with caution):
+  ⨯ useTypeScriptCli
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.3s
+  Running TypeScript ...
+  Finished TypeScript in 3.5s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/13) ...
+  Generating static pages using 9 workers (3/13) 
+  Generating static pages using 9 workers (6/13) 
+  Generating static pages using 9 workers (9/13) 
+✓ Generating static pages using 9 workers (13/13) in 205ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /_not-found
+├ ƒ /accept/[token]
+├ ○ /activity
+├ ○ /auth/exchange
+├ ○ /deadlines
+├ ○ /home
+├ ○ /invoices
+├ ƒ /invoices/[id]
+├ ƒ /invoices/[id]/payment-cancelled
+├ ƒ /invoices/[id]/payment-success
+├ ○ /login
+├ ○ /matters
+├ ƒ /matters/[id]
+├ ○ /profile
+├ ○ /requests
+├ ƒ /requests/[id]
+├ ○ /settings/notifications
+├ ○ /trust
+└ ƒ /trust/[matterId]
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

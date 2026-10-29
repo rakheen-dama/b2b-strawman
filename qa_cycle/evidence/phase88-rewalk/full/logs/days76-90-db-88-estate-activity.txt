@@ -1,0 +1,27 @@
+# 2026-10-29T20:05:07Z tenant=tenant_5039f2d497cf
++ SELECT event_type, count(*) FROM tenant_5039f2d497cf.audit_events WHERE entity_id='028d3901-e826-44a9-b6a6-b81328365629' OR details->>'project_id'='028d3901-e826-44a9-b6a6-b81328365629' GROUP BY 1 ORDER BY 2 DESC, 1
+task.updated|12
+time_entry.created|9
+document.created|5
+document.uploaded|5
+project_member.added|2
+budget.created|1
+comment.created|1
+document.accessed|1
+document.generated|1
+invoice.approved|1
+invoice.created|1
+invoice.sent|1
+matter.closure.override_used|1
+matter_closure.closed|1
+project.created_from_template|1
+statement.generated|1
+trust_deposit.recorded|1
+trust_payment.approved|1
+trust_payment.recorded|1
+# 2026-10-29T20:05:07Z tenant=tenant_5039f2d497cf
++ SELECT count(*) FROM tenant_5039f2d497cf.audit_events WHERE entity_id='028d3901-e826-44a9-b6a6-b81328365629' OR details->>'project_id'='028d3901-e826-44a9-b6a6-b81328365629'
+47
+# 2026-10-29T20:05:07Z tenant=tenant_5039f2d497cf
++ SELECT count(*) FROM tenant_5039f2d497cf.audit_events
+280

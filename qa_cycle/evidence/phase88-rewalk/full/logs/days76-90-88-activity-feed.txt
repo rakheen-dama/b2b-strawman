@@ -1,0 +1,66 @@
+# 2026-10-29T20:03:4xZ – 20:05:0xZ — W7b, Thandi, /matters/028d3901-e826-44a9-b6a6-b81328365629?tab=activity (Estate Late Peter Moroka, CLOSED)
+# Read-only browser_run_code_unsafe: clicked "Load more" until gone (2 clicks), read every feed paragraph.
+loadMoreClicks: 2, items: 47 (newest first)
+ 1 Thandi Mathebula generated a statement of account "statement-of-account-estate-late-peter-moroka-2026-10-29.pdf"
+ 2 Thandi Mathebula generated document "matter-closure-letter-estate-late-peter-moroka-2026-10-29.pdf" from template "Matter Closure Letter"
+ 3 Thandi Mathebula used an override to close the matter
+ 4 Thandi Mathebula closed the matter
+ 5 Bob Ndlovu approved the trust payment of R12 000,00
+ 6 Thandi Mathebula recorded a trust payment of R12 000,00 (PAY/2026/001)
+ 7 Carol Mokoena logged 1h on task "Distribute estate & file final account"
+ 8 Thandi Mathebula sent fee note INV-0002
+ 9 Thandi Mathebula approved fee note INV-0002
+10 Thandi Mathebula created a draft fee note
+11 Thandi Mathebula changed task "Obtain Letters of Executorship" status to DONE
+12 Thandi Mathebula changed task "Obtain Letters of Executorship" status to IN_PROGRESS
+13 Thandi Mathebula changed task "Report estate to Master of High Court" status to DONE
+14 Thandi Mathebula changed task "Report estate to Master of High Court" status to IN_PROGRESS
+15 Thandi Mathebula uploaded document "Bank statements.pdf"
+16 Thandi Mathebula uploaded document "Inventory draft.pdf"
+17 Thandi Mathebula created document "Bank statements.pdf"
+18 Thandi Mathebula created document "Inventory draft.pdf"
+19 Carol Mokoena logged 1h 30m on task "Inventory of assets & liabilities"
+20 Bob Ndlovu logged 2h 30m on task "Open estate bank account"
+21 Bob Ndlovu logged 3h on task "Advertise for creditors (Gazette + local newspaper)"
+22 Thandi Mathebula logged 2h 30m on task "Obtain Letters of Executorship"
+23 Thandi Mathebula logged 3h on task "Report estate to Master of High Court"
+24 Thandi Mathebula set the matter budget of R80 000,00
+25 Thandi Mathebula downloaded document "Master's appointment.pdf"
+26 Thandi Mathebula commented on document "Master's appointment.pdf"
+27 Thandi Mathebula uploaded document "Master's appointment.pdf"
+28 Thandi Mathebula created document "Master's appointment.pdf"
+29 Thandi Mathebula uploaded document "Master's appointment.pdf"
+30 Thandi Mathebula created document "Master's appointment.pdf"
+31 Carol Mokoena logged 1h on task "Advertise for creditors (Gazette + local newspaper)"
+32 Thandi Mathebula recorded a trust deposit of R50 000,00 (Initial fund for estate admin)
+33 Thandi Mathebula changed task "Obtain death certificate & will" status to DONE
+34 Thandi Mathebula changed task "Obtain death certificate & will" status to IN_PROGRESS
+35 Bob Ndlovu logged 1h 30m on task "Report estate to Master of High Court"
+36 Thandi Mathebula uploaded document "Trust Deed — Moroka Family Trust.pdf"
+37 Thandi Mathebula created document "Trust Deed — Moroka Family Trust.pdf"
+38 Thandi Mathebula logged 3h on task "Obtain death certificate & will"
+39 Thandi Mathebula assigned task "Distribute estate & file final account"
+40 Thandi Mathebula assigned task "Lodge L&D account with Master"
+41 Thandi Mathebula assigned task "Prepare Liquidation & Distribution account"
+42 Thandi Mathebula assigned task "Open estate bank account"
+43 Thandi Mathebula assigned task "Inventory of assets & liabilities"
+44 Thandi Mathebula assigned task "Advertise for creditors (Gazette + local newspaper)"
+45 Thandi Mathebula added a member to the matter team
+46 Thandi Mathebula added a member to the matter team
+47 Thandi Mathebula opened the matter from template "Deceased Estate Administration"
+# DB cross-check: logs/days76-90-db-88-estate-activity.txt — 47 audit_events with entity_id = estate or details.project_id = estate (task.updated 12, time_entry.created 9, document.created 5, document.uploaded 5, project_member.added 2, 14 other types ×1).
+
+# wow-7b — filters on the same surface (individual clicks; filters are view-only UI state):
+# "Filter by actor" listbox options: All actors · Bob Ndlovu · Carol Mokoena · Thandi Mathebula
+# Actor = Bob Ndlovu (entity chip All, 47 loaded) → 4 items:
+   Bob Ndlovu approved the trust payment of R12 000,00
+   Bob Ndlovu logged 2h 30m on task "Open estate bank account"
+   Bob Ndlovu logged 3h on task "Advertise for creditors (Gazette + local newspaper)"
+   Bob Ndlovu logged 1h 30m on task "Report estate to Master of High Court"
+# + entity chip "Time" (reloads page 0 with entityType=TIME_ENTRY, actor Bob kept) → 3 items, no Load more:
+   Bob Ndlovu logged 2h 30m on task "Open estate bank account"
+   Bob Ndlovu logged 3h on task "Advertise for creditors (Gazette + local newspaper)"
+   Bob Ndlovu logged 1h 30m on task "Report estate to Master of High Court"
+# Entity chips (code): frontend/components/activity/activity-filter.tsx:11-16 — All / Tasks TASK / Documents DOCUMENT / Comments COMMENT / Members PROJECT_MEMBER / Time TIME_ENTRY (server-side entityType);
+# actor select is client-side over the loaded items, keyed on actorName: frontend/components/activity/activity-feed-client.tsx:37-59,106-117.
+# Reset to All + All actors before the 88.3 shot.

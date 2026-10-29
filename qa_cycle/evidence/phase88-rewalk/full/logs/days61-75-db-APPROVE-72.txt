@@ -1,0 +1,3 @@
+# 2026-10-29T19:33:38Z tenant=tenant_5039f2d497cf
++ SELECT t.reference, t.status, rm.email AS recorded_by, am.email AS approved_by, t.approved_at FROM tenant_5039f2d497cf.trust_transactions t LEFT JOIN tenant_5039f2d497cf.members rm ON rm.id=t.recorded_by LEFT JOIN tenant_5039f2d497cf.members am ON am.id=t.approved_by WHERE t.reference='PAY/2026/001'
+PAY/2026/001|APPROVED|thandi@mathebula-test.local|bob@mathebula-test.local|2026-10-29 19:33:23.649656+00

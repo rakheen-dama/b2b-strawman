@@ -1,0 +1,40 @@
+# 2026-10-29T19:19:07Z tenant=tenant_5039f2d497cf
++ SELECT id, name, email, phone, customer_type, status, lifecycle_status, lifecycle_status_changed_at, custom_fields, address_line1, city, state_province, postal_code, country FROM tenant_5039f2d497cf.customers WHERE name='Nomvula Khoza'
+a5a35926-eaeb-4e9b-a1f1-50e822f1d846|Nomvula Khoza|nomvula.khoza@email.co.za|+27-83-555-0144|INDIVIDUAL|ACTIVE|ACTIVE|2026-10-29 19:18:26.36448+00|{"id_passport_number": "8807120456082"}|18 Jan Smuts Avenue|Johannesburg|Gauteng|2196|ZA
+# 2026-10-29T19:19:07Z tenant=tenant_5039f2d497cf
++ SELECT ci.status, ci.completed_at, count(cii.*) FILTER (WHERE cii.status='COMPLETED') AS done, count(cii.*) AS items, count(cii.document_id) AS with_doc FROM tenant_5039f2d497cf.checklist_instances ci JOIN tenant_5039f2d497cf.customers c ON c.id=ci.customer_id LEFT JOIN tenant_5039f2d497cf.checklist_instance_items cii ON cii.instance_id=ci.id WHERE c.name='Nomvula Khoza' GROUP BY 1,2
+COMPLETED|2026-10-29 19:18:26.359129+00|9|9|6
+# 2026-10-29T19:19:08Z tenant=tenant_5039f2d497cf
++ SELECT d.file_name, d.scope, d.visibility, d.status, d.customer_id IS NOT NULL AS on_client FROM tenant_5039f2d497cf.documents d WHERE d.file_name LIKE 'Nomvula%'
+Nomvula Khoza — certified FICA pack.pdf|CUSTOMER|INTERNAL|UPLOADED|t
+# 2026-10-29T19:19:08Z tenant=tenant_5039f2d497cf
++ SELECT email, status, customer_id, created_at FROM tenant_5039f2d497cf.portal_contacts WHERE email='nomvula.khoza@email.co.za'
+nomvula.khoza@email.co.za|ACTIVE|a5a35926-eaeb-4e9b-a1f1-50e822f1d846|2026-10-29 19:17:13.683307+00
+# 2026-10-29T19:19:08Z tenant=tenant_5039f2d497cf
++ SELECT email_lower, org_id, tenant_schema FROM portal.portal_contact_directory WHERE email_lower='nomvula.khoza@email.co.za'
+nomvula.khoza@email.co.za|mathebula-partners|tenant_5039f2d497cf
+# 2026-10-29T19:19:08Z tenant=tenant_5039f2d497cf
++ SELECT p.id, p.name, p.status, p.work_type, p.reference_number, c.name AS client FROM tenant_5039f2d497cf.projects p JOIN tenant_5039f2d497cf.customers c ON c.id=p.customer_id WHERE p.reference_number='COL-2026-001'
+0b9656be-244d-48e3-aaf8-80bcb154266e|Nomvula Khoza — Debt Recovery (Mokoena Traders)|ACTIVE|COLLECTIONS|COL-2026-001|Nomvula Khoza
+# 2026-10-29T19:19:08Z tenant=tenant_5039f2d497cf
++ SELECT m.email, pm.project_role, pm.created_at FROM tenant_5039f2d497cf.project_members pm JOIN tenant_5039f2d497cf.members m ON m.id=pm.member_id JOIN tenant_5039f2d497cf.projects p ON p.id=pm.project_id WHERE p.reference_number='COL-2026-001' ORDER BY pm.created_at
+bob@mathebula-test.local|lead|2026-10-29 19:18:50.55512+00
+thandi@mathebula-test.local|member|2026-10-29 19:18:50.555262+00
+# 2026-10-29T19:19:08Z tenant=tenant_5039f2d497cf
++ SELECT t.name, t.status FROM tenant_5039f2d497cf.tasks t JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id WHERE p.reference_number='COL-2026-001' ORDER BY t.sort_order
+# 2026-10-29T19:19:12Z tenant=tenant_5039f2d497cf
++ SELECT string_agg(column_name, ',' ORDER BY ordinal_position) FROM information_schema.columns WHERE table_schema='tenant_5039f2d497cf' AND table_name='tasks'
+id,project_id,title,description,status,priority,type,assignee_id,created_by,due_date,version,created_at,updated_at,customer_visible,custom_fields,applied_field_groups,completed_at,completed_by,cancelled_at,cancelled_by,recurrence_rule,recurrence_end_date,parent_task_id,estimated_hours
+# 2026-10-29T19:19:12Z tenant=tenant_5039f2d497cf
++ SELECT t.title, t.status FROM tenant_5039f2d497cf.tasks t JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id WHERE p.reference_number='COL-2026-001' ORDER BY t.sort_order
+# 2026-10-29T19:19:16Z tenant=tenant_5039f2d497cf
++ SELECT t.title, t.status FROM tenant_5039f2d497cf.tasks t JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id WHERE p.reference_number='COL-2026-001' ORDER BY t.created_at, t.title
+Client intake & verify claim documentation|OPEN
+Skip tracing / debtor address verification|OPEN
+Letter of demand -- Section 129 notice|OPEN
+Issue summons|OPEN
+Apply for default judgment|OPEN
+Issue warrant of execution -- movables|OPEN
+Issue warrant of execution -- immovables (if applicable)|OPEN
+Sale in execution / asset attachment|OPEN
+Close matter & report to client|OPEN

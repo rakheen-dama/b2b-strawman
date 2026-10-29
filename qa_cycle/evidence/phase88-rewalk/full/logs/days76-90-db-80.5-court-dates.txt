@@ -1,0 +1,3 @@
+# 2026-10-29T19:52:35Z tenant=tenant_5039f2d497cf
++ SELECT cd.id, p.name, cd.date_type, cd.scheduled_date, cd.scheduled_time, cd.court_name, cd.status, m.email AS created_by, current_date AS today, cd.scheduled_date - current_date AS days_out FROM tenant_5039f2d497cf.court_dates cd JOIN tenant_5039f2d497cf.projects p ON p.id=cd.project_id LEFT JOIN tenant_5039f2d497cf.members m ON m.id=cd.created_by
+fcbd7e7b-ebe3-41f1-9485-3e42efc9cd01|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|CASE_MANAGEMENT|2026-12-13|10:00:00|Gauteng High Court|SCHEDULED|bob@mathebula-test.local|2026-10-29|45

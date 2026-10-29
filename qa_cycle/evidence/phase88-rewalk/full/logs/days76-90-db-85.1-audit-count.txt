@@ -1,0 +1,3 @@
+# 2026-10-29T19:53:22Z tenant=tenant_5039f2d497cf
++ SELECT count(*), min(occurred_at), max(occurred_at) FROM tenant_5039f2d497cf.audit_events
+276|2026-10-29 13:47:23.345482+00|2026-10-29 19:44:49.093634+00

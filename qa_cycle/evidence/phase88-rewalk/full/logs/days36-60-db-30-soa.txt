@@ -1,0 +1,12 @@
+# 2026-10-29T18:51:51Z tenant=tenant_5039f2d497cf
++ SELECT id, file_name, primary_entity_type, primary_entity_id, document_id, generated_at FROM tenant_5039f2d497cf.generated_documents ORDER BY generated_at
+c630f2b1-afab-44ff-9e61-e69c39f9f59b|engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|d42337ad-2c76-4a79-ac75-e3d9f4d36881|dd8da96e-43f0-4ab7-967e-964be190188a|2026-10-29 14:31:27.045919+00
+168fe298-c279-4908-b76d-ce11d65e9af1|offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf|PROJECT|aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|8a8599ad-f526-47c6-8d2e-bb9022771519|2026-10-29 15:18:57.703638+00
+c9d3482f-36c7-44b0-b203-f90ac0da06f8|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|d42337ad-2c76-4a79-ac75-e3d9f4d36881|ebfe96bf-df4a-4054-a444-9ab8b8710ad4|2026-10-29 18:49:29.771841+00
++ SELECT id, file_name, scope, visibility, source, status, project_id, created_at FROM tenant_5039f2d497cf.documents WHERE file_name LIKE 'statement-of-account%'
+ebfe96bf-df4a-4054-a444-9ab8b8710ad4|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|PORTAL|MANUAL|UPLOADED|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 18:49:29.772718+00
++ SELECT count(*) FROM portal.portal_documents WHERE org_id='mathebula-partners'
+1
++ SELECT occurred_at, event_type, entity_type, entity_id FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > now() - interval '15 minutes' ORDER BY occurred_at
+2026-10-29 18:49:29.775056+00|statement.generated|generated_document|c9d3482f-36c7-44b0-b203-f90ac0da06f8
+mailpit total: 10

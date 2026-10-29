@@ -1,0 +1,34 @@
+# INFRA-10 swap-in 2026-10-29T20:47:09Z
+
+=== svc.sh stop portal ===
+
+  portal: stopping (PID 62740)...
+  portal: stopped
+
+Done.
+:3002 free
+2026-10-29T20:47:11Z
+build exit 0
+2026-10-29T20:47:23Z
+:8080 files        4  :8081 files        0
+2026-10-29T20:47:30Z
+:3002/login 200
+COMMAND   PID        USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+node    65083 rakheendama   16u  IPv6 0x5d083da7c6d92579      0t0  TCP *:3002 (LISTEN)
+  PID  PPID ELAPSED COMMAND
+65083 65045   00:02 next-server (v16.3.8)    
+  PID  PPID ELAPSED COMMAND
+65045 65044   00:02 node /opt/homebrew/bin/pnpm run start
+p65083
+fcwd
+n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+
+> portal@0.1.0 start /Users/rakheendama/Projects/2026/b2b-strawman/portal
+> next start --port 3002
+
+▲ Next.js 16.3.8
+- Local:         http://localhost:3002
+- Network:       http://192.168.0.112:3002
+✓ Ready in 98ms
+✓ Running next.config.ts took 27ms
+⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.

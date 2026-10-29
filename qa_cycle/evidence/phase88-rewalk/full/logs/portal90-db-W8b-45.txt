@@ -1,0 +1,14 @@
+# 2026-10-29T20:50:36Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, customer_name, total, amount_paid, paid_at, updated_at FROM tenant_5039f2d497cf.invoices WHERE invoice_number='INV-0002'
+2d84a43c-3e90-4455-b84e-32ae0c819915|INV-0002|PAID|Moroka Family Trust|36575.75|36575.75|2026-10-29 20:48:53.315391+00|2026-10-29 20:48:53.315391+00
++ SELECT invoice_id, provider_slug, status, amount, payment_method, payment_reference, created_at, updated_at FROM tenant_5039f2d497cf.payment_events WHERE invoice_id='2d84a43c-3e90-4455-b84e-32ae0c819915' ORDER BY created_at
+2d84a43c-3e90-4455-b84e-32ae0c819915|mock|CREATED|36575.75|||2026-10-29 19:03:48.514255+00|2026-10-29 19:03:48.514255+00
+2d84a43c-3e90-4455-b84e-32ae0c819915|mock|COMPLETED|36575.75|CARD|MOCK-PAY-acbe1771-003d-4af6-a804-2263214bf24a|2026-10-29 20:48:53.31535+00|2026-10-29 20:48:53.31535+00
++ SELECT occurred_at, event_type, entity_type, actor_type, details FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > now() - interval '10 minutes' ORDER BY occurred_at
+2026-10-29 20:48:53.328603+00|invoice.paid|invoice|SYSTEM|{"total": "36575.75", "amount": "36575.75", "paid_at": "2026-10-29T20:48:53.315391Z", "actor_name": "System", "project_id": "028d3901-e826-44a9-b6a6-b81328365629", "balance_due": "0.00", "customer_id": "acd36ca9-adc9-4a58-89bf-d36016febf49", "invoice_number": "INV-0002", "payment_method": "CARD", "payment_reference": "MOCK-PAY-acbe1771-003d-4af6-a804-2263214bf24a"}
+2026-10-29 20:48:53.349865+00|payment.completed|invoice|SYSTEM|{"amount": "36575.75", "provider": "mock", "actor_name": "System", "session_id": "MOCK-SESS-[REDACTED]", "payment_reference": "MOCK-PAY-acbe1771-003d-4af6-a804-2263214bf24a"}
+2026-10-29 20:48:53.353752+00|portal.invoice.paid|invoice|PORTAL_CONTACT|{"amount": "36575.75", "currency": "ZAR", "provider": "mock", "actor_name": "System", "project_id": "028d3901-e826-44a9-b6a6-b81328365629", "customer_id": "acd36ca9-adc9-4a58-89bf-d36016febf49", "invoice_number": "INV-0002", "payment_reference": "MOCK-PAY-acbe1771-003d-4af6-a804-2263214bf24a"}
++ SELECT id, invoice_number, status, total FROM portal.portal_invoices WHERE org_id='mathebula-partners' ORDER BY invoice_number
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|PAID|4585.00
+2d84a43c-3e90-4455-b84e-32ae0c819915|INV-0002|PAID|36575.75
+fc730aab-5f40-4e52-b919-a233fe3fe800|INV-0003|SENT|7058.13

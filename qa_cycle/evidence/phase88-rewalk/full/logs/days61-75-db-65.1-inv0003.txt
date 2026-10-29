@@ -1,0 +1,15 @@
+# 2026-10-29T19:25:59Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, customer_name, issue_date, due_date, subtotal, tax_amount, total, amount_paid, paid_at, payment_url IS NOT NULL AS has_pay_url FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|PAID|Sipho Dlamini|2026-10-29|2026-11-28|4150.00|435.00|4585.00|4585.00|2026-10-29 19:11:47.237862+00|f
+2d84a43c-3e90-4455-b84e-32ae0c819915|INV-0002|SENT|Moroka Family Trust|2026-10-29|2026-11-28|31805.00|4770.75|36575.75|0.00||t
+cd0fc2eb-217d-4ece-aea2-835c7f38784e||DRAFT|Lerato Mthembu|||9500.00|1425.00|10925.00|0.00||f
+fc730aab-5f40-4e52-b919-a233fe3fe800|INV-0003|SENT|Nomvula Khoza|2026-10-29|2026-11-28|6137.50|920.63|7058.13|0.00||t
+# 2026-10-29T19:25:59Z tenant=tenant_5039f2d497cf
++ SELECT i.invoice_number, l.sort_order, l.description, l.quantity, l.unit_price, l.amount, l.tax_rate_percent, l.tax_amount FROM tenant_5039f2d497cf.invoice_lines l JOIN tenant_5039f2d497cf.invoices i ON i.id=l.invoice_id WHERE i.invoice_number='INV-0003' ORDER BY l.sort_order
+INV-0003|0|2026-10-29 · Bob Ndlovu · Drafted summons and particulars for debt claim|2.0000|1200.00|2400.00|15.00|360.00
+INV-0003|1|2026-10-29 · Carol Mokoena · Prepared default judgment application|1.5000|550.00|825.00|15.00|123.75
+INV-0003|2|2026-10-29 · Carol Mokoena · Researched debtor assets for attachment|0.7500|550.00|412.50|15.00|61.88
+INV-0003|3|2026-10-29 · Thandi Mathebula · Reviewed debtor account and settled s129 demand letter|1.0000|2500.00|2500.00|15.00|375.00
+# 2026-10-29T19:25:59Z tenant=tenant_5039f2d497cf
++ SELECT count(*) FILTER (WHERE invoice_id IS NOT NULL), count(*) FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='0b9656be-244d-48e3-aaf8-80bcb154266e'
+4|4

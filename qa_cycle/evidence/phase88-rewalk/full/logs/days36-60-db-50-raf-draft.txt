@@ -1,0 +1,9 @@
+# 2026-10-29T19:11:19Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, customer_name, subtotal, tax_amount, total FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|SENT|Sipho Dlamini|4150.00|435.00|4585.00
+2d84a43c-3e90-4455-b84e-32ae0c819915|INV-0002|SENT|Moroka Family Trust|31805.00|4770.75|36575.75
+cd0fc2eb-217d-4ece-aea2-835c7f38784e||DRAFT|Lerato Mthembu|9500.00|1425.00|10925.00
++ SELECT l.line_type, l.sort_order, l.description, l.quantity, l.unit_price, l.amount, l.tax_amount FROM tenant_5039f2d497cf.invoice_lines l WHERE l.invoice_id='cd0fc2eb-217d-4ece-aea2-835c7f38784e' ORDER BY l.sort_order
+TIME|0|2026-10-29 · Bob Ndlovu · Medical records collation|4.0000|1200.00|4800.00|720.00
+TIME|1|2026-10-29 · Bob Ndlovu · Expert witness statements|3.0000|1200.00|3600.00|540.00
+TIME|2|2026-10-29 · Carol Mokoena · Legal research — RAF tariff|2.0000|550.00|1100.00|165.00

@@ -1,0 +1,31 @@
+# 2026-10-29T18:48:16Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, total FROM tenant_5039f2d497cf.invoices ORDER BY created_at
++ SELECT id, category, amount, approval_status, billing_status, payment_source, invoice_line_id FROM tenant_5039f2d497cf.legal_disbursements ORDER BY created_at
+30e55eca-d598-4cdd-9171-ab938e9a911e|SHERIFF_FEES|750.00|APPROVED|UNBILLED|OFFICE_ACCOUNT|
+adee383d-e115-451a-b144-9e7b04663685|DEEDS_OFFICE_FEES|1250.00|APPROVED|UNBILLED|TRUST_ACCOUNT|
++ SELECT p.name, m.email, te.duration_minutes, te.billing_rate_snapshot, te.description, te.invoice_id IS NOT NULL AS billed FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id ORDER BY te.created_at
+Sipho Dlamini v. Standard Bank (civil)|bob@mathebula-test.local|90|1200.00|Drafting particulars of claim|f
+Sipho Dlamini v. Standard Bank (civil)|carol@mathebula-test.local|120|550.00|Legal research — precedent review|f
+Estate Late Peter Moroka|thandi@mathebula-test.local|180|2500.00|Initial consultation with heirs + document gathering|f
+Estate Late Peter Moroka|bob@mathebula-test.local|90|1200.00|Master of High Court filing preparation|f
+Estate Late Peter Moroka|carol@mathebula-test.local|60|550.00|Drafting Section 29 advertisement notice|f
+Estate Late Peter Moroka|thandi@mathebula-test.local|180|2500.00|Reporting estate to the Master — J294 + inventory|f
+Estate Late Peter Moroka|thandi@mathebula-test.local|150|2500.00|Letters of Executorship application|f
+Estate Late Peter Moroka|bob@mathebula-test.local|180|1200.00|Section 29 notice — Gazette + newspaper placement|f
+Estate Late Peter Moroka|bob@mathebula-test.local|150|1200.00|Estate bank account opening documents|f
+Estate Late Peter Moroka|carol@mathebula-test.local|90|550.00|Drafting inventory of assets & liabilities|f
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|bob@mathebula-test.local|240|1200.00|Medical records collation|f
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|bob@mathebula-test.local|180|1200.00|Expert witness statements|f
+Lerato Mthembu — RAF Claim (MVA 2025-11-03)|carol@mathebula-test.local|120|550.00|Legal research — RAF tariff|f
++ SELECT id, file_name, primary_entity_type, document_id IS NOT NULL, generated_at FROM tenant_5039f2d497cf.generated_documents ORDER BY generated_at
+c630f2b1-afab-44ff-9e61-e69c39f9f59b|engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 14:31:27.045919+00
+168fe298-c279-4908-b76d-ce11d65e9af1|offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf|PROJECT|t|2026-10-29 15:18:57.703638+00
++ SELECT count(*) FROM portal.portal_documents WHERE org_id='mathebula-partners'
+0
++ SELECT count(*), max(occurred_at) FROM tenant_5039f2d497cf.audit_events
+197|2026-10-29 15:37:40.738717+00
++ SELECT id, name, status, created_at FROM tenant_5039f2d497cf.projects ORDER BY created_at
+d42337ad-2c76-4a79-ac75-e3d9f4d36881|Sipho Dlamini v. Standard Bank (civil)|ACTIVE|2026-10-29 14:21:19.672611+00
+028d3901-e826-44a9-b6a6-b81328365629|Estate Late Peter Moroka|ACTIVE|2026-10-29 15:03:38.858151+00
+aa61195f-7262-4c2a-bf3d-52b1d0cb1d0f|Khumalo Property Holdings — Erf 1234 Sandton Transfer|ACTIVE|2026-10-29 15:17:05.911972+00
+5c42e002-1218-48ac-9d74-a7e3aeff13e6|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|ACTIVE|2026-10-29 15:30:17.154992+00

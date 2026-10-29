@@ -1,0 +1,27 @@
+# 2026-10-29T20:40:45Z P-7.1 digest search
+{"total":0}
+59iKpM2sQrTS8H9sStaUG7	2026-10-29T20:37:13.225Z	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners
+jE7fJPHjJTMCzHK7sTmMc2	2026-10-29T20:30:34.633Z	sipho.dlamini@email.co.za	Information request REQ-0001 from Mathebula & Partners
+eNAExg95qJRr3GH4M77Hik	2026-10-29T19:42:44.575Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+V3jqAKMKSBZctH3RUbEJ5X	2026-10-29T19:33:23.752Z	moroka.trust@email.co.za	Mathebula & Partners: Trust account activity
+bdm3MjpDgj9RNXdRwqmHkT	2026-10-29T19:27:09.26Z	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners
+RBSMMPsErGDX9t99kZwjST	2026-10-29T19:25:46.324Z	nomvula.khoza@email.co.za	Fee Note INV-0003 from Mathebula & Partners
+4EHa3SRfspVnUxc4RNmJ9S	2026-10-29T19:03:48.743Z	moroka.trust@email.co.za	Fee Note INV-0002 from Mathebula & Partners
+9aX7RFWMCyBQLGF6oadfDw	2026-10-29T18:55:40.05Z	sipho.dlamini@email.co.za	Fee Note INV-0001 from Mathebula & Partners
+2eLfLXG6siubpr6BZYZmEC	2026-10-29T15:19:34.232Z	khumalo.holdings@email.co.za	Mathebula & Partners -- Please review offer to purchase for acceptance: offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf
+9x7Bvomc5iozoQ84iqA98X	2026-10-29T15:08:12.092Z	moroka.trust@email.co.za	Mathebula & Partners: Trust account activity
+nDLyma4n2diVpufTjJVFDz	2026-10-29T14:48:00.288Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+HneqAesGSSPW6o56bgS5uG	2026-10-29T14:47:05.978Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity
+42gqzT8eeBNS9eYUpMTkJW	2026-10-29T14:35:02.733Z	sipho.dlamini@email.co.za	Confirmed: You have accepted engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf
+8KMEefXcNrHvxHXDpkZLT6	2026-10-29T14:32:59.955Z	sipho.dlamini@email.co.za	Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf
+d3nSx8DmRagLZxJL3SJTdP	2026-10-29T13:50:14.875Z	carol@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+7DA8LpsXnky4Htky8EtxDu	2026-10-29T13:50:11.726Z	bob@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+S3TJcWLLFayunZhfL6cEa9	2026-10-29T13:47:23.877Z	thandi@mathebula-test.local	Invitation to join the Mathebula & Partners organization
+UJ3HXoAJ33jC9UjKzZs5hQ	2026-10-29T13:45:34.317Z	thandi@mathebula-test.local	Your Kazi verification code
+# 2026-10-29T20:41Z P-21.1 Sipho trust-activity emails (Mailpit search to:sipho.dlamini@email.co.za)
+HneqAesGSSPW6o56bgS5uG	2026-10-29T14:47:05.978Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity	(body: Date 29 Oct 2026 · Type DEPOSIT · Amount R 5 000,00 · "View trust ledger" → http://localhost:3002/trust/d42337ad-2c76-4a79-ac75-e3d9f4d36881?orgId=mathebula-partners)
+nDLyma4n2diVpufTjJVFDz	2026-10-29T14:48:00.288Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity	(deeds payment)
+eNAExg95qJRr3GH4M77Hik	2026-10-29T19:42:44.575Z	sipho.dlamini@email.co.za	Mathebula & Partners: Trust account activity	(W6c refund approval)
+2026-10-29T20:47:47.945Z	dqaczwrbTuaX5m7YhLBNPn	moroka.trust@email.co.za	Your portal access link from Mathebula & Partners (W8b P-45 sign-in)
+2026-10-29T20:52:14.536Z	2fiFJFA35NKQdrWge3Qpie	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners (W8b P-60 sign-in)
+2026-10-29T20:57:34.34Z	2gpDBUkRFfm5aWL8rQiw3b	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners (W8b P-CP85.2 re-sign-in)

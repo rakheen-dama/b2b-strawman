@@ -1,0 +1,18 @@
+# 2026-10-29T19:04:54Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, issue_date, due_date, subtotal, tax_amount, total, amount_paid, payment_url IS NOT NULL AS has_pay_url FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|SENT|2026-10-29|2026-11-28|4150.00|435.00|4585.00|0.00|t
+2d84a43c-3e90-4455-b84e-32ae0c819915|INV-0002|SENT|2026-10-29|2026-11-28|31805.00|4770.75|36575.75|0.00|t
++ SELECT id, file_name, primary_entity_type, primary_entity_id, document_id, generated_at FROM tenant_5039f2d497cf.generated_documents WHERE generated_at > now() - interval '15 minutes' ORDER BY generated_at
+27e38a7b-9848-4fc3-99fe-d6b67d985254|fee-note-inv-0001-2026-10-29.pdf|INVOICE|4a10f00a-600b-42d8-944a-a4f1697b4c7e||2026-10-29 18:55:39.806471+00
+52ab06fa-8569-46ef-b7c9-d884d665c6a4|fee-note-inv-0002-2026-10-29.pdf|INVOICE|2d84a43c-3e90-4455-b84e-32ae0c819915||2026-10-29 19:03:48.679945+00
+21a444ac-3bc5-4120-9ff9-8839f9467712|fee-note-inv-0002-2026-10-29.pdf|INVOICE|2d84a43c-3e90-4455-b84e-32ae0c819915|2cbeccba-93d8-4f65-93e2-065bdcf2b1e0|2026-10-29 19:04:33.946565+00
++ SELECT d.id, d.file_name, d.scope, d.visibility, d.status, d.customer_id, d.project_id FROM tenant_5039f2d497cf.documents d WHERE d.created_at > now() - interval '15 minutes'
+2cbeccba-93d8-4f65-93e2-065bdcf2b1e0|fee-note-inv-0002-2026-10-29.pdf|ORG|INTERNAL|UPLOADED||
++ SELECT occurred_at, event_type, entity_type, entity_id FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > '2026-10-29 19:00:00' ORDER BY occurred_at
+2026-10-29 19:02:06.018019+00|invoice.created|invoice|2d84a43c-3e90-4455-b84e-32ae0c819915
+2026-10-29 19:02:46.844762+00|invoice.updated|invoice|2d84a43c-3e90-4455-b84e-32ae0c819915
+2026-10-29 19:03:40.829468+00|invoice.approved|invoice|2d84a43c-3e90-4455-b84e-32ae0c819915
+2026-10-29 19:03:48.514475+00|payment.session.created|invoice|2d84a43c-3e90-4455-b84e-32ae0c819915
+2026-10-29 19:03:48.517259+00|invoice.sent|invoice|2d84a43c-3e90-4455-b84e-32ae0c819915
+2026-10-29 19:03:48.681882+00|document.generated|generated_document|52ab06fa-8569-46ef-b7c9-d884d665c6a4
+2026-10-29 19:04:33.948224+00|document.generated|generated_document|21a444ac-3bc5-4120-9ff9-8839f9467712

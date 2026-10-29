@@ -1,0 +1,25 @@
+# 2026-10-29T19:21:25Z tenant=tenant_5039f2d497cf
++ SELECT t.title, m.email, te.duration_minutes, te.billing_rate_snapshot, te.cost_rate_snapshot, te.billable, round(te.duration_minutes*te.billing_rate_snapshot/60,2) AS amount, te.description, te.invoice_id IS NOT NULL AS billed, te.created_at FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='0b9656be-244d-48e3-aaf8-80bcb154266e' ORDER BY te.created_at
+Letter of demand -- Section 129 notice|thandi@mathebula-test.local|60|2500.00|1000.00|t|2500.00|Reviewed debtor account and settled s129 demand letter|f|2026-10-29 19:20:15.972887+00
+Issue summons|bob@mathebula-test.local|120|1200.00|500.00|t|2400.00|Drafted summons and particulars for debt claim|f|2026-10-29 19:20:37.48437+00
+Apply for default judgment|carol@mathebula-test.local|90|550.00|200.00|t|825.00|Prepared default judgment application|f|2026-10-29 19:20:58.725239+00
+Sale in execution / asset attachment|carol@mathebula-test.local|45|550.00|200.00|t|412.50|Researched debtor assets for attachment|f|2026-10-29 19:21:08.022126+00
+# 2026-10-29T19:21:26Z tenant=tenant_5039f2d497cf
++ SELECT sum(te.duration_minutes) AS minutes, sum(round(te.duration_minutes*te.billing_rate_snapshot/60,2)) AS revenue, sum(round(te.duration_minutes*te.cost_rate_snapshot/60,2)) AS cost, count(*) AS entries, count(DISTINCT te.member_id) AS contributors FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='0b9656be-244d-48e3-aaf8-80bcb154266e'
+315|6137.50|2450.00|4|3
+# 2026-10-29T19:21:26Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type, actor_type, details->>'resource' AS res FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > '2026-10-29 19:20:00+00' AND event_type LIKE 'security.%' ORDER BY occurred_at
+2026-10-29 19:20:50.030681+00|security.access_denied|security|USER|
+2026-10-29 19:20:59.063713+00|security.access_denied|security|USER|
+2026-10-29 19:21:08.323807+00|security.access_denied|security|USER|
+2026-10-29 19:21:14.331585+00|security.access_denied|security|USER|
+# 2026-10-29T19:21:38Z tenant=tenant_5039f2d497cf
++ SELECT a.occurred_at, a.event_type, m.email, a.details FROM tenant_5039f2d497cf.audit_events a LEFT JOIN tenant_5039f2d497cf.members m ON m.id=a.actor_id WHERE a.occurred_at > '2026-10-29 19:20:00+00' AND a.event_type LIKE 'security.%' ORDER BY a.occurred_at
+2026-10-29 19:20:50.030681+00|security.access_denied|carol@mathebula-test.local|{"path": "/api/matters/0b9656be-244d-48e3-aaf8-80bcb154266e/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to matter leads, org admins, and org owners", "actor_name": "Carol Mokoena"}
+2026-10-29 19:20:59.063713+00|security.access_denied|carol@mathebula-test.local|{"path": "/api/matters/0b9656be-244d-48e3-aaf8-80bcb154266e/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to matter leads, org admins, and org owners", "actor_name": "Carol Mokoena"}
+2026-10-29 19:21:08.323807+00|security.access_denied|carol@mathebula-test.local|{"path": "/api/matters/0b9656be-244d-48e3-aaf8-80bcb154266e/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to matter leads, org admins, and org owners", "actor_name": "Carol Mokoena"}
+2026-10-29 19:21:14.331585+00|security.access_denied|carol@mathebula-test.local|{"path": "/api/matters/0b9656be-244d-48e3-aaf8-80bcb154266e/time-summary/by-member", "method": "GET", "reason": "Per-member time breakdown is restricted to matter leads, org admins, and org owners", "actor_name": "Carol Mokoena"}
+# 2026-10-29T19:21:38Z tenant=tenant_5039f2d497cf
++ SELECT count(*) FROM tenant_5039f2d497cf.audit_events
+241
+mailpit: 12

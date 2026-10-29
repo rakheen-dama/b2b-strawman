@@ -1,0 +1,26 @@
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|1|1|2|2026-10-29 20:30:34.58198+00
+# W8a magic-link ledger (links redacted)
+# 2026-10-29T20:30:34Z sipho.dlamini@email.co.za — token created as a side effect of PRE-P-request "Send Now" (information-request email carries a "View Request" CTA → http://localhost:3002/auth/exchange?[REDACTED] InformationRequestEmailService.java:63-67) — Mailpit jE7fJPHjJTMCzHK7sTmMc2 — NOT a walker magic-link request; counts against the per-contact DB cap (3 / 5 min)
+# 2026-10-29T20:37:10Z pre-request budget check
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|0|1|2|2026-10-29 20:30:34.58198+00
+59iKpM2sQrTS8H9sStaUG7	2026-10-29T20:37:13.225Z	sipho.dlamini@email.co.za	Your portal access link from Mathebula & Partners
+jE7fJPHjJTMCzHK7sTmMc2	2026-10-29T20:30:34.633Z	sipho.dlamini@email.co.za	Information request REQ-0001 from Mathebula & Partners
+# 2026-10-29T20:37:13Z sipho.dlamini@email.co.za — WALKER REQUEST (P-0.1b): /login Send Magic Link → POST /portal/auth/request-link 200 (browser network panel) → Mailpit 59iKpM2sQrTS8H9sStaUG7 "Your portal access link from Mathebula & Partners"
+
+# W8b
+2026-10-29T20:47:47Z  moroka.trust@email.co.za  (pre-check 20:46:56Z: Moroka 0 tokens; logs/portal90-db-W8b-pre.txt)  Send Magic Link on bare /login (Day 45, ruling O-3)  Mailpit dqaczwrbTuaX5m7YhLBNPn "Your portal access link from Mathebula & Partners"  link [REDACTED]
+# 2026-10-29T20:52:10Z tenant=tenant_5039f2d497cf
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|0|1|3|2026-10-29 20:37:13.173354+00
+moroka.trust@email.co.za|1|1|1|2026-10-29 20:47:47.856825+00
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=24379491)	100%; charged; 0:00 remaining present: true
+      "AppleClamshellState" = No
+2026-10-29T20:52:14Z  sipho.dlamini@email.co.za  (pre-check 20:52:10Z: Sipho last5m 0, last15m 1)  Send Magic Link on bare /login (Day 60 sign-in)  Mailpit 2fiFJFA35NKQdrWge3Qpie  link [REDACTED]; dev-echo link on /login not clicked
+# 2026-10-29T20:57:30Z tenant=tenant_5039f2d497cf
++ SELECT pc.email, count(*) FILTER (WHERE mlt.created_at > now() - interval '5 minutes') AS last5m, count(*) FILTER (WHERE mlt.created_at > now() - interval '15 minutes') AS last15m, count(*) AS total, max(mlt.created_at) FROM tenant_5039f2d497cf.magic_link_tokens mlt JOIN tenant_5039f2d497cf.portal_contacts pc ON pc.id = mlt.portal_contact_id GROUP BY 1
+sipho.dlamini@email.co.za|0|1|4|2026-10-29 20:52:14.483069+00
+moroka.trust@email.co.za|0|1|1|2026-10-29 20:47:47.856825+00
+2026-10-29T20:57:34Z  sipho.dlamini@email.co.za  (pre-check 20:57:30Z: Sipho last5m 0, last15m 1)  Send Magic Link on /login?redirectTo=%2Fsettings%2Fnotifications after Logout (P-CP85.2 re-sign-in)  Mailpit 2gpDBUkRFfm5aWL8rQiw3b  link [REDACTED]

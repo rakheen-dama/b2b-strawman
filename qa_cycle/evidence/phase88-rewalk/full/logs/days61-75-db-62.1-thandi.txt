@@ -1,0 +1,3 @@
+# 2026-10-29T19:20:20Z tenant=tenant_5039f2d497cf
++ SELECT t.title, m.email, te.duration_minutes, te.billing_rate_snapshot, te.cost_rate_snapshot, te.billable, te.description, te.created_at FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id WHERE t.project_id='0b9656be-244d-48e3-aaf8-80bcb154266e' ORDER BY te.created_at
+Letter of demand -- Section 129 notice|thandi@mathebula-test.local|60|2500.00|1000.00|t|Reviewed debtor account and settled s129 demand letter|2026-10-29 19:20:15.972887+00

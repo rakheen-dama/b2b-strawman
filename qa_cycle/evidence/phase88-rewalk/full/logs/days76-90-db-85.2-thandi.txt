@@ -1,0 +1,66 @@
+# 2026-10-29T19:53:55Z tenant=tenant_5039f2d497cf
++ SELECT actor_id, actor_type, count(*) FROM tenant_5039f2d497cf.audit_events GROUP BY 1,2 ORDER BY 3 DESC
+09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|USER|158
+bd26a345-8cff-4745-8c20-55a1f5bc4786|USER|79
+13c678b8-4e22-411e-8be0-1e5c90a01e43|USER|26
+|SYSTEM|6
+09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|SYSTEM|4
+e118da4e-e11f-4bea-964a-6b63f17fee66|PORTAL_CONTACT|2
+4e9f2986-74ab-4570-aa4e-0cf44cfcca86|PORTAL_CONTACT|1
+# 2026-10-29T19:53:55Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type, entity_id, actor_type, source FROM tenant_5039f2d497cf.audit_events WHERE actor_id='09e0e796-37a0-4fe5-8e36-df92f7d1b3fd' AND actor_type<>'USER' ORDER BY occurred_at
+2026-10-29 18:55:39.657306+00|payment.session.created|invoice|4a10f00a-600b-42d8-944a-a4f1697b4c7e|SYSTEM|SYSTEM
+2026-10-29 19:03:48.514475+00|payment.session.created|invoice|2d84a43c-3e90-4455-b84e-32ae0c819915|SYSTEM|SYSTEM
+2026-10-29 19:11:47.236534+00|payment.session.cancelled|invoice|4a10f00a-600b-42d8-944a-a4f1697b4c7e|SYSTEM|SYSTEM
+2026-10-29 19:25:45.929765+00|payment.session.created|invoice|fc730aab-5f40-4e52-b919-a233fe3fe800|SYSTEM|SYSTEM
+# 2026-10-29T19:53:56Z tenant=tenant_5039f2d497cf
++ SELECT event_type, count(*) FROM tenant_5039f2d497cf.audit_events WHERE actor_id='09e0e796-37a0-4fe5-8e36-df92f7d1b3fd' GROUP BY 1 ORDER BY 2 DESC
+task.updated|30
+checklist.item.completed|30
+document.created|8
+document.uploaded|8
+customer.lifecycle.transitioned|6
+document.generated|6
+time_entry.created|4
+invoice.created|4
+cost_rate.created|3
+invoice.approved|3
+project.created_from_template|3
+checklist.instance.created|3
+project_member.added|3
+invoice.sent|3
+billing_rate.created|3
+payment.session.created|3
+checklist.instance.completed|3
+customer.created|3
+org_settings.updated|2
+comment.created|2
+org_settings.tax_configured|2
+document.accessed|2
+trust_deposit.recorded|2
+conflict_check.performed|2
+invitation.created|2
+statement.generated|2
+acceptance.created|1
+org_settings.logo_uploaded|1
+trust_payment.recorded|1
+trust_payment.approved|1
+acceptance.sent|1
+trust_account.created|1
+document.generated_with_clauses|1
+invoice.updated|1
+org_settings.letterhead_updated|1
+project.updated|1
+trust_refund.recorded|1
+payment.session.cancelled|1
+invoice.paid|1
+disbursement.written_off|1
+disbursement.approved|1
+matter_closure.closed|1
+lpff_rate.created|1
+disbursement.billed|1
+project.completed|1
+budget.created|1
+# 2026-10-29T19:53:56Z tenant=tenant_5039f2d497cf
++ SELECT min(occurred_at), max(occurred_at) FROM tenant_5039f2d497cf.audit_events WHERE actor_id='09e0e796-37a0-4fe5-8e36-df92f7d1b3fd'
+2026-10-29 13:50:11.502586+00|2026-10-29 19:44:49.093634+00

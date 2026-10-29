@@ -1,0 +1,34 @@
+# 2026-10-29T19:44:33Z tenant=tenant_5039f2d497cf
++ SELECT id, name, status, completed_at, closed_at, retention_clock_started_at, retention_ends_on FROM tenant_5039f2d497cf.projects WHERE id='d42337ad-2c76-4a79-ac75-e3d9f4d36881'
+d42337ad-2c76-4a79-ac75-e3d9f4d36881|Sipho Dlamini v. Standard Bank (civil)|CLOSED|2026-10-29 19:40:40.792831+00|2026-10-29 19:44:16.89476+00|2026-10-29 19:44:16.89476|2031-10-29
+# 2026-10-29T19:44:33Z tenant=tenant_5039f2d497cf
++ SELECT id, project_id, closed_by, closed_at, reason, notes, override_used, override_justification, closure_letter_document_id, gate_report->>'allPassed' AS all_passed, jsonb_array_length(gate_report->'gates') AS gates FROM tenant_5039f2d497cf.matter_closure_log
+1f026a7c-ecfd-4062-a130-dced9700ea50|d42337ad-2c76-4a79-ac75-e3d9f4d36881|09e0e796-37a0-4fe5-8e36-df92f7d1b3fd|2026-10-29 19:44:16.89476+00|CONCLUDED||f||271971e1-6889-4d0b-8ba0-522b3dc67b76|true|9
+# 2026-10-29T19:44:33Z tenant=tenant_5039f2d497cf
++ SELECT string_agg(column_name, ',' ORDER BY ordinal_position) FROM information_schema.columns WHERE table_schema='tenant_5039f2d497cf' AND table_name='matter_closure_log'
+id,project_id,closed_by,closed_at,reason,notes,gate_report,override_used,override_justification,closure_letter_document_id,reopened_at,reopened_by,reopen_notes,created_at
+# 2026-10-29T19:44:34Z tenant=tenant_5039f2d497cf
++ SELECT file_name, scope, visibility, source, status, project_id, created_at FROM tenant_5039f2d497cf.documents WHERE created_at > now() - interval '5 minutes' ORDER BY created_at
+matter-closure-letter-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 19:44:17.143934+00
+statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|INTERNAL|MANUAL|UPLOADED|d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 19:44:17.255481+00
+# 2026-10-29T19:44:34Z tenant=tenant_5039f2d497cf
++ SELECT id, file_name, primary_entity_type, document_id IS NOT NULL, generated_at FROM tenant_5039f2d497cf.generated_documents ORDER BY generated_at
+c630f2b1-afab-44ff-9e61-e69c39f9f59b|engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 14:31:27.045919+00
+168fe298-c279-4908-b76d-ce11d65e9af1|offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf|PROJECT|t|2026-10-29 15:18:57.703638+00
+c9d3482f-36c7-44b0-b203-f90ac0da06f8|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 18:49:29.771841+00
+27e38a7b-9848-4fc3-99fe-d6b67d985254|fee-note-inv-0001-2026-10-29.pdf|INVOICE|f|2026-10-29 18:55:39.806471+00
+52ab06fa-8569-46ef-b7c9-d884d665c6a4|fee-note-inv-0002-2026-10-29.pdf|INVOICE|f|2026-10-29 19:03:48.679945+00
+21a444ac-3bc5-4120-9ff9-8839f9467712|fee-note-inv-0002-2026-10-29.pdf|INVOICE|t|2026-10-29 19:04:33.946565+00
+4f2951c2-6c8a-4585-bd4c-65afba2044ac|fee-note-inv-0003-2026-10-29.pdf|INVOICE|f|2026-10-29 19:25:46.189414+00
+271971e1-6889-4d0b-8ba0-522b3dc67b76|matter-closure-letter-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 19:44:17.142652+00
+cb8d81e4-019e-4483-be42-89a505322459|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 19:44:17.255142+00
+# 2026-10-29T19:44:34Z tenant=tenant_5039f2d497cf
++ SELECT record_type, retention_days, trigger_event, action, active FROM tenant_5039f2d497cf.retention_policies ORDER BY created_at
+CUSTOMER|1825|CUSTOMER_OFFBOARDED|FLAG|t
+AUDIT_EVENT|2555|RECORD_CREATED|FLAG|t
+# 2026-10-29T19:44:34Z tenant=tenant_5039f2d497cf
++ SELECT occurred_at, event_type, entity_type, details FROM tenant_5039f2d497cf.audit_events WHERE occurred_at > now() - interval '2 minutes' ORDER BY occurred_at
+2026-10-29 19:42:44.464608+00|trust_refund.approved|trust_transaction|{"amount": "3750.00", "actor_name": "Bob Ndlovu", "project_id": "d42337ad-2c76-4a79-ac75-e3d9f4d36881", "approved_by": "bd26a345-8cff-4745-8c20-55a1f5bc4786", "customer_id": "fbfe7eba-53f6-4536-809d-2fc785628ef3", "transaction_type": "REFUND"}
+2026-10-29 19:44:16.901144+00|matter_closure.closed|project|{"reason": "CONCLUDED", "actor_name": "Thandi Mathebula", "project_id": "d42337ad-2c76-4a79-ac75-e3d9f4d36881", "justification": "", "override_used": false, "closure_log_id": "1f026a7c-ecfd-4062-a130-dced9700ea50"}
+2026-10-29 19:44:17.145367+00|document.generated|generated_document|{"file_name": "matter-closure-letter-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf", "file_size": 2334, "actor_name": "Thandi Mathebula", "project_id": "d42337ad-2c76-4a79-ac75-e3d9f4d36881", "template_name": "Matter Closure Letter", "primary_entity_id": "d42337ad-2c76-4a79-ac75-e3d9f4d36881", "save_to_documents": true, "primary_entity_type": "PROJECT"}
+2026-10-29 19:44:17.256741+00|statement.generated|generated_document|{"file_name": "statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf", "actor_name": "Thandi Mathebula", "period_end": "2026-10-29", "project_id": "d42337ad-2c76-4a79-ac75-e3d9f4d36881", "template_id": "6cb44dd3-f3a4-433e-8439-a66b573362d3", "period_start": "2026-10-29", "notify_client": false, "shared_with_client": false}

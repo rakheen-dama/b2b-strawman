@@ -1,0 +1,7 @@
+# 2026-10-29T20:29:04Z P-0.A / P-0.D
+P-0.A :3002/ 307
+listener pid 58086
+P-0.D :8025/ 200
+P-0.D :8025/api/v1/info 200
+{"Messages":16,"Unread":3}
+  PID  PPID COMMAND

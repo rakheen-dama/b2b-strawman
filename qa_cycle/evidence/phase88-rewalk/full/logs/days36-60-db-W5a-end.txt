@@ -1,0 +1,19 @@
+# 2026-10-29T18:58:28Z tenant=tenant_5039f2d497cf
++ SELECT id, invoice_number, status, customer_name, issue_date, due_date, subtotal, tax_amount, total, amount_paid, paid_at, payment_url IS NOT NULL AS has_pay_url FROM tenant_5039f2d497cf.invoices ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|INV-0001|SENT|Sipho Dlamini|2026-10-29|2026-11-28|4150.00|435.00|4585.00|0.00||t
++ SELECT p.name, m.email, te.duration_minutes, te.billing_rate_snapshot, te.invoice_id FROM tenant_5039f2d497cf.time_entries te JOIN tenant_5039f2d497cf.members m ON m.id=te.member_id JOIN tenant_5039f2d497cf.tasks t ON t.id=te.task_id JOIN tenant_5039f2d497cf.projects p ON p.id=t.project_id WHERE p.name LIKE 'Sipho%' ORDER BY te.created_at
+Sipho Dlamini v. Standard Bank (civil)|bob@mathebula-test.local|90|1200.00|4a10f00a-600b-42d8-944a-a4f1697b4c7e
+Sipho Dlamini v. Standard Bank (civil)|carol@mathebula-test.local|120|550.00|4a10f00a-600b-42d8-944a-a4f1697b4c7e
++ SELECT id, category, amount, approval_status, billing_status, invoice_line_id FROM tenant_5039f2d497cf.legal_disbursements ORDER BY created_at
+30e55eca-d598-4cdd-9171-ab938e9a911e|SHERIFF_FEES|750.00|APPROVED|UNBILLED|
+adee383d-e115-451a-b144-9e7b04663685|DEEDS_OFFICE_FEES|1250.00|APPROVED|BILLED|062c8d85-2983-42f0-b2b0-1bef94cd0d36
++ SELECT invoice_id, provider_slug, status, amount, payment_method, payment_reference, created_at FROM tenant_5039f2d497cf.payment_events ORDER BY created_at
+4a10f00a-600b-42d8-944a-a4f1697b4c7e|mock|CREATED|4585.00|||2026-10-29 18:55:39.656886+00
++ SELECT id, file_name, primary_entity_type, document_id IS NOT NULL, generated_at FROM tenant_5039f2d497cf.generated_documents ORDER BY generated_at
+c630f2b1-afab-44ff-9e61-e69c39f9f59b|engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 14:31:27.045919+00
+168fe298-c279-4908-b76d-ce11d65e9af1|offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf|PROJECT|t|2026-10-29 15:18:57.703638+00
+c9d3482f-36c7-44b0-b203-f90ac0da06f8|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-10-29.pdf|PROJECT|t|2026-10-29 18:49:29.771841+00
+27e38a7b-9848-4fc3-99fe-d6b67d985254|fee-note-inv-0001-2026-10-29.pdf|INVOICE|f|2026-10-29 18:55:39.806471+00
++ SELECT count(*), max(occurred_at) FROM tenant_5039f2d497cf.audit_events
+204|2026-10-29 18:55:39.807554+00
+mailpit total: 11

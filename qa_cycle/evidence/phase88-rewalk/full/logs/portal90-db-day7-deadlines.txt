@@ -1,0 +1,5 @@
+# 2026-10-29T20:40:56Z
++ SELECT count(*) FROM portal.portal_deadline_view
+0
++ SELECT portal_digest_cadence, digest_last_sent_at FROM tenant_5039f2d497cf.org_settings
+|

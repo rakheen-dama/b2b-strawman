@@ -1,0 +1,7 @@
+# 2026-10-29T19:41:54Z tenant=tenant_5039f2d497cf
++ SELECT id, transaction_type, amount, reference, description, status, recorded_by, approved_by, project_id, created_at FROM tenant_5039f2d497cf.trust_transactions WHERE reference='REF/SIPHO-001'
+27234b0c-88b6-4253-bc82-05ff8cc13d85|REFUND|3750.00|REF/SIPHO-001|Refund of unused trust balance on matter completion|AWAITING_APPROVAL|09e0e796-37a0-4fe5-8e36-df92f7d1b3fd||d42337ad-2c76-4a79-ac75-e3d9f4d36881|2026-10-29 19:41:26.393174+00
+# 2026-10-29T19:41:54Z tenant=tenant_5039f2d497cf
++ SELECT c.name, l.balance, l.total_deposits, l.total_payments, l.total_fee_transfers FROM tenant_5039f2d497cf.client_ledger_cards l JOIN tenant_5039f2d497cf.customers c ON c.id=l.customer_id
+Sipho Dlamini|3750.00|5000.00|1250.00|0.00
+Moroka Family Trust|38000.00|50000.00|12000.00|0.00

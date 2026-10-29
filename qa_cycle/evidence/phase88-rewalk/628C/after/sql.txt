@@ -1,0 +1,171 @@
+-- A1 pack_install
+              pack_id              |      pack_type      | pack_version |         installed_at          | item_count 
+-----------------------------------+---------------------+--------------+-------------------------------+------------
+ automation-common                 | AUTOMATION_TEMPLATE | 4            | 2026-10-28 22:30:47.364575+00 |          6
+ automation-legal-za               | AUTOMATION_TEMPLATE | 2            | 2026-10-28 22:30:47.409761+00 |          4
+ conveyancing-za-clauses           | CLAUSE              | 2            | 2026-10-28 22:30:47.025172+00 |          0
+ legal-za-clauses                  | CLAUSE              | 2            | 2026-10-28 22:30:47.025172+00 |          0
+ standard-clauses                  | CLAUSE              | 2            | 2026-10-28 22:30:47.025172+00 |          0
+ common                            | DOCUMENT_TEMPLATE   | 4            | 2026-10-28 22:30:46.897204+00 |          3
+ compliance-za                     | DOCUMENT_TEMPLATE   | 1            | 2026-10-28 22:30:46.93995+00  |          1
+ legal-za                          | DOCUMENT_TEMPLATE   | 9            | 2026-10-28 22:30:46.96174+00  |         17
+ common-project                    | FIELD               | 3            | 2026-10-28 22:30:46.784926+00 |          0
+ common-task                       | FIELD               | 2            | 2026-10-28 22:30:46.784926+00 |          0
+ conveyancing-za-project           | FIELD               | 2            | 2026-10-28 22:30:46.784926+00 |          0
+ legal-za-customer                 | FIELD               | 2            | 2026-10-28 22:30:46.784926+00 |          0
+ legal-za-project                  | FIELD               | 3            | 2026-10-28 22:30:46.784926+00 |          0
+ standard-reports                  | REPORT              | 2            | 2026-10-28 22:30:47.302183+00 |          0
+ conveyancing-intake-za            | REQUEST             | 1            | 2026-10-28 22:30:47.32931+00  |          0
+ fica-onboarding-pack              | REQUEST             | 1            | 2026-10-28 22:30:47.32931+00  |          0
+ legal-za-liquidation-distribution | REQUEST             | 1            | 2026-10-28 22:30:47.32931+00  |          0
+(17 rows)
+
+-- A1b org_settings pack status (versions only)
+     k      |        v        |                                                   p                                                   
+------------+-----------------+-------------------------------------------------------------------------------------------------------
+ field      | [2, 2, 1, 2, 2] | ["common-project", "common-task", "conveyancing-za-project", "legal-za-customer", "legal-za-project"]
+ template   | [1, 9, 4]       | ["compliance-za", "legal-za", "common"]
+ report     | [1]             | ["standard-reports"]
+ clause     | [2, 1, 1]       | ["conveyancing-za-clauses", "legal-za-clauses", "standard-clauses"]
+ automation | [2, 4]          | ["automation-legal-za", "automation-common"]
+(5 rows)
+
+-- A2 field_groups PROJECT
+         pack_id         |          slug          |               name               |                                             description                                             |          updated_at           
+-------------------------+------------------------+----------------------------------+-----------------------------------------------------------------------------------------------------+-------------------------------
+ common-project          | project_info           | Matter Info                      | Firm-edited 628C description                                                                        | 2026-10-28 23:52:09.563676+00
+ conveyancing-za-project | conveyancing_za_matter | SA Conveyancing — Matter Details | South African conveyancing-specific fields for property transfer matters (matter type Conveyancing) | 2026-10-28 23:52:09.601992+00
+ legal-za-project        | legal_za_matter        | SA Legal — Matter Details        | South African legal-specific fields for matters                                                     | 2026-10-28 23:52:09.613529+00
+(3 rows)
+
+-- A2b field_groups legacy-word hits (all entity types)
+ entity_type | pack_id | slug | name | description 
+-------------+---------+------+------+-------------
+(0 rows)
+
+-- A3 field_definitions legacy hits + category
+ entity_type |    pack_id     | pack_field_key |   name   |       description       
+-------------+----------------+----------------+----------+-------------------------
+ PROJECT     | common-project | category       | Category | Matter category or type
+(1 row)
+
+-- A4 report_definitions
+         slug          |            name             |                             description                             |    category     
+-----------------------+-----------------------------+---------------------------------------------------------------------+-----------------
+ timesheet             | Timesheet Report            | Time entries grouped by member, matter, or date for a given period. | TIME_ATTENDANCE
+ invoice-aging         | Fee Note Aging Report       | Outstanding fee notes grouped by age bucket.                        | FINANCIAL
+ project-profitability | Matter Profitability Report | Revenue vs. cost per matter for a date range.                       | PROJECT
+(3 rows)
+
+-- A4b parameter_schema
+         slug          |                                                                                                                                                                                                                                                                                    parameter_schema                                                                                                                                                                                                                                                                                    
+-----------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ timesheet             | {"parameters": [{"name": "dateFrom", "type": "date", "label": "From Date", "required": true}, {"name": "dateTo", "type": "date", "label": "To Date", "required": true}, {"name": "groupBy", "type": "enum", "label": "Group By", "default": "member", "options": ["member", "project", "date"], "optionLabels": {"date": "Date", "member": "Member", "project": "Matter"}}, {"name": "projectId", "type": "uuid", "label": "Matter", "required": false, "entityType": "project"}, {"name": "memberId", "type": "uuid", "label": "Member", "required": false, "entityType": "member"}]}
+ invoice-aging         | {"parameters": [{"name": "asOfDate", "type": "date", "label": "As of Date", "required": true}, {"name": "customerId", "type": "uuid", "label": "Client", "required": false, "entityType": "customer"}]}
+ project-profitability | {"parameters": [{"name": "dateFrom", "type": "date", "label": "From Date", "required": true}, {"name": "dateTo", "type": "date", "label": "To Date", "required": true}, {"name": "projectId", "type": "uuid", "label": "Matter", "required": false, "entityType": "project"}, {"name": "customerId", "type": "uuid", "label": "Client", "required": false, "entityType": "customer"}]}
+(3 rows)
+
+-- A4c column_definitions
+         slug          |                                                                                                                                                                                                                                                                                                column_definitions                                                                                                                                                                                                                                                                                                 
+-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ timesheet             | {"columns": [{"key": "groupLabel", "type": "string", "label": "Group"}, {"key": "totalHours", "type": "decimal", "label": "Total Hours", "format": "0.00"}, {"key": "billableHours", "type": "decimal", "label": "Billable Hours", "format": "0.00"}, {"key": "nonBillableHours", "type": "decimal", "label": "Non-Billable", "format": "0.00"}, {"key": "entryCount", "type": "integer", "label": "Entries"}]}
+ invoice-aging         | {"columns": [{"key": "invoiceNumber", "type": "string", "label": "Fee Note #"}, {"key": "customerName", "type": "string", "label": "Client"}, {"key": "issueDate", "type": "date", "label": "Issue Date"}, {"key": "dueDate", "type": "date", "label": "Due Date"}, {"key": "amount", "type": "currency", "label": "Amount", "format": "0.00"}, {"key": "currency", "type": "string", "label": "Currency"}, {"key": "daysOverdue", "type": "integer", "label": "Days Overdue"}, {"key": "ageBucketLabel", "type": "string", "label": "Bucket"}]}
+ project-profitability | {"columns": [{"key": "projectName", "type": "string", "label": "Matter"}, {"key": "customerName", "type": "string", "label": "Client"}, {"key": "currency", "type": "string", "label": "Currency"}, {"key": "billableHours", "type": "decimal", "label": "Billable Hrs", "format": "0.00"}, {"key": "revenue", "type": "currency", "label": "Revenue", "format": "0.00"}, {"key": "cost", "type": "currency", "label": "Cost", "format": "0.00"}, {"key": "margin", "type": "currency", "label": "Margin", "format": "0.00"}, {"key": "marginPercent", "type": "decimal", "label": "Margin %", "format": "0.0"}]}
+(3 rows)
+
+-- A4d template_body capitalised legacy words in context (was 11 rows)
+ slug | context 
+------+---------
+(0 rows)
+
+-- A5 request templates hits
+ pack_id | name 
+---------+------
+(0 rows)
+
+-- A6 automation_rules
+          template_slug          |                  name                  |                                                   description                                                    |          updated_at           
+---------------------------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------+-------------------------------
+ budget-alert-escalation         | Fee Estimate Alert Escalation          | Notifies admins when a matter fee estimate threshold is reached                                                  | 2026-10-28 23:52:10.152331+00
+ document-review-notification    | Document uploaded — notify matter lead | Notifies the matter lead when a document is uploaded                                                             | 2026-10-28 22:30:47.371551+00
+ investment-maturity-reminder    | Investment Maturity Reminder           | Sends a notification 30 days before a trust investment reaches its maturity date                                 | 2026-10-28 22:30:47.414007+00
+ matter-onboarding-reminder      | Matter Onboarding Reminder             | Sends notification to complete the onboarding checklist when a client transitions to ONBOARDING status           | 2026-10-28 22:30:47.413443+00
+ new-project-welcome             | Welcome Notification                   | Sends a welcome notification to team members when work becomes active                                            | 2026-10-28 22:30:47.371025+00
+ overdue-invoice-reminder        | Overdue Fee Note Reminder              | Sends email to the client when a fee note becomes overdue, then notifies the matter lead after 7 days            | 2026-10-28 23:52:10.125193+00
+ pending-approval-aging          | Pending Approval Aging                 | Sends a reminder when a trust transaction has been awaiting approval for more than 48 hours                      | 2026-10-28 22:30:47.414504+00
+ reconciliation-overdue-reminder | Reconciliation Overdue Reminder        | Sends a notification when a trust account reconciliation has not been completed within 35 days of the period end | 2026-10-28 22:30:47.414236+00
+ request-complete-followup       | Request Complete Follow-up             | Creates a review task when an information request is completed                                                   | 2026-10-28 22:30:47.372125+00
+ task-completion-chain           | Task Completion Chain                  | Automatically creates a follow-up task when a task is completed                                                  | 2026-10-28 22:30:47.369393+00
+(10 rows)
+
+-- A6b automation_actions configs for the two reconciled rules
+      template_slug       | sort_order |                                                                                                                    action_config                                                                                                                     
+--------------------------+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ budget-alert-escalation  |          0 | {"title": "Fee estimate alert: {{project.name}}", "message": "Matter {{project.name}} has reached its fee estimate threshold.", "recipientType": "ORG_ADMINS"}
+ overdue-invoice-reminder |          0 | {"body": "Dear {{customer.name}},\n\nYour fee note {{invoice.invoiceNumber}} is now overdue. Please arrange payment at your earliest convenience.", "subject": "Fee note {{invoice.invoiceNumber}} is overdue", "recipientType": "CUSTOMER_CONTACT"}
+ overdue-invoice-reminder |          1 | {"title": "Fee note {{invoice.invoiceNumber}} still overdue", "message": "Fee note {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7 days.", "recipientType": "PROJECT_OWNER"}
+(3 rows)
+
+-- A7 document_templates common
+ pack_id |  pack_template_key   |            name            |            description            |                         content_sha_text                         |          updated_at           
+---------+----------------------+----------------------------+-----------------------------------+------------------------------------------------------------------+-------------------------------
+ common  | engagement-letter    | Standard Engagement Letter | Client engagement letter template | 381e742bc3fe78a1a3b86c3d75b8b82e28868d434b0618415cb0fc6aa6f8d90f | 2026-10-28 23:52:09.664071+00
+ common  | project-summary      | Matter Summary Report      | Matter summary report template    | 2ad5992825a567c09b75157db7bb340e7cc3d2f1cd7ce83ca56668114cdc2d07 | 2026-10-28 23:52:09.708375+00
+ common  | invoice-cover-letter | Fee Note Cover Letter      | Cover letter for fee notes        | e022bb6deaa1a01908185acaff3732b446dba194da25c6af7c78166b4e26937e | 2026-10-28 23:52:09.717653+00
+(3 rows)
+
+-- A7b document_templates legacy name/desc hits
+ pack_id | name | description 
+---------+------+-------------
+(0 rows)
+
+-- A7c common template content capitalised legacy words outside {{ }}
+ pack_template_key | m 
+-------------------+---
+(0 rows)
+
+-- A8 clauses legacy-word hits (body text)
+         pack_id         |           slug            |                 title                 
+-------------------------+---------------------------+---------------------------------------
+ conveyancing-za-clauses | fica-compliance           | FICA Compliance
+ conveyancing-za-clauses | occupation-date           | Occupation Date & Occupational Rent
+ conveyancing-za-clauses | sectional-title-levies    | Sectional Title Levies
+ conveyancing-za-clauses | suspensive-bond           | Suspensive Condition -- Bond Approval
+ conveyancing-za-clauses | transfer-duty-liability   | Transfer Duty Liability
+ conveyancing-za-clauses | voetstoots                | Voetstoots (As Is)
+ legal-za-clauses        | legal-za-conflict-waiver  | Conflict of Interest Waiver
+ legal-za-clauses        | legal-za-data-protection  | Data Protection (POPIA)
+ legal-za-clauses        | legal-za-fees-contingency | Fees — Contingency
+ legal-za-clauses        | legal-za-fica-consent     | FICA Consent
+ legal-za-clauses        | legal-za-jurisdiction     | Jurisdiction & Domicilium
+ legal-za-clauses        | legal-za-mandate-scope    | Scope of Mandate
+ legal-za-clauses        | legal-za-termination      | Termination of Mandate
+ legal-za-clauses        | legal-za-trust-deposits   | Trust Account Deposits
+ standard-clauses        | client-responsibilities   | Client Responsibilities
+ standard-clauses        | confidentiality           | Confidentiality
+ standard-clauses        | dispute-resolution        | Dispute Resolution
+ standard-clauses        | document-retention        | Document Retention
+ standard-clauses        | engagement-acceptance     | Engagement Acceptance
+ standard-clauses        | fee-schedule              | Fee Schedule
+ standard-clauses        | force-majeure             | Force Majeure
+ standard-clauses        | limitation-of-liability   | Limitation of Liability
+ standard-clauses        | payment-terms             | Payment Terms
+ standard-clauses        | professional-indemnity    | Professional Indemnity
+ standard-clauses        | scope-of-work             | Scope of Work
+ standard-clauses        | termination               | Termination
+(26 rows)
+
+-- A8b clause body text nodes containing legacy words (tokens {{..}} stripped)
+         pack_id         |      slug       |                                                ctx                                                 
+-------------------------+-----------------+----------------------------------------------------------------------------------------------------
+ conveyancing-za-clauses | fica-compliance | easonably required to enable   to comply with its customer due diligence obligations under FICA. F
+(1 row)
+
+-- A8c clause body updated_at for the 3 reconciled clauses
+     pack_id      |         slug         |          updated_at           
+------------------+----------------------+-------------------------------
+ legal-za-clauses | legal-za-fees-hourly | 2026-10-28 23:52:09.812736+00
+ standard-clauses | payment-terms        | 2026-10-28 23:52:09.823212+00
+ standard-clauses | fee-schedule         | 2026-10-28 23:52:09.828455+00
+(3 rows)
+

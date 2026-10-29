@@ -1,0 +1,9 @@
+ Generated: 28 Oct 2026 23:56
+ Timesheet Report
+ Period: 2026-10-01 to 2026-10-31 | Grouped by: matter
+ 2.00 2.00 0.00 1
+ TOTAL HOURS BILLABLE HOURS NON-BILLABLE HOURS ENTRIES
+ GROUP TOTAL HOURS BILLABLE HOURS NON-BILLABLE ENTRIES
+ Ndlovu v RAF — Depth II mvsoxhi2a97e 2.00 2.00 0.00 1
+ Total 2.00 2.00 0.00 1
+ Generated 28 Oct 2026 23:56

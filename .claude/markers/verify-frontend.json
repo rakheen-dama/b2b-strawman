@@ -1,7 +1,7 @@
 {
-  "commit": "5cd76cc68",
+  "commit": "5a8ef577b",
   "command": "cd frontend && pnpm install && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-10-28T22:42:35Z",
-  "summary": "628B FE-GATE on 5cd76cc68 (final head, detached gate worktree): lint 0 errors / 91 warnings, format clean, vitest 433 files / 3485 passed / 2 skipped, build OK; fresh-stack (e2e-down/up from 5cd76cc68) E2E-LEGAL lifecycle 75/4/5/14 (carried A1/A2/A4/A6), depth-ii 38/0/5; default navigation+settings on bd9d01fcd 29/1/15/1 — the 1 (packs.spec:94 strict-mode) A/B'd: fails identically on main 835f53338 → 628F"
+  "ts": "2026-10-29T00:39:55Z",
+  "summary": "628C FE-GATE on 5a8ef577b: lint 0 errors / 91 warnings, format clean, vitest 433 files / 3486 passed / 2 skipped (+1 report-parameter-form optionLabels case), build OK. The build failed in the slice worktree while backend/target (left by the Maven verify) was present (Turbopack next/font/google: 'queries have exactly one entry'). It passed with backend/target moved aside, and on the same commit in a clean detached worktree. main fe579bdc9 also passes in a clean worktree, so this is local worktree state, not PR code. CI Frontend pass."
 }

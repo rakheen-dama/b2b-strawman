@@ -1,0 +1,331 @@
+-- Q0 tenant schema
+SELECT external_org_id, schema_name, created_at FROM public.org_schema_mapping;
+ external_org_id |     schema_name     |          created_at           
+-----------------+---------------------+-------------------------------
+ e2e-test-org    | tenant_7d218705360b | 2026-10-28 22:30:47.516747+00
+(1 row)
+
+-- Q1 pack_install
+SELECT pack_id, pack_type, pack_version, pack_name, installed_at, item_count FROM tenant_7d218705360b.pack_install ORDER BY pack_type, pack_id;
+              pack_id              |      pack_type      | pack_version |             pack_name             |         installed_at          | item_count 
+-----------------------------------+---------------------+--------------+-----------------------------------+-------------------------------+------------
+ automation-common                 | AUTOMATION_TEMPLATE | 3            | automation-common                 | 2026-10-28 22:30:47.364575+00 |          6
+ automation-legal-za               | AUTOMATION_TEMPLATE | 2            | automation-legal-za               | 2026-10-28 22:30:47.409761+00 |          4
+ conveyancing-za-clauses           | CLAUSE              | 2            | conveyancing-za-clauses           | 2026-10-28 22:30:47.025172+00 |          0
+ legal-za-clauses                  | CLAUSE              | 1            | legal-za-clauses                  | 2026-10-28 22:30:47.025172+00 |          0
+ standard-clauses                  | CLAUSE              | 1            | standard-clauses                  | 2026-10-28 22:30:47.025172+00 |          0
+ common                            | DOCUMENT_TEMPLATE   | 3            | Common Templates                  | 2026-10-28 22:30:46.897204+00 |          3
+ compliance-za                     | DOCUMENT_TEMPLATE   | 1            | South Africa Compliance Templates | 2026-10-28 22:30:46.93995+00  |          1
+ legal-za                          | DOCUMENT_TEMPLATE   | 9            | SA Legal Templates                | 2026-10-28 22:30:46.96174+00  |         17
+ common-project                    | FIELD               | 2            | common-project                    | 2026-10-28 22:30:46.784926+00 |          0
+ common-task                       | FIELD               | 2            | common-task                       | 2026-10-28 22:30:46.784926+00 |          0
+ conveyancing-za-project           | FIELD               | 1            | conveyancing-za-project           | 2026-10-28 22:30:46.784926+00 |          0
+ legal-za-customer                 | FIELD               | 2            | legal-za-customer                 | 2026-10-28 22:30:46.784926+00 |          0
+ legal-za-project                  | FIELD               | 2            | legal-za-project                  | 2026-10-28 22:30:46.784926+00 |          0
+ standard-reports                  | REPORT              | 1            | standard-reports                  | 2026-10-28 22:30:47.302183+00 |          0
+ conveyancing-intake-za            | REQUEST             | 1            | conveyancing-intake-za            | 2026-10-28 22:30:47.32931+00  |          0
+ fica-onboarding-pack              | REQUEST             | 1            | fica-onboarding-pack              | 2026-10-28 22:30:47.32931+00  |          0
+ legal-za-liquidation-distribution | REQUEST             | 1            | legal-za-liquidation-distribution | 2026-10-28 22:30:47.32931+00  |          0
+(17 rows)
+
+-- Q1b org_settings pack status jsonb
+SELECT field_pack_status, template_pack_status, compliance_pack_status, report_pack_status, clause_pack_status, request_pack_status, automation_pack_status, project_template_pack_status FROM tenant_7d218705360b.org_settings;
+                                                                                                                                                                                                                                 field_pack_status                                                                                                                                                                                                                                  |                                                                                                                        template_pack_status                                                                                                                        |                                                                                                                                                                                                                                                          compliance_pack_status                                                                                                                                                                                                                                                           |                                      report_pack_status                                       |                                                                                                                                       clause_pack_status                                                                                                                                       |                                                                                                                                                request_pack_status                                                                                                                                                 |                                                                                     automation_pack_status                                                                                     |                                      project_template_pack_status                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------
+ [{"packId": "common-project", "version": 2, "appliedAt": "2026-10-28T22:30:46.806783754Z"}, {"packId": "common-task", "version": 2, "appliedAt": "2026-10-28T22:30:46.825342837Z"}, {"packId": "conveyancing-za-project", "version": 1, "appliedAt": "2026-10-28T22:30:46.836297629Z"}, {"packId": "legal-za-customer", "version": 2, "appliedAt": "2026-10-28T22:30:46.850026087Z"}, {"packId": "legal-za-project", "version": 2, "appliedAt": "2026-10-28T22:30:46.859454962Z"}] | [{"packId": "common", "version": 3, "appliedAt": "2026-10-28T22:30:46.924106837Z"}, {"packId": "compliance-za", "version": 1, "appliedAt": "2026-10-28T22:30:46.950233254Z"}, {"packId": "legal-za", "version": 9, "appliedAt": "2026-10-28T22:30:47.005990879Z"}] | [{"packId": "generic-onboarding", "version": "1.0.0", "appliedAt": "2026-10-28T22:30:47.267872754Z"}, {"packId": "legal-za-individual-onboarding", "version": "1.0.0", "appliedAt": "2026-10-28T22:30:47.269660712Z"}, {"packId": "legal-za-trust-onboarding", "version": "1.0.0", "appliedAt": "2026-10-28T22:30:47.271381754Z"}, {"packId": "sa-fica-company", "version": "1.0.0", "appliedAt": "2026-10-28T22:30:47.274899712Z"}, {"packId": "sa-fica-individual", "version": "1.0.0", "appliedAt": "2026-10-28T22:30:47.296288462Z"}] | [{"packId": "standard-reports", "version": 1, "appliedAt": "2026-10-28T22:30:47.321990296Z"}] | [{"packId": "conveyancing-za-clauses", "version": 2, "appliedAt": "2026-10-28T22:30:47.106073379Z"}, {"packId": "legal-za-clauses", "version": 1, "appliedAt": "2026-10-28T22:30:47.185901046Z"}, {"packId": "standard-clauses", "version": 1, "appliedAt": "2026-10-28T22:30:47.249653296Z"}] | [{"packId": "conveyancing-intake-za", "version": 1, "appliedAt": "2026-10-28T22:30:47.337874587Z"}, {"packId": "fica-onboarding-pack", "version": 1, "appliedAt": "2026-10-28T22:30:47.347566671Z"}, {"packId": "legal-za-liquidation-distribution", "version": 1, "appliedAt": "2026-10-28T22:30:47.352616921Z"}] | [{"packId": "automation-common", "version": 3, "appliedAt": "2026-10-28T22:30:47.398192296Z"}, {"packId": "automation-legal-za", "version": 2, "appliedAt": "2026-10-28T22:30:47.428275837Z"}] | [{"packId": "legal-za-project-templates", "version": 3, "appliedAt": "2026-10-28T22:30:47.449667337Z"}]
+(1 row)
+
+-- Q2 field_groups name/description ~* project|customer|invoice
+SELECT entity_type, pack_id, slug, name, description FROM tenant_7d218705360b.field_groups WHERE name ~* '(project|customer|invoice)' OR description ~* '(project|customer|invoice)' ORDER BY pack_id, slug;
+ entity_type |         pack_id         |          slug          |               name               |                                                     description                                                     
+-------------+-------------------------+------------------------+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+ PROJECT     | common-project          | project_info           | Project Info                     | Common project metadata fields
+ PROJECT     | conveyancing-za-project | conveyancing_za_matter | SA Conveyancing — Matter Details | South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)
+ PROJECT     | legal-za-project        | legal_za_matter        | SA Legal — Matter Details        | South African legal-specific fields for matter (project) entities
+(3 rows)
+
+-- Q3 field_definitions name/description/options ~*
+SELECT entity_type, pack_id, pack_field_key, name, description, options::text FROM tenant_7d218705360b.field_definitions WHERE name ~* '(project|customer|invoice)' OR description ~* '(project|customer|invoice)' OR options::text ~* '(project|customer|invoice)' ORDER BY pack_id, pack_field_key;
+ entity_type |    pack_id     | pack_field_key |   name   |       description        | options 
+-------------+----------------+----------------+----------+--------------------------+---------
+ PROJECT     | common-project | category       | Category | Project category or type | 
+(1 row)
+
+-- Q4 report_definitions name/description/category/parameter_schema
+SELECT slug, name, description, category FROM tenant_7d218705360b.report_definitions ORDER BY sort_order;
+         slug          |             name             |                             description                              |    category     
+-----------------------+------------------------------+----------------------------------------------------------------------+-----------------
+ timesheet             | Timesheet Report             | Time entries grouped by member, project, or date for a given period. | TIME_ATTENDANCE
+ invoice-aging         | Invoice Aging Report         | Outstanding invoices grouped by age bucket.                          | FINANCIAL
+ project-profitability | Project Profitability Report | Revenue vs. cost per project for a date range.                       | PROJECT
+(3 rows)
+
+-- Q4b report_definitions parameter_schema/column_definitions hits
+SELECT slug, parameter_schema::text AS params FROM tenant_7d218705360b.report_definitions WHERE parameter_schema::text ~* '(project|customer|invoice)';
+         slug          |                                                                                                                                                                                                                                                    params                                                                                                                                                                                                                                                    
+-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ timesheet             | {"parameters": [{"name": "dateFrom", "type": "date", "label": "From Date", "required": true}, {"name": "dateTo", "type": "date", "label": "To Date", "required": true}, {"name": "groupBy", "type": "enum", "label": "Group By", "default": "member", "options": ["member", "project", "date"]}, {"name": "projectId", "type": "uuid", "label": "Project", "required": false, "entityType": "project"}, {"name": "memberId", "type": "uuid", "label": "Member", "required": false, "entityType": "member"}]}
+ invoice-aging         | {"parameters": [{"name": "asOfDate", "type": "date", "label": "As of Date", "required": true}, {"name": "customerId", "type": "uuid", "label": "Customer", "required": false, "entityType": "customer"}]}
+ project-profitability | {"parameters": [{"name": "dateFrom", "type": "date", "label": "From Date", "required": true}, {"name": "dateTo", "type": "date", "label": "To Date", "required": true}, {"name": "projectId", "type": "uuid", "label": "Project", "required": false, "entityType": "project"}, {"name": "customerId", "type": "uuid", "label": "Customer", "required": false, "entityType": "customer"}]}
+(3 rows)
+
+SELECT slug, column_definitions::text AS cols FROM tenant_7d218705360b.report_definitions WHERE column_definitions::text ~* '(project|customer|invoice)';
+         slug          |                                                                                                                                                                                                                                                                                                         cols                                                                                                                                                                                                                                                                                                         
+-----------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ invoice-aging         | {"columns": [{"key": "invoiceNumber", "type": "string", "label": "Invoice #"}, {"key": "customerName", "type": "string", "label": "Customer"}, {"key": "issueDate", "type": "date", "label": "Issue Date"}, {"key": "dueDate", "type": "date", "label": "Due Date"}, {"key": "amount", "type": "currency", "label": "Amount", "format": "0.00"}, {"key": "currency", "type": "string", "label": "Currency"}, {"key": "daysOverdue", "type": "integer", "label": "Days Overdue"}, {"key": "ageBucketLabel", "type": "string", "label": "Bucket"}]}
+ project-profitability | {"columns": [{"key": "projectName", "type": "string", "label": "Project"}, {"key": "customerName", "type": "string", "label": "Customer"}, {"key": "currency", "type": "string", "label": "Currency"}, {"key": "billableHours", "type": "decimal", "label": "Billable Hrs", "format": "0.00"}, {"key": "revenue", "type": "currency", "label": "Revenue", "format": "0.00"}, {"key": "cost", "type": "currency", "label": "Cost", "format": "0.00"}, {"key": "margin", "type": "currency", "label": "Margin", "format": "0.00"}, {"key": "marginPercent", "type": "decimal", "label": "Margin %", "format": "0.0"}]}
+(2 rows)
+
+-- Q4c report template_body title/heading hits (count of matches)
+SELECT slug, (SELECT count(*) FROM regexp_matches(template_body, '\m(Projects?|Customers?|Invoices?)\M', 'g')) AS capitalised_hits FROM tenant_7d218705360b.report_definitions;
+         slug          | capitalised_hits 
+-----------------------+------------------
+ timesheet             |                0
+ invoice-aging         |                5
+ project-profitability |                6
+(3 rows)
+
+-- Q5 request_templates
+SELECT pack_id, source, name, description FROM tenant_7d218705360b.request_templates ORDER BY pack_id, name;
+              pack_id              |  source  |                   name                    |                                                                                                                                                  description                                                                                                                                                   
+-----------------------------------+----------+-------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ conveyancing-intake-za            | PLATFORM | Conveyancing Intake (SA)                  | Intake questionnaire for South African conveyancing matters — captures party identity and contact details, property description, purchase price and bond terms, occupation dates, FICA uploads, marital status, and rates/levy account contacts.
+ fica-onboarding-pack              | PLATFORM | FICA Onboarding Pack                      | FICA (Financial Intelligence Centre Act) onboarding pack for a new individual client of a South African law firm. Captures the three core FICA documents required to open a matter: certified ID copy, recent proof of residential address, and recent bank statement evidencing source of funds.
+ legal-za-liquidation-distribution | PLATFORM | Liquidation and Distribution Account Pack | Documents required to prepare and lodge a Liquidation and Distribution account for a deceased estate with the Master of the High Court. Collects the executor's appointment letter, evidence of death, identity of the deceased, the L&D account draft, and the IDs of every beneficiary named in the account.
+(3 rows)
+
+-- Q5b request_template_items hits
+SELECT t.name AS template, i.name, i.description FROM tenant_7d218705360b.request_template_items i JOIN tenant_7d218705360b.request_templates t ON t.id=i.template_id WHERE i.name ~* '(project|customer|invoice)' OR i.description ~* '(project|customer|invoice)';
+ template | name | description 
+----------+------+-------------
+(0 rows)
+
+-- Q6 automation_rules
+SELECT source, template_slug, enabled, trigger_type, name, description FROM tenant_7d218705360b.automation_rules ORDER BY template_slug;
+  source  |          template_slug          | enabled |         trigger_type          |                  name                  |                                                   description                                                    
+----------+---------------------------------+---------+-------------------------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------
+ TEMPLATE | budget-alert-escalation         | t       | BUDGET_THRESHOLD_REACHED      | Budget Alert Escalation                | Notifies admins when a project budget threshold is reached
+ TEMPLATE | document-review-notification    | f       | DOCUMENT_ACCEPTED             | Document uploaded — notify matter lead | Notifies the matter lead when a document is uploaded
+ TEMPLATE | investment-maturity-reminder    | t       | FIELD_DATE_APPROACHING        | Investment Maturity Reminder           | Sends a notification 30 days before a trust investment reaches its maturity date
+ TEMPLATE | matter-onboarding-reminder      | t       | CUSTOMER_STATUS_CHANGED       | Matter Onboarding Reminder             | Sends notification to complete the onboarding checklist when a client transitions to ONBOARDING status
+ TEMPLATE | new-project-welcome             | t       | PROJECT_STATUS_CHANGED        | Welcome Notification                   | Sends a welcome notification to team members when work becomes active
+ TEMPLATE | overdue-invoice-reminder        | t       | INVOICE_STATUS_CHANGED        | Overdue Invoice Reminder               | Sends email to customer when invoice becomes overdue, then notifies project owner after 7 days
+ TEMPLATE | pending-approval-aging          | t       | FIELD_DATE_APPROACHING        | Pending Approval Aging                 | Sends a reminder when a trust transaction has been awaiting approval for more than 48 hours
+ TEMPLATE | reconciliation-overdue-reminder | t       | FIELD_DATE_APPROACHING        | Reconciliation Overdue Reminder        | Sends a notification when a trust account reconciliation has not been completed within 35 days of the period end
+ TEMPLATE | request-complete-followup       | t       | INFORMATION_REQUEST_COMPLETED | Request Complete Follow-up             | Creates a review task when an information request is completed
+ TEMPLATE | task-completion-chain           | f       | TASK_STATUS_CHANGED           | Task Completion Chain                  | Automatically creates a follow-up task when a task is completed
+(10 rows)
+
+-- Q6b automation_actions config hits
+SELECT r.template_slug, a.* FROM tenant_7d218705360b.automation_actions a JOIN tenant_7d218705360b.automation_rules r ON r.id=a.rule_id WHERE a::text ~* '(project|customer|invoice)';
+        template_slug         |                  id                  |               rule_id                | sort_order |    action_type    |                                                                                                                               action_config                                                                                                                               | delay_duration | delay_unit |          created_at           |          updated_at           
+------------------------------+--------------------------------------+--------------------------------------+------------+-------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------+------------+-------------------------------+-------------------------------
+ task-completion-chain        | 49911c5a-46af-40ce-96b1-1fd9bf7ca93a | a305120f-cc05-43ba-b846-bef97ee73a93 |          0 | CREATE_TASK       | {"assignTo": "PROJECT_OWNER", "taskName": "Follow-up: {{task.name}}", "taskDescription": "Follow-up review for completed task"}                                                                                                                                           |                |            | 2026-10-28 22:30:47.3701+00   | 2026-10-28 22:30:47.370101+00
+ overdue-invoice-reminder     | 52cb2b1d-99cc-4b3c-9bea-7a9d6fb57dd6 | aadf772e-f798-413a-84c0-98748acc55f9 |          0 | SEND_EMAIL        | {"body": "Dear {{customer.name}},\n\nYour invoice {{invoice.invoiceNumber}} is now overdue. Please arrange payment at your earliest convenience.", "subject": "Invoice {{invoice.invoiceNumber}} is overdue", "recipientType": "CUSTOMER_CONTACT"}                        |                |            | 2026-10-28 22:30:47.370551+00 | 2026-10-28 22:30:47.370552+00
+ overdue-invoice-reminder     | ee4f3276-6ed3-424c-858a-e4f32d6b166a | aadf772e-f798-413a-84c0-98748acc55f9 |          1 | SEND_NOTIFICATION | {"title": "Invoice {{invoice.invoiceNumber}} still overdue", "message": "Invoice {{invoice.invoiceNumber}} for {{customer.name}} has been overdue for 7 days.", "recipientType": "PROJECT_OWNER"}                                                                         |              7 | DAYS       | 2026-10-28 22:30:47.370683+00 | 2026-10-28 22:30:47.370684+00
+ budget-alert-escalation      | ea43425b-7940-4f3e-b433-ded986890549 | d1d2d506-5cbd-4ffb-8c05-a78db7394290 |          0 | SEND_NOTIFICATION | {"title": "Budget alert: {{project.name}}", "message": "Project {{project.name}} has reached its budget threshold.", "recipientType": "ORG_ADMINS"}                                                                                                                       |                |            | 2026-10-28 22:30:47.370903+00 | 2026-10-28 22:30:47.370903+00
+ new-project-welcome          | 660acea1-2673-4745-8129-5a3e0040bb77 | 764a9258-ba5f-4ef5-bd50-cf69ce17dd68 |          0 | SEND_NOTIFICATION | {"title": "Welcome to {{project.name}}", "message": "{{project.name}} is now active. You can start logging time and creating tasks.", "recipientType": "PROJECT_MEMBERS"}                                                                                                 |                |            | 2026-10-28 22:30:47.371134+00 | 2026-10-28 22:30:47.371134+00
+ document-review-notification | df7c087c-570d-4e26-8546-f35eae55cf8e | 0eaedb50-0097-4b1a-8164-b02b82ec3945 |          0 | SEND_NOTIFICATION | {"title": "Document uploaded: {{document.name}}", "message": "{{document.name}} was uploaded to the matter.", "recipientType": "PROJECT_OWNER"}                                                                                                                           |                |            | 2026-10-28 22:30:47.37192+00  | 2026-10-28 22:30:47.37192+00
+ request-complete-followup    | 1b7c6431-3f1b-4fe6-95ea-ecb9daa364d3 | 2f59366f-2a90-46b8-be2a-46f06ab24475 |          0 | CREATE_TASK       | {"assignTo": "PROJECT_OWNER", "taskName": "Review completed request: {{request.name}}", "taskDescription": "Information request has been completed. Please review the submitted documents."}                                                                              |                |            | 2026-10-28 22:30:47.372285+00 | 2026-10-28 22:30:47.372286+00
+ matter-onboarding-reminder   | c10cac66-da36-4f13-84eb-0c77377c45db | d3ca7ed2-b640-493d-b18c-777814725392 |          0 | SEND_NOTIFICATION | {"title": "Complete onboarding: {{customer.name}}", "message": "Client {{customer.name}} has entered the onboarding phase. Please complete the onboarding checklist, including FICA verification, conflict check, and engagement letter.", "recipientType": "ORG_ADMINS"} |                |            | 2026-10-28 22:30:47.413854+00 | 2026-10-28 22:30:47.413855+00
+(8 rows)
+
+-- Q7 document_templates name/description hits
+SELECT pack_id, pack_template_key, category, primary_entity_type, name, description FROM tenant_7d218705360b.document_templates WHERE name ~* '(project|customer|invoice)' OR description ~* '(project|customer|invoice)' ORDER BY pack_id;
+ pack_id |  pack_template_key   |    category     | primary_entity_type |          name          |           description           
+---------+----------------------+-----------------+---------------------+------------------------+---------------------------------
+ common  | project-summary      | PROJECT_SUMMARY | PROJECT             | Project Summary Report | Project summary report template
+ common  | invoice-cover-letter | COVER_LETTER    | INVOICE             | Invoice Cover Letter   | Cover letter for invoices
+(2 rows)
+
+-- Q7b all document_templates names
+SELECT pack_id, name, description FROM tenant_7d218705360b.document_templates ORDER BY pack_id, sort_order;
+    pack_id    |                name                |                                                                                                     description                                                                                                      
+---------------+------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ common        | Standard Engagement Letter         | Client engagement letter template
+ common        | Project Summary Report             | Project summary report template
+ common        | Invoice Cover Letter               | Cover letter for invoices
+ compliance-za | PAIA Section 51 Manual             | PAIA Section 51 manual required for South African private bodies
+ legal-za      | Engagement Letter — Litigation     | Standard litigation engagement letter covering scope, fees, and court procedures.
+ legal-za      | Engagement Letter — Conveyancing   | Conveyancing engagement letter for property transfer matters.
+ legal-za      | Engagement Letter — General        | General legal engagement letter for advisory and non-litigation matters.
+ legal-za      | Power of Attorney                  | Standard power of attorney template for authorising legal representation.
+ legal-za      | Notice of Motion                   | Court filing template for notice of motion applications.
+ legal-za      | Founding Affidavit                 | Court filing template for founding affidavit in motion proceedings.
+ legal-za      | Letter of Demand                   | Demand letter for collections and debt recovery matters.
+ legal-za      | Client Trust Statement             | Statement of trust account transactions and balances for a specific client.
+ legal-za      | Trust Receipt                      | Receipt for funds received into the trust account on behalf of a client.
+ legal-za      | Section 35 Cover Letter            | Cover letter for Section 35 trust account audit submission to the Legal Practice Council.
+ legal-za      | Matter Closure Letter              | Closure letter issued to the client at matter conclusion summarising fees, disbursements, and retention terms.
+ legal-za      | Statement of Account               | Statement of account summarising fees, disbursements, trust activity, and balance for a matter period.
+ legal-za      | Offer to Purchase                  | Offer to purchase for a conveyancing property transfer, covering parties, property, purchase price, occupation, and standard SA sale conditions (voetstoots, suspensive bond, transfer duty, FICA, rates clearance).
+ legal-za      | Deed of Transfer                   | Deed of transfer instrument lodged at the Deeds Office recording transfer of immovable property from transferor to transferee.
+ legal-za      | Power of Attorney to Pass Transfer | Power of attorney authorising the conveyancer to appear before the Registrar of Deeds and pass transfer on behalf of the transferor.
+ legal-za      | Bond Cancellation Instruction      | Instruction letter to the bond institution to cancel the mortgage bond and furnish the title deed and Form J consent.
+ legal-za      | Fee Note                           | Client-facing fee note with itemised fees and disbursements, VAT breakdown, matter reference, and totals.
+(21 rows)
+
+-- Q8 checklist_templates hits
+SELECT pack_id, name, description FROM tenant_7d218705360b.checklist_templates WHERE name ~* '(project|customer|invoice)' OR description ~* '(project|customer|invoice)';
+ pack_id | name | description 
+---------+------+-------------
+(0 rows)
+
+-- Q9 project_templates hits
+SELECT * FROM tenant_7d218705360b.project_templates WHERE project_templates::text ~* '(project|customer|invoice)' LIMIT 20;
+                  id                  |                  name                  |          name_pattern          |                                                                                                                                    description                                                                                                                                    | billable_default | source | source_project_id | active |              created_by              |          created_at           |          updated_at           | required_customer_field_ids | request_template_id |  work_type   
+--------------------------------------+----------------------------------------+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------+--------+-------------------+--------+--------------------------------------+-------------------------------+-------------------------------+-----------------------------+---------------------+--------------
+ a70cabd5-19ab-4650-8cc0-efb1842f6155 | Litigation (Road Accident Fund -- RAF) | {customer} - RAF Claim         | Personal-injury workflow for Road Accident Fund (RAF) claims under the Road Accident Fund Act 56 of 1996. Covers RAF1 claim filing, statutory medical assessments, RAF tariff negotiation, Section 24 court action, and 3/5-year prescription monitoring. Matter type: LITIGATION | t                | SEEDER |                   | t      | 00000000-0000-0000-0000-000000000002 | 2026-10-28 22:30:47.442432+00 | 2026-10-28 22:30:47.442451+00 | []                          |                     | LITIGATION
+ fb0ca9af-3e99-41a2-a41f-df123cef63b0 | Litigation (Personal Injury / General) | {customer} - Litigation        | Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION                                                                                                                                                                               | t                | SEEDER |                   | t      | 00000000-0000-0000-0000-000000000002 | 2026-10-28 22:30:47.44601+00  | 2026-10-28 22:30:47.446019+00 | []                          |                     | LITIGATION
+ 78548358-9f61-4d0d-b567-7ff9c55c957c | Deceased Estate Administration         | {customer} - Estate            | Administration of deceased estate from reporting to final distribution. Matter type: ESTATES                                                                                                                                                                                      | t                | SEEDER |                   | t      | 00000000-0000-0000-0000-000000000002 | 2026-10-28 22:30:47.446568+00 | 2026-10-28 22:30:47.446571+00 | []                          |                     | ESTATES
+ d82925b2-9200-4fbf-945e-e74ca6605330 | Collections (Debt Recovery)            | {customer} - Collections       | Debt recovery workflow from demand to execution. Matter type: COLLECTIONS                                                                                                                                                                                                         | t                | SEEDER |                   | t      | 00000000-0000-0000-0000-000000000002 | 2026-10-28 22:30:47.447286+00 | 2026-10-28 22:30:47.44729+00  | []                          |                     | COLLECTIONS
+ 10002bc6-62a2-4878-a77f-db81fcdd2c3b | Commercial (Corporate & Contract)      | {customer} - Commercial        | Corporate and commercial transaction workflow. Matter type: COMMERCIAL                                                                                                                                                                                                            | t                | SEEDER |                   | t      | 00000000-0000-0000-0000-000000000002 | 2026-10-28 22:30:47.447867+00 | 2026-10-28 22:30:47.447869+00 | []                          |                     | COMMERCIAL
+ 15b419b0-db2d-4e64-918e-9af53d0eea43 | Property Transfer (Conveyancing)       | {customer} - Property Transfer | Standard conveyancing workflow for property transfer from instruction through registration and file closure. Matter type: CONVEYANCING                                                                                                                                            | t                | SEEDER |                   | t      | 00000000-0000-0000-0000-000000000002 | 2026-10-28 22:30:47.448452+00 | 2026-10-28 22:30:47.448455+00 | []                          |                     | CONVEYANCING
+(6 rows)
+
+-- Q10 report template_body capitalised legacy words in context
+SELECT slug, m[1] AS context FROM tenant_7d218705360b.report_definitions, regexp_matches(template_body, '([^<>]{0,40}\m(?:Projects?|Customers?|Invoices?)\M[^<>]{0,30})', 'g') AS m;
+         slug          |           context            
+-----------------------+------------------------------
+ invoice-aging         | Invoice Aging Report
+ invoice-aging         | Invoice Aging Report
+ invoice-aging         | Customer:
+ invoice-aging         | Invoice #
+ invoice-aging         | Customer
+ project-profitability | Project Profitability Report
+ project-profitability | Project Profitability Report
+ project-profitability | Customer:
+ project-profitability | Project
+ project-profitability | Customer
+ project-profitability | Project Alpha
+(11 rows)
+
+-- Q11 full parameter_schema (labels/options) of the 3 reports
+SELECT slug, jsonb_pretty(parameter_schema) FROM tenant_7d218705360b.report_definitions;
+         slug          |             jsonb_pretty             
+-----------------------+--------------------------------------
+ timesheet             | {                                   +
+                       |     "parameters": [                 +
+                       |         {                           +
+                       |             "name": "dateFrom",     +
+                       |             "type": "date",         +
+                       |             "label": "From Date",   +
+                       |             "required": true        +
+                       |         },                          +
+                       |         {                           +
+                       |             "name": "dateTo",       +
+                       |             "type": "date",         +
+                       |             "label": "To Date",     +
+                       |             "required": true        +
+                       |         },                          +
+                       |         {                           +
+                       |             "name": "groupBy",      +
+                       |             "type": "enum",         +
+                       |             "label": "Group By",    +
+                       |             "default": "member",    +
+                       |             "options": [            +
+                       |                 "member",           +
+                       |                 "project",          +
+                       |                 "date"              +
+                       |             ]                       +
+                       |         },                          +
+                       |         {                           +
+                       |             "name": "projectId",    +
+                       |             "type": "uuid",         +
+                       |             "label": "Project",     +
+                       |             "required": false,      +
+                       |             "entityType": "project" +
+                       |         },                          +
+                       |         {                           +
+                       |             "name": "memberId",     +
+                       |             "type": "uuid",         +
+                       |             "label": "Member",      +
+                       |             "required": false,      +
+                       |             "entityType": "member"  +
+                       |         }                           +
+                       |     ]                               +
+                       | }
+ invoice-aging         | {                                   +
+                       |     "parameters": [                 +
+                       |         {                           +
+                       |             "name": "asOfDate",     +
+                       |             "type": "date",         +
+                       |             "label": "As of Date",  +
+                       |             "required": true        +
+                       |         },                          +
+                       |         {                           +
+                       |             "name": "customerId",   +
+                       |             "type": "uuid",         +
+                       |             "label": "Customer",    +
+                       |             "required": false,      +
+                       |             "entityType": "customer"+
+                       |         }                           +
+                       |     ]                               +
+                       | }
+ project-profitability | {                                   +
+                       |     "parameters": [                 +
+                       |         {                           +
+                       |             "name": "dateFrom",     +
+                       |             "type": "date",         +
+                       |             "label": "From Date",   +
+                       |             "required": true        +
+                       |         },                          +
+                       |         {                           +
+                       |             "name": "dateTo",       +
+                       |             "type": "date",         +
+                       |             "label": "To Date",     +
+                       |             "required": true        +
+                       |         },                          +
+                       |         {                           +
+                       |             "name": "projectId",    +
+                       |             "type": "uuid",         +
+                       |             "label": "Project",     +
+                       |             "required": false,      +
+                       |             "entityType": "project" +
+                       |         },                          +
+                       |         {                           +
+                       |             "name": "customerId",   +
+                       |             "type": "uuid",         +
+                       |             "label": "Customer",    +
+                       |             "required": false,      +
+                       |             "entityType": "customer"+
+                       |         }                           +
+                       |     ]                               +
+                       | }
+(3 rows)
+
+-- Q12 column labels with legacy words
+SELECT slug, c->>'key' AS key, c->>'label' AS label FROM tenant_7d218705360b.report_definitions, jsonb_array_elements(column_definitions->'columns') c WHERE c->>'label' ~* '(project|customer|invoice)';
+         slug          |      key      |   label   
+-----------------------+---------------+-----------
+ invoice-aging         | invoiceNumber | Invoice #
+ invoice-aging         | customerName  | Customer
+ project-profitability | projectName   | Project
+ project-profitability | customerName  | Customer
+(4 rows)
+
+-- Q13 checklist_template_items hits
+SELECT t.name, i.name, i.description FROM tenant_7d218705360b.checklist_template_items i JOIN tenant_7d218705360b.checklist_templates t ON t.id=i.template_id WHERE i.name ~* '(project|customer|invoice)' OR i.description ~* '(project|customer|invoice)';
+ name | name | description 
+------+------+-------------
+(0 rows)
+
+-- Q14 template_tasks hits
+SELECT name, description FROM tenant_7d218705360b.template_tasks WHERE name ~* '(project|customer|invoice)' OR description ~* '(project|customer|invoice)';
+ name | description 
+------+-------------
+(0 rows)
+
+-- Q15 field_groups all (entity_type + names)
+SELECT entity_type, pack_id, name, description FROM tenant_7d218705360b.field_groups ORDER BY entity_type, pack_id;
+ entity_type |         pack_id         |               name               |                                                     description                                                     
+-------------+-------------------------+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+ CUSTOMER    | legal-za-customer       | SA Legal — Client Details        | South African legal-specific fields for client entities
+ CUSTOMER    | sa-fica-company         | Company FICA Details             | 
+ CUSTOMER    | sa-fica-individual      | FICA Compliance                  | 
+ PROJECT     | common-project          | Project Info                     | Common project metadata fields
+ PROJECT     | conveyancing-za-project | SA Conveyancing — Matter Details | South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)
+ PROJECT     | legal-za-project        | SA Legal — Matter Details        | South African legal-specific fields for matter (project) entities
+ TASK        | common-task             | Task Info                        | Standard task metadata fields
+(7 rows)
+

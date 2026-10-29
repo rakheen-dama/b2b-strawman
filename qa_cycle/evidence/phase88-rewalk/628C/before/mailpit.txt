@@ -1,0 +1,96 @@
+=== Mailpit http://localhost:8026: 4 messages
+
+--- 85oYq8bJ2ko9gMsqverMd7 | Fee Note INV-0001 from E2E Test Organization | 2026-10-28T22:34:41.529Z
+   HIT: View Fee Note (http://localhost:3002/invoices/0864a3bb-d565-4e96-952d-86af2ce187ba?orgId=e2e-test-org)
+
+--- kuoGqzCJdougXzAztdo3aR | E2E Test Organization -- Please review offer to purchase for acceptance: offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-mvsoxhi2a97e-2026-10-28.pdf | 2026-10-28T22:34:09.536Z
+   (no legacy word)
+
+--- W8QGt5XjrEZN6RRBKd2cC2 | E2E Test Organization: Trust account activity | 2026-10-28T22:33:23.49Z
+   (no legacy word)
+
+--- fxnCH8J4jyzQdDNyCAvSY6 | E2E Test Organization: Trust account activity | 2026-10-28T22:33:20.608Z
+   (no legacy word)
+
+=== Mailpit http://localhost:8025: 27 messages
+
+--- 3GKRr6Q5kvGAA8nWYuZXwm | Mathebula & Partners: Your weekly update | 2026-10-28T00:29:00.769Z
+   (no legacy word)
+
+--- 4kq4mJxTX3CS9RbX2Pa9v7 | Mathebula & Partners: Your weekly update | 2026-10-28T00:29:00.722Z
+   (no legacy word)
+
+--- FeRJjuACzemq53xYi9xYWW | Mathebula & Partners: Your weekly update | 2026-10-28T00:29:00.668Z
+   (no legacy word)
+
+--- 9TihhJ5H7WfsGwtGVCZcnT | Weekly cash digest | 2026-10-27T23:29:00.928Z
+   (no legacy word)
+
+--- QdSYPzRdS6EemWN75FiQ3c | Weekly cash digest | 2026-10-27T23:29:00.858Z
+   (no legacy word)
+
+--- Y7Xvz2bMazmZF6T5SRhJRu | Your portal access link from Mathebula & Partners | 2026-10-24T22:36:43.16Z
+   (no legacy word)
+
+--- S5khrDgFvRcHzhezSnGGnt | Your portal access link from Khanyile Attorneys 624I | 2026-10-24T22:36:43.125Z
+   (no legacy word)
+
+--- Wj9hU6GPhYpU5UViFTKgSR | Invitation to join the Khanyile Attorneys 624I organization | 2026-10-24T22:31:26.277Z
+   (no legacy word)
+
+--- 56TrHdNWvwRZGus8ZXWFRL | Your Kazi verification code | 2026-10-24T22:29:43.172Z
+   (no legacy word)
+
+--- dQw5LfUsb3nqLjFPLHLsHi | Your portal access link from Mathebula & Partners | 2026-10-24T22:29:04.937Z
+   (no legacy word)
+
+--- 8aKFRbFgpzPHombJZLFKQx | Fee Note INV-0004 from Mathebula & Partners | 2026-10-24T22:28:21.25Z
+   HIT: View Fee Note (http://localhost:3002/invoices/0feb4764-f6f4-425d-9fb1-5ca250ab8c88?orgId=mathebula-partners)
+
+--- KiXVGm28CJ9vwoGf2UU5tv | Your portal access link from Mathebula & Partners | 2026-10-24T17:16:34.32Z
+   (no legacy word)
+
+--- KTQZxn2RX48unAR7Dsur6s | Your portal access link from Mathebula & Partners | 2026-10-24T17:15:31.849Z
+   (no legacy word)
+
+--- CeJo3ft4EfnhuJ4hc5TA2S | Mathebula & Partners: Trust account activity | 2026-10-24T09:07:36.951Z
+   (no legacy word)
+
+--- YRvSgdpYnmvyouhfPjkp9Q | Your portal access link from Mathebula & Partners | 2026-10-24T09:04:42.315Z
+   (no legacy word)
+
+--- V3DU5k7H4FtHyDHg3yMznH | Fee Note INV-0003 from Mathebula & Partners | 2026-10-24T09:01:33.671Z
+   HIT: View Fee Note (http://localhost:3002/invoices/b4b05648-dd33-42d4-8129-0a1bac6cc498)
+
+--- SBqVXVMDaUU9ynhwcjrwVs | Fee Note INV-0002 from Mathebula & Partners | 2026-10-24T08:42:22.122Z
+   HIT: View Fee Note (http://localhost:3002/invoices/4591b2c1-3404-4cb9-8b97-d0e3099bfb64)
+
+--- XjvC3zG6yBNwkHKNfVV69w | Fee Note INV-0001 from Mathebula & Partners | 2026-10-24T08:37:13.999Z
+   HIT: View Fee Note (http://localhost:3002/invoices/8878574f-e15f-4936-a8c0-dd05d17b5556)
+
+--- UnBca9Zyez9nFWwdTqXN8g | Mathebula & Partners: Trust account activity | 2026-10-24T08:32:44.581Z
+   (no legacy word)
+
+--- YjVWPRYXWBNiu6fVNGw7op | Mathebula & Partners: Trust account activity | 2026-10-24T07:34:00.487Z
+   (no legacy word)
+
+--- TFCEhbVRgeFpbmitdmhXYK | Mathebula & Partners: Trust account activity | 2026-10-24T07:33:21.241Z
+   (no legacy word)
+
+--- d9gZS6wKeVv9x8VLgBGSz8 | Confirmed: You have accepted engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-24.pdf | 2026-10-24T07:29:15.13Z
+   (no legacy word)
+
+--- 28EhbiQiutroWDXG8HUoB8 | Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-10-24.pdf | 2026-10-24T07:28:46.725Z
+   (no legacy word)
+
+--- LrRQahuUAwUYjQ99hBPLxU | Invitation to join the Mathebula & Partners organization | 2026-10-24T07:14:25.47Z
+   (no legacy word)
+
+--- bpNFVYg9uSpdZ3ynmm4Z3G | Invitation to join the Mathebula & Partners organization | 2026-10-24T07:14:22.34Z
+   (no legacy word)
+
+--- 82XSyceTe6H7gNexZ4nDMc | Invitation to join the Mathebula & Partners organization | 2026-10-24T07:13:26.043Z
+   (no legacy word)
+
+--- bgiRhuB2ThwbjxduUrkufv | Your Kazi verification code | 2026-10-24T07:08:41.495Z
+   (no legacy word)

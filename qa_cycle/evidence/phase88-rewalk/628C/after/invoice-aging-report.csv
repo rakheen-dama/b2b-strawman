@@ -1,0 +1,5 @@
+# Fee Note Aging Report
+# Generated: 2026-10-28T23:55:36.651601346Z
+# Parameters: asOfDate=2026-12-31
+Fee Note #,Client,Issue Date,Due Date,Amount,Currency,Days Overdue,Bucket
+INV-0001,Apex Holdings mvsoxhi2a97e,2026-10-28,2026-11-27,4025.00,ZAR,34,31-60 Days

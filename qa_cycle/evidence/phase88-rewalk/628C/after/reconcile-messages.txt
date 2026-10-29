@@ -1,0 +1,54 @@
+INFO PackReconciliationRunner: Running pack reconciliation for 1 tenants
+INFO PackVersionGate: Reconciling FIELD pack common-project v2 -> v3 for tenant tenant_7d218705360b
+INFO FieldPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=common-project field_group 'project_info' field name updated
+INFO FieldPackSeeder: Reconcile skipped (edited): tenant=tenant_7d218705360b pack=common-project field_group 'project_info' field description differs from the shipped value — left alone
+INFO FieldPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=common-project field_definition 'category' field description updated
+INFO PackVersionGate: Reconciling FIELD pack conveyancing-za-project v1 -> v2 for tenant tenant_7d218705360b
+INFO FieldPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=conveyancing-za-project field_group 'conveyancing_za_matter' field description updated
+INFO PackVersionGate: Reconciling FIELD pack legal-za-project v2 -> v3 for tenant tenant_7d218705360b
+INFO FieldPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=legal-za-project field_group 'legal_za_matter' field description updated
+INFO TemplatePackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=common document_template 'project-summary' field name updated
+INFO TemplatePackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=common document_template 'project-summary' field description updated
+INFO TemplatePackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=common document_template 'invoice-cover-letter' field name updated
+INFO TemplatePackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=common document_template 'invoice-cover-letter' field description updated
+INFO TemplatePackInstaller: Reconciled template pack common to v4 for tenant tenant_7d218705360b (0 new templates, 3 refreshed, 0 re-pinned after the reconcile block)
+INFO PackInstallService: Pack common reconciled to v4 for tenant tenant_7d218705360b (internal path)
+INFO PackVersionGate: Reconciling CLAUSE pack legal-za-clauses v1 -> v2 for tenant tenant_7d218705360b
+INFO ClausePackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=legal-za-clauses clause 'legal-za-fees-hourly' field body updated
+INFO PackVersionGate: Reconciling CLAUSE pack standard-clauses v1 -> v2 for tenant tenant_7d218705360b
+INFO ClausePackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-clauses clause 'payment-terms' field body updated
+INFO ClausePackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-clauses clause 'fee-schedule' field body updated
+INFO CompliancePackSeeder: Compliance pack generic-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+INFO CompliancePackSeeder: Compliance pack legal-za-individual-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+INFO CompliancePackSeeder: Compliance pack legal-za-trust-onboarding already applied for tenant tenant_7d218705360b, reconciling settings
+INFO CompliancePackSeeder: Compliance pack sa-fica-company already applied for tenant tenant_7d218705360b, reconciling settings
+INFO CompliancePackSeeder: Compliance pack sa-fica-individual already applied for tenant tenant_7d218705360b, reconciling settings
+INFO PackVersionGate: Reconciling REPORT pack standard-reports v1 -> v2 for tenant tenant_7d218705360b
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'timesheet' field description updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'timesheet' field parameterSchema updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'timesheet' field templateBody updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'invoice-aging' field name updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'invoice-aging' field description updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'invoice-aging' field parameterSchema updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'invoice-aging' field columnDefinitions updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'invoice-aging' field templateBody updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'project-profitability' field name updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'project-profitability' field description updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'project-profitability' field parameterSchema updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'project-profitability' field columnDefinitions updated
+INFO StandardReportPackSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=standard-reports report_definition 'project-profitability' field templateBody updated
+INFO PackVersionGate: Reconciling AUTOMATION_TEMPLATE pack automation-common v3 -> v4 for tenant tenant_7d218705360b
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'overdue-invoice-reminder' field name updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'overdue-invoice-reminder' field description updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[0].actionConfig.subject updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[0].actionConfig.body updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[1].actionConfig.title updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'overdue-invoice-reminder' field actions[1].actionConfig.message updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'budget-alert-escalation' field name updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'budget-alert-escalation' field description updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'budget-alert-escalation' field actions[0].actionConfig.title updated
+INFO AutomationTemplateSeeder: Reconcile applied: tenant=tenant_7d218705360b pack=automation-common automation_rule 'budget-alert-escalation' field actions[0].actionConfig.message updated
+INFO AutomationPackInstaller: Re-pinned content hash of 2 rules of automation pack automation-common after the reconcile block for tenant tenant_7d218705360b
+INFO PackInstallService: Pack automation-common reconciled to v4 for tenant tenant_7d218705360b (internal path)
+INFO ProjectTemplatePackSeeder: Project-template pack legal-za-project-templates already applied for tenant tenant_7d218705360b, reconciling settings
+INFO PackReconciliationRunner: Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed

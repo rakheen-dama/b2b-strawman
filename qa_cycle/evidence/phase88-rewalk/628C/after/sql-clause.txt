@@ -1,0 +1,14 @@
+-- A8b clause body text nodes containing legacy words (tokens {{..}} stripped)
+         pack_id         |      slug       |                                                ctx                                                 
+-------------------------+-----------------+----------------------------------------------------------------------------------------------------
+ conveyancing-za-clauses | fica-compliance | easonably required to enable   to comply with its customer due diligence obligations under FICA. F
+(1 row)
+
+-- A8c clause body updated_at for the 3 reconciled clauses
+     pack_id      |         slug         |          updated_at           
+------------------+----------------------+-------------------------------
+ legal-za-clauses | legal-za-fees-hourly | 2026-10-28 23:52:09.812736+00
+ standard-clauses | payment-terms        | 2026-10-28 23:52:09.823212+00
+ standard-clauses | fee-schedule         | 2026-10-28 23:52:09.828455+00
+(3 rows)
+

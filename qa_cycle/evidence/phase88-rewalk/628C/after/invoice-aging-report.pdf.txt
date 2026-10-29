@@ -1,0 +1,12 @@
+ Generated: 28 Oct 2026 23:55
+ Fee Note Aging Report
+ As of: 2026-12-31
+ 0.00 0.00 4025.00 0.00 0.00
+ CURRENT 1-30 DAYS 31-60 DAYS 61-90 DAYS 90+ DAYS
+ 0 fee notes 0 fee notes 1 fee notes 0 fee notes 0 fee notes
+ FEE CLIENT ISSUE DUE AMOUNT CURRENCY DAYS BUCKET
+ NOTE # DATE DATE OVERDUE
+ INV-0001 Apex Holdings 2026-10- 2026-11- 4025.00 ZAR 34 31-60 
+ mvsoxhi2a97e 28 27 Days
+ Total Outstanding 4025.00
+ Generated 28 Oct 2026 23:55

@@ -1,0 +1,62 @@
+=== rev 50b88ed5c (50b88ed5c)
+entity_files:      103
+entity_files_naive_grep(@Entity incl @EntityGraph):      104
+capability: 27
+audit_hasSize:
+84:    assertThat(registry.entries()).hasSize(29);
+131:    assertThat(registry.entriesMatching(Set.of())).hasSize(29);
+132:    assertThat(registry.entriesMatching(null)).hasSize(29);
+InvoiceStatus: 5
+AcceptanceStatus: 6
+matter_tabs:
+12:    expect(MATTER_TAB_GROUPS).toHaveLength(7);
+13:    expect(allTabs).toHaveLength(21);
+org_slug_pages: 57
+frontend_pages_total: 71
+portal_pages: 18
+restcontrollers:      122
+tenant_latest: V3__normalise_work_types.sql
+global_latest: V1__baseline.sql
+legacy_redirect_sources: 51
+=== rev HEAD (59aee8731)
+entity_files:      104
+entity_files_naive_grep(@Entity incl @EntityGraph):      105
+capability: 27
+audit_hasSize:
+139:    assertThat(registry.entries()).hasSize(33);
+190:    assertThat(registry.entriesMatching(Set.of())).hasSize(33);
+191:    assertThat(registry.entriesMatching(null)).hasSize(33);
+InvoiceStatus: 6
+AcceptanceStatus: 7
+matter_tabs:
+13:    expect(MATTER_TAB_GROUPS).toHaveLength(7);
+14:    expect(allTabs).toHaveLength(22);
+org_slug_pages: 57
+frontend_pages_total: 71
+portal_pages: 18
+restcontrollers:      122
+tenant_latest: V9__phase88_comment_attachments.sql
+global_latest: V2__portal_contact_directory.sql
+legacy_redirect_sources: 51
+=== entity diff B..HEAD
+22a23
+> backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentAttachment.java
+=== PortalContactDirectoryEntry declaration
+8: * JdbcClient} (DataClassRowMapper maps by column name) like the {@code Portal*View} records.
+10:public record PortalContactDirectoryEntry(
+=== BaselineSchemaParityTest targets
+39: * {@link TenantProvisioningService} but {@code .target("1")}, dumps it and the global {@code
+53: * global series is migrated into a scratch DATABASE with {@code .target("1")} — a scratch schema
+123:        .target(MigrationVersion.fromVersion("1"))
+150:        .target(MigrationVersion.fromVersion("1"))
+190:      assertThat(rs.getString(4)).as("scratch global lowest version").isEqualTo("1");
+191:      assertThat(rs.getString(5)).as("scratch global highest version").isEqualTo("1");
+209:      assertThat(rs.getString(4)).as("scratch lowest version").isEqualTo("1");
+210:      assertThat(rs.getString(5)).as("scratch highest version").isEqualTo("1");
+241:      assertThat(rs.getString(4)).as("%s lowest version", series).isEqualTo("1");
+=== matter-tab-groups.ts Team
+8: * (`customers` → `clients`) and the old setup-step id (`members` → `team`) are aliased in
+29:      { id: "team", label: "Team" },
+=== tool-contract.json history
+b0b234ae0 2026-10-19 Epic 607A: Phase 87 contract tests — wire-vocabulary ratchet, MCP tool contract, ADR-342 literal pins (#1588)
+{'outputRecords': 29, 'resourceTemplates': 2, 'resources': 1, 'tools': 21}

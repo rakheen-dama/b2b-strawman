@@ -1,0 +1,36 @@
+# C.10 deck check, 2026-10-29T23:57:34Z, exec-deck.html at worktree = origin/main (629D swap reverted after review: the 623B shots carry the Next.js dev indicator)
+git diff origin/main -- marketing/decks/exec-deck.html: 0 lines
+slides: 13
+lines: 209
+ok line 84 screens/phase87/home-owner.png 1440x900 42ecfb80c816
+ok line 85 screens/phase87/home-firm.png 1440x900 6c3d0cf3bf18
+ok line 86 screens/phase87/home-fee-earner.png 1440x900 a09c3117923f
+ok line 87 screens/phase87/diary-week.png 1440x900 2694bee474ba
+ok line 95 screens/phase87/matters-table.png 1440x900 798af2f474e6
+ok line 96 screens/phase87/clients-table.png 1440x900 1f219d6d239c
+ok line 97 screens/phase87/matter-fees-group.png 1440x900 efe038d42e24
+ok line 98 screens/phase87/portal-matters.png 1440x900 c351a3c0d946
+ok line 106 screens/phase87/settings-firm.png 1440x900 6b2eb02092bd
+ok line 107 screens/phase87/settings-matters.png 1440x900 e3f54201be0d
+ok line 108 screens/phase87/settings-documents.png 1440x900 009aff5fdc17
+ok line 109 screens/phase87/settings-fees.png 1440x900 5b0591f07b05
+ok line 110 screens/phase87/settings-connections.png 1440x900 25e2923ca5a8
+== phase88 files not referenced by the deck:
+unreferenced screens/phase88/clients-outstanding.png 1440x900
+unreferenced screens/phase88/clients.png 1440x900
+unreferenced screens/phase88/fee-note-lines.png 1440x900
+unreferenced screens/phase88/home-debtors.png 1440x900
+unreferenced screens/phase88/home.png 1440x900
+unreferenced screens/phase88/matters-fee-earner.png 1440x900
+unreferenced screens/phase88/matters.png 1440x900
+unreferenced screens/phase88/part-payment.png 1440x900
+unreferenced screens/phase88/wow-1.png 1440x900
+unreferenced screens/phase88/wow-2.png 1440x900
+unreferenced screens/phase88/wow-3.png 1440x900
+unreferenced screens/phase88/wow-4.png 1440x900
+unreferenced screens/phase88/wow-5.png 1440x900
+unreferenced screens/phase88/wow-6.png 1440x900
+unreferenced screens/phase88/wow-7.png 1440x900
+phase88 PNG count: 15
+== browser render check: NOT RUN (deck unchanged vs origin/main; the earlier 629D attempt was refused by Playwright MCP: 'Access to "file:" protocol is blocked.')
+== dev indicator read-back (629D, visual, 2026-10-30): the Next.js dev 'N' badge over the sidebar avatar is visible on all five 623B shots (home-debtors, matters-fee-earner, clients-outstanding, fee-note-lines, part-payment); home-debtors.png also shows the breadcrumb 'Dashboard'. Not visible on wow-2 (portal page), wow-3 or wow-6 (modal over the sidebar); wow-1, wow-4 and wow-7 not checked for it; wow-5 carries it (E.2b, full/exit-checkpoints.md:11).

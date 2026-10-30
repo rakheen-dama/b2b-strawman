@@ -26,17 +26,17 @@ Reproduce-first items from §13.12 (HYPOTHESIS in the register — resolved in t
 | 6 | **(breakdown-found) `lib/api/invoices.ts` does not exist.** §13.8.2 names it for U3; the invoice fetchers live in `$FA/invoices/invoice-crud-actions.ts` / `invoice-payment-actions.ts` and `lib/api/billing-runs.ts`. | 620C adds `fetchOutstandingSummaryAction` beside the existing list fetcher in `invoice-crud-actions.ts` (server action in the route folder, as its siblings); no new `lib/api` module. 622E's payment-form action goes into `invoice-payment-actions.ts`. | 620C | **Resolved** (620C, PR #1654) — `fetchOutstandingSummaryAction` lives in `invoice-crud-actions.ts`; no `lib/api/invoices.ts`. |
 | 7 | **(breakdown-found) Event naming.** Architecture names `AcceptanceDeclinedEvent`; the tree's siblings are `event/AcceptanceRequest{Sent,Viewed,Accepted,Expired,Revoked}Event`. | Name it `AcceptanceRequestDeclinedEvent` to match the family; record the deviation in the PR body. | 624F | **Resolved** — 624F (PR #1675) shipped `AcceptanceRequestDeclinedEvent` (eventType `acceptance_request.declined`); deviation recorded in the PR body. |
 | 8 | **(breakdown-found) Comment UI paths.** §13.8.2 names `components/comments/comment-form.tsx` and `lib/api/comments.ts`; the tree has `components/comments/{add-comment-form,comment-item,comment-section-client,edit-comment-dialog}.tsx` and no `lib/api/comments.ts` (comment server actions are co-located — the scout greps `"/comments"` under `$FA` and `components/comments`). | 627I edits `add-comment-form.tsx` + `edit-comment-dialog.tsx` + `comment-item.tsx` and the located action module; no new `lib/api` module unless one already exists for comments. | 627I | **Resolved** (627I, PR #1700): the actions live in `frontend/lib/actions/comments.ts` (`"use server"`) calling `lib/api/matters.ts` comment wrappers; no `lib/api/comments.ts` created. |
-| 9 | **(breakdown-found) Migration numbering after 623.** The Keycloak dev DB is the first persistent stack; the e2e stack counts only when it is **not** wiped (`e2e-reseed.sh` keeps data). 622's observed PASS runs on :3001 (wiped by E2E-LEGAL), so §3 is expected to append to V4; 623 applies V4 to Keycloak; 624F/626A/627B+627H then take V5/V6/V7 (627's two sections share one file while it is unapplied). | Each migration slice has a **Decision** row recording the number taken and the `flyway_schema_history` evidence; 623C records "V4 applied to Keycloak at <ts>" so no later slice appends to it. | 619B, 620A, 622B, 623C, 624F, 626A, 627B, 627H | Open — 620A appended §2 to V4 (Keycloak dev tenants `tenant_5039f2d497cf` / `tenant_56399d06a773` flyway history ends at V3 on 2026-10-23); do not restart the Keycloak backend on a post-619B build before 622B decides §3.; **623A (PR #1667): V4 applied to the Keycloak dev DB at 2026-10-24 09:01:53 SAST (`tenant_56399d06a773` durable record) — every later tenant migration takes a new file (V5+).** 623C: decision record `$EV/mid/migrations.md` (both Keycloak tenant schemas at max V4, global `public` at max V1 → next free tenant V5, global V2). **625C (PR #1681) took tenant V6; 626A (PR #1685) took V7 (KC dev tenants at max V5, e2e at V6 on 2026-10-27, `$EV/626A/before/migrations.md`) → 627B/627H take V8+.** **627B (PR #1694) took tenant V8 on 2026-10-28 (KC dev tenants at V5, e2e at V7 — `$EV/627B/before/migrations.md`); the e2e stack applied it but is wiped per E2E-LEGAL, so 627H may append §7 to V8 only if a fresh `flyway_schema_history` read on KC still shows no V8 row — otherwise V9.** **627H (PR #1699) took tenant V9 (`V9__phase88_comment_attachments.sql`).** The KC dev tenants `tenant_5039f2d497cf`/`tenant_56399d06a773` had applied V8 at 2026-10-28 12:23 (`$EV/627H/before/migrations.md`). V9 is applied on e2e only, from a fresh stack; KC applies it on its next start from main. BASELINE next free: **tenant V10**, global V3. |
+| 9 | **(breakdown-found) Migration numbering after 623.** The Keycloak dev DB is the first persistent stack; the e2e stack counts only when it is **not** wiped (`e2e-reseed.sh` keeps data). 622's observed PASS runs on :3001 (wiped by E2E-LEGAL), so §3 is expected to append to V4; 623 applies V4 to Keycloak; 624F/626A/627B+627H then take V5/V6/V7 (627's two sections share one file while it is unapplied). | Each migration slice has a **Decision** row recording the number taken and the `flyway_schema_history` evidence; 623C records "V4 applied to Keycloak at <ts>" so no later slice appends to it. | 619B, 620A, 622B, 623C, 624F, 626A, 627B, 627H | **Closed (629D):** final tenant **V9** (`V9__phase88_comment_attachments.sql`, 627H #1699), global **V2** (624A #1670); Keycloak tenants at V9 since 2026-10-29 13:42:28Z (`qa_cycle/evidence/phase88-rewalk/full/logs/kc-stack-flyway-after.txt`); next free tenant **V10**, global **V3** (`backend/db/BASELINE.md:70`); trail in § Closure report C.6. History: 620A appended §2 to V4 (Keycloak dev tenants `tenant_5039f2d497cf` / `tenant_56399d06a773` flyway history ends at V3 on 2026-10-23); do not restart the Keycloak backend on a post-619B build before 622B decides §3.; **623A (PR #1667): V4 applied to the Keycloak dev DB at 2026-10-24 09:01:53 SAST (`tenant_56399d06a773` durable record) — every later tenant migration takes a new file (V5+).** 623C: decision record `$EV/mid/migrations.md` (both Keycloak tenant schemas at max V4, global `public` at max V1 → next free tenant V5, global V2). **625C (PR #1681) took tenant V6; 626A (PR #1685) took V7 (KC dev tenants at max V5, e2e at V6 on 2026-10-27, `$EV/626A/before/migrations.md`) → 627B/627H take V8+.** **627B (PR #1694) took tenant V8 on 2026-10-28 (KC dev tenants at V5, e2e at V7 — `$EV/627B/before/migrations.md`); the e2e stack applied it but is wiped per E2E-LEGAL, so 627H may append §7 to V8 only if a fresh `flyway_schema_history` read on KC still shows no V8 row — otherwise V9.** **627H (PR #1699) took tenant V9 (`V9__phase88_comment_attachments.sql`).** The KC dev tenants `tenant_5039f2d497cf`/`tenant_56399d06a773` had applied V8 at 2026-10-28 12:23 (`$EV/627H/before/migrations.md`). V9 is applied on e2e only, from a fresh stack; KC applies it on its next start from main. BASELINE next free: **tenant V10**, global V3. |
 | 10 | **(breakdown-found) `AuditEventTypeRegistryTest hasSize(29)` ×3 (`:84,131,132`) was frozen in Phase 87.** Phase 88 adds four additive stored keys: `disbursement.restored` (621A), `invoice.partially_paid` + `invoice.payment_excess` (622B), `acceptance.declined` (624F). | Each adding slice bumps the three pins deliberately (29 → 30 → 32 → 33) with the ADR-342 comment at the emit site and the registry entry; `EntityTypeLiteralStabilityTest` stays green (no new entity type). Final count 33 is a closure-report number (629D). | 621A, 622B, 624F | **Resolved** — 621A 29→30, 622B 30→32, 624F (PR #1675) 32→33 (`acceptance.declined`, INFO/STANDARD). |
 | 11 | **(breakdown-found) Playwright file names.** Architecture names `legal-lifecycle/day-01-07` for the Carol steps; the tree has `day-01-03-onboarding.spec.ts` and `day-07-14-work-trust.spec.ts`. | 619E greps `skip\|fixme` for the Carol steps across both files and un-skips there; the new Team-tab spec is `legal-lifecycle/matter-team.spec.ts`. | 619E | **Resolved** (619E, PR #1650): day-01-03 had no Carol step. The only Carol skip was the runtime `test.skip` in day-07-14 "Carol: Log 90min…", because Carol (a Member) was never on the Day-1 matter (ADR-346). Fixed by a Day-1 Team-tab add + a strict Day-7 lookup; `matter-team.spec.ts` is new. |
 | 12 | **(breakdown-found) When does the shared debtor-book predicate constant land?** §13.8.4's `CollectionsSql.OUTSTANDING_PREDICATE` / `OUTSTANDING_AMOUNT` is described under U15 but the five sites are touched by U3 first. | 620B introduces `collections/CollectionsSql` with the **current** predicate (`status = 'SENT' AND due_date IS NOT NULL`, amount `total`) and routes the five native sites through it plus the source-scan unit test; 622D flips the two constants once (`IN ('SENT','PARTIALLY_PAID')`, `total - amount_paid`). | 620B / 622D | **Resolved (620B, PR #1653)** — `CollectionsSql` holds `OUTSTANDING_PREDICATE`, `OUTSTANDING_AMOUNT` **and** `OUTSTANDING_STATUSES` (Java-side set read by `CollectionsTriageService`; architecture review H1); 7 SQL strings + 2 triage filters routed; `CollectionsSqlSourceScanTest` pins per-file reference counts + predicate↔set consistency. **622D must flip all three together** (the consistency test fails otherwise). |
 | 13 | **(breakdown-found) `portal.portal_invoices.amount_paid` is in global V2 (624A) but U15 ships in 622.** | 622C makes `InvoiceSyncEvent` carry `amountPaid`; `PortalEventHandler` ignores it until 624A adds the column + `PortalInvoiceView.amountPaid` mapping; the portal fee-note balance UI is 624H. 622's acceptance for the portal line is therefore DEFERRED to 624H, stated in 622F's PR body. | 622C / 624A / 624H | Resolved — portal balance shipped in 624H (PR #1677) |
 | 14 | **(breakdown-found) Reconcile-framework inputs.** `seeder/AbstractPackSeeder.reconcileExistingPack` runs ungated today; `pack_install` rows exist only for DOCUMENT_TEMPLATE / AUTOMATION_TEMPLATE (`packs/{TemplatePackInstaller,AutomationPackInstaller}`); the request-pack seeder's class name (architecture: `RequestTemplatePackSeeder`) was not found by grep. | 625E extends `pack_install` writes to all `PackType` values, backfills CLAUSE/FIELD/REPORT rows from the OrgSettings pack-status lists (`recordPackApplication`), and names the request-pack seeder it finds in the PR body. | 625E | **Resolved — 625E (PR #1683):** request-pack seeder is `informationrequest/RequestPackSeeder` (no `RequestTemplatePackSeeder`); `pack_install` rows now written for CLAUSE / FIELD / REPORT / REQUEST (compliance not typed: string versions `"1.0.0"`, its autoInstantiate sync must stay ungated, `compliance-za` id already owns a DOCUMENT_TEMPLATE row); backfill reads the highest integer version from the OrgSettings pack-status lists, lazily on next boot (no migration). |
-| 15 | **(breakdown-found) Scenario amendments land in 628H (docs PR) but 621D and 627C un-fixme specs that already follow the amended order (5.9 reorder, 75.1→75.2).** | Allowed: register §5 is authorised (founder 2026-10-22, CLAUDE.md §6); each un-fixme PR body cites the §5 row it relies on; 628H applies the prose. 629 walks the amended scenario. | 621D, 627C, 628H | Open |
+| 15 | **(breakdown-found) Scenario amendments land in 628H (docs PR) but 621D and 627C un-fixme specs that already follow the amended order (5.9 reorder, 75.1→75.2).** | Allowed: register §5 is authorised (founder 2026-10-22, CLAUDE.md §6); each un-fixme PR body cites the §5 row it relies on; 628H applies the prose. 629 walks the amended scenario. | 621D, 627C, 628H | **Closed (629D):** 628H (#1710) applied §5 rows 1–15; §5a rows 1–18 founder-authorised 2026-10-29 and applied (row 14 `7ea0175ac`, rows 1–13 and 15–18 #1712 `45dcc7a6f`); §5a rows 19–20 documented as §5b, not applied; 629 walked the amended scenario (`qa_cycle/evidence/phase88-rewalk/full/README.md:3`). |
 | 16 | **(breakdown-found) SoA category column is a pack template edit.** U9's `DisbursementStatementDto.categoryLabel` needs `template-packs/legal-za/statement-of-account.json` to point at it — a pack content change that reaches existing tenants only through reconcile (ADR-356). | 626D's pack edit list includes `statement-of-account.json` with its `reconcile` entry; 626E ships the Java label only. **Ruled in 626D (R-3, PR #1688):** binding `categoryLabel` before 626E ships it would blank the column on main, so 626D moved only the SoA Payment Instructions (banking leaves) and left the category column on `category`; **626E** ships `DisbursementCategory.label()` + `DisbursementStatementDto.categoryLabel` **and** the SoA column edit with a legal-za **v9** bump + `content` reconcile entry (`from` = 626D's v8 SoA hash, PR #1688 body). | 626D / 626E | Ruled — 626E owns the column. **Closed by 626E (PR #1689):** `categoryLabel` + SoA column edit shipped in legal-za v9 (v8→v9 entry `from` `sha256:a1da22c9…`). |
 | 17 | **(breakdown-found) Two report controllers.** U19's profitability CSV goes on `report/ReportController` (the bespoke page's controller, `ReportService`), not `reporting/ReportingController` (report definitions); `ReportControllerTest` does not exist yet. | 627D creates `$T/report/ReportControllerTest`. | 627D | **Done** — 627D (PR #1696) created `$T/report/ReportControllerTest` (9 cases) + `ProfitabilityCsvExporterTest` (12). |
 | 18 | **(breakdown-found) `frontend/__tests__/capabilities.test.tsx`** is at the `__tests__` root, not `__tests__/lib/` as §13.8.6 says. | 618C edits the file that exists; the `Capability.java` read uses a repo-relative path like `no-terminology-remnants.test.ts`. | 618C | **Resolved** (PR #1645) — edited the root `__tests__/capabilities.test.tsx`; the backend-file-reading precedent is `__tests__/lib/constants/work-types.test.ts`. ADR-355 / §13.8.6 path text still says `__tests__/lib/` (docs-only follow-up). |
-| 19 | **(breakdown-found) Deck screenshots folder.** Phase 87 shot to `marketing/decks/screens/phase87/*.png` + `exec-deck.html`. | Phase 88 re-shoots go to `marketing/decks/screens/phase88/` (620E Home/Matters/Clients; 623B; 629B wow moments) and `exec-deck.html` references are updated in 629D. | 620E, 623B, 629B | Open — 620E shots landed in `phase88/{home,matters,clients}.png` (PR #1656 docs; e2e tenant); 623B shots landed in `phase88/{fee-note-lines,part-payment,home-debtors,clients-outstanding,matters-fee-earner}.png` (PR #1668; Mathebula KC tenant, 1440×900 light); 629B pending |
+| 19 | **(breakdown-found) Deck screenshots folder.** Phase 87 shot to `marketing/decks/screens/phase87/*.png` + `exec-deck.html`. | Phase 88 re-shoots go to `marketing/decks/screens/phase88/` (620E Home/Matters/Clients; 623B; 629B wow moments) and `exec-deck.html` references are updated in 629D. | 620E, 623B, 629B | **Folder closed; deck update DEFERRED (629D):** 629B copied wow-1…7 to `marketing/decks/screens/phase88/` (#1713), so the folder holds 15 PNGs. `exec-deck.html` was **not** updated in 629D: the five 623B Keycloak-tenant shots were captured under `next dev` and show the Next.js dev indicator over the avatar (`home-debtors.png` also shows the old "Dashboard" breadcrumb), and the Phase 87 shots they would replace are clean. The deck update moves to a re-shoot on a production frontend build after the HIGH follow-ups land (§ Closure report C.10, C.12 (a)); all 15 phase88 PNGs are listed as unreferenced in C.10. History: 620E shots landed in `phase88/{home,matters,clients}.png` (PR #1656 docs; e2e tenant); 623B shots landed in `phase88/{fee-note-lines,part-payment,home-debtors,clients-outstanding,matters-fee-earner}.png` (PR #1668; Mathebula KC tenant, 1440×900 light); 629B pending |
 
 ---
 
@@ -993,4 +993,452 @@ E12 (629.12) must produce a closure report containing, with evidence paths for e
 
 ## Closure report
 
-*(written by 629D — C.1 Overall status · C.2 Before / After · C.3 Stability pins · C.4 Terminology · C.5 Routes / redirects · C.6 Migrations · C.7 Verify evidence + Phase 88 PRs · C.8 Playwright · C.9 Capstone (C.9.1 what was walked · C.9.2 per-day evidence · C.9.3 exit checkpoints · C.9.4 gaps and attribution · C.9.5 E.11 handling · C.9.6 deferred and deviations) · C.10 Screenshots · C.11 Open questions disposition · C.12 Follow-ups · C.13 Lessons)*
+**Date:** 2026-10-30. **Measured on:** worktree branch `phase88/12D-closure-report` at `59aee8731` (= origin/main). Its product code is identical to the last code PR, #1709 `87784b799`, and to the 628I gate head `cb10c5d63`: `git log --oneline 87784b799..HEAD -- backend frontend portal packages gateway compose` and `git diff --stat cb10c5d63..HEAD -- <same dirs>` are both empty (`closure/logs/closure-provenance.txt`). The 629D diff touches only this file, `architecture/ARCHITECTURE.md` (one line), `tasks/lessons.md` and `qa_cycle/evidence/phase88-rewalk/closure/`; `marketing/decks/exec-deck.html` is unchanged (C.10). **Baseline:** `50b88ed5c` (#1642, the Phase 87 findings docs PR; §13.1). `50b88ed5c..a1b927b3f^` holds only the two "phase 88 docs" commits `45f20478d` and `08384751b`; the Phase 88 slices start at `a1b927b3f` (#1643, 618A).
+
+Status vocabulary follows root `CLAUDE.md` §3. VERIFIED / PASS = observed behaviour. PARTIAL = some of the part was observed working and some was observed failing. Anything not observed is DEFERRED. There is no PASS-with-note. FAIL appears only where this report quotes a scored checkpoint, test or exit test; part statuses use VERIFIED / PASS / PARTIAL / DEFERRED. This report **reports** what 629A / 629B / 629C scored and does not re-score any walk, exit or suite row. All evidence paths below are relative to `qa_cycle/evidence/phase88-rewalk/` unless they start with a repo directory (`tasks/`, `backend/`, `frontend/`, `portal/`, `marketing/`, `architecture/`, `.claude/`). Sub-roots: `full/` (629A/B/C end-of-phase re-walk), `mid/` (623 mid-phase walk), `closure/` (this slice's measurements, indexed in `closure/README.md`), and per-slice directories (`626A/`, `627B/`, `628I/` …). `/tmp/629D-*` paths are ephemeral; the tracked excerpts under `closure/logs/` are the durable evidence.
+
+### C.1 Overall status
+
+| Part | Status | Evidence |
+|---|---|---|
+| Build (code at HEAD) | **VERIFIED.** The 628I gate ran the full BE-VERIFY (6290 testcases / 0 F / 0 E / 26 skipped, 16:52), FE-GATE (lint 0 errors / 79 warnings, format clean, vitest 434 files / 3551 passed / 2 skipped, build OK) and PORTAL-GATE (lint 0 errors / 4 warnings, vitest 45 / 256, build OK) on `cb10c5d63`, and no code has changed since. At HEAD the targeted pin run is **127 testcases / 0 F / 0 E / 0 S** across 18 classes, and the frontend / portal guard runs are 136/136 and 23/23 (C.3) | `.claude/markers/verify-{backend,frontend,portal}.json` (all `"commit": "cb10c5d63"`, `"exit": 0`); `628I/gate.md:9-11`; `closure/logs/closure-provenance.txt`; `closure/logs/closure-contract-tests.txt`; `closure/logs/closure-vitest-guards.txt` |
+| Per-PR verify-marker trail | **PARTIAL.** 58 of 63 code PRs have a committed marker for every touched area (68 of 73 required markers, all `"exit": 0`); 5 Epic-624 PRs (#1671, #1672, #1673, #1676, #1677) have none committed → **G88-F35** (LOW, process). 71/71 PRs carry two bound verdicts and a `## CodeRabbit:` line | `full/markers-audit.md:113-128`, `:143-162`; `full/exit-checkpoints.md:25` (E.11e PARTIAL) |
+| Playwright, three suites on one fresh stack (629.9) | **PARTIAL.** Five legs observed equal to their 628I baselines (depth-ii 39/0/4, default 159/0/18/0, login-bare 1/0, isolation 2/0, `test:e2e:portal` 32/0/1, 0 soft-skips). The lifecycle leg was observed failing: **82 passed / 4 failed / 1 skipped / 17 did not run** (run 1, scored) → G88-F48 HIGH, G88-F49 LOW | `full/e2e-runs.md:39-48`; `full/logs/629C-lifecycle.txt`; C.8 |
+| Capstone 90-day walk (`legal-za-90day-keycloak.md`, as amended) | **PARTIAL.** Walked end to end and observed on the Keycloak stack: **344 scored rows = 302 PASS · 37 FAIL · 2 PARTIAL · 0 DEFERRED · 3 N/A** (+17 unscored NOTE rows) | `full/README.md:90`; `full/exit-checkpoints.md:9`; C.9 |
+| Portal 90-day walk (`portal-client-90day-keycloak.md`) | **PARTIAL.** **138 scored rows = 75 PASS · 34 FAIL · 0 PARTIAL · 25 DEFERRED · 4 N/A** (+5 NOTE); its own exit P-E.1 is FAIL | `full/README.md:91`; `full/portal-90day.md:126` |
+| Exit checkpoints E.1–E.11 (17 rows, E.2 split a/b) | **PARTIAL.** PASS 10 (E.2a, E.4, E.5, E.6, E.7, E.9, E.10, E.11a, E.11b, E.11d) · **FAIL 5 (E.1, E.2b, E.3, E.8, E.11)** · PARTIAL 1 (E.11e) · DEFERRED 0 · N/A 1 (E.11c). Of the phase-exit bar E.1/E.2/E.3/E.8/E.9 only E.9 is PASS | `full/exit-checkpoints.md:29`, `:31` |
+| AI-core walk | **DEFERRED, needs the user** (funded Anthropic key; owner: the founder, C.12 (b)) | `full/exit-checkpoints.md:27`; C.9.6 |
+| **Phase 88 overall** | **Phase 88: PARTIAL — not DONE. Exit test FAIL, not demo-ready: 3 HIGH (G88-F12, G88-F33, G88-F48); E.1, E.2b, E.3, E.8, E.11 FAIL. Follow-up: one fix PR per HIGH; the G88-F48 PR's out-of-window lifecycle run re-scores the 17 DEFERRED tests, `day-90-review.spec.ts:95` and `:192`.** | `full/gaps.md:37-50`, `:247-260`; `full/exit-checkpoints.md:37` |
+
+Per the task file (629.14 Notes), the phase is DONE only when C.1 reads VERIFIED for the build and PASS for the capstone with the exit numbers met. The capstone reads PARTIAL and the exit test FAILs, so Phase 88 is **not DONE**. (`day-90-review.spec.ts:192` is one of the 17 DEFERRED run-1 tests, `full/gaps.md:258`; it is named separately because it is also a former carried test.)
+
+### C.2 Before / After (checklist 1)
+
+Before = `50b88ed5c`, re-measured with the same commands (`git grep` / `git ls-tree` / `git show` against the commit). After = HEAD `59aee8731`. All values: `closure/logs/closure-metrics.txt` unless stated. Rows marked **MISMATCH** differ from the 629.12 row / closure checklist item 1, which stay as written (they are the spec of record).
+
+| Surface | Before (`50b88ed5c`) | After (observed) | Predicted | Note |
+|---|---|---|---|---|
+| `@Entity` files | 103 | **104** | 105 | **MISMATCH.** The +1 is `comment/CommentAttachment.java` (627H). `PortalContactDirectoryEntry` is a **record** read by `JdbcClient`, not an entity (`backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/directory/PortalContactDirectoryEntry.java:10` `public record …`). Counted with the boundary regex `^[[:space:]]*@Entity([[:space:]]\|$)`; a bare `@Entity` grep also matches `@EntityGraph` and reads 104 → 105 |
+| `Capability` constants | 27 | **27** | 27 | matches |
+| Audit event-type catalogue | 29 (`hasSize(29)` at `AuditEventTypeRegistryTest.java:84,131,132`) | **33** (`hasSize(33)` at `:139,190,191`) | 33 | matches; `AuditEventTypeRegistryTest` 19/19 green (C.3). Adds `disbursement.restored` (621A), `invoice.partially_paid` + `invoice.payment_excess` (622B), `acceptance.declined` (624F) — OQ #10 |
+| `InvoiceStatus` values | 5 | **6** (+`PARTIALLY_PAID`) | 6 | matches (622B #1662) |
+| `AcceptanceStatus` values | 6 | **7** (+`DECLINED`) | 7 | matches (624F #1675) |
+| Matter tab groups / tabs | 7 / 21 (`matter-tab-groups.test.ts:12-13`) | **7 / 22** (`frontend/__tests__/lib/constants/matter-tab-groups.test.ts:13-14`) | 7 / 22 | matches; the added tab is `team` under Details (`frontend/lib/constants/matter-tab-groups.ts:29`; 619D, ADR-346); 9/9 green (C.3) |
+| `page.tsx` under `org/[slug]` | 57 | **57** | 57 | matches (frontend total 71 → 71) |
+| Portal `page.tsx` | 18 | **18** | 18 | matches |
+| `@RestController` files (extra) | 122 | **122** | — | unchanged |
+| Frontend `LEGACY_REDIRECTS` rows (extra) | 51 | **51** | — | unchanged; C.5 |
+| Terminology sites | ≈589 (R8 census, `tasks/phase88-research/R8-terminology-census-shell-layout.md:24`: 261 FE/portal + 24 pack + 26 registry + 278 backend messages) | Grep: frontend + portal **0 non-test hits that render on screen** (raw 38 hits / 16 files FE and 13 / 8 portal; the 2 + 4 non-test lines are code comments). Backend raw 632 hits / 182 files, identical to 628I (identifiers, logs, JPQL). Walk: on-screen residuals remain (Note) | 0 | **MISMATCH as a user-visible claim.** The grep counts only what its regex matches; the walk still saw legacy wording on screen: G88-F27 ("Invoiced", a word form the ADR-357 regex misses), G-D10a (Audit trail prints stored event keys), G-D10c (`{customer.name}` naming token) → E.8 FAIL (`full/exit-checkpoints.md:17`; `full/gaps.md:114`, `:145`, `:147`). Backend residuals outside the R8 census: N-9…N-12 (`tasks/phase88-gap-register.md:69-72`). Counts: `closure/logs/closure-terminology.txt`; C.4 |
+| Carried Playwright failures | six (617C C.8, `tasks/phase87-legal-native-shell.md:1048-1053`) | **1 still carried** (`day-90-review.spec.ts:95`) + **1 DEFERRED** (`:192`); 4 resolved by 628E (#1707) — confirmed by run 1 | 0 | **MISMATCH** (629C ruling R-6, `full/gaps.md:13`; `full/e2e-runs.md:91-104`); C.8 |
+| Tenant / global migrations | V3 / V1 | **V9** / **V2** | V7 / V2 | **MISMATCH (tenant).** 625C took V6, 627B V8, 627H V9 under the "next free at build time" rule (OQ #9); spec drift already flagged by 629A (`full/README.md:25`, ruling C-2). C.6 |
+| `BaselineSchemaParityTest` target | tenant `"1"` | tenant **and** global `.target(MigrationVersion.fromVersion("1"))` at `BaselineSchemaParityTest.java:123,150`; scratch history asserts version `"1"` at `:190-191` (global) and `:209-210` (tenant) | both `"1"` | matches; 6/6 green (C.3) |
+| Backend testcases (extra, informational) | 5444 (617C marker `43bb21a94`) | **6290** / 0 F / 0 E / 26 skip (628I marker on `cb10c5d63`) | — | `.claude/markers/verify-backend.json` |
+| Frontend / portal vitest (extra, informational) | 406 files / 3008 / 2 skip; portal 42 / 193 (617C) | **434 / 3551 / 2**; portal **45 / 256** (628I) | — | `.claude/markers/verify-{frontend,portal}.json` |
+
+### C.3 Stability pins and real-write-path tests (checklist 2, 3)
+
+Targeted run in the worktree backend (no `target/` before the run, so the first compile is included; zombie check first, none found): `./mvnw test -q -Dtest='EntityTypeLiteralStabilityTest,WireVocabularyContractTest,McpToolContractTest,LayerDependencyRulesTest,TenantScopeBindingTest,BaselineSchemaParityTest,PortalLinkBuilderArchTest,MatterScopedPublisherGuardTest,CollectionsSqlSourceScanTest,TerminologyRemnantScanTest,AuditEventTypeRegistryTest,TemplateCreatedMatterReadPathIntegrationTest,CollectionsReadApiTest,InvoiceLifecycleIntegrationTest,FicaOutstandingIntegrationTest,CustomerFicaStatusIntegrationTest,MatterFeedIntegrationTest,ClientActivityIntegrationTest'` → **EXIT 0**, wall 66 s, finished 2026-10-29T23:37:43Z. 18 report files, one per class; the three ArchUnit classes produced reports. Counts are `<testcase>` elements, not the `<testsuite tests=…>` attribute. Durable excerpt: `closure/logs/closure-contract-tests.txt`; full log (ephemeral): `/tmp/629D-pins.log`. This is an inner-loop evidence run, not a full `./mvnw verify` (the gate evidence is C.7).
+
+| Test | Kind | `<testcase>` | F / E / S | Observation |
+|---|---|---|---|---|
+| `EntityTypeLiteralStabilityTest` | unit | 3 | 0 / 0 / 0 | ADR-342 literal pins hold |
+| `WireVocabularyContractTest` | Spring | 2 | 0 / 0 / 0 | stdout "DTO offenders in scope io.b2mash.b2b.b2bstrawman (excluding .mcp): 0" and "ROUTE offenders …: 0"; ratchet baseline `backend/src/test/resources/wire/batch1-known-offenders.txt` has 0 non-comment entries |
+| `McpToolContractTest` | Spring | 1 | 0 / 0 / 0 | `tool-contract.json` history = **one commit**, `b0b234ae0` Epic 607A (#1588), so unchanged since 607A. Contents: tools 21, resources 1 + resourceTemplates 2, outputRecords 29 |
+| `LayerDependencyRulesTest` | ArchUnit | 3 | 0 / 0 / 0 | — |
+| `TenantScopeBindingTest` | ArchUnit | 5 | 0 / 0 / 0 | — |
+| `BaselineSchemaParityTest` | Spring | 6 | 0 / 0 / 0 | tenant and global branches at target `"1"` (C.2) |
+| `PortalLinkBuilderArchTest` | ArchUnit | 3 | 0 / 0 / 0 | new Phase 88 guard |
+| `MatterScopedPublisherGuardTest` | unit (source scan) | 3 | 0 / 0 / 0 | new Phase 88 guard |
+| `CollectionsSqlSourceScanTest` | unit | 5 | 0 / 0 / 0 | new Phase 88 guard (OQ #12) |
+| `TerminologyRemnantScanTest` | unit | 6 | 0 / 0 / 0 | new Phase 88 guard; `REASONS` at `TerminologyRemnantScanTest.java:89` |
+| `AuditEventTypeRegistryTest` | unit | 19 | 0 / 0 / 0 | catalogue 33 |
+| `TemplateCreatedMatterReadPathIntegrationTest` (U1) | Spring | 7 | 0 / 0 / 0 | real-write-path. The run log carries one ERROR line (`AssignMemberActionExecutor` 409 "Member already on matter"); it is output of the passing test `assignMemberProjectOwnerResolvesToTheTemplateLead` |
+| `CollectionsReadApiTest` (U3) | Spring | 12 | 0 / 0 / 0 | includes `realPath_feeNoteApprovedAndSentAppearsInDebtorBookAndSummary` (`:603`), present in the report |
+| `InvoiceLifecycleIntegrationTest` (U3) | Spring | 28 | 0 / 0 / 0 | includes `approveWithoutDueDateStampsIssuePlusTerms` (`:258`) and `typedDueDatePreserved` (`:292`), both present in the report |
+| `FicaOutstandingIntegrationTest` (U4) | Spring | 6 | 0 / 0 / 0 | `TestChecklistHelper` ×4 |
+| `CustomerFicaStatusIntegrationTest` (U4) | Spring | 6 | 0 / 0 / 0 | `TestChecklistHelper` ×10 |
+| `MatterFeedIntegrationTest` (U5) | Spring | 4 | 0 / 0 / 0 | — |
+| `ClientActivityIntegrationTest` (U6) | Spring | 8 | 0 / 0 / 0 | — |
+| **Total** | | **127** | **0 / 0 / 0** | |
+
+Frontend and portal guards (`pnpm install --frozen-lockfile` at the worktree root, then `pnpm vitest run --reporter=verbose <files>` with `NODE_OPTIONS=""`; `closure/logs/closure-vitest-guards.txt`):
+
+| Guard | Passed / failed / skipped |
+|---|---|
+| `frontend/__tests__/no-terminology-remnants.test.ts` | 5 / 0 / 0 |
+| `portal/__tests__/no-terminology-remnants.test.ts` (twin) | 8 / 0 / 0 |
+| `frontend/__tests__/no-adhoc-currency.test.ts` | 4 / 0 / 0 |
+| `frontend/__tests__/capabilities.test.tsx` (drift pin; reads backend `Capability.java`) | 12 / 0 / 0 |
+| `frontend/__tests__/eslint-rules/no-isvisible-catch.test.ts` | 65 / 0 / 0 |
+| `portal/__tests__/eslint-rules/no-isvisible-catch.test.ts` (drift test vs the frontend copy) | 13 / 0 / 0 |
+| `frontend/__tests__/lib/constants/matter-tab-groups.test.ts` | 9 / 0 / 0 |
+| `frontend/__tests__/lib/legacy-redirects.test.ts` | 34 / 0 / 0 |
+| `frontend/__tests__/no-legacy-hrefs.test.ts` | 7 / 0 / 0 |
+| `portal/__tests__/next-config-redirects.test.ts` | 2 / 0 / 0 |
+| **Total** | frontend **136 / 0 / 0** (7 files); portal **23 / 0 / 0** (3 files) |
+
+The `no-isvisible-catch` ESLint rule is enabled as `"error"` in `frontend/eslint.config.mjs:36` (`kazi-frontend-local/no-isvisible-catch`) and `portal/eslint.config.mjs:25` (`kazi-portal-local/no-isvisible-catch`); `frontend/e2e/eslint/no-isvisible-catch.mjs` and `portal/e2e/eslint/no-isvisible-catch.mjs` are byte-identical (`cmp`, `closure/logs/closure-terminology.txt`). The whole-suite evidence for every class above (they are inside the 6290 / 3551 / 256) is the 628I gate on byte-identical code (C.7).
+
+### C.4 Terminology (checklist 1, terminology row)
+
+- 628I gate grep re-run at HEAD, `grep -rnE '\b(Projects?|Customers?|Invoices?)\b'` (`closure/logs/closure-terminology.txt`):
+  - `frontend/{app,components,lib}`: **38 hits / 16 files / 2 non-test lines**, both comments (`frontend/components/field-definitions/CustomFieldSection.tsx:457`, `frontend/lib/constants/entity-types.ts:2`).
+  - `portal/{app,components,lib}`: **13 hits / 8 files / 4 non-test lines**, all comments (`portal/app/(authenticated)/profile/page.tsx:32-33`, `portal/lib/auth.ts:6`, `portal/lib/types.ts:91`).
+  - `backend/src/main`: **632 hits / 182 files**. These counts are identical to 628I at `cb10c5d63`, whose classification (413 identifiers, 122 comments, 80 literals, 17 resource files; 0 user-visible inside the R8 scope) is in `628I/grep.md:3-25`. 629D re-ran the raw counts only; the 628I classifier script was never committed, so no new classification is claimed.
+- Allow-lists: `frontend/__tests__/terminology-allow-list.json` 9 entries, `portal/__tests__/terminology-allow-list.json` 0; backend `REASONS` at `TerminologyRemnantScanTest.java:89`.
+- Guard tests green at HEAD: `TerminologyRemnantScanTest` 6/6 (C.3), `no-terminology-remnants.test.ts` 5/5 + portal twin 8/8 (C.3).
+- Phase 87 mechanism scan (`useTerminology|TerminologyText|…|terminology-map` over `frontend/{app,components,lib}`, `portal/{app,components,lib}`, `packages/shared/src`): still **0 files**.
+- **What the scans do not cover.** The walk still observed legacy wording on screen: G88-F27 (disbursement "**Invoiced** · Yes", `frontend/app/(app)/org/[slug]/legal/disbursements/[id]/detail-client.tsx:291`; the ADR-357 regex matches `Invoices?`, not "Invoiced"), G-D10a (Firm › Audit trail prints the stored event key, `audit-log-client.tsx:1025`) and G-D10c (Naming placeholder `{customer.name}`, `project-naming-settings.tsx:68,86`). E.8 is scored FAIL on G88-F27 + G-D10a (`full/exit-checkpoints.md:17`; `full/gaps.md:208`). The 90.1a sweep found zero Project / Customer / Invoice over 28 nav links, 29 pages, 31 settings tabs, 22 matter sub-tabs and every create dialog (`full/exit-checkpoints.md:17`). Residual backend sites outside the R8 census: N-9…N-12 (`tasks/phase88-gap-register.md:69-72`).
+
+### C.5 Routes / redirects (no checklist item; 629.12 C.5)
+
+- `git log --oneline 50b88ed5c..HEAD -- frontend/lib/legacy-redirects.ts` is **empty**; the table still has **51** `source:` rows (same at `50b88ed5c`, `closure/logs/closure-metrics.txt`). `frontend/__tests__/lib/legacy-redirects.test.ts:459-470` still pins 43 settings rows (32 tab + 11 route) and 17 settings `page.tsx`; 34/34 green (C.3).
+- Phase 88 changed settings **labels**, not ids: `frontend/lib/settings-nav.ts:222` and `:283` carry "The id stays (ADR-341)" next to the "Rates" and "Integrations" labels (628B #1704). The only `next.config.ts` change since the baseline is #1651 (`8f35312df`, next 16.3.8), not a redirect.
+- `curl -sI` probes, read-only `HEAD` requests, 2026-10-29T23:37Z = 01:37 SAST on 2026-10-30 (`closure/logs/closure-redirects.txt`). No service was started or restarted.
+  - Keycloak frontend :3000 (`next-server` v16.3.8 from the main checkout, HEAD `59aee8731`). Every probe returned **308**:
+    - `/org/mathebula-partners/settings/general` → `/settings/firm?tab=general`
+    - `/settings/billing` → `/settings/firm?tab=subscription`
+    - `/settings/rates` → `/settings/fees?tab=tariffs` (tab id `tariffs` kept under the "Rates" label)
+    - `/settings/project-templates/x` → `/settings/matters/templates/x`
+    - `/projects/x` → `/matters/x`; `/customers/x` → `/clients/x`; `/calendar` → `/diary`
+  - e2e frontend :3001 (the 629C diagnostic fresh stack, built from `239df0f13` = product tree `cb10c5d63`, `full/e2e-runs.md:163-164,174`): `/org/e2e-test-org/settings/general` → **308** `/settings/firm?tab=general`; `/projects/x` → **308** `/matters/x`.
+  - Portal :3002 (svc `next dev` from the main checkout): `/projects` → **308** `/matters`.
+- Browser observation in the walk: 90.4 PASS, typing `/settings/billing` lands on `?tab=subscription` (`full/exit-checkpoints.md:13`).
+
+### C.6 Migrations (checklist 4)
+
+- `ls backend/src/main/resources/db/migration/tenant | sort -V | tail -1` → **`V9__phase88_comment_attachments.sql`**; `ls backend/src/main/resources/db/migration/global | sort -V | tail -1` → **`V2__portal_contact_directory.sql`** (`closure/logs/closure-migrations.txt`, "RE-RUN 2026-10-29T23:57:55Z" block). The checklist and 629.12 predicted tenant V7; see the trail below.
+- Next free: tenant **V10**, global **V3** (`backend/db/BASELINE.md:70`). `TASKS.md:5` still says "next free tenant V4, global V2" (stale; C.12 (d)).
+- `BaselineSchemaParityTest` 6/6 green, both branches at target `"1"` (C.3). The V1 baselines are untouched since Phase 86 (`d8fb3983c`, #1577).
+- **OQ #9 decision trail** (per-file `git log` in `closure/logs/closure-migrations.txt`):
+
+| Version | File | Slice · PR · squash | Decision evidence |
+|---|---|---|---|
+| tenant V4 §1 | `V4__phase88_demo_ready.sql` | 619B · #1647 · `9649cdb88` (created 2026-10-23) | applied on the e2e stack only, which every gate wipes; OQ #9 State (`tasks/phase88-demo-ready-root-cause-closure.md:29`) |
+| tenant V4 §2 (append) | same file | 620A · #1652 · `5656330d8` (2026-10-23) | Keycloak tenants still at V3 on 2026-10-23 (OQ #9 State) |
+| tenant V4 §3 (append) | same file | 622B · #1662 · `1b419d74d` (merged 2026-10-24T01:51:00Z, `gh pr view 1662`) | appended before V4's first persistent application |
+| V4 first applied to a persistent stack | — | 623A · #1667; decision record 623C · #1669 | Keycloak `tenant_56399d06a773` 2026-10-24 09:01:53 SAST = 07:01:53Z (`mid/migrations.md:7-9`); every later change takes a new file |
+| tenant V5 | `V5__phase88_acceptance_decline.sql` | 624F · #1675 · `15fe4a3b4` | next free V5 (`mid/migrations.md`) |
+| tenant V6 | `V6__phase88_audit_customer_index.sql` | 625C · #1681 · `1631e4868` | OQ #9 State ("625C took tenant V6"); not in the spec's trail list (619B, 620A, 622B, 623C, 624F, 626A, 627B, 627H), included here |
+| tenant V7 | `V7__phase88_letterhead.sql` | 626A · #1685 · `fc70aad69` | `626A/before/migrations.md`; `626A/after/01-db-flyway-and-columns.txt` |
+| tenant V8 | `V8__phase88_retention_comment_attachments.sql` | 627B · #1694 · `f78b041f6` | `627B/before/migrations.md`; `627B/after/sql.txt` |
+| tenant V9 | `V9__phase88_comment_attachments.sql` | 627H · #1699 · `18082ab72` | `627H/before/migrations.md` (Keycloak tenants at V8 since 2026-10-28 12:23) |
+| global V2 | `V2__portal_contact_directory.sql` | 624A · #1670 · `ccd04c467` | Keycloak `public` V2 installed 2026-10-24 19:13:06 (re-read below) |
+| Keycloak end state | — | 629A KC-STACK | both tenants V8 → V9 at the 2026-10-29 13:42:28Z start, `public` V2 (`full/README.md:47-71`; `full/logs/kc-stack-flyway-before.txt`, `full/logs/kc-stack-flyway-after.txt`) |
+
+- **Read-only `flyway_schema_history` re-read by 629D** (2026-10-29T23:37Z, SQL not captured; re-run at 23:57:55Z inside `BEGIN TRANSACTION READ ONLY` … `ROLLBACK` with the exact SQL and the same rows, `closure/logs/closure-migrations.txt`): `tenant_56399d06a773` top rows V9 (2026-10-29 15:42:28 SAST) and V8 (2026-10-28 12:23:09); `public` V2 (2026-10-24 19:13:06) and V1 (2026-10-18). `tenant_5039f2d497cf` shows V1…V9 all installed 2026-10-29 15:47:22–15:47:23 SAST: 629A Session 0 dropped that schema (R.3, `full/session-0.md:13`) and the walk re-provisioned Mathebula from scratch at V9, so its rows postdate the 13:42Z start.
+- **No edit to an applied file.** `git log --diff-filter=M 50b88ed5c..HEAD -- backend/src/main/resources/db/migration` lists exactly two commits, both on V4 (620A `5656330d8`, 622B `1b419d74d`), both merged before V4's first persistent application at 07:01:53Z on 2026-10-24. The e2e stack had applied V4 earlier, but every gate wipes it, which is the plan's definition of "not persistent" (OQ #9; `backend/db/BASELINE.md:70-71`).
+- **DDL guards** (`closure/logs/closure-migrations.txt`): every tenant V4–V9 file references `current_schema()` (V4 ×7, V5 ×2, V6–V9 ×1 each) and uses `IF [NOT] EXISTS` guards. Global V2 schema-qualifies `portal.*` and uses `IF NOT EXISTS` (3 guards) with no `current_schema()`: a global migration is not tenant-scoped, so the checklist's "every DDL guard `current_schema()`-scoped" applies to the tenant series only.
+
+#### C.6.1 Pack reconcile (checklist 5)
+
+**PARTIAL.** The reconcile itself was observed in the backend log of the 629A start; the after-restart UI observation on a **reconciled** tenant was not made, because the walked tenant was re-provisioned.
+- Observed (log): `PackReconciliationRunner` "checked 2 tenants, 2 succeeded, 0 failed" at 13:42:29Z, with 8 packs bumped in the two pre-walk tenants: FIELD common-project v2→v3, conveyancing-za-project v1→v2, legal-za-project v2→v3; template pack common → v4; CLAUSE legal-za-clauses v1→v2, standard-clauses v1→v2; REPORT standard-reports v1→v2; automation-common v3→v4 (`full/README.md:61-65`; `full/logs/kc-stack-backend-startup.txt`, 88 reconcile lines).
+- Not observed on a reconciled tenant: Session 0 then dropped `tenant_5039f2d497cf` (`full/session-0.md:13`, `:24`) and re-provisioned Mathebula from the bumped packs. The walk therefore saw the reconciled **content** on a fresh install, not a reconcile into an existing tenant: the disabled "Document uploaded — notify matter lead" rule (0.56 PASS, `full/day-00.md:73`); the seven conveyancing OTP clauses (14.8a PASS, `full/days-08-21.md:98`; the binding half 14.8b FAIL → G88-F12); the fee-note letterhead (38.3 / 47.2 PASS, `full/days-36-60.md:28`, `:43`); legal pack and report names (90.1a PASS, `full/exit-checkpoints.md:17`). The other pre-walk tenant (`tenant_56399d06a773`, `org_phase86_squash_smoke`) was reconciled but not walked.
+- The firm-edited-row branch of reconcile is unit-test only: platform templates are read-only in the UI (lesson in C.13).
+
+### C.7 Verify evidence and Phase 88 PRs (checklist 6)
+
+**How the markers work.** Three marker files (`.claude/markers/verify-{backend,frontend,portal}.json`) are overwritten by each slice, so the per-PR evidence is the version **committed** for that PR (normally its post-merge `docs: Slice … done (#N)` commit). The merge hook (`.claude/hooks/pre-pr-merge-gate.sh`) reads the local file, checks mtime ≤ 24 h, `"exit": 0` and that `"commit"` is an ancestor of the PR head; it does not read `ts`, which is free text (`full/markers-audit.md:5-11`, `:166`). The marker format is `commit` / `command` / `exit` / `ts` / `summary` (`.claude/markers/README.md` "Marker format").
+
+**629.10 audit (629C, `full/markers-audit.md`; the 71-row per-PR table is there, not copied here):**
+- 71 PRs audited (#1643–#1713, contiguous) = **8 docs-only** (#1667, #1668, #1669, #1678, #1710, #1711, #1712, #1713) + **63 code PRs** (`:117-119`).
+- 73 area markers required, **68 recovered**, all `"exit": 0`, 0 not-ancestor; **58 / 63** code PRs complete; **5** with no committed marker (#1671, #1672, #1673, #1676, #1677) → **G88-F35** (`:120-123`). Their merge transcripts show the hook was satisfied, not bypassed; the post-merge docs commits, made from `worktree-docs-624X` checkouts, never `git add`-ed the marker (`:143-162`). Mitigation: the Epic 624 gate markers on `bd32f07ff` (BE 5743 tc, FE 417/3150/2, portal 44/233), committed in `12de7d3e4`.
+- CodeRabbit **69 REVIEWED / 2 DEFERRED** (#1653, #1703; #1703 had 265 files, over CodeRabbit's 150-file limit); **71/71** PRs carry two bound `## Verdict: APPROVE` lines (`:124-126`).
+- Commits without a PR (`:131-139`): gate-only 618D `e4cb137c8`, 625G `1c2447f12`, 628I `138119b81`; direct commit `7ea0175ac` (§5a row 14, founder-authorised docs, a process observation); 627G N/A (OQ #2).
+- After the audit: **#1714** (629C) is docs-only, squash `54cb266f5`, head `b93c2197f`, two `## Verdict: APPROVE @b93c2197f` lines, `## CodeRabbit: REVIEWED — 7 findings, addressed in fixer pass`. **629D** is this PR (docs-only, so it needs no area marker).
+
+**Current markers vs HEAD** (`closure/logs/closure-provenance.txt`): all three read `"commit": "cb10c5d63"`, `"exit": 0` — backend `./mvnw spotless:apply -q && bash scripts/verify.sh -q`, 6290 testcases / 0 F / 0 E / 26 skipped across 745 reports, 16:52 (ts 2026-10-29T12:48:25Z); frontend lint 0 errors / 79 warnings, format clean, vitest 434 files / 3551 passed / 2 skipped, build OK (12:34:12Z); portal lint 0 errors / 4 warnings, format clean, vitest 45 files / 256 passed, build OK (12:34:34Z). `git diff --stat cb10c5d63..HEAD -- backend frontend portal gateway packages compose` is empty; the 9 commits since are docs-only (612 `qa_cycle/` paths, 7 `marketing/`, 4 `qa/`, 3 `.claude/`, 2 `tasks/`, 1 `TASKS.md`).
+
+**Phase 88 PRs** (squash SHAs re-derivable with `git log --grep='(#N)'`; areas per `full/markers-audit.md` § Per-PR audit):
+
+| Epic | Slice · PR · squash (areas) |
+|---|---|
+| 618 | 618A #1643 `a1b927b3f` (backend) · 618B #1644 `38aba3758` (portal) · 618C #1645 `1b41573fd` (frontend) · 618D gate `e4cb137c8` (no PR) |
+| 619 | 619A #1646 `ef63813cf` (backend) · 619B #1647 `9649cdb88` (backend) · 619C #1648 `648e65560` (backend) · 619D #1649 `04d0ab454` (frontend) · 619E #1650 `9ff0963cf` (frontend) · 619E deps #1651 `8f35312df` (frontend, portal) |
+| 620 | 620A #1652 `5656330d8` (backend) · 620B #1653 `f15348332` (backend) · 620C #1654 `d514c24b5` (frontend) · 620D #1655 `fa4850692` (backend) · 620E #1656 `a326e6b10` (frontend) |
+| 621 | 621A #1657 `9dce4f14e` (backend) · 621B #1658 `df5e79dcf` (frontend) · 621C #1659 `b1df9c850` (frontend) · 621D #1660 `985e2d18d` (frontend) |
+| 622 | 622A #1661 `706a13555` (backend) · 622B #1662 `1b419d74d` (backend, frontend, portal) · 622C #1663 `4ccc255c2` (backend) · 622D #1664 `f78c22b27` (backend) · 622E #1665 `424b4380c` (backend, frontend) · 622F #1666 `957bc8765` (frontend) |
+| 623 | 623A #1667 `092f75505` · 623B #1668 `2a17c6ff6` · 623C #1669 `4a6cdd818` (all docs-only) |
+| 624 | 624A #1670 `ccd04c467` (backend) · 624B #1671 `211a6dfc8` (backend, no marker) · 624C #1672 `44c123007` (backend, no marker) · 624D #1673 `011028434` (portal, no marker) · 624E #1674 `9ad07aa7e` (backend) · 624F #1675 `15fe4a3b4` (backend, frontend) · 624G #1676 `1fe9799a0` (frontend, no marker) · 624H #1677 `4e7fc7827` (portal, no marker) · 624I #1678 `12de7d3e4` (docs-only + Epic 624 gate markers) |
+| 625 | 625A #1679 `60ac43b65` (backend) · 625B #1680 `6b80488a2` (backend) · 625C #1681 `1631e4868` (backend) · 625D #1682 `bd14638c7` (frontend) · 625E #1683 `7a1311207` (backend) · 625F #1684 `c331f3a7d` (backend, frontend) · 625G gate `1c2447f12` (no PR) |
+| 626 | 626A #1685 `fc70aad69` (backend) · 626B #1686 `46e5411ef` (backend) · 626C #1687 `969c9a36c` (frontend) · 626D #1688 `b66061708` (backend) · 626E #1689 `93ed0191c` (backend, frontend) · 626F #1690 `8f8017c28` (frontend) · 626G #1691 `347b94ee6` (backend) · 626H #1692 `6b15cc40f` (frontend) |
+| 627 | 627A #1693 `b0e94dc41` (frontend) · 627B #1694 `f78b041f6` (backend) · 627C #1695 `8c3a7a808` (frontend) · 627D #1696 `3559fe6c9` (backend) · 627E #1697 `fbf0af126` (frontend) · 627F #1698 `d4efc84f1` (frontend) · 627G N/A · 627H #1699 `18082ab72` (backend) · 627I #1700 `08c627141` (frontend) · 627J #1701 `3e9e5c5a2` (portal) · 627K #1702 `5aacb61a8` (frontend) |
+| 628 | 628A #1703 `4f1886c24` (frontend, packages; human-merged) · 628B #1704 `8a0b96265` (frontend, portal) · 628C #1705 `f812283a4` (backend, frontend) · 628D #1706 `d55417882` (backend) · 628E #1707 `ded12e044` (frontend) · 628F #1708 `15e19187d` (frontend) · 628G #1709 `87784b799` (portal; last code PR) · 628H #1710 `cfc3e4db9` (docs-only) · 628I gate `138119b81` (no PR) |
+| (orchestrator) | §5a rows 1–13, 15–18 #1712 `45dcc7a6f` (docs-only) · §5a row 14 direct commit `7ea0175ac` |
+| 629 | 629A #1711 `9a08796e4` · 629B #1713 `3c037ebb6` · 629C #1714 `54cb266f5` · 629D this PR (all docs-only) |
+
+### C.8 Playwright (checklist 7)
+
+Source: `full/e2e-runs.md` (629.9, 629C builder 2). One fresh mock-auth stack (`e2e-down.sh` removed all containers and both volumes; full image build from the 629C worktree at `20559c3d6`, product tree = `cb10c5d63`), chain 21:52:45Z–22:23:55Z on 2026-10-29. All six legs ran inside the 00:00–02:00 SAST window in which the browser date (SAST) and the container date (UTC) differ (`full/e2e-runs.md:5-18`). Run 1 is the scored result; there was no re-run to get green (629C ruling R-1).
+
+| Suite | Passed | Failed | Skipped | Flaky | Did not run | 628I baseline | Verdict | Log |
+|---|---|---|---|---|---|---|---|---|
+| E2E-LEGAL lifecycle | 82 | 4 | 1 | 0 | 17 | 101/0/3 | **FAIL** → G88-F48 HIGH, G88-F49 LOW (the 4th failure cascades from F48) | `full/logs/629C-lifecycle.txt` |
+| E2E-LEGAL depth-ii | 39 | 0 | 4 | 0 | 0 | 39/0/4 | **PASS** (= baseline) | `full/logs/629C-depth-ii.txt` |
+| E2E-DEFAULT | 159 | 0 | 18 | 0 | 0 | 159/0/18/0 | **PASS** (= baseline) | `full/logs/629C-default.txt` |
+| E2E-PORTAL login-bare | 1 | 0 | 0 | 0 | 0 | 1/0 | **PASS** (= baseline) | `full/logs/629C-login-bare.txt` |
+| E2E-PORTAL isolation (`KGOSI_EMAIL`) | 2 | 0 | 0 | 0 | 0 | 2/0 | **PASS** (= baseline) | `full/logs/629C-isolation.txt` |
+| E2E-PORTAL `test:e2e:portal` (responsive + portal-client-90day) | 32 | 0 | 1 | 0 | 0 | 32/0/1 | **PASS** (= baseline) | `full/logs/629C-portal.txt` |
+
+Source table: `full/e2e-runs.md:39-46`. Lifecycle reported "Running 104 tests"; 82 + 4 + 1 + 17 = 104 (`:48`).
+
+- **Failures → gaps** (`full/e2e-runs.md:56-71`): `day-07-14-work-trust.spec.ts:167` and `:306` → G88-F49 (My Work "today" computed on the server in UTC); `day-60-interest.spec.ts:96` → **G88-F48** (fee transfer dated by server `LocalDate.now()` in UTC a day before its funding deposit: a −8 500,00 balance day, interest average R 7 516,13 instead of R 7 790,32); `day-90-review.spec.ts:95` → cascade of G88-F48 (`siphoFeeNote2` not recorded; its own assertion not exercised). Not a harness defect: the spec's host-local dates mirror the product's own browser defaults (629C ruling R-2, `:73-77`).
+- **Skips = the named 628I sets, 0 soft-skips** (`full/e2e-runs.md:79-89`). Lifecycle differs only by the cascade (1 named fixme skipped, 2 named fixmes in "did not run").
+- **Portal 90-day: 0 soft-skipped** (`test:e2e:portal` 32/0/1, the 1 skip = the named Day 75 `628G-BLOCKER` fixme, `:88`).
+- **Visual regression is not scored** by any leg: no baseline PNG is committed and the runs pass `--update-snapshots=all` (`:35`).
+- **Diagnostic re-run (unscored, 629C ruling R-3):** fresh stack, Playwright host `TZ=UTC` as the one controlled change, still inside the window → **101 / 0 / 3** (= 628I baseline); the four run-1 failures passed, and the 17 run-1 "did not run" tests ran (15 passed, 2 named fixmes skipped). It confirms the zone dependency; it does not change run 1's scored FAIL, and F48 / F49 stand because real SA browsers run on SAST (`:159-175`; `full/logs/629C-diag-summary.txt`).
+
+**Former carried six** (617C C.8; scored on run 1 only, 629C ruling R-6; `full/e2e-runs.md:91-104`):
+
+| 617C location | HEAD location | Title | Run 1 (scored) | Status |
+|---|---|---|---|---|
+| `day-00-firm-setup.spec.ts:282` | `day-00-firm-setup.spec.ts:242` + `:262` | "Trust account — Mathebula & Partners Trust Account (GENERAL, Standard Bank) exists" + "LPFF rate 6.5% — …" | PASSED | **resolved by 628E (#1707) — confirmed by run** |
+| `day-30-billing.spec.ts:32` | `day-30-billing.spec.ts:90` | "Generate Sipho's fee note from unbilled time, add an LSSA tariff item and a sheriff disbursement line (VAT 15%)" | PASSED | **resolved by 628E (#1707) — confirmed by run** |
+| `day-30-billing.spec.ts:159` | `day-30-billing.spec.ts:141` | "Create Apex fee note — fixed fee R35,000 + VAT = R40,250" | PASSED | **resolved by 628E (#1707) — confirmed by run** |
+| `day-45-recon-prescription.spec.ts:41` | `day-45-recon-prescription.spec.ts:50` | "Start a bank reconciliation — select the trust account and period end, reach the statement upload step" | PASSED | **resolved by 628E (#1707) — confirmed by run** |
+| `day-90-review.spec.ts:63` | `day-90-review.spec.ts:95` | "Fee notes list shows the run's five fee notes" | FAILED (G88-F48 cascade) | **still failing — carried** (passed only in the unscored diagnostic run) |
+| `day-90-review.spec.ts:179` | `day-90-review.spec.ts:192` | "Profitability report — revenue, cost and margin columns for this month's matters" | did not run (serial after `:95`) | **DEFERRED** (one of the 17; passed only in the unscored diagnostic run) |
+
+Tally: **4 of 6 resolved by 628E (#1707) — confirmed by run 1**; 1 still carried; 1 DEFERRED. Owner of the last two and of the 17 DEFERRED run-1 tests: the G88-F48 fix PR's lifecycle run, outside 00:00–02:00 SAST or after G88-F49 is fixed (`day-07-14-work-trust.spec.ts:330` sits behind F49; `full/gaps.md:258`).
+
+### C.9 Capstone (checklist 8, 9)
+
+#### C.9.1 What was walked
+
+- **Scenarios.** `qa/testplan/demos/legal-za-90day-keycloak.md` (as amended by 628H #1710, §5a #1712 and `7ea0175ac`) and `qa/testplan/demos/portal-client-90day-keycloak.md`, both **walked end to end and observed** on the Keycloak dev stack on 2026-10-29 (`full/README.md:3`). Services: frontend :3000, gateway :8443, backend :8080, Keycloak :8180, Mailpit :8025, portal :3002 (a production build was swapped in for portal steps, `next dev` restored after each swap). Served from the main checkout at `138119b81` (product tree = `cb10c5d63`) after `./mvnw -q clean compile -DskipTests` (`full/README.md:9-23`).
+- **Walkers.** 629A W1a…W4 (Session 0, Day 0, Days 1–35) and 629B W5a…W9 (Day 30 SoA, Days 36–90, portal 90-day, exit checkpoints) (`full/README.md:3`, `:213-229`). Driver: Playwright MCP in a real browser, real Keycloak logins, portal magic links from Mailpit. REST only for the Mailpit API; DB evidence is read-only `SELECT`s. The only stack actions were the scenario's Session 0 reset (backend stopped at R.0 and started at R.6, `full/session-0.md:5-16`) and INFRA rows (portal prod-build swaps; one walker incident, INFRA-5, recorded as not PASS) (`full/exit-checkpoints.md:19`, E.10 PASS).
+- **Mid-phase walk (623, for context).** 623A/623B walked Days 0–7, 36–47 and 61–75 on the same stack; its register had 0 BLOCKER / 0 HIGH / 5 MEDIUM / 9 LOW (`mid/README.md:120`), and the four Epic-623 HIGH chains (G-C9, G-C10, G-C11, G-D21) passed in the browser (`mid/README.md:133`).
+
+`svc.sh status` at start (verbatim, 2026-10-29 ≈13:42Z, `full/README.md:27-36`; port holders 175 / 334 / 421 / 494 had etimes of 00:08–00:33, so all four were fresh from HEAD):
+
+```
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      99912    yes      yes      8080
+  gateway      207      yes      yes      8443
+  frontend     344      yes      yes      3000
+  portal       441      yes      yes      3002
+```
+
+The backend JVM that served the walk (:8080 PID 1420, started at Session 0 R.6, 13:43:49Z) and the gateway (:8443 PID 334) ran unchanged through W9 (etime 07:21:36 / 07:22:51 at 21:05Z, `full/exit-checkpoints.md:19`).
+
+#### C.9.2 Per-day evidence tables
+
+Each day file has one row per scored step: Step · Result · Evidence · Mailpit ID · Screenshot · Gap; rows added by rulings are unscored `NOTE` rows in a separate table. Counts below are 629A/629B's own (`full/README.md:79-92`, recounted by grep in `full/logs/exit-checkpoints-counts.txt`).
+
+| Section | File | Scored rows | PASS / FAIL / PARTIAL / DEFERRED / N/A | NOTE |
+|---|---|---|---|---|
+| Session 0 | `full/session-0.md` | 18 | 13 / 2 / 2 / 0 / 1 | 0 |
+| Day 0 | `full/day-00.md` | 88 | 81 / 7 / 0 / 0 / 0 | 2 |
+| Days 1–7 | `full/days-01-07.md` | 70 | 61 / 9 / 0 / 0 / 0 | 3 |
+| Days 8–21 | `full/days-08-21.md` | 47 | 39 / 8 / 0 / 0 / 0 | 4 |
+| Days 22–35 | `full/days-22-35.md` | 27 | 22 / 4 / 0 / 0 / 1 | 1 |
+| Day 30 SoA + Days 36–60 | `full/days-36-60.md` | 38 | 35 / 3 / 0 / 0 / 0 | 0 |
+| Days 61–75 | `full/days-61-75.md` | 20 | 19 / 1 / 0 / 0 / 0 | 7 |
+| Days 76–90 | `full/days-76-90.md` | 36 | 32 / 3 / 0 / 0 / 1 | 0 |
+| **90-day total** (Session 0 → Day 90) | 8 files | **344** | **302 / 37 / 2 / 0 / 3** | 17 |
+| **Portal 90-day** (separate scenario) | `full/portal-90day.md` | **138** | **75 / 34 / 0 / 25 / 4** | 5 |
+| **All walked rows** | 9 files | **482** | **377 / 71 / 2 / 25 / 7** | 22 |
+
+Portal split: steps + checkpoints 117 = 70 / 29 / 0 / 15 / 3; portal exit 21 = 5 / 5 / 0 / 10 / 1 (`full/README.md:91`). Phase 87 comparison: 228 PASS · 53 FAIL · 24 DEFERRED · 2 N/A of 307 (`tasks/phase87-legal-native-shell.md:1111`); the two scorings are not row-for-row comparable (Phase 88 splits mixed rows into a/b rows).
+
+Other evidence:
+- Screenshots: `full/screens/` holds 396 PNGs (`find full/screens -name '*.png' | wc -l`), named `<step>-<slug>.png`.
+- Logs: `full/logs/` holds 200 files (DB re-reads, Mailpit sweeps, startup logs, suite logs).
+- Mailpit: each message is named by ID in the day files' Mailpit column; 21 messages at the end of 629B, `email_delivery_log` SENT 13; audit events 288 (`full/README.md:309-311`).
+- Phase 87 gaps observed closed in the walk: 23 rows, including the 617C HIGH gaps G-C9, G-C10 and G-D1, and G-C11, G-D21 (`full/gaps.md:217-245`). The other two 617C HIGH gaps (G-B3, G-B7) were observed closed in the mid-phase walk (`mid/README.md:127`).
+
+#### C.9.3 Exit checkpoints (`full/exit-checkpoints.md`)
+
+Scored by 629B W9 (computed from the day files, no new browser observation) and, for E.11, by 629C (`full/exit-checkpoints.md:3`, `:39-43`). Reported as scored.
+
+| Checkpoint | Result | One line |
+|---|---|---|
+| E.1 every step checked | **FAIL** | 344 scored rows = 302 / 37 / 2 / 0 / 3; 7 of the 37 FAILs were scored against text #1712 later amended (inside §5a), 30 remain either way (`:9`) |
+| E.2a 7 wow moments captured | PASS | all 7 from PASS source rows, 1440 × 900, copied to `marketing/decks/screens/phase88/wow-{1..7}.png` (`:10`; `full/logs/exit-checkpoints-wow-copy.txt`) |
+| E.2b … without visual regression | **FAIL** | visible defects in the deck frames of wow 4 (G88-M13 "--" tile), 5 (G88-F4 clipped "%", plus the Next.js dev "N" overlay), 6 (G88-M10 tariff-line order) and 7 (G88-F24 raw "DONE") (`:11`) |
+| E.3 gap register | **FAIL** | W9 computed HIGH 2 (G88-F12, G88-F33); the authoritative register now holds **3 HIGH** with G88-F48 (`:12`, `:41`; `full/gaps.md:54`) |
+| E.4 tier removal | PASS | Subscription flat, team invite has no gate, "3 members" with no seat limit (`:13`) |
+| E.5 field promotion | PASS | Client / Matter / Task create dialogs (`:14`) |
+| E.6 progressive disclosure | PASS | six zones, 28 links, 4 legal modules, 0 cross-vertical items (`:15`) |
+| E.7 Keycloak onboarding, no mock IDP | PASS | Day 0 full path; 4 FAILs are button labels only (G88-F1) (`:16`) |
+| E.8 terminology sweep | **FAIL** | 90.1a PASS; 90.1b FAIL on G88-F27, plus G-D10a (`:17`; `full/gaps.md:208`) |
+| E.9 audit recorded + filterable | PASS | 276 = SELECT 276 at 85.1; filterable by actor, entity, event type (`:18`) |
+| E.10 one pass, no mid-loop fix | PASS | same backend / gateway JVMs Session 0 → W9; no dev dispatch (`:19`) |
+| E.11 test-suite gate | **FAIL** | the 629.9 lifecycle leg (G88-F48 / G88-F49); other legs = baseline (`:20`) |
+| E.11a `./mvnw -B verify` | PASS | by the 628I marker on byte-identical code (`:21`) |
+| E.11b `pnpm test` | PASS | by the 628I marker (`:22`) |
+| E.11c `pnpm typecheck` | N/A | the script does not exist → G88-F47 (`:23`) |
+| E.11d `pnpm lint` | PASS | by the 628I marker, 0 errors / 79 warnings (`:24`) |
+| E.11e every fix PR passed the gates | PARTIAL | 58 / 63 code PRs auditable; G88-F35 (`:25`) |
+
+Counts: PASS 10 · FAIL 5 · PARTIAL 1 · DEFERRED 0 · N/A 1 (`:29`). Phase-exit bar (Epic 629 goal: E.1/E.2/E.3/E.8/E.9 PASS): only **E.9** PASS (`:31`). 617C → 629 delta: E.9 FAIL → PASS; E.2 FAIL → E.2a PASS / E.2b FAIL; E.11 DEFERRED → FAIL; HIGH 5 → 3 (`:33`).
+
+**E.2b reading (routed to 629D, `full/gaps.md:196`; orchestrator ruling: E.2b is kept as scored and not re-scored in the closure).** E.2b stays **FAIL** as W9 scored it: the deck frames show four visible defects, and re-scoring a computed checkpoint in a closure report would be re-scoring. The alternative reading — "visual regression" = "worse than a prior walk", under which E.2b would be PASS because all four defects pre-date the walk — is recorded here and not applied. The exit verdict is FAIL under either reading (E.1, E.3, E.8, E.11 FAIL).
+
+**Verdict: the legal-za 90-day scenario is not demo-ready at `cb10c5d63`** (product tree of HEAD `59aee8731`; `full/exit-checkpoints.md:37`; `full/gaps.md:260`).
+
+#### C.9.4 Gaps and attribution (checklist 9)
+
+The authoritative register is `full/gaps.md` (629C, ruling O-10). **63 open gaps + 1 hypothesis: BLOCKER 0 · HIGH 3 · MEDIUM 15 · LOW 45**; by class product bug 49 · scenario mismatch needing authorisation 12 · process 1 · ADR conflict 1; G88-F36 (LOW, HYPOTHESIS) is not counted (`full/gaps.md:54-61`). The 12 scenario mismatches are 7 "design proven", 4 "missing feature — design intent unproven" and 1 "scenario-internal inconsistency", each with file:line (`:63`). Not open: G88-F8 (retired alias), G88-M1 (closed by §5a row 1), G-D5 (DEFERRED — not observed) (`:65-69`). Next free id: **G88-F50** (`:81`).
+
+| ID | Sev | What | Owner (register) |
+|---|---|---|---|
+| **G88-F12** | HIGH | OTP "Voetstoots (As Is)" clause names the **firm** (`org.name`, `backend/src/main/resources/clause-packs/conveyancing-za-clauses/pack.json:36`) as the party not liable for defects; the "Seller:" line is empty because `project.customFields.seller_name` (`backend/src/main/resources/template-packs/legal-za/offer-to-purchase.json:54-55`) has no field definition in any field pack (`full/gaps.md:87`; step 14.8b) | new — follow-up phase (attribution: U10 626G associated the clause and did not cover the binding; Seller line pre-existing) |
+| **G88-F33** | HIGH | Two Statements of Account for one matter and one period end share one S3 key (`StatementService.java:130-133,384-388`; same pattern `GeneratedDocumentService.java:245`); the Day-75 INTERNAL closure SoA overwrote the portal-shared Day-30 SoA, and the client downloaded the internal statement (`full/gaps.md:88`; P-60.5a, P-CP60.1; `full/logs/portal90-P-60.4-soa-download.pdf` vs `full/logs/days36-60-30.6-soa-download.pdf`) | new — follow-up phase (attribution: file naming, pre-Phase 88) |
+| **G88-F48** | HIGH | Server-dated trust postings use `LocalDate.now()` in the JVM default zone, UTC in containers (`TrustTransactionService.java:622` and the reversal / account / investment sites): between 00:00 and 02:00 SAST a fee transfer is dated the day before its funding deposit → a −8 500,00 client balance day, interest R 7 516,13 average instead of R 7 790,32 (`full/gaps.md:152`; `full/logs/629C-lifecycle-date-boundary-diagnosis.md`; `full/logs/629C-lifecycle-db-reverify.txt`) | new — follow-up fix PR (firm-timezone clock; red-first test) |
+
+**FAIL rows outside register §5:** 59 of the 71 scored day-file FAIL rows (37 90-day + 34 portal); 12 are inside §5 (7 in applied §5a rows, 5 in documented §5b rows); plus the 4 failing lifecycle tests and the computed exit FAILs (`full/gaps.md:39-50`, `:165-179`, `:251-254`). The exit bar "0 FAIL outside §5" is therefore not met.
+
+**Attribution — what the register states, no new classification (orchestrator ruling: report the register's attribution notes, do not add a classification).** Phase 87's closure classified every gap by code archaeology; Phase 88's register did not. Of the 63 open rows, **32** carry an "attribution:" note in their owner cell and **31** do not (count over `full/gaps.md:87-153`). The notes say which earlier work introduced, reproduced or did not cover the gap, for example: a Phase 88 slice that did not cover it (G88-F4 628B, G88-F16 626D, G88-F27 U21 628A–628D, G88-F29 / F31 628G + U21), a Phase 88 surface (G88-F17 625C, G88-F24 625A/625B, G88-F26 625C/625D), pre-Phase 88 code (G88-F19, G88-F23 Epic 448B, G88-F33), Phase 87 (G-D10a 616A), or reproduced by the 628E / 628F suite sweeps (G88-F38…F46). The register does **not** classify the 63 as Phase-88-introduced vs pre-existing, and this report does not either: "not classified" is the honest state. Of the three HIGH, two carry a note (F12: 626G associated the clause; F33: pre-Phase 88 naming); F48 carries none.
+
+#### C.9.5 E.11 (test-suite gate) handling
+
+629C scored the 90-day E.11 block (629C ruling R-4) and 629D does not rewrite it:
+
+| Sub-item | Last observed run | Status (as scored) |
+|---|---|---|
+| E.11 umbrella | 629.9 chain: lifecycle 82/4/1/17 | **FAIL** |
+| (a) `./mvnw -B verify` | `verify-backend.json` @ `cb10c5d63`: 6290 tc / 0 F / 0 E / 26 skip | PASS by marker; code byte-identical to HEAD |
+| (b) `pnpm test` | `verify-frontend.json` @ `cb10c5d63`: vitest 434 / 3551 / 2 | PASS by marker |
+| (c) `pnpm typecheck` | — | N/A — no such script (G88-F47) |
+| (d) `pnpm lint` | 0 errors / 79 warnings | PASS by marker |
+| (e) every fix PR passed the gates | 629.10 audit | PARTIAL (G88-F35) |
+
+These are observed runs on a byte-identical tree, not re-runs at HEAD; 629D added only the targeted pin run (C.3).
+
+**Portal exit rows not re-scored (orchestrator ruling: report them as left by 629B/629C, do not re-score).** 629B marked P-E.2b, P-E.10, P-E.11 and P-E.11a–d "DEFERRED → 629C" (`full/portal-90day.md:128`, `:141-146`); 629C did not re-score them. They stay **DEFERRED**, and `full/portal-90day.md` is untouched. The inputs that exist: the 628I PORTAL-GATE marker on byte-identical code (lint 0 errors / 4 warnings, build OK, vitest 45 / 256 — covers the commands of P-E.11a and P-E.11b); the 629.9 portal legs `test:e2e:portal` 32/0/1, login-bare 1/0, isolation 2/0 (P-E.11 / P-E.11c / P-E.11d territory); P-E.2b and P-E.10 cannot be scored while visual baselines are untracked (`.gitkeep` only; `full/e2e-runs.md:35`), so they stay DEFERRED until the founder decides on committing legal / portal visual baselines (C.12 (b)). The other five rows are routed in C.12 (d).
+
+#### C.9.6 Deferred and deviations
+
+- **AI-core walk: DEFERRED, needs the user.** `qa/testplan/demos/ai-core-verification-keycloak.md` was not walked: it needs a funded Anthropic key entered by a human (629B ruling R-8, as 617C) (`full/exit-checkpoints.md:27`). Owner: the founder (C.12 (b)).
+- **Suite DEFERRED:** the 17 lifecycle tests that did not run in run 1 (incl. `day-90-review.spec.ts:192`), plus the still-carried `:95`, re-scored by the G88-F48 fix PR's out-of-window lifecycle run (`full/gaps.md:256-258`).
+- **G-D5** (My work court dates): **DEFERRED — not observed**; no court date fell inside the 14-day Upcoming window (`full/gaps.md:150`). Owner: the next Keycloak walk in the follow-up phase (C.12 (d)).
+- **Portal DEFERRED (25 rows):** 6 digest-blocked rows (no weekly / final digest reached; G88-F34), 9 rows blocked by register §5b (portal deadlines / mark-read), P-E.8b–d (emails that do not exist), and the 7 portal exit rows of C.9.5 (`full/README.md:91`; `full/portal-90day.md:126`). Owners: P-E.2b / P-E.10 wait on the founder's visual-baseline decision (C.12 (b)); the other five are in C.12 (d).
+- **Scored against superseded text:** 629A scored seven rows (0.Aa, M.6a, 3.3a, 6.2a, 33.1-aa, 6.3a, 14.13a) before #1712 amended them; 629C recorded them as inside §5a and left the 629A files untouched (`full/gaps.md:165-177`).
+- **Split rows:** mixed rows were split into a/b rows (e.g. 14.8a PASS / 14.8b FAIL) by orchestrator rulings, never "PASS with gap" (`full/README.md:75`).
+- **Walker incident:** INFRA-5 — a walker `pkill` killed the svc frontend, which was restarted with no state lost; recorded as not PASS (`full/README.md:95`).
+- **No scenario doc was edited by 629A–629D** (root CLAUDE.md §6); the §5a amendments were founder-authorised and applied by the orchestrator (#1712, `7ea0175ac`).
+
+### C.10 Screenshots (checklist 10)
+
+`marketing/decks/screens/phase88/` holds **15 PNGs, each 1440 × 900** (`closure/logs/closure-deck-check.txt`, `sips`).
+
+**Deck: not updated in 629D — DEFERRED.** `marketing/decks/exec-deck.html` is unchanged from `origin/main`: 13 slides, 209 lines, all 13 `<img>` sources on `phase87/`, each resolving to a 1440 × 900 file (`closure/logs/closure-deck-check.txt`). An earlier 629D commit swapped three Phase 87 shots (deck lines 84, 95, 96) for their like-for-like 623B re-shoots on the Keycloak Mathebula tenant (`mid/README.md:174-183`, § "Deck re-shoots (623.6)"). Review found that the replacements are worse than the clean Phase 87 shots, and the swap was reverted. The 623B shots were captured with the svc frontend running `next dev`: all five (`home-debtors`, `matters-fee-earner`, `clients-outstanding`, `fee-note-lines`, `part-payment`) show the Next.js dev indicator "N" over the sidebar avatar, and `home-debtors.png` also shows the breadcrumb "Dashboard" (shot before G-A2 was closed by 628A/628B; 0.25 PASS, `full/day-00.md:33`) (629D visual read-back, `closure/logs/closure-deck-check.txt`). The deck update is **DEFERRED** to a re-shoot on a production frontend build (no dev indicator) after the HIGH follow-ups land; owner and scope in C.12 (a). Until then the deck must not showcase the 90-day flow, because the exit test failed with HIGH gaps open.
+
+Read back by 629D: `phase87/home-firm.png` (deck line 85) still shows the pre-fix Debtors "No client owes fees." and FICA "5 of 5 active clients without completed FICA" (G-D21, closed in the walk at 80.2). It is in the C.12 (a) re-shoot.
+
+**Browser render check: not run.** The deck is unchanged from `origin/main`. The earlier attempt was refused by Playwright MCP ("Access to "file:" protocol is blocked"), and no server was started to work around it.
+
+Not referenced by the deck (all 15) — candidates for the C.12 (a) re-shoot:
+
+| File | Source | Reason not referenced |
+|---|---|---|
+| `home-debtors.png`, `matters-fee-earner.png`, `clients-outstanding.png` | 623B #1668 | like-for-like for deck lines 84, 95, 96, but captured under `next dev` with the dev "N" indicator over the avatar; `home-debtors.png` also shows the old "Dashboard" breadcrumb. Swapped in and reverted in 629D (above) |
+| `fee-note-lines.png`, `part-payment.png` | 623B #1668 | dev "N" indicator over the avatar; no like-for-like Phase 87 slot, so they would need a new slide |
+| `home.png`, `matters.png`, `clients.png` | 620E #1656 | e2e (mock-auth) tenant, not the Keycloak demo tenant the deck shows |
+| `wow-1.png` | 629B W9 copy of 629A wow 1 | Day-0 Home with empty widgets; brand colour only as logo tile + accent bar (`full/README.md:123`) |
+| `wow-2.png` | 629B (portal acceptance, 4.3b) | clean, but it belongs to the 90-day flow the deck must not showcase while HIGH gaps are open |
+| `wow-3.png` | 629B (conflict check, 1.4) | reads "No Conflict", not the scenario's "CLEAR" (G88-F1) |
+| `wow-4.png` | 629B (matter header, 5.4) | "OUTSTANDING FEE NOTES --" stub tile in frame (G88-M13) |
+| `wow-5.png` | 629B (profitability, 33.5) | clipped "%" (G88-F4) and the dev "N" overlay |
+| `wow-6.png` | 629B (fee-note PDF preview, 47.3) | tariff line prints second (G88-M10); 90-day flow, not showcased while HIGH gaps are open |
+| `wow-7.png` | 629B (activity feed, 88.3) | raw "DONE" / "IN_PROGRESS" (G88-F24) |
+
+### C.11 Open questions disposition (checklist 11)
+
+The final states of #9, #15 and #19 are also written into the Open Questions table at the top of this file (orchestrator ruling: closure states go into that table as well as here); the other sixteen rows were already final and are unchanged.
+
+| # | Item | Final state |
+|---|---|---|
+| 1 | G-C4 grid-item cause | **Resolved** (626F #1690): hypothesis held; wrapper `contentRect` + `contain: inline-size` + form `min-w-0`. G-C4 observed closed at 30.4 / 30.6 (`full/gaps.md:223`) |
+| 2 | G-D12 stored invitation status | **Resolved** (627F #1698): ACCEPTED; 627G N/A. G-D12 observed closed at 90.4 (`full/gaps.md:243`) |
+| 3 | N-6 portal Firm-trail whitelist | **Resolved** (625A #1679). Follow-up: trust deposits are not client-visible → C.12 (c) |
+| 4 | "Something went wrong" vs 404 for a non-member | **Resolved** (619D #1649). Follow-up: the org `ErrorBoundary` digest guard for other not-found pages → C.12 (c) |
+| 5 | Demo tenants' due dates | **Resolved** (620A #1652) |
+| 6 | `lib/api/invoices.ts` does not exist | **Resolved** (620C #1654) |
+| 7 | Event naming | **Resolved** (624F #1675, `AcceptanceRequestDeclinedEvent`) |
+| 8 | Comment UI paths | **Resolved** (627I #1700) |
+| 9 | Migration numbering after 623 | **Closed by 629D:** final tenant **V9** (`V9__phase88_comment_attachments.sql`, 627H #1699), global **V2** (624A #1670); Keycloak tenants at V9 since 2026-10-29 13:42:28Z (`full/logs/kc-stack-flyway-after.txt`); next free tenant **V10**, global **V3** (`backend/db/BASELINE.md:70`). Trail in C.6 |
+| 10 | `AuditEventTypeRegistryTest hasSize(29)` | **Resolved:** final 33 (`AuditEventTypeRegistryTest.java:139,190,191`; 19/19 green, C.3) |
+| 11 | Playwright file names | **Resolved** (619E #1650) |
+| 12 | Shared debtor-book predicate constant | **Resolved** (620B #1653; 622D flipped all three; `CollectionsSqlSourceScanTest` 5/5, C.3) |
+| 13 | `portal_invoices.amount_paid` timing | **Resolved** (624H #1677) |
+| 14 | Reconcile-framework inputs | **Resolved** (625E #1683); reconcile observation in C.6.1 |
+| 15 | Scenario amendments vs un-fixme'd specs | **Closed by 629D:** 628H #1710 applied §5 rows 1–15; §5a rows 1–18 founder-authorised 2026-10-29 and applied (row 14 `7ea0175ac`, rows 1–13 and 15–18 #1712 `45dcc7a6f`); §5a rows 19–20 documented as §5b, not applied; 629 walked the amended scenario (`full/README.md:3`) |
+| 16 | SoA category column | **Closed** (626E #1689, legal-za v9) |
+| 17 | Two report controllers | **Done** (627D #1696) |
+| 18 | `capabilities.test.tsx` location | **Resolved** (618C #1645); 12/12 green (C.3). Follow-up: ADR-355 / §13.8.6 path text still says `__tests__/lib/` → C.12 (c) |
+| 19 | Deck screenshots folder | **Folder closed; deck update DEFERRED:** 620E, 623B and 629B shots are in `marketing/decks/screens/phase88/` (15 PNGs). `exec-deck.html` is unchanged in 629D: the 623B Keycloak-tenant shots carry the Next.js dev indicator (and `home-debtors.png` the old "Dashboard" breadcrumb), so a swap was reverted. The deck update moves to the production-build re-shoot in C.12 (a); all 15 PNGs are listed as unreferenced in C.10 |
+
+Follow-ups the 629.12 row hands to the next phase are in C.12 (c).
+
+### C.12 Follow-ups
+
+Each needs its own one-fix PR or an explicit founder decision. 629D fixed nothing. Every owner below can act on the item (no closed slice is named as an owner).
+
+**(a) Bug-fix PRs, from the authoritative register (`full/gaps.md`)**
+
+- **HIGH (3) — the named follow-up of C.1:**
+  - **G88-F12:** bind the OTP Voetstoots clause to the seller, not `org.name`, and give `seller_name` a field definition in a field pack (`full/gaps.md:87`).
+  - **G88-F33:** make generated-document S3 keys unique per document. The fix and its test must cover re-issued statements and closure SoAs (statement keys collide on matter + period end) and generic templates (entity + generation day) (`full/gaps.md:88`, `:212`).
+  - **G88-F48:** date server-side trust postings in the firm's zone (fee transfer `TrustTransactionService.java:622`, reversal / account / investment sites). Red-first reproduction in-window (or `TZ=Pacific/Kiritimati` 10:00–24:00Z), and a **separate** out-of-window lifecycle run that re-scores the 17 DEFERRED run-1 tests, `day-90-review.spec.ts:95` (carried) and `:192` (DEFERRED). `day-07-14-work-trust.spec.ts:330` sits behind G88-F49, so that run must be outside 00:00–02:00 SAST or follow the F49 fix (`full/gaps.md:152`, `:258`; `full/e2e-runs.md:167`).
+- **MEDIUM (15):** product G88-F3, F16, F19, F23, F38, F39, F40 (`TrustReportPackSeeder` never wired; the 627E N-2 remainder), F43, F44, G-B8, G88-M2, M4, M6, M13; scenario / missing feature G88-F32 (`full/gaps.md:59`).
+- **LOW (45):** product 32 (G88-F2, F4, F5, F6, F9, F10, F13, F15, F17, F18, F20, F24, F26, F27, F29, F30, F31, F41, F42, F45, F46, F49, M5, M7, M9, M10, M11, M14, G-D10a, G-D10c, G-D17 residual, G-D20 residual); the 11 LOW scenario mismatches, the process gap and the ADR conflict are in (b) and (d) (`full/gaps.md:60`).
+- **HYPOTHESIS:** G88-F36, the @mention regex (`NotificationService.java:817`) — reproduce red-first with an integration test before any fix (root CLAUDE.md §4; `full/gaps.md:122`).
+- **Suite skips tied to gaps:** `628E-BLOCKER` fixmes → G88-F38 / F39 / F40; `628F-BLOCKER` fixmes → G88-F41…F46; portal Day 75 fixme → §5b row 19 (`full/e2e-runs.md:79-89`).
+- **Register items cited by label:** N-9…N-12 (`tasks/phase88-gap-register.md:69-72`).
+- **Deck re-shoot (DEFERRED from 629D, C.10).** Owner: a deck re-shoot docs slice in the follow-up phase, after the HIGH follow-ups land. Re-shoot on a **production frontend build** (no Next.js dev indicator) on the Keycloak Mathebula tenant at 1440 × 900: deck lines 84 (Home · partner), 95 (Matters), 96 (Clients) to replace the 623B shots, which carry the dev indicator (and `home-debtors.png` the old "Dashboard" breadcrumb); `phase87/home-firm.png` (line 85), which still shows the stale "No client owes fees." and "5 of 5 active clients without completed FICA"; `home-fee-earner.png` (line 86); and the wow frames. Then update `exec-deck.html` and re-check every `<img>` source.
+
+**(b) Needs founder / product authorisation**
+
+- **12 scenario mismatches** (root CLAUDE.md §6): G88-F1, F7, F11, F14, F21, F22, F25, F28, F32, F34, F37, F47 — each with file:line in the register (`full/gaps.md:199`).
+- **G-D10b:** the audit Event-type combobox shows the stored key; amend ADR-357 / ADR-342 or hide the key (`full/gaps.md:146`, `:197`).
+- **Register §5b rows 19 and 20** (portal mark-read + portal deadlines with the dormant `DeadlinePortalSyncService`; portal profile editing): documented proposals, not applied (`tasks/phase88-gap-register.md` §5b).
+- **E.2b reading:** ruled by the orchestrator (kept as scored, C.9.3); no further decision needed unless the founder wants the "worse than a prior walk" reading adopted for future walks.
+- **AI-core walk (DEFERRED, C.9.6).** Owner: the founder. `qa/testplan/demos/ai-core-verification-keycloak.md` needs a funded Anthropic key entered by a human; it stays DEFERRED until the founder provides one and the walk is scheduled.
+- **Committing legal / portal visual baselines.** Owner: the founder. No baseline PNG is committed and the suites run with `--update-snapshots=all` (`full/e2e-runs.md:35`), so visual regression is never scored. Portal exit rows P-E.2b and P-E.10 (C.9.5) stay DEFERRED until this is decided; if baselines are committed, the next portal gate run scores them.
+- **Phase 87 rulings still awaiting ratification** (Phase 87 C.12 (b)): 615D D-1 All-clients default view; OQ #18 spec retirement (`project-expenses.spec.ts`); 611A.2 "Mandate accepted" badge + 617A D-2 accepted-state wording (both need backend `templateCategory`). This file records no Phase 88 decision on any of them (`grep -n '615D\|templateCategory\|611A.2'` over the task file finds only 628B workaround-retirement rows), so they are carried.
+
+**(c) Next phase (629.12 list + OQ follow-ups)**
+
+- Drop `portal_settings.portal_notification_doc_types`: the column stays in the table, unmapped since U13 (`backend/src/main/java/io/b2mash/b2b/b2bstrawman/settings/OrgSettings.java:272`, `PortalSettings.java:21-22`; `PortalDocumentNotificationHandler.java:32` says the allow-list is gone). Needs a tenant migration at the next free version (V10).
+- A pack-declared "header field" flag (D9 took a hard-coded legal-za list).
+- "Approve & send" convenience (G-C8 was handled as a wording amendment).
+- A real document-acceptance automation trigger (D4 renamed and disabled the upload rule; C.6.1).
+- `GOVERNMENT` as a backend-validated party type: frontend only today (`frontend/lib/types/legal.ts:113`, `frontend/lib/schemas/legal.ts:139`, `frontend/components/legal/adverse-party-dialog.tsx:40`); `grep -rn GOVERNMENT backend/src/main/java` → 0.
+- Phase 87 §12.14 / C.12 (c) carry-overs: `/api/calendar` deletion + the `ProjectUpcomingDeadlinesService` fold; profitability cost leg; `deadlines` module id; `/legal/*` prefix; per-matter trust balance; redirect-table removal (frontend 51 rows + portal 1); Phase 86 §7.8 deferrals.
+- Phase 84 take-on (`settings/matters?tab=take-on`).
+- OQ follow-ups: trust deposits not client-visible (#3); the org `ErrorBoundary` digest guard for other not-found pages (#4); ADR-355 / §13.8.6 path text for `capabilities.test.tsx` (#18).
+
+**(d) Ops / process**
+
+- **G88-F35:** the `/epic_v2` post-merge docs-commit step must `git add .claude/markers/verify-*.json`; the epic gate should check one marker commit per code PR (`full/markers-audit.md:143-162`). Marker `ts` is free text the hook does not read (`full/markers-audit.md:166`).
+- **Portal exit rows** P-E.11 and P-E.11a–d are DEFERRED and were left unowned when 629C did not re-score them (C.9.5). Owner: the next portal suite / gate run in the follow-up phase. P-E.2b and P-E.10 stay DEFERRED until the founder's visual-baseline decision (C.12 (b)).
+- **G-D5** (My work court dates in the 14-day Upcoming window) is DEFERRED — not observed (C.9.6). Owner: the next Keycloak walk in the follow-up phase, which re-observes it on a day when a court date falls inside the 14-day window (seed or schedule one before that walk day).
+- **`TASKS.md:5`** still says next free tenant V4 / global V2; actual tenant V10 / global V3 (`backend/db/BASELINE.md:70`). TASKS.md is the orchestrator's file.
+- **Stack state at 629D:** Keycloak svc stack up from the main checkout at `59aee8731` (frontend :3000 `next-server` 16.3.8, portal :3002 `next dev`); e2e stack up from the 629C diagnostic run (containers created 2026-10-30 00:33:42 SAST) (`closure/logs/closure-redirects.txt`). 629D started, stopped and restarted nothing. Never commit `.playwright-mcp/*` (unredacted presigned URLs, `full/README.md:315`).
+- **Worktree artefacts:** 629D's targeted Maven run left `backend/target/` (gitignored) and `pnpm install` left `node_modules/` in the worktree; neither is committed.
+
+### C.13 Lessons (checklist 12)
+
+New entries are in `tasks/lessons.md` under "Phase 88 closure lessons (629D, 2026-10-30)":
+- build lessons (618–628):
+  - size a slice by its hit list and keep PRs under 300 files;
+  - migration numbers are "next free at build time", decided against the persistent stack;
+  - name how each reconcile branch is observed;
+  - strict assertions expose false positives in both directions;
+  - task-row claims are hypotheses;
+  - only a real-browser observer catches some bug classes;
+  - a new enum value or a newly reachable row is a cross-layer change;
+  - rulings can cause defects;
+  - first-pass reviewers skim;
+  - bound verdicts need a head that does not move;
+  - CodeRabbit rate limits are waits, not DEFERRED;
+- re-walk and closure lessons (623, 629):
+  - time of day is a test variable;
+  - a diagnostic run never closes a scored item;
+  - verify markers must be committed in the bookkeeping step;
+  - walk evidence discipline;
+  - markdown tables break on literal pipes.

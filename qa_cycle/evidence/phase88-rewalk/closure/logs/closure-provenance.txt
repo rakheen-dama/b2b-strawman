@@ -1,0 +1,48 @@
+HEAD 59aee87316b6e68d5ff05f050aaa160040e8d527  origin/main 59aee87316b6e68d5ff05f050aaa160040e8d527
+--- code commits after last code PR #1709 (87784b799) — expect none:
+--- code diff vs 628I gate head cb10c5d63 — expect empty:
+--- commits since cb10c5d63 (all docs):
+59aee8731 docs: Slice 629C done (#1714) — three suites, verify-marker audit, gap register; exit test FAIL (3 HIGH)
+54cb266f5 Slice 629C: three suites on a fresh stack, verify-marker audit, gap register (629.9–629.11) (#1714)
+20559c3d6 docs: Slice 629B done (#1713) — KC re-walk Days 36–90, portal 90-day, exit checkpoints, wow shots
+3c037ebb6 Slice 629B: full KC re-walk — Days 36–90, portal 90-day, exit checkpoints, wow shots (629.5–629.8) (#1713)
+45dcc7a6f docs: apply register §5a rows 1–13, 15–18 scenario amendments; document rows 19–20 (founder-authorised 2026-10-29) (#1712)
+7ea0175ac docs: apply register §5a row 14 — Day 60 closure step ticks 'Email the client now' (founder-authorised 2026-10-29)
+69d6a5ec1 docs: Slice 629A done (#1711) — full KC re-walk Session 0, Day 0, Days 1–35
+9a08796e4 Slice 629A: full KC re-walk — KC-STACK, Session 0, Day 0, Days 1–35 (629.1–629.4) (#1711)
+138119b81 docs: Slice 628I done — Epic 628 gate (628.19); Epic 628 DONE
+--- paths touched since cb10c5d63:
+   3 .claude
+   1 TASKS.md
+   7 marketing
+   4 qa
+ 612 qa_cycle
+   2 tasks
+--- verify-backend.json
+{
+  "commit": "cb10c5d63",
+  "command": "cd backend && ./mvnw spotless:apply -q && bash scripts/verify.sh -q",
+  "exit": 0,
+  "ts": "2026-10-29T12:48:25Z",
+  "summary": "628I BE-VERIFY (Epic 628 gate, 628.19) on main cb10c5d63 (worktree-628I-be, no target/): 6290 testcases / 0 failures / 0 errors / 26 skipped across 745 reports; 16:52; spotless no diff; = 628D baseline 6290"
+}
+
+--- verify-frontend.json
+{
+  "commit": "cb10c5d63",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
+  "exit": 0,
+  "ts": "2026-10-29T12:34:12Z",
+  "summary": "628I FE-GATE (Epic 628 gate) on main cb10c5d63: lint 0 errors / 79 warnings; format clean; vitest 434 files / 3551 passed / 2 skipped; build OK; E2E fresh stack lifecycle 101/0/3, depth-ii 39/0/4, default 159/0/18/0"
+}
+
+--- verify-portal.json
+{
+  "commit": "cb10c5d63",
+  "command": "cd portal && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
+  "exit": 0,
+  "ts": "2026-10-29T12:34:34Z",
+  "summary": "628I PORTAL-GATE (Epic 628 gate) on main cb10c5d63: lint 0 errors / 4 warnings; format clean; vitest 45 files / 256 passed; build OK; E2E-PORTAL same fresh stack isolation 2/0, test:e2e:portal 32/0/1, login-bare 1/0"
+}
+
+Thu Oct 29 23:36:12 UTC 2026

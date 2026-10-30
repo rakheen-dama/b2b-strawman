@@ -1,0 +1,31 @@
+# C.5 redirect probes, read-only HEAD requests, 2026-10-29T23:37:03Z
+port 3000 pid 33288 cwd $MAIN/frontend cmd next-server (v16.3.8) 
+port 3001 pid 64355 cwd $HOME/Library/Containers/com.docker.docker/Data cmd /Applications/Docker.app/Contents/MacOS/com.docker.backend services
+port 3002 pid 9511 cwd $MAIN/portal cmd next-server (v16.3.8) 
+main checkout HEAD: 59aee8731
+--- :3000 (KC frontend)
+settings/general -> HTTP/1.1 308 Permanent Redirect  location: /org/mathebula-partners/settings/firm?tab=general  
+settings/billing -> HTTP/1.1 308 Permanent Redirect  location: /org/mathebula-partners/settings/firm?tab=subscription  
+settings/rates -> HTTP/1.1 308 Permanent Redirect  location: /org/mathebula-partners/settings/fees?tab=tariffs  
+settings/project-templates/x -> HTTP/1.1 308 Permanent Redirect  location: /org/mathebula-partners/settings/matters/templates/x  
+projects/x -> HTTP/1.1 308 Permanent Redirect  location: /org/mathebula-partners/matters/x  
+customers/x -> HTTP/1.1 308 Permanent Redirect  location: /org/mathebula-partners/clients/x  
+calendar -> HTTP/1.1 308 Permanent Redirect  location: /org/mathebula-partners/diary  
+--- :3001 (e2e frontend)
+settings/general -> HTTP/1.1 308 Permanent Redirect  location: /org/e2e-test-org/settings/firm?tab=general  
+projects/x -> HTTP/1.1 308 Permanent Redirect  location: /org/e2e-test-org/matters/x  
+--- :3002 (portal)
+portal /projects -> HTTP/1.1 308 Permanent Redirect  location: /matters  
+--- legacy-redirects.ts history since 50b88ed5c (expect empty):
+source: rows at HEAD: 51
+--- settings-nav.ts id-kept comments:
+5: * One settings navigation source (Phase 87 S9, ADR-341, architecture §12.7.3): five families,
+222:        // currency; the LSSA tariffs live at Fees › Tariffs (/legal/tariffs). The id stays (ADR-341).
+283:        // AI, signing, email), not Xero alone. The id stays for the redirects (ADR-341).
+--- redirect pins:
+459:  it("holds the 43 Phase 87 settings rows — 32 tab + 11 route (616D, §12.7.2)", () => {
+465:    expect(settingsRows).toHaveLength(43);
+470:  it("leaves exactly 17 settings page.tsx — 5 families + 11 sub-routes + index (616D, §12.7.2)", () => {
+--- next.config redirect-related changes since 50b88ed5c:
+8f35312df fix(deps): next 16.2.6 -> 16.3.8 for React lost-ping fix (unblocks 619E) (#1651)
+(port 3001 listener is the Docker Desktop proxy for the e2e-frontend container; containers created 2026-10-30 00:33:42 SAST = the 629C diagnostic fresh stack built from worktree-epic-629C at 239df0f13, product tree = cb10c5d63 (full/e2e-runs.md:163-164,174))

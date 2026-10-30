@@ -1,0 +1,25 @@
+# 628I gate grep re-run at HEAD 59aee8731, 2026-10-29T23:36:52Z. Pattern: grep -rnE "\b(Projects?|Customers?|Invoices?)\b"
+== frontend/app frontend/components frontend/lib:       38 hits /       16 files /        2 non-test lines
+== portal/app portal/components portal/lib:       13 hits /        8 files /        4 non-test lines
+== backend/src/main:      632 hits /      182 files /      632 non-test lines
+== FE+portal non-test lines:
+frontend/components/field-definitions/CustomFieldSection.tsx:457:  // entity columns (e.g. acct_entity_type → Customer.entityType).
+frontend/lib/constants/entity-types.ts:2: * Canonical entity types accepted by the backend `Customer.entityType` field.
+portal/app/(authenticated)/profile/page.tsx:32:// labels — prettifying the enum rendered "General" next to the "Customer" field
+portal/app/(authenticated)/profile/page.tsx:33:// label, which QA's Day-90 scan read as "Role: General Customer".
+portal/lib/types.ts:91:// === Invoices ===
+portal/lib/auth.ts:6: * frontend) with limited scope. Customer portal JWTs are short-lived and
+== allow-lists:
+frontend/__tests__/terminology-allow-list.json 9
+portal/__tests__/terminology-allow-list.json 0
+89:  static final List<String> REASONS =
+== Phase 87 mechanism scan (expect 0 files):
+       0
+== ESLint rule enablement:
+frontend/eslint.config.mjs:36:      "kazi-frontend-local/no-isvisible-catch": "error",
+portal/eslint.config.mjs:16:  // e2e/eslint/no-isvisible-catch.mjs is INTENTIONALLY a byte-identical copy of
+portal/eslint.config.mjs:17:  // frontend/e2e/eslint/no-isvisible-catch.mjs (the drift test in
+portal/eslint.config.mjs:18:  // __tests__/eslint-rules/no-isvisible-catch.test.ts enforces it), so its text says
+portal/eslint.config.mjs:25:      "kazi-portal-local/no-isvisible-catch": "error",
+== rule files identical?
+identical

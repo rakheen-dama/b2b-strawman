@@ -85,3 +85,47 @@ backend/src/main/resources/db/migration/global/V2__portal_contact_directory.sql 
               9 | 9       | phase88 comment attachments           | 2026-10-29 15:47:23.233025
 (9 rows)
 
+
+--- RE-RUN 2026-10-29T23:57:55Z (629D review fix): latest migration per series, two separate commands, from the worktree root (run as `command ls` to bypass the shell's ls alias) ---
+$ ls backend/src/main/resources/db/migration/tenant | sort -V | tail -1
+V9__phase88_comment_attachments.sql
+$ ls backend/src/main/resources/db/migration/global | sort -V | tail -1
+V2__portal_contact_directory.sql
+--- END RE-RUN ---
+
+--- RE-RUN 2026-10-29T23:57:55Z (629D review fix): read-only flyway_schema_history on the Keycloak dev DB ---
+The SQL of the 23:37Z block above was not captured; it is not reconstructed. This block re-runs the read in a READ ONLY transaction and records the exact SQL.
+$ docker exec -i b2b-postgres psql -U postgres -d docteams -v ON_ERROR_STOP=1  (stdin below)
+  sql> BEGIN TRANSACTION READ ONLY;
+  sql> SELECT external_org_id, schema_name FROM public.org_schema_mapping ORDER BY 1;
+  sql> SELECT version, description, installed_on, success FROM tenant_5039f2d497cf.flyway_schema_history ORDER BY installed_rank DESC LIMIT 2;
+  sql> SELECT version, description, installed_on, success FROM tenant_56399d06a773.flyway_schema_history ORDER BY installed_rank DESC LIMIT 2;
+  sql> SELECT version, description, installed_on, success FROM public.flyway_schema_history ORDER BY installed_rank DESC LIMIT 2;
+  sql> ROLLBACK;
+BEGIN
+     external_org_id      |     schema_name     
+--------------------------+---------------------
+ mathebula-partners       | tenant_5039f2d497cf
+ org_phase86_squash_smoke | tenant_56399d06a773
+(2 rows)
+
+ version |              description              |        installed_on        | success 
+---------+---------------------------------------+----------------------------+---------
+ 9       | phase88 comment attachments           | 2026-10-29 15:47:23.233025 | t
+ 8       | phase88 retention comment attachments | 2026-10-29 15:47:23.223701 | t
+(2 rows)
+
+ version |              description              |        installed_on        | success 
+---------+---------------------------------------+----------------------------+---------
+ 9       | phase88 comment attachments           | 2026-10-29 15:42:28.683291 | t
+ 8       | phase88 retention comment attachments | 2026-10-28 12:23:09.308036 | t
+(2 rows)
+
+ version |       description        |        installed_on        | success 
+---------+--------------------------+----------------------------+---------
+ 2       | portal contact directory | 2026-10-24 19:13:06.756576 | t
+ 1       | baseline                 | 2026-10-18 04:20:53.007533 | t
+(2 rows)
+
+ROLLBACK
+--- END RE-RUN ---

@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.settings.CollectionsSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -52,11 +54,11 @@ public class CollectionsScanService {
       SELECT i.id             AS invoice_id,
              i.customer_id     AS customer_id,
              i.customer_email  AS customer_email,
-             (CURRENT_DATE - i.due_date) AS days_overdue
+             (CAST(:today AS DATE) - i.due_date) AS days_overdue
       FROM   invoices i
       JOIN   customers c ON c.id = i.customer_id
       WHERE  %s
-        AND  i.due_date < CURRENT_DATE
+        AND  i.due_date < CAST(:today AS DATE)
         AND  c.collections_exempt = false
       ORDER  BY i.due_date
       """
@@ -86,6 +88,8 @@ public class CollectionsScanService {
    */
   private final TransactionTemplate requiresNewTransactionTemplate;
 
+  private final Clock clock;
+
   public CollectionsScanService(
       EntityManager entityManager,
       OrgSettingsRepository orgSettingsRepository,
@@ -96,7 +100,8 @@ public class CollectionsScanService {
       NotificationService notificationService,
       AuditService auditService,
       AiExecutionGateService gateService,
-      PlatformTransactionManager transactionManager) {
+      PlatformTransactionManager transactionManager,
+      Clock clock) {
     this.entityManager = entityManager;
     this.orgSettingsRepository = orgSettingsRepository;
     this.activityRepository = activityRepository;
@@ -109,6 +114,7 @@ public class CollectionsScanService {
     this.requiresNewTransactionTemplate = new TransactionTemplate(transactionManager);
     this.requiresNewTransactionTemplate.setPropagationBehavior(
         TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    this.clock = clock;
   }
 
   /** Counts for the job log. */
@@ -341,6 +347,7 @@ public class CollectionsScanService {
 
   private List<Candidate> loadCandidates() {
     var query = entityManager.createNativeQuery(CANDIDATE_SQL, Tuple.class);
+    query.setParameter("today", LocalDate.now(clock));
     @SuppressWarnings("unchecked")
     List<Tuple> tuples = query.getResultList();
     return tuples.stream()

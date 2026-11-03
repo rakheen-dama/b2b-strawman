@@ -90,7 +90,7 @@ public class CashDigestService {
   private static final int TOP_RISKS = 5;
   private static final int MAX_AI_RISKS = 3;
 
-  private static final String AGE_EXPR = "CURRENT_DATE - i.due_date";
+  private static final String AGE_EXPR = "CAST(:today AS DATE) - i.due_date";
 
   private static final String TOTALS_SQL =
       """
@@ -224,7 +224,11 @@ public class CashDigestService {
 
   private CashDigestData assembleDataInTransaction() {
     Tuple totals =
-        (Tuple) entityManager.createNativeQuery(TOTALS_SQL, Tuple.class).getSingleResult();
+        (Tuple)
+            entityManager
+                .createNativeQuery(TOTALS_SQL, Tuple.class)
+                .setParameter("today", LocalDate.now(clock))
+                .getSingleResult();
     BigDecimal outstandingTotal = toBigDecimal(totals.get("outstanding_total"));
     var buckets =
         new CashDigestData.Buckets(

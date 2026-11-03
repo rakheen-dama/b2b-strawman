@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
  * and {@code CollectionsCoreBoundaryTest}: reads {@code src/main/java} as text. Negative: no {@code
  * due_date IS NOT NULL} (any case/whitespace) outside {@code CollectionsSql.java}. Positive: each
  * of the five debtor-book sites references {@code CollectionsSql.OUTSTANDING_PREDICATE} — the
- * dunning scan's {@code due_date < CURRENT_DATE} carries no inline guard, so only the positive pin
+ * dunning scan's {@code due_date < :today} carries no inline guard, so only the positive pin
  * catches drift there. A legitimate non-debtor-book {@code due_date IS NOT NULL} must be added to
  * an explicit allowlist here consciously, never by inlining the guard.
  */

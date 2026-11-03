@@ -1,4 +1,4 @@
-import { todayInSA } from "@b2mash/shared/date";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
 
 /**
  * Returns the number of whole days between South African today and the given
@@ -6,14 +6,7 @@ import { todayInSA } from "@b2mash/shared/date";
  * any browser). Negative values are clamped to 0.
  */
 export function daysUntil(isoDate: string): number {
-  return Math.max(0, wholeDaysBetween(todayInSA(), isoDate));
-}
-
-/** Calendar-day difference of two yyyy-MM-dd dates (zone-free UTC arithmetic). */
-function wholeDaysBetween(from: string, to: string): number {
-  const [fy, fm, fd] = from.split("-").map(Number);
-  const [ty, tm, td] = to.split("-").map(Number);
-  return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86_400_000);
+  return Math.max(0, daysBetween(todayInSA(), isoDate));
 }
 
 /**

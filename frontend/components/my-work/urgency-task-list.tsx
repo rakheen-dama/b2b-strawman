@@ -15,8 +15,8 @@ import {
 import { formatDuration, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MyWorkTaskItem, TaskPriority, TaskStatus } from "@/lib/types";
-import { todayInSA } from "@b2mash/shared/date";
-import { addDays, daysBetween, parseIsoDate } from "@/app/(app)/org/[slug]/diary/diary-types";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
+import { addDays, parseIsoDate } from "@/app/(app)/org/[slug]/diary/diary-types";
 
 // --- Priority badge config ---
 

@@ -50,7 +50,6 @@ import {
   addDays,
   addMonths,
   buildDiaryQuery,
-  daysBetween,
   diaryWindow,
   filterDiaryEvents,
   firstOfMonth,
@@ -73,6 +72,7 @@ import {
   shouldUseServerFeeEarnerFilter,
   type DiaryEventResponse,
 } from "@/app/(app)/org/[slug]/diary/diary-types";
+import { daysBetween } from "@b2mash/shared/date";
 
 function okResponse(body: unknown, typesHeader: string | null) {
   const headers = new Headers({ "content-type": "application/json" });

@@ -10,8 +10,7 @@ import { cn } from "@/lib/utils";
 import type { TrustInvestment, TrustInvestmentStatus, InvestmentBasis } from "@/lib/types/trust";
 import { InvestmentPageClient } from "./InvestmentPageClient";
 import { InvestmentBasisFilter } from "./InvestmentBasisFilter";
-import { todayInSA } from "@b2mash/shared/date";
-import { daysBetween } from "@/app/(app)/org/[slug]/diary/diary-types";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
 
 // -- Badge variant mapping ------------------------------------------------
 

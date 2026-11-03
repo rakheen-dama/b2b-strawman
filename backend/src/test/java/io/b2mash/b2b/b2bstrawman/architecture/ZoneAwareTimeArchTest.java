@@ -51,15 +51,19 @@ import org.springframework.scheduling.annotation.Scheduled;
  *       a {@code LocalDate.now(ZoneOffset.UTC)} regression can hide), and no {@code Clock}
  *       factories outside the bean, except the commented allowlist below.
  *   <li>Every {@code @Scheduled(cron)} names {@code zone = KaziTime.ZONE_ID}.
- *   <li>No {@code ZoneOffset.UTC} and no {@code ZoneId.of(String)} outside the commented UTC
- *       allowlist: ArchUnit cannot read argument values, so naming a zone at all is the only
- *       bytecode-visible signal of a hand-rolled (usually UTC) business date, e.g. {@code
- *       instant.atZone(ZoneOffset.UTC).toLocalDate()}.
- *   <li>No legacy {@code java.util.Date} / {@code GregorianCalendar} constructors and no {@code
- *       Calendar.getInstance} — they read the JVM default zone or clock implicitly. No exemptions.
+ *   <li>No {@code ZoneOffset.UTC}, {@code ZoneOffset.of(String)} or {@code ZoneId.of(String)}
+ *       outside the commented UTC allowlist: ArchUnit cannot read argument values, so naming a zone
+ *       at all is the only bytecode-visible signal of a hand-rolled (usually UTC) business date,
+ *       e.g. {@code instant.atZone(ZoneOffset.UTC).toLocalDate()}.
+ *   <li>No legacy {@code java.util.Date} / {@code java.sql.Date} / {@code GregorianCalendar}
+ *       constructors, no {@code Calendar.getInstance} and no {@code TimeZone.getTimeZone} — they
+ *       read the JVM default zone or clock implicitly, or name a zone outside {@code java.time}. No
+ *       exemptions ({@code java.sql.Date.valueOf} and reading a JDBC value with {@code
+ *       toLocalDate()} stay allowed).
  * </ol>
  *
- * Allowlist entries carry their reason; adding one is a review-time decision, not a fix.
+ * Allowlist entries carry their reason; adding one is a review-time decision, not a fix. Both
+ * allowlists key on the top-level class, so nested and anonymous classes share their owner's entry.
  */
 @AnalyzeClasses(
     packages = "io.b2mash.b2b.b2bstrawman",
@@ -122,6 +126,8 @@ class ZoneAwareTimeArchTest {
           .accessField(ZoneOffset.class, "UTC")
           .orShould()
           .callMethod(ZoneId.class, "of", String.class)
+          .orShould()
+          .callMethod(ZoneOffset.class, "of", String.class)
           .because(
               "a business date is South African time — use the Clock bean or KaziTime.ZONE; a"
                   + " deliberate UTC site (wire format, storage instant, sort key, provider billing"
@@ -133,14 +139,20 @@ class ZoneAwareTimeArchTest {
           .should()
           .callConstructorWhere(target(owner(equivalentTo(Date.class))))
           .orShould()
+          .callConstructorWhere(target(owner(equivalentTo(java.sql.Date.class))))
+          .orShould()
           .callConstructorWhere(target(owner(equivalentTo(GregorianCalendar.class))))
           .orShould()
           .callMethodWhere(
               target(owner(equivalentTo(Calendar.class))).and(target(name("getInstance"))))
+          .orShould()
+          .callMethodWhere(
+              target(owner(equivalentTo(TimeZone.class))).and(target(name("getTimeZone"))))
           .because(
-              "java.util.Date / Calendar read the JVM default zone and clock implicitly — use"
-                  + " java.time with the Clock bean (Date.from(instant) at a library boundary is"
-                  + " fine)");
+              "java.util.Date / java.sql.Date / Calendar / TimeZone read the JVM default zone and"
+                  + " clock implicitly — use java.time with the Clock bean or KaziTime.ZONE"
+                  + " (Date.from(instant) or java.sql.Date.valueOf(localDate) at a library"
+                  + " boundary is fine)");
 
   @ArchTest
   static final ArchRule no_zone_less_now_or_jvm_default_zone =
@@ -160,7 +172,7 @@ class ZoneAwareTimeArchTest {
                   .that(
                       DescribedPredicate.describe(
                           "are not on the explicit-zone allowlist",
-                          (JavaClass c) -> !EXPLICIT_ZONE_ALLOWLIST.containsKey(c.getName())))
+                          (JavaClass c) -> !EXPLICIT_ZONE_ALLOWLIST.containsKey(topLevelName(c))))
                   .should()
                   .callMethod(Clock.class, "systemUTC"))
           .orShould()

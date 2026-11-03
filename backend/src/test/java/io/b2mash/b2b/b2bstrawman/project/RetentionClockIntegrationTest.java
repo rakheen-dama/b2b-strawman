@@ -41,8 +41,8 @@ import org.springframework.test.web.servlet.MockMvc;
  * <ul>
  *   <li>Completing a matter does NOT start the retention clock — only closure does.
  *   <li>Closing stamps {@code retention_clock_started_at = closed_at} and persists {@code
- *       retention_ends_on} = the UTC close date + the firm's years (seeded 5); the closure response
- *       and the matter detail both read that persisted value.
+ *       retention_ends_on} = the close's SA business date (Africa/Johannesburg) + the firm's years
+ *       (seeded 5); the closure response and the matter detail both read that persisted value.
  *   <li>Reopening clears {@code retention_ends_on} but keeps the clock for audit.
  *   <li>Re-closing re-stamps both (fresh anchor).
  *   <li>A matter completed and later closed anchors on the close, not the completion.

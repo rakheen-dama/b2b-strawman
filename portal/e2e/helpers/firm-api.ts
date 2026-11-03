@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { todayInSA } from "@b2mash/shared/date";
 
 /**
  * Phase 88 628G — firm-side setup for the portal suites: the run-unique rows the boot seed does not
@@ -124,9 +125,6 @@ export const acmeContactId = async () =>
     SEED.contactEmail,
   );
 
-/** UTC today, YYYY-MM-DD (the containers run UTC). */
-export const todayUtc = () => new Date().toISOString().slice(0, 10);
-
 /**
  * A RECORDED trust deposit for Acme on Website Redesign (no approval step). The portal read model
  * syncs after commit (TrustLedgerPortalSyncService.onTrustTransactionRecorded) and the contact is
@@ -147,7 +145,7 @@ export async function recordAcmeDeposit(
         amount,
         reference,
         description,
-        transactionDate: todayUtc(),
+        transactionDate: todayInSA(),
       },
     },
   );

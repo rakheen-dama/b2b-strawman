@@ -1,7 +1,7 @@
 {
-  "commit": "cb10c5d63",
-  "command": "cd backend && ./mvnw spotless:apply -q && bash scripts/verify.sh -q",
+  "commit": "cfb4fa03441fc66342f02196fa2df3114a438bb9",
+  "command": "cd backend && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-10-29T12:48:25Z",
-  "summary": "628I BE-VERIFY (Epic 628 gate, 628.19) on main cb10c5d63 (worktree-628I-be, no target/): 6290 testcases / 0 failures / 0 errors / 26 skipped across 745 reports; 16:52; spotless no diff; = 628D baseline 6290"
+  "ts": "2026-11-04T01:30:03+02:00",
+  "summary": "PR #1716 (G88-F48/F49): 6304 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML count)"
 }

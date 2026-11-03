@@ -1,7 +1,7 @@
 {
-  "commit": "cb10c5d63",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
+  "commit": "951e9a746599143df3ad07c58af00b162cc5d399",
+  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-29T12:34:12Z",
-  "summary": "628I FE-GATE (Epic 628 gate) on main cb10c5d63: lint 0 errors / 79 warnings; format clean; vitest 434 files / 3551 passed / 2 skipped; build OK; E2E fresh stack lifecycle 101/0/3, depth-ii 39/0/4, default 159/0/18/0"
+  "ts": "2026-11-04T02:15:00+02:00",
+  "summary": "PR #1716: lint 0 errors / 79 warnings, format clean, build OK, vitest 3561 passed / 2 skipped"
 }

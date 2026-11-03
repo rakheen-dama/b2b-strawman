@@ -1,7 +1,7 @@
 {
-  "commit": "cb10c5d63",
-  "command": "cd portal && rm -rf .next && pnpm lint && pnpm format:check && pnpm test && pnpm build",
+  "commit": "cfb4fa03441fc66342f02196fa2df3114a438bb9",
+  "command": "cd portal && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-10-29T12:34:34Z",
-  "summary": "628I PORTAL-GATE (Epic 628 gate) on main cb10c5d63: lint 0 errors / 4 warnings; format clean; vitest 45 files / 256 passed; build OK; E2E-PORTAL same fresh stack isolation 2/0, test:e2e:portal 32/0/1, login-bare 1/0"
+  "ts": "2026-11-04T01:50:00+02:00",
+  "summary": "PR #1716: lint 0 errors / 4 warnings, format clean, build OK, vitest 45 files / 256 passed"
 }

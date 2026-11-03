@@ -98,11 +98,12 @@ public class Project {
   private Instant retentionClockStartedAt;
 
   /**
-   * Per-matter retention end (Phase 88 U17, ADR-354): the UTC date of the close plus the firm's
-   * retention years, stamped by {@link #closeMatter(Instant, int)} on every close (a re-close
-   * re-stamps it) and cleared by {@link #reopenMatter()}. Null for every matter that is not CLOSED.
-   * Persisted so the obligation is frozen at close time — a later change to the firm's years does
-   * not move it — and read as-is by {@code MatterResponse}, with no read-time fallback.
+   * Per-matter retention end (Phase 88 U17, ADR-354): the South African business date of the close
+   * ({@code KaziTime.ZONE}) plus the firm's retention years, stamped by {@link
+   * #closeMatter(Instant, int)} on every close (a re-close re-stamps it) and cleared by {@link
+   * #reopenMatter()}. Null for every matter that is not CLOSED. Persisted so the obligation is
+   * frozen at close time — a later change to the firm's years does not move it — and read as-is by
+   * {@code MatterResponse}, with no read-time fallback.
    */
   @Column(name = "retention_ends_on")
   private LocalDate retentionEndsOn;

@@ -442,8 +442,10 @@ public class MatterClosureService {
     // persisted end date (legacy, never backfilled) recomputes it from the close anchor + the
     // firm's current years. The anchor is closed_at first — it is the true close, whereas a legacy
     // retention clock may hold the completion time — and the clock only when closed_at is missing,
-    // matching the tenant migration's backfill. Calendar-year arithmetic via LocalDate + plusYears
-    // so leap years don't bite.
+    // matching the tenant migration's backfill anchor. The recompute takes the South African date
+    // of the anchor; the V8 backfill took the UTC date, so a backfilled (pre-G88-F48) row can sit a
+    // day earlier than this for a late-evening (22:00-24:00 UTC) close. Calendar-year arithmetic
+    // via LocalDate + plusYears so leap years don't bite.
     LocalDate retentionEndsOn = project.getRetentionEndsOn();
     if (retentionEndsOn == null) {
       Instant anchor =

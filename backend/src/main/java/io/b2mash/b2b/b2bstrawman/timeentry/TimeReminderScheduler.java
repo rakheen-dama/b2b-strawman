@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
@@ -125,7 +126,7 @@ public class TimeReminderScheduler {
         transactionTemplate.execute(
             tx -> {
               // Deduplication: skip if a TIME_REMINDER was already sent today
-              var startOfDay = today.atStartOfDay(clock.getZone()).toInstant();
+              var startOfDay = today.atStartOfDay(KaziTime.ZONE).toInstant();
               if (notificationRepository.existsByTypeAndRecipientMemberIdAndCreatedAtAfter(
                   "TIME_REMINDER", memberId, startOfDay)) {
                 return false;

@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.CrossProjectActivityProjection;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -453,7 +454,7 @@ public class DashboardService {
                   int days =
                       (int)
                           ChronoUnit.DAYS.between(
-                              LocalDate.ofInstant(openedAt, clock.getZone()), today);
+                              LocalDate.ofInstant(openedAt, KaziTime.ZONE), today);
                   return new FicaOutstandingClient(
                       c.getId(),
                       c.getName(),

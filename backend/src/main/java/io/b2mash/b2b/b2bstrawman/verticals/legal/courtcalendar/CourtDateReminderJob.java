@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
@@ -64,7 +65,7 @@ public class CourtDateReminderJob {
   }
 
   @SchedulerLock(name = "court_date_reminder_execute", lockAtLeastFor = "5m")
-  @Scheduled(cron = "${court.reminder.cron:0 0 6 * * *}")
+  @Scheduled(cron = "${court.reminder.cron:0 0 6 * * *}", zone = KaziTime.ZONE_ID)
   public void execute() {
     log.debug("Court date reminder job started");
 

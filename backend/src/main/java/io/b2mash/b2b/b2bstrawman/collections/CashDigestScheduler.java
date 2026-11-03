@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.collections;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class CashDigestScheduler {
   }
 
   @SchedulerLock(name = "cash_digest_weekly", lockAtLeastFor = "5m")
-  @Scheduled(cron = "0 0 7 ? * MON")
+  @Scheduled(cron = "0 0 7 ? * MON", zone = KaziTime.ZONE_ID)
   public void enqueueWeeklyDigest() {
     log.debug("CashDigestScheduler: fanning out cash_digest");
     jobEnqueuer.fanOutToAllTenants("cash_digest", null);

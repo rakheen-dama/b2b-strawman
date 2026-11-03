@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.compliance;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -45,7 +46,7 @@ public class DormancyScheduledJob {
   }
 
   @SchedulerLock(name = "dormancy_execute_dormancy_check", lockAtLeastFor = "5m")
-  @Scheduled(cron = "0 0 2 * * *")
+  @Scheduled(cron = "0 0 2 * * *", zone = KaziTime.ZONE_ID)
   public void executeDormancyCheck() {
     log.info("Auto-dormancy scheduled job started");
 

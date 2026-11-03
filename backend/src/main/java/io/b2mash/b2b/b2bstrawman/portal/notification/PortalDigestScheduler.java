@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.portal.notification;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
@@ -102,7 +103,7 @@ public class PortalDigestScheduler {
    * Cron entry point — Monday 08:00 server time. Tests call {@link #runWeeklyDigest()} directly.
    */
   @SchedulerLock(name = "portal_digest_scheduled_run", lockAtLeastFor = "5m")
-  @Scheduled(cron = "0 0 8 ? * MON")
+  @Scheduled(cron = "0 0 8 ? * MON", zone = KaziTime.ZONE_ID)
   public void scheduledRun() {
     if (jobQueueProperties.isDualMode("portal_digest")) {
       runWeeklyDigest();

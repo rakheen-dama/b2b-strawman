@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.automation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
@@ -11,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -135,6 +137,59 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
               executions.stream().filter(e -> e.getRuleId().equals(updatedRule.getId())).toList();
           assertThat(matchingExecutions).isNotEmpty();
         });
+  }
+
+  /**
+   * Firm-authored cron expressions are South African wall-clock time. Rule A's daily tick is the
+   * SAST wall time 30 minutes ago (inside its lastRunAt window, so it fires). Rule B's tick is the
+   * SAST wall time 2h30 ago — read as UTC it would be 30 minutes ago and fire, but in SAST it is
+   * before lastRunAt, so it must not fire until tomorrow.
+   */
+  @Test
+  void scheduledTrigger_cronExpressionIsSouthAfricanWallClock() {
+    runInTenant(
+        () -> {
+          var now = Instant.now();
+          var lastRunAt = now.minus(1, ChronoUnit.HOURS).truncatedTo(ChronoUnit.SECONDS);
+          var dueSast = now.minus(30, ChronoUnit.MINUTES).atZone(KaziTime.ZONE);
+          var dueOnlyInUtc = now.minus(150, ChronoUnit.MINUTES).atZone(KaziTime.ZONE);
+
+          var fires = saveDailyRule("SAST tick", dueSast, lastRunAt);
+          var waits = saveDailyRule("UTC-only tick", dueOnlyInUtc, lastRunAt);
+
+          scheduler.processScheduledTenant();
+
+          assertThat(ruleRepository.findById(fires).orElseThrow().getLastRunAt())
+              .isAfter(lastRunAt);
+          assertThat(ruleRepository.findById(waits).orElseThrow().getLastRunAt())
+              .isEqualTo(lastRunAt);
+        });
+  }
+
+  private UUID saveDailyRule(String name, ZonedDateTime wallClock, Instant lastRunAt) {
+    String cron = "0 %d %d * * *".formatted(wallClock.getMinute(), wallClock.getHour());
+    var rule =
+        ruleRepository.save(
+            new AutomationRule(
+                name,
+                "Daily at " + cron,
+                TriggerType.SCHEDULED,
+                Map.of("cronExpression", cron),
+                List.of(),
+                RuleSource.CUSTOM,
+                null,
+                ownerMemberId));
+    rule.setLastRunAt(lastRunAt);
+    ruleRepository.save(rule);
+    actionRepository.save(
+        new AutomationAction(
+            rule.getId(),
+            1,
+            ActionType.SEND_NOTIFICATION,
+            Map.of("message", "Zone test"),
+            null,
+            null));
+    return rule.getId();
   }
 
   @Test

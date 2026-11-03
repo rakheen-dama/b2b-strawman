@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.collections;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class CollectionsScanScheduler {
   }
 
   @SchedulerLock(name = "collections_scan_daily", lockAtLeastFor = "5m")
-  @Scheduled(cron = "0 0 6 * * *")
+  @Scheduled(cron = "0 0 6 * * *", zone = KaziTime.ZONE_ID)
   public void enqueueDailyScan() {
     log.debug("CollectionsScanScheduler: fanning out collections_scan");
     jobEnqueuer.fanOutToAllTenants("collections_scan", null);

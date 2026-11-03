@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -71,7 +72,7 @@ public class FieldDateScannerJob {
   }
 
   @SchedulerLock(name = "field_date_scanner_execute", lockAtLeastFor = "5m")
-  @Scheduled(cron = "${app.automation.field-date-scan-cron:0 0 6 * * *}")
+  @Scheduled(cron = "${app.automation.field-date-scan-cron:0 0 6 * * *}", zone = KaziTime.ZONE_ID)
   public void execute() {
     log.debug("Field date scanner started");
 

@@ -250,7 +250,7 @@ class InvoiceIntegrationTest {
                   assertThat(found.get().getStatus()).isEqualTo(InvoiceStatus.APPROVED);
                   assertThat(found.get().getInvoiceNumber()).isEqualTo("INV-0001");
                   assertThat(found.get().getApprovedBy()).isEqualTo(memberIdOwner);
-                  assertThat(found.get().getIssueDate()).isEqualTo(LocalDate.now());
+                  assertThat(found.get().getIssueDate()).isEqualTo(LocalDate.now(KaziTime.ZONE));
                 }));
   }
 
@@ -321,7 +321,7 @@ class InvoiceIntegrationTest {
                   assertThatThrownBy(
                           () ->
                               approvedInvoice.updateDraft(
-                                  LocalDate.now().plusDays(30),
+                                  LocalDate.now(KaziTime.ZONE).plusDays(30),
                                   "Updated notes",
                                   "Net 30",
                                   new BigDecimal("10.00")))

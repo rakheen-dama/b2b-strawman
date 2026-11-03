@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -86,7 +87,7 @@ class DashboardServiceUnbilledWipTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private DisbursementRepository disbursementRepository;
 
-  private final LocalDate today = LocalDate.now();
+  private final LocalDate today = LocalDate.now(KaziTime.ZONE);
 
   private String tenantSchema;
   private String currency;

@@ -106,7 +106,7 @@ class ComplianceDataCollectorServiceTest {
     when(dataSubjectRequestRepository.countByStatusIn(List.of("RECEIVED", "IN_PROGRESS")))
         .thenReturn(3L);
     when(dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(
-            List.of("RECEIVED", "IN_PROGRESS"), LocalDate.now()))
+            List.of("RECEIVED", "IN_PROGRESS"), LocalDate.now(KaziTime.ZONE)))
         .thenReturn(0L);
 
     // Trust accounting enabled
@@ -361,7 +361,7 @@ class ComplianceDataCollectorServiceTest {
             true,
             false,
             BigDecimal.ZERO,
-            LocalDate.now(),
+            LocalDate.now(KaziTime.ZONE),
             null);
     return TestIds.withId(account, UUID.randomUUID());
   }

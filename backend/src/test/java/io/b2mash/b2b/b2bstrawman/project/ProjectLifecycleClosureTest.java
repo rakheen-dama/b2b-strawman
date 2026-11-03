@@ -3,10 +3,10 @@ package io.b2mash.b2b.b2bstrawman.project;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +54,7 @@ class ProjectLifecycleClosureTest {
         .as("the clock anchors on the close, not on the earlier completion")
         .isEqualTo(now);
     assertThat(project.getRetentionEndsOn())
-        .isEqualTo(now.atZone(ZoneOffset.UTC).toLocalDate().plusYears(YEARS));
+        .isEqualTo(now.atZone(KaziTime.ZONE).toLocalDate().plusYears(YEARS));
   }
 
   @Test
@@ -108,13 +108,14 @@ class ProjectLifecycleClosureTest {
   }
 
   @Test
-  void closeMatter_lateUtcEvening_usesUtcDate() {
+  void closeMatter_lateUtcEvening_usesSastDate() {
     var project = new Project("Smith v Jones", "matter", MEMBER_ID);
 
-    // 23:30 UTC is already the next day in Johannesburg (UTC+2); the end date follows UTC.
+    // 23:30 UTC is already the next day in Johannesburg (UTC+2); the end date follows the SA
+    // calendar, the firm's business date (G88-F48).
     project.closeMatter(Instant.parse("2026-10-22T23:30:00Z"), YEARS);
 
-    assertThat(project.getRetentionEndsOn()).isEqualTo(LocalDate.of(2031, 10, 22));
+    assertThat(project.getRetentionEndsOn()).isEqualTo(LocalDate.of(2031, 10, 23));
   }
 
   @Test

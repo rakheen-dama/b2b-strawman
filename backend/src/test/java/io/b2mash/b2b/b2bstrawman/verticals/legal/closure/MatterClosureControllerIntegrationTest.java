@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -19,7 +20,6 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -558,7 +558,7 @@ class MatterClosureControllerIntegrationTest {
         .andExpect(jsonPath("$.status").value("CLOSED"))
         .andExpect(jsonPath("$.retentionClockStartedAt").isNotEmpty())
         .andExpect(
-            jsonPath("$.retentionEndsOn").value(closedOnUtc(projectId).plusYears(7).toString()));
+            jsonPath("$.retentionEndsOn").value(closedOnSast(projectId).plusYears(7).toString()));
   }
 
   @Test
@@ -612,7 +612,7 @@ class MatterClosureControllerIntegrationTest {
           .andExpect(status().isOk());
 
       String expected =
-          closedOnUtc(projectId)
+          closedOnSast(projectId)
               .plusYears(DataProtectionSettings.DEFAULT_LEGAL_MATTER_RETENTION_YEARS)
               .toString();
       mockMvc
@@ -657,8 +657,8 @@ class MatterClosureControllerIntegrationTest {
                 }));
   }
 
-  /** The matter's persisted close instant as a UTC calendar date. */
-  private LocalDate closedOnUtc(UUID projectId) {
+  /** The matter's persisted close instant as an SAST calendar date. */
+  private LocalDate closedOnSast(UUID projectId) {
     final LocalDate[] day = new LocalDate[1];
     runInLegalTenant(
         () ->
@@ -667,7 +667,7 @@ class MatterClosureControllerIntegrationTest {
                     .findById(projectId)
                     .orElseThrow()
                     .getClosedAt()
-                    .atZone(ZoneOffset.UTC)
+                    .atZone(KaziTime.ZONE)
                     .toLocalDate());
     return day[0];
   }

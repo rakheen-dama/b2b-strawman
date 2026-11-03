@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.automation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -115,7 +116,8 @@ class FieldDateScannerJobTest {
                           TestCustomerFactory.createActiveCustomer(
                               "Scanner Test Client 14d", "scanner14@test.com", memberId1);
                       var customFields = new HashMap<String, Object>();
-                      customFields.put("tax_deadline_14", LocalDate.now().plusDays(14).toString());
+                      customFields.put(
+                          "tax_deadline_14", LocalDate.now(KaziTime.ZONE).plusDays(14).toString());
                       customer.setCustomFields(customFields);
                       var saved = customerRepository.save(customer);
                       customerRepository.flush();
@@ -162,7 +164,8 @@ class FieldDateScannerJobTest {
                           TestCustomerFactory.createActiveCustomer(
                               "Dedup Test Client", "dedup@test.com", memberId1);
                       var customFields = new HashMap<String, Object>();
-                      customFields.put("dedup_deadline", LocalDate.now().plusDays(7).toString());
+                      customFields.put(
+                          "dedup_deadline", LocalDate.now(KaziTime.ZONE).plusDays(7).toString());
                       customer.setCustomFields(customFields);
                       var saved = customerRepository.save(customer);
                       customerRepository.flush();
@@ -224,7 +227,8 @@ class FieldDateScannerJobTest {
                               "Far Away Client", "faraway@test.com", memberId1);
                       var customFields = new HashMap<String, Object>();
                       customFields.put(
-                          "far_away_deadline", LocalDate.now().plusDays(30).toString());
+                          "far_away_deadline",
+                          LocalDate.now(KaziTime.ZONE).plusDays(30).toString());
                       customer.setCustomFields(customFields);
                       var saved = customerRepository.save(customer);
                       customerRepository.flush();
@@ -281,7 +285,8 @@ class FieldDateScannerJobTest {
                               "Tenant1 Isolation Client", "t1iso@test.com", memberId1);
                       var customFields = new HashMap<String, Object>();
                       customFields.put(
-                          "isolation_deadline_t1", LocalDate.now().plusDays(7).toString());
+                          "isolation_deadline_t1",
+                          LocalDate.now(KaziTime.ZONE).plusDays(7).toString());
                       customer.setCustomFields(customFields);
                       var saved = customerRepository.save(customer);
                       customerRepository.flush();
@@ -309,7 +314,8 @@ class FieldDateScannerJobTest {
                               "Tenant2 Isolation Client", "t2iso@test.com", memberId2);
                       var customFields = new HashMap<String, Object>();
                       customFields.put(
-                          "isolation_deadline_t2", LocalDate.now().plusDays(7).toString());
+                          "isolation_deadline_t2",
+                          LocalDate.now(KaziTime.ZONE).plusDays(7).toString());
                       customer.setCustomFields(customFields);
                       var saved = customerRepository.save(customer);
                       customerRepository.flush();

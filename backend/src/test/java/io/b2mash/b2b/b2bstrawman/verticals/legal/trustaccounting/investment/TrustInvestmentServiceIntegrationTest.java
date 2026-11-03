@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -256,7 +257,7 @@ class TrustInvestmentServiceIntegrationTest {
     assertThat(withdrawn.status()).isEqualTo("WITHDRAWN");
     assertThat(withdrawn.withdrawalAmount())
         .isEqualByComparingTo(new BigDecimal("5250.00")); // 5000 + 250
-    assertThat(withdrawn.withdrawalDate()).isEqualTo(LocalDate.now());
+    assertThat(withdrawn.withdrawalDate()).isEqualTo(LocalDate.now(KaziTime.ZONE));
     assertThat(withdrawn.withdrawalTransactionId()).isNotNull();
   }
 
@@ -276,8 +277,8 @@ class TrustInvestmentServiceIntegrationTest {
                             "1112223334",
                             new BigDecimal("2000.00"),
                             new BigDecimal("0.0500"),
-                            LocalDate.now().minusDays(60),
-                            LocalDate.now().plusDays(10), // matures in 10 days
+                            LocalDate.now(KaziTime.ZONE).minusDays(60),
+                            LocalDate.now(KaziTime.ZONE).plusDays(10), // matures in 10 days
                             "Short-term deposit",
                             InvestmentBasis.FIRM_DISCRETION)));
 
@@ -294,8 +295,8 @@ class TrustInvestmentServiceIntegrationTest {
                         "4445556667",
                         new BigDecimal("1000.00"),
                         new BigDecimal("0.0400"),
-                        LocalDate.now().minusDays(30),
-                        LocalDate.now().plusDays(365), // matures in a year
+                        LocalDate.now(KaziTime.ZONE).minusDays(30),
+                        LocalDate.now(KaziTime.ZONE).plusDays(365), // matures in a year
                         "Long-term deposit",
                         InvestmentBasis.FIRM_DISCRETION)));
 

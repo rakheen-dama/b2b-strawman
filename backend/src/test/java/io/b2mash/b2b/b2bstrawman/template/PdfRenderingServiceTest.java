@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -213,7 +214,7 @@ class PdfRenderingServiceTest {
                   // Pattern: {slug}-{entity-name-slugified}-{yyyy-MM-dd}.pdf
                   assertThat(result.fileName()).startsWith("test-pdf-template-");
                   assertThat(result.fileName()).contains("rendering-test-project");
-                  assertThat(result.fileName()).endsWith(LocalDate.now() + ".pdf");
+                  assertThat(result.fileName()).endsWith(LocalDate.now(KaziTime.ZONE) + ".pdf");
                 }));
   }
 

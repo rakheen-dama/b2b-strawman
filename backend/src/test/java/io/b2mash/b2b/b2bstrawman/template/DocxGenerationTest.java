@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -272,7 +273,7 @@ class DocxGenerationTest {
             .andReturn();
 
     String fileName = JsonPath.read(result.getResponse().getContentAsString(), "$.fileName");
-    String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String today = LocalDate.now(KaziTime.ZONE).format(DateTimeFormatter.ISO_LOCAL_DATE);
     // Pattern: {slug}-{entity-name}-{date}.docx
     assertThat(fileName).endsWith("-" + today + ".docx");
     assertThat(fileName).startsWith("test-docx-template-");

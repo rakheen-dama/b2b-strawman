@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -18,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -131,7 +131,7 @@ class RetentionClockIntegrationTest {
     assertThat(project.getClosedAt()).isNotNull();
     assertThat(project.getRetentionClockStartedAt()).isEqualTo(project.getClosedAt());
     LocalDate expected =
-        project.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(SEEDED_YEARS);
+        project.getClosedAt().atZone(KaziTime.ZONE).toLocalDate().plusYears(SEEDED_YEARS);
     assertThat(project.getRetentionEndsOn()).isEqualTo(expected);
     assertThat(JsonPath.<String>read(closeJson, "$.retentionEndsAt"))
         .as("the closure response reports the persisted end date")
@@ -182,7 +182,7 @@ class RetentionClockIntegrationTest {
         .isAfter(firstClock)
         .isEqualTo(project.getClosedAt());
     LocalDate expected =
-        project.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(SEEDED_YEARS);
+        project.getClosedAt().atZone(KaziTime.ZONE).toLocalDate().plusYears(SEEDED_YEARS);
     assertThat(project.getRetentionEndsOn()).isEqualTo(expected);
     assertThat(JsonPath.<String>read(secondCloseJson, "$.retentionEndsAt"))
         .isEqualTo(expected.toString());
@@ -207,7 +207,7 @@ class RetentionClockIntegrationTest {
         .isAfter(completedAt);
     assertThat(project.getRetentionEndsOn())
         .isEqualTo(
-            project.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(SEEDED_YEARS));
+            project.getClosedAt().atZone(KaziTime.ZONE).toLocalDate().plusYears(SEEDED_YEARS));
   }
 
   // --- Helpers ---

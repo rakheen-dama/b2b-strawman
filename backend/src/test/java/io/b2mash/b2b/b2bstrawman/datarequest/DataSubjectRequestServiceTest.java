@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
@@ -93,7 +94,7 @@ class DataSubjectRequestServiceTest {
                 dataSubjectRequestService.createRequest(
                     customerId, "ACCESS", "Need my data", memberId));
 
-    assertThat(request.getDeadline()).isEqualTo(LocalDate.now().plusDays(14));
+    assertThat(request.getDeadline()).isEqualTo(LocalDate.now(KaziTime.ZONE).plusDays(14));
     assertThat(request.getStatus()).isEqualTo("RECEIVED");
     assertThat(request.getRequestType()).isEqualTo("ACCESS");
   }
@@ -112,7 +113,7 @@ class DataSubjectRequestServiceTest {
                 dataSubjectRequestService.createRequest(
                     customerId, "DELETION", "Delete my data", memberId));
 
-    assertThat(request.getDeadline()).isEqualTo(LocalDate.now().plusDays(30));
+    assertThat(request.getDeadline()).isEqualTo(LocalDate.now(KaziTime.ZONE).plusDays(30));
   }
 
   @Test
@@ -247,7 +248,7 @@ class DataSubjectRequestServiceTest {
                     customerId, "ACCESS", "Need my data", memberId));
 
     // ZA default = 30 days
-    assertThat(request.getDeadline()).isEqualTo(LocalDate.now().plusDays(30));
+    assertThat(request.getDeadline()).isEqualTo(LocalDate.now(KaziTime.ZONE).plusDays(30));
     assertThat(request.getJurisdiction()).isEqualTo("ZA");
   }
 
@@ -269,7 +270,7 @@ class DataSubjectRequestServiceTest {
                 dataSubjectRequestService.createRequest(
                     customerId, "DELETION", "Delete my data", memberId));
 
-    assertThat(request.getDeadline()).isEqualTo(LocalDate.now().plusDays(14));
+    assertThat(request.getDeadline()).isEqualTo(LocalDate.now(KaziTime.ZONE).plusDays(14));
     assertThat(request.getJurisdiction()).isEqualTo("ZA");
   }
 
@@ -292,7 +293,7 @@ class DataSubjectRequestServiceTest {
                     customerId, "ACCESS", "Access request", memberId));
 
     // 45 capped to ZA max 30
-    assertThat(request.getDeadline()).isEqualTo(LocalDate.now().plusDays(30));
+    assertThat(request.getDeadline()).isEqualTo(LocalDate.now(KaziTime.ZONE).plusDays(30));
   }
 
   @Test
@@ -339,7 +340,7 @@ class DataSubjectRequestServiceTest {
     runInTenant(
         () -> {
           var saved = requestRepository.findById(request.getId()).orElseThrow();
-          saved.setDeadlineForTest(LocalDate.now().plusDays(5));
+          saved.setDeadlineForTest(LocalDate.now(KaziTime.ZONE).plusDays(5));
           requestRepository.save(saved);
         });
 

@@ -258,13 +258,17 @@ class CollectionsReadApiTest {
   private UUID seedSentInvoice(
       UUID customerId, String name, String invoiceNumber, long amount, int daysOverdue) {
     return seedInvoice(
-        customerId, name, invoiceNumber, amount, LocalDate.now().minusDays(daysOverdue));
+        customerId,
+        name,
+        invoiceNumber,
+        amount,
+        LocalDate.now(KaziTime.ZONE).minusDays(daysOverdue));
   }
 
   private UUID seedFutureSentInvoice(
       UUID customerId, String name, String invoiceNumber, long amount, int daysAhead) {
     return seedInvoice(
-        customerId, name, invoiceNumber, amount, LocalDate.now().plusDays(daysAhead));
+        customerId, name, invoiceNumber, amount, LocalDate.now(KaziTime.ZONE).plusDays(daysAhead));
   }
 
   private UUID seedSentInvoiceCurrency(
@@ -275,7 +279,12 @@ class CollectionsReadApiTest {
       int daysOverdue,
       String currency) {
     return seedInvoice(
-        customerId, name, invoiceNumber, amount, LocalDate.now().minusDays(daysOverdue), currency);
+        customerId,
+        name,
+        invoiceNumber,
+        amount,
+        LocalDate.now(KaziTime.ZONE).minusDays(daysOverdue),
+        currency);
   }
 
   private UUID seedInvoice(
@@ -610,7 +619,7 @@ class CollectionsReadApiTest {
     rpPost("/api/invoices/" + current + "/approve");
     JsonNode currentSent = rpPost("/api/invoices/" + current + "/send");
 
-    String overdue = rpCreateDraftWithLine(LocalDate.now().minusDays(10));
+    String overdue = rpCreateDraftWithLine(LocalDate.now(KaziTime.ZONE).minusDays(10));
     rpPost("/api/invoices/" + overdue + "/approve");
     JsonNode overdueSent = rpPost("/api/invoices/" + overdue + "/send");
 
@@ -619,7 +628,8 @@ class CollectionsReadApiTest {
 
     assertThat(currentSent.get("status").asText()).isEqualTo("SENT");
     assertThat(currentSent.hasNonNull("dueDate")).as("approve stamped a due date").isTrue();
-    assertThat(LocalDate.parse(currentSent.get("dueDate").asText())).isAfter(LocalDate.now());
+    assertThat(LocalDate.parse(currentSent.get("dueDate").asText()))
+        .isAfter(LocalDate.now(KaziTime.ZONE));
     BigDecimal currentTotal = currentSent.get("total").decimalValue();
     BigDecimal overdueTotal = overdueSent.get("total").decimalValue();
     BigDecimal approvedTotal = approvedOnly.get("total").decimalValue();

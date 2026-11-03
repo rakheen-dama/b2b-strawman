@@ -45,13 +45,13 @@ describe("TimeTrackingSettingsForm", () => {
     expect(screen.getByLabelText("Sun")).toBeInTheDocument();
 
     // Time input
-    expect(screen.getByLabelText("Reminder Time (UTC)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Reminder Time (SAST)")).toBeInTheDocument();
 
     // Min hours input
     expect(screen.getByLabelText("Minimum Hours")).toBeInTheDocument();
 
     // Helper text
-    expect(screen.getByText(/Time is interpreted as UTC/)).toBeInTheDocument();
+    expect(screen.getByText(/South African time \(SAST, UTC\+2\)/)).toBeInTheDocument();
 
     // Expense markup
     expect(screen.getByLabelText("Default Disbursement Markup (%)")).toBeInTheDocument();

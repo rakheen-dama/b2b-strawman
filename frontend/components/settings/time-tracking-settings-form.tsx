@@ -177,7 +177,7 @@ export function TimeTrackingSettingsForm({
               htmlFor="reminder-time"
               className="block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              Reminder Time (UTC)
+              Reminder Time (SAST)
             </label>
             <Input
               id="reminder-time"
@@ -187,8 +187,7 @@ export function TimeTrackingSettingsForm({
               className="mt-1 w-40"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Note: Time is interpreted as UTC. For SAST (UTC+2), enter 2 hours earlier than your
-              local time.
+              South African time (SAST, UTC+2).
             </p>
           </div>
 

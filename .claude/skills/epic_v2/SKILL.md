@@ -708,7 +708,10 @@ cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/backend && ./mvnw clean v
 ```
 
 Interpreting the result:
-- **FULL BUILD SUCCESS** → local merge gate satisfied.
+- **FULL BUILD SUCCESS** → local merge gate satisfied. Write `.claude/markers/verify-backend.json` in the
+  **main checkout** (format and command per `.claude/markers/README.md`; `commit` = the verified head).
+  Do the same for `verify-frontend.json` / `verify-portal.json` after their gates go green. These files
+  are the merge gate's evidence and are committed in Step 5's bookkeeping commit (G88-F35).
 - **REAL FAILED TESTS: <names>** → genuine regression. Dispatch a fixer (Tier-1/Tier-2 only), push,
   re-run THIS step. (A push also re-triggers Backend CI.)
 - **NO NAMED TEST FAILURES** with non-zero exit → environmental SIGTERM/fork crash, not code. Re-kill
@@ -784,7 +787,11 @@ Then update task status — **for EACH slice implemented in this PR** (all slice
 
 In **full-epic mode**, you must update ALL slices (e.g., both 450A and 450B) in a single pass. Do not mark only one slice.
 
-- Commit and push from main repo
+- Commit and push from main repo. The bookkeeping commit **must** stage the verify markers this PR's
+  merge used, alongside the task files: `git add .claude/markers/verify-*.json <task files>`. Before
+  committing, check that every area the PR touched (backend / frontend / portal) has a marker whose
+  `commit` is the merged PR head: `git diff --cached --stat -- .claude/markers` must list them. A merge
+  whose marker is not committed cannot be audited later (G88-F35: five Epic-624 PRs lost theirs).
 
 ## Guardrails
 

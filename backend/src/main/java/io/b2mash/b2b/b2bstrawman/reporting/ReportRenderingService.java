@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.LenientStandardDialect;
@@ -10,7 +11,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -226,7 +226,7 @@ public class ReportRenderingService {
     context.put(
         "generatedAt",
         DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")
-            .withZone(ZoneOffset.UTC)
+            .withZone(KaziTime.ZONE)
             .format(Instant.now()));
     context.put("columns", getColumns(definition));
     if (settings != null) {

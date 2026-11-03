@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.timeentry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationPreference;
@@ -19,7 +20,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneOffset;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import java.util.UUID;
@@ -216,8 +216,8 @@ class TimeReminderSchedulerTest {
 
   @Test
   void reminderNotSent_whenNotInTimeWindow() {
-    // Setup: reminder time is far from current UTC time
-    var farAwayTime = LocalTime.now(ZoneOffset.UTC).plusHours(3);
+    // Setup: reminder time is far from current SAST time
+    var farAwayTime = LocalTime.now(KaziTime.ZONE).plusHours(3);
     configureOrgSettings(true, todayDayAbbrev(), farAwayTime, 240);
 
     runInTenant(() -> scheduler.processTenant());
@@ -330,7 +330,7 @@ class TimeReminderSchedulerTest {
                         new TimeEntry(
                             taskId,
                             memberId,
-                            LocalDate.now(ZoneOffset.UTC),
+                            LocalDate.now(KaziTime.ZONE),
                             durationMinutes,
                             false,
                             null,
@@ -347,21 +347,21 @@ class TimeReminderSchedulerTest {
 
   /** Returns the 3-letter abbreviation for today's day of week (e.g. "MON", "TUE"). */
   private String todayDayAbbrev() {
-    return LocalDate.now(ZoneOffset.UTC)
+    return LocalDate.now(KaziTime.ZONE)
         .getDayOfWeek()
         .getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
         .toUpperCase()
         .substring(0, 3);
   }
 
-  /** Returns the current UTC time (for aligning the time window). */
+  /** Returns the current SAST time (for aligning the time window). */
   private LocalTime currentUtcTime() {
-    return LocalTime.now(ZoneOffset.UTC);
+    return LocalTime.now(KaziTime.ZONE);
   }
 
   /** Returns a day abbreviation that is NOT today. */
   private String nonTodayDayAbbrev() {
-    var today = LocalDate.now(ZoneOffset.UTC).getDayOfWeek();
+    var today = LocalDate.now(KaziTime.ZONE).getDayOfWeek();
     var otherDay = today == DayOfWeek.MONDAY ? DayOfWeek.TUESDAY : DayOfWeek.MONDAY;
     return otherDay.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toUpperCase().substring(0, 3);
   }

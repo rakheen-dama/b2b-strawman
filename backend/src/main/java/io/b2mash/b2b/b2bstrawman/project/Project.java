@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import jakarta.persistence.Column;
@@ -13,7 +14,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -299,7 +299,7 @@ public class Project {
   /**
    * Marks the project CLOSED (Phase 67, ADR-248). Valid from ACTIVE or COMPLETED. Stamps {@code
    * closedAt} and {@code retentionClockStartedAt} with {@code now} on EVERY close and persists
-   * {@code retentionEndsOn} = the UTC calendar date of {@code now} + {@code retentionYears}
+   * {@code retentionEndsOn} = the SAST calendar date of {@code now} + {@code retentionYears}
    * (calendar-year arithmetic, so a leap-day close lands on 28 February). A re-close after a reopen
    * resets all three — a fresh anchor (ADR-249, ADR-354). The acting member is recorded on the
    * closure log by {@code MatterClosureService}, not here.
@@ -315,7 +315,7 @@ public class Project {
     this.status = ProjectStatus.CLOSED;
     this.closedAt = now;
     this.retentionClockStartedAt = now;
-    this.retentionEndsOn = now.atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
+    this.retentionEndsOn = now.atZone(KaziTime.ZONE).toLocalDate().plusYears(retentionYears);
     this.updatedAt = Instant.now();
   }
 

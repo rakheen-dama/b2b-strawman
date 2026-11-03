@@ -16,7 +16,7 @@ import org.springframework.web.ErrorResponseException;
  * condition:
  *
  * <pre>
- *   today (UTC) &gt; retentionEndsOn
+ *   today (SAST) &gt; retentionEndsOn
  * </pre>
  *
  * <p>Once retention has elapsed a matter cannot be reopened — Phase 67 §67.3.6, ADR-249.

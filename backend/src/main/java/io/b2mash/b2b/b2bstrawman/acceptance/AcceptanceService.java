@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.acceptance.dto.AcceptanceRequestResponse;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
@@ -33,7 +34,6 @@ import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
@@ -59,7 +59,7 @@ public class AcceptanceService {
   private static final String TEMPLATE_REMINDER = "acceptance-reminder";
 
   private static final DateTimeFormatter EMAIL_DATE_FORMAT =
-      DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(KaziTime.ZONE);
 
   private final AcceptanceRequestRepository acceptanceRequestRepository;
   private final GeneratedDocumentRepository generatedDocumentRepository;

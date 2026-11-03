@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -24,9 +25,9 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterClosedEvent
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterReopenedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.GenerateStatementRequest;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -103,6 +104,8 @@ public class MatterClosureService {
    */
   private final MatterClosureService self;
 
+  private final Clock clock;
+
   public MatterClosureService(
       List<ClosureGate> gates,
       ProjectRepository projectRepository,
@@ -116,7 +119,8 @@ public class MatterClosureService {
       ApplicationEventPublisher eventPublisher,
       StatementService statementService,
       MemberNameResolver memberNameResolver,
-      @Lazy MatterClosureService self) {
+      @Lazy MatterClosureService self,
+      Clock clock) {
     this.orderedGates = gates.stream().sorted(Comparator.comparingInt(ClosureGate::order)).toList();
     this.projectRepository = projectRepository;
     this.matterClosureLogRepository = matterClosureLogRepository;
@@ -130,6 +134,7 @@ public class MatterClosureService {
     this.statementService = statementService;
     this.memberNameResolver = memberNameResolver;
     this.self = self;
+    this.clock = clock;
   }
 
   // ---------- evaluate ----------
@@ -385,8 +390,9 @@ public class MatterClosureService {
   /**
    * GAP-L-93: generates the Statement of Account in its own transaction so that a render failure
    * cannot roll back the (already-committed) close. Default period spans the matter's open date
-   * (project {@code createdAt}) → today (UTC). If a different window is needed, the operator can
-   * re-generate via the standalone "Generate Statement of Account" button on the matter header.
+   * (project {@code createdAt}, as an SAST date) → today (SAST). If a different window is needed,
+   * the operator can re-generate via the standalone "Generate Statement of Account" button on the
+   * matter header.
    *
    * <p>Phase 88 U13 / ADR-350: the closure request's {@code shareWithClient} / {@code notifyClient}
    * intent is passed through, so the SoA follows the same visibility + email rule as the letter.
@@ -399,14 +405,14 @@ public class MatterClosureService {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public UUID generateSoaSafely(
       UUID projectId, UUID actingMemberId, boolean shareWithClient, boolean notifyClient) {
-    LocalDate today = LocalDate.now(ZoneOffset.UTC);
+    LocalDate today = LocalDate.now(clock);
     LocalDate openDate =
         projectRepository
             .findById(projectId)
             .map(
                 p ->
                     p.getCreatedAt() != null
-                        ? p.getCreatedAt().atZone(ZoneOffset.UTC).toLocalDate()
+                        ? p.getCreatedAt().atZone(KaziTime.ZONE).toLocalDate()
                         : today.minusYears(1))
             .orElse(today.minusYears(1));
     var resp =
@@ -453,9 +459,9 @@ public class MatterClosureService {
               .getOrCreateForCurrentTenant()
               .getDataProtection()
               .getEffectiveLegalMatterRetentionYears();
-      retentionEndsOn = anchor.atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
+      retentionEndsOn = anchor.atZone(KaziTime.ZONE).toLocalDate().plusYears(retentionYears);
     }
-    if (LocalDate.now(ZoneOffset.UTC).isAfter(retentionEndsOn)) {
+    if (LocalDate.now(clock).isAfter(retentionEndsOn)) {
       throw new RetentionElapsedException(projectId, retentionEndsOn);
     }
 

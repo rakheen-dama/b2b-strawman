@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.portal.notification;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
@@ -11,9 +12,9 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -81,6 +82,7 @@ public class PortalEmailNotificationChannel {
   private final TransactionTemplate transactionTemplate;
   private final PortalLinkBuilder portalLinkBuilder;
   private final String productName;
+  private final Clock clock;
 
   public PortalEmailNotificationChannel(
       PortalContactRepository portalContactRepository,
@@ -90,7 +92,8 @@ public class PortalEmailNotificationChannel {
       OrgSettingsRepository orgSettingsRepository,
       PlatformTransactionManager transactionManager,
       PortalLinkBuilder portalLinkBuilder,
-      @Value("${docteams.app.product-name:Kazi}") String productName) {
+      @Value("${docteams.app.product-name:Kazi}") String productName,
+      Clock clock) {
     this.portalContactRepository = portalContactRepository;
     this.preferenceService = preferenceService;
     this.portalEmailService = portalEmailService;
@@ -104,6 +107,7 @@ public class PortalEmailNotificationChannel {
     this.transactionTemplate = tpl;
     this.portalLinkBuilder = portalLinkBuilder;
     this.productName = productName;
+    this.clock = clock;
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -353,7 +357,7 @@ public class PortalEmailNotificationChannel {
     if (details.get("days_until") instanceof Number n) {
       daysUntil = n.longValue();
     } else if (dueDate != null) {
-      daysUntil = ChronoUnit.DAYS.between(LocalDate.now(ZoneOffset.UTC), dueDate);
+      daysUntil = ChronoUnit.DAYS.between(LocalDate.now(clock), dueDate);
     }
 
     String orgName = context.getOrDefault("orgName", productName).toString();
@@ -487,13 +491,14 @@ public class PortalEmailNotificationChannel {
   }
 
   /**
-   * Formats an {@link Instant} timestamp as a calendar-day string (e.g. {@code "30 Apr 2026"}) at
-   * UTC. Returns {@code null} for null input so the template can render an "N/A" fallback.
+   * Formats an {@link Instant} timestamp as a calendar-day string (e.g. {@code "30 Apr 2026"}) in
+   * South African time. Returns {@code null} for null input so the template can render an "N/A"
+   * fallback.
    */
   private static String formatOccurredAt(Instant occurredAt) {
     if (occurredAt == null) {
       return null;
     }
-    return occurredAt.atZone(ZoneOffset.UTC).format(OCCURRED_AT_FMT);
+    return occurredAt.atZone(KaziTime.ZONE).format(OCCURRED_AT_FMT);
   }
 }

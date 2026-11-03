@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.collections.CollectionActivity;
 import io.b2mash.b2b.b2bstrawman.collections.CollectionActivityRepository;
 import io.b2mash.b2b.b2bstrawman.collections.CollectionStage;
 import io.b2mash.b2b.b2bstrawman.collections.ReminderHtmlSanitizer;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
@@ -26,7 +27,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -148,7 +148,7 @@ public class CollectionReminderSkill implements AiSkill {
     if (customer.getCreatedAt() != null) {
       prompt
           .append("Customer since: ")
-          .append(customer.getCreatedAt().atZone(ZoneOffset.UTC).toLocalDate())
+          .append(customer.getCreatedAt().atZone(KaziTime.ZONE).toLocalDate())
           .append("\n");
     }
     appendBillingHistory(prompt, activity.getCustomerId());
@@ -257,7 +257,7 @@ public class CollectionReminderSkill implements AiSkill {
             .map(
                 i ->
                     ChronoUnit.DAYS.between(
-                        i.getDueDate(), i.getPaidAt().atZone(ZoneOffset.UTC).toLocalDate()))
+                        i.getDueDate(), i.getPaidAt().atZone(KaziTime.ZONE).toLocalDate()))
             .sorted()
             .toList();
     if (!daysToPay.isEmpty()) {

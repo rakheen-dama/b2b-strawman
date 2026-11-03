@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
@@ -364,7 +365,7 @@ public class StatementOfAccountContextBuilder {
     map.put(
         "opened_date",
         project.getCreatedAt() != null
-            ? project.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate()
+            ? project.getCreatedAt().atZone(KaziTime.ZONE).toLocalDate()
             : null);
     return map;
   }
@@ -605,7 +606,7 @@ public class StatementOfAccountContextBuilder {
 
     // One query for all invoices, then group in memory (avoids N+1).
     List<UUID> issuedIds = issued.stream().map(Invoice::getId).toList();
-    var startInstant = periodStart.atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
+    var startInstant = periodStart.atStartOfDay(KaziTime.ZONE).toInstant();
     BigDecimal paymentsBefore =
         paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(issuedIds).stream()
             .filter(p -> p.getStatus() == PaymentEventStatus.COMPLETED)
@@ -628,8 +629,8 @@ public class StatementOfAccountContextBuilder {
       return BigDecimal.ZERO;
     }
     List<UUID> invoiceIds = invoices.stream().map(Invoice::getId).toList();
-    var startInstant = periodStart.atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
-    var endInstant = periodEnd.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
+    var startInstant = periodStart.atStartOfDay(KaziTime.ZONE).toInstant();
+    var endInstant = periodEnd.plusDays(1).atStartOfDay(KaziTime.ZONE).toInstant();
 
     // Single batched query, filtered in memory (avoids N+1 from per-invoice calls).
     return paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(invoiceIds).stream()

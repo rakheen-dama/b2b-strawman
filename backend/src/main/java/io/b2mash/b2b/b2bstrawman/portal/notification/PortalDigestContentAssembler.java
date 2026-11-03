@@ -10,9 +10,9 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,16 +45,19 @@ public class PortalDigestContentAssembler {
   private final PortalReadModelRepository portalReadModelRepository;
   private final PortalTrustReadModelRepository portalTrustReadModelRepository;
   private final PortalDeadlineViewRepository portalDeadlineViewRepository;
+  private final Clock clock;
 
   public PortalDigestContentAssembler(
       PortalContactRepository portalContactRepository,
       PortalReadModelRepository portalReadModelRepository,
       PortalTrustReadModelRepository portalTrustReadModelRepository,
-      PortalDeadlineViewRepository portalDeadlineViewRepository) {
+      PortalDeadlineViewRepository portalDeadlineViewRepository,
+      Clock clock) {
     this.portalContactRepository = portalContactRepository;
     this.portalReadModelRepository = portalReadModelRepository;
     this.portalTrustReadModelRepository = portalTrustReadModelRepository;
     this.portalDeadlineViewRepository = portalDeadlineViewRepository;
+    this.clock = clock;
   }
 
   /**
@@ -76,7 +79,7 @@ public class PortalDigestContentAssembler {
     String orgId = contact.getOrgId();
 
     Instant since = Instant.now().minus(lookbackDays, ChronoUnit.DAYS);
-    LocalDate today = LocalDate.now(ZoneOffset.UTC);
+    LocalDate today = LocalDate.now(clock);
     LocalDate upcomingTo = today.plusDays(lookbackDays);
 
     // ── Recent invoices (filter in-memory by issueDate >= since-day) ──

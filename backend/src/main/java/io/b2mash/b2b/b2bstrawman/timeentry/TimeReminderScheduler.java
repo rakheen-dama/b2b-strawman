@@ -6,10 +6,10 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
@@ -39,6 +39,7 @@ public class TimeReminderScheduler {
   private final NotificationRepository notificationRepository;
   private final TransactionTemplate transactionTemplate;
   private final JobEnqueuer jobEnqueuer;
+  private final Clock clock;
 
   public TimeReminderScheduler(
       OrgSettingsRepository orgSettingsRepository,
@@ -47,7 +48,8 @@ public class TimeReminderScheduler {
       NotificationService notificationService,
       NotificationRepository notificationRepository,
       TransactionTemplate transactionTemplate,
-      JobEnqueuer jobEnqueuer) {
+      JobEnqueuer jobEnqueuer,
+      Clock clock) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.memberRepository = memberRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -55,6 +57,7 @@ public class TimeReminderScheduler {
     this.notificationRepository = notificationRepository;
     this.transactionTemplate = transactionTemplate;
     this.jobEnqueuer = jobEnqueuer;
+    this.clock = clock;
   }
 
   @SchedulerLock(name = "time_reminder_check_time_reminders", lockAtLeastFor = "5m")
@@ -86,7 +89,7 @@ public class TimeReminderScheduler {
   }
 
   private int processOrgReminders(OrgSettings orgSettings) {
-    var today = LocalDate.now(ZoneOffset.UTC);
+    var today = LocalDate.now(clock);
     DayOfWeek todayDow = today.getDayOfWeek();
 
     if (!orgSettings.getTimeReminder().getWorkingDays().contains(todayDow)) {
@@ -122,7 +125,7 @@ public class TimeReminderScheduler {
         transactionTemplate.execute(
             tx -> {
               // Deduplication: skip if a TIME_REMINDER was already sent today
-              var startOfDay = today.atStartOfDay(ZoneOffset.UTC).toInstant();
+              var startOfDay = today.atStartOfDay(clock.getZone()).toInstant();
               if (notificationRepository.existsByTypeAndRecipientMemberIdAndCreatedAtAfter(
                   "TIME_REMINDER", memberId, startOfDay)) {
                 return false;
@@ -172,14 +175,14 @@ public class TimeReminderScheduler {
   }
 
   /**
-   * Checks if the current UTC time falls within the 15-minute window starting at the configured
-   * reminder time.
+   * Checks if the current South African time falls within the 15-minute window starting at the
+   * firm's configured reminder time (a wall-clock time in SAST, e.g. 17:00).
    */
   boolean isWithinTimeWindow(LocalTime reminderTime) {
     if (reminderTime == null) {
       return false;
     }
-    var now = LocalTime.now(ZoneOffset.UTC);
+    var now = LocalTime.now(clock);
     var windowEnd = reminderTime.plusMinutes(15);
 
     // Handle normal case (no midnight wrap)

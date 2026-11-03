@@ -5,6 +5,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
@@ -17,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +53,10 @@ class MatterClosureContextBuilderTest {
   void setUp() {
     builder =
         new MatterClosureContextBuilder(
-            projectRepository, invoiceRepository, invoiceLineRepository);
+            projectRepository,
+            invoiceRepository,
+            invoiceLineRepository,
+            Clock.system(KaziTime.ZONE));
     lenient().when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project));
     lenient().when(project.getClosedAt()).thenReturn(null);
     lenient().when(project.getCreatedAt()).thenReturn(Instant.now());
@@ -97,6 +102,28 @@ class MatterClosureContextBuilderTest {
         .as(key + " is a BigDecimal (formatted by a hint)")
         .isInstanceOf(BigDecimal.class);
     return (BigDecimal) matter.get(key);
+  }
+
+  /** G88-F48: a matter closed at 01:30 SAST on 30 Oct is dated 30 Oct, not the UTC 29 Oct. */
+  @Test
+  @SuppressWarnings("unchecked")
+  void closureDate_isTheSastCalendarDateOfClosedAt() {
+    Instant closedAt = Instant.parse("2026-10-29T23:30:00Z");
+    when(project.getClosedAt()).thenReturn(closedAt);
+    var atClose =
+        new MatterClosureContextBuilder(
+            projectRepository,
+            invoiceRepository,
+            invoiceLineRepository,
+            Clock.fixed(closedAt, KaziTime.ZONE));
+
+    Map<String, Object> context =
+        atClose.buildClosureContext(
+            PROJECT_ID,
+            new ClosureRequest(
+                ClosureReason.CONCLUDED, null, false, null, false, null, null, null));
+
+    assertThat(((Map<String, Object>) context.get("closure")).get("date")).isEqualTo("2026-10-30");
   }
 
   @Test

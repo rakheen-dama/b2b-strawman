@@ -33,9 +33,11 @@ export interface Matter {
   retentionClockStartedAt: string | null;
   /**
    * The persisted `retention_ends_on` (`YYYY-MM-DD`, ADR-354): the close's SA business date
-   * (Africa/Johannesburg) plus the
-   * firm's matter retention years, stamped at close and cleared on reopen — null unless the
-   * matter is CLOSED. Frozen once stamped: a later change to the firm setting does not move it.
+   * (Africa/Johannesburg) plus the firm's matter retention years, stamped at close and cleared
+   * on reopen — null unless the matter is CLOSED. Frozen once stamped: a later change to the
+   * firm setting does not move it. Matters closed before the G88-F48 fix carry a value derived
+   * from the UTC close date (the earlier stamping code and the tenant V8 backfill), so for a
+   * close between 00:00 and 02:00 SAST their value can be one day earlier.
    */
   retentionEndsOn: string | null;
   matterRole: MatterRole | null;

@@ -22,6 +22,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { todayInSA } from "@b2mash/shared/date";
 
 export const ORG = "e2e-test-org";
 export const BASE = `/org/${ORG}`;
@@ -90,13 +91,13 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** YYYY-MM-DD for today offset by `days` (local time, matching `<input type="date">`). */
+/**
+ * YYYY-MM-DD for South African today offset by `days` — the product's business date (G88-F49),
+ * independent of the Playwright host's zone.
+ */
 export function isoDate(days = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${mm}-${dd}`;
+  const [y, m, d] = todayInSA().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
 
 /**

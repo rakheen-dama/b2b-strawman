@@ -27,6 +27,8 @@ export default defineConfig({
   },
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
+    // Product "today" is South African time (G88-F49); PW_TIMEZONE overrides for boundary runs.
+    timezoneId: process.env.PW_TIMEZONE ?? "Africa/Johannesburg",
     screenshot: "only-on-failure",
     trace: "on-first-retry",
   },

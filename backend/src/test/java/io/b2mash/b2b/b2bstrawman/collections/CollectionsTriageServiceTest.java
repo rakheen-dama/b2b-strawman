@@ -264,7 +264,8 @@ class CollectionsTriageServiceTest {
   /** A currently-outstanding (SENT) invoice due {@code daysOverdue} in the past. */
   private UUID seedSentInvoice(
       UUID customerId, String name, String invoiceNumber, int daysOverdue) {
-    Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysOverdue));
+    Invoice invoice =
+        draftInvoice(customerId, name, LocalDate.now(KaziTime.ZONE).minusDays(daysOverdue));
     invoice.approve(
         invoiceNumber,
         ownerMemberId,
@@ -277,7 +278,8 @@ class CollectionsTriageServiceTest {
   /** A SENT invoice due {@code daysOverdue} in the past with 300 of its 1000 paid (622D). */
   private UUID seedPartPaidInvoice(
       UUID customerId, String name, String invoiceNumber, int daysOverdue) {
-    Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysOverdue));
+    Invoice invoice =
+        draftInvoice(customerId, name, LocalDate.now(KaziTime.ZONE).minusDays(daysOverdue));
     invoice.approve(
         invoiceNumber,
         ownerMemberId,
@@ -294,7 +296,8 @@ class CollectionsTriageServiceTest {
    * past.
    */
   private void seedPaidInvoice(UUID customerId, String name, String invoiceNumber, int daysToPay) {
-    Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysToPay));
+    Invoice invoice =
+        draftInvoice(customerId, name, LocalDate.now(KaziTime.ZONE).minusDays(daysToPay));
     invoice.approve(
         invoiceNumber,
         ownerMemberId,

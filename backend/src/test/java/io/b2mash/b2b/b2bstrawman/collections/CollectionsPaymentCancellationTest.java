@@ -227,7 +227,8 @@ class CollectionsPaymentCancellationTest {
                   null,
                   "Test Org",
                   ownerMemberId);
-          invoice.updateDraft(LocalDate.now().minusDays(10), null, null, BigDecimal.ZERO);
+          invoice.updateDraft(
+              LocalDate.now(KaziTime.ZONE).minusDays(10), null, null, BigDecimal.ZERO);
           invoice.recalculateTotals(BigDecimal.valueOf(1500), false, BigDecimal.ZERO, false);
           invoice.approve(
               "INV-" + UUID.randomUUID().toString().substring(0, 6),

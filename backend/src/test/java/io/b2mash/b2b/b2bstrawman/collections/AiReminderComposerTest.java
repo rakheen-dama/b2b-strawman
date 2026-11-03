@@ -146,7 +146,8 @@ class AiReminderComposerTest {
           var savedCustomer = customerRepository.save(customer);
           var invoice =
               new Invoice(savedCustomer.getId(), "ZAR", name, email, null, "Test Org", memberId);
-          invoice.updateDraft(LocalDate.now().minusDays(daysOverdue), null, null, BigDecimal.ZERO);
+          invoice.updateDraft(
+              LocalDate.now(KaziTime.ZONE).minusDays(daysOverdue), null, null, BigDecimal.ZERO);
           invoice.recalculateTotals(BigDecimal.valueOf(1500), false, BigDecimal.ZERO, false);
           invoice.approve(
               invoiceNumber,

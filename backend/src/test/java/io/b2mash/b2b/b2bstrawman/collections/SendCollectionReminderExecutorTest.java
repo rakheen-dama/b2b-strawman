@@ -161,7 +161,8 @@ class SendCollectionReminderExecutorTest {
           var savedCustomer = customerRepository.save(customer);
           var invoice =
               new Invoice(savedCustomer.getId(), "ZAR", name, email, null, "Test Org", member);
-          invoice.updateDraft(LocalDate.now().minusDays(10), null, null, BigDecimal.ZERO);
+          invoice.updateDraft(
+              LocalDate.now(KaziTime.ZONE).minusDays(10), null, null, BigDecimal.ZERO);
           invoice.recalculateTotals(BigDecimal.valueOf(1500), false, BigDecimal.ZERO, false);
           invoice.approve(
               invoiceNumber,

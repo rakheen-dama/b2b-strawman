@@ -161,7 +161,7 @@ class CashDigestServiceTest {
             null,
             "Test Org",
             RequestScopes.MEMBER_ID.get());
-    invoice.updateDraft(LocalDate.now().minusDays(40), null, null, BigDecimal.ZERO);
+    invoice.updateDraft(LocalDate.now(KaziTime.ZONE).minusDays(40), null, null, BigDecimal.ZERO);
     invoice.recalculateTotals(BigDecimal.valueOf(2500), false, BigDecimal.ZERO, false);
     invoice.approve(
         "INV-" + UUID.randomUUID().toString().substring(0, 8),

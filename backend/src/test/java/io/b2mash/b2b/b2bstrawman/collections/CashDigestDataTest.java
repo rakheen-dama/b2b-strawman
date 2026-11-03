@@ -103,7 +103,7 @@ class CashDigestDataTest {
    * exact.
    */
   private void seedBook() {
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(KaziTime.ZONE);
 
     // ── Aging buckets (SENT). issue_date backdated out of the billed window so they don't inflate
     // billed. Each has its own customer so the debtor book yields distinct top-risk rows. ──
@@ -181,7 +181,8 @@ class CashDigestDataTest {
   }
 
   private void seedPaidInvoice(String name, long total, LocalDate issueDate, Instant paidAt) {
-    UUID invoiceId = seedInvoice(name, total, LocalDate.now().minusDays(5), true, paidAt);
+    UUID invoiceId =
+        seedInvoice(name, total, LocalDate.now(KaziTime.ZONE).minusDays(5), true, paidAt);
     pinIssueDate(invoiceId, issueDate);
     jdbcTemplate.update(
         "UPDATE \"%s\".invoices SET paid_at = ? WHERE id = ?::uuid".formatted(tenantSchema),

@@ -11,7 +11,7 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
-import { todayUtc } from "../../helpers/api";
+import { todayInSA } from "@b2mash/shared/date";
 
 const ORG = "e2e-test-org";
 const base = `/org/${ORG}`;
@@ -25,7 +25,7 @@ async function runAgingReport(page: Page) {
   const exportCsv = page.getByRole("button", { name: "Export CSV" });
   // Export stays disabled until a run (components/reports/report-runner.tsx)
   await expect(exportCsv).toBeDisabled();
-  await page.getByLabel("As of Date").fill(todayUtc());
+  await page.getByLabel("As of Date").fill(todayInSA());
   await page.getByRole("button", { name: "Run Report" }).click();
   const table = page.locator("#main-content").getByRole("table");
   await expect(table.getByRole("columnheader", { name: "Fee Note #" })).toBeVisible({

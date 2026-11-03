@@ -30,10 +30,15 @@ public class S3StorageAdapter implements StorageService {
 
   private static final Logger log = LoggerFactory.getLogger(S3StorageAdapter.class);
 
-  /** Validates that S3 keys follow the expected org-scoped path structure. */
+  /**
+   * Validates that S3 keys follow the expected org-scoped path structure. Generated documents use
+   * {@code generated/{uuid}/{fileName}} (G88-F33); the flat {@code generated/{fileName}} form is
+   * kept so keys stored on rows written before that change still presign. {@code
+   * InMemoryStorageService} (test) must carry the identical pattern.
+   */
   private static final Pattern S3_KEY_PATTERN =
       Pattern.compile(
-          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|exports|templates/[^/]+)/[^/]+$");
+          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|generated/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|exports|templates/[^/]+)/[^/]+$");
 
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;

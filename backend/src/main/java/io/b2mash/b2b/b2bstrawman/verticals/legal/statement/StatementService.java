@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
@@ -129,7 +130,7 @@ public class StatementService {
 
     String fileName = buildFileName(template.getSlug(), project, request.periodEnd());
     String tenantId = RequestScopes.requireTenantId();
-    String s3Key = "org/" + tenantId + "/generated/" + fileName;
+    String s3Key = S3PresignedUrlService.buildGeneratedKey(tenantId, UUID.randomUUID(), fileName);
     storageService.upload(s3Key, pdfBytes, "application/pdf");
 
     StatementSummary summary = extractSummary(context);

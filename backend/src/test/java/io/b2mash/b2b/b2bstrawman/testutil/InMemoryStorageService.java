@@ -17,10 +17,13 @@ import java.util.regex.Pattern;
  */
 public class InMemoryStorageService implements StorageService {
 
-  /** Same key validation as S3StorageAdapter — rejects path traversal and invalid formats. */
+  /**
+   * Same key validation as S3StorageAdapter (must stay identical) — rejects path traversal and
+   * invalid formats; accepts both generated/{uuid}/{fileName} and legacy flat generated/{fileName}.
+   */
   private static final Pattern KEY_PATTERN =
       Pattern.compile(
-          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|exports|templates/[^/]+)/[^/]+$");
+          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|generated/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|exports|templates/[^/]+)/[^/]+$");
 
   private final ConcurrentHashMap<String, byte[]> store = new ConcurrentHashMap<>();
 

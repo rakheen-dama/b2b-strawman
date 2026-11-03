@@ -145,8 +145,11 @@ public class TrustReconciliationService {
       throw new BankStatementParseException("Failed to read uploaded file", e);
     }
 
-    // Store file in S3
-    String s3Key = "trust-statements/" + tenantSchema + "/" + accountId + "/" + fileName;
+    // Store file in S3. G88-F33: a fresh uuid segment per import, so a re-import of a same-named
+    // file (banks export fixed names such as statement.csv) never overwrites the earlier raw file.
+    String s3Key =
+        "trust-statements/%s/%s/%s/%s"
+            .formatted(tenantSchema, accountId, UUID.randomUUID(), fileName);
     storageService.upload(s3Key, fileBytes, file.getContentType());
 
     // Detect format: read first line for header detection

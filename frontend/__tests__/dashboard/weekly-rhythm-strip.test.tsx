@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { todayInSA } from "@b2mash/shared/date";
+import { parseIsoDate } from "@/app/(app)/org/[slug]/diary/diary-types";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { WeeklyRhythmStrip } from "@/components/dashboard/weekly-rhythm-strip";
 
@@ -27,7 +29,7 @@ describe("WeeklyRhythmStrip", () => {
     render(<WeeklyRhythmStrip {...defaultProps} />);
 
     // The current day should have the ring-teal-500 class
-    const todayDayOfWeek = new Date().getDay();
+    const todayDayOfWeek = parseIsoDate(todayInSA()).getDay();
     const todayIndex = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
 
     const todayButton = screen.getByTestId(`rhythm-day-${todayIndex}`);

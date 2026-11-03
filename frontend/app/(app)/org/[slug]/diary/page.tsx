@@ -9,9 +9,9 @@ import {
   isValidIsoDate,
   parseDiaryKindsParam,
   parseDiaryView,
-  toIsoDate,
   type DiaryView,
 } from "./diary-types";
+import { todayInSA } from "@b2mash/shared/date";
 
 function DiarySkeleton({ view }: { view: DiaryView }) {
   switch (view) {
@@ -49,7 +49,7 @@ export default async function DiaryPage({
   const { slug } = await params;
   const search = await searchParams;
 
-  const today = toIsoDate(new Date());
+  const today = todayInSA();
   const view = parseDiaryView(search.view);
   const { from, to } = diaryWindow(view, isValidIsoDate(search.from) ? search.from : today);
   const initialKinds = parseDiaryKindsParam(search.types);

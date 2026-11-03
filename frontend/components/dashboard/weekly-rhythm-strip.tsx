@@ -1,6 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { todayInSA } from "@b2mash/shared/date";
+import { parseIsoDate } from "@/app/(app)/org/[slug]/diary/diary-types";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -17,8 +19,9 @@ export function WeeklyRhythmStrip({
   selectedDayIndex,
   onDaySelect,
 }: WeeklyRhythmStripProps) {
-  // Current day index (0=Mon, 6=Sun)
-  const todayDayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon..6=Sat
+  // Current day index (0=Mon, 6=Sun) on the South African calendar — the same on the SSR server
+  // (UTC) and in the browser (G88-F49).
+  const todayDayOfWeek = parseIsoDate(todayInSA()).getDay(); // 0=Sun, 1=Mon..6=Sat
   const todayIndex = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
 
   const totalHours = dailyHours.reduce((sum, h) => sum + h, 0);

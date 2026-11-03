@@ -36,39 +36,8 @@ import { createMessages } from "@/lib/messages";
 import { findCurrentMemberId } from "@/lib/current-member";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
-
-/**
- * Resolves date range from search params, defaulting to current week
- * (Monday to Sunday) instead of current month.
- */
-function resolveMyWorkDateRange(searchParams: { from?: string; to?: string }): {
-  from: string;
-  to: string;
-} {
-  if (searchParams.from && searchParams.to) {
-    return { from: searchParams.from, to: searchParams.to };
-  }
-
-  // Default to current week (Monday - Sunday)
-  const now = new Date();
-  const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-
-  const formatDate = (d: Date): string => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${dd}`;
-  };
-
-  return {
-    from: formatDate(monday),
-    to: formatDate(sunday),
-  };
-}
+import { todayInSA } from "@b2mash/shared/date";
+import { resolveMyWorkDateRange } from "./my-work-date-range";
 
 export default async function MyWorkPage({
   params,
@@ -106,7 +75,7 @@ export default async function MyWorkPage({
     // Non-fatal: show empty time summary
   }
 
-  const today = new Date().toLocaleDateString("en-CA");
+  const today = todayInSA();
 
   let todayEntries: MyWorkTimeEntryItem[] = [];
   try {

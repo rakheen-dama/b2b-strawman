@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import type { TrustInvestment, TrustInvestmentStatus, InvestmentBasis } from "@/lib/types/trust";
 import { InvestmentPageClient } from "./InvestmentPageClient";
 import { InvestmentBasisFilter } from "./InvestmentBasisFilter";
+import { todayInSA } from "@b2mash/shared/date";
+import { daysBetween } from "@/app/(app)/org/[slug]/diary/diary-types";
 
 // -- Badge variant mapping ------------------------------------------------
 
@@ -31,12 +33,10 @@ const BASIS_LABEL: Record<InvestmentBasis, string> = {
 
 // -- Maturity helper ------------------------------------------------------
 
+/** Matures within `daysAhead` days of South African today, inclusive (G88-F49). */
 function isMaturing(maturityDate: string | null, daysAhead: number = 30): boolean {
   if (!maturityDate) return false;
-  const today = new Date();
-  const maturity = new Date(maturityDate + "T00:00:00");
-  const diffMs = maturity.getTime() - today.getTime();
-  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  const diffDays = daysBetween(todayInSA(), maturityDate);
   return diffDays >= 0 && diffDays <= daysAhead;
 }
 

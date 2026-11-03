@@ -19,6 +19,8 @@
  * @formatjs directly.
  */
 
+import { todayInSA } from "./date";
+
 // ---------------------------------------------------------------------------
 // Currency
 // ---------------------------------------------------------------------------
@@ -54,7 +56,7 @@ export function formatCurrency(amount: number, currency: string = "ZAR"): string
  */
 export function formatCurrencySafe(
   amount: number | null | undefined,
-  currency: string | null | undefined,
+  currency: string | null | undefined
 ): string {
   if (amount == null || !currency) return "N/A";
   return formatCurrency(amount, currency);
@@ -172,16 +174,12 @@ export function formatDateTime(isoString: string): string {
 }
 
 /**
- * Returns true if the given "YYYY-MM-DD" deadline is strictly before today.
- * (Staff-app helper, retained.)
+ * Returns true if the given "YYYY-MM-DD" deadline is strictly before today in South Africa
+ * (G88-F49: the same answer on the UTC SSR server and in any browser). (Staff-app helper.)
  */
 export function isOverdue(deadline: string): boolean {
-  const [year, month, day] = deadline.split("-").map(Number);
-  if (!year || !month || !day) return false;
-  const deadlineLocal = new Date(year, month - 1, day);
-  const now = new Date();
-  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return deadlineLocal.getTime() < todayLocal.getTime();
+  if (!/^\d{4}-\d{2}-\d{2}/.test(deadline)) return false;
+  return deadline.slice(0, 10) < todayInSA();
 }
 
 /**

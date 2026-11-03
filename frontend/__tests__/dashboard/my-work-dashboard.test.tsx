@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { todayInSA } from "@b2mash/shared/date";
+import { addDays } from "@/app/(app)/org/[slug]/diary/diary-types";
 import { cleanup, render, screen } from "@testing-library/react";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
 import { UrgencyTaskList, groupByUrgency } from "@/components/my-work/urgency-task-list";
@@ -79,14 +81,9 @@ const mockDashboardData: PersonalDashboardResponse = {
   ],
 };
 
-// Helper to create a date string relative to today
+// Helper to create a date string relative to South African today (the product's "today")
 function daysFromNow(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
+  return addDays(todayInSA(), days);
 }
 
 function makeTask(overrides: Partial<MyWorkTaskItem> & { id: string }): MyWorkTaskItem {

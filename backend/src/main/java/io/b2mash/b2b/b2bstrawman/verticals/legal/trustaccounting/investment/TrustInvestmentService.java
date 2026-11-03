@@ -17,6 +17,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -43,6 +44,7 @@ public class TrustInvestmentService {
   private final TrustTransactionService transactionService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
+  private final Clock clock;
 
   public TrustInvestmentService(
       TrustInvestmentRepository investmentRepository,
@@ -51,7 +53,8 @@ public class TrustInvestmentService {
       ClientLedgerCardRepository ledgerCardRepository,
       TrustTransactionService transactionService,
       VerticalModuleGuard moduleGuard,
-      AuditService auditService) {
+      AuditService auditService,
+      Clock clock) {
     this.investmentRepository = investmentRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
@@ -59,6 +62,7 @@ public class TrustInvestmentService {
     this.transactionService = transactionService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -240,7 +244,7 @@ public class TrustInvestmentService {
           "Invalid investment state", "Investment must be ACTIVE or MATURED to withdraw");
     }
 
-    var today = LocalDate.now();
+    var today = LocalDate.now(clock);
     var withdrawalAmount = investment.getPrincipal().add(investment.getInterestEarned());
 
     // Create DEPOSIT transaction (immediately credits client ledger)
@@ -286,7 +290,7 @@ public class TrustInvestmentService {
         .findById(accountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
 
-    var today = LocalDate.now();
+    var today = LocalDate.now(clock);
     var endDate = today.plusDays(daysAhead);
 
     var investments =

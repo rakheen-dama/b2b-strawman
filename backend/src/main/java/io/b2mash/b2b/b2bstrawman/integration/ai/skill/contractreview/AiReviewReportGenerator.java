@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,14 +44,17 @@ public class AiReviewReportGenerator {
   private final DocumentRepository documentRepository;
   private final StorageService storageService;
   private final ObjectMapper objectMapper;
+  private final Clock clock;
 
   public AiReviewReportGenerator(
       DocumentRepository documentRepository,
       StorageService storageService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      Clock clock) {
     this.documentRepository = documentRepository;
     this.storageService = storageService;
     this.objectMapper = objectMapper;
+    this.clock = clock;
   }
 
   /**
@@ -76,7 +80,7 @@ public class AiReviewReportGenerator {
     } catch (JacksonException e) {
       throw new IllegalStateException("Failed to serialize review report to JSON", e);
     }
-    String fileName = "Contract Review Report - " + LocalDate.now() + ".json";
+    String fileName = "Contract Review Report - " + LocalDate.now(clock) + ".json";
 
     var document =
         new Document(

@@ -41,14 +41,6 @@ public class MyWorkController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
     UUID memberId = RequestScopes.requireMemberId();
 
-    // Default to today if not specified
-    if (from == null) {
-      from = LocalDate.now();
-    }
-    if (to == null) {
-      to = LocalDate.now();
-    }
-
     var entries = myWorkService.getMyTimeEntries(memberId, from, to);
     return ResponseEntity.ok(entries);
   }

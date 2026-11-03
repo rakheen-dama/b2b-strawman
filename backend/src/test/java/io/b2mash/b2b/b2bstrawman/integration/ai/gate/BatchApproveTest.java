@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.collections.CollectionActivityRepository;
 import io.b2mash.b2b.b2bstrawman.collections.CollectionActivityStatus;
 import io.b2mash.b2b.b2bstrawman.collections.CollectionStage;
 import io.b2mash.b2b.b2bstrawman.collections.CollectionsScanService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfile;
@@ -136,7 +137,11 @@ class BatchApproveTest {
                   savedCustomer.getId(), "ZAR", name, email, null, "Batch Org", ownerMemberId);
           invoice.updateDraft(LocalDate.now().minusDays(daysOverdue), null, null, BigDecimal.ZERO);
           invoice.recalculateTotals(BigDecimal.valueOf(1500), false, BigDecimal.ZERO, false);
-          invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+          invoice.approve(
+              invoiceNumber,
+              ownerMemberId,
+              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+              LocalDate.now(KaziTime.ZONE));
           invoice.markSent();
           holder[0] = invoiceRepository.save(invoice).getId();
         });

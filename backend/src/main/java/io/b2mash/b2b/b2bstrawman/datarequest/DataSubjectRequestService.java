@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.datarequest;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -10,9 +11,9 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class DataSubjectRequestService {
   private final AuditService auditService;
   private final MemberNameResolver memberNameResolver;
   private final NotificationService notificationService;
+  private final Clock clock;
 
   public DataSubjectRequestService(
       DataSubjectRequestRepository requestRepository,
@@ -47,13 +49,15 @@ public class DataSubjectRequestService {
       OrgSettingsRepository orgSettingsRepository,
       AuditService auditService,
       MemberNameResolver memberNameResolver,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      Clock clock) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.memberNameResolver = memberNameResolver;
     this.notificationService = notificationService;
+    this.clock = clock;
   }
 
   @Transactional
@@ -72,7 +76,7 @@ public class DataSubjectRequestService {
     int deadlineDays =
         orgSettings != null ? resolveDeadlineDays(orgSettings) : DEFAULT_DEADLINE_DAYS;
 
-    LocalDate deadline = LocalDate.now().plusDays(deadlineDays);
+    LocalDate deadline = LocalDate.now(clock).plusDays(deadlineDays);
 
     var request = new DataSubjectRequest(customerId, requestType, description, actorId, deadline);
     if (orgSettings != null) {
@@ -187,7 +191,7 @@ public class DataSubjectRequestService {
    */
   @Transactional
   public int checkDeadlines() {
-    LocalDate now = LocalDate.now();
+    LocalDate now = LocalDate.now(clock);
     LocalDate horizon = now.plusDays(7);
     LocalDate lookback = now.minusDays(30);
 
@@ -259,7 +263,7 @@ public class DataSubjectRequestService {
 
   @Transactional
   public int sendDeadlineWarnings() {
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     LocalDate sevenDaysOut = today.plusDays(7);
 
     var requests =
@@ -319,8 +323,10 @@ public class DataSubjectRequestService {
       Instant createdAt) {
 
     public static DataSubjectRequestSummary from(
-        DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
-      LocalDate today = LocalDate.now();
+        DataSubjectRequest req,
+        String customerName,
+        Map<UUID, String> memberNames,
+        LocalDate today) {
       DeadlineStatus deadlineStatus;
       if (req.getDeadline() == null) {
         deadlineStatus = DeadlineStatus.ON_TRACK;
@@ -338,7 +344,7 @@ public class DataSubjectRequestService {
           (req.getDeadline() != null && req.getRequestedAt() != null)
               ? (int)
                   ChronoUnit.DAYS.between(
-                      req.getRequestedAt().atZone(ZoneOffset.UTC).toLocalDate(), req.getDeadline())
+                      req.getRequestedAt().atZone(KaziTime.ZONE).toLocalDate(), req.getDeadline())
               : req.getDeadlineDaysOverride();
 
       return new DataSubjectRequestSummary(
@@ -369,17 +375,24 @@ public class DataSubjectRequestService {
     var memberNames = resolveMemberNames(List.of(request));
     var customerNames = resolveCustomerNames(List.of(request));
     return DataSubjectRequestSummary.from(
-        request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
+        request,
+        customerNames.getOrDefault(request.getCustomerId(), "Unknown"),
+        memberNames,
+        LocalDate.now(clock));
   }
 
   public List<DataSubjectRequestSummary> toSummaries(List<DataSubjectRequest> requests) {
     var memberNames = resolveMemberNames(requests);
     var customerNames = resolveCustomerNames(requests);
+    var today = LocalDate.now(clock);
     return requests.stream()
         .map(
             req ->
                 DataSubjectRequestSummary.from(
-                    req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
+                    req,
+                    customerNames.getOrDefault(req.getCustomerId(), "Unknown"),
+                    memberNames,
+                    today))
         .toList();
   }
 }

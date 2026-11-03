@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -379,7 +380,8 @@ class InvoiceControllerIntegrationTest {
                       invoice.approve(
                           "INV-TEST-001",
                           memberIdOwner,
-                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                          LocalDate.now(KaziTime.ZONE));
                       invoice = invoiceRepository.save(invoice);
                       invoiceIdHolder[0] = invoice.getId().toString();
                     }));
@@ -608,7 +610,8 @@ class InvoiceControllerIntegrationTest {
                       invoice.approve(
                           "INV-TEST-002",
                           memberIdOwner,
-                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                          LocalDate.now(KaziTime.ZONE));
                       invoice = invoiceRepository.save(invoice);
                       invoiceIdHolder[0] = invoice.getId().toString();
                     }));

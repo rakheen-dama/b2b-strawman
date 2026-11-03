@@ -34,6 +34,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ public class TaskService {
   private final ProjectRepository projectRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final ProjectLifecycleGuard projectLifecycleGuard;
+  private final Clock clock;
 
   public TaskService(
       TaskRepository taskRepository,
@@ -83,7 +85,8 @@ public class TaskService {
       FieldGroupService fieldGroupService,
       ProjectRepository projectRepository,
       TimeEntryRepository timeEntryRepository,
-      ProjectLifecycleGuard projectLifecycleGuard) {
+      ProjectLifecycleGuard projectLifecycleGuard,
+      Clock clock) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.projectMemberRepository = projectMemberRepository;
@@ -98,6 +101,7 @@ public class TaskService {
     this.projectRepository = projectRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.projectLifecycleGuard = projectLifecycleGuard;
+    this.clock = clock;
   }
 
   private static final List<TaskStatus> DEFAULT_STATUSES =
@@ -870,7 +874,8 @@ public class TaskService {
   private Task createRecurringNextInstance(
       Task completedTask, UUID memberId, String actorName, String tenantId, String orgId) {
     var rule = RecurrenceRule.parse(completedTask.getRecurrenceRule());
-    LocalDate nextDueDate = rule.calculateNextDueDate(completedTask.getDueDate());
+    var today = LocalDate.now(clock);
+    LocalDate nextDueDate = rule.calculateNextDueDate(completedTask.getDueDate(), today);
 
     // Check if recurrence has expired
     if (completedTask.getRecurrenceEndDate() != null
@@ -884,7 +889,7 @@ public class TaskService {
 
     // Also check if end date itself has already passed (before calculating next)
     if (completedTask.getRecurrenceEndDate() != null
-        && LocalDate.now().isAfter(completedTask.getRecurrenceEndDate())) {
+        && today.isAfter(completedTask.getRecurrenceEndDate())) {
       log.info(
           "Recurrence end date {} already passed for task {}",
           completedTask.getRecurrenceEndDate(),

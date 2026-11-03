@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
@@ -823,7 +824,7 @@ class MatterClosureServiceIntegrationTest {
                   invoiceLineRepository.save(disbursementLine);
                   sent.recalculateTotals(
                       new BigDecimal("2550.00"), true, new BigDecimal("270.00"), false);
-                  sent.approve("INV-626E-1", memberId, 30);
+                  sent.approve("INV-626E-1", memberId, 30, LocalDate.now(KaziTime.ZONE));
                   sent.markSent();
                   invoiceRepository.saveAndFlush(sent);
 

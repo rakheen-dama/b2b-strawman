@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,16 +23,19 @@ public class PaiaManualContextBuilder {
   private final RetentionPolicyRepository retentionPolicyRepository;
   private final ProcessingActivityRepository processingActivityRepository;
   private final TemplateContextHelper contextHelper;
+  private final Clock clock;
 
   public PaiaManualContextBuilder(
       OrgSettingsRepository orgSettingsRepository,
       RetentionPolicyRepository retentionPolicyRepository,
       ProcessingActivityRepository processingActivityRepository,
-      TemplateContextHelper contextHelper) {
+      TemplateContextHelper contextHelper,
+      Clock clock) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.retentionPolicyRepository = retentionPolicyRepository;
     this.processingActivityRepository = processingActivityRepository;
     this.contextHelper = contextHelper;
+    this.clock = clock;
   }
 
   @Transactional(readOnly = true)
@@ -51,7 +55,7 @@ public class PaiaManualContextBuilder {
     context.put("jurisdiction", settings.getDataProtection().getDataProtectionJurisdiction());
     context.put("retentionPolicies", retentionPolicyRepository.findByActive(true));
     context.put("processingActivities", processingActivityRepository.findAll());
-    context.put("generatedDate", LocalDate.now().toString());
+    context.put("generatedDate", LocalDate.now(clock).toString());
     return context;
   }
 }

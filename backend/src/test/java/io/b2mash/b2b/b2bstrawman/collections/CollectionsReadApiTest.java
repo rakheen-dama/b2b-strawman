@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -294,7 +295,11 @@ class CollectionsReadApiTest {
             customerId, currency, name, name + "@test.com", null, "Read Org", ownerMemberId);
     invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
     invoice.recalculateTotals(BigDecimal.valueOf(amount), false, BigDecimal.ZERO, false);
-    invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.approve(
+        invoiceNumber,
+        ownerMemberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     return invoiceRepository.save(invoice).getId();
   }

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.icegreen.greenmail.util.GreenMail;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailDeliveryLogRepository;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailDeliveryStatus;
@@ -19,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,7 +103,10 @@ class InvoiceEmailServiceIntegrationTest {
                       invoice.recalculateTotals(
                           new BigDecimal("1000.00"), false, BigDecimal.ZERO, false);
                       invoice.approve(
-                          "INV-2026-0001", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                          "INV-2026-0001",
+                          memberId,
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                          LocalDate.now(KaziTime.ZONE));
                       invoice.markSent();
                       savedInvoice = invoiceRepository.save(invoice);
                     }));
@@ -205,7 +210,10 @@ class InvoiceEmailServiceIntegrationTest {
                       invoice.recalculateTotals(
                           new BigDecimal("500.00"), false, BigDecimal.ZERO, false);
                       invoice.approve(
-                          "INV-RL-0001", rlMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                          "INV-RL-0001",
+                          rlMemberId,
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                          LocalDate.now(KaziTime.ZONE));
                       invoice.markSent();
                       rlInvoice[0] = invoiceRepository.save(invoice);
                     }));

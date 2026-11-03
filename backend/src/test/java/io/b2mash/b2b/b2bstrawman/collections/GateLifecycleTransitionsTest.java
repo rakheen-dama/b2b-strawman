@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.collections;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiCompletionResponse;
@@ -134,7 +135,8 @@ class GateLifecycleTransitionsTest {
           invoice.approve(
               "INV-" + UUID.randomUUID().toString().substring(0, 6),
               ownerMemberId,
-              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+              LocalDate.now(KaziTime.ZONE));
           invoice.markSent();
           holder[0] = invoiceRepository.save(invoice).getId();
         });

@@ -50,6 +50,7 @@ import io.b2mash.b2b.b2bstrawman.task.TaskItem;
 import io.b2mash.b2b.b2bstrawman.task.TaskItemRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -93,6 +94,7 @@ public class ProjectTemplateService {
   private final PortalContactRepository portalContactRepository;
   private final MemberRepository memberRepository;
   private final RequestTemplateRepository requestTemplateRepository;
+  private final Clock clock;
 
   public ProjectTemplateService(
       ProjectTemplateRepository templateRepository,
@@ -116,7 +118,8 @@ public class ProjectTemplateService {
       InformationRequestService informationRequestService,
       PortalContactRepository portalContactRepository,
       MemberRepository memberRepository,
-      RequestTemplateRepository requestTemplateRepository) {
+      RequestTemplateRepository requestTemplateRepository,
+      Clock clock) {
     this.templateRepository = templateRepository;
     this.templateTaskRepository = templateTaskRepository;
     this.templateTaskItemRepository = templateTaskItemRepository;
@@ -139,6 +142,7 @@ public class ProjectTemplateService {
     this.portalContactRepository = portalContactRepository;
     this.memberRepository = memberRepository;
     this.requestTemplateRepository = requestTemplateRepository;
+    this.clock = clock;
   }
 
   @Transactional
@@ -513,7 +517,7 @@ public class ProjectTemplateService {
         request.name() != null
             ? request.name()
             : nameTokenResolver.resolveNameTokens(
-                template.getNamePattern(), customer, LocalDate.now(), null, null);
+                template.getNamePattern(), customer, LocalDate.now(clock), null, null);
 
     // 4. Resolve description
     String description =

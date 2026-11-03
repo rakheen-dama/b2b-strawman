@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -54,6 +55,7 @@ public class CourtCalendarService {
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
   private final AuditService auditService;
+  private final Clock clock;
 
   public CourtCalendarService(
       CourtDateRepository courtDateRepository,
@@ -61,13 +63,15 @@ public class CourtCalendarService {
       VerticalModuleGuard moduleGuard,
       ProjectRepository projectRepository,
       CustomerRepository customerRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      Clock clock) {
     this.courtDateRepository = courtDateRepository;
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.auditService = auditService;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -409,7 +413,7 @@ public class CourtCalendarService {
   public UpcomingResponse getUpcoming() {
     moduleGuard.requireModule(MODULE_ID);
 
-    var today = LocalDate.now();
+    var today = LocalDate.now(clock);
 
     // Upcoming court dates within lookahead window
     var rawCourtDates =

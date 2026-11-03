@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstance;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceItemRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
@@ -28,6 +29,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSta
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -76,7 +78,8 @@ class ComplianceDataCollectorServiceTest {
             prescriptionTrackerRepository,
             retentionPolicyRepository,
             retentionService,
-            moduleGuard);
+            moduleGuard,
+            Clock.system(KaziTime.ZONE));
   }
 
   @Test

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -64,6 +65,7 @@ public class CollectionReminderSkill implements AiSkill {
   private final AiFirmProfileService firmProfileService;
   private final ObjectMapper objectMapper;
   private final LlmJsonParser llmJsonParser;
+  private final Clock clock;
 
   public CollectionReminderSkill(
       CollectionActivityRepository activityRepository,
@@ -71,13 +73,15 @@ public class CollectionReminderSkill implements AiSkill {
       CustomerRepository customerRepository,
       AiFirmProfileService firmProfileService,
       ObjectMapper objectMapper,
-      LlmJsonParser llmJsonParser) {
+      LlmJsonParser llmJsonParser,
+      Clock clock) {
     this.activityRepository = activityRepository;
     this.invoiceRepository = invoiceRepository;
     this.customerRepository = customerRepository;
     this.firmProfileService = firmProfileService;
     this.objectMapper = objectMapper;
     this.llmJsonParser = llmJsonParser;
+    this.clock = clock;
   }
 
   @Override
@@ -116,7 +120,7 @@ public class CollectionReminderSkill implements AiSkill {
 
     long daysOverdue =
         invoice.getDueDate() != null
-            ? ChronoUnit.DAYS.between(invoice.getDueDate(), LocalDate.now())
+            ? ChronoUnit.DAYS.between(invoice.getDueDate(), LocalDate.now(clock))
             : activity.getDaysOverdueAtAction();
 
     var prompt = new StringBuilder();

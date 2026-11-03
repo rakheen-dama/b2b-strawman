@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.icegreen.greenmail.util.GreenMail;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfile;
@@ -165,7 +166,8 @@ class CashDigestServiceTest {
     invoice.approve(
         "INV-" + UUID.randomUUID().toString().substring(0, 8),
         RequestScopes.MEMBER_ID.get(),
-        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     invoiceRepository.save(invoice);
   }

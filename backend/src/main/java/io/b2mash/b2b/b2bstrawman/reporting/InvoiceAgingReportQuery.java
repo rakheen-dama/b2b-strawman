@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,9 +18,11 @@ import org.springframework.stereotype.Component;
 public class InvoiceAgingReportQuery implements ReportQuery {
 
   private final EntityManager entityManager;
+  private final Clock clock;
 
-  public InvoiceAgingReportQuery(EntityManager entityManager) {
+  public InvoiceAgingReportQuery(EntityManager entityManager, Clock clock) {
     this.entityManager = entityManager;
+    this.clock = clock;
   }
 
   @Override
@@ -52,7 +55,7 @@ public class InvoiceAgingReportQuery implements ReportQuery {
   private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
     var asOfDate = parseDate(parameters, "asOfDate");
     if (asOfDate == null) {
-      asOfDate = LocalDate.now();
+      asOfDate = LocalDate.now(clock);
     }
     var customerId = parseUuid(parameters, "customerId");
 

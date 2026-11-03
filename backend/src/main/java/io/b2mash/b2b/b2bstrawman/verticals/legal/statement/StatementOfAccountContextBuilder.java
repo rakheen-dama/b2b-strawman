@@ -31,6 +31,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLe
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -131,6 +132,7 @@ public class StatementOfAccountContextBuilder {
   private final ObjectMapper objectMapper;
   private final TaxRateRepository taxRateRepository;
   private final TrustTransactionRepository trustTransactionRepository;
+  private final Clock clock;
 
   public StatementOfAccountContextBuilder(
       ProjectRepository projectRepository,
@@ -146,7 +148,8 @@ public class StatementOfAccountContextBuilder {
       VerticalModuleGuard moduleGuard,
       ObjectMapper objectMapper,
       TaxRateRepository taxRateRepository,
-      TrustTransactionRepository trustTransactionRepository) {
+      TrustTransactionRepository trustTransactionRepository,
+      Clock clock) {
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -161,6 +164,7 @@ public class StatementOfAccountContextBuilder {
     this.objectMapper = objectMapper;
     this.taxRateRepository = taxRateRepository;
     this.trustTransactionRepository = trustTransactionRepository;
+    this.clock = clock;
   }
 
   /**
@@ -340,7 +344,7 @@ public class StatementOfAccountContextBuilder {
     var map = new LinkedHashMap<String, Object>();
     map.put("period_start", periodStart);
     map.put("period_end", periodEnd);
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     map.put("generation_date", today);
     map.put("reference", buildStatementReference(projectId, today));
     return map;

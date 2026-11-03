@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
@@ -32,6 +33,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -147,7 +149,8 @@ class AccountingPaymentPollIntegrationTest {
     savedInvoice.approve(
         "INV-POLL-" + savedInvoice.getId().toString().substring(0, 6),
         memberId,
-        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     savedInvoice.markSent();
     savedInvoice = invoiceRepository.save(savedInvoice);
 

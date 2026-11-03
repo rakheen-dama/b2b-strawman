@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -231,7 +232,8 @@ class CollectionsPaymentCancellationTest {
           invoice.approve(
               "INV-" + UUID.randomUUID().toString().substring(0, 6),
               ownerMemberId,
-              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+              LocalDate.now(KaziTime.ZONE));
           invoice.markSent();
           var saved = invoiceRepository.save(invoice);
           holder[0] = saved.getId();
@@ -338,7 +340,8 @@ class CollectionsPaymentCancellationTest {
           savedInvoice.approve(
               "INV-XPULL-" + savedInvoice.getId().toString().substring(0, 6),
               ownerMemberId,
-              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+              LocalDate.now(KaziTime.ZONE));
           savedInvoice.markSent();
           savedInvoice = invoiceRepository.save(savedInvoice);
           var pushEntry =

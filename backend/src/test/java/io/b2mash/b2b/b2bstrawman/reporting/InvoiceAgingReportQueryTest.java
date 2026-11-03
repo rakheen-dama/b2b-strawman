@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.reporting;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
@@ -376,7 +377,11 @@ class InvoiceAgingReportQueryTest {
     var invoice = new Invoice(customerId, "ZAR", customerName, null, null, "Test Org", memberId);
     invoice.updateDraft(dueDate, null, null, BigDecimal.ZERO);
     invoice.recalculateTotals(subtotal, false, BigDecimal.ZERO, false);
-    invoice.approve(invoiceNumber, memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.approve(
+        invoiceNumber,
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     return invoiceRepository.save(invoice);
   }

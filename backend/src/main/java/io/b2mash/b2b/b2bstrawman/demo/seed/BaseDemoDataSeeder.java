@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.demo.seed;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
@@ -95,8 +96,13 @@ public abstract class BaseDemoDataSeeder {
     return Instant.now().minus(Duration.ofDays(n));
   }
 
+  /** Business "today" for seeded data: South African time, independent of the JVM zone. */
+  protected LocalDate today() {
+    return LocalDate.now(KaziTime.ZONE);
+  }
+
   protected LocalDate daysAgoDate(int n) {
-    return LocalDate.now().minusDays(n);
+    return today().minusDays(n);
   }
 
   protected Instant monthsAgo(int n) {

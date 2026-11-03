@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
@@ -20,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -188,7 +190,11 @@ class TaxRateBatchRecalcIntegrationTest {
 
                   invoice.recalculateTotals(
                       new BigDecimal("1000.00"), true, new BigDecimal("150.00"), false);
-                  invoice.approve("INV-001", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                  invoice.approve(
+                      "INV-001",
+                      memberId,
+                      BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                      LocalDate.now(KaziTime.ZONE));
                   invoiceRepository.save(invoice);
                 }));
 

@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,18 +48,21 @@ public class AiDraftDocumentGenerator {
   private final ClauseRepository clauseRepository;
   private final StorageService storageService;
   private final ObjectMapper objectMapper;
+  private final Clock clock;
 
   public AiDraftDocumentGenerator(
       DocumentTemplateRepository documentTemplateRepository,
       DocumentRepository documentRepository,
       ClauseRepository clauseRepository,
       StorageService storageService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      Clock clock) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.documentRepository = documentRepository;
     this.clauseRepository = clauseRepository;
     this.storageService = storageService;
     this.objectMapper = objectMapper;
+    this.clock = clock;
   }
 
   /**
@@ -92,7 +96,7 @@ public class AiDraftDocumentGenerator {
       throw new IllegalStateException("Failed to serialize draft document to JSON", e);
     }
 
-    String fileName = template.getName() + " - " + LocalDate.now() + ".json";
+    String fileName = template.getName() + " - " + LocalDate.now(clock) + ".json";
 
     var document =
         new Document(

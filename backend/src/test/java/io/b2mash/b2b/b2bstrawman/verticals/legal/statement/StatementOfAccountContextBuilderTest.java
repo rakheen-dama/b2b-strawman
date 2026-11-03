@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
@@ -37,6 +38,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLe
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +84,7 @@ class StatementOfAccountContextBuilderTest {
   // while still letting Mockito inject it via @InjectMocks.
   @org.mockito.Spy private ObjectMapper objectMapper = new ObjectMapper();
 
+  @org.mockito.Spy private Clock clock = Clock.system(KaziTime.ZONE);
   @InjectMocks private StatementOfAccountContextBuilder builder;
 
   private final UUID projectId = UUID.randomUUID();

@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -36,18 +37,21 @@ public class PrescriptionTrackerService {
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
   private final AuditService auditService;
+  private final Clock clock;
 
   public PrescriptionTrackerService(
       PrescriptionTrackerRepository prescriptionTrackerRepository,
       VerticalModuleGuard moduleGuard,
       ProjectRepository projectRepository,
       CustomerRepository customerRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      Clock clock) {
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.auditService = auditService;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -276,7 +280,7 @@ public class PrescriptionTrackerService {
     if (TERMINAL_STATES.contains(entity.getStatus())) {
       return entity.getStatus();
     }
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     if (!entity.getPrescriptionDate().isAfter(today)) {
       return "EXPIRED";
     }

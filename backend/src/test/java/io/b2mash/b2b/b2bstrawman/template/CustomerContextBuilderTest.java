@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -184,13 +185,21 @@ class CustomerContextBuilderTest {
     var sentInvoice =
         new Invoice(customerId, "ZAR", "Invoice Customer", null, null, "Org", memberId);
     sentInvoice.recalculateTotals(new BigDecimal("1000.00"), false, BigDecimal.ZERO, false);
-    sentInvoice.approve("INV-001", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    sentInvoice.approve(
+        "INV-001",
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     sentInvoice.markSent();
 
     var paidInvoice =
         new Invoice(customerId, "ZAR", "Invoice Customer", null, null, "Org", memberId);
     paidInvoice.recalculateTotals(new BigDecimal("500.00"), false, BigDecimal.ZERO, false);
-    paidInvoice.approve("INV-002", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    paidInvoice.approve(
+        "INV-002",
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     paidInvoice.markSent();
     paidInvoice.recordPayment("PAY-001");
 
@@ -236,20 +245,32 @@ class CustomerContextBuilderTest {
     var sentInvoice =
         new Invoice(customerId, "ZAR", "Part Paid Customer", null, null, "Org", memberId);
     sentInvoice.recalculateTotals(new BigDecimal("1000.00"), false, BigDecimal.ZERO, false);
-    sentInvoice.approve("INV-101", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    sentInvoice.approve(
+        "INV-101",
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     sentInvoice.markSent();
 
     var partInvoice =
         new Invoice(customerId, "ZAR", "Part Paid Customer", null, null, "Org", memberId);
     partInvoice.recalculateTotals(new BigDecimal("2000.00"), false, BigDecimal.ZERO, false);
-    partInvoice.approve("INV-102", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    partInvoice.approve(
+        "INV-102",
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     partInvoice.markSent();
     partInvoice.applyPayment(new BigDecimal("800.00"), "P-1");
 
     var paidInvoice =
         new Invoice(customerId, "ZAR", "Part Paid Customer", null, null, "Org", memberId);
     paidInvoice.recalculateTotals(new BigDecimal("500.00"), false, BigDecimal.ZERO, false);
-    paidInvoice.approve("INV-103", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    paidInvoice.approve(
+        "INV-103",
+        memberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     paidInvoice.markSent();
     paidInvoice.recordPayment("PAY-103");
 

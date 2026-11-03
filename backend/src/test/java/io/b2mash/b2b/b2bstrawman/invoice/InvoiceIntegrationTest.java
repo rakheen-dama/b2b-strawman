@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -238,7 +239,10 @@ class InvoiceIntegrationTest {
                   invoice = invoiceRepository.save(invoice);
 
                   invoice.approve(
-                      "INV-0001", memberIdOwner, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                      "INV-0001",
+                      memberIdOwner,
+                      BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                      LocalDate.now(KaziTime.ZONE));
                   invoice = invoiceRepository.save(invoice);
 
                   var found = invoiceRepository.findById(invoice.getId());
@@ -271,7 +275,10 @@ class InvoiceIntegrationTest {
                   invoice = invoiceRepository.save(invoice);
 
                   invoice.approve(
-                      "INV-0002", memberIdOwner, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                      "INV-0002",
+                      memberIdOwner,
+                      BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                      LocalDate.now(KaziTime.ZONE));
                   invoice = invoiceRepository.save(invoice);
 
                   invoice.voidInvoice();
@@ -304,7 +311,10 @@ class InvoiceIntegrationTest {
                   invoice = invoiceRepository.save(invoice);
 
                   invoice.approve(
-                      "INV-0003", memberIdOwner, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                      "INV-0003",
+                      memberIdOwner,
+                      BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                      LocalDate.now(KaziTime.ZONE));
                   invoice = invoiceRepository.save(invoice);
 
                   final var approvedInvoice = invoice;

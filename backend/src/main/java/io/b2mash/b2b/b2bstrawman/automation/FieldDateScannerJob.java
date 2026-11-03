@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -44,6 +45,7 @@ public class FieldDateScannerJob {
   private final TransactionTemplate transactionTemplate;
   private final JobEnqueuer jobEnqueuer;
   private final JobQueueProperties jobQueueProperties;
+  private final Clock clock;
 
   public FieldDateScannerJob(
       TenantScopedRunner tenantScopedRunner,
@@ -54,7 +56,8 @@ public class FieldDateScannerJob {
       ApplicationEventPublisher eventPublisher,
       TransactionTemplate transactionTemplate,
       JobEnqueuer jobEnqueuer,
-      JobQueueProperties jobQueueProperties) {
+      JobQueueProperties jobQueueProperties,
+      Clock clock) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.customerRepository = customerRepository;
@@ -64,6 +67,7 @@ public class FieldDateScannerJob {
     this.transactionTemplate = transactionTemplate;
     this.jobEnqueuer = jobEnqueuer;
     this.jobQueueProperties = jobQueueProperties;
+    this.clock = clock;
   }
 
   @SchedulerLock(name = "field_date_scanner_execute", lockAtLeastFor = "5m")
@@ -168,7 +172,7 @@ public class FieldDateScannerJob {
       return 0;
     }
 
-    long daysUntil = ChronoUnit.DAYS.between(LocalDate.now(), fieldDate);
+    long daysUntil = ChronoUnit.DAYS.between(LocalDate.now(clock), fieldDate);
     int fired = 0;
 
     for (int threshold : THRESHOLDS) {

@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -75,6 +76,7 @@ public class ComplianceDataCollectorService {
   private final RetentionPolicyRepository retentionPolicyRepository;
   private final RetentionService retentionService;
   private final VerticalModuleGuard moduleGuard;
+  private final Clock clock;
 
   public ComplianceDataCollectorService(
       CustomerRepository customerRepository,
@@ -87,7 +89,8 @@ public class ComplianceDataCollectorService {
       PrescriptionTrackerRepository prescriptionTrackerRepository,
       RetentionPolicyRepository retentionPolicyRepository,
       RetentionService retentionService,
-      VerticalModuleGuard moduleGuard) {
+      VerticalModuleGuard moduleGuard,
+      Clock clock) {
     this.customerRepository = customerRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
     this.checklistInstanceItemRepository = checklistInstanceItemRepository;
@@ -99,6 +102,7 @@ public class ComplianceDataCollectorService {
     this.retentionPolicyRepository = retentionPolicyRepository;
     this.retentionService = retentionService;
     this.moduleGuard = moduleGuard;
+    this.clock = clock;
   }
 
   /**
@@ -264,7 +268,7 @@ public class ComplianceDataCollectorService {
     int overdueDsars =
         (int)
             dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(
-                List.of("RECEIVED", "IN_PROGRESS"), LocalDate.now());
+                List.of("RECEIVED", "IN_PROGRESS"), LocalDate.now(clock));
 
     return new PopiaSummary(registered, unregistered, (int) pendingDsars, overdueDsars);
   }
@@ -295,7 +299,7 @@ public class ComplianceDataCollectorService {
   }
 
   private PrescriptionSummary aggregatePrescriptionData(int flaggedItemsCap, StringBuilder notes) {
-    LocalDate now = LocalDate.now();
+    LocalDate now = LocalDate.now(clock);
 
     // Approaching: prescriptions expiring within 90 days (starting tomorrow to avoid overlap with
     // expired)

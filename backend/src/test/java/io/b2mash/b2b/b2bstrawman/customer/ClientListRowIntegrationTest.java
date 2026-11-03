@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientListRow;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
@@ -627,14 +628,22 @@ class ClientListRowIntegrationTest {
 
   private UUID seedSentInvoice(UUID clientId, long amount, String invoiceCurrency, LocalDate due) {
     var invoice = newInvoice(clientId, amount, invoiceCurrency, due);
-    invoice.approve("CLR-" + (++invoiceSeq), ownerId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.approve(
+        "CLR-" + (++invoiceSeq),
+        ownerId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     return invoiceRepository.save(invoice).getId();
   }
 
   private UUID seedPartPaidInvoice(UUID clientId, long amount, String paid, LocalDate due) {
     var invoice = newInvoice(clientId, amount, currency, due);
-    invoice.approve("CLR-" + (++invoiceSeq), ownerId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.approve(
+        "CLR-" + (++invoiceSeq),
+        ownerId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     invoice.applyPayment(new BigDecimal(paid), "CLR-PART-" + invoiceSeq);
     return invoiceRepository.save(invoice).getId();
@@ -642,7 +651,11 @@ class ClientListRowIntegrationTest {
 
   private UUID seedPaidInvoice(UUID clientId, long amount, LocalDate due) {
     var invoice = newInvoice(clientId, amount, currency, due);
-    invoice.approve("CLR-" + (++invoiceSeq), ownerId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    invoice.approve(
+        "CLR-" + (++invoiceSeq),
+        ownerId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     invoice.recordPayment("CLR-PAID-" + invoiceSeq);
     return invoiceRepository.save(invoice).getId();

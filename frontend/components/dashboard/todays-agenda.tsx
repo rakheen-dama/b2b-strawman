@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@b2mash/ui/badge";
 import { formatDuration } from "@/lib/format";
 import { DIARY_KIND_SINGULAR, DiaryEventRow } from "@/components/diary/diary-event-row";
-import { daysBetween, formatDiaryDay } from "@/app/(app)/org/[slug]/diary/diary-types";
+import { daysBetween } from "@b2mash/shared/date";
+import { formatDiaryDay } from "@/app/(app)/org/[slug]/diary/diary-types";
 import type { DiaryEventsResult } from "@/app/(app)/org/[slug]/my-work/todays-diary";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
 import {

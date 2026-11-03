@@ -1,11 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.collections;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
  * </ul>
  *
  * <p>The median definition is kept IDENTICAL to {@code
- * CollectionReminderSkill.appendBillingHistory} (upper median of {@code paid_at - due_date} in UTC
+ * CollectionReminderSkill.appendBillingHistory} (upper median of {@code paid_at - due_date} in SAST
  * days over PAID invoices) so the prompt's "Median days-to-pay" and the {@code DRIFTING} signal
  * never disagree. No PAID history → median undefined → neither {@code DRIFTING} nor {@code
  * SERIAL_LATE}.
@@ -57,14 +58,17 @@ public class CollectionsTriageService {
   private final InvoiceRepository invoiceRepository;
   private final CollectionActivityRepository activityRepository;
   private final List<CollectionsAdvisor> advisors;
+  private final Clock clock;
 
   public CollectionsTriageService(
       InvoiceRepository invoiceRepository,
       CollectionActivityRepository activityRepository,
-      List<CollectionsAdvisor> advisors) {
+      List<CollectionsAdvisor> advisors,
+      Clock clock) {
     this.invoiceRepository = invoiceRepository;
     this.activityRepository = activityRepository;
     this.advisors = List.copyOf(advisors);
+    this.clock = clock;
   }
 
   /**
@@ -85,9 +89,9 @@ public class CollectionsTriageService {
   @Transactional(readOnly = true)
   public TriageResult triageFor(UUID customerId) {
     List<Invoice> invoices = invoiceRepository.findByCustomerId(customerId);
-    // UTC to match medianDaysToPay, which normalizes paid_at to UTC — otherwise, around midnight,
-    // the JVM default zone could disagree with the median and flip DRIFTING across hosts.
-    LocalDate today = LocalDate.now(ZoneOffset.UTC);
+    // South African "today", matching medianDaysToPay, which reads paid_at as an SAST calendar
+    // date — both sides must use the same zone or DRIFTING flips around midnight.
+    LocalDate today = LocalDate.now(clock);
 
     Long median = medianDaysToPay(invoices);
     long oldestCurrentDaysOverdue = oldestCurrentDaysOverdue(invoices, today);
@@ -164,9 +168,9 @@ public class CollectionsTriageService {
   }
 
   /**
-   * Upper median of {@code paid_at - due_date} (UTC days) over PAID invoices with both fields
-   * present, or {@code null} when there is no such history. Identical to the reminder skill's
-   * median.
+   * Upper median of {@code paid_at - due_date} (SAST calendar days) over PAID invoices with both
+   * fields present, or {@code null} when there is no such history. Identical to the reminder
+   * skill's median.
    */
   private static Long medianDaysToPay(List<Invoice> invoices) {
     List<Long> daysToPay =
@@ -176,7 +180,7 @@ public class CollectionsTriageService {
             .map(
                 i ->
                     ChronoUnit.DAYS.between(
-                        i.getDueDate(), i.getPaidAt().atZone(ZoneOffset.UTC).toLocalDate()))
+                        i.getDueDate(), i.getPaidAt().atZone(KaziTime.ZONE).toLocalDate()))
             .sorted()
             .toList();
     if (daysToPay.isEmpty()) {

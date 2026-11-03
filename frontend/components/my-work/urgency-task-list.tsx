@@ -15,6 +15,8 @@ import {
 import { formatDuration, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MyWorkTaskItem, TaskPriority, TaskStatus } from "@/lib/types";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
+import { addDays, parseIsoDate } from "@/app/(app)/org/[slug]/diary/diary-types";
 
 // --- Priority badge config ---
 
@@ -47,15 +49,13 @@ interface UrgencyGroups {
 }
 
 export function groupByUrgency(tasks: MyWorkTaskItem[]): UrgencyGroups {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // South African today, so the SSR render (UTC) and the browser group identically (G88-F49).
+  // yyyy-MM-dd strings compare lexically.
+  const today = todayInSA();
 
-  // Calculate end of current week (Sunday)
-  const day = today.getDay();
-  const diff = day === 0 ? 0 : 7 - day;
-  const endOfWeek = new Date(today);
-  endOfWeek.setDate(today.getDate() + diff);
-  endOfWeek.setHours(23, 59, 59, 999);
+  // End of the current week (Sunday)
+  const day = parseIsoDate(today).getDay();
+  const endOfWeek = addDays(today, day === 0 ? 0 : 7 - day);
 
   const overdue: MyWorkTaskItem[] = [];
   const dueThisWeek: MyWorkTaskItem[] = [];
@@ -71,8 +71,7 @@ export function groupByUrgency(tasks: MyWorkTaskItem[]): UrgencyGroups {
       upcoming.push(task);
       continue;
     }
-    const [y, m, d] = task.dueDate.split("-").map(Number);
-    const due = new Date(y, m - 1, d);
+    const due = task.dueDate.slice(0, 10);
     if (due < today) {
       overdue.push(task);
     } else if (due <= endOfWeek) {
@@ -83,24 +82,13 @@ export function groupByUrgency(tasks: MyWorkTaskItem[]): UrgencyGroups {
   }
 
   // Sort overdue by most overdue first (earliest due date first)
-  overdue.sort((a, b) => {
-    const [ay, am, ad] = a.dueDate!.split("-").map(Number);
-    const [by, bm, bd] = b.dueDate!.split("-").map(Number);
-    const aDate = new Date(ay, am - 1, ad);
-    const bDate = new Date(by, bm - 1, bd);
-    return aDate.getTime() - bDate.getTime();
-  });
+  overdue.sort((a, b) => a.dueDate!.localeCompare(b.dueDate!));
 
   return { overdue, dueThisWeek, upcoming, noDueDate };
 }
 
 function getOverdueDays(dueDate: string): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const [y, m, d] = dueDate.split("-").map(Number);
-  const due = new Date(y, m - 1, d);
-  const diffMs = today.getTime() - due.getTime();
-  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return daysBetween(dueDate.slice(0, 10), todayInSA());
 }
 
 // --- Task table for a group ---

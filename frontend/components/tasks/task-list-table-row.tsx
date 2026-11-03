@@ -11,13 +11,12 @@ import { formatDate } from "@/lib/format";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
 import { describeRecurrence } from "@/lib/recurrence";
 import type { Task } from "@/lib/types";
+import { todayInSA } from "@b2mash/shared/date";
 
+/** Due before South African today — identical on the SSR server (UTC) and in the browser. */
 function isOverdue(dueDate: string | null, status: string): boolean {
   if (!dueDate || status === "DONE" || status === "CANCELLED") return false;
-  const due = new Date(dueDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return due < today;
+  return dueDate.slice(0, 10) < todayInSA();
 }
 
 interface TaskListTableRowProps {

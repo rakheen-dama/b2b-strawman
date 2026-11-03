@@ -17,9 +17,10 @@ package io.b2mash.b2b.b2bstrawman.reporting;
  * </ul>
  *
  * <p>Each method takes the SQL expression that yields the integer days-overdue (e.g. {@code
- * "CAST(:asOfDate AS DATE) - i.due_date"} for the report or {@code "CURRENT_DATE - i.due_date"} for
- * the debtor book) so the same boundaries apply regardless of how a caller spells "days overdue".
- * Callers keep their column aliases and surrounding SQL; only the boundary arithmetic is shared.
+ * "CAST(:asOfDate AS DATE) - i.due_date"} for the report or {@code "CAST(:today AS DATE) -
+ * i.due_date"} for the debtor book, both bound from the SA clock) so the same boundaries apply
+ * regardless of how a caller spells "days overdue". Callers keep their column aliases and
+ * surrounding SQL; only the boundary arithmetic is shared.
  */
 public final class AgingBuckets {
 

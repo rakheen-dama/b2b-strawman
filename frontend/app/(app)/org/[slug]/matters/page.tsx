@@ -41,6 +41,8 @@ import { MatterFiltersSheet } from "@/components/matters/matter-filters-sheet";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { createSavedViewAction } from "./view-actions";
+import { todayInSA } from "@b2mash/shared/date";
+import { parseIsoDate } from "@/app/(app)/org/[slug]/diary/diary-types";
 
 /** Params the backend ignores on the saved-view path; switching to a saved view drops them. */
 const SAVED_VIEW_IGNORED_PARAMS = ["tags"] as const;
@@ -94,7 +96,8 @@ export default async function MattersPage({
   const listParams = buildMatterListParams(
     selection,
     { status: param("status"), tags: param("tags") },
-    new Date()
+    // South African today as a local calendar Date (the SSR server runs in UTC — G88-F49).
+    parseIsoDate(todayInSA())
   );
 
   let rows: MatterListRow[] = [];

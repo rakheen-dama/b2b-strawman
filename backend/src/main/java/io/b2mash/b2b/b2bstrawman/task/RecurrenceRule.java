@@ -68,11 +68,12 @@ public record RecurrenceRule(String frequency, int interval) {
   /**
    * Calculates the next due date based on the current due date and this rule's frequency/interval.
    *
-   * @param currentDueDate the current due date; if null, uses today's date
+   * @param currentDueDate the current due date; if null, uses {@code today}
+   * @param today the business "today" (South African time) supplied by the calling service
    * @return the next due date
    */
-  public LocalDate calculateNextDueDate(LocalDate currentDueDate) {
-    LocalDate base = currentDueDate != null ? currentDueDate : LocalDate.now();
+  public LocalDate calculateNextDueDate(LocalDate currentDueDate, LocalDate today) {
+    LocalDate base = currentDueDate != null ? currentDueDate : today;
     return switch (frequency) {
       case "DAILY" -> base.plusDays(interval);
       case "WEEKLY" -> base.plusWeeks(interval);

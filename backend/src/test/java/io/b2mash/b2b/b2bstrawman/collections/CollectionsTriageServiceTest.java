@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.collections;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
@@ -263,8 +264,13 @@ class CollectionsTriageServiceTest {
   /** A currently-outstanding (SENT) invoice due {@code daysOverdue} in the past. */
   private UUID seedSentInvoice(
       UUID customerId, String name, String invoiceNumber, int daysOverdue) {
-    Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysOverdue));
-    invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    Invoice invoice =
+        draftInvoice(customerId, name, LocalDate.now(KaziTime.ZONE).minusDays(daysOverdue));
+    invoice.approve(
+        invoiceNumber,
+        ownerMemberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     return invoiceRepository.save(invoice).getId();
   }
@@ -272,8 +278,13 @@ class CollectionsTriageServiceTest {
   /** A SENT invoice due {@code daysOverdue} in the past with 300 of its 1000 paid (622D). */
   private UUID seedPartPaidInvoice(
       UUID customerId, String name, String invoiceNumber, int daysOverdue) {
-    Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysOverdue));
-    invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    Invoice invoice =
+        draftInvoice(customerId, name, LocalDate.now(KaziTime.ZONE).minusDays(daysOverdue));
+    invoice.approve(
+        invoiceNumber,
+        ownerMemberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     invoice.applyPayment(new BigDecimal("300"), "PART-" + invoiceNumber);
     return invoiceRepository.save(invoice).getId();
@@ -285,8 +296,13 @@ class CollectionsTriageServiceTest {
    * past.
    */
   private void seedPaidInvoice(UUID customerId, String name, String invoiceNumber, int daysToPay) {
-    Invoice invoice = draftInvoice(customerId, name, LocalDate.now().minusDays(daysToPay));
-    invoice.approve(invoiceNumber, ownerMemberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+    Invoice invoice =
+        draftInvoice(customerId, name, LocalDate.now(KaziTime.ZONE).minusDays(daysToPay));
+    invoice.approve(
+        invoiceNumber,
+        ownerMemberId,
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     invoice.recordPayment("PAY-" + invoiceNumber);
     invoiceRepository.save(invoice);

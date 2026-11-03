@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobHandler;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -129,9 +130,11 @@ public class AutomationPollTriggersHandler implements JobHandler {
     try {
       var cron = CronExpression.parse(cronExpr);
       Instant baseTime = rule.getLastRunAt() != null ? rule.getLastRunAt() : rule.getCreatedAt();
-      var next = cron.next(baseTime.atZone(java.time.ZoneOffset.UTC).toLocalDateTime());
+      // Firm-authored cron expressions mean South African wall-clock time ("0 8 * * *" = 08:00
+      // SAST), not the JVM zone.
+      var next = cron.next(baseTime.atZone(KaziTime.ZONE));
       if (next == null) return false;
-      Instant nextFire = next.toInstant(java.time.ZoneOffset.UTC);
+      Instant nextFire = next.toInstant();
       return !nextFire.isAfter(now);
     } catch (IllegalArgumentException e) {
       log.warn(

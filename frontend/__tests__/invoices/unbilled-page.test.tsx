@@ -76,7 +76,7 @@ async function renderPage(searchParams: Record<string, string> = {}) {
 describe("Unbilled work page (Phase 87 612B)", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["Date"] }); // only Date — promises/timers stay real
-    vi.setSystemTime(new Date(2026, 9, 21, 10, 0, 0)); // 21 Oct 2026, local time
+    vi.setSystemTime(new Date("2026-10-21T10:00:00+02:00")); // 21 Oct 2026, 10:00 SAST
     mockFetchMyCapabilities.mockResolvedValue(OWNER);
     mockGetOrgSettings.mockResolvedValue({ defaultCurrency: "ZAR", enabledModules: [] });
     mockGetUnbilledSummary.mockResolvedValue([row()]);

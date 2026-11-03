@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { daysBetween, todayInSA } from "@b2mash/shared/date";
 import { updateDsarStatus } from "@/app/(app)/org/[slug]/settings/firm/_tabs/data-requests-actions";
 import type { DsarRequest } from "@/lib/types/data-protection";
 
@@ -62,10 +63,8 @@ function DeadlineCell({
     return <span className="text-sm text-slate-500 dark:text-slate-400">{deadline}</span>;
   }
 
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const deadlineDate = new Date(deadline + "T00:00:00Z");
-  const diffDays = Math.ceil((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  // Days left from the South African "today" (G88-F48), not the browser's or the UTC date.
+  const diffDays = daysBetween(todayInSA(), deadline);
 
   if (deadlineStatus === "OVERDUE") {
     return <span className="text-sm font-medium text-red-600 dark:text-red-400">Overdue</span>;

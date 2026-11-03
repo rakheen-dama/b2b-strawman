@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -18,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,8 +41,8 @@ import org.springframework.test.web.servlet.MockMvc;
  * <ul>
  *   <li>Completing a matter does NOT start the retention clock — only closure does.
  *   <li>Closing stamps {@code retention_clock_started_at = closed_at} and persists {@code
- *       retention_ends_on} = the UTC close date + the firm's years (seeded 5); the closure response
- *       and the matter detail both read that persisted value.
+ *       retention_ends_on} = the close's SA business date (Africa/Johannesburg) + the firm's years
+ *       (seeded 5); the closure response and the matter detail both read that persisted value.
  *   <li>Reopening clears {@code retention_ends_on} but keeps the clock for audit.
  *   <li>Re-closing re-stamps both (fresh anchor).
  *   <li>A matter completed and later closed anchors on the close, not the completion.
@@ -131,7 +131,7 @@ class RetentionClockIntegrationTest {
     assertThat(project.getClosedAt()).isNotNull();
     assertThat(project.getRetentionClockStartedAt()).isEqualTo(project.getClosedAt());
     LocalDate expected =
-        project.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(SEEDED_YEARS);
+        project.getClosedAt().atZone(KaziTime.ZONE).toLocalDate().plusYears(SEEDED_YEARS);
     assertThat(project.getRetentionEndsOn()).isEqualTo(expected);
     assertThat(JsonPath.<String>read(closeJson, "$.retentionEndsAt"))
         .as("the closure response reports the persisted end date")
@@ -182,7 +182,7 @@ class RetentionClockIntegrationTest {
         .isAfter(firstClock)
         .isEqualTo(project.getClosedAt());
     LocalDate expected =
-        project.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(SEEDED_YEARS);
+        project.getClosedAt().atZone(KaziTime.ZONE).toLocalDate().plusYears(SEEDED_YEARS);
     assertThat(project.getRetentionEndsOn()).isEqualTo(expected);
     assertThat(JsonPath.<String>read(secondCloseJson, "$.retentionEndsAt"))
         .isEqualTo(expected.toString());
@@ -207,7 +207,7 @@ class RetentionClockIntegrationTest {
         .isAfter(completedAt);
     assertThat(project.getRetentionEndsOn())
         .isEqualTo(
-            project.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(SEEDED_YEARS));
+            project.getClosedAt().atZone(KaziTime.ZONE).toLocalDate().plusYears(SEEDED_YEARS));
   }
 
   // --- Helpers ---

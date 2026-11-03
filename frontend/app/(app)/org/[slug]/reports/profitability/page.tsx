@@ -6,15 +6,12 @@ import { EmptyState } from "@/components/empty-state";
 import { PermissionDenied } from "@/components/permission-denied";
 import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types";
 import { ProfitabilityContent } from "@/components/profitability/profitability-content";
+import { todayInSA } from "@b2mash/shared/date";
 
-/** Returns first day of current month and today as 'YYYY-MM-DD'. */
+/** Returns the first day of the current South African month and SA today as 'YYYY-MM-DD'. */
 function getCurrentMonthRange(): { from: string; to: string } {
-  const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  return {
-    from: firstDay.toLocaleDateString("en-CA"),
-    to: now.toLocaleDateString("en-CA"),
-  };
+  const today = todayInSA();
+  return { from: `${today.slice(0, 8)}01`, to: today };
 }
 
 export default async function ReportsProfitabilityPage({

@@ -10,12 +10,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -37,6 +40,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLe
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +87,7 @@ class StatementOfAccountContextBuilderTest {
   // while still letting Mockito inject it via @InjectMocks.
   @org.mockito.Spy private ObjectMapper objectMapper = new ObjectMapper();
 
+  @org.mockito.Spy private Clock clock = Clock.system(KaziTime.ZONE);
   @InjectMocks private StatementOfAccountContextBuilder builder;
 
   private final UUID projectId = UUID.randomUUID();
@@ -478,6 +484,43 @@ class StatementOfAccountContextBuilderTest {
     Map<String, Object> summary = (Map<String, Object>) context.get("summary");
     assertThat((BigDecimal) summary.get("previous_balance_owing"))
         .isEqualByComparingTo(new BigDecimal("800.00"));
+  }
+
+  /**
+   * G88-F48 (SoA period boundaries): a payment at 2026-10-31T23:30Z is 01:30 SAST on 1 November, so
+   * it belongs to the November statement — not to the October opening balance a UTC boundary would
+   * put it in.
+   */
+  @Test
+  void periodBoundary_paymentJustAfterSastMidnight_fallsInTheNewPeriod() {
+    var novStart = LocalDate.of(2026, 11, 1);
+    var novEnd = LocalDate.of(2026, 11, 30);
+    var project = projectWithCustomer("Boundary Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(novStart), eq(novEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, novStart, novEnd)).thenReturn(List.of());
+
+    var octoberNote =
+        invoiceWithStatusTotalAndIssueDate(
+            InvoiceStatus.PAID, new BigDecimal("1000.00"), LocalDate.of(2026, 10, 15));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of(octoberNote));
+    var payment = org.mockito.Mockito.mock(PaymentEvent.class);
+    lenient().when(payment.getStatus()).thenReturn(PaymentEventStatus.COMPLETED);
+    lenient().when(payment.getCreatedAt()).thenReturn(Instant.parse("2026-10-31T23:30:00Z"));
+    lenient().when(payment.getAmount()).thenReturn(new BigDecimal("1000.00"));
+    when(paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(anyCollection()))
+        .thenReturn(List.of(payment));
+
+    var context = builder.build(projectId, novStart, novEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> summary = (Map<String, Object>) context.get("summary");
+    assertThat((BigDecimal) summary.get("payments_received"))
+        .isEqualByComparingTo(new BigDecimal("1000.00"));
+    assertThat((BigDecimal) summary.get("previous_balance_owing"))
+        .isEqualByComparingTo(new BigDecimal("1000.00"));
   }
 
   @Test

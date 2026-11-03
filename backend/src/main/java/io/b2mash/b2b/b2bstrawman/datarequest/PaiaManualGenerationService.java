@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.template.OutputFormat;
 import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import io.b2mash.b2b.b2bstrawman.template.TiptapRenderer;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +45,7 @@ public class PaiaManualGenerationService {
   private final StorageService storageService;
   private final AuditService auditService;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final Clock clock;
 
   public PaiaManualGenerationService(
       PaiaManualContextBuilder contextBuilder,
@@ -53,7 +55,8 @@ public class PaiaManualGenerationService {
       TiptapRenderer tiptapRenderer,
       StorageService storageService,
       AuditService auditService,
-      OrgSettingsRepository orgSettingsRepository) {
+      OrgSettingsRepository orgSettingsRepository,
+      Clock clock) {
     this.contextBuilder = contextBuilder;
     this.documentTemplateRepository = documentTemplateRepository;
     this.generatedDocumentRepository = generatedDocumentRepository;
@@ -62,6 +65,7 @@ public class PaiaManualGenerationService {
     this.storageService = storageService;
     this.auditService = auditService;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.clock = clock;
   }
 
   /**
@@ -93,7 +97,7 @@ public class PaiaManualGenerationService {
 
     // 5. Upload to S3
     String tenantId = RequestScopes.requireTenantId();
-    String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String date = LocalDate.now(clock).format(DateTimeFormatter.ISO_LOCAL_DATE);
     String uniqueId = UUID.randomUUID().toString().substring(0, 8);
     String fileName = PAIA_TEMPLATE_SLUG + "-" + date + "-" + uniqueId + ".pdf";
     String s3Key = "org/" + tenantId + "/generated/" + fileName;

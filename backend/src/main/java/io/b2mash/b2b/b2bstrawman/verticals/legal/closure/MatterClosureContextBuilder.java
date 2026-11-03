@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
@@ -12,10 +13,10 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -64,14 +65,17 @@ public class MatterClosureContextBuilder {
   private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
+  private final Clock clock;
 
   public MatterClosureContextBuilder(
       ProjectRepository projectRepository,
       InvoiceRepository invoiceRepository,
-      InvoiceLineRepository invoiceLineRepository) {
+      InvoiceLineRepository invoiceLineRepository,
+      Clock clock) {
     this.projectRepository = projectRepository;
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
+    this.clock = clock;
   }
 
   /** Format hints for the {@code matter.*} totals — merged over the registry hints at render. */
@@ -107,14 +111,12 @@ public class MatterClosureContextBuilder {
     // CR-Minor-2: the legal-za closure-letter template binds to closure.reason_label.
     // closure.date is the PERSISTED closure timestamp (project.closedAt, stamped by
     // Project#closeMatter inside performClose), not render-time "now" — a letter re-rendered
-    // later (or a render straddling midnight UTC) must still carry the real closure date. The
+    // later (or a render straddling midnight SAST) must still carry the real closure date. The
     // now() fallback only covers the not-yet-closed edge (e.g. a preview before the close
     // transaction has stamped closedAt).
     Instant closedAt = project.getClosedAt();
     LocalDate closureDate =
-        closedAt != null
-            ? closedAt.atZone(ZoneOffset.UTC).toLocalDate()
-            : LocalDate.now(ZoneOffset.UTC);
+        closedAt != null ? closedAt.atZone(KaziTime.ZONE).toLocalDate() : LocalDate.now(clock);
 
     var closureMap = new LinkedHashMap<String, Object>();
     closureMap.put("reason", req.reason().name());
@@ -181,8 +183,8 @@ public class MatterClosureContextBuilder {
     if (createdAt == null) {
       return 0;
     }
-    LocalDate start = createdAt.atZone(ZoneOffset.UTC).toLocalDate();
-    LocalDate end = LocalDate.now(ZoneOffset.UTC);
+    LocalDate start = createdAt.atZone(KaziTime.ZONE).toLocalDate();
+    LocalDate end = LocalDate.now(clock);
     // Defensive: if createdAt is somehow in the future (clock skew / data corruption), clamp to 0
     // rather than render a negative duration in the closure letter (CR nitpick).
     if (start.isAfter(end)) {

@@ -15,6 +15,7 @@ import {
 import { formatDuration, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MyWorkTaskItem, TaskPriority, TaskStatus } from "@/lib/types";
+import { todayInSA } from "@b2mash/shared/date";
 
 // --- Priority badge config ---
 
@@ -39,12 +40,10 @@ const STATUS_BADGE: Record<
 
 // --- Overdue helper ---
 
+/** Due before South African today — identical on the SSR server (UTC) and in the browser. */
 function isOverdue(dueDate: string | null, status: string): boolean {
   if (!dueDate || status === "DONE" || status === "CANCELLED") return false;
-  const due = new Date(dueDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return due < today;
+  return dueDate.slice(0, 10) < todayInSA();
 }
 
 // --- Component ---

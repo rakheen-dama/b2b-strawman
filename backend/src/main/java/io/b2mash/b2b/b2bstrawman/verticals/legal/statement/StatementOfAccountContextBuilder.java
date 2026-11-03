@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
@@ -31,6 +32,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLe
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -131,6 +133,7 @@ public class StatementOfAccountContextBuilder {
   private final ObjectMapper objectMapper;
   private final TaxRateRepository taxRateRepository;
   private final TrustTransactionRepository trustTransactionRepository;
+  private final Clock clock;
 
   public StatementOfAccountContextBuilder(
       ProjectRepository projectRepository,
@@ -146,7 +149,8 @@ public class StatementOfAccountContextBuilder {
       VerticalModuleGuard moduleGuard,
       ObjectMapper objectMapper,
       TaxRateRepository taxRateRepository,
-      TrustTransactionRepository trustTransactionRepository) {
+      TrustTransactionRepository trustTransactionRepository,
+      Clock clock) {
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -161,6 +165,7 @@ public class StatementOfAccountContextBuilder {
     this.objectMapper = objectMapper;
     this.taxRateRepository = taxRateRepository;
     this.trustTransactionRepository = trustTransactionRepository;
+    this.clock = clock;
   }
 
   /**
@@ -340,7 +345,7 @@ public class StatementOfAccountContextBuilder {
     var map = new LinkedHashMap<String, Object>();
     map.put("period_start", periodStart);
     map.put("period_end", periodEnd);
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     map.put("generation_date", today);
     map.put("reference", buildStatementReference(projectId, today));
     return map;
@@ -360,7 +365,7 @@ public class StatementOfAccountContextBuilder {
     map.put(
         "opened_date",
         project.getCreatedAt() != null
-            ? project.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate()
+            ? project.getCreatedAt().atZone(KaziTime.ZONE).toLocalDate()
             : null);
     return map;
   }
@@ -601,7 +606,7 @@ public class StatementOfAccountContextBuilder {
 
     // One query for all invoices, then group in memory (avoids N+1).
     List<UUID> issuedIds = issued.stream().map(Invoice::getId).toList();
-    var startInstant = periodStart.atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
+    var startInstant = periodStart.atStartOfDay(KaziTime.ZONE).toInstant();
     BigDecimal paymentsBefore =
         paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(issuedIds).stream()
             .filter(p -> p.getStatus() == PaymentEventStatus.COMPLETED)
@@ -624,8 +629,8 @@ public class StatementOfAccountContextBuilder {
       return BigDecimal.ZERO;
     }
     List<UUID> invoiceIds = invoices.stream().map(Invoice::getId).toList();
-    var startInstant = periodStart.atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
-    var endInstant = periodEnd.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
+    var startInstant = periodStart.atStartOfDay(KaziTime.ZONE).toInstant();
+    var endInstant = periodEnd.plusDays(1).atStartOfDay(KaziTime.ZONE).toInstant();
 
     // Single batched query, filtered in memory (avoids N+1 from per-invoice calls).
     return paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(invoiceIds).stream()

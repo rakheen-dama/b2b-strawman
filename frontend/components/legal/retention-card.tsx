@@ -4,6 +4,7 @@ import { ShieldAlert } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatLocalDate } from "@/lib/format";
 import { daysUntil } from "@/lib/date-utils";
+import { isoDateInSA } from "@b2mash/shared/date";
 import { settingsHref } from "@/lib/settings-nav";
 import { DEFAULT_MATTER_RETENTION_YEARS } from "@/lib/schemas";
 
@@ -33,9 +34,9 @@ const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
  * The retention period, in years, a CLOSED matter's deletion date was stamped with — derived from
  * its own dates so it stays true after the firm setting changes (the date is frozen, ADR-354).
  *
- * The backend stamps `retentionEndsOn = <UTC calendar date of the close> + years`, and the clock
- * is the close instant, so the clock's UTC month-day must match the end date's (29 Feb maps to
- * 28 Feb in a non-leap end year). Anything else — a missing clock, a legacy completion-time
+ * The backend stamps `retentionEndsOn = <South African calendar date of the close> + years`
+ * (G88-F48), and the clock is the close instant, so the clock's SA month-day must match the end
+ * date's (29 Feb maps to 28 Feb in a non-leap end year). Anything else — a missing clock, a legacy completion-time
  * clock, a malformed value — is not derivable and returns null.
  */
 export function deriveRetentionYears(
@@ -44,13 +45,11 @@ export function deriveRetentionYears(
 ): number | null {
   if (retentionClockStartedAt == null || retentionEndsOn == null) return null;
 
-  const clock = new Date(retentionClockStartedAt);
+  const clockDate = clockStartDateInSA(retentionClockStartedAt);
   const end = ISO_DATE.exec(retentionEndsOn);
-  if (Number.isNaN(clock.getTime()) || end == null) return null;
+  if (clockDate == null || end == null) return null;
 
-  const clockYear = clock.getUTCFullYear();
-  const clockMonth = clock.getUTCMonth() + 1;
-  const clockDay = clock.getUTCDate();
+  const [clockYear, clockMonth, clockDay] = clockDate.split("-").map(Number);
   const endYear = Number(end[1]);
   const endMonth = Number(end[2]);
   const endDay = Number(end[3]);
@@ -61,6 +60,12 @@ export function deriveRetentionYears(
 
   const years = endYear - clockYear;
   return years >= 1 ? years : null;
+}
+
+/** The yyyy-MM-dd South African date of the retention clock instant; null when unparseable. */
+function clockStartDateInSA(retentionClockStartedAt: string): string | null {
+  const clock = new Date(retentionClockStartedAt);
+  return Number.isNaN(clock.getTime()) ? null : isoDateInSA(clock);
 }
 
 /** "(firm default 5 years)" only when both the matter's period and the firm setting are 5. */
@@ -166,9 +171,11 @@ export function RetentionCard({
   }
 
   const formattedEndDate = formatLocalDate(retentionEndsOn);
-  // The clock is an ISO-UTC instant; its first 10 characters are the UTC close date.
-  const clockStartedDate =
-    retentionClockStartedAt != null ? formatLocalDate(retentionClockStartedAt.slice(0, 10)) : null;
+  // The clock is an ISO instant; the close date shown is its South African calendar date, the same
+  // date the backend stamped retentionEndsOn from.
+  const clockStartIso =
+    retentionClockStartedAt != null ? clockStartDateInSA(retentionClockStartedAt) : null;
+  const clockStartedDate = clockStartIso != null ? formatLocalDate(clockStartIso) : null;
   const note = periodNote(
     deriveRetentionYears(retentionClockStartedAt, retentionEndsOn),
     firmRetentionYears

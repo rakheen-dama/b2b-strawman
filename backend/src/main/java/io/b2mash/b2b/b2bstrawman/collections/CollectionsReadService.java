@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -55,11 +56,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class CollectionsReadService {
 
   /**
-   * The SQL expression yielding integer days-overdue for a joined {@code invoices i} row. Fed to
-   * {@link AgingBuckets} so the debtor-book four-way split (593A) shares its boundaries with the
-   * aging report and the cash digest.
+   * The SQL expression yielding integer days-overdue for a joined {@code invoices i} row. {@code
+   * :today} is bound from the SA {@link Clock}, never the DB {@code CURRENT_DATE} (the DB session
+   * runs in the JVM zone, UTC in prod). Fed to {@link AgingBuckets} so the debtor-book four-way
+   * split (593A) shares its boundaries with the aging report and the cash digest.
    */
-  private static final String AGE_EXPR = "CURRENT_DATE - i.due_date";
+  private static final String AGE_EXPR = "CAST(:today AS DATE) - i.due_date";
 
   private static final String DEBTOR_BOOK_SQL =
       """
@@ -70,7 +72,7 @@ public class CollectionsReadService {
           SUM(%5$s) AS outstanding_total,
           i.currency AS currency,
           COUNT(*) AS invoice_count,
-          MAX(CURRENT_DATE - i.due_date) AS oldest_days_overdue,
+          MAX(CAST(:today AS DATE) - i.due_date) AS oldest_days_overdue,
           COALESCE(SUM(%5$s) FILTER (WHERE %1$s), 0) AS bucket_current,
           COALESCE(SUM(%5$s) FILTER (WHERE %2$s), 0) AS bucket_d30,
           COALESCE(SUM(%5$s) FILTER (WHERE %3$s), 0) AS bucket_d60,
@@ -125,7 +127,7 @@ public class CollectionsReadService {
           %1$s AS balance_due,
           i.currency AS currency,
           i.due_date AS due_date,
-          (CURRENT_DATE - i.due_date) AS days_overdue
+          (CAST(:today AS DATE) - i.due_date) AS days_overdue
       FROM invoices i
       WHERE i.customer_id = CAST(:customerId AS UUID)
         AND %2$s
@@ -135,8 +137,8 @@ public class CollectionsReadService {
 
   /**
    * The Fee notes page summary (Phase 88 U3, §13.4.3): one statement, org default currency only.
-   * Outstanding = the debtor-book definition; overdue = outstanding with {@code due_date <
-   * CURRENT_DATE} (the same DB clock as the debtor book's {@code current} bucket, so overdue equals
+   * Outstanding = the debtor-book definition; overdue = outstanding with {@code due_date < :today}
+   * (the same South African "today" as the debtor book's {@code current} bucket, so overdue equals
    * the d30 + d60 + d90plus bucket sum); approved-unsent = APPROVED (no payments can exist yet).
    */
   private static final String OUTSTANDING_SUMMARY_SQL =
@@ -144,8 +146,8 @@ public class CollectionsReadService {
       SELECT
           COALESCE(SUM(%1$s) FILTER (WHERE %2$s), 0) AS outstanding_total,
           COUNT(*) FILTER (WHERE %2$s) AS outstanding_count,
-          COALESCE(SUM(%1$s) FILTER (WHERE %2$s AND i.due_date < CURRENT_DATE), 0) AS overdue_total,
-          COUNT(*) FILTER (WHERE %2$s AND i.due_date < CURRENT_DATE) AS overdue_count,
+          COALESCE(SUM(%1$s) FILTER (WHERE %2$s AND i.due_date < CAST(:today AS DATE)), 0) AS overdue_total,
+          COUNT(*) FILTER (WHERE %2$s AND i.due_date < CAST(:today AS DATE)) AS overdue_count,
           COALESCE(SUM(i.total) FILTER (WHERE i.status = 'APPROVED'), 0) AS approved_unsent_total,
           COUNT(*) FILTER (WHERE i.status = 'APPROVED') AS approved_unsent_count
       FROM invoices i
@@ -159,6 +161,7 @@ public class CollectionsReadService {
   private final InvoiceRepository invoiceRepository;
   private final CollectionsTriageService triageService;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final Clock clock;
 
   public CollectionsReadService(
       EntityManager entityManager,
@@ -166,13 +169,15 @@ public class CollectionsReadService {
       CollectionActivityRepository activityRepository,
       InvoiceRepository invoiceRepository,
       CollectionsTriageService triageService,
-      OrgSettingsRepository orgSettingsRepository) {
+      OrgSettingsRepository orgSettingsRepository,
+      Clock clock) {
     this.entityManager = entityManager;
     this.customerRepository = customerRepository;
     this.activityRepository = activityRepository;
     this.invoiceRepository = invoiceRepository;
     this.triageService = triageService;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.clock = clock;
   }
 
   /**
@@ -243,6 +248,7 @@ public class CollectionsReadService {
             .orElse(OrgSettingsService.DEFAULT_CURRENCY);
     var query = entityManager.createNativeQuery(OUTSTANDING_SUMMARY_SQL, Tuple.class);
     query.setParameter("currency", currency);
+    query.setParameter("today", LocalDate.now(clock));
     Tuple t = (Tuple) query.getSingleResult();
     return new OutstandingSummaryResponse(
         currency,
@@ -263,6 +269,7 @@ public class CollectionsReadService {
     var query = entityManager.createNativeQuery(DEBTOR_BOOK_SQL, Tuple.class);
     query.setParameter("limit", limit);
     query.setParameter("offset", offset);
+    query.setParameter("today", LocalDate.now(clock));
     @SuppressWarnings("unchecked")
     List<Tuple> tuples = query.getResultList();
     var rows = new ArrayList<DebtorResponse>(tuples.size());
@@ -302,6 +309,7 @@ public class CollectionsReadService {
   private List<OutstandingInvoice> queryOutstandingInvoices(UUID customerId) {
     var query = entityManager.createNativeQuery(OUTSTANDING_INVOICES_SQL, Tuple.class);
     query.setParameter("customerId", customerId.toString());
+    query.setParameter("today", LocalDate.now(clock));
     @SuppressWarnings("unchecked")
     List<Tuple> tuples = query.getResultList();
     var rows = new ArrayList<OutstandingInvoice>(tuples.size());

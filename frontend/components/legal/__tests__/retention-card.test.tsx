@@ -6,7 +6,7 @@ import { RetentionCard, deriveRetentionYears } from "@/components/legal/retentio
 // close, cleared on reopen, null unless CLOSED). COMPLETED-not-closed matters never show a date.
 
 describe("deriveRetentionYears", () => {
-  it("returns the year span when the clock's UTC date and the end date share month-day", () => {
+  it("returns the year span when the clock's SA date and the end date share month-day", () => {
     expect(deriveRetentionYears("2026-10-22T06:44:25.034385Z", "2031-10-22")).toBe(5);
     expect(deriveRetentionYears("2026-10-22T06:44:25Z", "2033-10-22")).toBe(7);
     expect(deriveRetentionYears("2026-10-22T06:44:25Z", "2027-10-22")).toBe(1);
@@ -14,10 +14,10 @@ describe("deriveRetentionYears", () => {
     expect(deriveRetentionYears("2026-10-28T06:44:25.034385166Z", "2031-10-28")).toBe(5);
   });
 
-  it("uses the clock's UTC calendar date, not the local one", () => {
-    // 23:30 UTC on 27 Oct is already 28 Oct in SAST — the stamp is the UTC date (27 Oct).
-    expect(deriveRetentionYears("2026-10-27T23:30:00Z", "2031-10-27")).toBe(5);
-    expect(deriveRetentionYears("2026-10-27T23:30:00Z", "2031-10-28")).toBeNull();
+  it("uses the clock's South African calendar date, not the UTC one (G88-F48)", () => {
+    // 23:30 UTC on 27 Oct is already 28 Oct in SAST — the backend stamps the SA date (28 Oct).
+    expect(deriveRetentionYears("2026-10-27T23:30:00Z", "2031-10-28")).toBe(5);
+    expect(deriveRetentionYears("2026-10-27T23:30:00Z", "2031-10-27")).toBeNull();
   });
 
   it("maps a 29 Feb close to 28 Feb in a non-leap end year", () => {
@@ -93,6 +93,25 @@ describe("RetentionCard", () => {
       expect(card.textContent).toContain("permanently deleted on 22 Oct 2031");
       expect(screen.getByTestId("retention-card-days-remaining")).toHaveTextContent(
         "1826 days remaining"
+      );
+    });
+
+    it("dates a late-evening UTC close by its South African day (G88-F48)", () => {
+      // 23:30 UTC on 27 Oct = 01:30 SAST on 28 Oct; the backend stamped 28 Oct + 5 years.
+      render(
+        <RetentionCard
+          status="CLOSED"
+          retentionClockStartedAt="2026-10-27T23:30:00Z"
+          retentionEndsOn="2031-10-28"
+          firmRetentionYears={5}
+          slug="acme"
+        />
+      );
+
+      const card = screen.getByTestId("retention-card");
+      expect(card.textContent).toContain("Clock started on 28 Oct 2026.");
+      expect(screen.getByTestId("retention-card-scheduled-deletion")).toHaveTextContent(
+        "Scheduled deletion: 28 Oct 2031 (firm default 5 years)"
       );
     });
 

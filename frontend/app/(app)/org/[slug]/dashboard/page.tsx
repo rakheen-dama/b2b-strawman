@@ -32,6 +32,7 @@ import { FicaOutstandingWidget } from "@/components/dashboard/fica-outstanding-w
 import { MatterHealthWidget } from "@/components/dashboard/matter-health-widget";
 import { RecentActivityWidget } from "@/components/dashboard/recent-activity-widget";
 import { SensitiveEventsWidget } from "@/components/dashboard/sensitive-events-widget";
+import { todayInSA } from "@b2mash/shared/date";
 
 const SENSITIVE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
 const SENSITIVE_VIEW_ALL_LOOKBACK_DAYS = 30;
@@ -89,7 +90,7 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
     { capabilities: caps.capabilities ?? [], isAdmin: caps.isAdmin, isOwner: caps.isOwner },
     enabledModules
   );
-  const today = new Date().toLocaleDateString("en-CA");
+  const today = todayInSA();
 
   // Sensitive events (Epic 509A) — last 7 days, gated server-side so Admin-only events never
   // reach a Member's RSC payload. Timestamps computed once here: a Date.now() inside the client

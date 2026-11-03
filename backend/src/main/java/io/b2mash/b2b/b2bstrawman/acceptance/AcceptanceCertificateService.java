@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ public class AcceptanceCertificateService {
   private final PdfRenderingService pdfRenderingService;
   private final TemplateEngine templateEngine;
   private final String productName;
+  private final Clock clock;
 
   public AcceptanceCertificateService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -49,7 +51,8 @@ public class AcceptanceCertificateService {
       StorageService storageService,
       PdfRenderingService pdfRenderingService,
       TemplateEngine templateEngine,
-      @Value("${docteams.app.product-name:Kazi}") String productName) {
+      @Value("${docteams.app.product-name:Kazi}") String productName,
+      Clock clock) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.portalContactRepository = portalContactRepository;
     this.orgSettingsRepository = orgSettingsRepository;
@@ -58,6 +61,7 @@ public class AcceptanceCertificateService {
     this.pdfRenderingService = pdfRenderingService;
     this.templateEngine = templateEngine;
     this.productName = productName;
+    this.clock = clock;
   }
 
   /**
@@ -136,7 +140,7 @@ public class AcceptanceCertificateService {
         "Certificate-of-Acceptance-"
             + slugify(genDoc.getFileName())
             + "-"
-            + LocalDate.now()
+            + LocalDate.now(clock)
             + ".pdf";
 
     // 13. Upload to S3

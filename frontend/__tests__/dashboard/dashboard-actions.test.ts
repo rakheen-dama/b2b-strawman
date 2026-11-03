@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { resolveDateRange } from "@/lib/date-utils";
+import { todayInSA } from "@b2mash/shared/date";
 
 // Phase 87 614B — Home fan-out (arch §12.5.3): each read only when its gate passes; 403/404 →
 // absent; 401 → branded re-login; anything else → the card's quiet error line.
@@ -275,9 +276,8 @@ describe("resolveDateRange", () => {
 
   it("defaults to current month when neither from nor to is provided", () => {
     const result = resolveDateRange({});
-    const now = new Date();
-    const expectedYear = now.getFullYear();
-    const expectedMonth = String(now.getMonth() + 1).padStart(2, "0");
+    // The current month is the South African calendar month (G88-F49).
+    const [expectedYear, expectedMonth] = todayInSA().split("-");
 
     expect(result.from).toMatch(new RegExp(`^${expectedYear}-${expectedMonth}-01$`));
     // Last day of month varies, just check it starts with the right year-month

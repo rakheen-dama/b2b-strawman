@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import jakarta.persistence.Column;
@@ -13,7 +14,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,11 +98,12 @@ public class Project {
   private Instant retentionClockStartedAt;
 
   /**
-   * Per-matter retention end (Phase 88 U17, ADR-354): the UTC date of the close plus the firm's
-   * retention years, stamped by {@link #closeMatter(Instant, int)} on every close (a re-close
-   * re-stamps it) and cleared by {@link #reopenMatter()}. Null for every matter that is not CLOSED.
-   * Persisted so the obligation is frozen at close time — a later change to the firm's years does
-   * not move it — and read as-is by {@code MatterResponse}, with no read-time fallback.
+   * Per-matter retention end (Phase 88 U17, ADR-354): the South African business date of the close
+   * ({@code KaziTime.ZONE}) plus the firm's retention years, stamped by {@link
+   * #closeMatter(Instant, int)} on every close (a re-close re-stamps it) and cleared by {@link
+   * #reopenMatter()}. Null for every matter that is not CLOSED. Persisted so the obligation is
+   * frozen at close time — a later change to the firm's years does not move it — and read as-is by
+   * {@code MatterResponse}, with no read-time fallback.
    */
   @Column(name = "retention_ends_on")
   private LocalDate retentionEndsOn;
@@ -299,7 +300,7 @@ public class Project {
   /**
    * Marks the project CLOSED (Phase 67, ADR-248). Valid from ACTIVE or COMPLETED. Stamps {@code
    * closedAt} and {@code retentionClockStartedAt} with {@code now} on EVERY close and persists
-   * {@code retentionEndsOn} = the UTC calendar date of {@code now} + {@code retentionYears}
+   * {@code retentionEndsOn} = the SAST calendar date of {@code now} + {@code retentionYears}
    * (calendar-year arithmetic, so a leap-day close lands on 28 February). A re-close after a reopen
    * resets all three — a fresh anchor (ADR-249, ADR-354). The acting member is recorded on the
    * closure log by {@code MatterClosureService}, not here.
@@ -315,7 +316,7 @@ public class Project {
     this.status = ProjectStatus.CLOSED;
     this.closedAt = now;
     this.retentionClockStartedAt = now;
-    this.retentionEndsOn = now.atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
+    this.retentionEndsOn = now.atZone(KaziTime.ZONE).toLocalDate().plusYears(retentionYears);
     this.updatedAt = Instant.now();
   }
 

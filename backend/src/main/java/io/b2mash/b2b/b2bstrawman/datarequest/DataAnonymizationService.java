@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -21,7 +22,6 @@ import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -398,7 +398,7 @@ public class DataAnonymizationService {
     if (invoice.getIssueDate() != null) {
       return invoice.getIssueDate();
     }
-    return invoice.getCreatedAt().atZone(ZoneOffset.UTC).toLocalDate();
+    return invoice.getCreatedAt().atZone(KaziTime.ZONE).toLocalDate();
   }
 
   /** Result of anonymization execution. */

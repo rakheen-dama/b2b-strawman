@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ConnectionTestResult;
@@ -145,9 +146,14 @@ class AiReminderComposerTest {
           var savedCustomer = customerRepository.save(customer);
           var invoice =
               new Invoice(savedCustomer.getId(), "ZAR", name, email, null, "Test Org", memberId);
-          invoice.updateDraft(LocalDate.now().minusDays(daysOverdue), null, null, BigDecimal.ZERO);
+          invoice.updateDraft(
+              LocalDate.now(KaziTime.ZONE).minusDays(daysOverdue), null, null, BigDecimal.ZERO);
           invoice.recalculateTotals(BigDecimal.valueOf(1500), false, BigDecimal.ZERO, false);
-          invoice.approve(invoiceNumber, memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+          invoice.approve(
+              invoiceNumber,
+              memberId,
+              BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+              LocalDate.now(KaziTime.ZONE));
           invoice.markSent();
           holder[0] = invoiceRepository.save(invoice).getId();
           holder[1] = savedCustomer.getId();

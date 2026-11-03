@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -21,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.IContext;
@@ -46,6 +49,7 @@ class AcceptanceCertificateServiceTest {
   @Mock private PdfRenderingService pdfRenderingService;
   @Mock private TemplateEngine templateEngine;
 
+  @Spy private Clock clock = Clock.system(KaziTime.ZONE);
   @InjectMocks private AcceptanceCertificateService certificateService;
 
   private UUID docId;

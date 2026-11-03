@@ -613,7 +613,8 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         // All non-DRAFT statuses need approval first
         // A freshly provisioned demo tenant's firm terms are the column default (30), so the
         // seeded fee notes carry a due date like any approved one (ADR-347, Phase 88 OQ #5).
-        invoice.approve(invoiceNumber, createdBy, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+        invoice.approve(
+            invoiceNumber, createdBy, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS, today());
 
         switch (targetStatus) {
           case "SENT" -> invoice.markSent();

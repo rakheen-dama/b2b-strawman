@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -40,11 +41,13 @@ public class PortalDeadlineService {
 
   private final PortalDeadlineViewRepository deadlineRepo;
   private final VerticalModuleGuard moduleGuard;
+  private final Clock clock;
 
   public PortalDeadlineService(
-      PortalDeadlineViewRepository deadlineRepo, VerticalModuleGuard moduleGuard) {
+      PortalDeadlineViewRepository deadlineRepo, VerticalModuleGuard moduleGuard, Clock clock) {
     this.deadlineRepo = deadlineRepo;
     this.moduleGuard = moduleGuard;
+    this.clock = clock;
   }
 
   /**
@@ -55,7 +58,7 @@ public class PortalDeadlineService {
    */
   public List<PortalDeadlineResponse> listForContact(LocalDate from, LocalDate to, String status) {
     requireDeadlinesEnabled();
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     LocalDate effectiveFrom = from != null ? from : today;
     LocalDate effectiveTo = to != null ? to : today.plusDays(DEFAULT_LOOKAHEAD_DAYS);
     if (effectiveFrom.isAfter(effectiveTo)) {

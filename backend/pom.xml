@@ -32,6 +32,11 @@
              (non-coverage runs, including CI). Under -Pcoverage, jacoco:prepare-agent overrides
              this property with the agent argument, which @{argLine} then picks up at runtime. -->
         <argLine></argLine>
+        <!-- Test JVM default zone. Pinned to UTC so local (SAST) runs match CI and the prod
+             containers: the product computes business dates in Africa/Johannesburg via the Clock
+             bean, and a test that leans on the JVM zone instead fails here as it would in prod.
+             Override for boundary runs, e.g. -Dtest.timezone=Pacific/Kiritimati. -->
+        <test.timezone>UTC</test.timezone>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -306,7 +311,7 @@
                          heaviest context load. Pin a headroom-safe 3g (leaves room for embedded
                          Postgres + Maven + OS under 7g). @{argLine} preserves the JaCoCo agent under
                          -Pcoverage. -->
-                    <argLine>@{argLine} -Xmx3g</argLine>
+                    <argLine>@{argLine} -Xmx3g -Duser.timezone=${test.timezone}</argLine>
                     <forkedProcessExitTimeoutInSeconds>60</forkedProcessExitTimeoutInSeconds>
                     <shutdown>kill</shutdown>
                 </configuration>

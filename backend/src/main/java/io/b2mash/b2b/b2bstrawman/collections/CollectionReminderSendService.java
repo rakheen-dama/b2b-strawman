@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
 import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -64,6 +65,7 @@ public class CollectionReminderSendService {
   private final InvoiceRepository invoiceRepository;
   private final AuditService auditService;
   private final PortalLinkBuilder portalLinkBuilder;
+  private final Clock clock;
 
   public CollectionReminderSendService(
       IntegrationRegistry integrationRegistry,
@@ -74,7 +76,8 @@ public class CollectionReminderSendService {
       CollectionActivityRepository activityRepository,
       InvoiceRepository invoiceRepository,
       AuditService auditService,
-      PortalLinkBuilder portalLinkBuilder) {
+      PortalLinkBuilder portalLinkBuilder,
+      Clock clock) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
@@ -84,6 +87,7 @@ public class CollectionReminderSendService {
     this.invoiceRepository = invoiceRepository;
     this.auditService = auditService;
     this.portalLinkBuilder = portalLinkBuilder;
+    this.clock = clock;
   }
 
   public void sendReminder(GateAction.SendCollectionReminderAction action) {
@@ -138,7 +142,7 @@ public class CollectionReminderSendService {
     context.put(
         "daysOverdue",
         invoice.getDueDate() != null
-            ? String.valueOf(ChronoUnit.DAYS.between(invoice.getDueDate(), LocalDate.now()))
+            ? String.valueOf(ChronoUnit.DAYS.between(invoice.getDueDate(), LocalDate.now(clock)))
             : String.valueOf(activity.getDaysOverdueAtAction()));
     // AI-drafted parts (approved on the gate). body_html is already sanitized at draft time when it
     // enters the gate; re-sanitize here defensively (defense in depth) so th:utext can never render

@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry.RateCardDefaults;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry.RoleRate;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -35,16 +36,19 @@ public class MemberRateSeedingService {
   private final VerticalProfileRegistry verticalProfileRegistry;
   private final BillingRateRepository billingRateRepository;
   private final CostRateRepository costRateRepository;
+  private final Clock clock;
 
   public MemberRateSeedingService(
       OrgSettingsRepository orgSettingsRepository,
       VerticalProfileRegistry verticalProfileRegistry,
       BillingRateRepository billingRateRepository,
-      CostRateRepository costRateRepository) {
+      CostRateRepository costRateRepository,
+      Clock clock) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.verticalProfileRegistry = verticalProfileRegistry;
     this.billingRateRepository = billingRateRepository;
     this.costRateRepository = costRateRepository;
+    this.clock = clock;
   }
 
   /**
@@ -91,7 +95,7 @@ public class MemberRateSeedingService {
         && billingRateRepository.findMemberDefaultEarliest(member.getId()).isEmpty()) {
       var rate =
           new BillingRate(
-              member.getId(), null, null, currency, billingRate.get(), LocalDate.now(), null);
+              member.getId(), null, null, currency, billingRate.get(), LocalDate.now(clock), null);
       try {
         billingRateRepository.save(rate);
         log.info(
@@ -110,7 +114,7 @@ public class MemberRateSeedingService {
 
     Optional<BigDecimal> costRate = findRateForRole(defaults.costRates(), roleSlug);
     if (costRate.isPresent() && costRateRepository.findByMemberId(member.getId()).isEmpty()) {
-      var rate = new CostRate(member.getId(), currency, costRate.get(), LocalDate.now(), null);
+      var rate = new CostRate(member.getId(), currency, costRate.get(), LocalDate.now(clock), null);
       try {
         costRateRepository.save(rate);
         log.info(

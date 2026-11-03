@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
@@ -7,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -35,6 +37,7 @@ public class CourtDateReminderJob {
   private final TransactionTemplate transactionTemplate;
   private final JobEnqueuer jobEnqueuer;
   private final JobQueueProperties jobQueueProperties;
+  private final Clock clock;
 
   public CourtDateReminderJob(
       TenantScopedRunner tenantScopedRunner,
@@ -46,7 +49,8 @@ public class CourtDateReminderJob {
       ProjectRepository projectRepository,
       TransactionTemplate transactionTemplate,
       JobEnqueuer jobEnqueuer,
-      JobQueueProperties jobQueueProperties) {
+      JobQueueProperties jobQueueProperties,
+      Clock clock) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.courtDateRepository = courtDateRepository;
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
@@ -57,10 +61,11 @@ public class CourtDateReminderJob {
     this.transactionTemplate = transactionTemplate;
     this.jobEnqueuer = jobEnqueuer;
     this.jobQueueProperties = jobQueueProperties;
+    this.clock = clock;
   }
 
   @SchedulerLock(name = "court_date_reminder_execute", lockAtLeastFor = "5m")
-  @Scheduled(cron = "${court.reminder.cron:0 0 6 * * *}")
+  @Scheduled(cron = "${court.reminder.cron:0 0 6 * * *}", zone = KaziTime.ZONE_ID)
   public void execute() {
     log.debug("Court date reminder job started");
 
@@ -108,7 +113,7 @@ public class CourtDateReminderJob {
   }
 
   private int processCourtDateReminders() {
-    var today = LocalDate.now();
+    var today = LocalDate.now(clock);
     var upcomingDates =
         courtDateRepository.findByStatusInAndScheduledDateBetween(
             List.of("SCHEDULED", "POSTPONED"), today, today.plusDays(COURT_DATE_LOOKAHEAD_DAYS));
@@ -150,7 +155,7 @@ public class CourtDateReminderJob {
   }
 
   private int processPrescriptionWarnings() {
-    var today = LocalDate.now();
+    var today = LocalDate.now(clock);
     // No lower bound on date — catches trackers that expired while the job was down (e.g.,
     // downtime, weekends). The status filter (RUNNING/WARNED) excludes already-EXPIRED trackers.
     var trackers =

@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.timeentry.MyWorkProjectTimeSummaryProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TaskDurationProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -31,14 +32,17 @@ public class MyWorkService {
   private final TaskRepository taskRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final ProjectRepository projectRepository;
+  private final Clock clock;
 
   public MyWorkService(
       TaskRepository taskRepository,
       TimeEntryRepository timeEntryRepository,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      Clock clock) {
     this.taskRepository = taskRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.projectRepository = projectRepository;
+    this.clock = clock;
   }
 
   /**
@@ -96,11 +100,18 @@ public class MyWorkService {
 
   /**
    * Returns the member's time entries within the given date range. Enriched with task title and
-   * project name.
+   * project name. A null {@code from} or {@code to} defaults to today (South African time).
    */
   @Transactional(readOnly = true)
   public List<MyWorkController.MyWorkTimeEntryItem> getMyTimeEntries(
       UUID memberId, LocalDate from, LocalDate to) {
+    var today = LocalDate.now(clock);
+    if (from == null) {
+      from = today;
+    }
+    if (to == null) {
+      to = today;
+    }
     var entries = timeEntryRepository.findByMemberIdAndDateBetween(memberId, from, to);
 
     if (entries.isEmpty()) {

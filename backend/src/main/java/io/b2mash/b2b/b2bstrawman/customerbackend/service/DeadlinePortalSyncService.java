@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
@@ -69,18 +70,21 @@ public class DeadlinePortalSyncService {
   private final CustomerProjectRepository customerProjectRepository;
   private final PortalTrustDescriptionSanitiser sanitiser;
   private final TransactionTemplate portalTxTemplate;
+  private final Clock clock;
 
   public DeadlinePortalSyncService(
       PortalDeadlineViewRepository deadlineRepo,
       FieldDefinitionRepository fieldDefinitionRepository,
       CustomerProjectRepository customerProjectRepository,
       PortalTrustDescriptionSanitiser sanitiser,
-      @Qualifier("portalTransactionManager") PlatformTransactionManager portalTxManager) {
+      @Qualifier("portalTransactionManager") PlatformTransactionManager portalTxManager,
+      Clock clock) {
     this.deadlineRepo = deadlineRepo;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.sanitiser = sanitiser;
     this.portalTxTemplate = new TransactionTemplate(portalTxManager);
+    this.clock = clock;
   }
 
   // ── Event listeners ─────────────────────────────────────────────────────
@@ -208,7 +212,7 @@ public class DeadlinePortalSyncService {
             "CUSTOM_DATE",
             label,
             dueDate,
-            deriveStatus(dueDate, LocalDate.now()),
+            deriveStatus(dueDate, LocalDate.now(clock)),
             sanitisedDescription,
             null);
 
@@ -235,7 +239,7 @@ public class DeadlinePortalSyncService {
             src.dueDate(),
             src.overrideStatus() != null
                 ? src.overrideStatus()
-                : deriveStatus(src.dueDate(), LocalDate.now()),
+                : deriveStatus(src.dueDate(), LocalDate.now(clock)),
             sanitisedDescription,
             null);
     portalTxTemplate.executeWithoutResult(status -> deadlineRepo.upsert(view));

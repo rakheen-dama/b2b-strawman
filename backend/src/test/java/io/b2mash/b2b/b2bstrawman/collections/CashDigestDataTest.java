@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobHandler;
@@ -102,7 +103,7 @@ class CashDigestDataTest {
    * exact.
    */
   private void seedBook() {
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(KaziTime.ZONE);
 
     // ── Aging buckets (SENT). issue_date backdated out of the billed window so they don't inflate
     // billed. Each has its own customer so the debtor book yields distinct top-risk rows. ──
@@ -172,14 +173,16 @@ class CashDigestDataTest {
     invoice.approve(
         "INV-" + UUID.randomUUID().toString().substring(0, 8),
         memberId,
-        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     invoice.applyPayment(new BigDecimal(paid), "ref-" + name);
     pinIssueDate(invoiceRepository.save(invoice).getId(), issueDate);
   }
 
   private void seedPaidInvoice(String name, long total, LocalDate issueDate, Instant paidAt) {
-    UUID invoiceId = seedInvoice(name, total, LocalDate.now().minusDays(5), true, paidAt);
+    UUID invoiceId =
+        seedInvoice(name, total, LocalDate.now(KaziTime.ZONE).minusDays(5), true, paidAt);
     pinIssueDate(invoiceId, issueDate);
     jdbcTemplate.update(
         "UPDATE \"%s\".invoices SET paid_at = ? WHERE id = ?::uuid".formatted(tenantSchema),
@@ -200,7 +203,8 @@ class CashDigestDataTest {
     invoice.approve(
         "INV-" + UUID.randomUUID().toString().substring(0, 8),
         memberId,
-        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+        BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+        LocalDate.now(KaziTime.ZONE));
     invoice.markSent();
     if (paid) {
       invoice.recordPayment("ref-" + name);

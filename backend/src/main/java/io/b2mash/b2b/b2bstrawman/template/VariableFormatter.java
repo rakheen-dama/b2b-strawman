@@ -1,10 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -109,7 +109,8 @@ public final class VariableFormatter {
    * Formats a date as <b>plain text</b> (not HTML-escaped) for non-HTML sinks such as the activity
    * feed. Same {@code "d MMMM yyyy"} pattern as the document renderer's {@code format(value,
    * "date")}, which wraps this method: a {@link LocalDate}, an ISO date ({@code 2026-03-08}) or an
-   * ISO instant ({@code 2026-03-08T14:30:00Z}, taken in UTC) gives {@code 8 March 2026}.
+   * ISO instant ({@code 2026-03-08T14:30:00Z}, taken in South African time) gives {@code 8 March
+   * 2026}.
    *
    * @param value the raw date (LocalDate, ISO date String or ISO instant String)
    * @return the formatted date, {@code String.valueOf(value)} if it is not parsable, or {@code ""}
@@ -122,7 +123,7 @@ public final class VariableFormatter {
       String str = String.valueOf(value);
       if (str.contains("T")) {
         Instant instant = Instant.parse(str);
-        LocalDate date = instant.atZone(ZoneOffset.UTC).toLocalDate();
+        LocalDate date = instant.atZone(KaziTime.ZONE).toLocalDate();
         return date.format(DATE_FORMAT);
       } else {
         LocalDate date = LocalDate.parse(str);

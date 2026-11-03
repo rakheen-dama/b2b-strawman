@@ -2,13 +2,12 @@ import { api } from "@/lib/api";
 import type { MyWorkTasksResponse, MyWorkTimeEntryItem } from "@/lib/types";
 import { WeeklyTimeGrid } from "@/components/time-tracking/weekly-time-grid";
 import type { GridTaskRow } from "@/components/time-tracking/weekly-time-grid";
+import { todayInSA } from "@b2mash/shared/date";
+import { mondayOf } from "@/app/(app)/org/[slug]/diary/diary-types";
 
+/** Monday of the current South African week (the SSR server runs in UTC — G88-F49). */
 function getCurrentWeekMonday(): string {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
-  return monday.toLocaleDateString("en-CA");
+  return mondayOf(todayInSA());
 }
 
 function addDaysToIso(isoDate: string, days: number): string {

@@ -15,14 +15,16 @@ import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { HelpTip } from "@/components/help-tip";
 import { fetchOutstandingSummaryAction } from "./invoice-crud-actions";
+import { isoDateInSA, todayInSA } from "@b2mash/shared/date";
 
 /**
  * "Paid This Month" — the one tile still computed from the list. The debtor-book tiles read
  * GET /api/invoices/outstanding-summary (Phase 88 U3, ADR-347), never a client-side sum.
  */
 function computePaidThisMonth(invoices: InvoiceResponse[], fallbackCurrency: string) {
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  // "This month" is the South African calendar month; paidAt instants are compared by their SA
+  // date (G88-F49 — the SSR server runs in UTC).
+  const monthStart = `${todayInSA().slice(0, 8)}01`;
 
   // Use the first invoice's currency as the default, falling back to the org's
   // configured default currency (ZAR for legal-za tenants) instead of USD.
@@ -31,8 +33,7 @@ function computePaidThisMonth(invoices: InvoiceResponse[], fallbackCurrency: str
 
   for (const inv of invoices) {
     if (inv.status === "PAID" && inv.paidAt) {
-      const paidDate = new Date(inv.paidAt);
-      if (paidDate >= monthStart) {
+      if (isoDateInSA(new Date(inv.paidAt)) >= monthStart) {
         paidThisMonth += inv.total;
         paidCurrency = inv.currency;
       }

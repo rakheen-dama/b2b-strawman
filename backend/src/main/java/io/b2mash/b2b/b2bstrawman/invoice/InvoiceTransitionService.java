@@ -33,7 +33,9 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -68,6 +70,7 @@ public class InvoiceTransitionService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final TaxCalculationService taxCalculationService;
   private final InvoiceRenderingService invoiceRenderingService;
+  private final Clock clock;
 
   public InvoiceTransitionService(
       InvoiceRepository invoiceRepository,
@@ -84,7 +87,8 @@ public class InvoiceTransitionService {
       PaymentLinkService paymentLinkService,
       OrgSettingsRepository orgSettingsRepository,
       TaxCalculationService taxCalculationService,
-      InvoiceRenderingService invoiceRenderingService) {
+      InvoiceRenderingService invoiceRenderingService,
+      Clock clock) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -100,6 +104,7 @@ public class InvoiceTransitionService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.taxCalculationService = taxCalculationService;
     this.invoiceRenderingService = invoiceRenderingService;
+    this.clock = clock;
   }
 
   @Transactional
@@ -139,7 +144,7 @@ public class InvoiceTransitionService {
             .orElse(BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
 
     try {
-      invoice.approve(invoiceNumber, approvedBy, defaultTermsDays);
+      invoice.approve(invoiceNumber, approvedBy, defaultTermsDays, LocalDate.now(clock));
     } catch (IllegalStateException e) {
       throw new ResourceConflictException("Invalid status transition", e.getMessage());
     }

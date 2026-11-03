@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.acceptance;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
@@ -20,7 +21,6 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
 import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
@@ -43,7 +43,7 @@ class AcceptanceNotificationService {
   private static final String TEMPLATE_CONFIRMATION = "acceptance-confirmation";
 
   private static final DateTimeFormatter EMAIL_DATE_FORMAT =
-      DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneOffset.UTC);
+      DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(KaziTime.ZONE);
 
   /** GAP-L-51: engagement letters keep their legal-firm wording (scenario 4.3b pins it). */
   static final String ENGAGEMENT_LETTER_LABEL = "engagement letter";

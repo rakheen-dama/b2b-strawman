@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelec
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -72,6 +73,7 @@ public class GeneratedDocumentService {
   private final List<TemplateContextBuilder> contextBuilders;
   private final OrgSettingsRepository orgSettingsRepository;
   private final DocumentService documentService;
+  private final Clock clock;
 
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -91,7 +93,8 @@ public class GeneratedDocumentService {
       ProjectAccessService projectAccessService,
       List<TemplateContextBuilder> contextBuilders,
       OrgSettingsRepository orgSettingsRepository,
-      DocumentService documentService) {
+      DocumentService documentService,
+      Clock clock) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.memberNameResolver = memberNameResolver;
@@ -110,6 +113,7 @@ public class GeneratedDocumentService {
     this.contextBuilders = contextBuilders;
     this.orgSettingsRepository = orgSettingsRepository;
     this.documentService = documentService;
+    this.clock = clock;
   }
 
   /**
@@ -1079,7 +1083,7 @@ public class GeneratedDocumentService {
 
   private String buildDocxFileName(String templateSlug, String entityName, String extension) {
     String slugifiedName = slugifyName(entityName);
-    String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String date = LocalDate.now(clock).format(DateTimeFormatter.ISO_LOCAL_DATE);
     return templateSlug + "-" + slugifiedName + "-" + date + "." + extension;
   }
 }

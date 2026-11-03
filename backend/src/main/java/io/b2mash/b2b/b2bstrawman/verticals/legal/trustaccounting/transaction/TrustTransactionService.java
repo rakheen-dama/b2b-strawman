@@ -26,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLe
 import jakarta.persistence.EntityManager;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -59,6 +60,7 @@ public class TrustTransactionService {
   private final AuditService auditService;
   private final EntityManager entityManager;
   private final ApplicationEventPublisher eventPublisher;
+  private final Clock clock;
 
   public TrustTransactionService(
       TrustTransactionRepository transactionRepository,
@@ -72,7 +74,8 @@ public class TrustTransactionService {
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       EntityManager entityManager,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      Clock clock) {
     this.transactionRepository = transactionRepository;
     this.ledgerCardRepository = ledgerCardRepository;
     this.trustAccountRepository = trustAccountRepository;
@@ -85,6 +88,7 @@ public class TrustTransactionService {
     this.auditService = auditService;
     this.entityManager = entityManager;
     this.eventPublisher = eventPublisher;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -619,7 +623,7 @@ public class TrustTransactionService {
             null,
             request.reference(),
             null,
-            LocalDate.now(),
+            LocalDate.now(clock),
             "AWAITING_APPROVAL",
             memberId);
 
@@ -1111,7 +1115,7 @@ public class TrustTransactionService {
             original.getCounterpartyCustomerId(),
             reversalRef,
             reason,
-            LocalDate.now(),
+            LocalDate.now(clock),
             reversalStatus,
             memberId);
 
@@ -1136,7 +1140,7 @@ public class TrustTransactionService {
                 .orElse(null);
 
         if (ledgerCard != null) {
-          ledgerCard.creditBalance(original.getAmount(), LocalDate.now());
+          ledgerCard.creditBalance(original.getAmount(), LocalDate.now(clock));
           ledgerCardRepository.save(ledgerCard);
         }
       }
@@ -1261,7 +1265,7 @@ public class TrustTransactionService {
             original.getCounterpartyCustomerId(),
             reversalRef,
             reason,
-            LocalDate.now(),
+            LocalDate.now(clock),
             "RECORDED",
             memberId);
     outReversal.setReversalOf(original.getId());
@@ -1278,7 +1282,7 @@ public class TrustTransactionService {
             pairedTransferIn.getCounterpartyCustomerId(),
             reversalRef,
             reason,
-            LocalDate.now(),
+            LocalDate.now(clock),
             "RECORDED",
             memberId);
     inReversal.setReversalOf(pairedTransferIn.getId());
@@ -1325,13 +1329,13 @@ public class TrustTransactionService {
 
     // Credit source (add back transferred amount)
     if (sourceLedger != null) {
-      sourceLedger.creditBalance(original.getAmount(), LocalDate.now());
+      sourceLedger.creditBalance(original.getAmount(), LocalDate.now(clock));
       ledgerCardRepository.save(sourceLedger);
     }
 
     // Debit target (remove transferred amount)
     if (targetLedger != null) {
-      targetLedger.debitBalance(original.getAmount(), LocalDate.now());
+      targetLedger.debitBalance(original.getAmount(), LocalDate.now(clock));
       ledgerCardRepository.save(targetLedger);
     }
 

@@ -213,11 +213,13 @@ public class Invoice {
   }
 
   /**
-   * DRAFT → APPROVED: allocates the number, stamps {@code issueDate} (today when unset) and — when
-   * the draft carries no due date — {@code dueDate = issueDate + defaultTermsDays} from the firm's
-   * payment terms (Phase 88 U3, ADR-347). A due date typed on the draft is never overwritten.
+   * DRAFT → APPROVED: allocates the number, stamps {@code issueDate} ({@code today} when unset) and
+   * — when the draft carries no due date — {@code dueDate = issueDate + defaultTermsDays} from the
+   * firm's payment terms (Phase 88 U3, ADR-347). A due date typed on the draft is never
+   * overwritten. {@code today} is the business date (South African time) from the calling service.
    */
-  public void approve(String invoiceNumber, UUID approvedBy, int defaultTermsDays) {
+  public void approve(
+      String invoiceNumber, UUID approvedBy, int defaultTermsDays, LocalDate today) {
     if (this.status != InvoiceStatus.DRAFT) {
       throw new IllegalStateException("Only draft invoices can be approved");
     }
@@ -225,7 +227,7 @@ public class Invoice {
     this.invoiceNumber = invoiceNumber;
     this.approvedBy = approvedBy;
     if (this.issueDate == null) {
-      this.issueDate = LocalDate.now();
+      this.issueDate = today;
     }
     if (this.dueDate == null) {
       this.dueDate = this.issueDate.plusDays(defaultTermsDays);

@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -45,18 +46,21 @@ public class PdfRenderingService {
   private final TemplateValidationService templateValidationService;
   private final TiptapRenderer tiptapRenderer;
   private final VariableMetadataRegistry variableMetadataRegistry;
+  private final Clock clock;
 
   public PdfRenderingService(
       DocumentTemplateRepository documentTemplateRepository,
       List<TemplateContextBuilder> contextBuilders,
       TemplateValidationService templateValidationService,
       TiptapRenderer tiptapRenderer,
-      VariableMetadataRegistry variableMetadataRegistry) {
+      VariableMetadataRegistry variableMetadataRegistry,
+      Clock clock) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.contextBuilders = contextBuilders;
     this.templateValidationService = templateValidationService;
     this.tiptapRenderer = tiptapRenderer;
     this.variableMetadataRegistry = variableMetadataRegistry;
+    this.clock = clock;
   }
 
   /**
@@ -330,7 +334,7 @@ public class PdfRenderingService {
       String templateSlug, TemplateEntityType entityType, Map<String, Object> context) {
     String entityName = extractEntityName(entityType, context);
     String slugifiedName = slugify(entityName);
-    String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String date = LocalDate.now(clock).format(DateTimeFormatter.ISO_LOCAL_DATE);
     return templateSlug + "-" + slugifiedName + "-" + date + ".pdf";
   }
 

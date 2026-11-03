@@ -4,6 +4,8 @@
  * Pure helpers live here because a "use server" file may export only async functions.
  */
 
+import { daysBetween } from "@b2mash/shared/date";
+
 export type DiaryKind = "TASK_DUE" | "MATTER_DUE" | "COURT_DATE" | "PRESCRIPTION";
 
 /** Display order = backend within-day rank (court dates first — immovable; tasks last). */
@@ -148,13 +150,6 @@ export function mondayOf(iso: string): string {
   const d = parseIsoDate(iso);
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   return toIsoDate(d);
-}
-
-/** Whole days from `from` to `to` (same arithmetic as the backend's ChronoUnit.DAYS.between). */
-export function daysBetween(from: string, to: string): number {
-  const [fy, fm, fd] = from.split("-").map(Number);
-  const [ty, tm, td] = to.split("-").map(Number);
-  return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86_400_000);
 }
 
 /** `?view=` → a known view; absent or junk falls back to week. */

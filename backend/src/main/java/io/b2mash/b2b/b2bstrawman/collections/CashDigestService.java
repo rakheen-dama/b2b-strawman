@@ -31,6 +31,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -89,7 +90,7 @@ public class CashDigestService {
   private static final int TOP_RISKS = 5;
   private static final int MAX_AI_RISKS = 3;
 
-  private static final String AGE_EXPR = "CURRENT_DATE - i.due_date";
+  private static final String AGE_EXPR = "CAST(:today AS DATE) - i.due_date";
 
   private static final String TOTALS_SQL =
       """
@@ -150,6 +151,8 @@ public class CashDigestService {
    */
   private final TransactionTemplate readTransactionTemplate;
 
+  private final Clock clock;
+
   public CashDigestService(
       EntityManager entityManager,
       TimeEntryRepository timeEntryRepository,
@@ -168,7 +171,8 @@ public class CashDigestService {
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
       AuditService auditService,
-      PlatformTransactionManager transactionManager) {
+      PlatformTransactionManager transactionManager,
+      Clock clock) {
     this.entityManager = entityManager;
     this.timeEntryRepository = timeEntryRepository;
     this.activityRepository = activityRepository;
@@ -188,6 +192,7 @@ public class CashDigestService {
     this.auditService = auditService;
     this.readTransactionTemplate = new TransactionTemplate(transactionManager);
     this.readTransactionTemplate.setReadOnly(true);
+    this.clock = clock;
   }
 
   /**
@@ -219,7 +224,11 @@ public class CashDigestService {
 
   private CashDigestData assembleDataInTransaction() {
     Tuple totals =
-        (Tuple) entityManager.createNativeQuery(TOTALS_SQL, Tuple.class).getSingleResult();
+        (Tuple)
+            entityManager
+                .createNativeQuery(TOTALS_SQL, Tuple.class)
+                .setParameter("today", LocalDate.now(clock))
+                .getSingleResult();
     BigDecimal outstandingTotal = toBigDecimal(totals.get("outstanding_total"));
     var buckets =
         new CashDigestData.Buckets(
@@ -229,7 +238,7 @@ public class CashDigestService {
             toBigDecimal(totals.get("bucket_d90plus")));
 
     var billedCollectedQuery = entityManager.createNativeQuery(BILLED_COLLECTED_SQL, Tuple.class);
-    billedCollectedQuery.setParameter("billedSince", LocalDate.now().minusDays(TRAILING_DAYS));
+    billedCollectedQuery.setParameter("billedSince", LocalDate.now(clock).minusDays(TRAILING_DAYS));
     billedCollectedQuery.setParameter(
         "collectedSince", Timestamp.from(Instant.now().minus(Duration.ofDays(TRAILING_DAYS))));
     Tuple billedCollected = (Tuple) billedCollectedQuery.getSingleResult();
@@ -237,7 +246,7 @@ public class CashDigestService {
     BigDecimal collected = toBigDecimal(billedCollected.get("collected"));
 
     UnbilledTimeSummaryProjection wip =
-        timeEntryRepository.countUnbilledOlderThan(LocalDate.now().minusDays(STALE_WIP_DAYS));
+        timeEntryRepository.countUnbilledOlderThan(LocalDate.now(clock).minusDays(STALE_WIP_DAYS));
     long staleWipEntryCount = wip != null ? wip.getEntryCount() : 0L;
     double staleWipHours = wip != null ? wip.getTotalHours() : 0.0;
 

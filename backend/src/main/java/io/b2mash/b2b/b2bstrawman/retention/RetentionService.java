@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -36,6 +37,7 @@ public class RetentionService {
   private final AuditService auditService;
   private final StorageService storageService;
   private final NotificationService notificationService;
+  private final Clock clock;
 
   public RetentionService(
       RetentionPolicyRepository policyRepository,
@@ -46,7 +48,8 @@ public class RetentionService {
       TimeEntryRepository timeEntryRepository,
       AuditService auditService,
       StorageService storageService,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      Clock clock) {
     this.policyRepository = policyRepository;
     this.customerRepository = customerRepository;
     this.auditEventRepository = auditEventRepository;
@@ -56,6 +59,7 @@ public class RetentionService {
     this.auditService = auditService;
     this.storageService = storageService;
     this.notificationService = notificationService;
+    this.clock = clock;
   }
 
   @Transactional
@@ -75,7 +79,7 @@ public class RetentionService {
               case "TIME_ENTRY" ->
                   findExpiredTimeEntries(
                       policy.getTriggerEvent(),
-                      LocalDate.now().minusDays(policy.getRetentionDays()));
+                      LocalDate.now(clock).minusDays(policy.getRetentionDays()));
               default -> List.of();
             };
         if (!flaggedIds.isEmpty()) {
@@ -125,8 +129,8 @@ public class RetentionService {
     List<UUID> approachingIds;
 
     if ("TIME_ENTRY".equals(policy.getRecordType())) {
-      LocalDate warnCutoff = LocalDate.now().minusDays(policy.getRetentionDays() - 30);
-      LocalDate expiredCutoff = LocalDate.now().minusDays(policy.getRetentionDays());
+      LocalDate warnCutoff = LocalDate.now(clock).minusDays(policy.getRetentionDays() - 30);
+      LocalDate expiredCutoff = LocalDate.now(clock).minusDays(policy.getRetentionDays());
       approachingIds =
           findApproachingTimeEntries(policy.getTriggerEvent(), warnCutoff, expiredCutoff);
     } else {
@@ -145,7 +149,7 @@ public class RetentionService {
     }
 
     if (!approachingIds.isEmpty()) {
-      LocalDate purgeDate = LocalDate.now().plusDays(30);
+      LocalDate purgeDate = LocalDate.now(clock).plusDays(30);
       notificationService.notifyAdminsAndOwners(
           "RETENTION_PURGE_WARNING",
           "Retention warning: "
@@ -258,7 +262,8 @@ public class RetentionService {
             case "DOCUMENT" -> findExpiredDocuments(policy.getTriggerEvent(), cutoff);
             case "TIME_ENTRY" ->
                 findExpiredTimeEntries(
-                    policy.getTriggerEvent(), LocalDate.now().minusDays(policy.getRetentionDays()));
+                    policy.getTriggerEvent(),
+                    LocalDate.now(clock).minusDays(policy.getRetentionDays()));
             default -> List.of();
           };
       if (!flaggedIds.isEmpty()) {

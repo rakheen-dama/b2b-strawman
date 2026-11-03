@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRe
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,18 +31,21 @@ public class TrustAccountService {
   private final LpffRateRepository lpffRateRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
+  private final Clock clock;
 
   public TrustAccountService(
       TrustAccountRepository trustAccountRepository,
       ClientLedgerCardRepository ledgerCardRepository,
       LpffRateRepository lpffRateRepository,
       VerticalModuleGuard moduleGuard,
-      AuditService auditService) {
+      AuditService auditService,
+      Clock clock) {
     this.trustAccountRepository = trustAccountRepository;
     this.ledgerCardRepository = ledgerCardRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -144,7 +148,7 @@ public class TrustAccountService {
             primary,
             dualApproval,
             request.paymentApprovalThreshold(),
-            request.openedDate() != null ? request.openedDate() : LocalDate.now(),
+            request.openedDate() != null ? request.openedDate() : LocalDate.now(clock),
             request.notes());
 
     var saved = trustAccountRepository.save(account);
@@ -241,7 +245,7 @@ public class TrustAccountService {
     }
 
     account.setStatus(TrustAccountStatus.CLOSED);
-    account.setClosedDate(LocalDate.now());
+    account.setClosedDate(LocalDate.now(clock));
 
     var saved = trustAccountRepository.save(account);
 

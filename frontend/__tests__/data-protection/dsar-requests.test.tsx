@@ -104,6 +104,31 @@ describe("DsarRequestsTable", () => {
     expect(dueSoonBadge).toHaveAttribute("data-variant", "warning");
   });
 
+  it("counts days left from the South African date, not the UTC date (G88-F48)", () => {
+    // 23:30 UTC on 27 Oct is 01:30 SAST on 28 Oct: a 30 Oct deadline is 2 days away, not 3.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-27T23:30:00Z"));
+    try {
+      render(
+        <DsarRequestsTable
+          requests={[
+            {
+              ...baseRequest,
+              id: "req-boundary",
+              status: "IN_PROGRESS",
+              deadline: "2026-10-30",
+              deadlineStatus: "DUE_SOON",
+            },
+          ]}
+          slug="acme"
+        />
+      );
+      expect(screen.getByText("2d left")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("calls updateDsarStatus with START_PROCESSING when Mark Processing is clicked", async () => {
     const user = userEvent.setup();
     mockUpdateDsarStatus.mockResolvedValue({ success: true });

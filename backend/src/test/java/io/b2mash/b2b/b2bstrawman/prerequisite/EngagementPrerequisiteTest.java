@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
@@ -32,6 +33,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -284,6 +286,7 @@ class EngagementPrerequisiteTest {
         null, // informationRequestService
         null, // portalContactRepository
         null, // memberRepository
-        null); // requestTemplateRepository
+        null, // requestTemplateRepository
+        Clock.system(KaziTime.ZONE));
   }
 }

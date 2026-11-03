@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.billing;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -61,7 +62,7 @@ public class SubscriptionExpiryJob {
 
   /** Transitions TRIALING subscriptions past their trial end date to EXPIRED with grace period. */
   @SchedulerLock(name = "subscription_process_trial_expiry", lockAtLeastFor = "5m")
-  @Scheduled(cron = "0 0 3 * * *")
+  @Scheduled(cron = "0 0 3 * * *", zone = KaziTime.ZONE_ID)
   public void processTrialExpiry() {
     log.info("Trial expiry job started");
 
@@ -115,7 +116,7 @@ public class SubscriptionExpiryJob {
    * LOCKED.
    */
   @SchedulerLock(name = "subscription_process_grace_expiry", lockAtLeastFor = "5m")
-  @Scheduled(cron = "0 5 3 * * *")
+  @Scheduled(cron = "0 5 3 * * *", zone = KaziTime.ZONE_ID)
   public void processGraceExpiry() {
     log.info("Grace period expiry job started");
 
@@ -177,7 +178,7 @@ public class SubscriptionExpiryJob {
    * with grace period set.
    */
   @SchedulerLock(name = "subscription_process_pending_cancellation_end", lockAtLeastFor = "5m")
-  @Scheduled(cron = "0 10 3 * * *")
+  @Scheduled(cron = "0 10 3 * * *", zone = KaziTime.ZONE_ID)
   public void processPendingCancellationEnd() {
     log.info("Pending cancellation end job started");
 

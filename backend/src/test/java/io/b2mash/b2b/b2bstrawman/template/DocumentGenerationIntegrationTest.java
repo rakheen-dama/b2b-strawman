@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.clause.TemplateClause;
 import io.b2mash.b2b.b2bstrawman.clause.TemplateClauseRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -260,7 +261,7 @@ class DocumentGenerationIntegrationTest {
 
     String contentDisposition = result.getResponse().getHeader("Content-Disposition");
     assertThat(contentDisposition).contains("gen-template-");
-    String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String today = LocalDate.now(KaziTime.ZONE).format(DateTimeFormatter.ISO_LOCAL_DATE);
     assertThat(contentDisposition).contains(today);
     assertThat(contentDisposition).endsWith(".pdf\"");
   }

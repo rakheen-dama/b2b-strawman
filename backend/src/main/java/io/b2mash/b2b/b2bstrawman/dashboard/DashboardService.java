@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.CrossProjectActivityProjection;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -453,7 +454,7 @@ public class DashboardService {
                   int days =
                       (int)
                           ChronoUnit.DAYS.between(
-                              LocalDate.ofInstant(openedAt, clock.getZone()), today);
+                              LocalDate.ofInstant(openedAt, KaziTime.ZONE), today);
                   return new FicaOutstandingClient(
                       c.getId(),
                       c.getName(),
@@ -577,7 +578,7 @@ public class DashboardService {
   // --- Private: project-scoped computation ---
 
   private MatterHealthDetail computeProjectHealth(UUID projectId) {
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
 
     // Task counts
     long totalTasks = taskRepository.countByProjectId(projectId);
@@ -643,7 +644,7 @@ public class DashboardService {
   }
 
   private TaskSummary computeTaskSummary(UUID projectId) {
-    var rows = taskRepository.getTaskSummaryByProjectId(projectId, LocalDate.now());
+    var rows = taskRepository.getTaskSummaryByProjectId(projectId, LocalDate.now(clock));
     if (rows.isEmpty()) {
       return new TaskSummary(0, 0, 0, 0, 0, 0);
     }
@@ -711,7 +712,7 @@ public class DashboardService {
     }
 
     // 3. Overdue task count
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     int overdueTaskCount = (int) taskRepository.countOverdueByAssignee(memberId, today);
 
     // 4. Upcoming deadlines (next 5)
@@ -780,7 +781,7 @@ public class DashboardService {
     Double billablePercent =
         totalMinutes > 0 ? (double) billableMinutes / totalMinutes * 100 : null;
 
-    long overdueCount = taskRepository.countOrgOverdue(LocalDate.now());
+    long overdueCount = taskRepository.countOrgOverdue(LocalDate.now(clock));
 
     // averageMarginPercent: null until Phase 8 rate snapshots are available
     Double averageMarginPercent = null;
@@ -840,7 +841,7 @@ public class DashboardService {
       projectsWithRoles = projectRepository.findProjectsForMember(actor.memberId());
     }
 
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
 
     return projectsWithRoles.stream()
         .map(

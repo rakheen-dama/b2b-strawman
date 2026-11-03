@@ -48,7 +48,7 @@ async function renderPage(search: Record<string, string> = {}) {
 describe("Diary page (613B)", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date(2026, 9, 21, 10, 0, 0)); // Wed 21 Oct 2026, local
+    vi.setSystemTime(new Date("2026-10-21T10:00:00+02:00")); // Wed 21 Oct 2026, 10:00 SAST
     loaderState.suspend = false;
   });
 

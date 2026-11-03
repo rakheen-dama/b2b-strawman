@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
@@ -16,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
@@ -107,7 +109,10 @@ class InvoiceCoverLetterRenderIntegrationTest {
                       invoice.recalculateTotals(
                           new BigDecimal("1250.00"), false, BigDecimal.ZERO, false);
                       invoice.approve(
-                          "INV-9001", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                          "INV-9001",
+                          memberId,
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                          LocalDate.now(KaziTime.ZONE));
                       invoice = invoiceRepository.save(invoice);
 
                       var template =
@@ -164,7 +169,10 @@ class InvoiceCoverLetterRenderIntegrationTest {
                       invoice.recalculateTotals(
                           new BigDecimal("900.00"), false, BigDecimal.ZERO, false);
                       invoice.approve(
-                          "INV-9002", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                          "INV-9002",
+                          memberId,
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                          LocalDate.now(KaziTime.ZONE));
                       invoice = invoiceRepository.save(invoice);
 
                       var template =
@@ -226,7 +234,10 @@ class InvoiceCoverLetterRenderIntegrationTest {
                       invoice.recalculateTotals(
                           new BigDecimal("400.00"), false, BigDecimal.ZERO, false);
                       invoice.approve(
-                          "INV-9003", memberId, BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                          "INV-9003",
+                          memberId,
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                          LocalDate.now(KaziTime.ZONE));
                       invoice = invoiceRepository.save(invoice);
 
                       var template =

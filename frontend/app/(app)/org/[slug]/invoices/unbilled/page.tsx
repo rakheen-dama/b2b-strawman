@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/empty-state";
 import { UnbilledWorkTable } from "@/components/invoices/unbilled-work-table";
 import { formatLocalDate } from "@/lib/format";
 import { UnbilledWorkFilters } from "./unbilled-work-filters";
+import { todayInSA } from "@b2mash/shared/date";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const CURRENCY_CODE = /^[A-Z]{3}$/;
@@ -52,11 +53,10 @@ export default async function UnbilledWorkPage({
     console.error("Failed to load org settings for unbilled work page", error);
   }
 
-  const now = new Date();
-  const defaultTo = toIsoDate(now);
-  const defaultFrom = toIsoDate(
-    new Date(now.getFullYear(), now.getMonth() - DEFAULT_PERIOD_MONTHS, now.getDate())
-  );
+  // Default period ends on today's South African date (the SSR server runs in UTC — G88-F49).
+  const defaultTo = todayInSA();
+  const [todayY, todayM, todayD] = defaultTo.split("-").map(Number);
+  const defaultFrom = toIsoDate(new Date(todayY, todayM - 1 - DEFAULT_PERIOD_MONTHS, todayD));
   let periodFrom = isValidIsoDate(search.periodFrom) ? search.periodFrom : defaultFrom;
   let periodTo = isValidIsoDate(search.periodTo) ? search.periodTo : defaultTo;
   // An inverted range (hand-edited URL) restores both defaults; yyyy-MM-dd compares lexically.

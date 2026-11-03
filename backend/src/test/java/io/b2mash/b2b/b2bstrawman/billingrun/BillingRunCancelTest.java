@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -394,7 +395,8 @@ class BillingRunCancelTest {
                       firstInvoice.approve(
                           "INV-CANCEL-001",
                           memberIdOwner,
-                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS);
+                          BillingSettings.DEFAULT_PAYMENT_TERMS_DAYS,
+                          LocalDate.now(KaziTime.ZONE));
                       invoiceRepository.save(firstInvoice);
                     }));
 

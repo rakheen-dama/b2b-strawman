@@ -9,6 +9,7 @@
  */
 import { expect } from "@playwright/test";
 import { getApiToken } from "../fixtures/auth";
+import { todayInSA } from "@b2mash/shared/date";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 
@@ -201,11 +202,6 @@ export async function createTask(matterId: string, title: string): Promise<strin
   return task.id;
 }
 
-/** Today as YYYY-MM-DD in UTC (the frontend and backend containers run on UTC). */
-export function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 /** A matter-scoped ZAR hourly billing rate for a member, effective from the 1st of this month. */
 export async function createMatterRate(
   matterId: string,
@@ -219,7 +215,7 @@ export async function createMatterRate(
       matterId,
       currency: "ZAR",
       hourlyRate,
-      effectiveFrom: `${todayUtc().slice(0, 8)}01`,
+      effectiveFrom: `${todayInSA().slice(0, 8)}01`,
     },
   });
 }
@@ -235,7 +231,7 @@ export async function logTime(
     `/api/tasks/${taskId}/time-entries`,
     {
       method: "POST",
-      body: { date: todayUtc(), durationMinutes: minutes, billable: true, description },
+      body: { date: todayInSA(), durationMinutes: minutes, billable: true, description },
     },
     user
   );

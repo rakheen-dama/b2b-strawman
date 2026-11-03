@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
@@ -43,7 +44,6 @@ import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -303,7 +303,7 @@ class MatterClosureServiceIntegrationTest {
                   // seeded 5 years), and the closure response reports exactly that value.
                   assertThat(project.getRetentionEndsOn())
                       .isEqualTo(
-                          project.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(5));
+                          project.getClosedAt().atZone(KaziTime.ZONE).toLocalDate().plusYears(5));
                   assertThat(reportedEndsAt[0]).isEqualTo(project.getRetentionEndsOn());
 
                   var log =
@@ -521,7 +521,7 @@ class MatterClosureServiceIntegrationTest {
     // reads this frozen per-matter date, so an end date 95 years ago must block the reopen.
     jdbcTemplate.update(
         "UPDATE \"%s\".projects SET retention_ends_on = ? WHERE id = ?".formatted(tenantSchema),
-        java.sql.Date.valueOf(LocalDate.now(ZoneOffset.UTC).minusYears(95)),
+        java.sql.Date.valueOf(LocalDate.now(KaziTime.ZONE).minusYears(95)),
         projectId);
 
     runInTenantAsOwner(
@@ -748,7 +748,7 @@ class MatterClosureServiceIntegrationTest {
         .contains("Matter concluded");
     assertThat(pdfText)
         .as("closure.date must render the closure date (ISO, per MatterClosureContextBuilder)")
-        .contains(response.closedAt().atZone(ZoneOffset.UTC).toLocalDate().toString());
+        .contains(response.closedAt().atZone(KaziTime.ZONE).toLocalDate().toString());
     assertThat(pdfText)
         .as("closure.notes must render the operator notes")
         .contains("LZKC-018 marker note");
@@ -823,7 +823,7 @@ class MatterClosureServiceIntegrationTest {
                   invoiceLineRepository.save(disbursementLine);
                   sent.recalculateTotals(
                       new BigDecimal("2550.00"), true, new BigDecimal("270.00"), false);
-                  sent.approve("INV-626E-1", memberId, 30);
+                  sent.approve("INV-626E-1", memberId, 30, LocalDate.now(KaziTime.ZONE));
                   sent.markSent();
                   invoiceRepository.saveAndFlush(sent);
 

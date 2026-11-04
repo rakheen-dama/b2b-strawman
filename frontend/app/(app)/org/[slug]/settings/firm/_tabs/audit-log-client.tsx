@@ -15,7 +15,7 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
-import { formatComplianceDateWithTime } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import type {
   ActorFacet,
   AuditEventFilter,
@@ -274,9 +274,10 @@ function isKeyShaped(query: string): boolean {
 
 /**
  * Event type filter: a searchable Popover + Command combobox over the event-type facets. Search
- * matches the legal label or the stored key. Because the backend matches `eventType` as a prefix,
- * a typed query also offers "Event key starts with “…”", which commits the typed text. Enter picks
- * the first item, ordered so it is the one the user most likely means:
+ * matches the legal label or the stored key (the key itself is never shown). Because the backend
+ * matches `eventType` as a prefix, a typed query also offers "Event key starts with “…”", which
+ * commits the typed text. Enter picks the first item, ordered so it is the one the user most
+ * likely means:
  *  (a) the query is exactly a facet key → that option first (no prefix item);
  *  (b) a plain word (no `.` / `_`) with label matches → label matches first, then the prefix item;
  *  (c) otherwise (key-shaped, or no label match) → the prefix item first.
@@ -316,14 +317,12 @@ function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventT
   if (value === MULTI_EVENT_SENTINEL) {
     triggerText = `Preset (${presetEventCount ?? "multiple"} event types)`;
   } else if (current) {
-    triggerText = (
-      <>
-        {current.label}{" "}
-        <span className="font-mono text-[10px] text-slate-500">{current.eventType}</span>
-      </>
-    );
+    // Label only: stored event keys are searchable but never shown (G-D10b, ADR-357)
+    triggerText = current.label;
   } else if (value) {
-    triggerText = <span className="font-mono text-xs">{value}</span>;
+    // No facet for the active filter (a typed prefix, or the date range dropped it): describe the
+    // filter the way the prefix option does — the backend matches eventType as a prefix.
+    triggerText = `Event key starts with “${value}”`;
   } else {
     triggerText = "All event types";
   }
@@ -337,10 +336,7 @@ function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventT
   const renderFacet = (f: EventTypeFacet) => (
     <CommandItem key={f.eventType} value={f.eventType} onSelect={() => select(f.eventType)}>
       <Check className={cn("size-4", value === f.eventType ? "opacity-100" : "opacity-0")} />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate">{f.label}</span>
-        <span className="block truncate font-mono text-[10px] text-slate-500">{f.eventType}</span>
-      </span>
+      <span className="min-w-0 flex-1 truncate">{f.label}</span>
       <span className="text-xs text-slate-400 tabular-nums">{f.count}</span>
     </CommandItem>
   );
@@ -897,7 +893,7 @@ export function AuditLogClient({
           <CardTitle className="text-base">
             Events
             <span className="ml-2 font-mono text-xs font-normal text-slate-500">
-              {page.totalElements.toLocaleString()} total
+              {page.totalElements.toLocaleString("en-ZA")} total
             </span>
             {isPending && <span className="ml-2 text-xs text-slate-400">Loading…</span>}
           </CardTitle>
@@ -1015,7 +1011,8 @@ function Row({ event, slug, expanded, onToggle }: RowProps) {
           </button>
         </TableCell>
         <TableCell className="font-mono text-xs whitespace-nowrap text-slate-700 dark:text-slate-300">
-          {formatComplianceDateWithTime(event.occurredAt)}
+          {/* SSR (UTC server) and hydration (browser) must print the same string → SA-pinned. */}
+          {formatDateTime(event.occurredAt)}
         </TableCell>
         <TableCell>
           <SeverityPill severity={event.severity} />

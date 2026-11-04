@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { ClientHeaderCard } from "@/components/customers/client-header-card";
 import type { ClientHeaderCardProps } from "@/components/customers/client-header-card";
+import type { TemplateListResponse } from "@/lib/types";
 
 // ---- Mocks ----
 
@@ -26,6 +27,28 @@ vi.mock("@/components/customers/XeroContactBadge", () => ({
 
 vi.mock("@/components/customers/client-overflow-menu", () => ({
   ClientOverflowMenu: () => <div data-testid="client-overflow-trigger" />,
+}));
+
+// Standalone Generate Document control, as on the matter page (G88-F46)
+vi.mock("@/components/templates/GenerateDocumentDropdown", () => ({
+  GenerateDocumentDropdown: ({
+    entityId,
+    entityType,
+    customerId,
+  }: {
+    entityId: string;
+    entityType: string;
+    customerId?: string;
+  }) => (
+    <button
+      data-testid="generate-document-dropdown"
+      data-entity-id={entityId}
+      data-entity-type={entityType}
+      data-customer-id={customerId}
+    >
+      Generate Document
+    </button>
+  ),
 }));
 
 vi.mock("@/components/customers/edit-customer-dialog", () => ({
@@ -82,6 +105,10 @@ const defaultProps: ClientHeaderCardProps = {
   kycVerified: false,
   customer: mockCustomer,
 };
+
+const mockTemplates: TemplateListResponse[] = [
+  { id: "tpl-1", name: "Power of Attorney", format: "TIPTAP" } as TemplateListResponse,
+];
 
 // ---- Tests ----
 
@@ -185,5 +212,38 @@ describe("ClientHeaderCard", () => {
   it("renders no facts strip without headerFields", () => {
     render(<ClientHeaderCard {...defaultProps} />);
     expect(screen.queryByTestId("client-header-fields")).not.toBeInTheDocument();
+  });
+
+  // G88-F46: the client page mounts the Generate Document control next to the overflow menu
+  describe("Generate Document", () => {
+    it("renders the Generate Document control for an admin with client templates", () => {
+      render(<ClientHeaderCard {...defaultProps} templates={mockTemplates} />);
+      const actions = screen.getByTestId("client-header-actions");
+      const control = within(actions).getByTestId("generate-document-dropdown");
+      expect(control).toHaveAttribute("data-entity-type", "CUSTOMER");
+      expect(control).toHaveAttribute("data-entity-id", "cust-1");
+      expect(control).toHaveAttribute("data-customer-id", "cust-1");
+    });
+
+    it("hides the control for a non-admin", () => {
+      render(<ClientHeaderCard {...defaultProps} templates={mockTemplates} isAdmin={false} />);
+      expect(screen.queryByTestId("generate-document-dropdown")).not.toBeInTheDocument();
+    });
+
+    it("hides the control when there are no client templates", () => {
+      render(<ClientHeaderCard {...defaultProps} templates={[]} />);
+      expect(screen.queryByTestId("generate-document-dropdown")).not.toBeInTheDocument();
+    });
+
+    it("hides the control for an anonymised client", () => {
+      render(
+        <ClientHeaderCard
+          {...defaultProps}
+          templates={mockTemplates}
+          lifecycleStatus="ANONYMIZED"
+        />
+      );
+      expect(screen.queryByTestId("generate-document-dropdown")).not.toBeInTheDocument();
+    });
   });
 });

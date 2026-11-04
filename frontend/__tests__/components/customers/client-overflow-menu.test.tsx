@@ -2,7 +2,6 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ClientOverflowMenu } from "@/components/customers/client-overflow-menu";
-import type { TemplateListResponse } from "@/lib/types";
 
 // ---- Mocks ----
 
@@ -28,10 +27,6 @@ vi.mock("@/components/customers/data-export-dialog", () => ({
 }));
 
 // ---- Test Data ----
-
-const mockTemplates: TemplateListResponse[] = [
-  { id: "tpl-1", name: "Invoice Template", format: "HTML" } as TemplateListResponse,
-];
 
 const mockCustomer = {
   id: "cust-1",
@@ -59,7 +54,6 @@ const defaultProps = {
   isAdmin: true,
   isOwner: true,
   isAnonymized: false,
-  templates: mockTemplates,
   aiProviderConfigured: true,
   conflictCheckEnabled: true,
   kycConfigured: true,
@@ -82,7 +76,6 @@ describe("ClientOverflowMenu", () => {
 
     expect(screen.getByText("Edit Client")).toBeInTheDocument();
     expect(screen.getByText("Summarise Activity")).toBeInTheDocument();
-    expect(screen.getByText("Generate Document")).toBeInTheDocument();
     expect(screen.getByText("Run Conflict Check")).toBeInTheDocument();
     expect(screen.getByText("Verify KYC")).toBeInTheDocument();
     expect(screen.getByText("Export Data")).toBeInTheDocument();
@@ -107,8 +100,6 @@ describe("ClientOverflowMenu", () => {
     await user.click(screen.getByTestId("client-overflow-trigger"));
 
     expect(screen.queryByText("Archive")).not.toBeInTheDocument();
-    // Generate Document also hidden (requires isAdmin)
-    expect(screen.queryByText("Generate Document")).not.toBeInTheDocument();
     // Other items still present
     expect(screen.getByText("Edit Client")).toBeInTheDocument();
   });
@@ -122,21 +113,21 @@ describe("ClientOverflowMenu", () => {
 
     expect(screen.getByText("Export Data")).toBeInTheDocument();
     expect(screen.queryByText("Edit Client")).not.toBeInTheDocument();
-    expect(screen.queryByText("Generate Document")).not.toBeInTheDocument();
     expect(screen.queryByText("Run Conflict Check")).not.toBeInTheDocument();
     expect(screen.queryByText("Verify KYC")).not.toBeInTheDocument();
     expect(screen.queryByText("Anonymize")).not.toBeInTheDocument();
     expect(screen.queryByText("Archive")).not.toBeInTheDocument();
   });
 
-  it("hides Generate Document when no templates", async () => {
+  // G88-F46: the overflow item pushed ?action=generate-document, which nothing reads. Generate
+  // Document now lives in the client header as a standalone control (client-header-card.tsx).
+  it("has no Generate Document item", async () => {
     const user = userEvent.setup();
-    render(<ClientOverflowMenu {...defaultProps} templates={[]} />);
+    render(<ClientOverflowMenu {...defaultProps} />);
     await user.click(screen.getByTestId("client-overflow-trigger"));
 
     expect(screen.queryByText("Generate Document")).not.toBeInTheDocument();
-    // Other items still present
-    expect(screen.getByText("Edit Client")).toBeInTheDocument();
+    expect(screen.getByText("Run Conflict Check")).toBeInTheDocument();
   });
 
   it("hides Run Conflict Check when conflictCheckEnabled is false", async () => {

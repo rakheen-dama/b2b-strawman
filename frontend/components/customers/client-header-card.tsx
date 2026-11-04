@@ -8,6 +8,7 @@ import { KycStatusBadge } from "@/components/customers/kyc-status-badge";
 import type { KycSummary } from "@/components/customers/kyc-status-badge";
 import { XeroContactBadge } from "@/components/customers/XeroContactBadge";
 import { ClientOverflowMenu } from "@/components/customers/client-overflow-menu";
+import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { HeaderFactsStrip } from "@/components/shared/header-facts-strip";
 import { formatDate } from "@/lib/format";
 import type { HeaderField } from "@/lib/constants/header-field-slugs";
@@ -65,8 +66,9 @@ export interface ClientHeaderCardProps {
   slug: string;
   isAdmin: boolean;
   isOwner: boolean;
-  // Props forwarded to ClientOverflowMenu
+  /** Active CUSTOMER templates — drive the Generate Document control */
   templates: TemplateListResponse[];
+  // Props forwarded to ClientOverflowMenu
   aiProviderConfigured: boolean;
   conflictCheckEnabled: boolean;
   kycConfigured: boolean;
@@ -112,6 +114,7 @@ export function ClientHeaderCard({
   const showRecordBadge = customerStatus !== "ACTIVE" || lifecycleStatus === null;
   const smartAction = getSmartPrimaryAction(lifecycleStatus, customerStatus);
   const isAnonymized = lifecycleStatus === "ANONYMIZED";
+  const showGenerateDocument = isAdmin && templates.length > 0 && !isAnonymized;
 
   return (
     <Card className="p-5" data-testid="client-header-card">
@@ -168,7 +171,7 @@ export function ClientHeaderCard({
 
         {/* Row 5 — Actions */}
         <div
-          className="flex shrink-0 items-center gap-2 self-end sm:self-auto"
+          className="flex flex-wrap items-center justify-end gap-2 self-end sm:self-auto"
           data-testid="client-header-actions"
         >
           {smartAction && (
@@ -183,6 +186,18 @@ export function ClientHeaderCard({
               {smartAction.label}
             </Button>
           )}
+          {/* Generate Document — standalone button with its own dropdown, as on the matter page
+              (a dropdown cannot nest in the overflow DropdownMenu) */}
+          {showGenerateDocument && (
+            <GenerateDocumentDropdown
+              templates={templates}
+              entityId={customerId}
+              entityType="CUSTOMER"
+              slug={slug}
+              customerId={customerId}
+              isAdmin={isAdmin}
+            />
+          )}
           <ClientOverflowMenu
             customerId={customerId}
             customerName={customerName}
@@ -192,7 +207,6 @@ export function ClientHeaderCard({
             isAdmin={isAdmin}
             isOwner={isOwner}
             isAnonymized={isAnonymized}
-            templates={templates}
             aiProviderConfigured={aiProviderConfigured}
             conflictCheckEnabled={conflictCheckEnabled}
             kycConfigured={kycConfigured}

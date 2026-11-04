@@ -203,11 +203,11 @@ class ClientActivityIntegrationTest extends AbstractIntegrationTest {
     assertThat(rowsA)
         .filteredOn(r -> feeNoteA.toString().equals(r.get("entityId")))
         .singleElement()
-        .satisfies(r -> assertThat(r.get("label")).isEqualTo("Fee note"));
+        .satisfies(r -> assertThat(r.get("label")).isEqualTo("Fee note created"));
     assertThat(rowsB)
         .filteredOn(r -> feeNoteB.toString().equals(r.get("entityId")))
         .singleElement()
-        .satisfies(r -> assertThat(r.get("label")).isEqualTo("Fee note"));
+        .satisfies(r -> assertThat(r.get("label")).isEqualTo("Fee note created"));
 
     // Neither feed holds a single row of the other client: no audit row id, entity id or
     // customer_id tag of B in A (lifecycle, checklist items, the fee note) — and the reverse.

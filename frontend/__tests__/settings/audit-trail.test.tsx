@@ -109,7 +109,13 @@ const EVENT_TYPE_FACETS: EventTypeFacet[] = [
     group: "STANDARD",
     count: 9,
   },
-  { eventType: "invoice.sent", label: "Fee note", severity: "INFO", group: "FINANCIAL", count: 3 },
+  {
+    eventType: "invoice.sent",
+    label: "Fee note sent",
+    severity: "INFO",
+    group: "FINANCIAL",
+    count: 3,
+  },
   {
     eventType: "matter_closure.closed",
     label: "Matter closure closed",
@@ -390,6 +396,40 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       /^Checklist item 5831f9d6$/
     );
     expect(screen.queryByText(/invoice 7b7e7dde/)).not.toBeInTheDocument();
+  });
+
+  it("renders the timestamp in South African time whatever the runtime zone (no #418)", async () => {
+    // The table is SSR-rendered on a UTC Node server and hydrated in an SAST browser: a zone-less
+    // formatter printed 23:30 on the server and 01:30 in the browser → React #418 text mismatch.
+    // Rendering under TZ=UTC must give the SAST wall clock.
+    const originalTz = process.env.TZ;
+    process.env.TZ = "UTC";
+    try {
+      mockListAuditEvents.mockResolvedValue({
+        content: [makeEvent({ id: "evt-tz", occurredAt: "2026-11-03T23:30:00Z" })],
+        page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+      });
+
+      await renderTab();
+
+      expect(screen.getByText("04 Nov 2026, 01:30")).toBeInTheDocument();
+      expect(screen.queryByText("03 Nov 2026, 23:30")).not.toBeInTheDocument();
+    } finally {
+      if (originalTz === undefined) delete process.env.TZ;
+      else process.env.TZ = originalTz;
+    }
+  });
+
+  it("renders the total count with the en-ZA separator whatever the runtime locale (no #418)", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [makeEvent({ id: "evt-count" })],
+      page: { totalElements: 1234, totalPages: 25, size: 50, number: 0 },
+    });
+
+    await renderTab();
+
+    // en-ZA groups thousands with a (narrow) no-break space; a runtime-default en-US "1,234" must not match.
+    expect(screen.getByText(/^1[\s  ]234 total$/)).toBeInTheDocument();
   });
 
   it("toggling a severity chip pushes a URL with the severities param", async () => {
@@ -701,7 +741,10 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       const user = userEvent.setup();
       await user.click(screen.getByRole("combobox", { name: "Event type" }));
       await user.type(await screen.findByPlaceholderText("Search event types…"), "inv");
-      const option = await screen.findByRole("option", { name: /Fee note.*invoice\.sent/ });
+      // "inv" only matches the key (invoice.sent), never the label "Fee note"
+      const option = await screen.findByRole("option", { name: /^Fee note/ });
+      // G-D10b: the stored event key is searchable but never rendered
+      expect(option).not.toHaveTextContent("invoice.sent");
       expect(screen.queryByRole("option", { name: /Matter updated/ })).not.toBeInTheDocument();
       await user.click(option);
 
@@ -806,6 +849,37 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       const trigger = screen.getByRole("combobox", { name: "Event type" });
       expect(trigger).toHaveAttribute("id", "audit-filter-event-type");
       expect(trigger).toHaveTextContent("Matter closure closed");
+      // G-D10b: the trigger shows the label only, not the stored event key
+      expect(trigger).not.toHaveTextContent("matter_closure.closed");
+    });
+
+    it("describes an active filter that has no facet as a key prefix, not a bare key", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab({ eventType: "invoice." });
+
+      const trigger = screen.getByRole("combobox", { name: "Event type" });
+      expect(trigger).toHaveTextContent("Event key starts with “invoice.”");
+    });
+
+    it("G-D10b: finds an event by its full key without rendering any key text", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab();
+
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("combobox", { name: "Event type" }));
+      const search = await screen.findByPlaceholderText("Search event types…");
+      fireEvent.change(search, { target: { value: "invoice.sent" } });
+      const option = await screen.findByRole("option", { name: /^Fee note/ });
+      const listbox = screen.getByRole("listbox");
+      expect(listbox).not.toHaveTextContent(
+        /invoice\.sent|project\.updated|matter_closure\.closed/
+      );
+      await user.click(option);
+
+      await waitFor(() => expect(pushMock).toHaveBeenCalled());
+      expect(pushedUrl()).toContain("eventType=invoice.sent");
     });
   });
 });

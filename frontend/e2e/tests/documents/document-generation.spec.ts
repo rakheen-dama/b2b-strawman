@@ -2,7 +2,7 @@
  * DOC-02: Document Generation — Playwright E2E Tests
  *
  * Tests: generate a document from a template on the matter page (preview with resolved
- * variables, save to the matter's generated documents), the client-page path (product blocker),
+ * variables, save to the matter's generated documents), the client-page path,
  * downloading the generated PDF, and the generated documents list.
  *
  * Generation runs on this run's own ACTIVE client + matter (628F R-5). The list check reads the
@@ -29,6 +29,8 @@ const CLIENT = `DocGen Client ${RUN_ID}`;
 const MATTER = `DocGen Matter ${RUN_ID}`;
 /** A matter template without clause associations (one-step dialog: preview → save). */
 const TEMPLATE = "Matter Summary Report";
+/** A client (CUSTOMER) template without clause associations (legal-za pack). */
+const CLIENT_TEMPLATE = "Power of Attorney";
 
 /** Opens the matter's Generate Document menu and picks `TEMPLATE`; returns the dialog. */
 async function openGenerateDialog(page: Page, matterId: string) {
@@ -83,17 +85,20 @@ test.describe.serial("DOC-02: Document Generation", () => {
   });
 
   test("Generate a document from the client page", async ({ page }) => {
-    test.fixme(
-      true,
-      "628F-BLOCKER: client overflow 'Generate Document' pushes ?action=generate-document and nothing reads `action` (the client page no longer mounts GenerateDocumentDropdown, Epic 560A) — components/customers/client-overflow-menu.tsx:120"
-    );
     await page.goto(`${BASE}/clients`);
     await page.getByRole("link", { name: CLIENT, exact: true }).click();
     await expect(page.getByRole("heading", { level: 1, name: CLIENT })).toBeVisible();
-    await page.getByTestId("client-overflow-trigger").click();
-    await page.getByRole("menuitem", { name: "Generate Document" }).click();
-    // Intended: a template choice for the client, then the Generate dialog
-    await expect(page.getByRole("dialog", { name: /^Generate: / })).toBeVisible();
+    // G88-F46: a standalone Generate Document control in the client header, as on the matter page
+    await page
+      .getByTestId("client-header-actions")
+      .getByRole("button", { name: "Generate Document" })
+      .click();
+    await page.getByRole("menuitem", { name: CLIENT_TEMPLATE, exact: true }).click();
+    // The prerequisite check passes for an ACTIVE client with an email, so the dialog opens
+    const dialog = page.getByRole("dialog", { name: `Generate: ${CLIENT_TEMPLATE}` });
+    await expect(dialog).toBeVisible({ timeout: 15_000 });
+    const preview = dialog.frameLocator('iframe[title="Document Preview"]').locator("body");
+    await expect(preview).toContainText(CLIENT, { timeout: 15_000 });
   });
 
   test("Download PDF", async ({ page }) => {

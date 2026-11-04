@@ -60,6 +60,19 @@ public class AuditEventTypeRegistry {
                 "Permission Denied",
                 AuditSeverity.WARNING,
                 AuditEventGroup.SECURITY),
+            // G88-F17: per-key labels for the published security.* keys (the Event-type filter
+            // shows labels only, so the family label alone made them indistinguishable). Same
+            // NOTICE/SECURITY classification the prefix gives them — only the label is explicit.
+            new AuditEventTypeMetadata(
+                "security.access_denied",
+                "Access Denied",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.SECURITY),
+            new AuditEventTypeMetadata(
+                "security.document_accessed",
+                "Document Accessed",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.SECURITY),
             new AuditEventTypeMetadata(
                 "security.*", "Security Event", AuditSeverity.NOTICE, AuditEventGroup.SECURITY),
             // COMPLIANCE — matter closure
@@ -124,6 +137,58 @@ public class AuditEventTypeRegistry {
             // FINANCIAL — fee note (stored key invoice.*; ADR-342: storage key, do not rename).
             // D12 (Phase 88 625C): legal display label — labels derive at read time, so history
             // relabels and exports regenerate on demand.
+            // G88-F17: one label per published invoice.* key (InvoiceCreationService /
+            // InvoiceTransitionService) — the Event-type filter shows labels only (G-D10b), so the
+            // single family label "Fee note" made distinct keys indistinguishable. Same
+            // INFO/FINANCIAL classification as the prefix; invoice.partially_paid and
+            // invoice.payment_excess are catalogued further down. The prefix stays as the fallback
+            // for keys not yet catalogued.
+            new AuditEventTypeMetadata(
+                "invoice.created",
+                "Fee note created",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.updated",
+                "Fee note updated",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.deleted",
+                "Fee note deleted",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.custom_fields_updated",
+                "Fee note custom fields updated",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.field_groups_updated",
+                "Fee note field groups updated",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.approved",
+                "Fee note approved",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.sent", "Fee note sent", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.paid", "Fee note paid", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.payment_reversed",
+                "Fee note payment reversed",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.payment_partially_reversed",
+                "Fee note payment partially reversed",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "invoice.voided", "Fee note voided", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
             new AuditEventTypeMetadata(
                 "invoice.*", "Fee note", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
             // AI SKILL FAILURE — Phase 72 skill pipeline (AiExecutionPersistenceService) still
@@ -140,11 +205,27 @@ public class AuditEventTypeRegistry {
             // compliance-relevant audit trail (an authorised member decides whether an AI-proposed
             // action runs). The exact ai.gate.created entry classifies the propose_task gate as
             // NOTICE/COMPLIANCE (an authorised member's decision on an AI-proposed action); the
-            // prefix carries the remaining
-            // gate lifecycle (approved/rejected/expired) so none fall through to default INFO.
+            // prefix keeps any uncatalogued gate key out of the default INFO.
             new AuditEventTypeMetadata(
                 "ai.gate.created",
                 "AI Execution Gate Created",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.COMPLIANCE),
+            // G88-F17: per-key labels for the remaining published gate keys
+            // (AiExecutionGateService); same NOTICE/COMPLIANCE classification as the prefix.
+            new AuditEventTypeMetadata(
+                "ai.gate.approved",
+                "AI Execution Gate Approved",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.COMPLIANCE),
+            new AuditEventTypeMetadata(
+                "ai.gate.rejected",
+                "AI Execution Gate Rejected",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.COMPLIANCE),
+            new AuditEventTypeMetadata(
+                "ai.gate.expired",
+                "AI Execution Gate Expired",
                 AuditSeverity.NOTICE,
                 AuditEventGroup.COMPLIANCE),
             new AuditEventTypeMetadata(

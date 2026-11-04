@@ -94,7 +94,7 @@ class AuditEventMetadataEndpointIntegrationTest extends AbstractIntegrationTest 
 
   @Test
   void resolvedRowLabelsAreLegalWorded() throws Exception {
-    // Phase 88 625C (D12, R-8): the labels a firm audit-trail read returns — "Fee note" for an
+    // Phase 88 625C (D12, R-8): the labels a firm audit-trail read returns — "Fee note sent" for an
     // invoice.* row and the six legal head mappings for synthesised (unregistered) defaults.
     UUID entityId = UUID.randomUUID();
     String entityType = "legal_label_probe";
@@ -130,7 +130,7 @@ class AuditEventMetadataEndpointIntegrationTest extends AbstractIntegrationTest 
         .andExpect(jsonPath("$.content", hasSize(6)))
         .andExpect(
             jsonPath("$.content[?(@.eventType == 'invoice.sent')].label")
-                .value(hasItem("Fee note")))
+                .value(hasItem("Fee note sent")))
         .andExpect(
             jsonPath("$.content[?(@.eventType == 'project.updated')].label")
                 .value(hasItem("Matter updated")))

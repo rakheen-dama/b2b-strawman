@@ -67,9 +67,11 @@ class AuditEventTypeRegistryTest {
   void invoicePrefixReadsFeeNote() {
     // Phase 88 625C (D12, R-8): stored key invoice.* (ADR-342: storage key, do not rename);
     // the display label is the legal "Fee note". Labels derive at read time, so history relabels.
+    // G88-F17: each published key carries its own "Fee note …" label; the family entry keeps the
+    // bare "Fee note" as the fallback for uncatalogued keys.
     var resolved = registry.resolve("invoice.sent");
     assertThat(resolved.eventType()).isEqualTo("invoice.sent");
-    assertThat(resolved.label()).isEqualTo("Fee note");
+    assertThat(resolved.label()).isEqualTo("Fee note sent");
     assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
     assertThat(resolved.group()).isEqualTo(AuditEventGroup.FINANCIAL);
     assertThat(registry.entries())
@@ -162,7 +164,7 @@ class AuditEventTypeRegistryTest {
         .isEqualTo("Disbursement created");
     assertThat(registry.resolve("project_budget.updated").label())
         .isEqualTo("Matter budget updated");
-    // invoice.* never reaches the default (the prefix entry wins), but the helper maps it too.
+    // invoice.* never reaches the default (an exact or prefix entry wins), but the helper maps it.
     assertThat(AuditEventTypeRegistry.legalLabel("invoice.voided")).isEqualTo("Fee note voided");
     // Unmapped heads: underscores become spaces, sentence case.
     assertThat(registry.resolve("checklist.item.completed").label())
@@ -199,11 +201,13 @@ class AuditEventTypeRegistryTest {
     // + 1 disbursement.restored (exact, Phase 88 Epic 621A — additive ADR-342 key, OQ #10)
     // + 2 invoice.partially_paid / invoice.payment_excess (exact, Phase 88 Epic 622B — additive
     // ADR-342 keys, OQ #10)
-    // + 1 acceptance.declined (exact, Phase 88 Epic 624F — additive ADR-342 key, OQ #10) = 33.
+    // + 1 acceptance.declined (exact, Phase 88 Epic 624F — additive ADR-342 key, OQ #10)
+    // + 16 per-key labels under wildcard families (G88-F17: 11 invoice.*, 2 security.*,
+    // 3 ai.gate.* — exact, same classification as their prefix; stored keys unchanged) = 49.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(33);
+    assertThat(registry.entries()).hasSize(49);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -254,8 +258,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(33);
-    assertThat(registry.entriesMatching(null)).hasSize(33);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(49);
+    assertThat(registry.entriesMatching(null)).hasSize(49);
   }
 
   @Test

@@ -109,7 +109,13 @@ const EVENT_TYPE_FACETS: EventTypeFacet[] = [
     group: "STANDARD",
     count: 9,
   },
-  { eventType: "invoice.sent", label: "Fee note", severity: "INFO", group: "FINANCIAL", count: 3 },
+  {
+    eventType: "invoice.sent",
+    label: "Fee note sent",
+    severity: "INFO",
+    group: "FINANCIAL",
+    count: 3,
+  },
   {
     eventType: "matter_closure.closed",
     label: "Matter closure closed",
@@ -390,6 +396,27 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       /^Checklist item 5831f9d6$/
     );
     expect(screen.queryByText(/invoice 7b7e7dde/)).not.toBeInTheDocument();
+  });
+
+  it("renders the timestamp in South African time whatever the runtime zone (no #418)", async () => {
+    // The table is SSR-rendered on a UTC Node server and hydrated in an SAST browser: a zone-less
+    // formatter printed 23:30 on the server and 01:30 in the browser → React #418 text mismatch.
+    // Rendering under TZ=UTC must give the SAST wall clock.
+    const originalTz = process.env.TZ;
+    process.env.TZ = "UTC";
+    try {
+      mockListAuditEvents.mockResolvedValue({
+        content: [makeEvent({ id: "evt-tz", occurredAt: "2026-11-03T23:30:00Z" })],
+        page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+      });
+
+      await renderTab();
+
+      expect(screen.getByText("04 Nov 2026, 01:30")).toBeInTheDocument();
+      expect(screen.queryByText("03 Nov 2026, 23:30")).not.toBeInTheDocument();
+    } finally {
+      process.env.TZ = originalTz;
+    }
   });
 
   it("toggling a severity chip pushes a URL with the severities param", async () => {

@@ -1,0 +1,71 @@
+## 631B frontend red @ 562cc7d2b 2026-11-04T19:02:23Z (production code untouched; red test only)
+$ cd frontend && NODE_OPTIONS="" pnpm vitest run __tests__/lib/format-compliance-date.test.ts   # default process zone (laptop = Africa/Johannesburg)
+     × renders the South African wall clock 6ms
+     × rolls the year on the SAST calendar 1ms
+     × renders the South African wall clock 2ms
+     × rolls the year on the SAST calendar 1ms
+     × renders the South African wall clock 1ms
+     × rolls the year on the SAST calendar 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=UTC > renders the South African wall clock
+AssertionError: expected '03 Nov 2026, 23:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=UTC > rolls the year on the SAST calendar
+AssertionError: expected '31 Dec 2026, 22:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=Pacific/Kiritimati > renders the South African wall clock
+AssertionError: expected '04 Nov 2026, 13:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=Pacific/Kiritimati > rolls the year on the SAST calendar
+AssertionError: expected '01 Jan 2027, 12:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=America/New_York > renders the South African wall clock
+AssertionError: expected '03 Nov 2026, 18:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=America/New_York > rolls the year on the SAST calendar
+AssertionError: expected '31 Dec 2026, 17:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ Test Files  1 failed (1)
+      Tests  6 failed | 3 passed (9)
+
+$ cd frontend && TZ=UTC NODE_OPTIONS="" pnpm vitest run __tests__/lib/format-compliance-date.test.ts
+     × renders the South African wall clock 5ms
+     × rolls the year on the SAST calendar 1ms
+     × renders the South African wall clock 1ms
+     × rolls the year on the SAST calendar 1ms
+     × renders the South African wall clock 1ms
+     × rolls the year on the SAST calendar 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=UTC > renders the South African wall clock
+AssertionError: expected '03 Nov 2026, 23:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=UTC > rolls the year on the SAST calendar
+AssertionError: expected '31 Dec 2026, 22:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=Pacific/Kiritimati > renders the South African wall clock
+AssertionError: expected '04 Nov 2026, 13:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=Pacific/Kiritimati > rolls the year on the SAST calendar
+AssertionError: expected '01 Jan 2027, 12:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=America/New_York > renders the South African wall clock
+AssertionError: expected '03 Nov 2026, 18:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=America/New_York > rolls the year on the SAST calendar
+AssertionError: expected '31 Dec 2026, 17:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ Test Files  1 failed (1)
+      Tests  6 failed | 3 passed (9)
+
+$ cd frontend && TZ=Pacific/Kiritimati NODE_OPTIONS="" pnpm vitest run __tests__/lib/format-compliance-date.test.ts
+     × renders the South African wall clock 6ms
+     × rolls the year on the SAST calendar 1ms
+     × renders the South African wall clock 1ms
+     × rolls the year on the SAST calendar 1ms
+     × renders the South African wall clock 1ms
+     × rolls the year on the SAST calendar 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=UTC > renders the South African wall clock
+AssertionError: expected '03 Nov 2026, 23:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=UTC > rolls the year on the SAST calendar
+AssertionError: expected '31 Dec 2026, 22:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=Pacific/Kiritimati > renders the South African wall clock
+AssertionError: expected '04 Nov 2026, 13:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=Pacific/Kiritimati > rolls the year on the SAST calendar
+AssertionError: expected '01 Jan 2027, 12:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=America/New_York > renders the South African wall clock
+AssertionError: expected '03 Nov 2026, 18:30' to be '04 Nov 2026, 01:30' // Object.is equality
+ FAIL  __tests__/lib/format-compliance-date.test.ts > formatComplianceDateWithTime under TZ=America/New_York > rolls the year on the SAST calendar
+AssertionError: expected '31 Dec 2026, 17:15' to be '01 Jan 2027, 00:15' // Object.is equality
+ Test Files  1 failed (1)
+      Tests  6 failed | 3 passed (9)
+
+(The TZ=Africa/Johannesburg cases and the invalid-input case pass at HEAD in every invocation; the in-test vi.stubEnv("TZ", …) sweep makes UTC / Pacific/Kiritimati / America/New_York go red whatever the launching zone.)

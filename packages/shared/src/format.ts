@@ -19,7 +19,7 @@
  * @formatjs directly.
  */
 
-import { todayInSA } from "./date";
+import { KAZI_TIME_ZONE, todayInSA } from "./date";
 
 // ---------------------------------------------------------------------------
 // Currency
@@ -125,19 +125,14 @@ export function formatComplianceDate(isoString: string): string {
 }
 
 /**
- * Formats an ISO timestamp with date and time (en-ZA locale).
+ * Formats an ISO timestamp with date and time (en-ZA locale) on the South African wall clock
+ * ("04 Nov 2026, 01:30" for 2026-11-03T23:30Z), whatever the runtime zone — the Next.js SSR
+ * server runs in UTC (C3, ADR-358). Delegates to `formatDateTime`, which pins both locale and
+ * zone; kept as a named compliance helper for its call sites. Returns "" for invalid input.
  * (Staff-app helper, retained.)
  */
 export function formatComplianceDateWithTime(isoString: string): string {
-  const d = new Date(isoString);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return formatDateTime(isoString);
 }
 
 /**
@@ -169,7 +164,7 @@ export function formatDateTime(isoString: string): string {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "Africa/Johannesburg",
+    timeZone: KAZI_TIME_ZONE,
   });
 }
 

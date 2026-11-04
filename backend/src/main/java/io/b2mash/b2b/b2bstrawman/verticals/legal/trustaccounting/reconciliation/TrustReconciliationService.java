@@ -137,20 +137,13 @@ public class TrustReconciliationService {
     UUID memberId = RequestScopes.requireMemberId();
     String fileName = sanitizeFileName(file.getOriginalFilename());
 
-    // Read file bytes so we can use them for both S3 upload and parsing
+    // Read file bytes so we can use them for both parsing and S3 upload
     byte[] fileBytes;
     try {
       fileBytes = file.getBytes();
     } catch (IOException e) {
       throw new BankStatementParseException("Failed to read uploaded file", e);
     }
-
-    // Store file in S3. G88-F33: a fresh uuid segment per import, so a re-import of a same-named
-    // file (banks export fixed names such as statement.csv) never overwrites the earlier raw file.
-    String s3Key =
-        "trust-statements/%s/%s/%s/%s"
-            .formatted(tenantSchema, accountId, UUID.randomUUID(), fileName);
-    storageService.upload(s3Key, fileBytes, file.getContentType());
 
     // Detect format: read first line for header detection
     String headerLine = readFirstLine(fileBytes);
@@ -175,6 +168,14 @@ public class TrustReconciliationService {
     } catch (IOException e) {
       throw new BankStatementParseException("Failed to parse bank statement file", e);
     }
+
+    // Store file in S3 only after a successful parse, so a rejected import leaves no orphaned
+    // object. G88-F33: a fresh uuid segment per import, so a re-import of a same-named file (banks
+    // export fixed names such as statement.csv) never overwrites the earlier raw file.
+    String s3Key =
+        "trust-statements/%s/%s/%s/%s"
+            .formatted(tenantSchema, accountId, UUID.randomUUID(), fileName);
+    storageService.upload(s3Key, fileBytes, file.getContentType());
 
     // Determine format label from parser class name
     String format = detectFormat(matchedParser);

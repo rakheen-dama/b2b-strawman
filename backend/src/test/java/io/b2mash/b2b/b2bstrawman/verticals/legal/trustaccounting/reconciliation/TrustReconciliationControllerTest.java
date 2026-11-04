@@ -304,6 +304,35 @@ class TrustReconciliationControllerTest {
         .isEqualTo(aprilCsv);
   }
 
+  /**
+   * G88-F33 follow-up: the raw file is stored only after a successful parse. A rejected import must
+   * not leave an orphaned object under the account's prefix — with a per-import uuid key, every
+   * failed retry would otherwise retain another copy.
+   */
+  @Test
+  void importBankStatement_parseFailure_storesNoFile() throws Exception {
+    String accountId = createIsolatedTrustAccount();
+    var malformedCsv =
+        """
+        Date,Description,Amount,Balance
+        not-a-date,Garbage row,not-a-number,also-not-a-number
+        still-not-a-date,Another garbage row,xyz,abc
+        """;
+    var csvFile =
+        new MockMultipartFile(
+            "file", "malformed.csv", "text/csv", malformedCsv.getBytes(StandardCharsets.UTF_8));
+
+    mockMvc
+        .perform(
+            multipart("/api/trust-accounts/{accountId}/bank-statements", accountId)
+                .file(csvFile)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
+        .andExpect(status().isInternalServerError());
+
+    assertThat(storageService.listKeys("trust-statements/" + tenantSchema + "/" + accountId + "/"))
+        .isEmpty();
+  }
+
   private String importSameNamedStatement(String csv) throws Exception {
     var csvFile =
         new MockMultipartFile(

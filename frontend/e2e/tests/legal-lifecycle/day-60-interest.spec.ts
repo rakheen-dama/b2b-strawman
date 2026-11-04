@@ -2,8 +2,9 @@
  * Day 60 — Interest Run & Investments
  *
  * Interest run on the trust account: create the run for the last 30 days and calculate the
- * per-client allocations at the Day 0 LPFF rate (6.5%, 50% LPFF share); approval by a second member
- * and posting are covered by the `628E-BLOCKER` test below. Investments: Moroka R200,000 Standard
+ * per-client allocations at the Day 0 LPFF rate (6.5%, 50% LPFF share). The creator cannot approve
+ * her own run (two-member rule): Bob approves it from the runs table's Actions column and Alice
+ * posts it (Phase 89 630B, G88-F39). Investments: Moroka R200,000 Standard
  * Bank fixed deposit (firm surplus funds, s86(3)) and QuickCollect R30,000 Nedbank call account
  * (client instruction, s86(4)). Second billing cycle (new Sipho time → fee note), timesheet report
  * and profitability report.
@@ -130,7 +131,10 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
       await expect(row).toContainText("Arrangement");
     }
 
-    await wizard.getByRole("button", { name: "Approve", exact: true }).click();
+    // The run's creator reviews (never approves) her own run — 630B hides self-approval via
+    // MyCapabilitiesResponse.memberId
+    await expect(wizard.getByRole("button", { name: "Approve", exact: true })).toHaveCount(0);
+    await wizard.getByRole("button", { name: "Review", exact: true }).click();
     await expect(wizard).toContainText("Step 3 of 4");
     await expect(wizard.getByRole("heading", { name: "Interest Run Totals" })).toBeVisible();
     for (const total of ["Total Interest", "LPFF Share", "Client Share"]) {
@@ -141,46 +145,63 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     await captureScreenshot(page, "day-60-interest-lpff-calculated");
     await captureScreenshot(page, "interest-run-lpff-split", { curated: true });
 
-    // The run's creator cannot approve it
-    await wizard.getByRole("button", { name: "Approve Run" }).click();
-    await expect(wizard).toContainText("The interest run creator cannot approve their own", {
-      timeout: 15_000,
-    });
+    // The run's creator cannot approve it: Approve Run is disabled client-side and the backend
+    // still refuses self-approval (InterestService.approveInterestRun)
+    await expect(wizard.getByRole("button", { name: "Approve Run" })).toBeDisabled();
+    await expect(wizard.getByTestId("interest-run-awaiting-approval")).toHaveText(
+      "Awaiting approval by another member"
+    );
     await page.keyboard.press("Escape");
     await expect(wizard).toBeHidden();
 
-    // The calculated run is listed as a DRAFT
+    // The calculated run persists as a Draft awaiting a second member (G88-F39)
     await page.reload();
     const run = page.getByTestId("interest-runs-table").locator('[data-testid^="run-row-"]');
     await expect(run).toHaveCount(1, { timeout: 15_000 });
-    await expect(run).toContainText("DRAFT");
+    await expect(run.getByTestId("run-status")).toHaveText("Draft");
+    await expect(run.getByRole("button", { name: "Review", exact: true })).toBeVisible();
+    await expect(run.getByRole("button", { name: "Review & approve" })).toHaveCount(0);
+    await expect(run).toContainText("Awaiting approval by another member");
+    await expect(run.getByRole("button", { name: "Delete draft" })).toBeVisible();
   });
 
-  test("Bob: Approve and post the interest run to the client ledgers", async ({ page }) => {
-    test.fixme(
-      true,
-      "628E-BLOCKER: a DRAFT interest run cannot be approved by a second member — the run wizard is session-local (components/trust/InterestRunWizard.tsx:173) and the runs table has no actions (app/(app)/org/[slug]/trust-accounting/interest/page.tsx:135-186), while the creator's own approval is refused (backend/.../trustaccounting/interest/InterestService.java:455)"
-    );
-    // The intended flow once a second member can open a DRAFT run (the blocker above): Bob opens
-    // Alice's calculated run, approves it (Step 3) and posts it to the client ledgers (Step 4).
+  test("Bob: Review & approve Alice's interest run as the second member", async ({ page }) => {
     await loginAs(page, "bob");
     await page.goto(`${BASE}/trust-accounting/interest`);
     const run = page.getByTestId("interest-runs-table").locator('[data-testid^="run-row-"]');
     await expect(run).toHaveCount(1, { timeout: 15_000 });
-    await expect(run).toContainText("DRAFT");
-    // No such control exists today — the product fix decides its name; adjust this locator then
-    await run.getByRole("button", { name: /Review|Open/ }).click();
+    await expect(run.getByTestId("run-status")).toHaveText("Draft");
+    await run.getByRole("button", { name: "Review & approve" }).click();
     const wizard = page.getByTestId("interest-run-wizard");
     await expect(wizard).toContainText("Step 3 of 4", { timeout: 15_000 });
     await wizard.getByRole("button", { name: "Approve Run" }).click();
     await expect(wizard).toContainText("Step 4 of 4", { timeout: 15_000 });
     await expect(wizard.getByRole("heading", { name: "Approved Interest Run" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(wizard).toBeHidden();
+
+    // The table behind the wizard refreshed: Approved, no Delete draft, Post offered
+    await expect(run.getByTestId("run-status")).toHaveText("Approved", { timeout: 15_000 });
+    await expect(run.getByRole("button", { name: "Delete draft" })).toHaveCount(0);
+    await expect(run.getByRole("button", { name: "Post", exact: true })).toBeVisible();
+  });
+
+  test("Alice: Post the approved interest run to the client ledgers", async ({ page }) => {
+    await loginAs(page, "alice");
+    await page.goto(`${BASE}/trust-accounting/interest`);
+    const run = page.getByTestId("interest-runs-table").locator('[data-testid^="run-row-"]');
+    await expect(run).toHaveCount(1, { timeout: 15_000 });
+    await expect(run.getByTestId("run-status")).toHaveText("Approved");
+    await run.getByRole("button", { name: "Post", exact: true }).click();
+    const wizard = page.getByTestId("interest-run-wizard");
+    await expect(wizard).toContainText("Step 4 of 4", { timeout: 15_000 });
     await wizard.getByRole("button", { name: "Post to Ledger" }).click();
     await expect(wizard).toBeHidden({ timeout: 15_000 });
 
-    // The run is POSTED with a posted date …
-    await expect(run).toContainText("POSTED", { timeout: 15_000 });
-    await expect(run.getByRole("cell").last()).not.toHaveText("—");
+    // The run is Posted with a posted date and no further actions …
+    await expect(run.getByTestId("run-status")).toHaveText("Posted", { timeout: 15_000 });
+    await expect(run.getByTestId("run-posted-at")).not.toHaveText("—");
+    await expect(run.getByRole("button")).toHaveCount(0);
     // … and each allocated client (Moroka, QuickCollect) has an Interest Credit on the trust ledger
     await openTrustTransactions(page);
     await expect(

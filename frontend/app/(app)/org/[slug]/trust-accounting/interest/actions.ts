@@ -59,6 +59,19 @@ export async function postInterestRun(
   }
 }
 
+/** Deletes a mistaken DRAFT run and its allocations (630B, founder ruling §9.2). */
+export async function deleteInterestRun(
+  runId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await api.delete(`/api/interest-runs/${runId}`);
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to delete interest run";
+    return { success: false, error: message };
+  }
+}
+
 export async function fetchInterestRunDetail(
   runId: string
 ): Promise<{ run: InterestRun; allocations: InterestAllocation[] }> {

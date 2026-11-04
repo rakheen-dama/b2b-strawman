@@ -9,6 +9,8 @@ export interface MyCapabilitiesResponse {
   role: string;
   isAdmin: boolean;
   isOwner: boolean;
+  /** The caller's members.id — what the backend compares for self-approval (630B). */
+  memberId: string;
 }
 
 // ---- API Functions ----

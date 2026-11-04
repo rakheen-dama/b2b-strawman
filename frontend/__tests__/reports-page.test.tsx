@@ -133,6 +133,7 @@ describe("ReportsPage", () => {
       role: "Member",
       isAdmin: false,
       isOwner: false,
+      memberId: "member-1",
     } as Awaited<ReturnType<typeof fetchMyCapabilities>>);
     await renderPage();
 

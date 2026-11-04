@@ -363,6 +363,7 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
         isOwner: false,
         role: "member",
         capabilities: ["APPROVE_DISBURSEMENTS"],
+        memberId: "member-1",
       });
       const result = await call();
       expect(mockPost).not.toHaveBeenCalled();

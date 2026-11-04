@@ -109,7 +109,7 @@ public class OrgRoleService {
     boolean isAdmin = "admin".equals(orgRole);
     boolean isOwner = "owner".equals(orgRole);
 
-    return new MyCapabilitiesResponse(capabilities, roleName, isAdmin, isOwner);
+    return new MyCapabilitiesResponse(capabilities, roleName, isAdmin, isOwner, memberId);
   }
 
   @Transactional(readOnly = true)

@@ -480,6 +480,13 @@ public class InvoiceCreationService {
           "Fee note not editable", "Line items can only be added to draft fee notes");
     }
 
+    // G88-M10: a line added without an explicit sortOrder goes after the existing lines (the
+    // max + 1 rule of appendDisbursementLinesToInvoice); defaulting to 0 tied it with line one.
+    int sortOrder =
+        request.sortOrder() != null
+            ? request.sortOrder()
+            : lineRepository.findMaxSortOrderByInvoiceId(invoiceId).orElse(-1) + 1;
+
     InvoiceLine line;
 
     if (request.tariffItemId() != null) {
@@ -500,7 +507,6 @@ public class InvoiceCreationService {
       BigDecimal unitPrice =
           (request.unitPrice() != null) ? request.unitPrice() : tariffItem.getAmount();
 
-      int sortOrder = request.sortOrder() != null ? request.sortOrder() : 0;
       line =
           new InvoiceLine(
               invoiceId,
@@ -522,7 +528,6 @@ public class InvoiceCreationService {
         throw new InvalidStateException(
             "Unit price required", "Manual line items require a unit price");
       }
-      int sortOrder = request.sortOrder() != null ? request.sortOrder() : 0;
       line =
           new InvoiceLine(
               invoiceId,

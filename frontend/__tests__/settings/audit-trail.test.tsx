@@ -415,8 +415,21 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       expect(screen.getByText("04 Nov 2026, 01:30")).toBeInTheDocument();
       expect(screen.queryByText("03 Nov 2026, 23:30")).not.toBeInTheDocument();
     } finally {
-      process.env.TZ = originalTz;
+      if (originalTz === undefined) delete process.env.TZ;
+      else process.env.TZ = originalTz;
     }
+  });
+
+  it("renders the total count with the en-ZA separator whatever the runtime locale (no #418)", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [makeEvent({ id: "evt-count" })],
+      page: { totalElements: 1234, totalPages: 25, size: 50, number: 0 },
+    });
+
+    await renderTab();
+
+    // en-ZA groups thousands with a (narrow) no-break space; a runtime-default en-US "1,234" must not match.
+    expect(screen.getByText(/^1[\s  ]234 total$/)).toBeInTheDocument();
   });
 
   it("toggling a severity chip pushes a URL with the severities param", async () => {

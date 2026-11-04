@@ -891,7 +891,7 @@ export function AuditLogClient({
           <CardTitle className="text-base">
             Events
             <span className="ml-2 font-mono text-xs font-normal text-slate-500">
-              {page.totalElements.toLocaleString()} total
+              {page.totalElements.toLocaleString("en-ZA")} total
             </span>
             {isPending && <span className="ml-2 text-xs text-slate-400">Loading…</span>}
           </CardTitle>

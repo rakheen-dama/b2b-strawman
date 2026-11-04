@@ -32,6 +32,7 @@ import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -813,40 +814,74 @@ public class NotificationService {
 
   // --- @mention resolution ---
 
-  /** Regex matching {@code @FirstName} or {@code @FirstName LastName} in comment text. */
-  private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+(?:\\s+\\w+)?)");
+  /**
+   * Matches {@code @Word} with an optional second word on the same line, so {@code @FirstName} and
+   * {@code @FirstName LastName} can both be tried. The {@code @} must open the text or follow
+   * whitespace, so an email address ({@code info@bob.co.za}) is not a mention. Word characters are
+   * Unicode ({@code @Zoë}). The optional second word cannot start with {@code @}, so in {@code @Bob
+   * and @Carol} the next {@code find()} still reaches {@code @Carol}.
+   */
+  private static final Pattern MENTION_PATTERN =
+      Pattern.compile("(?<!\\S)@(\\w+)(?:[ \\t]+(\\w+))?", Pattern.UNICODE_CHARACTER_CLASS);
+
+  private record Mention(String firstWord, String secondWord) {}
+
+  private record MentionableMember(UUID id, String fullNameLower, String firstNameLower) {}
 
   /**
-   * Parses {@code @Name} patterns from the comment body and resolves them to member IDs by matching
-   * against org member names (case-insensitive first-name or full-name match).
+   * Parses {@code @Name} mentions from the comment body and resolves them to member IDs
+   * (case-insensitive). For each mention the two-word full name ({@code @Bob Ndlovu}) is tried
+   * first; if no member has that full name, the first word alone is matched against members' first
+   * names and single-word full names, so {@code @Bob please review} still resolves Bob (G88-F36).
+   * Every member a mention matches is included (two members named Bob are both notified by
+   * {@code @Bob}).
    */
   Set<UUID> resolveMentionedMemberIds(String body) {
-    var mentionTokens = new HashSet<String>();
+    var mentions = new ArrayList<Mention>();
     Matcher matcher = MENTION_PATTERN.matcher(body);
     while (matcher.find()) {
-      mentionTokens.add(matcher.group(1).toLowerCase());
+      mentions.add(new Mention(lower(matcher.group(1)), lower(matcher.group(2))));
     }
-    if (mentionTokens.isEmpty()) {
+    if (mentions.isEmpty()) {
       return Set.of();
     }
 
     // TODO: Replace findAll() with a targeted query once Member has separate firstName/lastName
     // columns. Currently, first-name matching requires splitting the full `name` field in Java,
     // which prevents a pure SQL solution.
-    var allMembers = memberRepository.findAll();
+    var members =
+        memberRepository.findAll().stream()
+            .filter(member -> member.getName() != null && !member.getName().isBlank())
+            .map(
+                member -> {
+                  var nameWords = member.getName().trim().split("\\s+");
+                  return new MentionableMember(
+                      member.getId(), lower(String.join(" ", nameWords)), lower(nameWords[0]));
+                })
+            .toList();
+
     var matched = new HashSet<UUID>();
-    for (var member : allMembers) {
-      if (member.getName() == null) continue;
-      String fullNameLower = member.getName().toLowerCase();
-      String firstNameLower = member.getName().split("\\s+")[0].toLowerCase();
-      for (var token : mentionTokens) {
-        if (token.equals(firstNameLower) || token.equals(fullNameLower)) {
-          matched.add(member.getId());
-          break;
+    for (var mention : mentions) {
+      String firstWord = mention.firstWord();
+      String secondWord = mention.secondWord();
+      if (secondWord != null) {
+        String fullName = firstWord + " " + secondWord;
+        var fullNameMatches =
+            members.stream().filter(m -> m.fullNameLower().equals(fullName)).toList();
+        if (!fullNameMatches.isEmpty()) {
+          fullNameMatches.forEach(m -> matched.add(m.id()));
+          continue;
         }
       }
+      members.stream()
+          .filter(m -> m.firstNameLower().equals(firstWord) || m.fullNameLower().equals(firstWord))
+          .forEach(m -> matched.add(m.id()));
     }
     return matched;
+  }
+
+  private static String lower(String value) {
+    return value == null ? null : value.toLowerCase(Locale.ROOT);
   }
 
   // --- Private helpers ---

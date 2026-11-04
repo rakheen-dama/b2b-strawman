@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportPackSeeder;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -66,7 +67,7 @@ class PackInstallBackfillTest {
                   "legal-za-customer", "2",
                   "legal-za-project", "3")),
           PackType.REPORT,
-          new TreeMap<>(Map.of("standard-reports", "2")),
+          new TreeMap<>(Map.of("standard-reports", "2", "trust-reports", "1")),
           PackType.REQUEST,
           new TreeMap<>(
               Map.of(
@@ -85,6 +86,7 @@ class PackInstallBackfillTest {
   @Autowired private ClausePackSeeder clausePackSeeder;
   @Autowired private RequestPackSeeder requestPackSeeder;
   @Autowired private StandardReportPackSeeder standardReportPackSeeder;
+  @Autowired private TrustReportPackSeeder trustReportPackSeeder;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private PackCatalogService packCatalogService;
   @Autowired private PackInstallService packInstallService;
@@ -212,7 +214,7 @@ class PackInstallBackfillTest {
           .as("backfilled at the OrgSettings-recorded versions")
           .isEqualTo(EXPECTED_LEGAL_ZA_LEDGER);
       Map<String, UUID> firstIds = legalLedgerIds();
-      assertThat(firstIds).hasSize(12);
+      assertThat(firstIds).hasSize(13);
 
       runLegalSeeders();
       assertThat(legalLedger())
@@ -283,6 +285,7 @@ class PackInstallBackfillTest {
     fieldPackSeeder.seedPacksForTenant(legalSchema, LEGAL_ORG_ID);
     clausePackSeeder.seedPacksForTenant(legalSchema, LEGAL_ORG_ID);
     standardReportPackSeeder.seedForTenant(legalSchema, LEGAL_ORG_ID);
+    trustReportPackSeeder.seedForTenant(legalSchema, LEGAL_ORG_ID);
     requestPackSeeder.seedPacksForTenant(legalSchema, LEGAL_ORG_ID);
   }
 

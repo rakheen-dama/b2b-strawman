@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getReportDefinitions } from "@/lib/api/reports";
+import { hasCapability } from "@/lib/dashboard-home";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 
 // -- Page -----------------------------------------------------------------
@@ -23,23 +24,26 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
     notFound();
   }
 
-  // Capability check
+  // Capability check — VIEW_TRUST gates the page, FINANCIAL_VISIBILITY gates the data
+  // (/api/report-definitions is FINANCIAL_VISIBILITY; architecture §14.6.6).
   const capData = await fetchMyCapabilities();
-  const hasViewTrust =
-    capData.isAdmin || capData.isOwner || capData.capabilities.includes("VIEW_TRUST");
-  if (!hasViewTrust) {
+  if (!hasCapability(capData, "VIEW_TRUST")) {
     notFound();
   }
+  const canReadReports = hasCapability(capData, "FINANCIAL_VISIBILITY");
 
-  // Fetch report definitions and filter to TRUST category
+  // Fetch report definitions and filter to TRUST category. Without FINANCIAL_VISIBILITY no request
+  // is made, so an expected condition never logs a 403 access-denied event.
   let trustReports: { slug: string; name: string; description: string }[] = [];
   let fetchError = false;
-  try {
-    const data = await getReportDefinitions();
-    const trustCategory = data.categories.find((c) => c.category === "TRUST");
-    trustReports = trustCategory?.reports ?? [];
-  } catch {
-    fetchError = true;
+  if (canReadReports) {
+    try {
+      const data = await getReportDefinitions();
+      const trustCategory = data.categories.find((c) => c.category === "TRUST");
+      trustReports = trustCategory?.reports ?? [];
+    } catch {
+      fetchError = true;
+    }
   }
 
   return (
@@ -51,6 +55,17 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
           Generate and download trust accounting reports
         </p>
       </div>
+
+      {/* Financial visibility required */}
+      {!canReadReports && (
+        <Card data-testid="trust-reports-financial-visibility-required">
+          <CardContent className="py-10 text-center">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Trust reports need financial visibility. Ask an owner or admin to grant it.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Error State */}
       {fetchError && (
@@ -64,7 +79,7 @@ export default async function TrustReportsPage({ params }: { params: Promise<{ s
       )}
 
       {/* Empty State */}
-      {!fetchError && trustReports.length === 0 && (
+      {canReadReports && !fetchError && trustReports.length === 0 && (
         <Card>
           <CardContent className="py-10 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">

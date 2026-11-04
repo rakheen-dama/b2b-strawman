@@ -33,6 +33,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportPackSeeder;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -66,6 +67,7 @@ class TenantProvisioningServiceTest {
   @Mock private ClausePackSeeder clausePackSeeder;
   @Mock private CompliancePackSeeder compliancePackSeeder;
   @Mock private StandardReportPackSeeder standardReportPackSeeder;
+  @Mock private TrustReportPackSeeder trustReportPackSeeder;
   @Mock private RequestPackSeeder requestPackSeeder;
   @Mock private ProjectTemplatePackSeeder projectTemplatePackSeeder;
   @Mock private LegalTariffSeeder legalTariffSeeder;
@@ -411,6 +413,7 @@ class TenantProvisioningServiceTest {
     // Verify other seeders are still called directly
     verify(fieldPackSeeder).seedPacksForTenant(anyString(), eq("org_pipeline"));
     verify(clausePackSeeder).seedPacksForTenant(anyString(), eq("org_pipeline"));
+    verify(trustReportPackSeeder).seedForTenant(anyString(), eq("org_pipeline"));
   }
 
   @Test

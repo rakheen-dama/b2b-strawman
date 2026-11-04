@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileReconciliationSeeder;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportPackSeeder;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * {@code PackInstaller}s gate DOCUMENT_TEMPLATE / AUTOMATION_TEMPLATE via {@code internalInstall}).
  * Tenants provisioned before Epic 625E get their CLAUSE / FIELD / REPORT / REQUEST ledger rows
  * backfilled from the OrgSettings pack-status lists on the first pass. Order matters: templates
- * before clauses (clause associations reference template rows).
+ * before clauses (clause associations reference template rows). The Section 35 trust-reports pack
+ * (Phase 89 630A) reaches every existing legal-za tenant through this runner on the first boot
+ * after it shipped (architecture §14.7.5).
  *
  * <p>Ordered after TenantMigrationRunner ({@code @Order(50)}) to ensure schemas are fully migrated
  * before seeding.
@@ -54,6 +57,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final ClausePackSeeder clausePackSeeder;
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
+  private final TrustReportPackSeeder trustReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
@@ -70,6 +74,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
       ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
+      TrustReportPackSeeder trustReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       LegalTariffSeeder legalTariffSeeder,
@@ -84,6 +89,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
     this.clausePackSeeder = clausePackSeeder;
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
+    this.trustReportPackSeeder = trustReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
@@ -138,6 +144,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
     clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
     compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
     standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
+    trustReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
     requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
     installPacksViaPipeline(schemaName, PackType.AUTOMATION_TEMPLATE);
     projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);

@@ -10,7 +10,7 @@ import {
 import { api, ApiError } from "@/lib/api";
 import { listMatters } from "@/lib/api/matters";
 import { listClients } from "@/lib/api/clients";
-import type { OrgMember } from "@/lib/types";
+import type { OrgMember, TrustAccount } from "@/lib/types";
 
 interface ActionResult<T> {
   data: T | null;
@@ -103,6 +103,23 @@ export async function fetchEntityOptionsAction(
       const customers = await listClients();
       return {
         data: customers.map((c) => ({ id: c.id, label: c.name })),
+      };
+    }
+    if (type === "trustaccount") {
+      // Section 35 trust_account_id parameter (630A); GET /api/trust-accounts is VIEW_TRUST.
+      const accounts = await api.get<TrustAccount[]>("/api/trust-accounts");
+      return {
+        data: accounts.map((a) => {
+          // Name + bank need not be unique, so the label carries a masked account-number suffix
+          // (the picker trigger shows only `label`). Never expose the full number.
+          const accountNumber = a.accountNumber?.trim() ?? "";
+          const maskedSuffix = accountNumber.length > 4 ? ` ••••${accountNumber.slice(-4)}` : "";
+          return {
+            id: a.id,
+            label: `${a.accountName}${maskedSuffix}`,
+            secondaryLabel: a.bankName,
+          };
+        }),
       };
     }
     return { data: null, error: `Unknown entity type: ${entityType}` };

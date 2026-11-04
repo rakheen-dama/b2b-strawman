@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileReconciliationSeeder;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportPackSeeder;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,7 @@ public class TenantProvisioningService {
   private final ClausePackSeeder clausePackSeeder;
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
+  private final TrustReportPackSeeder trustReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
@@ -95,6 +97,7 @@ public class TenantProvisioningService {
       ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
+      TrustReportPackSeeder trustReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       LegalTariffSeeder legalTariffSeeder,
@@ -114,6 +117,7 @@ public class TenantProvisioningService {
     this.clausePackSeeder = clausePackSeeder;
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
+    this.trustReportPackSeeder = trustReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
@@ -235,6 +239,7 @@ public class TenantProvisioningService {
             clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
             compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
             standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
+            trustReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
             requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
             installPacksViaPipeline(schemaName, verticalProfile, PackType.AUTOMATION_TEMPLATE);
             projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);

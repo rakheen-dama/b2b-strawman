@@ -116,14 +116,6 @@ test.describe.serial("Day 90 — Quarter Review", () => {
 
   // ── 90.8-90.11: Section 35 Data Pack ──────────────────────────────
   test("Alice: Generate Section 35 Data Pack report", async ({ page }) => {
-    // 628E-BLOCKER (reproduced 2026-10-29 on :3001): Trust → Reports says "No trust reports
-    // available" — the tenant has only the timesheet / invoice-aging / project-profitability report
-    // definitions, because TrustReportPackSeeder.seedForTenant is never called (no caller in
-    // backend/src/main), so the Section 35 data pack card does not exist.
-    test.fixme(
-      true,
-      "628E-BLOCKER: no trust report definitions are seeded (Section 35 data pack missing) — backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/report/TrustReportPackSeeder.java:38 seedForTenant has no caller"
-    );
     await loginAs(page, "alice");
     await page.goto(`${BASE}/trust-accounting/reports`);
     await expect(page.getByTestId("trust-reports-page")).toBeVisible({ timeout: 15_000 });
@@ -139,6 +131,13 @@ test.describe.serial("Day 90 — Quarter Review", () => {
     await expect(page.getByRole("button", { name: "Export CSV" })).toBeEnabled({
       timeout: 15_000,
     });
+    // A rendered result (630A / G88-F40): the Section / Item / Amount table with at least one data
+    // row — the trust account carries the earlier days' deposits and client balances.
+    const results = page.getByRole("table");
+    await expect(results.getByRole("columnheader", { name: "Section", exact: true })).toBeVisible();
+    await expect(results.getByRole("columnheader", { name: "Item", exact: true })).toBeVisible();
+    await expect(results.getByRole("columnheader", { name: "Amount", exact: true })).toBeVisible();
+    await expect(results.getByRole("row").nth(1)).toBeVisible();
 
     // Screenshot: Section 35 report
     await captureScreenshot(page, "day-90-section-35-generated");

@@ -85,8 +85,9 @@ class AuditEventTypeRegistryTest {
 
   /**
    * Keys a publisher actually emits under a wildcard family (grep of {@code .eventType("...")}):
-   * invoice.* from InvoiceCreationService / InvoiceTransitionService, security.* from
-   * GlobalExceptionHandler / DocumentService, ai.gate.* from AiExecutionGateService.
+   * invoice.* from InvoiceCreationService / InvoiceTransitionService / PaymentReceiptService,
+   * security.* from GlobalExceptionHandler / DocumentService, ai.gate.* from
+   * AiExecutionGateService.
    */
   private static final List<String> PUBLISHED_WILDCARD_FAMILY_KEYS =
       List.of(
@@ -103,6 +104,7 @@ class AuditEventTypeRegistryTest {
           "invoice.payment_reversed",
           "invoice.payment_partially_reversed",
           "invoice.voided",
+          "invoice.receipt_generated",
           "security.access_denied",
           "security.document_accessed",
           "ai.gate.created",
@@ -203,11 +205,12 @@ class AuditEventTypeRegistryTest {
     // ADR-342 keys, OQ #10)
     // + 1 acceptance.declined (exact, Phase 88 Epic 624F — additive ADR-342 key, OQ #10)
     // + 16 per-key labels under wildcard families (G88-F17: 11 invoice.*, 2 security.*,
-    // 3 ai.gate.* — exact, same classification as their prefix; stored keys unchanged) = 49.
+    // 3 ai.gate.* — exact, same classification as their prefix; stored keys unchanged)
+    // + 1 invoice.receipt_generated (exact, Phase 89 632B — additive ADR-342 key) = 50.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(49);
+    assertThat(registry.entries()).hasSize(50);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -258,8 +261,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(49);
-    assertThat(registry.entriesMatching(null)).hasSize(49);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(50);
+    assertThat(registry.entriesMatching(null)).hasSize(50);
   }
 
   @Test

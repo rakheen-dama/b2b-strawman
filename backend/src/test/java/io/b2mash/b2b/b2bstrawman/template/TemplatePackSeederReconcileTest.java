@@ -165,7 +165,7 @@ class TemplatePackSeederReconcileTest {
    */
   @Test
   void shippedPack_reconcileBlock_takesEachPriorBodyToTheShippedBody() {
-    assertThat(shippedPack.version()).isEqualTo(11);
+    assertThat(shippedPack.version()).isEqualTo(12);
     var entries = PackReconcileEntry.parse(PACK_ID, shippedPack.reconcile());
     var expectedKeys = new ArrayList<>(RECONCILED_KEYS);
     expectedKeys.addAll(V9_EDITED_KEYS);

@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 11,
+  "version": 12,
   "reconcile": [
     {
       "entity": "document_template",
@@ -364,6 +364,17 @@
       "cssFile": null,
       "description": "Client-facing fee note with itemised fees and disbursements, VAT breakdown, matter reference, and totals.",
       "sortOrder": 17,
+      "acceptanceEligible": false
+    },
+    {
+      "templateKey": "payment-receipt-za",
+      "name": "Payment Receipt",
+      "category": "OTHER",
+      "primaryEntityType": "INVOICE",
+      "contentFile": "payment-receipt-za.json",
+      "cssFile": null,
+      "description": "Client-facing receipt for one payment on a fee note, with the payments to date and the balance due.",
+      "sortOrder": 18,
       "acceptanceEligible": false
     }
   ]

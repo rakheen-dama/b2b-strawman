@@ -122,7 +122,8 @@ class LegalPackSeederIntegrationTest {
                   // offer-to-purchase, deed-of-transfer, power-of-attorney-to-pass-transfer,
                   // bond-cancellation-instruction.
                   // LZKC-012 added fee-note-za (17th template).
-                  assertThat(legalTemplates).hasSize(17);
+                  // Phase 89 632B added payment-receipt-za (18th template).
+                  assertThat(legalTemplates).hasSize(18);
                   assertThat(legalTemplates)
                       .extracting(t -> t.getSlug())
                       .contains(

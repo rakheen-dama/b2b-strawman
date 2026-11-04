@@ -70,6 +70,7 @@ public class InvoiceTransitionService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final TaxCalculationService taxCalculationService;
   private final InvoiceRenderingService invoiceRenderingService;
+  private final PaymentReceiptService paymentReceiptService;
   private final Clock clock;
 
   public InvoiceTransitionService(
@@ -88,6 +89,7 @@ public class InvoiceTransitionService {
       OrgSettingsRepository orgSettingsRepository,
       TaxCalculationService taxCalculationService,
       InvoiceRenderingService invoiceRenderingService,
+      PaymentReceiptService paymentReceiptService,
       Clock clock) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
@@ -104,6 +106,7 @@ public class InvoiceTransitionService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.taxCalculationService = taxCalculationService;
     this.invoiceRenderingService = invoiceRenderingService;
+    this.paymentReceiptService = paymentReceiptService;
     this.clock = clock;
   }
 
@@ -391,9 +394,12 @@ public class InvoiceTransitionService {
     }
 
     // The event always records the real amount (an external overpayment included).
-    paymentEventRepository.save(
-        PaymentEvent.completed(
-            invoiceId, invoice.getCurrency(), invoice.getPaymentDestination(), effective));
+    // Phase 89 632B (R7.4): the saved id rides on the paid events so the receipt listener can key
+    // the receipt to exactly this payment.
+    var saved =
+        paymentEventRepository.save(
+            PaymentEvent.completed(
+                invoiceId, invoice.getCurrency(), invoice.getPaymentDestination(), effective));
 
     invoice.applyPayment(effective.amount(), effective.reference());
     invoice = invoiceRepository.save(invoice);
@@ -418,6 +424,7 @@ public class InvoiceTransitionService {
     details.put("payment_method", effective.method().name());
     details.put("balance_due", invoice.getBalanceDue().toPlainString());
     details.put("total", invoice.getTotal().toString());
+    details.put("payment_event_id", saved.getId().toString());
     if (paid) {
       details.put("paid_at", invoice.getPaidAt().toString());
     }
@@ -471,7 +478,9 @@ public class InvoiceTransitionService {
                   "payment_reference",
                   reference,
                   "total",
-                  invoice.getTotal().toString()),
+                  invoice.getTotal().toString(),
+                  "payment_event_id",
+                  saved.getId().toString()),
               invoice.getCreatedBy(),
               invoice.getInvoiceNumber(),
               invoice.getCustomerName(),
@@ -498,7 +507,9 @@ public class InvoiceTransitionService {
                   "amount",
                   effective.amount().toPlainString(),
                   "balance_due",
-                  invoice.getBalanceDue().toPlainString()),
+                  invoice.getBalanceDue().toPlainString(),
+                  "payment_event_id",
+                  saved.getId().toString()),
               invoice.getCreatedBy(),
               invoice.getInvoiceNumber(),
               invoice.getCustomerName(),
@@ -643,8 +654,17 @@ public class InvoiceTransitionService {
     }
 
     var amount = paymentEvent.getAmount();
+    // Phase 89 632B (R6.2): a void receipt must not stay downloadable. Capture the receipt before
+    // the event row goes, then delete the receipt document (row now, stored object after commit) —
+    // joining this (trust) transaction. invoices.receipt_sequence is never decremented, so the
+    // reversed receipt's number is never reissued; the reversal audit row records it.
+    UUID receiptDocumentId = paymentEvent.getReceiptGeneratedDocumentId();
+    String receiptNumber = paymentEvent.getReceiptNumber();
     paymentEventRepository.delete(paymentEvent);
     paymentEventRepository.flush();
+    if (receiptDocumentId != null) {
+      paymentReceiptService.deleteReceiptDocument(receiptDocumentId);
+    }
 
     // newest first, so the first non-null reference is the latest remaining one
     var remainingCompleted =
@@ -688,7 +708,9 @@ public class InvoiceTransitionService {
               .eventType("invoice.payment_reversed")
               .entityType("invoice")
               .entityId(invoice.getId())
-              .details(buildReversalAuditDetails(invoice, paymentEventId, projectId, amount, false))
+              .details(
+                  buildReversalAuditDetails(
+                      invoice, paymentEventId, projectId, amount, receiptNumber, false))
               .build());
 
       eventPublisher.publishEvent(
@@ -733,7 +755,9 @@ public class InvoiceTransitionService {
               .eventType("invoice.payment_partially_reversed")
               .entityType("invoice")
               .entityId(invoice.getId())
-              .details(buildReversalAuditDetails(invoice, paymentEventId, projectId, amount, true))
+              .details(
+                  buildReversalAuditDetails(
+                      invoice, paymentEventId, projectId, amount, receiptNumber, true))
               .build());
 
       eventPublisher.publishEvent(
@@ -775,7 +799,12 @@ public class InvoiceTransitionService {
   }
 
   private Map<String, Object> buildReversalAuditDetails(
-      Invoice invoice, UUID paymentEventId, UUID projectId, BigDecimal amount, boolean partial) {
+      Invoice invoice,
+      UUID paymentEventId,
+      UUID projectId,
+      BigDecimal amount,
+      String receiptNumber,
+      boolean partial) {
     var details = AuditDetails.matterScoped(projectId, invoice.getCustomerId());
     details.put(
         "invoice_number", invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "");
@@ -784,6 +813,8 @@ public class InvoiceTransitionService {
     details.put("partial", String.valueOf(partial));
     details.put("amount_paid", invoice.getAmountPaid().toPlainString());
     details.put("balance_due", invoice.getBalanceDue().toPlainString());
+    // Phase 89 632B (R6.2): the reversed payment's receipt number ("" when it had none).
+    details.put("receipt_number", receiptNumber != null ? receiptNumber : "");
     return details;
   }
 

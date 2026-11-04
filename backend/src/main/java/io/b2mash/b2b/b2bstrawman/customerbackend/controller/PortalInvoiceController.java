@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.controller;
 
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalInvoicePayment;
 import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalReadModelService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
@@ -112,13 +113,34 @@ public class PortalInvoiceController {
     return ResponseEntity.ok(status);
   }
 
-  /** Returns a presigned download URL for the most recent PDF generated for this invoice. */
+  /** Returns a presigned download URL for the fee-note PDF (the fee-note template's newest). */
   @GetMapping("/{id}/download")
   public ResponseEntity<PortalDownloadResponse> downloadInvoice(@PathVariable UUID id) {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
     String downloadUrl = portalReadModelService.getInvoiceDownloadUrl(id, customerId, orgId);
     return ResponseEntity.ok(new PortalDownloadResponse(downloadUrl));
+  }
+
+  /** Phase 89 632B: the fee note's completed payments, oldest first. */
+  @GetMapping("/{id}/payments")
+  public ResponseEntity<List<PortalInvoicePayment>> listPayments(@PathVariable UUID id) {
+    return ResponseEntity.ok(
+        portalReadModelService.listInvoicePayments(
+            id, RequestScopes.requireCustomerId(), RequestScopes.requireOrgId()));
+  }
+
+  /** Phase 89 632B: presigned download URL for one payment's receipt (generated when missing). */
+  @GetMapping("/{id}/payments/{paymentEventId}/receipt")
+  public ResponseEntity<PortalDownloadResponse> downloadReceipt(
+      @PathVariable UUID id, @PathVariable UUID paymentEventId) {
+    return ResponseEntity.ok(
+        new PortalDownloadResponse(
+            portalReadModelService.getReceiptDownloadUrl(
+                id,
+                paymentEventId,
+                RequestScopes.requireCustomerId(),
+                RequestScopes.requireOrgId())));
   }
 
   // --- DTOs ---

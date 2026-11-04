@@ -207,6 +207,18 @@ public class InvoiceController {
     return ResponseEntity.ok(invoiceService.getPaymentEvents(id));
   }
 
+  /**
+   * Phase 89 632B (B11): generates the payment's receipt when it has none (idempotent — an existing
+   * receipt is returned as is). Download via {@code GET /api/generated-documents/{id}/download}.
+   */
+  @PostMapping("/{id}/payment-events/{paymentEventId}/receipt")
+  @RequiresCapability("INVOICING")
+  public ResponseEntity<PaymentReceiptResponse> generatePaymentReceipt(
+      @PathVariable UUID id, @PathVariable UUID paymentEventId) {
+    return ResponseEntity.ok(
+        new PaymentReceiptResponse(invoiceService.generatePaymentReceipt(id, paymentEventId)));
+  }
+
   @PostMapping("/{id}/refresh-payment-link")
   @RequiresCapability("INVOICING")
   public ResponseEntity<InvoiceResponse> refreshPaymentLink(@PathVariable UUID id) {
@@ -218,4 +230,7 @@ public class InvoiceController {
   public ResponseEntity<InvoiceResponse> voidInvoice(@PathVariable UUID id) {
     return ResponseEntity.ok(invoiceService.voidInvoice(id));
   }
+
+  /** {@code POST …/payment-events/{paymentEventId}/receipt} response (B11). */
+  public record PaymentReceiptResponse(UUID generatedDocumentId) {}
 }

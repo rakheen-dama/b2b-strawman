@@ -13,12 +13,19 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentMethod;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentPosting;
 import io.b2mash.b2b.b2bstrawman.invoice.TaxType;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectPriority;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +46,9 @@ class InvoiceContextBuilderTest {
   @Mock private CustomerRepository customerRepository;
   @Mock private ProjectRepository projectRepository;
   @Mock private TemplateContextHelper contextHelper;
+  // Phase 89 632B (D22): constructor arg — unstubbed it returns no payments, so every older case
+  // sees an empty invoice.payments list.
+  @Mock private PaymentEventRepository paymentEventRepository;
 
   @InjectMocks private InvoiceContextBuilder builder;
 
@@ -256,5 +266,113 @@ class InvoiceContextBuilderTest {
 
     assertThatThrownBy(() -> builder.buildContext(invoiceId, memberId))
         .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  // --- Phase 89 632B: payment keys (ADR-364) ---
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void paymentKeys_amountPaidBalanceDuePaidAtInSaDate_andPaymentsOldestFirstWithBalanceAfter() {
+    var invoice = paidInvoice(new BigDecimal("1000.00"), new BigDecimal("1000.00"));
+    // 23:30 UTC on 4 Nov is 01:30 on 5 Nov in Johannesburg — the business date is the SA date.
+    TestIds.withField(invoice, "paidAt", Instant.parse("2026-11-04T23:30:00Z"));
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+    var second =
+        event(
+            "600.00", PaymentMethod.CASH, "CASH-2", Instant.parse("2026-11-04T23:30:00Z"), "0002");
+    var first =
+        event("400.00", PaymentMethod.EFT, "FNB-1", Instant.parse("2026-11-01T08:00:00Z"), "0001");
+    // repository order is unspecified — the builder sorts by created_at ascending
+    when(paymentEventRepository.findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED))
+        .thenReturn(List.of(second, first));
+
+    var invoiceMap = (Map<String, Object>) builder.buildContext(invoiceId, memberId).get("invoice");
+
+    assertThat((BigDecimal) invoiceMap.get("amountPaid")).isEqualByComparingTo("1000.00");
+    assertThat((BigDecimal) invoiceMap.get("balanceDue")).isEqualByComparingTo("0");
+    assertThat(invoiceMap.get("paidAt")).isEqualTo("2026-11-05");
+    var payments = (List<Map<String, Object>>) invoiceMap.get("payments");
+    assertThat(payments).hasSize(2);
+    assertThat(payments.get(0))
+        .containsEntry("date", "2026-11-01")
+        .containsEntry("methodLabel", "EFT")
+        .containsEntry("reference", "FNB-1")
+        .containsEntry("id", first.getId());
+    assertThat((BigDecimal) payments.get(0).get("amount")).isEqualByComparingTo("400.00");
+    assertThat((BigDecimal) payments.get(0).get("balanceAfter")).isEqualByComparingTo("600.00");
+    assertThat(payments.get(1))
+        .containsEntry("date", "2026-11-05")
+        .containsEntry("methodLabel", "Cash")
+        .containsEntry("reference", "CASH-2");
+    assertThat((BigDecimal) payments.get(1).get("balanceAfter")).isEqualByComparingTo("0.00");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void paymentKeys_overpaymentClampsBalanceAfterAtZero_nullMethodIsPayment_unpaidHasNoPaidAt() {
+    var invoice = paidInvoice(new BigDecimal("1000.00"), new BigDecimal("1000.00"));
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+    // An external source (card / Xero / trust transfer) records the real, larger amount (ADR-347).
+    var over =
+        event(
+            "1500.00",
+            PaymentMethod.TRUST_TRANSFER,
+            "FT-1",
+            Instant.parse("2026-11-02T10:00:00Z"),
+            "0001");
+    var legacy = event("50.00", null, null, Instant.parse("2026-11-03T10:00:00Z"), "0002");
+    when(paymentEventRepository.findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED))
+        .thenReturn(List.of(over, legacy));
+
+    var invoiceMap = (Map<String, Object>) builder.buildContext(invoiceId, memberId).get("invoice");
+
+    assertThat(invoiceMap.get("paidAt")).isNull();
+    var payments = (List<Map<String, Object>>) invoiceMap.get("payments");
+    assertThat(payments.get(0)).containsEntry("methodLabel", "Trust transfer");
+    assertThat((BigDecimal) payments.get(0).get("balanceAfter")).isEqualByComparingTo("0");
+    assertThat(payments.get(1)).containsEntry("methodLabel", "Payment");
+    assertThat(payments.get(1).get("reference")).isNull();
+    assertThat((BigDecimal) payments.get(1).get("balanceAfter")).isEqualByComparingTo("0");
+  }
+
+  @Test
+  void methodLabels_coverEveryPaymentMethod() {
+    assertThat(PaymentMethod.labelOf(PaymentMethod.EFT)).isEqualTo("EFT");
+    assertThat(PaymentMethod.labelOf(PaymentMethod.CARD)).isEqualTo("Card");
+    assertThat(PaymentMethod.labelOf(PaymentMethod.CASH)).isEqualTo("Cash");
+    assertThat(PaymentMethod.labelOf(PaymentMethod.TRUST_TRANSFER)).isEqualTo("Trust transfer");
+    assertThat(PaymentMethod.labelOf(PaymentMethod.XERO)).isEqualTo("Xero");
+    assertThat(PaymentMethod.labelOf(PaymentMethod.OTHER)).isEqualTo("Other");
+    assertThat(PaymentMethod.labelOf(null)).isEqualTo("Payment");
+  }
+
+  private Invoice paidInvoice(BigDecimal total, BigDecimal amountPaid) {
+    var invoice =
+        new Invoice(customerId, "ZAR", "Receipt Corp", "receipt@test.com", null, "Org", memberId);
+    TestIds.withField(invoice, "total", total);
+    TestIds.withField(invoice, "amountPaid", amountPaid);
+    return invoice;
+  }
+
+  private PaymentEvent event(
+      String amount, PaymentMethod method, String reference, Instant createdAt, String idSuffix) {
+    var event =
+        PaymentEvent.completed(
+            invoiceId,
+            "ZAR",
+            "OPERATING",
+            new PaymentPosting(
+                new BigDecimal(amount),
+                method != null ? method : PaymentMethod.OTHER,
+                reference,
+                "manual",
+                null,
+                null));
+    if (method == null) {
+      TestIds.withField(event, "paymentMethod", null); // pre-U15 row: NULL method
+    }
+    TestIds.withId(event, UUID.fromString("00000000-0000-0000-0000-00000000" + idSuffix));
+    TestIds.withField(event, "createdAt", createdAt);
+    return event;
   }
 }

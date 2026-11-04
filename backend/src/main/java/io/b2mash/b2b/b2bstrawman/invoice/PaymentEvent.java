@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -55,6 +56,18 @@ public class PaymentEvent {
   @Enumerated(EnumType.STRING)
   @Column(name = "payment_method", length = 20)
   private PaymentMethod paymentMethod;
+
+  /**
+   * The payment receipt for this event (Phase 89 632B, ADR-364, tenant V10 §1). NULL until a
+   * receipt is generated; the FK is {@code ON DELETE SET NULL}, so a deleted receipt reads NULL
+   * again and the lazy path regenerates it. Set only through {@link #attachReceipt}.
+   */
+  @Column(name = "receipt_generated_document_id")
+  private UUID receiptGeneratedDocumentId;
+
+  /** {@code {invoiceNumber}/R{seq}}, stored (R6.2); NULL until a receipt exists. Never reused. */
+  @Column(name = "receipt_number", length = 40)
+  private String receiptNumber;
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "provider_payload", columnDefinition = "jsonb")
@@ -131,6 +144,26 @@ public class PaymentEvent {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Links the receipt document (the only setter, ADR-364). Idempotent: the same document id again
+   * is a no-op (the listener and the lazy path may race, R6.3); a different id while one is
+   * attached is refused. After the receipt row is deleted (FK ON DELETE SET NULL) the pointer reads
+   * NULL again and a new receipt with a new number may be attached.
+   */
+  public void attachReceipt(UUID documentId, String receiptNumber) {
+    Objects.requireNonNull(documentId, "documentId must not be null");
+    if (documentId.equals(this.receiptGeneratedDocumentId)) {
+      return;
+    }
+    if (this.receiptGeneratedDocumentId != null) {
+      throw new InvalidStateException(
+          "Receipt already generated",
+          "This payment already has receipt " + this.receiptNumber + ".");
+    }
+    this.receiptGeneratedDocumentId = documentId;
+    this.receiptNumber = Objects.requireNonNull(receiptNumber, "receiptNumber must not be null");
+  }
+
   /** Updates the status of this payment event. */
   public void updateStatus(PaymentEventStatus newStatus) {
     this.status = newStatus;
@@ -194,5 +227,13 @@ public class PaymentEvent {
 
   public PaymentMethod getPaymentMethod() {
     return paymentMethod;
+  }
+
+  public UUID getReceiptGeneratedDocumentId() {
+    return receiptGeneratedDocumentId;
+  }
+
+  public String getReceiptNumber() {
+    return receiptNumber;
   }
 }

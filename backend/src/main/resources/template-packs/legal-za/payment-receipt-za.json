@@ -1,0 +1,641 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "org.logoUrl",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "org.logoUrl"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 1
+      },
+      "content": [
+        {
+          "type": "variable",
+          "attrs": {
+            "key": "org.name"
+          }
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "org.address",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "org.address"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "org.phone",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Tel:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "org.phone"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "org.email",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Email:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "org.email"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "org.website",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Web:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "org.website"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "org.taxRegistrationNumber",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "VAT Registration No:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "org.taxRegistrationNumber"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "horizontalRule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "PAYMENT RECEIPT"
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "payment.number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 3
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Receipt "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "payment.number"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ],
+          "text": "To:"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "variable",
+          "attrs": {
+            "key": "customer.name"
+          }
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "invoice.invoiceNumber",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Fee Note Number:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "invoice.invoiceNumber"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.name",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Matter:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "project.name"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.referenceNumber",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Matter Reference:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "project.referenceNumber"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "horizontalRule"
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "payment.number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 3
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Payment received"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Amount received:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "payment.amount"
+              }
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Date received:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "payment.date"
+              }
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Method:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "payment.methodLabel"
+              }
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": {
+            "fieldKey": "payment.reference",
+            "operator": "isNotEmpty"
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "marks": [
+                    {
+                      "type": "bold"
+                    }
+                  ],
+                  "text": "Reference:"
+                },
+                {
+                  "type": "text",
+                  "text": " "
+                },
+                {
+                  "type": "variable",
+                  "attrs": {
+                    "key": "payment.reference"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ],
+              "text": "Balance after this payment:"
+            },
+            {
+              "type": "text",
+              "text": " "
+            },
+            {
+              "type": "variable",
+              "attrs": {
+                "key": "payment.balanceAfter"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "horizontalRule"
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Payments on this fee note"
+        }
+      ]
+    },
+    {
+      "type": "loopTable",
+      "attrs": {
+        "dataSource": "invoice.payments",
+        "columns": [
+          {
+            "header": "Date",
+            "key": "date",
+            "format": "date"
+          },
+          {
+            "header": "Method",
+            "key": "methodLabel"
+          },
+          {
+            "header": "Reference",
+            "key": "reference"
+          },
+          {
+            "header": "Amount",
+            "key": "amount",
+            "format": "currency"
+          },
+          {
+            "header": "Balance after",
+            "key": "balanceAfter",
+            "format": "currency"
+          }
+        ]
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ],
+          "text": "Fee note total:"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "variable",
+          "attrs": {
+            "key": "invoice.total"
+          }
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ],
+          "text": "Amount paid to date:"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "variable",
+          "attrs": {
+            "key": "invoice.amountPaid"
+          }
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ],
+          "text": "Balance due:"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "variable",
+          "attrs": {
+            "key": "invoice.balanceDue"
+          }
+        }
+      ]
+    },
+    {
+      "type": "horizontalRule"
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "variable",
+          "attrs": {
+            "key": "org.documentFooterText"
+          }
+        }
+      ]
+    }
+  ]
+}

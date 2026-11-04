@@ -189,6 +189,12 @@ public class AuditEventTypeRegistry {
                 AuditEventGroup.FINANCIAL),
             new AuditEventTypeMetadata(
                 "invoice.voided", "Fee note voided", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
+            // Phase 89 632B (ADR-364): additive ADR-342 key — PaymentReceiptService.
+            new AuditEventTypeMetadata(
+                "invoice.receipt_generated",
+                "Fee note receipt generated",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             new AuditEventTypeMetadata(
                 "invoice.*", "Fee note", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
             // AI SKILL FAILURE — Phase 72 skill pipeline (AiExecutionPersistenceService) still

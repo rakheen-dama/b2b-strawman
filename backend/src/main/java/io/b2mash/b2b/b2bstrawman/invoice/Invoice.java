@@ -123,6 +123,14 @@ public class Invoice {
   @Column(name = "billing_run_id")
   private UUID billingRunId;
 
+  /**
+   * Per-fee-note payment receipt counter (Phase 89 632B, tenant V10 §1, R6.2). Incremented under
+   * the invoice row lock by {@link #nextReceiptNumber()}, never decremented — so receipt numbers
+   * are monotonic per fee note and never reused, even after a reversal deletes a payment event.
+   */
+  @Column(name = "receipt_sequence", nullable = false)
+  private int receiptSequence;
+
   @Column(name = "po_number", length = 100)
   private String poNumber;
 
@@ -430,6 +438,23 @@ public class Invoice {
 
   public Instant getPaidAt() {
     return paidAt;
+  }
+
+  /**
+   * Issues the next payment receipt number {@code {invoiceNumber}/R{seq}} (R6.2). The caller holds
+   * the invoice row lock ({@code InvoiceRepository.findByIdForUpdate}).
+   */
+  public String nextReceiptNumber() {
+    if (invoiceNumber == null) {
+      throw new IllegalStateException("A fee note without a number cannot issue a receipt");
+    }
+    receiptSequence++;
+    this.updatedAt = Instant.now();
+    return invoiceNumber + "/R" + receiptSequence;
+  }
+
+  public int getReceiptSequence() {
+    return receiptSequence;
   }
 
   public BigDecimal getAmountPaid() {

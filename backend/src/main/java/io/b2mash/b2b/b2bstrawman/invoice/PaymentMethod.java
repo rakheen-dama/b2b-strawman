@@ -21,4 +21,22 @@ public enum PaymentMethod {
   public boolean isManual() {
     return this == EFT || this == CASH || this == OTHER;
   }
+
+  /**
+   * Client-facing label (payment receipt PDF, portal payments list — Phase 89 632B). {@code null}
+   * is a pre-U15 event recorded before the column existed → {@code "Payment"}.
+   */
+  public static String labelOf(PaymentMethod method) {
+    if (method == null) {
+      return "Payment";
+    }
+    return switch (method) {
+      case EFT -> "EFT";
+      case CARD -> "Card";
+      case CASH -> "Cash";
+      case TRUST_TRANSFER -> "Trust transfer";
+      case XERO -> "Xero";
+      case OTHER -> "Other";
+    };
+  }
 }

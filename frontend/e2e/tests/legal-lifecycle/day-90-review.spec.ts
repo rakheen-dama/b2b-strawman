@@ -135,6 +135,7 @@ test.describe.serial("Day 90 — Quarter Review", () => {
     // row — the trust account carries the earlier days' deposits and client balances.
     const results = page.getByRole("table");
     await expect(results.getByRole("columnheader", { name: "Section", exact: true })).toBeVisible();
+    await expect(results.getByRole("columnheader", { name: "Item", exact: true })).toBeVisible();
     await expect(results.getByRole("columnheader", { name: "Amount", exact: true })).toBeVisible();
     await expect(results.getByRole("row").nth(1)).toBeVisible();
 

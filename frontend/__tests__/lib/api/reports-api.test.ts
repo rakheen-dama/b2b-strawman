@@ -365,18 +365,25 @@ describe("Report actions", () => {
 
   // 630A (G88-F40): the Section 35 trust_account_id parameter is entityType "trustAccount", so the
   // report runner's "Trust Account" combobox needs trust-account options.
+  // Name + bank can repeat, so the label carries a masked account-number suffix (never the full
+  // number); a number too short to mask falls back to the bare name.
   it("fetchEntityOptionsAction lists trust accounts for the trustAccount entity type", async () => {
     mockGet.mockResolvedValueOnce([
-      { id: "acc-1", accountName: "Main Trust", bankName: "FNB" },
-      { id: "acc-2", accountName: "Investment Trust", bankName: "Absa" },
+      { id: "acc-1", accountName: "Main Trust", bankName: "FNB", accountNumber: "0123456789" },
+      { id: "acc-2", accountName: "Main Trust", bankName: "FNB", accountNumber: "9876541234" },
+      { id: "acc-3", accountName: "Investment Trust", bankName: "Absa", accountNumber: "1234" },
     ]);
 
-    await expect(fetchEntityOptionsAction("trustAccount")).resolves.toEqual({
+    const result = await fetchEntityOptionsAction("trustAccount");
+    expect(result).toEqual({
       data: [
-        { id: "acc-1", label: "Main Trust", secondaryLabel: "FNB" },
-        { id: "acc-2", label: "Investment Trust", secondaryLabel: "Absa" },
+        { id: "acc-1", label: "Main Trust ••••6789", secondaryLabel: "FNB" },
+        { id: "acc-2", label: "Main Trust ••••1234", secondaryLabel: "FNB" },
+        { id: "acc-3", label: "Investment Trust", secondaryLabel: "Absa" },
       ],
     });
+    expect(JSON.stringify(result)).not.toContain("0123456789");
+    expect(JSON.stringify(result)).not.toContain("9876541234");
     expect(mockGet).toHaveBeenCalledWith("/api/trust-accounts");
   });
 });

@@ -1,7 +1,7 @@
 {
-  "commit": "50f0641a0",
-  "command": "cd backend && bash scripts/verify.sh -q (./mvnw verify under caffeinate) — worktree-epic-630C, PR #1724 final head",
+  "commit": "29798db31",
+  "command": "cd backend && ./mvnw clean && bash scripts/verify.sh -q (./mvnw verify under caffeinate) — worktree-epic-631A, PR #1725 final head",
   "exit": 0,
-  "ts": "2026-11-04T17:03:25Z",
-  "summary": "6409 testcases / 0 failures / 0 errors / 26 skipped (surefire XML, 758 files) — 1027 s"
+  "ts": "2026-11-04T18:28:00Z",
+  "summary": "6411 testcases / 0 failures / 0 errors / 26 skipped (surefire XML, 759 files) — 1069 s"
 }

@@ -1,0 +1,15 @@
+# 632B — API-level observation (orchestrator)
+
+PR #1728, head `ec2aaa3ad8c3ad36f7676d43622f16338582bab7`, merged `971e3af1d` (2026-11-05).
+Stack: e2e mock-auth backend :8081 rebuilt from the PR branch (`compose/scripts/e2e-rebuild.sh backend`), mock IDP :8090, LocalStack :4567.
+Artefacts: `receipt-INV-0006-R1.pdf` (portal receipt download), `portal-feenote-INV-0006.pdf` (portal fee-note download, receipt present), `boot-log.txt`, `red-at-head.md`, `before/migrations.md`.
+
+- [x] **API-level observation (orchestrator), e2e mock-auth stack :8081 rebuilt from this branch at `ec2aaa3ad`.** Boot log: `Migrating schema "tenant_7d218705360b" to version "10 - phase89 go live"` + `Reconciled template pack legal-za to v12 for tenant tenant_7d218705360b (1 new templates, 4 refreshed, …)`; `flyway_schema_history` max = 10. Walk (Alice firm token / portal magic-link sessions):
+  1. `POST /api/invoices/{INV-0005}/payment` (EFT 1000.00) → 200 PARTIALLY_PAID; `GET …/payment-events` → `receiptNumber = INV-0005/R1`, `receiptGeneratedDocumentId` set (listener path); `GET /api/generated-documents/{id}/download` → 200 `application/pdf`.
+  2. Fresh fee note INV-0006 (approve → send → `fee-note-za` row) → part payment (CASH 500.00) → `INV-0006/R1`. Portal (Sipho): `GET /portal/invoices/{id}/download` → the **`fee-note-inv-0006-…pdf`** key, presigned 200 PDF, even though the receipt is the newer INVOICE document (the G88-F32 trap is closed). `GET …/payments` → `[{methodLabel:"Cash", amount:500.00, reference:"OBS-632B-2", receiptAvailable:true}]`; `GET …/payments/{pe}/receipt` → presigned 200 PDF. PDF text: "PAYMENT RECEIPT · Receipt INV-0006/R1 · Fee Note Number: INV-0006 · Matter: Ndlovu v RAF … · Amount received: R500,00 · Date received: 5 November 2026 · Method: Cash · Balance after this payment: R2 375,00 · Balance due: R2 375,00".
+  3. Lazy path: INV-0002 (pre-phase TRUST_TRANSFER payment, FK null, `receiptAvailable:false`) → Moroka portal `GET …/receipt` → 200 presigned PDF; a second call is idempotent (DB: one receipt document, `receipt_number = INV-0002/R1`, `receipt_sequence = 1`).
+  4. Isolation: Apex on INV-0005 with INV-0002's payment event → **404** `PaymentEvent not found`; Apex on Moroka's INV-0002 → **404** `Fee note not found`.
+  5. Firm `POST /api/invoices/{INV-0006}/payment-events/{pe}/receipt` → 200 `{"generatedDocumentId":"5edca8bc-…"}` (same id as the listener's, idempotent); Carol (member) → **403**.
+  6. Audit: `invoice.receipt_generated` rows `INV-0005/R1 · posting_member · listener` and `INV-0002/R1 · invoice_creator · lazy`. Backend ERROR lines during the walk: 0.
+  - Env note: `e2e-rebuild.sh backend` also recreated the non-persistent LocalStack, so the pre-rebuild seed fee-note objects (INV-0001…0005, generated 18:42–18:47) were gone from S3 (presigned 404 for INV-0005's fee note — the row/key selection was correct). A fresh fee note (INV-0006) proved the full path. The walk mutated e2e seed rows (INV-0005/0006 payments); gate-grade E2E for 632C needs `e2e-down`/`e2e-up`.
+  - **G88-F32: backend half PASS (API-level, observed). UI closer is in 632C.**

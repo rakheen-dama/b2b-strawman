@@ -3,9 +3,17 @@ package io.b2mash.b2b.b2bstrawman.template;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -18,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentMethod;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentPosting;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentReceiptService;
 import io.b2mash.b2b.b2bstrawman.invoice.TaxType;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectPriority;
@@ -27,6 +36,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +44,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,6 +60,9 @@ class InvoiceContextBuilderTest {
   // Phase 89 632B (D22): constructor arg — unstubbed it returns no payments, so every older case
   // sees an empty invoice.payments list.
   @Mock private PaymentEventRepository paymentEventRepository;
+  // Only for the receipt/context agreement case (not constructor args of the builder).
+  @Mock private GeneratedDocumentService generatedDocumentService;
+  @Mock private AuditService auditService;
 
   @InjectMocks private InvoiceContextBuilder builder;
 
@@ -333,6 +347,84 @@ class InvoiceContextBuilderTest {
     assertThat(payments.get(1)).containsEntry("methodLabel", "Payment");
     assertThat(payments.get(1).get("reference")).isNull();
     assertThat((BigDecimal) payments.get(1).get("balanceAfter")).isEqualByComparingTo("0");
+  }
+
+  /**
+   * Review fix (PR #1728): the receipt's own {@code payment.*} and the {@code invoice.payments[]}
+   * row for the same event come from one ledger ({@code PaymentLedger}) — same date, method,
+   * amount, reference and running balance, including a same-instant tie broken by id.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void receiptPaymentContext_agreesWithInvoicePaymentsRow_forTheSameEvent() {
+    var invoice = paidInvoice(new BigDecimal("1000.00"), new BigDecimal("1000.00"));
+    TestIds.withId(invoice, invoiceId);
+    TestIds.withField(invoice, "invoiceNumber", "INV-0007");
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceRepository.findByIdForUpdate(invoiceId)).thenReturn(Optional.of(invoice));
+    var sameInstant = Instant.parse("2026-11-03T22:15:00Z"); // 00:15 on 4 Nov in SA
+    var a = event("300.00", PaymentMethod.EFT, "A", sameInstant, "000a");
+    var b = event("200.00", PaymentMethod.CASH, "B", sameInstant, "000b"); // tie → after a by id
+    var c = event("900.00", PaymentMethod.CARD, "C", Instant.parse("2026-11-04T08:00:00Z"), "000c");
+    when(paymentEventRepository.findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED))
+        .thenReturn(List.of(c, b, a));
+    when(paymentEventRepository.findByIdAndInvoiceIdForUpdate(b.getId(), invoiceId))
+        .thenReturn(Optional.of(b));
+    var template = mock(DocumentTemplate.class);
+    when(template.getId()).thenReturn(UUID.randomUUID());
+    when(generatedDocumentService.resolveReceiptTemplate()).thenReturn(Optional.of(template));
+    var generated = mock(GeneratedDocument.class);
+    var generatedId = UUID.randomUUID();
+    when(generated.getId()).thenReturn(generatedId);
+    when(generatedDocumentService.generateDocument(
+            any(),
+            eq(invoiceId),
+            anyBoolean(),
+            anyBoolean(),
+            anyList(),
+            any(),
+            anyString(),
+            anyMap(),
+            anyMap(),
+            anyBoolean()))
+        .thenReturn(new GeneratedDocumentService.GenerationResult(generated, null));
+    var receiptService =
+        new PaymentReceiptService(
+            invoiceRepository,
+            paymentEventRepository,
+            invoiceLineRepository,
+            generatedDocumentService,
+            auditService);
+
+    assertThat(receiptService.ensureReceipt(invoiceId, b.getId(), memberId)).isEqualTo(generatedId);
+
+    ArgumentCaptor<Map<String, Object>> extraContext = ArgumentCaptor.forClass(Map.class);
+    verify(generatedDocumentService)
+        .generateDocument(
+            any(),
+            eq(invoiceId),
+            anyBoolean(),
+            anyBoolean(),
+            anyList(),
+            any(),
+            anyString(),
+            extraContext.capture(),
+            anyMap(),
+            anyBoolean());
+    var receiptPayment = (Map<String, Object>) extraContext.getValue().get("payment");
+    var invoiceMap = (Map<String, Object>) builder.buildContext(invoiceId, memberId).get("invoice");
+    var payments = (List<Map<String, Object>>) invoiceMap.get("payments");
+
+    assertThat(payments)
+        .extracting(row -> row.get("id"))
+        .containsExactly(a.getId(), b.getId(), c.getId());
+    var tableRow = payments.get(1);
+    assertThat(receiptPayment).containsEntry("number", "INV-0007/R1");
+    var receiptWithoutNumber = new LinkedHashMap<>(receiptPayment);
+    receiptWithoutNumber.remove("number");
+    assertThat(receiptWithoutNumber).isEqualTo(tableRow);
+    assertThat(tableRow).containsEntry("date", "2026-11-04");
+    assertThat((BigDecimal) tableRow.get("balanceAfter")).isEqualByComparingTo("500.00");
   }
 
   @Test

@@ -9,16 +9,13 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
-import io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
-import io.b2mash.b2b.b2bstrawman.invoice.PaymentMethod;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentLedger;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -111,7 +108,12 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
         invoice.getPaidAt() != null
             ? LocalDate.ofInstant(invoice.getPaidAt(), KaziTime.ZONE).toString()
             : null);
-    invoiceMap.put("payments", buildPayments(entityId, invoice));
+    // invoice.payments[] — order + balanceAfter owned by PaymentLedger (shared with the receipt).
+    invoiceMap.put(
+        "payments",
+        PaymentLedger.rows(
+            paymentEventRepository.findByInvoiceIdAndStatus(entityId, PaymentEventStatus.COMPLETED),
+            invoice.getTotal()));
     context.put("invoice", invoiceMap);
 
     // lines[]
@@ -221,45 +223,6 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
     context.put("generatedBy", contextHelper.buildGeneratedByMap(memberId));
 
     return context;
-  }
-
-  /**
-   * {@code invoice.payments[]}: the fee note's COMPLETED payment events, oldest first (tie-break by
-   * id), each {@code {id, date, methodLabel, amount, reference, balanceAfter}}. {@code
-   * balanceAfter} = total − Σ amounts up to and including this event, floored at zero (an external
-   * overpayment is recorded at its real amount while {@code amount_paid} is capped — ADR-347).
-   */
-  private List<Map<String, Object>> buildPayments(UUID invoiceId, Invoice invoice) {
-    var completed =
-        paymentEventRepository
-            .findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED)
-            .stream()
-            .sorted(
-                Comparator.comparing(
-                        PaymentEvent::getCreatedAt,
-                        Comparator.nullsFirst(Comparator.naturalOrder()))
-                    .thenComparing(
-                        PaymentEvent::getId, Comparator.nullsFirst(Comparator.naturalOrder())))
-            .toList();
-    BigDecimal total = invoice.getTotal() != null ? invoice.getTotal() : BigDecimal.ZERO;
-    BigDecimal paidSoFar = BigDecimal.ZERO;
-    var payments = new ArrayList<Map<String, Object>>();
-    for (var event : completed) {
-      paidSoFar = paidSoFar.add(event.getAmount());
-      var row = new LinkedHashMap<String, Object>();
-      row.put("id", event.getId());
-      row.put(
-          "date",
-          event.getCreatedAt() != null
-              ? LocalDate.ofInstant(event.getCreatedAt(), KaziTime.ZONE).toString()
-              : null);
-      row.put("methodLabel", PaymentMethod.labelOf(event.getPaymentMethod()));
-      row.put("amount", event.getAmount());
-      row.put("reference", event.getPaymentReference());
-      row.put("balanceAfter", total.subtract(paidSoFar).max(BigDecimal.ZERO));
-      payments.add(row);
-    }
-    return payments;
   }
 
   /**

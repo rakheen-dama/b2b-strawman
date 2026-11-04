@@ -418,7 +418,12 @@ class PaymentReceiptIntegrationTest {
                   .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
           .andExpect(status().isNotFound())
           .andExpect(jsonPath("$.status").value(404))
-          .andExpect(jsonPath("$.title").value("Receipt unavailable"));
+          .andExpect(jsonPath("$.title").value("Receipt unavailable"))
+          .andExpect(
+              jsonPath("$.detail")
+                  .value(
+                      "The payment receipt template (payment-receipt-za) is not installed for"
+                          + " this firm."));
     } finally {
       setPackTemplateKey(templateId, "payment-receipt-za");
     }
@@ -471,6 +476,81 @@ class PaymentReceiptIntegrationTest {
                     .contains("Failed to generate payment receipt")
                     .contains(invoiceId)
                     .contains(foreignEvent.toString()));
+  }
+
+  /**
+   * Real flow (review fix, PR #1728): a genuine render failure during {@code POST
+   * /api/invoices/{id}/payment} — the tenant's receipt template body is corrupt (its {@code
+   * content} is not a node list), so the real {@code generateDocument} → Tiptap render throws
+   * inside the AFTER_COMMIT listener. The payment still returns 200 and stands, the FK stays null,
+   * the REQUIRES_NEW rollback leaves the receipt sequence untouched, and the ERROR line names both
+   * ids. Once the body is restored the lazy path issues R1 (no number was burned).
+   */
+  @Test
+  void realGenerationFailureDuringPayment_paymentStands_fkNull_errorLoggedWithBothIds()
+      throws Exception {
+    String invoiceId = createSentInvoice();
+    UUID templateId =
+        inTenant(
+            () ->
+                documentTemplateRepository
+                    .findPackSeeded("legal-za", "payment-receipt-za")
+                    .getFirst()
+                    .getId());
+    String originalContent =
+        jdbcTemplate.queryForObject(
+            "SELECT content::text FROM \"%s\".document_templates WHERE id = ?"
+                .formatted(tenantSchema),
+            String.class,
+            templateId);
+    UUID event;
+    List<String> errors;
+    try {
+      setTemplateContent(templateId, "{\"type\": \"doc\", \"content\": \"corrupt\"}");
+      var holder = new UUID[1];
+      errors =
+          captureLogs(
+              PaymentReceiptListener.class,
+              Level.ERROR,
+              () -> {
+                try {
+                  holder[0] = postAndGetNewestEventId(invoiceId, OWNER, "1000.00", "EFT", "FAIL-1");
+                } catch (Exception e) {
+                  throw new IllegalStateException(e);
+                }
+              });
+      event = holder[0];
+    } finally {
+      setTemplateContent(templateId, originalContent);
+    }
+
+    assertThat(
+            inTenant(() -> invoiceRepository.findById(UUID.fromString(invoiceId)).orElseThrow())
+                .getStatus())
+        .isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+    assertThat(receiptDocOrNull(event)).isNull();
+    assertThat(receiptNumber(event)).isNull();
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "SELECT receipt_sequence FROM \"%s\".invoices WHERE id = ?::uuid"
+                    .formatted(tenantSchema),
+                Integer.class,
+                invoiceId))
+        .isZero();
+    assertThat(errors)
+        .anySatisfy(
+            m ->
+                assertThat(m)
+                    .contains("Failed to generate payment receipt")
+                    .contains(invoiceId)
+                    .contains(event.toString()));
+
+    mockMvc
+        .perform(
+            post("/api/invoices/{id}/payment-events/{pe}/receipt", invoiceId, event)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk());
+    assertThat(receiptNumber(event)).isEqualTo(invoiceNumber(invoiceId) + "/R1");
   }
 
   /**
@@ -645,6 +725,14 @@ class PaymentReceiptIntegrationTest {
                   template.setPackTemplateKey(key);
                   return documentTemplateRepository.save(template);
                 }));
+  }
+
+  private void setTemplateContent(UUID templateId, String contentJson) {
+    jdbcTemplate.update(
+        "UPDATE \"%s\".document_templates SET content = ?::jsonb WHERE id = ?"
+            .formatted(tenantSchema),
+        contentJson,
+        templateId);
   }
 
   private static List<String> captureLogs(Class<?> source, Level level, Runnable action) {

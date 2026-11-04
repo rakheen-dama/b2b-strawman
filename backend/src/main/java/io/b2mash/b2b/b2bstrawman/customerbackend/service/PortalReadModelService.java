@@ -16,9 +16,9 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentLedger;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentMethod;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentReceiptService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
@@ -29,7 +29,6 @@ import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -222,7 +221,7 @@ public class PortalReadModelService {
     return paymentEventRepository
         .findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED)
         .stream()
-        .sorted(Comparator.comparing(PaymentEvent::getCreatedAt).thenComparing(PaymentEvent::getId))
+        .sorted(PaymentLedger.ORDER) // same order as invoice.payments[] on the receipt
         .map(
             event ->
                 new PortalInvoicePayment(

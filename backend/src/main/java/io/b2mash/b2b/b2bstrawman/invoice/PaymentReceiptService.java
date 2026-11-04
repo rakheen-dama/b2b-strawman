@@ -3,15 +3,12 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +122,11 @@ public class PaymentReceiptService {
   }
 
   /**
-   * Reversal (R6.2): a void receipt must not stay downloadable — deletes the receipt row in the
+   * Deliberate pass-through: this service is the single owner of the receipt lifecycle (create,
+   * attach, delete), so the reversal path never reaches into {@code GeneratedDocumentService}
+   * itself.
+   *
+   * <p>Reversal (R6.2): a void receipt must not stay downloadable — deletes the receipt row in the
    * caller's (reversal) transaction and its stored object after commit. The sequence is untouched,
    * so the reversed receipt's number is never reissued.
    */
@@ -175,7 +176,7 @@ public class PaymentReceiptService {
 
     UUID actor = actorMemberId != null ? actorMemberId : invoice.getCreatedBy();
     String receiptNumber = invoice.nextReceiptNumber();
-    var payment = paymentContext(invoice, paymentEvent, receiptNumber);
+    var payment = paymentContext(invoiceId, invoice, paymentEvent, receiptNumber);
     var result =
         generatedDocumentService.generateDocument(
             template.get().getId(),
@@ -220,33 +221,29 @@ public class PaymentReceiptService {
   }
 
   /**
-   * {@code payment.*} for the receipt: this event's row plus its stored number. {@code
-   * balanceAfter} = total − Σ COMPLETED amounts up to and including this event (oldest first,
-   * tie-break by id — the same order as {@code invoice.payments[]}), floored at zero (D15).
+   * {@code payment.*} for the receipt: this event's {@link PaymentLedger} row — the very row the
+   * receipt's {@code invoice.payments[]} table prints, so the two can never disagree — plus the
+   * stored receipt {@code number}.
    */
   private Map<String, Object> paymentContext(
-      Invoice invoice, PaymentEvent paymentEvent, String receiptNumber) {
-    BigDecimal paidUpToThis = BigDecimal.ZERO;
-    for (var event :
-        paymentEventRepository.findByInvoiceIdAndStatus(
-            invoice.getId(), PaymentEventStatus.COMPLETED)) {
-      if (isAtOrBefore(event, paymentEvent)) {
-        paidUpToThis = paidUpToThis.add(event.getAmount());
-      }
-    }
-    var payment = new LinkedHashMap<String, Object>();
-    payment.put("id", paymentEvent.getId());
+      UUID invoiceId, Invoice invoice, PaymentEvent paymentEvent, String receiptNumber) {
+    var row =
+        PaymentLedger.rows(
+                paymentEventRepository.findByInvoiceIdAndStatus(
+                    invoiceId, PaymentEventStatus.COMPLETED),
+                invoice.getTotal())
+            .stream()
+            .filter(r -> paymentEvent.getId().equals(r.get("id")))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "Locked COMPLETED payment event "
+                            + paymentEvent.getId()
+                            + " missing from the ledger of invoice "
+                            + invoiceId));
+    var payment = new LinkedHashMap<String, Object>(row);
     payment.put("number", receiptNumber);
-    payment.put("date", LocalDate.ofInstant(paymentEvent.getCreatedAt(), KaziTime.ZONE).toString());
-    payment.put("methodLabel", PaymentMethod.labelOf(paymentEvent.getPaymentMethod()));
-    payment.put("amount", paymentEvent.getAmount());
-    payment.put("reference", paymentEvent.getPaymentReference());
-    payment.put("balanceAfter", invoice.getTotal().subtract(paidUpToThis).max(BigDecimal.ZERO));
     return payment;
-  }
-
-  private static boolean isAtOrBefore(PaymentEvent candidate, PaymentEvent target) {
-    int byTime = candidate.getCreatedAt().compareTo(target.getCreatedAt());
-    return byTime < 0 || (byTime == 0 && candidate.getId().compareTo(target.getId()) <= 0);
   }
 }

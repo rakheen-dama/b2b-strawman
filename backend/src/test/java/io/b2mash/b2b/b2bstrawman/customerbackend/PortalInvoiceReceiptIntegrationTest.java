@@ -339,7 +339,8 @@ class PortalInvoiceReceiptIntegrationTest {
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
-        .andExpect(jsonPath("$.title").value("PaymentEvent not found"));
+        .andExpect(jsonPath("$.title").value("PaymentEvent not found"))
+        .andExpect(jsonPath("$.detail").value("No paymentevent found with id " + eventOfA));
 
     mockMvc
         .perform(
@@ -354,7 +355,9 @@ class PortalInvoiceReceiptIntegrationTest {
             get("/portal/invoices/{id}/payments/{pe}/receipt", invoiceA, eventOfA)
                 .header("Authorization", "Bearer " + otherClientToken))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.title").value("Fee note not found"));
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Fee note not found"))
+        .andExpect(jsonPath("$.detail").value("No fee note found with id " + invoiceA));
   }
 
   // --- helpers ---

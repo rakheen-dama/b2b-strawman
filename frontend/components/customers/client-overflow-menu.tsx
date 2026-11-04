@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   Archive,
   Download,
-  FileText,
   MoreHorizontal,
   Pencil,
   Scale,
@@ -24,7 +23,7 @@ import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog"
 import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
 import { AnonymizeCustomerDialog } from "@/components/customers/anonymize-customer-dialog";
 import { DataExportDialog } from "@/components/customers/data-export-dialog";
-import type { Client, ClientStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
+import type { Client, ClientStatus, LifecycleStatus } from "@/lib/types";
 
 interface ClientOverflowMenuProps {
   customerId: string;
@@ -35,7 +34,6 @@ interface ClientOverflowMenuProps {
   isAdmin: boolean;
   isOwner: boolean;
   isAnonymized: boolean;
-  templates: TemplateListResponse[];
   aiProviderConfigured: boolean;
   conflictCheckEnabled: boolean;
   kycConfigured: boolean;
@@ -55,7 +53,6 @@ export function ClientOverflowMenu({
   isAdmin,
   isOwner,
   isAnonymized,
-  templates,
   aiProviderConfigured,
   conflictCheckEnabled,
   kycConfigured,
@@ -73,14 +70,13 @@ export function ClientOverflowMenu({
 
   const showEditClient = !isAnonymized;
   const showSummariseActivity = isAdmin && aiProviderConfigured && !!onSummariseActivity;
-  const showGenerateDocument = isAdmin && templates.length > 0 && !isAnonymized;
   const showConflictCheck = conflictCheckEnabled && !isAnonymized;
   const showVerifyKyc = kycConfigured && !kycVerified && !isAnonymized;
   const showAnonymize = isOwner && !isAnonymized;
   const showArchive = isAdmin && !isAnonymized;
 
   const hasFirstGroup = showEditClient || showSummariseActivity;
-  const hasSecondGroup = showGenerateDocument || showConflictCheck || showVerifyKyc;
+  const hasSecondGroup = showConflictCheck || showVerifyKyc;
   const hasDestructiveGroup = showAnonymize || showArchive;
 
   return (
@@ -113,17 +109,6 @@ export function ClientOverflowMenu({
           )}
 
           {hasFirstGroup && hasSecondGroup && <DropdownMenuSeparator />}
-
-          {showGenerateDocument && (
-            <DropdownMenuItem
-              onSelect={() =>
-                router.push(`/org/${slug}/clients/${customerId}?action=generate-document`)
-              }
-            >
-              <FileText className="mr-2 size-4" />
-              Generate Document
-            </DropdownMenuItem>
-          )}
 
           {showConflictCheck && (
             <DropdownMenuItem

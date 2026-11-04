@@ -237,7 +237,11 @@ describe("ClientHeaderCard", () => {
 
     it("hides the control for an anonymised client", () => {
       render(
-        <ClientHeaderCard {...defaultProps} templates={mockTemplates} lifecycleStatus="ANONYMIZED" />
+        <ClientHeaderCard
+          {...defaultProps}
+          templates={mockTemplates}
+          lifecycleStatus="ANONYMIZED"
+        />
       );
       expect(screen.queryByTestId("generate-document-dropdown")).not.toBeInTheDocument();
     });

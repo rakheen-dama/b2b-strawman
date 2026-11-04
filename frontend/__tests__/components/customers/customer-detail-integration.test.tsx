@@ -50,6 +50,11 @@ vi.mock("@/components/customers/client-overflow-menu", () => ({
   ClientOverflowMenu: () => <div data-testid="client-overflow-trigger" />,
 }));
 
+// The header's standalone Generate Document control (G88-F46) pulls in server actions
+vi.mock("@/components/templates/GenerateDocumentDropdown", () => ({
+  GenerateDocumentDropdown: () => <button data-testid="generate-document-dropdown" />,
+}));
+
 vi.mock("@/components/setup/setup-progress-card", () => ({
   SetupProgressCard: () => <div data-testid="setup-progress-card" />,
 }));

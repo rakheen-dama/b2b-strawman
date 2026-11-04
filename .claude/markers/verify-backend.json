@@ -1,7 +1,7 @@
 {
-  "commit": "931ca6a3e97827873b4739be91dcd51793f361fd",
-  "command": "cd backend && bash scripts/verify.sh -q",
+  "commit": "90a247161871",
+  "command": "cd backend && bash scripts/verify.sh -q  (= caffeinate -is ./mvnw verify -q)",
   "exit": 0,
-  "ts": "2026-11-04T07:08:57+02:00",
-  "summary": "PR #1720 (G88-F36, G88-M10): 6389 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML count)"
+  "ts": "2026-11-04T13:45:36Z",
+  "summary": "Slice 630A BE-VERIFY on 90a247161871 (PR #1722; final head 8b7f293d2 differs only in 3 frontend files — backend tree identical; Backend CI pass on 8b7f293d2): 6394 tests / 0 failures / 0 errors / 26 skipped (testcase count from surefire+failsafe XML) — ~27 min, 14:55-15:22 SAST 2026-11-04"
 }

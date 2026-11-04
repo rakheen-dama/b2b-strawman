@@ -170,7 +170,7 @@ class FieldPackSeederReconcileTest {
           conveyancing.updateMetadata(
               conveyancing.getName(), CONVEYANCING_V1_DESC, conveyancing.getSortOrder());
           fieldGroupRepository.saveAll(List.of(legal, conveyancing));
-          rewind("legal-za-project", "4", "2");
+          rewind("legal-za-project", "3", "2");
           rewind("conveyancing-za-project", "3", "1");
           return null;
         });
@@ -183,7 +183,7 @@ class FieldPackSeederReconcileTest {
           assertThat(group("legal_za_matter").getName()).isEqualTo("SA Legal — Matter Details");
           assertThat(group("conveyancing_za_matter").getDescription())
               .isEqualTo(CONVEYANCING_V2_DESC);
-          assertThat(ledgerVersion("legal-za-project")).isEqualTo("4");
+          assertThat(ledgerVersion("legal-za-project")).isEqualTo("3");
           assertThat(ledgerVersion("conveyancing-za-project")).isEqualTo("3");
           return null;
         });
@@ -468,29 +468,6 @@ class FieldPackSeederReconcileTest {
     }
   }
 
-  /** G88-F12 letter of demand: a legal-za tenant at v3 gains the explicit debtor field. */
-  @Test
-  void legalZaV3Tenant_gainsDebtorField() {
-    inTenantTx(
-        () -> {
-          deleteDefinitions(List.of("debtor_name"));
-          rewindTo("legal-za-project", "3");
-          return null;
-        });
-
-    fieldPackSeeder.seedPacksForTenant(schema, ORG_ID);
-
-    inTenantTx(
-        () -> {
-          var fd = definition("debtor_name");
-          assertThat(fd.getPackId()).isEqualTo("legal-za-project");
-          assertThat(fd.getPackFieldKey()).isEqualTo("debtor_name");
-          assertThat(memberSortOrderBySlug("legal_za_matter")).containsEntry("debtor_name", 8);
-          assertThat(ledgerVersion("legal-za-project")).isEqualTo("4");
-          return null;
-        });
-  }
-
   /**
    * No-Spring guard over every shipped field pack with a {@code reconcile} block: each entry
    * targets the pack's group slug ({@code field_group}) or one of its field slugs ({@code
@@ -548,7 +525,7 @@ class FieldPackSeederReconcileTest {
     assertThat(checked)
         .as("common-project (3) + legal-za-project (1) + conveyancing (1)")
         .isEqualTo(5);
-    assertThat(added).as("conveyancing party fields (6) + legal-za debtor (1)").isEqualTo(7);
+    assertThat(added).as("conveyancing party fields (6)").isEqualTo(6);
   }
 
   /**

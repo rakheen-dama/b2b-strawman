@@ -31,10 +31,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * G88-F12: contract parties are explicit matter fields and are never inferred from the firm ({@code
  * org.*}) or the firm's client ({@code customer.*}). Renders the shipped {@code legal-za} Offer to
- * Purchase, Deed of Transfer and Letter of Demand through the preview endpoint for a matter whose
- * party fields are set, and asserts every party slot names the field value — the Voetstoots clause
- * names the SELLER as not liable and the PURCHASER as accepting the property; the Letter of Demand
- * is addressed to the debtor, not to the client (the creditor).
+ * Purchase, Deed of Transfer, Bond Cancellation Instruction and Letter of Demand through the
+ * preview endpoint for a matter whose party fields are set, and asserts every party slot names the
+ * field value — the Voetstoots clause names the SELLER as not liable and the PURCHASER as accepting
+ * the property; the bond cancellation names the seller (the mortgagor), not the client; the Letter
+ * of Demand is addressed to the opposing party, not to the client (the creditor).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -52,7 +53,7 @@ class ContractPartyBindingIntegrationTest {
   private static final String SELLER_ID = "8001015009087";
   private static final String PURCHASER = "Thandi Nkosi";
   private static final String PURCHASER_ID = "9002020123083";
-  private static final String DEBTOR = "Pillay Hardware CC";
+  private static final String OPPOSING_PARTY = "Pillay Hardware CC";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -134,12 +135,32 @@ class ContractPartyBindingIntegrationTest {
   }
 
   @Test
-  void letterOfDemand_isAddressedToTheDebtorField_notTheClient() throws Exception {
-    String matterId = createMatter("COLLECTIONS", "{\"debtor_name\":\"%s\"}".formatted(DEBTOR));
+  void bondCancellationInstruction_namesTheSellerAsMortgagor_notTheClient() throws Exception {
+    String matterId =
+        createMatter(
+            "CONVEYANCING",
+            """
+            {"seller_name":"%s","seller_id_number":"%s",\
+            "purchaser_name":"%s","purchaser_id_number":"%s"}"""
+                .formatted(SELLER, SELLER_ID, PURCHASER, PURCHASER_ID));
+
+    String html = preview("bond-cancellation-instruction", matterId);
+
+    assertThat(html).contains("Mortgagor (Seller)");
+    assertThat(html).contains("Name: </strong>" + SELLER);
+    assertThat(html).contains("ID / Passport Number: </strong>" + SELLER_ID);
+    assertThat(html).doesNotContain(CLIENT).doesNotContain(PURCHASER);
+    assertThat(html).doesNotContain("on behalf of our client");
+  }
+
+  @Test
+  void letterOfDemand_isAddressedToTheOpposingParty_notTheClient() throws Exception {
+    String matterId =
+        createMatter("COLLECTIONS", "{\"opposing_party\":\"%s\"}".formatted(OPPOSING_PARTY));
 
     String html = preview("letter-of-demand", matterId);
 
-    assertThat(html).contains("Dear " + DEBTOR + ",");
+    assertThat(html).contains("Dear " + OPPOSING_PARTY + ",");
     // the firm's client is the creditor ("our client"), never the addressee
     assertThat(html).doesNotContain("Dear " + CLIENT);
     assertThat(html).contains("you are indebted to our client");

@@ -64,7 +64,7 @@ class PackInstallBackfillTest {
                   "common-task", "2",
                   "conveyancing-za-project", "3",
                   "legal-za-customer", "2",
-                  "legal-za-project", "4")),
+                  "legal-za-project", "3")),
           PackType.REPORT,
           new TreeMap<>(Map.of("standard-reports", "2")),
           PackType.REQUEST,

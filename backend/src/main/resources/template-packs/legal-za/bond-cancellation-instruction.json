@@ -43,7 +43,7 @@
       "content": [
         {
           "type": "text",
-          "text": "We act on behalf of our client, named below, in respect of the cancellation of the mortgage bond registered over the property described hereunder. Kindly furnish us with the original title deed, bond cancellation figures, and consent to cancellation (Form J) as soon as possible."
+          "text": "We act in respect of the cancellation of the mortgage bond registered over the property described hereunder in the name of the mortgagor (seller) named below. Kindly furnish us with the original title deed, bond cancellation figures, and consent to cancellation (Form J) as soon as possible."
         }
       ]
     },
@@ -51,19 +51,19 @@
     {
       "type": "heading",
       "attrs": { "level": 3 },
-      "content": [{ "type": "text", "text": "Client" }]
+      "content": [{ "type": "text", "text": "Mortgagor (Seller)" }]
     },
     {
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Name: " },
-        { "type": "variable", "attrs": { "key": "customer.name" } }
+        { "type": "variable", "attrs": { "key": "project.customFields.seller_name" } }
       ]
     },
     {
       "type": "conditionalBlock",
       "attrs": {
-        "fieldKey": "customer.customFields.id_passport_number",
+        "fieldKey": "project.customFields.seller_id_number",
         "operator": "isNotEmpty"
       },
       "content": [
@@ -71,7 +71,7 @@
           "type": "paragraph",
           "content": [
             { "type": "text", "marks": [{ "type": "bold" }], "text": "ID / Passport Number: " },
-            { "type": "variable", "attrs": { "key": "customer.customFields.id_passport_number" } }
+            { "type": "variable", "attrs": { "key": "project.customFields.seller_id_number" } }
           ]
         }
       ]

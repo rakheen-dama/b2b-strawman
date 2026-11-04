@@ -1,6 +1,6 @@
 {
   "packId": "legal-za-project",
-  "version": 4,
+  "version": 3,
   "reconcile": [
     {
       "entity": "field_group",
@@ -8,8 +8,7 @@
       "field": "description",
       "from": "South African legal-specific fields for matter (project) entities",
       "to": "South African legal-specific fields for matters"
-    },
-    { "entity": "field_definition", "key": "debtor_name", "field": "membership", "to": "legal_za_matter" }
+    }
   ],
   "verticalProfile": "legal-za",
   "entityType": "PROJECT",
@@ -75,14 +74,6 @@
       "description": "Estimated monetary value of the claim or matter",
       "required": false,
       "sortOrder": 7
-    },
-    {
-      "slug": "debtor_name",
-      "name": "Debtor Name",
-      "fieldType": "TEXT",
-      "description": "Full legal name of the debtor to whom a letter of demand is addressed",
-      "required": false,
-      "sortOrder": 8
     }
   ]
 }

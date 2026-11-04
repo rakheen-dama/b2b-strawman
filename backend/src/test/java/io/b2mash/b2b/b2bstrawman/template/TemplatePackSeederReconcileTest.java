@@ -84,7 +84,11 @@ class TemplatePackSeederReconcileTest {
    * from the client to the matter ({@code primaryEntityType} CUSTOMER → PROJECT, the last entry).
    */
   static final List<String> V10_EDITED_KEYS =
-      List.of("offer-to-purchase", "deed-of-transfer", "letter-of-demand");
+      List.of(
+          "offer-to-purchase",
+          "deed-of-transfer",
+          "bond-cancellation-instruction",
+          "letter-of-demand");
 
   static final String LETTER_OF_DEMAND = "letter-of-demand";
 
@@ -156,7 +160,7 @@ class TemplatePackSeederReconcileTest {
           .as("reconcile key %s is a templateKey of the pack", entry.key())
           .anyMatch(t -> entry.key().equals(t.templateKey()));
       if (i == entries.size() - 1) {
-        // G88-F12: the Letter of Demand renders with the matter (its debtor field)
+        // G88-F12: the Letter of Demand renders with the matter (its opposing party)
         assertThat(entry.field()).isEqualTo("primaryEntityType");
         assertThat(entry.from()).isEqualTo("CUSTOMER");
         assertThat(entry.to())
@@ -260,7 +264,7 @@ class TemplatePackSeederReconcileTest {
   }
 
   /**
-   * G88-F12: pristine v9 rows of the three party-bound templates reach the v10 body, and the Letter
+   * G88-F12: pristine v9 rows of the four party-bound templates reach the v10 body, and the Letter
    * of Demand moves from the client to the matter once its body is the shipped one (the {@code
    * content} entry precedes the {@code primaryEntityType} entry).
    */

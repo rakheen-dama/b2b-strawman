@@ -77,7 +77,11 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   /** Template bodies re-edited in v10 (G88-F12 contract parties), reconciled from their v9 body. */
   private static final List<String> V10_EDITED_KEYS =
-      List.of("offer-to-purchase", "deed-of-transfer", "letter-of-demand");
+      List.of(
+          "offer-to-purchase",
+          "deed-of-transfer",
+          "bond-cancellation-instruction",
+          "letter-of-demand");
 
   /**
    * A legal-za template outside the reconcile block with no clause links: deleted to force a
@@ -448,9 +452,9 @@ class LegalZaTemplateReconcileIntegrationTest {
   }
 
   /**
-   * (g) G88-F12: a v9 tenant's pristine Offer to Purchase, Deed of Transfer and Letter of Demand
-   * reach the party-bound v10 bodies (still pristine), and the Letter of Demand moves from the
-   * client to the matter so its debtor field resolves.
+   * (g) G88-F12: a v9 tenant's pristine Offer to Purchase, Deed of Transfer, Bond Cancellation
+   * Instruction and Letter of Demand reach the party-bound v10 bodies (still pristine), and the
+   * Letter of Demand moves from the client to the matter so its opposing-party field resolves.
    */
   @Test
   void pristineV9Tenant_partyBoundBodies_letterOfDemandBecomesAMatterTemplate() {

@@ -56,7 +56,7 @@
       "key": "bond-cancellation-instruction",
       "field": "content",
       "from": "sha256:baaa3d306e1893adcf69f6b35d366bff64e899ac76e67cff233df904bdb7249b",
-      "to": "sha256:acb5037cd4adb96fbc9ff86c5e878a916f4772b9f93bea99eadc4bb87cb2095f"
+      "to": "sha256:09d279ca474fe75a99a149ee462a33c6c1707605457a0dbc5064e2cc4da048ca"
     },
     {
       "entity": "document_template",
@@ -95,10 +95,17 @@
     },
     {
       "entity": "document_template",
+      "key": "bond-cancellation-instruction",
+      "field": "content",
+      "from": "sha256:acb5037cd4adb96fbc9ff86c5e878a916f4772b9f93bea99eadc4bb87cb2095f",
+      "to": "sha256:09d279ca474fe75a99a149ee462a33c6c1707605457a0dbc5064e2cc4da048ca"
+    },
+    {
+      "entity": "document_template",
       "key": "letter-of-demand",
       "field": "content",
       "from": "sha256:02f4cd0ca25aa8aa706c5af6612adb52fde98cde0d5b1d23c2c6cecffc9f79ba",
-      "to": "sha256:905cfd5157b48ba6afd039b4bce20996f48613da1ea207ca93d8e885c0f7a3d8"
+      "to": "sha256:1120ad071e5a8577172c5d60fb41d0107c57f126cfb634d05c57e6956b576590"
     },
     {
       "entity": "document_template",

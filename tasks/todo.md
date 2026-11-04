@@ -22,3 +22,27 @@ Targeted tests → PR → reviews A+B bound to head + CodeRabbit line → full `
 - **PR-F #1720** (2026-11-04): F36 hypothesis CONFIRMED red-first. Review round: mention after punctuation regressed with `(?<!\S)` → `(?<![\w.+\-])`. Follow-ups: mention recipients not filtered by matter access (Phase 89 candidate); URL handles count as mentions; hyphen/apostrophe names; existing tied draft lines not backfilled.
 
 **Batch complete 2026-11-04:** 7 PRs (A on main `291e1a082`; #1716–#1721), all merged with full gates, two bound reviews per head, CodeRabbit addressed, verify markers committed. Phase 89 requirements updated with the pre-phase status. Next: `/architecture requirements/claude-code-prompt-phase89.md`.
+
+# Phase 89 — /architecture (2026-11-04)
+
+Input: `requirements/claude-code-prompt-phase89.md`. Numbering: ARCHITECTURE.md **Section 14**, ADRs **358+**, tenant migration **V10** (global V3 only if needed). Pre-phase PRs #1716–#1721 wrote no ADRs, so the clock / S3-key / OTP-party ADRs are written here as records of shipped decisions.
+
+- [x] Step 0 — context inventories (`.arch-context.md` 1308 lines, `.arch-context-phase89.md` 498, `.arch-context-prephase.md` 357) + binding rulings in `.arch-rulings-phase89.md` (scope at HEAD: E2 = F43+F44, E3 = F16+F32; 8 follow-up candidates triaged: C1/C2/C3/C5/C6 in, C4/C7/C8 backlog)
+- [x] Step 1 — `architecture/phase89-go-live-readiness.md` written (1230 lines, 12 sections, 28 slices 630A–636C, tenant V10 + global V3)
+- [x] Step 2 — ADRs 358–365 written; ADR-363/364 aligned with the backfill-marker and receipt-actor rulings
+- [x] Step 3 — two reviewers (consistency: 3 BLOCKER/9 MAJOR/12 MINOR; code facts: 0 BLOCKER/5 MAJOR/12 MINOR, 112 citations sampled, 15 wrong) → rulings §6/§7 → all 41 findings applied; re-verified by the orchestrator
+- [x] Step 4 — summary presented 2026-11-04; next `/breakdown 89 requirements/claude-code-prompt-phase89.md`
+
+## Review — Phase 89 /architecture (2026-11-04)
+- Output: `architecture/phase89-go-live-readiness.md` (Section 14, 1254 lines, 28 slices 630A–636C, tenant V10 §1–§2 + global V3) and `adr/ADR-358…365`. Working files `.arch-context*.md`, `.arch-rulings-phase89.md`, `.arch-review-findings-phase89.md` kept as inputs (untracked).
+- Scope corrections vs the requirements text: E2 = F43+F44 (F38 closed #1719); E3 = F16+F32 (M10 #1720, F46 #1719); E6 = docs PR + marker-check script only. Follow-up candidates: C1/C2/C3/C5/C6 in, C4/C7/C8 backlog.
+- Decisions that need the founder's eye (§14.12): trust-report capability (VIEW_TRUST alone?), interest-run cancel, receipt actor fallback = invoice creator, co-client deadline visibility, PROJECT-target comment surface.
+- Lessons: reviewers caught two design errors a writer cannot see from the inventories (global snapshot re-pin forbidden by BASELINE.md; a `Task.sortOrder` that does not exist) and three real design holes (receipt numbers reused after reversal, POSTPONED rows ghosted by the backfill, `s3Key` breaking the pin) — a code-fact reviewer with Bash is worth its cost on architecture docs too.
+
+# Phase 89 — /breakdown (2026-11-04)
+
+- [x] Step 0 — inputs: architecture §14 (28 slices 630A–636C), ADR-358..365, rulings; TASKS.md last epic 629 → epics 630–636
+- [x] Step 1 — `tasks/phase89-go-live-readiness.md` written (664 lines, 7 epics 630–636, 43 slices; mapping table to §14.10 ids)
+- [x] Step 2 — verified: 7 epics, 43 slices, all 28 architecture ids mapped, rows 8 pipes = TASKS.md layout
+- [x] Step 3 — TASKS.md rows inserted after epic 629 (line 718+), migration note on line 5 updated; breakdown pointer added under architecture §14.10
+- [x] Step 4 — summary presented 2026-11-04; next: founder rulings on §14.12 open questions, then `/phase_v2 89`

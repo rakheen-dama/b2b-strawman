@@ -8,6 +8,8 @@
 
 > **Phase 88 (2026-10):** goal: demo-ready — root-cause closure of the Phase 87 capstone's 59 gaps in 24 fix units (matter team + role casing, fee-note due date/balance model, FICA source, activity-feed correlation, firm letterhead, portal contact directory, acceptance PDF framing, decline, part payments, comment attachments, terminology census). See [Section 13 — `phase88-demo-ready-root-cause-closure.md`](phase88-demo-ready-root-cause-closure.md) and ADR-345..357; vetted register in `tasks/phase88-gap-register.md`, research dossiers in `tasks/phase88-research/`; closure report in `tasks/phase88-demo-ready-root-cause-closure.md` § Closure report — closure: **PARTIAL — not demo-ready** (3 HIGH open: G88-F12, G88-F33, G88-F48).
 
+> **Phase 89 (2026-11):** go-live readiness — trust, compliance, documents and portal correctness after the Phase 88 re-walk (Section 35 report pack wiring, interest-run approval surface, server-side ledger running balance, POPIA shape alignment + wire-shape contract pins, letterhead on all client-facing templates, payment receipts, portal task projection + court-date/prescription deadline sync with backfills, firm-side MEDIUMs). Pre-phase PRs #1716–#1721 shipped the SA clock, identity-based document keys and explicit OTP parties (ADR-358..360). See [Section 14 — `phase89-go-live-readiness.md`](phase89-go-live-readiness.md) and ADR-358..365; breakdown in `tasks/phase89-go-live-readiness.md` (epics 630–636).
+
 ## 1. Overview
 
 A reusable SaaS starter platform supporting multi-tenant B2B products with schema-per-tenant isolation. The reference implementation is **DocTeams** — a team-based document hub where organizations manage projects and upload documents.

@@ -329,6 +329,7 @@ class TrustReconciliationControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
         // C5 (Phase 89 630C, arch §14.3.4): a parse failure is a 422 ProblemDetail, not a 500.
         .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.status").value(422))
         .andExpect(jsonPath("$.title").value("Bank statement could not be parsed"))
         .andExpect(
             jsonPath("$.detail")

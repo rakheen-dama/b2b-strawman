@@ -383,8 +383,7 @@ class DocxGenerationTest {
   /**
    * G88-F33: two DOCX generations for the same entity on the same day must not share a storage
    * object. The key is {@code org/{tenant}/generated/{uuid}/{fileName}}, so the presigned download
-   * URL (which embeds the key) differs while the human-readable file name is unchanged; with BOTH,
-   * the PDF sibling shares its DOCX's uuid segment.
+   * URL (which embeds the key) differs while the human-readable file name is unchanged.
    */
   @Test
   @Order(13)
@@ -410,15 +409,9 @@ class DocxGenerationTest {
       String url = JsonPath.read(body, "$.downloadUrl");
       var matcher = keyShape.matcher(url);
       assertThat(matcher.matches()).as("DOCX download URL %s", url).isTrue();
-      Map<String, Object> response = JsonPath.read(body, "$");
-      // Null fields are omitted when the PDF converter is unavailable in the test environment
-      var pdfUrl = (String) response.get("pdfDownloadUrl");
-      if (pdfUrl != null) {
-        assertThat(pdfUrl)
-            .contains("/generated/" + matcher.group(1) + "/")
-            .endsWith(".pdf?download=true");
-      }
     }
+    // The PDF sibling sharing the DOCX's uuid segment is pinned by the unit test
+    // GeneratedDocumentServiceDocxStorageKeyTest: no PDF converter runs in this suite.
   }
 
   // --- Helpers ---

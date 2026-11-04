@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementService;
@@ -114,6 +115,20 @@ class GeneratedDocumentStorageKeyIntegrationTest {
                 + Pattern.quote(tenantSchema)
                 + "/generated/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[^/]+$");
 
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUBJECT);
+    genericMatterId =
+        UUID.fromString(
+            TestEntityHelper.createProject(
+                mockMvc, ownerJwt, "Generic Key Matter", "Same entity, same day"));
+    genericSameNameA =
+        UUID.fromString(
+            TestEntityHelper.createProject(
+                mockMvc, ownerJwt, SHARED_MATTER_NAME, "First client's matter"));
+    genericSameNameB =
+        UUID.fromString(
+            TestEntityHelper.createProject(
+                mockMvc, ownerJwt, SHARED_MATTER_NAME, "Second client's matter"));
+
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -125,10 +140,6 @@ class GeneratedDocumentStorageKeyIntegrationTest {
                   statementMatterId = matterWithClient("Mokoena Estate", "Mokoena Client", "a");
                   sameNameMatterA = matterWithClient(SHARED_MATTER_NAME, "Sipho Dlamini", "b");
                   sameNameMatterB = matterWithClient(SHARED_MATTER_NAME, "Thandi Dlamini", "c");
-
-                  genericMatterId = matter("Generic Key Matter", "Same entity, same day");
-                  genericSameNameA = matter(SHARED_MATTER_NAME, "First client's matter");
-                  genericSameNameB = matter(SHARED_MATTER_NAME, "Second client's matter");
 
                   templateId =
                       documentTemplateRepository
@@ -285,10 +296,6 @@ class GeneratedDocumentStorageKeyIntegrationTest {
     var project = new Project(matterName, "G88-F33 key test", memberId);
     project.setCustomerId(customer.getId());
     return projectRepository.saveAndFlush(project).getId();
-  }
-
-  private UUID matter(String name, String description) {
-    return projectRepository.saveAndFlush(new Project(name, description, memberId)).getId();
   }
 
   private void runInTenant(Runnable action) {

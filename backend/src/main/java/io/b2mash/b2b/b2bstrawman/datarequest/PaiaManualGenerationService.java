@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
@@ -98,9 +99,9 @@ public class PaiaManualGenerationService {
     // 5. Upload to S3
     String tenantId = RequestScopes.requireTenantId();
     String date = LocalDate.now(clock).format(DateTimeFormatter.ISO_LOCAL_DATE);
-    String uniqueId = UUID.randomUUID().toString().substring(0, 8);
-    String fileName = PAIA_TEMPLATE_SLUG + "-" + date + "-" + uniqueId + ".pdf";
-    String s3Key = "org/" + tenantId + "/generated/" + fileName;
+    // G88-F33: uniqueness lives in the key's uuid segment, so the file name stays human-readable
+    String fileName = PAIA_TEMPLATE_SLUG + "-" + date + ".pdf";
+    String s3Key = S3PresignedUrlService.buildGeneratedKey(tenantId, UUID.randomUUID(), fileName);
 
     try {
       storageService.upload(s3Key, pdfBytes, "application/pdf");

@@ -20,16 +20,18 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 /**
- * G88-F33: the presign key whitelist must accept the identity-based generated-document key {@code
- * org/{tenant}/generated/{uuid}/{fileName}} and keep accepting the legacy flat {@code
- * org/{tenant}/generated/{fileName}} keys stored on existing rows. Runs every case against the
- * production {@link S3StorageAdapter} (real offline presigner, no network) and the {@link
- * InMemoryStorageService} test double, so the two patterns cannot drift apart.
+ * G88-F33: the presign key whitelist ({@code StorageKeyPolicy}) must accept the identity-based
+ * generated-document key {@code org/{tenant}/generated/{uuid}/{fileName}}, keep accepting the
+ * legacy flat {@code org/{tenant}/generated/{fileName}} keys stored on existing rows, and keep
+ * accepting every other key family it allowed before. Runs every case against the production {@link
+ * S3StorageAdapter} (real offline presigner, no network) and the {@link InMemoryStorageService}
+ * test double, which both validate through the one policy.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StorageKeyValidationTest {
 
   private static final String UUID_SEGMENT = "3f2c8a10-5b7e-4c1d-9a2b-0e6f4d8c1a7b";
+  private static final String DOC_ID = "9b1e7c42-0d3a-4f6e-8c5b-2a7d1e9f3c60";
 
   private final StaticCredentialsProvider credentials =
       StaticCredentialsProvider.create(AwsBasicCredentials.create("test-key", "test-secret"));
@@ -60,7 +62,14 @@ class StorageKeyValidationTest {
                         "org/tenant_5039f2d497cf/generated/" + UUID_SEGMENT + "/fee-note.docx",
                         // Legacy flat shape still stored on existing rows
                         "org/tenant_5039f2d497cf/generated/statement-of-account-sipho-dlamini-2026-10-29.pdf",
-                        "org/tenant_5039f2d497cf/generated/paia-section-51-manual-2026-10-29-1a2b3c4d.pdf")
+                        "org/tenant_5039f2d497cf/generated/paia-section-51-manual-2026-10-29-1a2b3c4d.pdf",
+                        // The other key families the policy allows
+                        "org/tenant_5039f2d497cf/project/" + UUID_SEGMENT + "/" + DOC_ID,
+                        "org/tenant_5039f2d497cf/org-docs/" + DOC_ID,
+                        "org/tenant_5039f2d497cf/customer/" + UUID_SEGMENT + "/" + DOC_ID,
+                        "org/tenant_5039f2d497cf/branding/logo.png",
+                        "org/tenant_5039f2d497cf/exports/" + DOC_ID + ".zip",
+                        "org/tenant_5039f2d497cf/templates/" + UUID_SEGMENT + "/template.docx")
                     .map(key -> Arguments.of(impl.get()[0], impl.get()[1], key)));
   }
 
@@ -73,7 +82,15 @@ class StorageKeyValidationTest {
                         "org/t/generated/" + UUID_SEGMENT + "/",
                         "org/t/generated/not-a-uuid/name.pdf",
                         "org/t/generated/../name.pdf",
-                        "org/t/generated/" + UUID_SEGMENT + "/../../etc/passwd")
+                        "org/t/generated/" + UUID_SEGMENT + "/../../etc/passwd",
+                        "org/t/project/" + UUID_SEGMENT + "/nested/" + DOC_ID,
+                        "org/t/customer/" + DOC_ID,
+                        "org/t/org-docs/nested/" + DOC_ID,
+                        "org/t/branding/",
+                        "org/t/templates/" + UUID_SEGMENT + "/../template.docx",
+                        "org/t/unknown-family/" + DOC_ID,
+                        "org//exports/" + DOC_ID + ".zip",
+                        "tenant/t/exports/" + DOC_ID + ".zip")
                     .map(key -> Arguments.of(impl.get()[0], impl.get()[1], key)));
   }
 

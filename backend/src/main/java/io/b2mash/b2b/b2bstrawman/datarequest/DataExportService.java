@@ -193,7 +193,7 @@ public class DataExportService {
     // Generate exportId upfront so it can be embedded in the S3 key
     UUID exportId = UUID.randomUUID();
 
-    // Upload to S3 — use exports segment (matches existing S3_KEY_PATTERN)
+    // Upload to S3 — use exports segment (matches StorageKeyPolicy)
     String timestamp = String.valueOf(Instant.now().toEpochMilli());
     String s3Key =
         "org/"

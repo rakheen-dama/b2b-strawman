@@ -1,12 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -59,15 +62,39 @@ class DataProtectionControllerTest {
         .andExpect(status().isOk());
 
     // Generate the PAIA manual
+    String body =
+        mockMvc
+            .perform(
+                post("/api/settings/paia-manual/generate")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").isNotEmpty())
+            .andExpect(
+                jsonPath(
+                    "$.fileName",
+                    matchesPattern("^paia-section-51-manual-\\d{4}-\\d{2}-\\d{2}\\.pdf$")))
+            .andExpect(jsonPath("$.fileSize").isNumber())
+            .andExpect(jsonPath("$.generatedAt").isNotEmpty())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    // G88-F33: the manual is stored under org/{tenant}/generated/{uuid}/{fileName} and presigns
+    String id = JsonPath.read(body, "$.id");
+    String fileName = JsonPath.read(body, "$.fileName");
     mockMvc
         .perform(
-            post("/api/settings/paia-manual/generate")
+            get("/api/generated-documents/{id}/download", id)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").isNotEmpty())
-        .andExpect(jsonPath("$.fileName").isNotEmpty())
-        .andExpect(jsonPath("$.fileSize").isNumber())
-        .andExpect(jsonPath("$.generatedAt").isNotEmpty());
+        .andExpect(status().isFound())
+        .andExpect(
+            header()
+                .string(
+                    "Location",
+                    matchesPattern(
+                        "^.*/org/[^/]+/generated/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/"
+                            + Pattern.quote(fileName)
+                            + "\\?download=true$")));
   }
 
   @Test

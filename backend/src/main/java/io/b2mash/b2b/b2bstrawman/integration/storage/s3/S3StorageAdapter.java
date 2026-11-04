@@ -2,12 +2,12 @@ package io.b2mash.b2b.b2bstrawman.integration.storage.s3;
 
 import io.b2mash.b2b.b2bstrawman.config.S3Config.S3Properties;
 import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageKeyPolicy;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,11 +29,6 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class S3StorageAdapter implements StorageService {
 
   private static final Logger log = LoggerFactory.getLogger(S3StorageAdapter.class);
-
-  /** Validates that S3 keys follow the expected org-scoped path structure. */
-  private static final Pattern S3_KEY_PATTERN =
-      Pattern.compile(
-          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|exports|templates/[^/]+)/[^/]+$");
 
   private final S3Client s3Client;
   private final S3Presigner s3Presigner;
@@ -84,7 +79,7 @@ public class S3StorageAdapter implements StorageService {
 
   @Override
   public PresignedUrl generateUploadUrl(String key, String contentType, Duration expiry) {
-    validateKey(key);
+    StorageKeyPolicy.requireValidKey(key);
     var putRequest =
         PutObjectRequest.builder().bucket(bucketName).key(key).contentType(contentType).build();
 
@@ -100,7 +95,7 @@ public class S3StorageAdapter implements StorageService {
 
   @Override
   public PresignedUrl generateDownloadUrl(String key, Duration expiry) {
-    validateKey(key);
+    StorageKeyPolicy.requireValidKey(key);
     var getRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
 
     var presignRequest =
@@ -117,11 +112,5 @@ public class S3StorageAdapter implements StorageService {
   public List<String> listKeys(String prefix) {
     var request = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix).build();
     return s3Client.listObjectsV2Paginator(request).contents().stream().map(S3Object::key).toList();
-  }
-
-  private static void validateKey(String key) {
-    if (key == null || !S3_KEY_PATTERN.matcher(key).matches()) {
-      throw new IllegalArgumentException("Invalid storage key format");
-    }
   }
 }

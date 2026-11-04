@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.testutil;
 
 import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageKeyPolicy;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +9,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 /**
  * In-memory StorageService for tests. Replaces real S3 (formerly LocalStack) for ALL tests —
@@ -16,11 +16,6 @@ import java.util.regex.Pattern;
  * instantiated directly by plain unit tests (e.g. {@code S3PresignedUrlServiceTest}).
  */
 public class InMemoryStorageService implements StorageService {
-
-  /** Same key validation as S3StorageAdapter — rejects path traversal and invalid formats. */
-  private static final Pattern KEY_PATTERN =
-      Pattern.compile(
-          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|exports|templates/[^/]+)/[^/]+$");
 
   private final ConcurrentHashMap<String, byte[]> store = new ConcurrentHashMap<>();
 
@@ -56,22 +51,16 @@ public class InMemoryStorageService implements StorageService {
 
   @Override
   public PresignedUrl generateUploadUrl(String key, String contentType, Duration expiry) {
-    validateKey(key);
+    StorageKeyPolicy.requireValidKey(key);
     return new PresignedUrl(
         "http://test-storage/test-bucket/" + key + "?upload=true", Instant.now().plus(expiry));
   }
 
   @Override
   public PresignedUrl generateDownloadUrl(String key, Duration expiry) {
-    validateKey(key);
+    StorageKeyPolicy.requireValidKey(key);
     return new PresignedUrl(
         "http://test-storage/test-bucket/" + key + "?download=true", Instant.now().plus(expiry));
-  }
-
-  private static void validateKey(String key) {
-    if (key == null || !KEY_PATTERN.matcher(key).matches()) {
-      throw new IllegalArgumentException("Invalid storage key format");
-    }
   }
 
   @Override

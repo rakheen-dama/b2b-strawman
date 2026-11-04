@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
+import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
@@ -246,7 +247,8 @@ public class GeneratedDocumentService {
 
     // 3. Upload to storage
     String tenantId = RequestScopes.requireTenantId();
-    String s3Key = "org/" + tenantId + "/generated/" + pdfResult.fileName();
+    String s3Key =
+        S3PresignedUrlService.buildGeneratedKey(tenantId, UUID.randomUUID(), pdfResult.fileName());
     uploadToStorage(s3Key, pdfResult.pdfBytes());
 
     // 4. Build context snapshot
@@ -628,8 +630,11 @@ public class GeneratedDocumentService {
     String docxFileName = buildDocxFileName(template.getSlug(), entityName, "docx");
 
     // 6. Upload merged DOCX to S3
+    // G88-F33: one storage token per generation, shared by the DOCX and its PDF sibling
     String tenantId = RequestScopes.requireTenantId();
-    String docxS3Key = "org/" + tenantId + "/generated/" + docxFileName;
+    UUID storageToken = UUID.randomUUID();
+    String docxS3Key =
+        S3PresignedUrlService.buildGeneratedKey(tenantId, storageToken, docxFileName);
     try {
       storageService.upload(docxS3Key, mergedBytes, DOCX_CONTENT_TYPE);
     } catch (Exception e) {
@@ -649,7 +654,7 @@ public class GeneratedDocumentService {
       if (pdfBytes.isPresent()) {
         pdfFileSize = pdfBytes.get().length;
         String pdfFileName = buildDocxFileName(template.getSlug(), entityName, "pdf");
-        pdfS3Key = "org/" + tenantId + "/generated/" + pdfFileName;
+        pdfS3Key = S3PresignedUrlService.buildGeneratedKey(tenantId, storageToken, pdfFileName);
         try {
           storageService.upload(pdfS3Key, pdfBytes.get(), "application/pdf");
         } catch (Exception e) {

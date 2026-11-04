@@ -47,6 +47,7 @@ class TrustReconciliationControllerTest {
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private StorageService storageService;
+  @Autowired private BankStatementRepository bankStatementRepository;
 
   private String tenantSchema;
   private String trustAccountId;
@@ -259,6 +260,102 @@ class TrustReconciliationControllerTest {
     String expectedPrefix = "trust-statements/" + tenantSchema + "/" + trustAccountId + "/";
     var keys = storageService.listKeys(expectedPrefix);
     assertThat(keys).anyMatch(key -> key.contains("fnb-s3-test.csv"));
+  }
+
+  /**
+   * G88-F33 (same bug class): banks export statements under fixed names such as {@code
+   * statement.csv}. Importing two same-named files into one trust account must keep both raw
+   * artefacts — the key is {@code trust-statements/{tenant}/{accountId}/{uuid}/{fileName}}.
+   */
+  @Test
+  void importBankStatement_sameFileNameTwice_keepsBothFilesUnderDistinctKeys() throws Exception {
+    var marchCsv =
+        """
+        FNB Trust Account Statement - Account 62012345678
+        Date,Description,Amount,Balance,Reference
+        26/03/2026,Interest earned,101.10,224057.85,INT-SAME-NAME-1
+        """;
+    var aprilCsv =
+        """
+        FNB Trust Account Statement - Account 62012345678
+        Date,Description,Amount,Balance,Reference
+        26/04/2026,Interest earned,202.20,224260.05,INT-SAME-NAME-2
+        """;
+
+    String firstId = importSameNamedStatement(marchCsv);
+    String secondId = importSameNamedStatement(aprilCsv);
+
+    String firstKey = fileKeyOf(firstId);
+    String secondKey = fileKeyOf(secondId);
+    String uuidSegment = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+    String expectedShape =
+        "^trust-statements/"
+            + java.util.regex.Pattern.quote(tenantSchema + "/" + trustAccountId)
+            + "/"
+            + uuidSegment
+            + "/statement\\.csv$";
+
+    assertThat(firstKey).isNotEqualTo(secondKey);
+    assertThat(firstKey).matches(expectedShape);
+    assertThat(secondKey).matches(expectedShape);
+    assertThat(new String(storageService.download(firstKey), StandardCharsets.UTF_8))
+        .isEqualTo(marchCsv);
+    assertThat(new String(storageService.download(secondKey), StandardCharsets.UTF_8))
+        .isEqualTo(aprilCsv);
+  }
+
+  /**
+   * G88-F33 follow-up: the raw file is stored only after a successful parse. A rejected import must
+   * not leave an orphaned object under the account's prefix — with a per-import uuid key, every
+   * failed retry would otherwise retain another copy.
+   */
+  @Test
+  void importBankStatement_parseFailure_storesNoFile() throws Exception {
+    String accountId = createIsolatedTrustAccount();
+    var malformedCsv =
+        """
+        Date,Description,Amount,Balance
+        not-a-date,Garbage row,not-a-number,also-not-a-number
+        still-not-a-date,Another garbage row,xyz,abc
+        """;
+    var csvFile =
+        new MockMultipartFile(
+            "file", "malformed.csv", "text/csv", malformedCsv.getBytes(StandardCharsets.UTF_8));
+
+    mockMvc
+        .perform(
+            multipart("/api/trust-accounts/{accountId}/bank-statements", accountId)
+                .file(csvFile)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
+        .andExpect(status().isInternalServerError());
+
+    assertThat(storageService.listKeys("trust-statements/" + tenantSchema + "/" + accountId + "/"))
+        .isEmpty();
+  }
+
+  private String importSameNamedStatement(String csv) throws Exception {
+    var csvFile =
+        new MockMultipartFile(
+            "file", "statement.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
+    var result =
+        mockMvc
+            .perform(
+                multipart("/api/trust-accounts/{accountId}/bank-statements", trustAccountId)
+                    .file(csvFile)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private String fileKeyOf(String statementId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .call(
+            () ->
+                bankStatementRepository
+                    .findById(java.util.UUID.fromString(statementId))
+                    .orElseThrow()
+                    .getFileKey());
   }
 
   @Test

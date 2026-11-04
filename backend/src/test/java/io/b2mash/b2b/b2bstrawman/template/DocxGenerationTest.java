@@ -380,7 +380,54 @@ class DocxGenerationTest {
         .andExpect(jsonPath("$.pdfDownloadUrl").doesNotExist());
   }
 
+  /**
+   * G88-F33: two DOCX generations for the same entity on the same day must not share a storage
+   * object. The key is {@code org/{tenant}/generated/{uuid}/{fileName}}, so the presigned download
+   * URL (which embeds the key) differs while the human-readable file name is unchanged.
+   */
+  @Test
+  @Order(13)
+  void generateDocx_twiceSameEntitySameDay_getsDistinctStorageKeys() throws Exception {
+    var requestBody =
+        objectMapper.writeValueAsString(Map.of("entityId", projectId, "outputFormat", "BOTH"));
+
+    String first = generateDocxBody(requestBody);
+    String second = generateDocxBody(requestBody);
+
+    String fileName = JsonPath.read(first, "$.fileName");
+    assertThat((String) JsonPath.read(second, "$.fileName")).isEqualTo(fileName);
+
+    String firstUrl = JsonPath.read(first, "$.downloadUrl");
+    String secondUrl = JsonPath.read(second, "$.downloadUrl");
+    assertThat(firstUrl).isNotEqualTo(secondUrl);
+    var keyShape =
+        java.util.regex.Pattern.compile(
+            ".*/generated/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/"
+                + java.util.regex.Pattern.quote(fileName)
+                + "\\?download=true$");
+    for (String body : List.of(first, second)) {
+      String url = JsonPath.read(body, "$.downloadUrl");
+      var matcher = keyShape.matcher(url);
+      assertThat(matcher.matches()).as("DOCX download URL %s", url).isTrue();
+    }
+    // The PDF sibling sharing the DOCX's uuid segment is pinned by the unit test
+    // GeneratedDocumentServiceDocxStorageKeyTest: no PDF converter runs in this suite.
+  }
+
   // --- Helpers ---
+
+  private String generateDocxBody(String requestBody) throws Exception {
+    return mockMvc
+        .perform(
+            post("/api/templates/{id}/generate-docx", docxTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
 
   private byte[] createTestDocx(String text) throws Exception {
     try (XWPFDocument doc = new XWPFDocument()) {

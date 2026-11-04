@@ -816,13 +816,16 @@ public class NotificationService {
 
   /**
    * Matches {@code @Word} with an optional second word on the same line, so {@code @FirstName} and
-   * {@code @FirstName LastName} can both be tried. The {@code @} must open the text or follow
-   * whitespace, so an email address ({@code info@bob.co.za}) is not a mention. Word characters are
-   * Unicode ({@code @Zoë}). The optional second word cannot start with {@code @}, so in {@code @Bob
-   * and @Carol} the next {@code find()} still reaches {@code @Carol}.
+   * {@code @FirstName LastName} can both be tried. The {@code @} must not follow a character that
+   * can end an email local part (a word character, {@code .}, {@code +} or {@code -}), so {@code
+   * info@bob.co.za}, {@code a.b@x} and {@code x+y@z} are not mentions, while a mention at the start
+   * of the text, after whitespace or after other punctuation ({@code (@Bob)}, {@code cc:@Bob},
+   * {@code "@Bob"}) is. Word characters are Unicode ({@code @Zoë}). The optional second word cannot
+   * start with {@code @}, so in {@code @Bob and @Carol} the next {@code find()} still reaches
+   * {@code @Carol}.
    */
   private static final Pattern MENTION_PATTERN =
-      Pattern.compile("(?<!\\S)@(\\w+)(?:[ \\t]+(\\w+))?", Pattern.UNICODE_CHARACTER_CLASS);
+      Pattern.compile("(?<![\\w.+\\-])@(\\w+)(?:[ \\t]+(\\w+))?", Pattern.UNICODE_CHARACTER_CLASS);
 
   private record Mention(String firstWord, String secondWord) {}
 

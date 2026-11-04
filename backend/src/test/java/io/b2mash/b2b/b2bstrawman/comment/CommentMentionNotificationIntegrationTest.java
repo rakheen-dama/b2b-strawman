@@ -64,6 +64,7 @@ class CommentMentionNotificationIntegrationTest extends AbstractIntegrationTest 
     String taskId = commentOnFreshTask("@Bob please review the draft");
 
     assertThat(hasCommentNotification(BOB, taskId)).isTrue();
+    assertThat(hasCommentNotification(BOB_SECOND, taskId)).isTrue();
   }
 
   @Test
@@ -102,6 +103,28 @@ class CommentMentionNotificationIntegrationTest extends AbstractIntegrationTest 
 
     assertThat(hasCommentNotification(BOB, taskId)).isFalse();
     assertThat(hasCommentNotification(BOB_SECOND, taskId)).isFalse();
+  }
+
+  @Test
+  void dottedEmailLocalPart_isNotAMention() throws Exception {
+    String taskId = commentOnFreshTask("Copied first.last@bob.co.za on the draft");
+
+    assertThat(hasCommentNotification(BOB, taskId)).isFalse();
+    assertThat(hasCommentNotification(BOB_SECOND, taskId)).isFalse();
+  }
+
+  @Test
+  void mentionInsideParentheses_notifiesThatMember() throws Exception {
+    String taskId = commentOnFreshTask("Please check the draft (@Bob)");
+
+    assertThat(hasCommentNotification(BOB, taskId)).isTrue();
+  }
+
+  @Test
+  void mentionAfterColon_notifiesThatMember() throws Exception {
+    String taskId = commentOnFreshTask("cc:@Bob for the draft");
+
+    assertThat(hasCommentNotification(BOB, taskId)).isTrue();
   }
 
   @Test

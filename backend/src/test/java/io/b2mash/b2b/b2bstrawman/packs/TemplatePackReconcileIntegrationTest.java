@@ -96,8 +96,8 @@ class TemplatePackReconcileIntegrationTest {
                 tx -> {
                   // Rewind the recorded version to simulate a tenant installed before v6 (the
                   // version that introduced fee-note-za). Also exercises the CAS guard: the
-                  // expected-version match must succeed exactly once. (Current classpath: v9.)
-                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "9", "5", 16);
+                  // expected-version match must succeed exactly once. (Current classpath: v10.)
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "10", "5", 16);
                   assertThat(updated).isEqualTo(1);
                 }));
 
@@ -118,7 +118,7 @@ class TemplatePackReconcileIntegrationTest {
                   assertThat(feeNote.getContentHash()).isNotBlank();
 
                   // Install row advanced to the classpath pack version
-                  assertThat(install.getPackVersion()).isEqualTo("9");
+                  assertThat(install.getPackVersion()).isEqualTo("10");
                   assertThat(install.getItemCount()).isEqualTo(17);
                 }));
 
@@ -436,7 +436,7 @@ class TemplatePackReconcileIntegrationTest {
                       templatePackInstaller.computeContentHash(staleSoaContent, soa.getCss()));
                   documentTemplateRepository.save(soa);
 
-                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "9", "8", 17);
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "10", "8", 17);
                   assertThat(updated).isEqualTo(1);
                 }));
 
@@ -449,7 +449,7 @@ class TemplatePackReconcileIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
-                  assertThat(install.getPackVersion()).isEqualTo("9");
+                  assertThat(install.getPackVersion()).isEqualTo("10");
 
                   var soa =
                       documentTemplateRepository

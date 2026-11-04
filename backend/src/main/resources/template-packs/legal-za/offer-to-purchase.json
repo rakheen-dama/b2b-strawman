@@ -29,13 +29,13 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Purchaser: " },
-        { "type": "variable", "attrs": { "key": "customer.name" } }
+        { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } }
       ]
     },
     {
       "type": "conditionalBlock",
       "attrs": {
-        "fieldKey": "customer.customFields.id_passport_number",
+        "fieldKey": "project.customFields.purchaser_id_number",
         "operator": "isNotEmpty"
       },
       "content": [
@@ -43,7 +43,7 @@
           "type": "paragraph",
           "content": [
             { "type": "text", "marks": [{ "type": "bold" }], "text": "Purchaser ID / Passport: " },
-            { "type": "variable", "attrs": { "key": "customer.customFields.id_passport_number" } }
+            { "type": "variable", "attrs": { "key": "project.customFields.purchaser_id_number" } }
           ]
         }
       ]
@@ -165,7 +165,7 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Purchaser: " },
-        { "type": "variable", "attrs": { "key": "customer.name" } }
+        { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } }
       ]
     },
     {

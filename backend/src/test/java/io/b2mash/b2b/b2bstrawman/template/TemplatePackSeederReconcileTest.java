@@ -54,6 +54,7 @@ class TemplatePackSeederReconcileTest {
   static final String PACK_JSON = "template-packs/legal-za/pack.json";
   static final String V7_FIXTURES = "fixtures/template-packs/legal-za-v7/";
   static final String V8_FIXTURES = "fixtures/template-packs/legal-za-v8/";
+  static final String V9_FIXTURES = "fixtures/template-packs/legal-za-v9/";
 
   /**
    * Every template body rewritten in v8 (626.8 + ruling R-2), one v7 → shipped reconcile entry
@@ -76,6 +77,16 @@ class TemplatePackSeederReconcileTest {
    */
   static final List<String> V9_EDITED_KEYS =
       List.of("fee-note-za", "statement-of-account", "matter-closure-letter");
+
+  /**
+   * Template bodies re-edited in v10 (G88-F12: contract parties bound to explicit matter fields),
+   * one v9 → shipped entry each, appended after the v9 entries; the Letter of Demand also moves
+   * from the client to the matter ({@code primaryEntityType} CUSTOMER → PROJECT, the last entry).
+   */
+  static final List<String> V10_EDITED_KEYS =
+      List.of("offer-to-purchase", "deed-of-transfer", "letter-of-demand");
+
+  static final String LETTER_OF_DEMAND = "letter-of-demand";
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -128,23 +139,36 @@ class TemplatePackSeederReconcileTest {
    */
   @Test
   void shippedPack_reconcileBlock_takesEachPriorBodyToTheShippedBody() {
-    assertThat(shippedPack.version()).isEqualTo(9);
+    assertThat(shippedPack.version()).isEqualTo(10);
     var entries = PackReconcileEntry.parse(PACK_ID, shippedPack.reconcile());
     var expectedKeys = new ArrayList<>(RECONCILED_KEYS);
     expectedKeys.addAll(V9_EDITED_KEYS);
+    expectedKeys.addAll(V10_EDITED_KEYS);
+    expectedKeys.add(LETTER_OF_DEMAND);
     assertThat(entries).extracting(PackReconcileEntry::key).containsExactlyElementsOf(expectedKeys);
 
+    int v9Start = RECONCILED_KEYS.size();
+    int v10Start = v9Start + V9_EDITED_KEYS.size();
     for (int i = 0; i < entries.size(); i++) {
       PackReconcileEntry entry = entries.get(i);
-      boolean fromV8 = i >= RECONCILED_KEYS.size();
       assertThat(entry.entity()).as(entry.key()).isEqualTo("document_template");
-      assertThat(entry.field()).as(entry.key()).isEqualTo("content");
       assertThat(shippedPack.templates())
           .as("reconcile key %s is a templateKey of the pack", entry.key())
           .anyMatch(t -> entry.key().equals(t.templateKey()));
+      if (i == entries.size() - 1) {
+        // G88-F12: the Letter of Demand renders with the matter (its debtor field)
+        assertThat(entry.field()).isEqualTo("primaryEntityType");
+        assertThat(entry.from()).isEqualTo("CUSTOMER");
+        assertThat(entry.to())
+            .isEqualTo("PROJECT")
+            .isEqualTo(shippedTemplate(LETTER_OF_DEMAND).primaryEntityType());
+        continue;
+      }
+      String prior = i >= v10Start ? "v9" : i >= v9Start ? "v8" : "v7";
+      assertThat(entry.field()).as(entry.key()).isEqualTo("content");
       assertThat(entry.from())
-          .as("%s from = sha256 of the %s body", entry.key(), fromV8 ? "v8" : "v7")
-          .isEqualTo(hashRef(fromV8 ? v8Body(entry.key()) : v7Body(entry.key())));
+          .as("%s from = sha256 of the %s body", entry.key(), prior)
+          .isEqualTo(hashRef(priorBody(prior, entry.key())));
       assertThat(entry.to())
           .as("%s to = sha256 of the shipped body", entry.key())
           .isEqualTo(hashRef(shippedBody(entry.key())));
@@ -236,6 +260,64 @@ class TemplatePackSeederReconcileTest {
   }
 
   /**
+   * G88-F12: pristine v9 rows of the three party-bound templates reach the v10 body, and the Letter
+   * of Demand moves from the client to the matter once its body is the shipped one (the {@code
+   * content} entry precedes the {@code primaryEntityType} entry).
+   */
+  @Test
+  void pristineV9Rows_reachTheV10Body_letterOfDemandMovesToTheMatter() {
+    var rows = new ArrayList<DocumentTemplate>();
+    for (String key : V10_EDITED_KEYS) {
+      rows.add(
+          platformRow(
+              key,
+              v9Body(key),
+              LETTER_OF_DEMAND.equals(key)
+                  ? TemplateEntityType.CUSTOMER
+                  : TemplateEntityType.PROJECT));
+    }
+    stubInstallRows(rows);
+
+    var logs = captureLogs(() -> seeder.reconcileInstalledPack(shippedPack, packResource, "t"));
+
+    for (DocumentTemplate row : rows) {
+      assertThat(ContentHashUtil.hashOf(row.getContent()))
+          .as("%s carries the shipped v10 body", row.getPackTemplateKey())
+          .isEqualTo(ContentHashUtil.hashOf(shippedBody(row.getPackTemplateKey())));
+      assertThat(row.getPrimaryEntityType())
+          .as(row.getPackTemplateKey())
+          .isEqualTo(TemplateEntityType.PROJECT);
+    }
+    assertThat(logs)
+        .filteredOn(m -> m.startsWith("Reconcile applied"))
+        .hasSize(V10_EDITED_KEYS.size() + 1);
+    assertThat(logs).noneMatch(m -> m.startsWith("Reconcile entry ignored"));
+  }
+
+  /**
+   * A firm-edited Letter of Demand keeps its body AND stays a client template: the entity type
+   * decides the render context, so it never moves under a body the pack did not ship.
+   */
+  @Test
+  void firmEditedLetterOfDemand_keepsItsBodyAndEntityType() {
+    Map<String, Object> edited =
+        withExtraParagraph(v9Body(LETTER_OF_DEMAND), "Our own demand wording");
+    var letter = platformRow(LETTER_OF_DEMAND, edited, TemplateEntityType.CUSTOMER);
+    stubInstallRows(List.of(letter));
+
+    var logs = captureLogs(() -> seeder.reconcileInstalledPack(shippedPack, packResource, "t"));
+
+    assertThat(letter.getContent()).isEqualTo(edited);
+    assertThat(letter.getPrimaryEntityType()).isEqualTo(TemplateEntityType.CUSTOMER);
+    assertThat(logs)
+        .anyMatch(
+            m ->
+                m.startsWith("Reconcile skipped (edited)")
+                    && m.contains("'letter-of-demand' field primaryEntityType"));
+    assertThat(logs).noneMatch(m -> m.startsWith("Reconcile applied"));
+  }
+
+  /**
    * The resolver asks only for this install's pack-seeded rows ({@code findPackSeededByInstall}:
    * PLATFORM, not a clone, tagged with the install — the predicate is JPQL, proven against real
    * Hibernate in {@code LegalZaTemplateReconcileIntegrationTest}); none for the key → no target.
@@ -294,7 +376,11 @@ class TemplatePackSeederReconcileTest {
             new PackReconcileEntry("clause", "fee-note-za", "content", from, to),
             new PackReconcileEntry("document_template", "fee-note-za", "css", from, to),
             new PackReconcileEntry("document_template", "fee-note-za", "content", "a", "b"),
-            new PackReconcileEntry("document_template", "no-such-key", "content", from, to));
+            new PackReconcileEntry("document_template", "no-such-key", "content", from, to),
+            new PackReconcileEntry(
+                "document_template", LETTER_OF_DEMAND, "primaryEntityType", "CUSTOMER", "INVOICE"),
+            new PackReconcileEntry(
+                "document_template", LETTER_OF_DEMAND, "primaryEntityType", "CUSTOMER", 42));
 
     var logs = new ArrayList<String>();
     assertThatCode(
@@ -304,7 +390,7 @@ class TemplatePackSeederReconcileTest {
         .doesNotThrowAnyException();
 
     assertThat(row.getContent()).isSameAs(v7);
-    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile entry ignored")).hasSize(4);
+    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile entry ignored")).hasSize(6);
   }
 
   @Test
@@ -367,8 +453,12 @@ class TemplatePackSeederReconcileTest {
   }
 
   private DocumentTemplate platformRow(String key, Map<String, Object> content) {
-    var dt =
-        new DocumentTemplate(TemplateEntityType.PROJECT, key, key, TemplateCategory.OTHER, content);
+    return platformRow(key, content, TemplateEntityType.PROJECT);
+  }
+
+  private DocumentTemplate platformRow(
+      String key, Map<String, Object> content, TemplateEntityType entityType) {
+    var dt = new DocumentTemplate(entityType, key, key, TemplateCategory.OTHER, content);
     TestIds.withId(dt, UUID.randomUUID());
     dt.setSource(TemplateSource.PLATFORM);
     dt.setPackId(PACK_ID);
@@ -388,6 +478,21 @@ class TemplatePackSeederReconcileTest {
 
   static Map<String, Object> v8Body(String key) {
     return readBody(V8_FIXTURES + key + ".json");
+  }
+
+  static Map<String, Object> v9Body(String key) {
+    return readBody(V9_FIXTURES + key + ".json");
+  }
+
+  static Map<String, Object> priorBody(String version, String key) {
+    return readBody("fixtures/template-packs/legal-za-" + version + "/" + key + ".json");
+  }
+
+  private TemplatePackTemplate shippedTemplate(String key) {
+    return shippedPack.templates().stream()
+        .filter(t -> key.equals(t.templateKey()))
+        .findFirst()
+        .orElseThrow();
   }
 
   static Map<String, Object> shippedBody(String key) {

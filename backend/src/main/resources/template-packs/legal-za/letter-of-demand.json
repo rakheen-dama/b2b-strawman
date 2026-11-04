@@ -26,7 +26,7 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "text": "Dear " },
-        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "variable", "attrs": { "key": "project.customFields.debtor_name" } },
         { "type": "text", "text": "," }
       ]
     },

@@ -6,7 +6,11 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle, CreditCard, Download } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { listPayments, receiptDownload } from "@/lib/api/invoices";
-import { formatCurrency, formatDate } from "@b2mash/shared/format";
+import {
+  formatCurrency,
+  formatDate,
+  formatLocalDate,
+} from "@b2mash/shared/format";
 import { useBranding } from "@/hooks/use-branding";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { InvoiceLineTable } from "@/components/invoice-line-table";
@@ -84,10 +88,20 @@ export default function InvoiceDetailPage() {
   }
 
   async function handleReceiptDownload(paymentEventId: string) {
+    // Open the tab synchronously, while the click's user activation is still live — strict
+    // browsers (Safari) block a window.open issued after the await. Not "noopener": that makes
+    // window.open return null, so the opener is severed by hand instead.
+    const popup = window.open("", "_blank");
+    if (!popup) {
+      alert("Pop-up blocked. Allow pop-ups for this site and try again.");
+      return;
+    }
+    popup.opener = null;
     try {
       const data = await receiptDownload(invoiceId, paymentEventId);
-      window.open(data.downloadUrl, "_blank");
+      popup.location.href = data.downloadUrl;
     } catch {
+      popup.close();
       alert("Receipt download failed. Please try again.");
     }
   }
@@ -246,7 +260,7 @@ export default function InvoiceDetailPage() {
                         {formatCurrency(payment.amount, invoice.currency)}
                       </p>
                       <p>
-                        {formatDate(payment.date)} · {payment.methodLabel}
+                        {formatLocalDate(payment.date)} · {payment.methodLabel}
                         {payment.reference ? ` · ${payment.reference}` : ""}
                       </p>
                     </div>

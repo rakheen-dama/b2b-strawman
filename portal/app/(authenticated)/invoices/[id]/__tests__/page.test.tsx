@@ -468,14 +468,27 @@ describe("InvoiceDetailPage — payments and receipts", () => {
     ).toHaveLength(2);
   });
 
-  it("opens the presigned receipt URL for the clicked payment", async () => {
+  /** A stand-in for the blank tab handleReceiptDownload opens synchronously. */
+  function fakePopup() {
+    return {
+      opener: {} as unknown,
+      location: { href: "" },
+      close: vi.fn(),
+    };
+  }
+
+  it("opens a blank tab before the receipt request resolves, then navigates it to the presigned URL", async () => {
     const user = userEvent.setup();
+    const popup = fakePopup();
+    mockWindowOpen.mockReturnValue(popup as unknown as Window);
+    let resolveReceipt!: (value: { downloadUrl: string }) => void;
+    const receipt = new Promise<{ downloadUrl: string }>((resolve) => {
+      resolveReceipt = resolve;
+    });
     routeGet({
       "/portal/invoices/inv-1": mockPartiallyPaid,
       [PAYMENTS_PATH]: payments,
-      [`${PAYMENTS_PATH}/pe-1/receipt`]: {
-        downloadUrl: "https://s3.example.com/receipt.pdf?signed=abc",
-      },
+      [`${PAYMENTS_PATH}/pe-1/receipt`]: receipt,
     });
 
     render(<InvoiceDetailPage />);
@@ -485,18 +498,31 @@ describe("InvoiceDetailPage — payments and receipts", () => {
     });
     await user.click(buttons[0]);
 
+    // The tab is opened inside the click (user activation still live), before the API answers.
+    expect(mockWindowOpen).toHaveBeenCalledTimes(1);
+    expect(mockWindowOpen).toHaveBeenCalledWith("", "_blank");
+    expect(mockPortalGet).toHaveBeenCalledWith(`${PAYMENTS_PATH}/pe-1/receipt`);
+    expect(popup.opener).toBeNull();
+    expect(popup.location.href).toBe("");
+
+    resolveReceipt({
+      downloadUrl: "https://s3.example.com/receipt.pdf?signed=abc",
+    });
+
     await waitFor(() => {
-      expect(mockWindowOpen).toHaveBeenCalledWith(
+      expect(popup.location.href).toBe(
         "https://s3.example.com/receipt.pdf?signed=abc",
-        "_blank",
       );
     });
-    expect(mockPortalGet).toHaveBeenCalledWith(`${PAYMENTS_PATH}/pe-1/receipt`);
+    expect(mockWindowOpen).toHaveBeenCalledTimes(1);
+    expect(popup.close).not.toHaveBeenCalled();
     expect(window.alert).not.toHaveBeenCalled();
   });
 
-  it("alerts when the receipt download fails", async () => {
+  it("closes the blank tab and alerts when the receipt download fails", async () => {
     const user = userEvent.setup();
+    const popup = fakePopup();
+    mockWindowOpen.mockReturnValue(popup as unknown as Window);
     routeGet({
       "/portal/invoices/inv-1": mockPartiallyPaid,
       [PAYMENTS_PATH]: payments,
@@ -514,7 +540,59 @@ describe("InvoiceDetailPage — payments and receipts", () => {
         "Receipt download failed. Please try again.",
       );
     });
-    expect(mockWindowOpen).not.toHaveBeenCalled();
+    expect(popup.close).toHaveBeenCalledTimes(1);
+    expect(popup.location.href).toBe("");
+  });
+
+  it("alerts and never calls the receipt API when the pop-up is blocked", async () => {
+    const user = userEvent.setup();
+    mockWindowOpen.mockReturnValue(null);
+    routeGet({
+      "/portal/invoices/inv-1": mockPartiallyPaid,
+      [PAYMENTS_PATH]: payments,
+      [`${PAYMENTS_PATH}/pe-1/receipt`]: {
+        downloadUrl: "https://s3.example.com/receipt.pdf?signed=abc",
+      },
+    });
+
+    render(<InvoiceDetailPage />);
+
+    const buttons = await screen.findAllByRole("button", {
+      name: "Download receipt",
+    });
+    await user.click(buttons[0]);
+
+    expect(window.alert).toHaveBeenCalledWith(
+      "Pop-up blocked. Allow pop-ups for this site and try again.",
+    );
+    expect(
+      mockPortalGet.mock.calls.some(([path]) =>
+        String(path).endsWith("/receipt"),
+      ),
+    ).toBe(false);
+  });
+
+  it("renders a payment's LocalDate on its calendar day for a viewer west of UTC", async () => {
+    // "2026-11-04" parsed as UTC midnight would read 3 Nov in Los Angeles.
+    const originalTz = process.env.TZ;
+    process.env.TZ = "America/Los_Angeles";
+    try {
+      routeGet({
+        "/portal/invoices/inv-1": mockPartiallyPaid,
+        [PAYMENTS_PATH]: [payments[0]],
+      });
+
+      render(<InvoiceDetailPage />);
+
+      const list = await screen.findByRole("list", { name: "Payments" });
+      // The date line is the row's second <p> ("<date> · <method> · <reference>").
+      const text = list.querySelectorAll("li p")[1]?.textContent ?? "";
+      expect(text).toMatch(/\b0?4 Nov 2026\b/);
+      expect(text).not.toMatch(/\b0?3 Nov 2026\b/);
+    } finally {
+      if (originalTz === undefined) delete process.env.TZ;
+      else process.env.TZ = originalTz;
+    }
   });
 
   it("lists payments on a PAID fee note", async () => {

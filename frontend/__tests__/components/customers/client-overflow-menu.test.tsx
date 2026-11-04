@@ -19,7 +19,9 @@ vi.mock("@/components/customers/archive-customer-dialog", () => ({
 }));
 
 vi.mock("@/components/customers/anonymize-customer-dialog", () => ({
-  AnonymizeCustomerDialog: () => <div data-testid="anonymize-customer-dialog" />,
+  AnonymizeCustomerDialog: ({ open }: { open?: boolean }) => (
+    <div data-testid="anonymize-customer-dialog" data-open={open ? "true" : "false"} />
+  ),
 }));
 
 vi.mock("@/components/customers/data-export-dialog", () => ({
@@ -138,5 +140,29 @@ describe("ClientOverflowMenu", () => {
     expect(screen.queryByText("Run Conflict Check")).not.toBeInTheDocument();
     // Other items still present
     expect(screen.getByText("Edit Client")).toBeInTheDocument();
+  });
+
+  // G88-F44: executeAnonymization revalidates the client page, so the server re-renders the menu
+  // with isAnonymized=true while the dialog is still showing its completion panel. The open dialog
+  // must stay mounted until the user closes it; only the menu item is hidden.
+  it("keeps an open Anonymize dialog mounted when the client becomes ANONYMIZED", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<ClientOverflowMenu {...defaultProps} />);
+    await user.click(screen.getByTestId("client-overflow-trigger"));
+    await user.click(screen.getByRole("menuitem", { name: "Anonymize" }));
+    expect(screen.getByTestId("anonymize-customer-dialog")).toHaveAttribute("data-open", "true");
+
+    rerender(
+      <ClientOverflowMenu {...defaultProps} isAnonymized={true} lifecycleStatus="ANONYMIZED" />
+    );
+
+    expect(screen.getByTestId("anonymize-customer-dialog")).toHaveAttribute("data-open", "true");
+  });
+
+  it("does not mount the Anonymize dialog for an ANONYMIZED client that never opened it", () => {
+    render(
+      <ClientOverflowMenu {...defaultProps} isAnonymized={true} lifecycleStatus="ANONYMIZED" />
+    );
+    expect(screen.queryByTestId("anonymize-customer-dialog")).not.toBeInTheDocument();
   });
 });

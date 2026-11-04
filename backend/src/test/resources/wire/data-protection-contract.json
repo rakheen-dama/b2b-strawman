@@ -1,0 +1,105 @@
+{
+  "AnonymizationPreview" : [ {
+    "name" : "clientId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "clientName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "portalContacts",
+    "type" : "int"
+  }, {
+    "name" : "projects",
+    "type" : "int"
+  }, {
+    "name" : "documents",
+    "type" : "int"
+  }, {
+    "name" : "timeEntries",
+    "type" : "int"
+  }, {
+    "name" : "invoices",
+    "type" : "int"
+  }, {
+    "name" : "comments",
+    "type" : "int"
+  }, {
+    "name" : "customFieldValues",
+    "type" : "int"
+  }, {
+    "name" : "financialRecordsRetained",
+    "type" : "int"
+  }, {
+    "name" : "financialRetentionExpiresAt",
+    "type" : "java.time.LocalDate"
+  } ],
+  "AnonymizationResult" : [ {
+    "name" : "customerAnonymized",
+    "type" : "boolean"
+  }, {
+    "name" : "documentsDeleted",
+    "type" : "int"
+  }, {
+    "name" : "commentsRedacted",
+    "type" : "int"
+  }, {
+    "name" : "portalContactsAnonymized",
+    "type" : "int"
+  }, {
+    "name" : "invoicesPreserved",
+    "type" : "int"
+  } ],
+  "ConflictDetail" : [ {
+    "name" : "adversePartyId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "adversePartyName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "customerId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "customerName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "projectId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "projectName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "relationship",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "matchType",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "similarityScore",
+    "type" : "double"
+  }, {
+    "name" : "explanation",
+    "type" : "java.lang.String"
+  } ],
+  "ExportStatusResponse" : [ {
+    "name" : "exportId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "status",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "downloadUrl",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "expiresAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "fileCount",
+    "type" : "int"
+  }, {
+    "name" : "totalSizeBytes",
+    "type" : "long"
+  }, {
+    "name" : "s3Key",
+    "type" : "java.lang.String"
+  } ]
+}

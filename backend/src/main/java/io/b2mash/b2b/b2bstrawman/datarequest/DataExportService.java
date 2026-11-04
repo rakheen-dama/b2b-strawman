@@ -168,13 +168,6 @@ public class DataExportService {
     return s3Key;
   }
 
-  /** Triggers a compliance data export and returns the export result for the controller. */
-  @Transactional
-  public ExportResult triggerCustomerExport(UUID customerId, UUID actorId) {
-    var response = exportCustomerData(customerId, actorId);
-    return new ExportResult(response.exportId(), response.status(), response.fileCount());
-  }
-
   @Transactional
   public ExportStatusResponse exportCustomerData(UUID customerId, UUID actorId) {
     customerRepository

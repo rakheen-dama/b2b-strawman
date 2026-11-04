@@ -97,22 +97,22 @@ export interface AnonymizeClientRequest {
   reason: string;
 }
 
+/** `GET /api/clients/{id}/anonymize/preview` — flat backend record `datarequest/AnonymizationPreview` (ADR-365). */
 export interface AnonymizationPreview {
   clientId: string;
   clientName: string;
-  affectedEntities: {
-    portalContacts: number;
-    projects: number;
-    documents: number;
-    timeEntries: number;
-    invoices: number;
-    comments: number;
-    customFieldValues: number;
-  };
+  portalContacts: number;
+  projects: number;
+  documents: number;
+  timeEntries: number;
+  invoices: number;
+  comments: number;
+  customFieldValues: number;
   financialRecordsRetained: number;
   financialRetentionExpiresAt: string | null;
 }
 
+/** `POST /api/clients/{id}/data-export` (200) and `GET /api/data-exports/{id}` — `datarequest/ExportStatusResponse` (ADR-365). */
 export interface StandaloneExportResult {
   exportId: string;
   status: string;
@@ -120,18 +120,15 @@ export interface StandaloneExportResult {
   expiresAt: string;
   fileCount: number;
   totalSizeBytes: number;
+  /** Storage key of the archive; sent by the backend, not rendered by the dialog. */
+  s3Key: string;
 }
 
+/** `POST /api/clients/{id}/anonymize` — flat backend record `DataAnonymizationService.AnonymizationResult` (ADR-365). */
 export interface StandaloneAnonymizationResult {
-  status: "COMPLETED";
-  referenceId: string;
-  preExportKey: string;
-  summary: {
-    customerAnonymized: boolean;
-    documentsDeleted: number;
-    commentsRedacted: number;
-    portalContactsAnonymized: number;
-    invoicesPreserved: number;
-    customFieldsCleared: number;
-  };
+  customerAnonymized: boolean;
+  documentsDeleted: number;
+  commentsRedacted: number;
+  portalContactsAnonymized: number;
+  invoicesPreserved: number;
 }

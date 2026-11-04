@@ -185,7 +185,9 @@ export function ClientOverflowMenu({
         />
       )}
 
-      {showAnonymize && (
+      {/* Stay mounted while open: executeAnonymization revalidates this page, which flips
+          isAnonymized before the user has read the completion panel (G88-F44). */}
+      {(showAnonymize || (isOwner && anonymizeOpen)) && (
         <AnonymizeCustomerDialog
           slug={slug}
           customerId={customerId}

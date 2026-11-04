@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.SendInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UpdateLineItemRequest;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import java.time.LocalDate;
 import java.util.List;
@@ -39,6 +40,7 @@ public class InvoiceService {
   private final InvoiceRepository invoiceRepository;
   private final PaymentEventRepository paymentEventRepository;
   private final GeneratedDocumentService generatedDocumentService;
+  private final PaymentReceiptService paymentReceiptService;
 
   public InvoiceService(
       InvoiceCreationService creationService,
@@ -48,7 +50,8 @@ public class InvoiceService {
       InvoiceValidationService invoiceValidationService,
       InvoiceRepository invoiceRepository,
       PaymentEventRepository paymentEventRepository,
-      GeneratedDocumentService generatedDocumentService) {
+      GeneratedDocumentService generatedDocumentService,
+      PaymentReceiptService paymentReceiptService) {
     this.creationService = creationService;
     this.transitionService = transitionService;
     this.renderingService = renderingService;
@@ -57,6 +60,7 @@ public class InvoiceService {
     this.invoiceRepository = invoiceRepository;
     this.paymentEventRepository = paymentEventRepository;
     this.generatedDocumentService = generatedDocumentService;
+    this.paymentReceiptService = paymentReceiptService;
   }
 
   // --- Validation ---
@@ -149,6 +153,16 @@ public class InvoiceService {
     return paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(invoiceId).stream()
         .map(PaymentEventResponse::from)
         .toList();
+  }
+
+  /**
+   * Firm "Generate receipt" (Phase 89 632B, B11): the same idempotent lazy path the portal receipt
+   * download uses — returns the payment event's receipt document id, generating it when missing.
+   */
+  @Transactional
+  public UUID generatePaymentReceipt(UUID invoiceId, UUID paymentEventId) {
+    return paymentReceiptService.ensureReceipt(
+        invoiceId, paymentEventId, RequestScopes.requireMemberId());
   }
 
   @Transactional(readOnly = true)

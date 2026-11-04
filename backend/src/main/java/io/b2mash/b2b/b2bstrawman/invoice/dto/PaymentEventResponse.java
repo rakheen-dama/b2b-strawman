@@ -19,7 +19,11 @@ public record PaymentEventResponse(
     /** Phase 88 U15: NULL for events recorded before the payment_method column existed. */
     PaymentMethod paymentMethod,
     Instant createdAt,
-    Instant updatedAt) {
+    Instant updatedAt,
+    /** Phase 89 632B: the payment receipt (a generated document); NULL until one exists. */
+    UUID receiptGeneratedDocumentId,
+    /** Phase 89 632B: the stored receipt number {@code {invoiceNumber}/R{seq}}; NULL until then. */
+    String receiptNumber) {
 
   public static PaymentEventResponse from(PaymentEvent event) {
     return new PaymentEventResponse(
@@ -33,6 +37,8 @@ public record PaymentEventResponse(
         event.getPaymentDestination(),
         event.getPaymentMethod(),
         event.getCreatedAt(),
-        event.getUpdatedAt());
+        event.getUpdatedAt(),
+        event.getReceiptGeneratedDocumentId(),
+        event.getReceiptNumber());
   }
 }

@@ -1112,6 +1112,16 @@ class ActivityMessageFormatterTest {
             d("invoice_number", "INV-0004", "total", "5750.00"),
             "Alice voided fee note INV-0004"),
         Arguments.of(
+            "invoice.receipt_generated",
+            "invoice",
+            d("invoice_number", "INV-0004", "receipt_number", "INV-0004/R1"),
+            "Alice generated receipt INV-0004/R1 for fee note INV-0004"),
+        Arguments.of(
+            "invoice.receipt_generated",
+            "invoice",
+            d(),
+            "Alice generated a payment receipt for a fee note"),
+        Arguments.of(
             "invoice.updated", "invoice", d("action", "line_added"), "Alice updated a fee note"),
         Arguments.of("invoice.deleted", "invoice", d(), "Alice deleted a fee note"),
         Arguments.of(
@@ -1655,6 +1665,7 @@ class ActivityMessageFormatterTest {
           new String[] {"invoice.payment_reversed", "invoice"},
           new String[] {"invoice.payment_partially_reversed", "invoice"},
           new String[] {"invoice.voided", "invoice"},
+          new String[] {"invoice.receipt_generated", "invoice"},
           new String[] {"invoice.updated", "invoice"},
           new String[] {"invoice.deleted", "invoice"},
           new String[] {"invoice.custom_fields_updated", "invoice"},

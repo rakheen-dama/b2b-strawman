@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 public class GeneratedDocumentService {
@@ -536,6 +538,50 @@ public class GeneratedDocumentService {
   }
 
   /**
+   * Deletes a generated document row AND its stored object(s) (Phase 89 632B, ADR-364 — a reversed
+   * payment's receipt must not stay downloadable). The row goes in the caller's transaction; the
+   * storage objects ({@code s3Key}, and {@code docxS3Key} when set) are deleted only after that
+   * transaction commits, so a rolled-back caller never leaves a row pointing at a deleted object.
+   * Storage deletion is best-effort: a failure is logged at WARN and never fails the caller. Unlike
+   * {@link #delete(UUID)} (the firm endpoint, row only), this is for system-owned documents.
+   */
+  @Transactional
+  public void deleteWithStoredObject(UUID id) {
+    var doc =
+        generatedDocumentRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("GeneratedDocument", id));
+    var keys = new ArrayList<String>();
+    keys.add(doc.getS3Key());
+    if (doc.getDocxS3Key() != null) {
+      keys.add(doc.getDocxS3Key());
+    }
+    generatedDocumentRepository.delete(doc);
+    log.info("Deleted generated document (stored objects after commit): id={}", id);
+    Runnable deleteObjects =
+        () -> {
+          for (String key : keys) {
+            try {
+              storageService.delete(key);
+            } catch (RuntimeException e) {
+              log.warn("Failed to delete stored object for generated document {}: {}", id, key, e);
+            }
+          }
+        };
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      TransactionSynchronizationManager.registerSynchronization(
+          new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+              deleteObjects.run();
+            }
+          });
+    } else {
+      deleteObjects.run();
+    }
+  }
+
+  /**
    * Resolves the default invoice template based on the org's vertical profile. If verticalProfile
    * is "legal-za", returns the "fee-note-za" pack template — and ONLY that template (LZKC-012 — the
    * line-item fee note, not the cover letter): if it is unavailable (e.g. pack reconciliation
@@ -574,6 +620,18 @@ public class GeneratedDocumentService {
     return documentTemplateRepository
         .findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(TemplateEntityType.INVOICE)
         .stream()
+        .findFirst();
+  }
+
+  /**
+   * Resolves the legal-za payment receipt template (Phase 89 632B, ADR-364): the platform-seeded
+   * {@code payment-receipt-za} row — and ONLY that row, never a fallback (a generic INVOICE
+   * template would print a fee note as a receipt). Clone-safe ({@code findPackSeeded}). Empty for a
+   * tenant without the legal-za pack, or when pack reconciliation has not delivered it yet.
+   */
+  @Transactional(readOnly = true)
+  public Optional<DocumentTemplate> resolveReceiptTemplate() {
+    return documentTemplateRepository.findPackSeeded("legal-za", "payment-receipt-za").stream()
         .findFirst();
   }
 

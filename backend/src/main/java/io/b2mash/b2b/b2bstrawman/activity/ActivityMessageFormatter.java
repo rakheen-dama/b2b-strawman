@@ -262,6 +262,12 @@ public class ActivityMessageFormatter {
           "%s reversed a payment%s on %s"
               .formatted(actorName, ofMoney(details, "amount"), feeNote(details));
       case "invoice.voided" -> "%s voided %s".formatted(actorName, feeNote(details));
+      case "invoice.receipt_generated" -> {
+        String receipt = str(details, "receipt_number");
+        yield receipt != null
+            ? "%s generated receipt %s for %s".formatted(actorName, receipt, feeNote(details))
+            : "%s generated a payment receipt for %s".formatted(actorName, feeNote(details));
+      }
       case "payment.completed" -> "Online payment%s received".formatted(ofMoney(details, "amount"));
       case "payment.failed" -> "Online payment failed for %s".formatted(feeNote(details));
       case "payment.session.created" ->

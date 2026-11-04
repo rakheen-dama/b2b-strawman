@@ -42,8 +42,8 @@ class ConveyancingTemplatePackTest {
 
   private static final String PACK_ID = "legal-za";
 
-  // 16 through Epic 492B + fee-note-za (LZKC-012)
-  private static final int EXPECTED_LEGAL_ZA_TEMPLATE_COUNT = 17;
+  // 16 through Epic 492B + fee-note-za (LZKC-012) + payment-receipt-za (Phase 89 632B)
+  private static final int EXPECTED_LEGAL_ZA_TEMPLATE_COUNT = 18;
 
   private static final Set<String> PRE_PHASE_TEMPLATE_KEYS =
       Set.of(

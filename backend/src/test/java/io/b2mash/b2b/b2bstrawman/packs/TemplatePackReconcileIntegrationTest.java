@@ -96,8 +96,8 @@ class TemplatePackReconcileIntegrationTest {
                 tx -> {
                   // Rewind the recorded version to simulate a tenant installed before v6 (the
                   // version that introduced fee-note-za). Also exercises the CAS guard: the
-                  // expected-version match must succeed exactly once. (Current classpath: v11.)
-                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "11", "5", 16);
+                  // expected-version match must succeed exactly once. (Current classpath: v12.)
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "12", "5", 16);
                   assertThat(updated).isEqualTo(1);
                 }));
 
@@ -118,8 +118,8 @@ class TemplatePackReconcileIntegrationTest {
                   assertThat(feeNote.getContentHash()).isNotBlank();
 
                   // Install row advanced to the classpath pack version
-                  assertThat(install.getPackVersion()).isEqualTo("11");
-                  assertThat(install.getItemCount()).isEqualTo(17);
+                  assertThat(install.getPackVersion()).isEqualTo("12");
+                  assertThat(install.getItemCount()).isEqualTo(18);
                 }));
 
     // --- Phase 4: reconcile again -> idempotent, no duplicate templates ---
@@ -132,7 +132,7 @@ class TemplatePackReconcileIntegrationTest {
                       documentTemplateRepository.findByActiveTrueOrderBySortOrder().stream()
                           .filter(t -> PACK_ID.equals(t.getPackId()))
                           .toList();
-                  assertThat(packTemplates).hasSize(17);
+                  assertThat(packTemplates).hasSize(18);
                   assertThat(
                           packTemplates.stream()
                               .filter(t -> NEW_TEMPLATE_KEY.equals(t.getPackTemplateKey())))
@@ -436,7 +436,7 @@ class TemplatePackReconcileIntegrationTest {
                       templatePackInstaller.computeContentHash(staleSoaContent, soa.getCss()));
                   documentTemplateRepository.save(soa);
 
-                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "11", "8", 17);
+                  int updated = packInstallRepository.advancePackVersion(PACK_ID, "12", "8", 17);
                   assertThat(updated).isEqualTo(1);
                 }));
 
@@ -449,7 +449,7 @@ class TemplatePackReconcileIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
-                  assertThat(install.getPackVersion()).isEqualTo("11");
+                  assertThat(install.getPackVersion()).isEqualTo("12");
 
                   var soa =
                       documentTemplateRepository

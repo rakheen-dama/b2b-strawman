@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -8,9 +9,13 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentLedger;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -28,18 +33,21 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
   private final TemplateContextHelper contextHelper;
+  private final PaymentEventRepository paymentEventRepository;
 
   public InvoiceContextBuilder(
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
-      TemplateContextHelper contextHelper) {
+      TemplateContextHelper contextHelper,
+      PaymentEventRepository paymentEventRepository) {
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.contextHelper = contextHelper;
+    this.paymentEventRepository = paymentEventRepository;
   }
 
   @Override
@@ -91,6 +99,21 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
     var mutableInvoiceCustomFields = new LinkedHashMap<String, Object>(resolvedInvoiceCustomFields);
     injectPromotedInvoiceAliases(mutableInvoiceCustomFields, invoice);
     invoiceMap.put("customFields", mutableInvoiceCustomFields);
+    // Payment keys (Phase 89 632B, ADR-364) — the payment receipt reads them; the fee note ignores
+    // them. Business dates are SA dates (KaziTime.ZONE, ADR-358).
+    invoiceMap.put("amountPaid", invoice.getAmountPaid());
+    invoiceMap.put("balanceDue", invoice.getBalanceDue());
+    invoiceMap.put(
+        "paidAt",
+        invoice.getPaidAt() != null
+            ? LocalDate.ofInstant(invoice.getPaidAt(), KaziTime.ZONE).toString()
+            : null);
+    // invoice.payments[] — order + balanceAfter owned by PaymentLedger (shared with the receipt).
+    invoiceMap.put(
+        "payments",
+        PaymentLedger.rows(
+            paymentEventRepository.findByInvoiceIdAndStatus(entityId, PaymentEventStatus.COMPLETED),
+            invoice.getTotal()));
     context.put("invoice", invoiceMap);
 
     // lines[]

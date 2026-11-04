@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.template.TemplateSource;
@@ -46,7 +47,8 @@ import tools.jackson.databind.ObjectMapper;
  * body, keeps firm edits, never touches a clone, and is a no-op at equal version and on a second
  * run. Phase 89 v11: a v10 tenant's four client-facing bodies reach the letterhead bodies and the
  * four contract templates receive their {@code requiredContextFields} — only while their body is
- * the shipped body.
+ * the shipped body. Phase 89 v12: a v11 tenant receives the new {@code payment-receipt-za} template
+ * on the bump (the installer's "create missing" — no reconcile entry).
  *
  * <p>A v7 (v8) tenant is simulated by writing each rewritten row's exact v7 (v8) body (test fixture
  * copied from git before the edit) with its install-time hash pinned (pristine), then rewinding
@@ -61,7 +63,7 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static final String ORG_ID = "org_legal_za_template_reconcile_test";
   private static final String PACK_ID = "legal-za";
-  private static final String CURRENT_VERSION = "11";
+  private static final String CURRENT_VERSION = "12";
   private static final List<String> RECONCILED_KEYS =
       List.of(
           "engagement-letter-litigation",
@@ -689,6 +691,66 @@ class LegalZaTemplateReconcileIntegrationTest {
                 .as("%s untouched at equal version", key)
                 .isNull();
           }
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+  }
+
+  /**
+   * Phase 89 632B (v11 → v12, ADR-364): an existing v11 tenant without {@code payment-receipt-za}
+   * gets it on the bump — a PLATFORM row tagged with the install, pristine (stored hash = the
+   * shipped body's), INVOICE / OTHER at sortOrder 18; a second run at equal version creates no
+   * duplicate.
+   */
+  @Test
+  void v11Tenant_receivesThePaymentReceiptTemplateOnTheBump_equalVersionNoDuplicate() {
+    inTenantTx(
+        () -> {
+          documentTemplateRepository.delete(packRow("payment-receipt-za"));
+          assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, CURRENT_VERSION, "11"))
+              .as("rewind %s %s -> 11", PACK_ID, CURRENT_VERSION)
+              .isEqualTo(1);
+          return null;
+        });
+    assertThat(
+            inTenantTx(
+                () ->
+                    documentTemplateRepository.findByPackTemplateKey("payment-receipt-za").stream()
+                        .filter(dt -> PACK_ID.equals(dt.getPackId()))
+                        .toList()))
+        .as("simulated v11 tenant has no receipt template")
+        .isEmpty();
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    UUID createdId =
+        inTenantTx(
+            () -> {
+              UUID installId = packInstallRepository.findByPackId(PACK_ID).orElseThrow().getId();
+              var created = packRow("payment-receipt-za");
+              assertThat(created.getSource()).isEqualTo(TemplateSource.PLATFORM);
+              assertThat(created.getSourceTemplateId()).isNull();
+              assertThat(created.getSourcePackInstallId()).isEqualTo(installId);
+              assertThat(created.getPrimaryEntityType()).isEqualTo(TemplateEntityType.INVOICE);
+              assertThat(created.getCategory()).isEqualTo(TemplateCategory.OTHER);
+              assertThat(created.getSortOrder()).isEqualTo(18);
+              assertThat(created.isActive()).isTrue();
+              assertThat(ContentHashUtil.hashOf(created.getContent()))
+                  .isEqualTo(ContentHashUtil.hashOf(shippedBody("payment-receipt-za")));
+              assertThat(created.getContentHash())
+                  .as("pristine: stored hash = install hash of the shipped body")
+                  .isEqualTo(
+                      templatePackInstaller.computeContentHash(
+                          created.getContent(), created.getCss()));
+              assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+              return created.getId();
+            });
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          assertThat(packRow("payment-receipt-za").getId()).isEqualTo(createdId); // one row
           assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
           return null;
         });

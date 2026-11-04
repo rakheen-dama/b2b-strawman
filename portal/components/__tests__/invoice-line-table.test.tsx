@@ -1,8 +1,9 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { InvoiceLineTable } from "@/components/invoice-line-table";
+import type { PortalInvoiceLine } from "@/lib/types";
 
-const mockLines = [
+const mockLines: PortalInvoiceLine[] = [
   {
     id: "line-1",
     description: "Design consultation",
@@ -10,6 +11,10 @@ const mockLines = [
     unitPrice: 200,
     amount: 1000,
     sortOrder: 1,
+    taxRateName: null,
+    taxRatePercent: null,
+    taxAmount: null,
+    taxExempt: false,
   },
   {
     id: "line-2",
@@ -18,6 +23,10 @@ const mockLines = [
     unitPrice: 150,
     amount: 1500,
     sortOrder: 2,
+    taxRateName: null,
+    taxRatePercent: null,
+    taxAmount: null,
+    taxExempt: false,
   },
 ];
 
@@ -74,6 +83,10 @@ describe("InvoiceLineTable", () => {
             unitPrice: 100,
             amount: 100,
             sortOrder: 1,
+            taxRateName: null,
+            taxRatePercent: null,
+            taxAmount: null,
+            taxExempt: false,
           },
         ]}
         currency="USD"

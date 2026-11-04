@@ -30,6 +30,7 @@ const mockRequest: InformationRequestResponse = {
   portalContactEmail: "john@acme.com",
   status: "IN_PROGRESS",
   reminderIntervalDays: 5,
+  dueDate: null,
   sentAt: "2026-03-01T10:00:00Z",
   completedAt: null,
   totalItems: 8,

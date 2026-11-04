@@ -33,6 +33,7 @@ const mockInstances: ChecklistInstanceResponse[] = [
     startedAt: "2026-02-18T10:00:00Z",
     completedAt: null,
     completedBy: null,
+    completedByName: null,
     items: [
       {
         id: "item-1",
@@ -47,6 +48,7 @@ const mockInstances: ChecklistInstanceResponse[] = [
         status: "COMPLETED",
         completedAt: "2026-02-18T11:00:00Z",
         completedBy: "m1",
+        completedByName: null,
         notes: "Verified in person",
         documentId: "doc-1",
         dependsOnItemId: null,
@@ -66,6 +68,7 @@ const mockInstances: ChecklistInstanceResponse[] = [
         status: "PENDING",
         completedAt: null,
         completedBy: null,
+        completedByName: null,
         notes: null,
         documentId: null,
         dependsOnItemId: null,
@@ -85,6 +88,7 @@ const mockInstances: ChecklistInstanceResponse[] = [
         status: "PENDING",
         completedAt: null,
         completedBy: null,
+        completedByName: null,
         notes: null,
         documentId: null,
         dependsOnItemId: null,

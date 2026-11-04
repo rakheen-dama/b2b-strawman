@@ -143,7 +143,6 @@ describe("CherryPickStep", () => {
   it("renders accordion with customer sections", () => {
     render(
       <CherryPickStep
-        slug="test-org"
         billingRunId="run-1"
         currency="ZAR"
         items={mockItems}
@@ -171,7 +170,6 @@ describe("CherryPickStep", () => {
 
     render(
       <CherryPickStep
-        slug="test-org"
         billingRunId="run-1"
         currency="ZAR"
         items={mockItems}
@@ -215,7 +213,6 @@ describe("CherryPickStep", () => {
 
     render(
       <CherryPickStep
-        slug="test-org"
         billingRunId="run-1"
         currency="ZAR"
         items={mockItems}
@@ -261,7 +258,6 @@ describe("CherryPickStep", () => {
 
     render(
       <CherryPickStep
-        slug="test-org"
         billingRunId="run-1"
         currency="ZAR"
         items={mockItems}

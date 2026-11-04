@@ -33,6 +33,7 @@ const existingMembers: MatterMember[] = [
     email: "alice@example.com",
     avatarUrl: null,
     matterRole: "lead",
+    orgRole: "member",
     createdAt: "2024-01-01T00:00:00Z",
   },
 ];

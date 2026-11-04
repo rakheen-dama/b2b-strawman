@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ValidationCheck } from "@/lib/types";
+import type { InvoiceResponse, ValidationCheck } from "@/lib/types";
 
 // Mock server actions
 const mockValidateInvoiceGeneration = vi.fn();
@@ -205,11 +205,11 @@ describe("Invoice Generation Validation", () => {
       validationChecks: mockValidationChecks,
     });
 
-    const mockInvoice = {
+    const mockInvoice: InvoiceResponse = {
       id: "inv-1",
       clientId: "cust-1",
       invoiceNumber: "INV-001",
-      status: "APPROVED" as const,
+      status: "APPROVED",
       currency: "ZAR",
       issueDate: "2026-02-20",
       dueDate: "2026-03-20",
@@ -218,6 +218,13 @@ describe("Invoice Generation Validation", () => {
       total: 2070,
       notes: null,
       paymentTerms: "Net 30",
+      poNumber: null,
+      taxType: null,
+      billingPeriodStart: null,
+      billingPeriodEnd: null,
+      amountPaid: 0,
+      balanceDue: 2070,
+      payments: [],
       paymentReference: null,
       paidAt: null,
       clientName: "Test Corp",

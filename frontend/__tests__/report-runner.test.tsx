@@ -64,7 +64,7 @@ describe("ReportRunner", () => {
   });
 
   it("renders export buttons disabled initially", () => {
-    render(<ReportRunner definition={makeDefinition()} orgSlug="acme" />);
+    render(<ReportRunner definition={makeDefinition()} />);
 
     const csvBtn = screen.getByRole("button", { name: /export csv/i });
     const pdfBtn = screen.getByRole("button", { name: /export pdf/i });
@@ -79,7 +79,7 @@ describe("ReportRunner", () => {
       data: makeExecutionResponse(),
     });
 
-    render(<ReportRunner definition={makeDefinition()} orgSlug="acme" />);
+    render(<ReportRunner definition={makeDefinition()} />);
 
     // Fill required date field
     const dateInput = screen.getByLabelText(/date from/i);
@@ -103,7 +103,7 @@ describe("ReportRunner", () => {
       data: makeExecutionResponse(),
     });
 
-    render(<ReportRunner definition={makeDefinition()} orgSlug="acme" />);
+    render(<ReportRunner definition={makeDefinition()} />);
 
     const dateInput = screen.getByLabelText(/date from/i);
     await user.type(dateInput, "2026-01-01");
@@ -122,7 +122,7 @@ describe("ReportRunner", () => {
       data: makeExecutionResponse(),
     });
 
-    render(<ReportRunner definition={makeDefinition()} orgSlug="acme" />);
+    render(<ReportRunner definition={makeDefinition()} />);
 
     const dateInput = screen.getByLabelText(/date from/i);
     await user.type(dateInput, "2026-02-15");
@@ -145,7 +145,7 @@ describe("ReportRunner", () => {
       error: "Report execution failed",
     });
 
-    render(<ReportRunner definition={makeDefinition()} orgSlug="acme" />);
+    render(<ReportRunner definition={makeDefinition()} />);
 
     const dateInput = screen.getByLabelText(/date from/i);
     await user.type(dateInput, "2026-01-01");

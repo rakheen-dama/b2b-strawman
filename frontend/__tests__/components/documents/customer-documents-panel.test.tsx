@@ -43,6 +43,7 @@ function makeDocument(overrides: Partial<Document> = {}): Document {
     visibility: "INTERNAL",
     source: "MANUAL",
     uploadedBy: "m1",
+    uploadedByName: null,
     uploadedAt: "2024-06-01T00:00:00Z",
     createdAt: "2024-06-01T00:00:00Z",
     ...overrides,

@@ -48,6 +48,7 @@ const dataWithExpenses: UnbilledTimeResponse = {
           billingRateCurrency: "USD",
           billableValue: 200,
           description: null,
+          rateSource: "SNAPSHOT",
         },
       ],
       totals: { USD: { hours: 2, amount: 200 } },
@@ -252,6 +253,8 @@ describe("Invoice Line Table — lineType grouping", () => {
       taxRatePercent: null,
       taxAmount: null,
       taxExempt: false,
+      tariffItemId: null,
+      lineSource: null,
     },
     {
       id: "line-2",
@@ -270,6 +273,8 @@ describe("Invoice Line Table — lineType grouping", () => {
       taxRatePercent: null,
       taxAmount: null,
       taxExempt: false,
+      tariffItemId: null,
+      lineSource: null,
     },
     {
       id: "line-3",
@@ -288,6 +293,8 @@ describe("Invoice Line Table — lineType grouping", () => {
       taxRatePercent: null,
       taxAmount: null,
       taxExempt: false,
+      tariffItemId: null,
+      lineSource: null,
     },
   ];
 

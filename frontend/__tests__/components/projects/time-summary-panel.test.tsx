@@ -90,7 +90,7 @@ describe("TimeSummaryPanel", () => {
     expect(screen.getByText("Contributors")).toBeInTheDocument();
 
     // Scope to the stat card grid to verify values without colliding with table headers
-    const statGrid = screen.getByText("Total Time").closest("div[class*='grid']")!;
+    const statGrid = screen.getByText("Total Time").closest<HTMLElement>("div[class*='grid']")!;
 
     // Total: 600 min = 10h
     expect(within(statGrid).getByText("10h")).toBeInTheDocument();

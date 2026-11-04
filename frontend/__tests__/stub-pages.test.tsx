@@ -84,6 +84,7 @@ beforeEach(() => {
     error: undefined,
     isLoading: false,
     mutate: vi.fn(),
+    isValidating: false,
   } as ReturnType<typeof useSWR>);
 });
 

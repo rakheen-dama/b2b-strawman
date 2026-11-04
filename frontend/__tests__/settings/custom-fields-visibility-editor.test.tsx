@@ -36,6 +36,8 @@ function makeFields(): FieldDefinitionResponse[] {
       active: true,
       createdAt: "2025-01-15T10:00:00Z",
       updatedAt: "2025-01-15T10:00:00Z",
+      requiredForContexts: [],
+      portalVisibleDeadline: false,
     },
     {
       id: "fd-vis-2",
@@ -55,6 +57,8 @@ function makeFields(): FieldDefinitionResponse[] {
       active: true,
       createdAt: "2025-01-15T10:00:00Z",
       updatedAt: "2025-01-15T10:00:00Z",
+      requiredForContexts: [],
+      portalVisibleDeadline: false,
     },
     {
       id: "fd-vis-3",
@@ -74,6 +78,8 @@ function makeFields(): FieldDefinitionResponse[] {
       active: true,
       createdAt: "2025-01-15T10:00:00Z",
       updatedAt: "2025-01-15T10:00:00Z",
+      requiredForContexts: [],
+      portalVisibleDeadline: false,
     },
   ];
 }

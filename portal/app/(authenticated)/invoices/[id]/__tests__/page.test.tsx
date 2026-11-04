@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { Mock } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { formatCurrency } from "@b2mash/shared/format";
@@ -61,7 +62,7 @@ vi.mock("@/hooks/use-branding", () => ({
 }));
 
 // Mock window.open
-let mockWindowOpen: ReturnType<typeof vi.fn>;
+let mockWindowOpen: Mock<typeof window.open>;
 
 import InvoiceDetailPage from "@/app/(authenticated)/invoices/[id]/page";
 
@@ -167,7 +168,7 @@ const mockPartiallyPaid = {
 describe("InvoiceDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockWindowOpen = vi.fn();
+    mockWindowOpen = vi.fn<typeof window.open>();
     vi.spyOn(window, "open").mockImplementation(mockWindowOpen);
     window.alert = vi.fn();
   });

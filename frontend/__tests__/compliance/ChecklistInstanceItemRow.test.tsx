@@ -36,6 +36,7 @@ const baseItem: ChecklistInstanceItemResponse = {
   status: "PENDING",
   completedAt: null,
   completedBy: null,
+  completedByName: null,
   notes: null,
   documentId: null,
   dependsOnItemId: null,
@@ -183,9 +184,11 @@ describe("ChecklistInstanceItemRow", () => {
         scope: "CUSTOMER",
         clientId: "c1",
         visibility: "INTERNAL",
+        source: "MANUAL",
         uploadedBy: "m1",
+        uploadedByName: null,
+        uploadedAt: "2026-02-18T10:00:00Z",
         createdAt: "2026-02-18T10:00:00Z",
-        updatedAt: "2026-02-18T10:00:00Z",
       },
       {
         id: "doc-2",
@@ -197,9 +200,11 @@ describe("ChecklistInstanceItemRow", () => {
         scope: "CUSTOMER",
         clientId: "c1",
         visibility: "INTERNAL",
+        source: "MANUAL",
         uploadedBy: "m1",
+        uploadedByName: null,
+        uploadedAt: "2026-02-18T10:00:00Z",
         createdAt: "2026-02-18T10:00:00Z",
-        updatedAt: "2026-02-18T10:00:00Z",
       },
     ];
 
@@ -240,9 +245,11 @@ describe("ChecklistInstanceItemRow", () => {
         scope: "CUSTOMER",
         clientId: "c1",
         visibility: "INTERNAL",
+        source: "MANUAL",
         uploadedBy: "m1",
+        uploadedByName: null,
+        uploadedAt: "2026-02-18T10:00:00Z",
         createdAt: "2026-02-18T10:00:00Z",
-        updatedAt: "2026-02-18T10:00:00Z",
       },
     ];
 

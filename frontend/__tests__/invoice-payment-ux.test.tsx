@@ -79,6 +79,10 @@ function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse 
     total: 1150,
     notes: null,
     paymentTerms: null,
+    poNumber: null,
+    taxType: null,
+    billingPeriodStart: null,
+    billingPeriodEnd: null,
     amountPaid: 0,
     balanceDue: 1150,
     payments: [],
@@ -98,6 +102,12 @@ function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse 
     paymentSessionId: "cs_test_123",
     paymentUrl: "https://checkout.stripe.com/pay/cs_test_123",
     paymentDestination: "OPERATING",
+    taxBreakdown: [],
+    taxInclusive: false,
+    taxRegistrationNumber: null,
+    taxRegistrationLabel: null,
+    taxLabel: null,
+    hasPerLineTax: false,
     ...overrides,
   };
 }

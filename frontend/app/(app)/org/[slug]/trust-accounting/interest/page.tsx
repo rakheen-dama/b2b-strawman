@@ -9,8 +9,13 @@ import {
   fetchLpffRates,
 } from "@/app/(app)/org/[slug]/trust-accounting/interest/actions";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import type { InterestRun, InterestRunStatus, LpffRate } from "@/lib/types/trust";
-import { InterestPageClient } from "./InterestPageClient";
+import {
+  INTEREST_RUN_STATUS_LABELS,
+  type InterestRun,
+  type InterestRunStatus,
+  type LpffRate,
+} from "@/lib/types/trust";
+import { InterestPageClient, InterestRunRowActions } from "./InterestPageClient";
 
 // ── Badge variant mapping ──────────────────────────────────────────
 
@@ -50,6 +55,8 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
     capData.isAdmin || capData.isOwner || capData.capabilities.includes("MANAGE_TRUST");
   const canApproveTrust =
     capData.isAdmin || capData.isOwner || capData.capabilities.includes("APPROVE_TRUST_PAYMENT");
+  // The caller's members.id: hides self-approval (630B); the backend still refuses it.
+  const memberId = capData.memberId ?? null;
 
   // Fetch primary trust account
   let accountId: string | null = null;
@@ -119,6 +126,7 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
                   variant="wizard"
                   canApprove={canApproveTrust}
                   currency={currency}
+                  memberId={memberId}
                 />
               )}
             </div>
@@ -150,8 +158,11 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
                       <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                         Status
                       </th>
-                      <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                         Posted Date
+                      </th>
+                      <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                        Actions
                       </th>
                     </tr>
                   </thead>
@@ -174,11 +185,26 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
                         <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
                           {formatCurrency(run.totalClientShare, currency)}
                         </td>
-                        <td className="py-3 pr-4">
-                          <Badge variant={STATUS_BADGE_VARIANT[run.status]}>{run.status}</Badge>
+                        <td className="py-3 pr-4" data-testid="run-status">
+                          <Badge variant={STATUS_BADGE_VARIANT[run.status]}>
+                            {INTEREST_RUN_STATUS_LABELS[run.status]}
+                          </Badge>
                         </td>
-                        <td className="py-3 text-slate-600 dark:text-slate-400">
+                        <td
+                          className="py-3 pr-4 text-slate-600 dark:text-slate-400"
+                          data-testid="run-posted-at"
+                        >
                           {run.postedAt ? formatLocalDate(run.postedAt.slice(0, 10)) : "—"}
+                        </td>
+                        <td className="py-3">
+                          <InterestRunRowActions
+                            run={run}
+                            accountId={run.trustAccountId}
+                            currency={currency}
+                            memberId={memberId}
+                            hasManageTrust={hasManageTrust}
+                            canApproveTrust={canApproveTrust}
+                          />
                         </td>
                       </tr>
                     ))}

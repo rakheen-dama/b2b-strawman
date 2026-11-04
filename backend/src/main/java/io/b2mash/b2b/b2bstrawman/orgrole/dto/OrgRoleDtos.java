@@ -58,6 +58,10 @@ public final class OrgRoleDtos {
       Set<String> overrides,
       Set<String> effectiveCapabilities) {}
 
+  /**
+   * The caller's effective capabilities. {@code memberId} is the caller's {@code members.id} — the
+   * id the backend compares for self-approval (630B, ADR-362), so the UI can hide it.
+   */
   public record MyCapabilitiesResponse(
-      Set<String> capabilities, String role, boolean isAdmin, boolean isOwner) {}
+      Set<String> capabilities, String role, boolean isAdmin, boolean isOwner, UUID memberId) {}
 }

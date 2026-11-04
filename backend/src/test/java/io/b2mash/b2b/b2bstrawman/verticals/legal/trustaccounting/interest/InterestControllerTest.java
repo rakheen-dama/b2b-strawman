@@ -326,6 +326,49 @@ class InterestControllerTest {
         .andExpect(jsonPath("$.postedAt").isNotEmpty());
   }
 
+  // 630B (G88-F39): allocationCount tells a calculated DRAFT from a never-calculated one.
+  @Test
+  void runResponses_carryAllocationCount() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner");
+
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/interest-runs")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "periodStart": "2027-12-01",
+                          "periodEnd": "2027-12-31"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.allocationCount").value(0))
+            .andReturn();
+
+    var runId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id").toString();
+
+    mockMvc
+        .perform(post("/api/interest-runs/" + runId + "/calculate").with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.allocationCount").value(1));
+
+    mockMvc
+        .perform(get("/api/interest-runs/" + runId).with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.run.allocationCount").value(1))
+        .andExpect(jsonPath("$.allocations.length()").value(1));
+
+    mockMvc
+        .perform(get("/api/trust-accounts/" + trustAccountId + "/interest-runs").with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$[?(@.id == '" + runId + "')].allocationCount")
+                .value(org.hamcrest.Matchers.contains(1)));
+  }
+
   private void assertResultIsNotEmpty(org.springframework.test.web.servlet.MvcResult result)
       throws Exception {
     var content = result.getResponse().getContentAsString();

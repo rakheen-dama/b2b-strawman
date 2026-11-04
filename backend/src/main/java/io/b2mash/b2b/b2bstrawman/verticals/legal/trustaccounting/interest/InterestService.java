@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -93,7 +94,10 @@ public class InterestService {
       UUID approvedBy,
       Instant postedAt,
       Instant createdAt,
-      Instant updatedAt) {}
+      Instant updatedAt,
+      // Count of interest_allocations: 0 = never calculated (or nothing to allocate) — the only
+      // honest "calculated" discriminator, since a calculated run can total 0 (630B, ADR-362).
+      int allocationCount) {}
 
   public record InterestRunDetailResponse(
       InterestRunResponse run, List<InterestAllocationResponse> allocations) {}
@@ -582,6 +586,53 @@ public class InterestService {
     return toRunResponse(run);
   }
 
+  /**
+   * Deletes a mistaken DRAFT run and its allocations (founder ruling §9.2, ADR-362). No financial
+   * effect: nothing reaches trust_transactions before approval and posting, so there is no reversal
+   * and no status value. APPROVED / POSTED runs are refused.
+   */
+  @Transactional
+  public void deleteInterestRun(UUID runId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var run =
+        interestRunRepository
+            .findById(runId)
+            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
+
+    if (!"DRAFT".equals(run.getStatus())) {
+      throw new InvalidStateException(
+          "Invalid interest run state", "Only DRAFT interest runs can be deleted");
+    }
+
+    // interest_allocations.interest_run_id has no ON DELETE CASCADE (V1 baseline) and no JPA
+    // relationship: children first, in this transaction — the recalculation path's pattern.
+    var allocations = interestAllocationRepository.findByInterestRunId(runId);
+    interestAllocationRepository.deleteAll(allocations);
+    interestRunRepository.delete(run);
+
+    // LinkedHashMap, not Map.of: created_by is nullable on legacy rows and Map.of rejects nulls.
+    var details = new LinkedHashMap<String, Object>();
+    details.put("trust_account_id", run.getTrustAccountId().toString());
+    details.put("period_start", run.getPeriodStart().toString());
+    details.put("period_end", run.getPeriodEnd().toString());
+    details.put("total_interest", run.getTotalInterest().toString());
+    details.put("total_lpff_share", run.getTotalLpffShare().toString());
+    details.put("total_client_share", run.getTotalClientShare().toString());
+    details.put("allocation_count", allocations.size());
+    if (run.getCreatedBy() != null) {
+      details.put("created_by", run.getCreatedBy().toString());
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("interest_run.deleted")
+            .entityType("interest_run")
+            .entityId(runId)
+            .details(details)
+            .build());
+  }
+
   // --- Private Helpers ---
 
   private record RateSegment(
@@ -645,7 +696,8 @@ public class InterestService {
         run.getApprovedBy(),
         run.getPostedAt(),
         run.getCreatedAt(),
-        run.getUpdatedAt());
+        run.getUpdatedAt(),
+        Math.toIntExact(interestAllocationRepository.countByInterestRunId(run.getId())));
   }
 
   private InterestAllocationResponse toAllocationResponse(InterestAllocation alloc) {

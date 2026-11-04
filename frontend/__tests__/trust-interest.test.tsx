@@ -10,6 +10,7 @@ const mockCreateInterestRun = vi.fn();
 const mockCalculateInterest = vi.fn();
 const mockApproveInterestRun = vi.fn();
 const mockPostInterestRun = vi.fn();
+const mockDeleteInterestRun = vi.fn();
 const mockFetchInterestRunDetail = vi.fn();
 const mockFetchLpffRates = vi.fn();
 const mockAddLpffRate = vi.fn();
@@ -20,6 +21,7 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
   calculateInterest: (...args: unknown[]) => mockCalculateInterest(...args),
   approveInterestRun: (...args: unknown[]) => mockApproveInterestRun(...args),
   postInterestRun: (...args: unknown[]) => mockPostInterestRun(...args),
+  deleteInterestRun: (...args: unknown[]) => mockDeleteInterestRun(...args),
   fetchInterestRunDetail: (...args: unknown[]) => mockFetchInterestRunDetail(...args),
   fetchLpffRates: (...args: unknown[]) => mockFetchLpffRates(...args),
   addLpffRate: (...args: unknown[]) => mockAddLpffRate(...args),
@@ -62,6 +64,7 @@ vi.mock("@/lib/api/capabilities", () => ({
     role: "OWNER",
     isAdmin: false,
     isOwner: true,
+    memberId: "member-viewer",
   }),
 }));
 
@@ -120,6 +123,7 @@ function makeRun(overrides: Record<string, unknown> = {}) {
     postedAt: null,
     createdAt: "2026-04-01T09:00:00Z",
     updatedAt: "2026-04-01T09:00:00Z",
+    allocationCount: 0,
     ...overrides,
   };
 }
@@ -166,8 +170,10 @@ describe("Trust Interest", () => {
     await renderInterestPage();
 
     expect(screen.getByTestId("interest-runs-table")).toBeInTheDocument();
-    expect(screen.getByText("POSTED")).toBeInTheDocument();
-    expect(screen.getByText("DRAFT")).toBeInTheDocument();
+    // ADR-362: the status cell renders the label map, never the raw enum
+    expect(screen.getByText("Posted")).toBeInTheDocument();
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(screen.queryByText("POSTED")).toBeNull();
     expect(screen.getByText("2 runs found")).toBeInTheDocument();
   });
 

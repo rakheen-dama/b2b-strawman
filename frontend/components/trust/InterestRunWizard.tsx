@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -33,7 +33,12 @@ import {
   fetchInterestRunDetail,
 } from "@/app/(app)/org/[slug]/trust-accounting/interest/actions";
 import { formatCurrency } from "@/lib/format";
-import type { InterestRun, InterestAllocation } from "@/lib/types/trust";
+import {
+  INTEREST_RUN_STATUS_LABELS,
+  type InterestRun,
+  type InterestAllocation,
+  type InterestRunStatus,
+} from "@/lib/types/trust";
 
 interface InterestRunWizardProps {
   accountId: string;
@@ -42,13 +47,25 @@ interface InterestRunWizardProps {
   onSuccess: () => void;
   canApprove: boolean;
   currency: string;
+  /** 630B: resume a persisted run — loads its detail on open and jumps to the step its state implies. */
+  initialRun?: InterestRun;
+  /** The viewer's members.id (MyCapabilitiesResponse.memberId); hides self-approval — the backend still refuses it. */
+  memberId?: string | null;
+  /** MANAGE_TRUST — gates Post (step 4). Default true: the "New Interest Run" mount is MANAGE_TRUST-gated. */
+  canManage?: boolean;
 }
 
-const STATUS_BADGE_VARIANT: Record<string, "neutral" | "warning" | "success"> = {
+const STATUS_BADGE_VARIANT: Record<InterestRunStatus, "neutral" | "warning" | "success"> = {
   DRAFT: "neutral",
   APPROVED: "warning",
   POSTED: "success",
 };
+
+/** Step a persisted run resumes at (§14.3.2): never-calculated DRAFT → 2, calculated DRAFT → 3, APPROVED → 4. */
+function resumeStep(run: InterestRun, allocationCount: number): number {
+  if (run.status === "APPROVED") return 4;
+  return allocationCount > 0 ? 3 : 2;
+}
 
 export function InterestRunWizard({
   accountId,
@@ -57,6 +74,9 @@ export function InterestRunWizard({
   onSuccess,
   canApprove,
   currency,
+  initialRun,
+  memberId,
+  canManage = true,
 }: InterestRunWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -73,6 +93,33 @@ export function InterestRunWizard({
       periodEnd: "",
     },
   });
+
+  // Resume a persisted run: setState only in the promise callbacks; a close resets local state
+  // (handleOpenChange), so the next open refetches. A router.refresh() while open hands a new
+  // initialRun object with the same id — no refetch, no step reset.
+  const initialRunId = initialRun?.id;
+  useEffect(() => {
+    if (!open || !initialRunId) return;
+    let cancelled = false;
+    fetchInterestRunDetail(initialRunId)
+      .then((detail) => {
+        if (cancelled) return;
+        setRunId(detail.run.id);
+        setRun(detail.run);
+        setAllocations(detail.allocations);
+        setStep(resumeStep(detail.run, detail.allocations.length));
+      })
+      .catch(() => {
+        if (!cancelled) setError("Unable to load the interest run. Please try again.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, initialRunId]);
+
+  const isResuming = !!initialRunId && runId !== initialRunId;
+  // The two-member rule (InterestService.approveInterestRun): the creator never approves.
+  const isCreator = !!memberId && !!run?.createdBy && run.createdBy === memberId;
 
   function handleOpenChange(newOpen: boolean) {
     onOpenChange(newOpen);
@@ -96,6 +143,7 @@ export function InterestRunWizard({
         setRunId(result.run.id);
         setRun(result.run);
         setStep(2);
+        router.refresh();
       } else {
         setError(result.error ?? "Failed to create interest run");
       }
@@ -116,6 +164,7 @@ export function InterestRunWizard({
         setRun(calcResult.run);
         const detail = await fetchInterestRunDetail(runId);
         setAllocations(detail.allocations);
+        router.refresh();
       } else {
         setError(calcResult.error ?? "Failed to calculate interest");
       }
@@ -135,6 +184,7 @@ export function InterestRunWizard({
       if (result.success && result.run) {
         setRun(result.run);
         setStep(4);
+        router.refresh();
       } else {
         setError(result.error ?? "Failed to approve interest run");
       }
@@ -172,11 +222,30 @@ export function InterestRunWizard({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl" data-testid="interest-run-wizard">
         <DialogHeader>
-          <DialogTitle>New Interest Run</DialogTitle>
+          <DialogTitle>{initialRun ? "Interest Run" : "New Interest Run"}</DialogTitle>
           <DialogDescription>
-            Step {step} of 4 — {stepLabels[step - 1]}
+            {isResuming ? "Loading…" : `Step ${step} of 4 — ${stepLabels[step - 1]}`}
           </DialogDescription>
         </DialogHeader>
+
+        {/* Resuming a persisted run: never flash the step-1 create form */}
+        {isResuming && (
+          <div className="space-y-4">
+            {error ? (
+              <p className="text-destructive text-sm">{error}</p>
+            ) : (
+              <p className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                <Loader2 className="mr-1.5 size-4 animate-spin" />
+                Loading interest run…
+              </p>
+            )}
+            <DialogFooter>
+              <Button type="button" variant="plain" onClick={() => handleOpenChange(false)}>
+                Cancel
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
 
         {/* Step indicators */}
         <div className="flex items-center gap-2" data-testid="step-indicators">
@@ -208,7 +277,7 @@ export function InterestRunWizard({
         </div>
 
         {/* Step 1 — Create */}
-        {step === 1 && (
+        {!isResuming && step === 1 && (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
               <FormField
@@ -266,7 +335,7 @@ export function InterestRunWizard({
         )}
 
         {/* Step 2 — Calculate */}
-        {step === 2 && (
+        {!isResuming && step === 2 && (
           <div className="space-y-4">
             {run && (
               <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
@@ -277,7 +346,9 @@ export function InterestRunWizard({
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Run ID: {run.id}</p>
                   </div>
-                  <Badge variant={STATUS_BADGE_VARIANT[run.status]}>{run.status}</Badge>
+                  <Badge variant={STATUS_BADGE_VARIANT[run.status]}>
+                    {INTEREST_RUN_STATUS_LABELS[run.status]}
+                  </Badge>
                 </div>
               </div>
             )}
@@ -372,9 +443,18 @@ export function InterestRunWizard({
                     "Calculate Interest"
                   )}
                 </Button>
-              ) : canApprove ? (
+              ) : canApprove && !isCreator ? (
                 <Button type="button" onClick={() => setStep(3)} disabled={isLoading}>
                   Approve
+                </Button>
+              ) : isCreator ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep(3)}
+                  disabled={isLoading}
+                >
+                  Review
                 </Button>
               ) : (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -386,7 +466,7 @@ export function InterestRunWizard({
         )}
 
         {/* Step 3 — Approve */}
-        {step === 3 && (
+        {!isResuming && step === 3 && (
           <div className="space-y-4">
             {run && (
               <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
@@ -427,7 +507,7 @@ export function InterestRunWizard({
               >
                 Cancel
               </Button>
-              {canApprove ? (
+              {canApprove && !isCreator ? (
                 <Button type="button" onClick={handleApprove} disabled={isLoading}>
                   {isLoading ? (
                     <>
@@ -438,6 +518,18 @@ export function InterestRunWizard({
                     "Approve Run"
                   )}
                 </Button>
+              ) : isCreator ? (
+                <div className="flex flex-col items-end gap-1">
+                  <Button type="button" disabled>
+                    Approve Run
+                  </Button>
+                  <p
+                    className="text-xs text-slate-500 dark:text-slate-400"
+                    data-testid="interest-run-awaiting-approval"
+                  >
+                    Awaiting approval by another member
+                  </p>
+                </div>
               ) : (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Pending Approval — you do not have permission to approve interest runs.
@@ -448,7 +540,7 @@ export function InterestRunWizard({
         )}
 
         {/* Step 4 — Post */}
-        {step === 4 && (
+        {!isResuming && step === 4 && (
           <div className="space-y-4">
             {run && (
               <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
@@ -456,7 +548,7 @@ export function InterestRunWizard({
                   <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
                     Approved Interest Run
                   </h3>
-                  <Badge variant="warning">APPROVED</Badge>
+                  <Badge variant="warning">{INTEREST_RUN_STATUS_LABELS.APPROVED}</Badge>
                 </div>
                 <dl className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -492,7 +584,7 @@ export function InterestRunWizard({
               >
                 Cancel
               </Button>
-              {canApprove ? (
+              {canManage ? (
                 <Button type="button" onClick={handlePost} disabled={isLoading}>
                   {isLoading ? (
                     <>
@@ -505,7 +597,7 @@ export function InterestRunWizard({
                 </Button>
               ) : (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Pending Approval — you do not have permission to post interest runs.
+                  You do not have permission to post interest runs.
                 </p>
               )}
             </DialogFooter>

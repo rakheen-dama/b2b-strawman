@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,6 +65,14 @@ public class InterestController {
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<InterestRunResponse> postInterestRun(@PathVariable UUID runId) {
     return ResponseEntity.ok(interestService.postInterestRun(runId));
+  }
+
+  /** Deletes a mistaken DRAFT run and its allocations (founder ruling §9.2, ADR-362). */
+  @DeleteMapping("/api/interest-runs/{runId}")
+  @RequiresCapability("MANAGE_TRUST")
+  public ResponseEntity<Void> deleteInterestRun(@PathVariable UUID runId) {
+    interestService.deleteInterestRun(runId);
+    return ResponseEntity.noContent().build();
   }
 
   // --- Request Records ---

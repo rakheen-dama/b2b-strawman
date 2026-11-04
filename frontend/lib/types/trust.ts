@@ -279,6 +279,13 @@ export interface TrustInvestment {
 
 export type InterestRunStatus = "DRAFT" | "APPROVED" | "POSTED";
 
+/** Firm-side status words (ADR-362: never the raw enum). */
+export const INTEREST_RUN_STATUS_LABELS: Record<InterestRunStatus, string> = {
+  DRAFT: "Draft",
+  APPROVED: "Approved",
+  POSTED: "Posted",
+};
+
 export interface InterestRun {
   id: string;
   trustAccountId: string;
@@ -294,6 +301,8 @@ export interface InterestRun {
   postedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Count of interest_allocations — 0 = never calculated (or calculated with nothing to allocate). */
+  allocationCount: number;
 }
 
 export interface InterestAllocation {

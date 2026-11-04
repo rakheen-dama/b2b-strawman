@@ -870,4 +870,38 @@ class InterestServiceIntegrationTest {
         .isInstanceOf(InvalidStateException.class)
         .hasMessageContaining("Self-approval not allowed");
   }
+
+  // ==========================================================================
+  // 630B (G88-F39) -- allocationCount discriminates a calculated DRAFT
+  // ==========================================================================
+
+  @Test
+  void runResponse_allocationCount_tracksCalculatedAllocations() throws Exception {
+    var created =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(
+                () ->
+                    interestService.createInterestRun(
+                        trustAccountId, LocalDate.of(2027, 8, 1), LocalDate.of(2027, 8, 31)));
+    assertThat(created.allocationCount()).isZero();
+
+    var calculated =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(() -> interestService.calculateInterest(created.id()));
+    var allocations =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(() -> interestService.getAllocations(created.id()));
+    assertThat(allocations).isNotEmpty();
+    assertThat(calculated.allocationCount()).isEqualTo(allocations.size());
+
+    var listed =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(() -> interestService.listInterestRuns(trustAccountId));
+    assertThat(listed)
+        .filteredOn(r -> r.id().equals(created.id()))
+        .singleElement()
+        .extracting(InterestService.InterestRunResponse::allocationCount)
+        .isEqualTo(allocations.size());
+  }
 }

@@ -220,6 +220,21 @@ class CapabilityEndpointTest {
         .andExpect(jsonPath("$.role").value("Project Manager"));
   }
 
+  // 630B (G88-F39): the caller's members.id, so the interest-run table can hide self-approval.
+  @Test
+  void getMyCapabilities_returnsCallerMemberId() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/me/capabilities").with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_member")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberId").value(memberMemberId.toString()));
+    mockMvc
+        .perform(
+            get("/api/me/capabilities").with(TestJwtFactory.adminJwt(ORG_ID, "user_cap_admin")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberId").value(adminMemberId.toString()));
+  }
+
   // --- GET /api/members/{id}/capabilities ---
 
   @Test

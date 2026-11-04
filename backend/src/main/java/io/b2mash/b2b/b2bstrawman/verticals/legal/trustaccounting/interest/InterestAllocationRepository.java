@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface InterestAllocationRepository extends JpaRepository<InterestAllocation, UUID> {
 
   List<InterestAllocation> findByInterestRunId(UUID interestRunId);
+
+  long countByInterestRunId(UUID interestRunId);
 }

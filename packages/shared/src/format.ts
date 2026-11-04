@@ -125,18 +125,21 @@ export function formatComplianceDate(isoString: string): string {
 }
 
 /**
- * Formats an ISO timestamp with date and time (en-ZA locale).
- * (Staff-app helper, retained.)
+ * Formats an ISO timestamp with date and time (en-ZA locale) on the South African wall clock
+ * ("04 Nov 2026, 01:30" for 2026-11-03T23:30Z), whatever the runtime zone — the Next.js SSR
+ * server runs in UTC (C3, ADR-358). Uses toLocaleString for the reasons `formatDateTime`
+ * documents. Returns "" for invalid input. (Staff-app helper, retained.)
  */
 export function formatComplianceDateWithTime(isoString: string): string {
   const d = new Date(isoString);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-ZA", {
+  return d.toLocaleString("en-ZA", {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Africa/Johannesburg",
   });
 }
 

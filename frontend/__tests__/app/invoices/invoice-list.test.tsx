@@ -81,6 +81,8 @@ describe("InvoiceLineTable", () => {
       taxRatePercent: null,
       taxAmount: null,
       taxExempt: false,
+      tariffItemId: null,
+      lineSource: null,
     },
     {
       id: "line-2",
@@ -99,6 +101,8 @@ describe("InvoiceLineTable", () => {
       taxRatePercent: null,
       taxAmount: null,
       taxExempt: false,
+      tariffItemId: null,
+      lineSource: null,
     },
   ];
 

@@ -179,6 +179,7 @@ describe("Task Recurrence", () => {
       createdBy: "user-1",
       createdByName: "Alice",
       dueDate: null,
+      estimatedHours: null,
       version: 1,
       createdAt: "2026-01-01T00:00:00Z",
       updatedAt: "2026-01-01T00:00:00Z",

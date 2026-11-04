@@ -121,7 +121,11 @@ vi.mock("next/link", () => ({
 import ReconciliationListPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/page";
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
-import type { TrustReconciliationResponse } from "@/lib/types";
+import type {
+  BankStatementLineResponse,
+  TrustReconciliationResponse,
+  TrustTransaction,
+} from "@/lib/types";
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -148,7 +152,9 @@ function makeRecon(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function makeBankLine(overrides: Record<string, unknown> = {}) {
+function makeBankLine(
+  overrides: Partial<BankStatementLineResponse> = {}
+): BankStatementLineResponse {
   return {
     id: "line-1",
     lineNumber: 1,
@@ -166,7 +172,7 @@ function makeBankLine(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function makeTx(overrides: Record<string, unknown> = {}) {
+function makeTx(overrides: Partial<TrustTransaction> = {}): TrustTransaction {
   return {
     id: "tx-1",
     trustAccountId: "acc-1",

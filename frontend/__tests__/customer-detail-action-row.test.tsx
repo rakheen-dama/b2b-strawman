@@ -52,6 +52,7 @@ const activeCustomer: Client = {
   status: "ACTIVE",
   notes: null,
   createdBy: "m1",
+  createdByName: null,
   createdAt: "2024-01-15T00:00:00Z",
   updatedAt: "2024-01-15T00:00:00Z",
 };

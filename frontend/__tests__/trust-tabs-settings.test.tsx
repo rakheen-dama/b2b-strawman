@@ -146,11 +146,14 @@ describe("Project detail Trust tab", () => {
       error: undefined,
       isLoading: false,
       mutate: vi.fn(),
+      isValidating: false,
     } as ReturnType<typeof useSWR>);
 
     render(
       withTrustEnabled(
         <MatterTabs
+          detailsPanel={placeholder}
+          fieldsPanel={placeholder}
           overviewPanel={placeholder}
           documentsPanel={placeholder}
           clientsPanel={placeholder}
@@ -171,6 +174,8 @@ describe("Project detail Trust tab", () => {
     render(
       withNoModules(
         <MatterTabs
+          detailsPanel={placeholder}
+          fieldsPanel={placeholder}
           overviewPanel={placeholder}
           documentsPanel={placeholder}
           clientsPanel={placeholder}
@@ -195,6 +200,8 @@ describe("Project detail Trust tab", () => {
     render(
       withNoModules(
         <MatterTabs
+          detailsPanel={placeholder}
+          fieldsPanel={placeholder}
           overviewPanel={<div data-testid="overview-content">Overview</div>}
           documentsPanel={placeholder}
           clientsPanel={placeholder}
@@ -226,6 +233,7 @@ describe("Customer detail Trust tab", () => {
       error: undefined,
       isLoading: false,
       mutate: vi.fn(),
+      isValidating: false,
     } as ReturnType<typeof useSWR>);
 
     render(
@@ -267,6 +275,7 @@ describe("TrustBalanceCard", () => {
       error: undefined,
       isLoading: true,
       mutate: vi.fn(),
+      isValidating: false,
     } as ReturnType<typeof useSWR>);
 
     render(withTrustEnabled(<TrustBalanceCard customerId="cust-1" slug="acme" />));
@@ -282,6 +291,7 @@ describe("TrustBalanceCard", () => {
           error: new Error("Network error"),
           isLoading: false,
           mutate: vi.fn(),
+          isValidating: false,
         } as ReturnType<typeof useSWR>;
       }
       return {
@@ -289,6 +299,7 @@ describe("TrustBalanceCard", () => {
         error: undefined,
         isLoading: false,
         mutate: vi.fn(),
+        isValidating: false,
       } as ReturnType<typeof useSWR>;
     });
 
@@ -303,6 +314,7 @@ describe("TrustBalanceCard", () => {
       error: undefined,
       isLoading: false,
       mutate: vi.fn(),
+      isValidating: false,
     } as ReturnType<typeof useSWR>);
 
     render(withTrustEnabled(<TrustBalanceCard customerId="cust-1" slug="acme" />));
@@ -324,6 +336,7 @@ describe("TrustBalanceCard", () => {
           error: undefined,
           isLoading: false,
           mutate: vi.fn(),
+          isValidating: false,
         } as ReturnType<typeof useSWR>;
       }
       return {
@@ -331,6 +344,7 @@ describe("TrustBalanceCard", () => {
         error: undefined,
         isLoading: false,
         mutate: vi.fn(),
+        isValidating: false,
       } as ReturnType<typeof useSWR>;
     });
 
@@ -357,6 +371,7 @@ describe("TrustBalanceCard", () => {
           error: undefined,
           isLoading: false,
           mutate: vi.fn(),
+          isValidating: false,
         } as ReturnType<typeof useSWR>;
       }
       return {
@@ -364,6 +379,7 @@ describe("TrustBalanceCard", () => {
         error: undefined,
         isLoading: false,
         mutate: vi.fn(),
+        isValidating: false,
       } as ReturnType<typeof useSWR>;
     });
 
@@ -388,6 +404,7 @@ describe("TrustBalanceCard", () => {
           error: undefined,
           isLoading: false,
           mutate: vi.fn(),
+          isValidating: false,
         } as ReturnType<typeof useSWR>;
       }
       return {
@@ -395,6 +412,7 @@ describe("TrustBalanceCard", () => {
         error: undefined,
         isLoading: false,
         mutate: vi.fn(),
+        isValidating: false,
       } as ReturnType<typeof useSWR>;
     });
 

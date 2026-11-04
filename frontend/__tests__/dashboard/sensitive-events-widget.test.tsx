@@ -187,7 +187,7 @@ describe("SensitiveEventsWidget", () => {
   });
 
   it("ignores unknown severity values in facets (defensive aggregation)", () => {
-    const facetsWithUnknown = [
+    const facetsWithUnknown: EventTypeFacet[] = [
       ...SAMPLE_FACETS,
       // Future severity the frontend hasn't been regenerated to know about.
       {

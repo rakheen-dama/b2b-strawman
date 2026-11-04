@@ -64,6 +64,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     createdBy: "m1",
     createdByName: "Alice",
     dueDate: null,
+    estimatedHours: null,
     version: 0,
     createdAt: "2024-06-01T00:00:00Z",
     updatedAt: "2024-06-01T00:00:00Z",
@@ -71,6 +72,10 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     completedBy: null,
     completedByName: null,
     cancelledAt: null,
+    recurrenceRule: null,
+    recurrenceEndDate: null,
+    parentTaskId: null,
+    isRecurring: false,
     ...overrides,
   };
 }

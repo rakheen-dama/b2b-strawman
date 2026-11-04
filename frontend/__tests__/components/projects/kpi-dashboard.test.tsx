@@ -194,11 +194,14 @@ describe("KPIDashboard", () => {
     const jsx = await KPIDashboard({
       ...defaultProps,
       setupStatus: {
+        matterId: "proj-1",
         clientAssigned: true,
         rateCardConfigured: true,
         budgetConfigured: true,
         teamAssigned: true,
-        requiredFields: { total: 0, filled: 0 },
+        requiredFields: { total: 0, filled: 0, fields: [] },
+        completionPercentage: 100,
+        overallComplete: true,
       },
       setupSteps: [
         { label: "Customer assigned", complete: true, actionHref: "?tab=customers" },

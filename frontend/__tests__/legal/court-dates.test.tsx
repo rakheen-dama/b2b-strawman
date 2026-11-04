@@ -378,6 +378,7 @@ describe("Court date detail actions", () => {
         onPostpone={onPostpone}
         onCancel={onCancel}
         onRecordOutcome={onOutcome}
+        onEdit={vi.fn()}
         onSelect={vi.fn()}
       />
     );

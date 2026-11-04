@@ -21,6 +21,8 @@ const group1: FieldGroupResponse = {
   active: true,
   createdAt: "2025-01-01T00:00:00Z",
   updatedAt: "2025-01-01T00:00:00Z",
+  autoApply: false,
+  dependsOn: null,
 };
 
 const group2: FieldGroupResponse = {
@@ -34,6 +36,8 @@ const group2: FieldGroupResponse = {
   active: true,
   createdAt: "2025-01-01T00:00:00Z",
   updatedAt: "2025-01-01T00:00:00Z",
+  autoApply: false,
+  dependsOn: null,
 };
 
 const group3: FieldGroupResponse = {
@@ -47,6 +51,8 @@ const group3: FieldGroupResponse = {
   active: true,
   createdAt: "2025-01-01T00:00:00Z",
   updatedAt: "2025-01-01T00:00:00Z",
+  autoApply: false,
+  dependsOn: null,
 };
 
 const allGroups = [group1, group2, group3];

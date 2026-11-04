@@ -96,7 +96,23 @@ const mockProject: Matter = {
 };
 
 const mockTemplates: TemplateListResponse[] = [
-  { id: "tpl-1", name: "Invoice Template", format: "HTML" } as TemplateListResponse,
+  {
+    id: "tpl-1",
+    name: "Invoice Template",
+    slug: "invoice-template",
+    description: "",
+    category: "ENGAGEMENT_LETTER",
+    primaryEntityType: "PROJECT",
+    source: "ORG_CUSTOM",
+    sourceTemplateId: null,
+    active: true,
+    sortOrder: 0,
+    format: "TIPTAP",
+    docxFileName: null,
+    docxFileSize: null,
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+  },
 ];
 
 const defaultProps = {

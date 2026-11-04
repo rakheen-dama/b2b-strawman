@@ -30,6 +30,7 @@ vi.mock("@/lib/api", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 import { closeMatterAction } from "@/app/(app)/org/[slug]/matters/[id]/matter-closure-actions";
+import type { CloseMatterRequest } from "@/lib/api/matter-closure";
 
 // Backend OrgRoleService.resolveCapabilities: admin = ALL_NAMES − OWNER_ONLY, so an admin's
 // real capability set carries CLOSE_MATTER but never OVERRIDE_MATTER_CLOSURE.
@@ -47,13 +48,15 @@ const OWNER_CAPS = {
   isOwner: true,
 };
 
-const baseReq = {
-  reason: "CONCLUDED" as const,
+const baseReq: CloseMatterRequest = {
+  reason: "CONCLUDED",
   generateClosureLetter: false,
   generateStatementOfAccount: false,
   override: false,
+  shareWithClient: false,
+  notifyClient: false,
 };
-const overrideReq = {
+const overrideReq: CloseMatterRequest = {
   ...baseReq,
   override: true,
   overrideJustification: "Owner override justification text",

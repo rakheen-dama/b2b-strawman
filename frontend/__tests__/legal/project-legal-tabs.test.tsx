@@ -267,6 +267,7 @@ describe("ProjectCourtDatesTab", () => {
       error: undefined,
       isLoading: false,
       mutate: vi.fn(),
+      isValidating: false,
     } as ReturnType<typeof useSWR>);
 
     render(
@@ -295,6 +296,7 @@ describe("ProjectAdversePartiesTab", () => {
       error: undefined,
       isLoading: false,
       mutate: vi.fn(),
+      isValidating: false,
     } as ReturnType<typeof useSWR>);
 
     render(withLegalProfile(<ProjectAdversePartiesTab projectId="proj-1" slug="acme" />));
@@ -329,6 +331,7 @@ describe("UpcomingCourtDatesWidget", () => {
       error: undefined,
       isLoading: false,
       mutate: vi.fn(),
+      isValidating: false,
     } as ReturnType<typeof useSWR>);
 
     render(withLegalProfile(<UpcomingCourtDatesWidget orgSlug="acme" />));

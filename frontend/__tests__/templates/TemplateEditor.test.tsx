@@ -58,8 +58,22 @@ const SAMPLE_TEMPLATE: ProjectTemplateResponse = {
 };
 
 const AVAILABLE_TAGS: TagResponse[] = [
-  { id: "tag-1", name: "Accounting", slug: "accounting", color: "#22c55e" },
-  { id: "tag-2", name: "Monthly", slug: "monthly", color: null },
+  {
+    id: "tag-1",
+    name: "Accounting",
+    slug: "accounting",
+    color: "#22c55e",
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "tag-2",
+    name: "Monthly",
+    slug: "monthly",
+    color: null,
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+  },
 ];
 
 const REQUEST_TEMPLATES = [
@@ -87,6 +101,7 @@ const CUSTOMER_FIELDS: FieldDefinitionResponse[] = [
     active: true,
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
+    portalVisibleDeadline: false,
   },
   {
     id: "fd-2",
@@ -107,6 +122,7 @@ const CUSTOMER_FIELDS: FieldDefinitionResponse[] = [
     active: true,
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
+    portalVisibleDeadline: false,
   },
 ];
 

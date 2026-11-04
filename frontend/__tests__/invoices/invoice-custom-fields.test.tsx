@@ -34,6 +34,8 @@ const invoiceFieldDef: FieldDefinitionResponse = {
   active: true,
   createdAt: "2025-01-01T00:00:00Z",
   updatedAt: "2025-01-01T00:00:00Z",
+  requiredForContexts: [],
+  portalVisibleDeadline: false,
 };
 
 const invoiceFieldGroup: FieldGroupResponse = {

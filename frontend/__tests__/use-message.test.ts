@@ -2,10 +2,8 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { createMessages } from "@/lib/messages";
 
 describe("createMessages", () => {
-  const originalNodeEnv = process.env.NODE_ENV;
-
   afterEach(() => {
-    process.env.NODE_ENV = originalNodeEnv;
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
@@ -41,7 +39,7 @@ describe("createMessages", () => {
   });
 
   it("returns raw code for missing key in production", () => {
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { t } = createMessages("errors");
     const result = t("nonexistent.key.here");
@@ -50,7 +48,7 @@ describe("createMessages", () => {
   });
 
   it("logs console.warn for missing key in development", () => {
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { t } = createMessages("errors");
     t("nonexistent.key.here");

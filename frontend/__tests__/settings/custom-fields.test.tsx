@@ -40,6 +40,9 @@ function makeFieldDefinitions(entityType: EntityType): FieldDefinitionResponse[]
         active: true,
         createdAt: "2025-01-15T10:00:00Z",
         updatedAt: "2025-01-15T10:00:00Z",
+        visibilityCondition: null,
+        requiredForContexts: [],
+        portalVisibleDeadline: false,
       },
       {
         id: "fd-2",
@@ -61,6 +64,9 @@ function makeFieldDefinitions(entityType: EntityType): FieldDefinitionResponse[]
         active: true,
         createdAt: "2025-01-15T10:00:00Z",
         updatedAt: "2025-01-15T10:00:00Z",
+        visibilityCondition: null,
+        requiredForContexts: [],
+        portalVisibleDeadline: false,
       },
     ];
   }
@@ -81,6 +87,8 @@ function makeFieldGroups(entityType: EntityType): FieldGroupResponse[] {
         active: true,
         createdAt: "2025-01-15T10:00:00Z",
         updatedAt: "2025-01-15T10:00:00Z",
+        autoApply: false,
+        dependsOn: null,
       },
     ];
   }

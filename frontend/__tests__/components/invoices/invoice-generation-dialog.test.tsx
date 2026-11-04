@@ -40,6 +40,7 @@ const sampleUnbilledData: UnbilledTimeResponse = {
           billingRateCurrency: "USD",
           billableValue: 200,
           description: null,
+          rateSource: "SNAPSHOT",
         },
         {
           id: "e2",
@@ -51,6 +52,7 @@ const sampleUnbilledData: UnbilledTimeResponse = {
           billingRateCurrency: "USD",
           billableValue: 100,
           description: null,
+          rateSource: "SNAPSHOT",
         },
         {
           id: "e3",
@@ -62,6 +64,7 @@ const sampleUnbilledData: UnbilledTimeResponse = {
           billingRateCurrency: "ZAR",
           billableValue: 1200,
           description: null,
+          rateSource: "SNAPSHOT",
         },
       ],
       totals: {

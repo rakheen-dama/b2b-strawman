@@ -23,6 +23,7 @@ function makeMembers(): MatterMember[] {
       email: "alice@example.com",
       avatarUrl: null,
       matterRole: "lead",
+      orgRole: "member",
       createdAt: "2025-01-01T00:00:00Z",
     },
     {
@@ -32,6 +33,7 @@ function makeMembers(): MatterMember[] {
       email: "bob@example.com",
       avatarUrl: null,
       matterRole: "member",
+      orgRole: "member",
       createdAt: "2025-01-01T00:00:00Z",
     },
   ];

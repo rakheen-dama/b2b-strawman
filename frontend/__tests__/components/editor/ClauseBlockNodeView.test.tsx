@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { useClauseContent } from "@/components/editor/hooks/useClauseContent";
 
 vi.mock("@tiptap/react", () => ({
   NodeViewWrapper: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
@@ -23,7 +24,7 @@ vi.mock("motion/react", () => ({
   },
 }));
 
-let mockClauseContent = {
+let mockClauseContent: ReturnType<typeof useClauseContent> = {
   body: {
     type: "doc",
     content: [

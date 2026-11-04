@@ -52,7 +52,7 @@ const DOCX_TEMPLATE: TemplateListResponse = {
   description: "DOCX engagement letter",
   category: "ENGAGEMENT_LETTER",
   primaryEntityType: "PROJECT",
-  source: "CUSTOM",
+  source: "ORG_CUSTOM",
   sourceTemplateId: null,
   active: true,
   sortOrder: 1,

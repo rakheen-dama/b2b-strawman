@@ -21,6 +21,7 @@ const sampleDataWithExpenses: UnbilledTimeResponse = {
           billingRateCurrency: "ZAR",
           billableValue: 1000,
           description: null,
+          rateSource: "SNAPSHOT",
         },
       ],
       totals: {

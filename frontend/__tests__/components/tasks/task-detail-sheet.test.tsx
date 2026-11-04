@@ -91,6 +91,9 @@ const textFieldDef: FieldDefinitionResponse = {
   active: true,
   createdAt: "2025-01-01T00:00:00Z",
   updatedAt: "2025-01-01T00:00:00Z",
+  visibilityCondition: null,
+  requiredForContexts: [],
+  portalVisibleDeadline: false,
 };
 
 const testFieldGroup: FieldGroupResponse = {
@@ -104,6 +107,8 @@ const testFieldGroup: FieldGroupResponse = {
   active: true,
   createdAt: "2025-01-01T00:00:00Z",
   updatedAt: "2025-01-01T00:00:00Z",
+  autoApply: false,
+  dependsOn: null,
 };
 
 const testGroupMembers: FieldGroupMemberResponse[] = [
@@ -129,6 +134,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     createdBy: "m1",
     createdByName: "Alice",
     dueDate: "2026-03-15",
+    estimatedHours: null,
     version: 1,
     createdAt: "2026-01-10T10:00:00Z",
     updatedAt: "2026-02-20T08:00:00Z",
@@ -136,6 +142,10 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     completedBy: null,
     completedByName: null,
     cancelledAt: null,
+    recurrenceRule: null,
+    recurrenceEndDate: null,
+    parentTaskId: null,
+    isRecurring: false,
     tags: [],
     customFields: {},
     appliedFieldGroups: [],

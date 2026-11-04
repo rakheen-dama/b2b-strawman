@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -73,11 +76,21 @@ class FieldPackSeederReconcileTest {
       "South African conveyancing-specific fields for property transfer matters (matter type"
           + " Conveyancing)";
 
+  static final List<String> CONVEYANCING_PARTY_FIELDS =
+      List.of(
+          "seller_name",
+          "seller_id_number",
+          "purchaser_name",
+          "purchaser_id_number",
+          "occupation_date",
+          "bond_number");
+
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private FieldPackSeeder fieldPackSeeder;
   @Autowired private FieldGroupRepository fieldGroupRepository;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
+  @Autowired private FieldGroupMemberRepository fieldGroupMemberRepository;
   @Autowired private PackInstallRepository packInstallRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -158,7 +171,7 @@ class FieldPackSeederReconcileTest {
               conveyancing.getName(), CONVEYANCING_V1_DESC, conveyancing.getSortOrder());
           fieldGroupRepository.saveAll(List.of(legal, conveyancing));
           rewind("legal-za-project", "3", "2");
-          rewind("conveyancing-za-project", "2", "1");
+          rewind("conveyancing-za-project", "3", "1");
           return null;
         });
 
@@ -171,7 +184,7 @@ class FieldPackSeederReconcileTest {
           assertThat(group("conveyancing_za_matter").getDescription())
               .isEqualTo(CONVEYANCING_V2_DESC);
           assertThat(ledgerVersion("legal-za-project")).isEqualTo("3");
-          assertThat(ledgerVersion("conveyancing-za-project")).isEqualTo("2");
+          assertThat(ledgerVersion("conveyancing-za-project")).isEqualTo("3");
           return null;
         });
   }
@@ -323,10 +336,144 @@ class FieldPackSeederReconcileTest {
   }
 
   /**
+   * G88-F12 contract parties: the explicit "add missing field definitions" reconcile step. A
+   * conveyancing tenant installed before the party fields existed (simulated: the six definitions
+   * deleted, the ledger rewound to v2) gains every one as a pack-owned definition in the pack's
+   * group, at the shipped sort order; a firm edit to another pack field is kept; a second run (the
+   * gate re-opened, a firm rename of a new field in between) neither duplicates nor rewrites
+   * anything.
+   */
+  @Test
+  void conveyancingV2Tenant_gainsPartyFields_idempotently_firmEditsKept() {
+    inTenantTx(
+        () -> {
+          deleteDefinitions(CONVEYANCING_PARTY_FIELDS);
+          var erf = definition("erf_number");
+          erf.updateMetadata(
+              "Stand Number (firm)", erf.getDescription(), erf.isRequired(), erf.getValidation());
+          fieldDefinitionRepository.save(erf);
+          rewindTo("conveyancing-za-project", "2");
+          return null;
+        });
+    try {
+      fieldPackSeeder.seedPacksForTenant(schema, ORG_ID);
+
+      inTenantTx(
+          () -> {
+            var members = memberSortOrderBySlug("conveyancing_za_matter");
+            int sortOrder = 11;
+            for (String slug : CONVEYANCING_PARTY_FIELDS) {
+              var fd = definition(slug);
+              assertThat(fd.getPackId()).as(slug).isEqualTo("conveyancing-za-project");
+              assertThat(fd.getPackFieldKey()).as(slug).isEqualTo(slug);
+              assertThat(fd.isActive()).as(slug).isTrue();
+              assertThat(members).as(slug).containsEntry(slug, sortOrder++);
+            }
+            assertThat(definition("seller_name").getName()).isEqualTo("Seller Name");
+            assertThat(definition("occupation_date").getFieldType()).isEqualTo(FieldType.DATE);
+            assertThat(definition("erf_number").getName()).isEqualTo("Stand Number (firm)");
+            assertThat(ledgerVersion("conveyancing-za-project")).isEqualTo("3");
+            return null;
+          });
+
+      // Second run: a firm renames a reconciled field, the gate re-opens — nothing is re-added
+      int membersBefore = inTenantTx(() -> memberSortOrderBySlug("conveyancing_za_matter").size());
+      inTenantTx(
+          () -> {
+            var seller = definition("seller_name");
+            seller.updateMetadata(
+                "Verkoper (firm)",
+                seller.getDescription(),
+                seller.isRequired(),
+                seller.getValidation());
+            fieldDefinitionRepository.save(seller);
+            rewindTo("conveyancing-za-project", "2");
+            return null;
+          });
+      fieldPackSeeder.seedPacksForTenant(schema, ORG_ID);
+
+      inTenantTx(
+          () -> {
+            assertThat(definition("seller_name").getName()).isEqualTo("Verkoper (firm)");
+            assertThat(memberSortOrderBySlug("conveyancing_za_matter")).hasSize(membersBefore);
+            assertThat(ledgerVersion("conveyancing-za-project")).isEqualTo("3");
+            return null;
+          });
+    } finally {
+      inTenantTx(
+          () -> {
+            var erf = definition("erf_number");
+            erf.updateMetadata(
+                "Erf Number", erf.getDescription(), erf.isRequired(), erf.getValidation());
+            fieldDefinitionRepository.save(erf);
+            definitionIfPresent("seller_name")
+                .ifPresent(
+                    s -> {
+                      s.updateMetadata(
+                          "Seller Name", s.getDescription(), s.isRequired(), s.getValidation());
+                      fieldDefinitionRepository.save(s);
+                    });
+            return null;
+          });
+    }
+  }
+
+  /**
+   * A firm that created its own {@code bond_number} field (no {@code pack_id}) before the pack
+   * shipped one keeps it untouched: the reconcile step never takes over, renames or re-groups a row
+   * it does not own (and never trips {@code uq_field_def_type_slug} at boot).
+   */
+  @Test
+  void firmCreatedFieldOwningAPackSlug_isLeftAlone() {
+    UUID firmId =
+        inTenantTx(
+            () -> {
+              deleteDefinitions(List.of("bond_number"));
+              var firm =
+                  new FieldDefinition(
+                      EntityType.PROJECT, "Bond Account No (firm)", "bond_number", FieldType.TEXT);
+              UUID id = fieldDefinitionRepository.save(firm).getId();
+              rewindTo("conveyancing-za-project", "2");
+              return id;
+            });
+    try {
+      List<String> logs = captureLogs(() -> fieldPackSeeder.seedPacksForTenant(schema, ORG_ID));
+
+      inTenantTx(
+          () -> {
+            var fd = definition("bond_number");
+            assertThat(fd.getId()).isEqualTo(firmId);
+            assertThat(fd.getName()).isEqualTo("Bond Account No (firm)");
+            assertThat(fd.getPackId()).isNull();
+            assertThat(memberSortOrderBySlug("conveyancing_za_matter"))
+                .doesNotContainKey("bond_number");
+            assertThat(ledgerVersion("conveyancing-za-project")).isEqualTo("3");
+            return null;
+          });
+      assertThat(logs)
+          .anyMatch(
+              m ->
+                  m.startsWith("Reconcile skipped")
+                      && m.contains("pack=conveyancing-za-project")
+                      && m.contains("'bond_number'"));
+    } finally {
+      // restore the pack-owned field for sibling tests
+      inTenantTx(
+          () -> {
+            deleteDefinitions(List.of("bond_number"));
+            rewindTo("conveyancing-za-project", "2");
+            return null;
+          });
+      fieldPackSeeder.seedPacksForTenant(schema, ORG_ID);
+    }
+  }
+
+  /**
    * No-Spring guard over every shipped field pack with a {@code reconcile} block: each entry
    * targets the pack's group slug ({@code field_group}) or one of its field slugs ({@code
    * field_definition}), its {@code to} equals the value shipped in the same file, and {@code from}
-   * differs — a later JSON edit without updating {@code to} fails here, not at a tenant's boot.
+   * differs ({@code membership} add-missing entries: a declared field slug, {@code to} = the pack's
+   * group slug) — a later JSON edit without updating {@code to} fails here, not at a tenant's boot.
    * Cumulative-chain convention ({@code backend/CLAUDE.md} › Pack reconcile contract): every {@code
    * to} is the head (the shipped value) and every {@code from} a value of some prior version; when
    * a field is re-edited, re-point every older entry's {@code to} to the new head and add one entry
@@ -336,6 +483,7 @@ class FieldPackSeederReconcileTest {
   void shippedFieldPackReconcileEntries_targetDeclaredKeysAndShippedValues() throws IOException {
     var mapper = new ObjectMapper();
     int checked = 0;
+    int added = 0;
     for (Resource resource :
         new PathMatchingResourcePatternResolver().getResources("classpath:field-packs/*.json")) {
       FieldPackDefinition pack;
@@ -344,6 +492,14 @@ class FieldPackSeederReconcileTest {
       }
       for (PackReconcileEntry e : PackReconcileEntry.parse(pack.packId(), pack.reconcile())) {
         String where = pack.packId() + " " + e.entity() + " '" + e.key() + "' " + e.field();
+        if ("membership".equals(e.field())) {
+          // G88-F12 add-missing step: a declared field slug into the pack's own group
+          assertThat(e.entity()).as(where).isEqualTo("field_definition");
+          assertThat(pack.fields()).as(where).anyMatch(f -> e.key().equals(f.slug()));
+          assertThat(e.to()).as(where).isEqualTo(pack.group().slug());
+          added++;
+          continue;
+        }
         assertThat(e.field()).as(where).isIn("name", "description");
         Object shipped =
             switch (e.entity()) {
@@ -369,6 +525,7 @@ class FieldPackSeederReconcileTest {
     assertThat(checked)
         .as("common-project (3) + legal-za-project (1) + conveyancing (1)")
         .isEqualTo(5);
+    assertThat(added).as("conveyancing party fields (6)").isEqualTo(6);
   }
 
   /**
@@ -409,14 +566,18 @@ class FieldPackSeederReconcileTest {
                 new PackReconcileEntry("field_group", "project_info", "name", "a", 42),
                 new PackReconcileEntry("field_group", "other_group", "name", "a", "Matter Info"),
                 new PackReconcileEntry("field_group", "project_info", "name", "a", "Not shipped"),
-                new PackReconcileEntry("field_definition", "no_such_field", "name", "a", "b")));
+                new PackReconcileEntry("field_definition", "no_such_field", "name", "a", "b"),
+                new PackReconcileEntry(
+                    "field_definition", "no_such_field", "membership", null, "project_info"),
+                new PackReconcileEntry("field_definition", "category", "membership", null, "other"),
+                new PackReconcileEntry("field_definition", "category", "membership", null, 42)));
 
     var logs = new java.util.ArrayList<String>();
     assertThatCode(
             () -> logs.addAll(captureLogs(() -> seeder.reconcileInstalledPack(pack, null, "t"))))
         .doesNotThrowAnyException();
 
-    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile entry ignored")).hasSize(7);
+    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile entry ignored")).hasSize(10);
     // the entity is checked first, so an unsupported entity is reported as such even when its
     // field / value are unsupported too
     assertThat(logs)
@@ -467,6 +628,44 @@ class FieldPackSeederReconcileTest {
           fieldDefinitionRepository.save(category);
           return null;
         });
+  }
+
+  /** CAS-rewinds the ledger from its current version to {@code to}; inside a tenant tx. */
+  private void rewindTo(String packId, String to) {
+    rewind(packId, ledgerVersion(packId), to);
+  }
+
+  /**
+   * Hard-deletes the PROJECT definitions with these slugs (memberships cascade); in a tenant tx.
+   */
+  private void deleteDefinitions(List<String> slugs) {
+    for (String slug : slugs) {
+      definitionIfPresent(slug).ifPresent(fieldDefinitionRepository::delete);
+    }
+    fieldDefinitionRepository.flush();
+  }
+
+  private java.util.Optional<FieldDefinition> definitionIfPresent(String slug) {
+    return fieldDefinitionRepository.findByEntityTypeAndSlug(EntityType.PROJECT, slug);
+  }
+
+  /** Slug → membership sort order of the group's members; in a tenant tx. */
+  private Map<String, Integer> memberSortOrderBySlug(String groupSlug) {
+    var members =
+        fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(group(groupSlug).getId());
+    Map<UUID, String> slugById =
+        fieldDefinitionRepository
+            .findAllById(members.stream().map(FieldGroupMember::getFieldDefinitionId).toList())
+            .stream()
+            .collect(Collectors.toMap(FieldDefinition::getId, FieldDefinition::getSlug));
+    return members.stream()
+        .collect(
+            Collectors.toMap(
+                m -> slugById.get(m.getFieldDefinitionId()),
+                FieldGroupMember::getSortOrder,
+                (a, b) -> {
+                  throw new AssertionError("duplicate membership");
+                }));
   }
 
   /** CAS-rewinds the ledger; must run inside a tenant tx. */

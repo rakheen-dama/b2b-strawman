@@ -302,7 +302,7 @@ class ClausePackSeederIntegrationTest {
           .as("fresh legal-za tenant associations of %s", declared.getKey())
           .containsExactlyElementsOf(expectedRows(declared.getValue()));
     }
-    assertThat(ledgerVersion()).isEqualTo("2");
+    assertThat(ledgerVersion()).isEqualTo("3");
   }
 
   @Test
@@ -322,7 +322,7 @@ class ClausePackSeederIntegrationTest {
     try {
       simulateV1Tenant(false);
       DECLARED.keySet().forEach(key -> assertThat(associations(key)).as(key).isEmpty());
-      long v2EntriesBefore = orgSettingsClauseEntries("2");
+      long headEntriesBefore = orgSettingsClauseEntries("3");
 
       List<String> logs =
           captureLogs(this::seedLegalTenant, ClausePackSeeder.class, PackVersionGate.class);
@@ -332,9 +332,9 @@ class ClausePackSeederIntegrationTest {
             .as("reconciled associations of %s", declared.getKey())
             .containsExactlyElementsOf(expectedRows(declared.getValue()));
       }
-      assertThat(ledgerVersion()).isEqualTo("2");
+      assertThat(ledgerVersion()).isEqualTo("3");
       assertThat(logs)
-          .anyMatch(m -> m.startsWith("Reconciling CLAUSE pack conveyancing-za-clauses v1 -> v2"));
+          .anyMatch(m -> m.startsWith("Reconciling CLAUSE pack conveyancing-za-clauses v1 -> v3"));
       List<String> applied =
           logs.stream()
               .filter(m -> m.startsWith("Reconcile applied:"))
@@ -354,7 +354,7 @@ class ClausePackSeederIntegrationTest {
           .noneMatch(m -> m.startsWith("Reconcile skipped"));
       // R-11 (fix cycle 1): the reconcile does not re-record the version in the OrgSettings
       // pack-status list; the pack_install ledger is the gate.
-      assertThat(orgSettingsClauseEntries("2")).isEqualTo(v2EntriesBefore);
+      assertThat(orgSettingsClauseEntries("3")).isEqualTo(headEntriesBefore);
     } finally {
       restoreV2();
     }
@@ -372,7 +372,7 @@ class ClausePackSeederIntegrationTest {
       expected.removeIf(r -> r.slug().equals("voetstoots"));
       expected.add(new Row("voetstoots", 42, false));
       assertThat(associations(OTP)).containsExactlyInAnyOrderElementsOf(expected);
-      assertThat(ledgerVersion()).isEqualTo("2");
+      assertThat(ledgerVersion()).isEqualTo("3");
       // The firm edit is reported, not silently treated as current.
       assertThat(logs)
           .filteredOn(m -> m.startsWith("Reconcile skipped (edited):"))
@@ -428,7 +428,7 @@ class ClausePackSeederIntegrationTest {
 
   @Test
   void reconcile_atEqualVersion_isANoOp() {
-    assertThat(ledgerVersion()).isEqualTo("2");
+    assertThat(ledgerVersion()).isEqualTo("3");
     Map<String, Set<UUID>> idsBefore = new LinkedHashMap<>();
     DECLARED.keySet().forEach(key -> idsBefore.put(key, associationIds(key)));
 
@@ -441,7 +441,7 @@ class ClausePackSeederIntegrationTest {
     assertThat(logs)
         .noneMatch(m -> m.startsWith("Reconciling CLAUSE pack " + CONVEYANCING_PACK))
         .noneMatch(m -> m.startsWith("Reconcile applied:"));
-    assertThat(ledgerVersion()).isEqualTo("2");
+    assertThat(ledgerVersion()).isEqualTo("3");
   }
 
   @Test
@@ -543,7 +543,7 @@ class ClausePackSeederIntegrationTest {
 
   /**
    * Puts the legal tenant in the state of a tenant provisioned at conveyancing-za-clauses v1: no
-   * associations on the four conveyancing templates and the ledger rewound 2 → 1. With {@code
+   * associations on the four conveyancing templates and the ledger rewound 3 → 1. With {@code
    * keepEditedVoetstoots} the OTP–voetstoots row survives, firm-edited (required off, sort 42).
    */
   private void simulateV1Tenant(boolean keepEditedVoetstoots) {
@@ -565,14 +565,14 @@ class ClausePackSeederIntegrationTest {
               }
             }
           }
-          assertThat(packInstallRepository.compareAndSetVersion(CONVEYANCING_PACK, "2", "1"))
-              .as("rewind %s 2 -> 1", CONVEYANCING_PACK)
+          assertThat(packInstallRepository.compareAndSetVersion(CONVEYANCING_PACK, "3", "1"))
+              .as("rewind %s 3 -> 1", CONVEYANCING_PACK)
               .isEqualTo(1);
           return null;
         });
   }
 
-  /** Leaves the tenant at v2 with every association present, even if a test failed mid-way. */
+  /** Leaves the tenant at the head with every association present, even if a test failed. */
   private void restoreV2() {
     if ("1".equals(ledgerVersion())) {
       seedLegalTenant();

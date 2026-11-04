@@ -4,11 +4,14 @@
  * Exercises the conveyancing flow on the legal-za profile:
  *   - Thandi (Owner) creates a new client and a matter using the
  *     Property Transfer template (matter_type = CONVEYANCING)
- *   - Verifies the 10 conveyancing custom fields are present (from field pack
+ *   - Verifies the 16 conveyancing custom fields are present (from field pack
  *     `conveyancing_za_matter`): conveyancing_type, property_address,
  *     erf_number, deeds_office, lodgement_date, registration_date, deed_number,
- *     purchase_price, transfer_duty, bond_institution
- *   - Fills minimum subset: property_address, erf_number, deeds_office
+ *     purchase_price, transfer_duty, bond_institution, seller_name,
+ *     seller_id_number, purchaser_name, purchaser_id_number, occupation_date,
+ *     bond_number (G88-F12: contract parties are explicit matter fields)
+ *   - Fills minimum subset: property_address, erf_number, deeds_office, seller_name,
+ *     purchaser_name
  *   - Generates an Offer to Purchase document (key `offer-to-purchase`,
  *     acceptanceEligible: true)
  *   - Sends for acceptance via Phase 28 flow
@@ -46,8 +49,10 @@ const clientName = () => `Khumalo Property Holdings ${attemptRunId()}`;
 const clientEmail = () => `khumalo.property.${attemptRunId()}@example.com`;
 const matterName = () => `Khumalo Property Holdings — Erf 1234 Sandton Transfer ${attemptRunId()}`;
 const ficaPack = () => `khumalo-fica-pack-${attemptRunId()}.pdf`;
+/** G88-F12: the seller is an explicit matter field; the client (Khumalo) is the purchaser. */
+const SELLER_NAME = "Johannes van der Merwe";
 
-/** Labels of the 10 fields in the `conveyancing_za_matter` field group. */
+/** Labels of the 16 fields in the `conveyancing_za_matter` field group. */
 const CONVEYANCING_FIELDS: Record<string, string> = {
   conveyancing_type: "Conveyancing Type",
   property_address: "Property Address",
@@ -59,6 +64,12 @@ const CONVEYANCING_FIELDS: Record<string, string> = {
   purchase_price: "Purchase Price",
   transfer_duty: "Transfer Duty",
   bond_institution: "Bond Institution",
+  seller_name: "Seller Name",
+  seller_id_number: "Seller ID / Passport Number",
+  purchaser_name: "Purchaser Name",
+  purchaser_id_number: "Purchaser ID / Passport Number",
+  occupation_date: "Occupation Date",
+  bond_number: "Bond Number",
 };
 
 /** FICA checklist items of the "Legal Individual Client Onboarding" checklist (dependency order). */
@@ -229,12 +240,12 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     }
   });
 
-  // ── 14.4: Verify 10 conveyancing custom fields present ────────────
-  test("Alice: Verify 10 conveyancing custom fields present on matter detail", async ({ page }) => {
+  // ── 14.4: Verify 16 conveyancing custom fields present ────────────
+  test("Alice: Verify 16 conveyancing custom fields present on matter detail", async ({ page }) => {
     await loginAs(page, "alice");
     const fieldsTab = await openMatterFieldsTab(page);
 
-    // 8 fields render unconditionally; registration_date is shown once lodgement_date
+    // 14 fields render unconditionally; registration_date is shown once lodgement_date
     // is set and deed_number once registration_date is set (visibleWhen rules).
     const conditional = ["registration_date", "deed_number"];
     for (const [slug, label] of Object.entries(CONVEYANCING_FIELDS)) {
@@ -268,13 +279,18 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   });
 
   // ── 14.5-14.6: Fill minimum field subset ──────────────────────────
-  test("Alice: Fill property_address, erf_number, deeds_office", async ({ page }) => {
+  test("Alice: Fill property_address, erf_number, deeds_office, seller and purchaser", async ({
+    page,
+  }) => {
     await loginAs(page, "alice");
     const fieldsTab = await openMatterFieldsTab(page);
 
     await fieldsTab.locator("#cf-property_address").fill("12 Rivonia Road, Sandton, 2196");
     await fieldsTab.locator("#cf-erf_number").fill("1234");
     await fieldsTab.locator("#cf-deeds_office").selectOption("JOHANNESBURG");
+    // G88-F12 (scenario 14.5, founder authorisation 2026-11-03): fill Seller and Purchaser
+    await fieldsTab.locator("#cf-seller_name").fill(SELLER_NAME);
+    await fieldsTab.locator("#cf-purchaser_name").fill(clientName());
     await fieldsTab.getByRole("button", { name: "Save Custom Fields" }).click();
     await expect(fieldsTab.getByText("Saved successfully")).toBeVisible({ timeout: 15_000 });
 
@@ -287,6 +303,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     );
     await expect(reloaded.locator("#cf-erf_number")).toHaveValue("1234");
     await expect(reloaded.locator("#cf-deeds_office")).toHaveValue("JOHANNESBURG");
+    await expect(reloaded.locator("#cf-seller_name")).toHaveValue(SELLER_NAME);
+    await expect(reloaded.locator("#cf-purchaser_name")).toHaveValue(clientName());
 
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-conveyancing-fields-populated");
@@ -309,7 +327,9 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     const preview = dialog.frameLocator('iframe[title="Document Preview"]').locator("body");
     // The preview merges the client, matter and the Day 14 conveyancing fields
     await expect(preview).toContainText("Offer to Purchase", { timeout: 15_000 });
+    // G88-F12: both parties come from the matter's seller / purchaser fields
     await expect(preview).toContainText(`Purchaser: ${clientName()}`);
+    await expect(preview).toContainText(`Seller: ${SELLER_NAME}`);
     await expect(preview).toContainText("Property Address: 12 Rivonia Road, Sandton, 2196");
     await expect(preview).toContainText("Erf Number: 1234");
     await expect(preview).toContainText("Deeds Office: Johannesburg");
@@ -347,6 +367,9 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     const preview = dialog.frameLocator('iframe[title="Document Preview"]').locator("body");
     await expect(preview).toContainText("Conditions of Sale", { timeout: 15_000 });
     await expect(preview).toContainText(/voetstoots/i);
+    // G88-F12 (HIGH): the SELLER is not liable for defects, the PURCHASER accepts the property
+    await expect(preview).toContainText(`meaning that ${clientName()} accepts the property`);
+    await expect(preview).toContainText(`and ${SELLER_NAME} shall not be liable`);
     await expect(preview).toContainText(/suspensive/i);
     await expect(preview).toContainText(/transfer duty/i);
     await page.waitForLoadState("networkidle");

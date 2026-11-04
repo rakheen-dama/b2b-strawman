@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.template.TemplateSource;
 import java.io.IOException;
@@ -58,7 +59,7 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static final String ORG_ID = "org_legal_za_template_reconcile_test";
   private static final String PACK_ID = "legal-za";
-  private static final String CURRENT_VERSION = "9";
+  private static final String CURRENT_VERSION = "10";
   private static final List<String> RECONCILED_KEYS =
       List.of(
           "engagement-letter-litigation",
@@ -73,6 +74,14 @@ class LegalZaTemplateReconcileIntegrationTest {
   /** Template bodies re-edited in v9 (626E), reconciled from their v8 body. */
   private static final List<String> V9_EDITED_KEYS =
       List.of("fee-note-za", "statement-of-account", "matter-closure-letter");
+
+  /** Template bodies re-edited in v10 (G88-F12 contract parties), reconciled from their v9 body. */
+  private static final List<String> V10_EDITED_KEYS =
+      List.of(
+          "offer-to-purchase",
+          "deed-of-transfer",
+          "bond-cancellation-instruction",
+          "letter-of-demand");
 
   /**
    * A legal-za template outside the reconcile block with no clause links: deleted to force a
@@ -442,6 +451,51 @@ class LegalZaTemplateReconcileIntegrationTest {
     }
   }
 
+  /**
+   * (g) G88-F12: a v9 tenant's pristine Offer to Purchase, Deed of Transfer, Bond Cancellation
+   * Instruction and Letter of Demand reach the party-bound v10 bodies (still pristine), and the
+   * Letter of Demand moves from the client to the matter so its opposing-party field resolves.
+   */
+  @Test
+  void pristineV9Tenant_partyBoundBodies_letterOfDemandBecomesAMatterTemplate() {
+    inTenantTx(
+        () -> {
+          for (String key : V10_EDITED_KEYS) {
+            var row = packRow(key);
+            Map<String, Object> body = v9Body(key);
+            row.updateContent(row.getName(), row.getDescription(), body, row.getCss());
+            row.setContentHash(templatePackInstaller.computeContentHash(body, row.getCss()));
+            if ("letter-of-demand".equals(key)) {
+              row.changePrimaryEntityType(TemplateEntityType.CUSTOMER);
+            }
+            documentTemplateRepository.save(row);
+          }
+          assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, CURRENT_VERSION, "9"))
+              .isEqualTo(1);
+          return null;
+        });
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          for (String key : V10_EDITED_KEYS) {
+            var row = packRow(key);
+            assertThat(ContentHashUtil.hashOf(row.getContent()))
+                .as("%s carries the shipped v10 body", key)
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody(key)));
+            assertThat(row.getContentHash())
+                .as("%s stays pristine", key)
+                .isEqualTo(
+                    templatePackInstaller.computeContentHash(row.getContent(), row.getCss()));
+          }
+          assertThat(packRow("letter-of-demand").getPrimaryEntityType())
+              .isEqualTo(TemplateEntityType.PROJECT);
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+  }
+
   /** (e) Equal version: the gate stays closed and nothing is written. */
   @Test
   void equalVersion_isANoOp() {
@@ -513,7 +567,12 @@ class LegalZaTemplateReconcileIntegrationTest {
    */
   private void simulateV8Tenant(Consumer<Map<String, DocumentTemplate>> firmEdits, boolean rewind) {
     simulateTenant(
-        key -> V9_EDITED_KEYS.contains(key) ? v8Body(key) : shippedBody(key), firmEdits, rewind);
+        key ->
+            V9_EDITED_KEYS.contains(key)
+                ? v8Body(key)
+                : V10_EDITED_KEYS.contains(key) ? v9Body(key) : shippedBody(key),
+        firmEdits,
+        rewind);
   }
 
   private void simulateTenant(
@@ -578,6 +637,10 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static Map<String, Object> v8Body(String key) {
     return readBody("fixtures/template-packs/legal-za-v8/" + key + ".json");
+  }
+
+  private static Map<String, Object> v9Body(String key) {
+    return readBody("fixtures/template-packs/legal-za-v9/" + key + ".json");
   }
 
   private static Map<String, Object> shippedBody(String key) {

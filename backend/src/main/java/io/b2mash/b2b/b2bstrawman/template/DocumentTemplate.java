@@ -178,6 +178,15 @@ public class DocumentTemplate {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Moves the template to another primary entity type (the context its body renders with). Only the
+   * ADR-356 pack reconcile calls this, for a pack-seeded row whose body is the shipped body.
+   */
+  public void changePrimaryEntityType(TemplateEntityType primaryEntityType) {
+    this.primaryEntityType = primaryEntityType;
+    this.updatedAt = Instant.now();
+  }
+
   public void deactivate() {
     this.active = false;
     this.updatedAt = Instant.now();

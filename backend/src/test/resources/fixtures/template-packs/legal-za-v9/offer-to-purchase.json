@@ -1,0 +1,188 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Offer to Purchase" }]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter: " },
+        { "type": "variable", "attrs": { "key": "project.name" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Parties" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Purchaser: " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "customer.customFields.id_passport_number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Purchaser ID / Passport: " },
+            { "type": "variable", "attrs": { "key": "customer.customFields.id_passport_number" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Seller: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.seller_name" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.seller_id_number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Seller ID / Passport: " },
+            { "type": "variable", "attrs": { "key": "project.customFields.seller_id_number" } }
+          ]
+        }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Property" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Property Address: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.property_address" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Erf Number: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.erf_number" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Deeds Office: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.deeds_office" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Purchase Price & Occupation" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Purchase Price (ZAR): " },
+        { "type": "variable", "attrs": { "key": "project.customFields.purchase_price" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.bond_institution",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Bond Institution: " },
+            { "type": "variable", "attrs": { "key": "project.customFields.bond_institution" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Occupation Date: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.occupation_date" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Conditions of Sale" }]
+    },
+    { "type": "clauseBlock", "attrs": { "slug": "voetstoots" } },
+    { "type": "clauseBlock", "attrs": { "slug": "occupation-date" } },
+    { "type": "clauseBlock", "attrs": { "slug": "suspensive-bond" } },
+    { "type": "clauseBlock", "attrs": { "slug": "transfer-duty-liability" } },
+    { "type": "clauseBlock", "attrs": { "slug": "fica-compliance" } },
+    { "type": "clauseBlock", "attrs": { "slug": "rates-clearance" } },
+    { "type": "clauseBlock", "attrs": { "slug": "jurisdiction-za" } },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Signed at _________________ on this _____ day of ______________ 20___."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "____________________________" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Purchaser: " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "____________________________" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Seller: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.seller_name" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.documentFooterText" } }]
+    }
+  ]
+}

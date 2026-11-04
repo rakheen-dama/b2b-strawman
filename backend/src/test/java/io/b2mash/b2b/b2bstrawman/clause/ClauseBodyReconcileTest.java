@@ -62,6 +62,17 @@ class ClauseBodyReconcileTest {
   static final String STANDARD_PACK = "standard-clauses";
   static final String FEE_CLAUSE = "legal-za-fees-hourly";
 
+  static final String CONVEYANCING_PACK = "conveyancing-za-clauses";
+
+  /** G88-F12: the conveyancing clauses whose party bindings v3 rebinds. */
+  static final List<String> CONVEYANCING_REBOUND =
+      List.of(
+          "voetstoots",
+          "occupation-date",
+          "suspensive-bond",
+          "transfer-duty-liability",
+          "sectional-title-levies");
+
   /** pack id → the clause slugs whose bodies v2 rewords. */
   static final Map<String, List<String>> REWORDED =
       Map.of(
@@ -251,6 +262,78 @@ class ClauseBodyReconcileTest {
                 PRIOR_VERSIONS.stream().map(v -> hashRef(priorBody(packId, v, e.key()))).toList());
         assertThat(e.to()).as(e.key()).isNotEqualTo(e.from());
       }
+    }
+  }
+
+  /**
+   * G88-F12: the {@code conveyancing-za-clauses} v3 block rebinds the contract parties of five
+   * clauses ({@code customer.name} / {@code org.name} → the explicit seller / purchaser matter
+   * fields; sentence text unchanged). A tenant at v2 (v1 and v2 bodies are identical — v2 only
+   * added template associations) is reconciled to the shipped bodies; FICA and the clearance
+   * clauses keep binding the firm.
+   */
+  @Test
+  void conveyancingV2Bodies_areReconciledToV3_partiesBound() {
+    inTenantTx(
+        () -> {
+          for (String slug : CONVEYANCING_REBOUND) {
+            var clause = systemClause(slug);
+            clause.update(
+                clause.getTitle(),
+                clause.getSlug(),
+                clause.getDescription(),
+                priorBody(CONVEYANCING_PACK, "v2", slug),
+                clause.getCategory());
+            clauseRepository.save(clause);
+          }
+          assertThat(packInstallRepository.compareAndSetVersion(CONVEYANCING_PACK, "3", "2"))
+              .isEqualTo(1);
+          return null;
+        });
+
+    clausePackSeeder.seedPacksForTenant(schema, ORG_ID);
+
+    inTenantTx(
+        () -> {
+          for (String slug : CONVEYANCING_REBOUND) {
+            String body = JSON.writeValueAsString(systemClause(slug).getBody());
+            assertThat(ContentHashUtil.hashOf(systemClause(slug).getBody()))
+                .as("%s carries the shipped body", slug)
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody(CONVEYANCING_PACK, slug)));
+            assertThat(body).as(slug).doesNotContain("customer.name");
+            assertThat(body).as(slug).contains("project.customFields.purchaser_name");
+          }
+          String voetstoots = JSON.writeValueAsString(systemClause("voetstoots").getBody());
+          assertThat(voetstoots)
+              .contains("project.customFields.seller_name")
+              .doesNotContain("org.name");
+          assertThat(JSON.writeValueAsString(systemClause("fica-compliance").getBody()))
+              .contains("org.name");
+          assertThat(ledgerVersion(CONVEYANCING_PACK)).isEqualTo("3");
+          return null;
+        });
+  }
+
+  /**
+   * Cumulative-chain guard for {@code conveyancing-za-clauses} (its own history: v3 is the first
+   * body edit, so every {@code from} is the v2 body): one {@code clause body} entry per rebound
+   * clause, {@code to} = the shipped head.
+   */
+  @Test
+  void conveyancingClauseBodyEntries_toIsHead_fromIsV2() {
+    var pack = readPack("clause-packs/" + CONVEYANCING_PACK + "/pack.json");
+    assertThat(pack.version()).isEqualTo(3);
+    var entries =
+        PackReconcileEntry.parse(CONVEYANCING_PACK, pack.reconcile()).stream()
+            .filter(e -> "clause".equals(e.entity()))
+            .toList();
+    assertThat(entries).extracting(PackReconcileEntry::key).hasSameElementsAs(CONVEYANCING_REBOUND);
+    for (PackReconcileEntry e : entries) {
+      assertThat(e.field()).as(e.key()).isEqualTo("body");
+      assertThat(e.to()).as(e.key()).isEqualTo(hashRef(shippedBody(CONVEYANCING_PACK, e.key())));
+      assertThat(e.from())
+          .as(e.key())
+          .isEqualTo(hashRef(priorBody(CONVEYANCING_PACK, "v2", e.key())));
     }
   }
 

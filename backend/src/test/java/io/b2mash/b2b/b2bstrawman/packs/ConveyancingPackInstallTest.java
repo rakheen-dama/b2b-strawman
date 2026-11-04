@@ -30,10 +30,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Integration tests for Epic 492A — conveyancing pack installation. Verifies that a fresh {@code
- * legal-za} tenant receives the conveyancing field pack (10 project fields), the Property Transfer
- * project template (12 tasks), and the conveyancing clause pack (10 Tiptap clauses) via the
- * standard classpath-scanning seeders, and that vertical-profile gating prevents non-legal tenants
- * from receiving any of this content.
+ * legal-za} tenant receives the conveyancing field pack (16 project fields — the six G88-F12
+ * contract-party / transaction fields appended at the group end), the Property Transfer project
+ * template (12 tasks), and the conveyancing clause pack (10 Tiptap clauses) via the standard
+ * classpath-scanning seeders, and that vertical-profile gating prevents non-legal tenants from
+ * receiving any of this content.
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -59,7 +60,13 @@ class ConveyancingPackInstallTest {
           "deed_number",
           "purchase_price",
           "transfer_duty",
-          "bond_institution");
+          "bond_institution",
+          "seller_name",
+          "seller_id_number",
+          "purchaser_name",
+          "purchaser_id_number",
+          "occupation_date",
+          "bond_number");
 
   private static final List<String> EXPECTED_CLAUSE_SLUGS =
       List.of(
@@ -117,7 +124,7 @@ class ConveyancingPackInstallTest {
   }
 
   @Test
-  void legalTenantGetsTenConveyancingProjectFields() {
+  void legalTenantGetsSixteenConveyancingProjectFields() {
     runInTenant(
         legalTenantSchema,
         LEGAL_ORG_ID,
@@ -126,7 +133,7 @@ class ConveyancingPackInstallTest {
                 tx -> {
                   var conveyancingFields = conveyancingFields();
 
-                  assertThat(conveyancingFields).hasSize(10);
+                  assertThat(conveyancingFields).hasSize(16);
 
                   var slugs = conveyancingFields.stream().map(FieldDefinition::getSlug).toList();
                   assertThat(slugs).containsExactlyInAnyOrderElementsOf(EXPECTED_FIELD_SLUGS);
@@ -228,7 +235,7 @@ class ConveyancingPackInstallTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   // All three packs landed (field + template + clause).
-                  assertThat(conveyancingFields()).hasSize(10);
+                  assertThat(conveyancingFields()).hasSize(16);
                   assertThat(propertyTransferTemplate()).isNotNull();
                   assertThat(
                           clauseRepository.findByPackIdAndSourceAndActiveTrue(

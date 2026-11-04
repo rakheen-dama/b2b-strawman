@@ -1,6 +1,6 @@
 {
   "packId": "conveyancing-za-project",
-  "version": 2,
+  "version": 3,
   "reconcile": [
     {
       "entity": "field_group",
@@ -8,7 +8,13 @@
       "field": "description",
       "from": "South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)",
       "to": "South African conveyancing-specific fields for property transfer matters (matter type Conveyancing)"
-    }
+    },
+    { "entity": "field_definition", "key": "seller_name", "field": "membership", "to": "conveyancing_za_matter" },
+    { "entity": "field_definition", "key": "seller_id_number", "field": "membership", "to": "conveyancing_za_matter" },
+    { "entity": "field_definition", "key": "purchaser_name", "field": "membership", "to": "conveyancing_za_matter" },
+    { "entity": "field_definition", "key": "purchaser_id_number", "field": "membership", "to": "conveyancing_za_matter" },
+    { "entity": "field_definition", "key": "occupation_date", "field": "membership", "to": "conveyancing_za_matter" },
+    { "entity": "field_definition", "key": "bond_number", "field": "membership", "to": "conveyancing_za_matter" }
   ],
   "verticalProfile": "legal-za",
   "entityType": "PROJECT",
@@ -136,6 +142,54 @@
         { "value": "OTHER", "label": "Other" },
         { "value": "NONE", "label": "None (Cash Purchase)" }
       ]
+    },
+    {
+      "slug": "seller_name",
+      "name": "Seller Name",
+      "description": "Full legal name of the seller (transferor)",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 11
+    },
+    {
+      "slug": "seller_id_number",
+      "name": "Seller ID / Passport Number",
+      "description": "ID number, passport number or registration number of the seller",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 12
+    },
+    {
+      "slug": "purchaser_name",
+      "name": "Purchaser Name",
+      "description": "Full legal name of the purchaser (transferee)",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 13
+    },
+    {
+      "slug": "purchaser_id_number",
+      "name": "Purchaser ID / Passport Number",
+      "description": "ID number, passport number or registration number of the purchaser",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 14
+    },
+    {
+      "slug": "occupation_date",
+      "name": "Occupation Date",
+      "description": "Date on which the purchaser takes occupation of the property",
+      "fieldType": "DATE",
+      "required": false,
+      "sortOrder": 15
+    },
+    {
+      "slug": "bond_number",
+      "name": "Bond Number",
+      "description": "Number of the existing mortgage bond over the property (for bond cancellation)",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 16
     }
   ]
 }

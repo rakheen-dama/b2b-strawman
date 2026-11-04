@@ -37,6 +37,7 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
   private static final String CONTENT_FIELD = "content";
   private static final String NAME_FIELD = "name";
   private static final String DESCRIPTION_FIELD = "description";
+  private static final String PRIMARY_ENTITY_TYPE_FIELD = "primaryEntityType";
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final PackInstallRepository packInstallRepository;
@@ -165,23 +166,30 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
    * pack, string equality; the same ownership, written through the managed entity (slug, body and
    * css untouched — the slug is an identifier and is never reconciled). Names are not part of the
    * install content hash, and {@code refreshIfUnmodified} does not touch them, so these entries are
-   * what renames a pristine row. Unsupported entries, a {@code to} that does not match the shipped
-   * value and ambiguous rows are WARN-logged and skipped; nothing here throws at boot.
+   * what renames a pristine row. {@code primaryEntityType} (G88-F12): a plain string {@code to}
+   * equal to the template's {@code primaryEntityType} in this pack (a {@link TemplateEntityType}
+   * name); the same ownership. The entity type decides which context the body renders with, so it
+   * moves only together with the shipped body: a row whose body is not the shipped body (tenant
+   * edited) reports no current value and the one rule leaves it alone. List this entry after the
+   * template's {@code content} entry so a body the refresh skipped is updated first. Unsupported
+   * entries, a {@code to} that does not match the shipped value and ambiguous rows are WARN-logged
+   * and skipped; nothing here throws at boot.
    */
   @Override
   protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
       TemplatePackDefinition pack, PackReconcileEntry entry, Resource packResource) {
     boolean content = CONTENT_FIELD.equals(entry.field());
-    boolean nameOrDescription =
-        NAME_FIELD.equals(entry.field()) || DESCRIPTION_FIELD.equals(entry.field());
+    boolean entityType = PRIMARY_ENTITY_TYPE_FIELD.equals(entry.field());
+    boolean plainString =
+        NAME_FIELD.equals(entry.field()) || DESCRIPTION_FIELD.equals(entry.field()) || entityType;
     if (!TEMPLATE_ENTITY.equals(entry.entity())
         || !(entry.to() instanceof String to)
-        || !(content || nameOrDescription)
+        || !(content || plainString)
         || content != to.startsWith(PackReconcileEntry.HASH_PREFIX)) {
       log.warn(
           "Reconcile entry ignored: template pack {} unsupported entity/field/value '{}'.{} (key"
               + " {}) — only document_template content with a sha256: target, or name /"
-              + " description with a plain string target, is supported",
+              + " description / primaryEntityType with a plain string target, is supported",
           pack.packId(),
           entry.entity(),
           entry.field(),
@@ -197,7 +205,21 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
           entry.key());
       return Optional.empty();
     }
-    if (nameOrDescription) {
+    if (entityType) {
+      if (!to.equals(templateDef.get().primaryEntityType())) {
+        log.warn(
+            "Reconcile entry ignored: template pack {} '{}' {} 'to' does not match the shipped"
+                + " value",
+            pack.packId(),
+            entry.key(),
+            entry.field());
+        return Optional.empty();
+      }
+      Map<String, Object> shippedBody =
+          loadTemplateContent(templateDef.get(), packResource).content();
+      return packSeededRow(pack, entry).map(template -> entityTypeTarget(template, shippedBody));
+    }
+    if (plainString) {
       String shippedValue =
           NAME_FIELD.equals(entry.field())
               ? templateDef.get().name()
@@ -237,6 +259,29 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
                         template.getName(), template.getDescription(), shipped, template.getCss());
                   }
                 });
+  }
+
+  /**
+   * {@code primaryEntityType}: the row's entity type name while its body is the shipped body, else
+   * no current value (a tenant-edited body keeps its entity type — LEFT_ALONE). Written through the
+   * managed entity.
+   */
+  private static PackReconcileEntry.Target entityTypeTarget(
+      DocumentTemplate template, Map<String, Object> shippedBody) {
+    String shippedHash = ContentHashUtil.hashOf(shippedBody);
+    return new PackReconcileEntry.Target() {
+      @Override
+      public Object currentValue() {
+        return shippedHash.equals(ContentHashUtil.hashOf(template.getContent()))
+            ? template.getPrimaryEntityType().name()
+            : null;
+      }
+
+      @Override
+      public void apply(Object to) {
+        template.changePrimaryEntityType(TemplateEntityType.valueOf((String) to));
+      }
+    };
   }
 
   /** {@code name} / {@code description}: string target written through the managed entity. */

@@ -1,6 +1,6 @@
 {
   "packId": "conveyancing-za-clauses",
-  "version": 2,
+  "version": 3,
   "reconcile": [
     { "entity": "clause_template_association", "key": "voetstoots", "field": "association", "to": "offer-to-purchase" },
     { "entity": "clause_template_association", "key": "occupation-date", "field": "association", "to": "offer-to-purchase" },
@@ -13,7 +13,12 @@
     { "entity": "clause_template_association", "key": "rates-clearance", "field": "association", "to": "deed-of-transfer" },
     { "entity": "clause_template_association", "key": "body-corporate-clearance", "field": "association", "to": "deed-of-transfer" },
     { "entity": "clause_template_association", "key": "fica-compliance", "field": "association", "to": "power-of-attorney-transfer" },
-    { "entity": "clause_template_association", "key": "cost-of-cancellation", "field": "association", "to": "bond-cancellation-instruction" }
+    { "entity": "clause_template_association", "key": "cost-of-cancellation", "field": "association", "to": "bond-cancellation-instruction" },
+    { "entity": "clause", "key": "voetstoots", "field": "body", "from": "sha256:6f3fb893051a5d0663e50cc541f5919d4dee92aeac25d3d18812e8e70808106b", "to": "sha256:8f96a4ca694137146f109a882cbc6b392f99c5b4ba514440c83abf7b9f3b9719" },
+    { "entity": "clause", "key": "occupation-date", "field": "body", "from": "sha256:e11e3f12f7cbe8c90f643128c96bd85544172258820eb00f24df8a2167e85630", "to": "sha256:d12a7e9c6d1eafbdec8675c3864984c0b80a40c83219632b57fe4b47d86ca9f8" },
+    { "entity": "clause", "key": "suspensive-bond", "field": "body", "from": "sha256:742b0c6a84b2fe6f76243ddf23de5fa4b08c453900e40504dfdc568f34feb2c7", "to": "sha256:390637e0128a24a829faeae434f83c554d106816906c0254694e665479015d36" },
+    { "entity": "clause", "key": "transfer-duty-liability", "field": "body", "from": "sha256:737796ee87fbbf750050ad5c5ffbf291db9aea21378dc8008cc4a7370ae411b1", "to": "sha256:e0a2caae0fc89d213bbabf84066a4bdaff45a10137f38d3bd392449face6be65" },
+    { "entity": "clause", "key": "sectional-title-levies", "field": "body", "from": "sha256:55f56f4bf961f8d0675320d6fd57cac20b623674d05d7fa5121c28ac8ae98fd5", "to": "sha256:d15d524a78d2bf10a8af93f6e6d514a46f877108b98014e09bf5ea332d946ea0" }
   ],
   "verticalProfile": "legal-za",
   "name": "SA Conveyancing Clauses",
@@ -31,9 +36,9 @@
             "type": "paragraph",
             "content": [
               { "type": "text", "text": "The property is sold voetstoots, meaning that " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " accepts the property in its current condition, including any patent and latent defects, and " },
-              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.seller_name" } },
               { "type": "text", "text": " shall not be liable for any defects, whether disclosed or undisclosed, save as expressly required by law." }
             ]
           },
@@ -41,7 +46,7 @@
             "type": "paragraph",
             "content": [
               { "type": "text", "text": "Where the Consumer Protection Act 68 of 2008 applies to this transaction, the rights of " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " as a consumer shall not be excluded or limited by the voetstoots provisions above. In particular, section 55 of the Consumer Protection Act protects a consumer-buyer from a supplier-seller in the ordinary course of business, and those statutory rights remain unaffected." }
             ]
           }
@@ -61,7 +66,7 @@
             "type": "paragraph",
             "content": [
               { "type": "text", "text": "Occupation of the property shall be given to " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " on the occupation date stipulated in the offer to purchase, which date may precede or follow the date of registration of transfer." }
             ]
           },
@@ -69,9 +74,9 @@
             "type": "paragraph",
             "content": [
               { "type": "text", "text": "Should occupation be given prior to registration, " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " shall pay occupational rent to the seller, in advance, from the occupation date until the date of registration of transfer. Should occupation be given after registration, the seller shall pay occupational rent to " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " for the period between registration and occupation. Occupational rent shall be calculated on a monthly basis and apportioned pro-rata for part months." }
             ]
           }
@@ -91,9 +96,9 @@
             "type": "paragraph",
             "content": [
               { "type": "text", "text": "This sale is subject to the suspensive condition that " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " obtains approval in principle for a mortgage bond, from a registered financial institution, in the amount and on terms acceptable to " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": ", within twenty-one (21) business days of the signature date of the offer to purchase." }
             ]
           },
@@ -101,7 +106,7 @@
             "type": "paragraph",
             "content": [
               { "type": "text", "text": "If bond approval is not obtained within the stipulated period (as it may be extended in writing by agreement between the parties), this agreement shall lapse and be of no further force or effect, and any deposit paid shall be refunded to " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " without interest or deduction, save for any bank charges actually incurred." }
             ]
           }
@@ -120,7 +125,7 @@
           {
             "type": "paragraph",
             "content": [
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " shall be liable for the payment of transfer duty to the South African Revenue Service in accordance with the Transfer Duty Act 40 of 1949, calculated on the purchase price of the property." }
             ]
           },
@@ -175,9 +180,9 @@
             "type": "paragraph",
             "content": [
               { "type": "text", "text": "Where the property is a sectional title unit, all monthly levies payable to the body corporate shall be apportioned between the seller and " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " on a pro-rata basis as at the date of occupation, with the seller liable for levies up to and including the occupation date and " },
-              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "variable", "attrs": { "key": "project.customFields.purchaser_name" } },
               { "type": "text", "text": " liable for levies from the day following the occupation date." }
             ]
           },

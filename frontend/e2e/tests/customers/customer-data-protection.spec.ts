@@ -45,10 +45,6 @@ test.describe("DP-01: Customer Data Protection", () => {
   });
 
   test("Download customer data export", async ({ page }) => {
-    test.fixme(
-      true,
-      "628F-BLOCKER: client data export 'Export Ready' shows 'files · NaN undefined' and 'Download Archive' has no href — POST /api/clients/{id}/data-export answers ExportResult(exportId, status, estimatedFiles) (backend datarequest/ExportResult.java:6) but components/customers/data-export-dialog.tsx:131-137 reads fileCount/totalSizeBytes/downloadUrl (lib/types/data-protection.ts:116-123)"
-    );
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${base}/clients/${await acmeId()}`);
     await expect(
@@ -66,17 +62,19 @@ test.describe("DP-01: Customer Data Protection", () => {
     await expect(dialog.getByRole("heading", { name: "Export Ready" })).toBeVisible({
       timeout: 30_000,
     });
-    await expect(dialog.getByRole("link", { name: "Download Archive" })).toHaveAttribute(
-      "href",
-      /^https?:\/\/.+/
-    );
+    // "N files · size" from the 200 ExportStatusResponse (G88-F43: was "files · NaN undefined")
+    await expect(dialog).toContainText(/\d+ files? · \d+(\.\d+)? (B|KB|MB|GB)/);
+    const archive = dialog.getByRole("link", { name: "Download Archive" });
+    await expect(archive).toHaveAttribute("href", /^https?:\/\/.+/);
+    const href = await archive.getAttribute("href");
+    expect(href).toBeTruthy();
+    // The presigned URL is signed for the host-mapped LocalStack (AWS_S3_PRESIGNER_ENDPOINT
+    // http://localhost:4567 in compose/docker-compose.e2e.yml), so the runner can fetch it.
+    const download = await page.request.get(href as string);
+    expect(download.status()).toBe(200);
   });
 
   test("Anonymize customer preview shows entity counts", async ({ page }) => {
-    test.fixme(
-      true,
-      "628F-BLOCKER: Anonymize preview crashes the client page (TypeError reading 'portalContacts') — components/customers/anonymize-customer-dialog.tsx:148-154 reads preview.affectedEntities.* (lib/types/data-protection.ts:100-114) but GET /api/clients/{id}/anonymize/preview answers a flat record (backend datarequest/AnonymizationPreview.java:11-22)"
-    );
     // Phase 87 S4 (ADR-344): route rename
     await page.goto(`${base}/clients/${await acmeId()}`);
     await expect(
@@ -92,6 +90,11 @@ test.describe("DP-01: Customer Data Protection", () => {
     // The preview lists the affected entities (Acme Corp has the seeded matter and fee notes)
     await expect(dialog).toContainText(/Matters: \d+/, { timeout: 15_000 });
     await expect(dialog).toContainText(/Fee notes: [1-9]\d*/);
+    await expect(dialog).toContainText(/Portal contacts: \d+/);
+    await expect(dialog).toContainText(/Documents: \d+/);
+    await expect(dialog).toContainText(/Time entries: \d+/);
+    await expect(dialog).toContainText(/Comments: \d+/);
+    await expect(dialog).toContainText(/Custom field values: \d+/);
     await expect(dialog.getByRole("button", { name: "Continue" })).toBeEnabled();
 
     // Preview only — the seed client must stay intact
@@ -103,11 +106,6 @@ test.describe("DP-01: Customer Data Protection", () => {
   });
 
   test("Execute anonymization", async ({ page }) => {
-    // The UI flow passes through the preview step, which crashes (same blocker as the preview test)
-    test.fixme(
-      true,
-      "628F-BLOCKER: Anonymize preview crashes the client page (TypeError reading 'portalContacts') — components/customers/anonymize-customer-dialog.tsx:148-154 reads preview.affectedEntities.* (lib/types/data-protection.ts:100-114) but GET /api/clients/{id}/anonymize/preview answers a flat record (backend datarequest/AnonymizationPreview.java:11-22)"
-    );
     const name = `DP Anon ${RUN_ID}`;
     const id = await createOwnClient(name);
 
@@ -133,6 +131,10 @@ test.describe("DP-01: Customer Data Protection", () => {
       timeout: 30_000,
     });
     await expect(dialog).toContainText("Client anonymized: Yes");
+    await expect(dialog).toContainText(/Documents deleted: \d+/);
+    await expect(dialog).toContainText(/Comments redacted: \d+/);
+    await expect(dialog).toContainText(/Portal contacts anonymized: \d+/);
+    await expect(dialog).toContainText(/Fee notes preserved: \d+/);
     await dialog.getByRole("button", { name: "Close" }).click();
     await expect(dialog).toBeHidden();
 

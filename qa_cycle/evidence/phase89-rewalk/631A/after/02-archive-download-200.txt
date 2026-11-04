@@ -1,0 +1,12 @@
+631A after — Download Archive href fetched from the browser page (Playwright MCP browser_evaluate, fetch(href)) 2026-11-04T18:04:14Z
+Client: Acme Corp (edd17447-4eee-43a8-82fe-55e1de804f2e), Alice (owner), :3001 stack rebuilt from worktree-epic-631A
+
+dialog innerText : "Export Ready\n\n12 files · 8.5 KB\n\nDownload Archive\n\nLink expires in 24 hours\n\nClose"
+href             : http://localhost:4567/docteams-dev/org/tenant_7d218705360b/exports/compliance-edd17447-4eee-43a8-82fe-55e1de804f2e-8fe32505-4e9e-49a7-bae6-3698bcdad709-1793815453381.zip?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261104T180413Z&X-Amz-SignedHeaders=host&X-Amz-Credential=test%2F20261104%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Expires=86400&X-Amz-Signature=798fa61c…
+fetch status     : 200
+content-type     : application/zip
+body             : 8682 bytes, magic "PK" (ZIP local-file header)
+
+Audit row (read-only DB check, e2e-postgres, tenant_7d218705360b.audit_events):
+ data.subject.export.generated | customer | edd17447-4eee-43a8-82fe-55e1de804f2e | exportId 8fe32505-4e9e-49a7-bae6-3698bcdad709 | fileCount 12 | totalSizeBytes 8682 | 2026-11-04 18:04:13.387893+00
+(totalSizeBytes 8682 == bytes downloaded; fileCount 12 == "12 files" rendered)

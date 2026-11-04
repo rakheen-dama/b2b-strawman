@@ -145,13 +145,13 @@ export function AnonymizeCustomerDialog({
                 <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                   <p className="font-medium">Affected entities:</p>
                   <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
-                    <li>Portal contacts: {preview.affectedEntities.portalContacts}</li>
-                    <li>Matters: {preview.affectedEntities.projects}</li>
-                    <li>Documents: {preview.affectedEntities.documents}</li>
-                    <li>Time entries: {preview.affectedEntities.timeEntries}</li>
-                    <li>Fee notes: {preview.affectedEntities.invoices}</li>
-                    <li>Comments: {preview.affectedEntities.comments}</li>
-                    <li>Custom field values: {preview.affectedEntities.customFieldValues}</li>
+                    <li>Portal contacts: {preview.portalContacts}</li>
+                    <li>Matters: {preview.projects}</li>
+                    <li>Documents: {preview.documents}</li>
+                    <li>Time entries: {preview.timeEntries}</li>
+                    <li>Fee notes: {preview.invoices}</li>
+                    <li>Comments: {preview.comments}</li>
+                    <li>Custom field values: {preview.customFieldValues}</li>
                   </ul>
                 </div>
 
@@ -281,11 +281,11 @@ export function AnonymizeCustomerDialog({
             <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <p>Anonymization summary:</p>
               <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
-                <li>Client anonymized: {result.summary.customerAnonymized ? "Yes" : "No"}</li>
-                <li>Documents deleted: {result.summary.documentsDeleted}</li>
-                <li>Comments redacted: {result.summary.commentsRedacted}</li>
-                <li>Portal contacts anonymized: {result.summary.portalContactsAnonymized}</li>
-                <li>Fee notes preserved: {result.summary.invoicesPreserved}</li>
+                <li>Client anonymized: {result.customerAnonymized ? "Yes" : "No"}</li>
+                <li>Documents deleted: {result.documentsDeleted}</li>
+                <li>Comments redacted: {result.commentsRedacted}</li>
+                <li>Portal contacts anonymized: {result.portalContactsAnonymized}</li>
+                <li>Fee notes preserved: {result.invoicesPreserved}</li>
               </ul>
             </div>
 

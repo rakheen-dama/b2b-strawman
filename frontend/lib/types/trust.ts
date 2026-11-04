@@ -65,6 +65,21 @@ export function transactionTypeLabel(type: TrustTransactionType): string {
   return TRUST_TRANSACTION_TYPE_LABELS[type] ?? type;
 }
 
+/**
+ * Transaction types that move money INTO the client's trust ledger — the credit set of the backend
+ * balance queries (TrustTransactionRepository.calculateClientBalanceAsOfDate). Everything else
+ * (PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND, INTEREST_LPFF, …) renders as an outflow (G88-F23).
+ */
+const INFLOW_TRANSACTION_TYPES: ReadonlySet<TrustTransactionType> = new Set([
+  "DEPOSIT",
+  "TRANSFER_IN",
+  "INTEREST_CREDIT",
+]);
+
+export function isInflowType(type: TrustTransactionType): boolean {
+  return INFLOW_TRANSACTION_TYPES.has(type);
+}
+
 export type TrustTransactionStatus =
   | "RECORDED"
   | "AWAITING_APPROVAL"

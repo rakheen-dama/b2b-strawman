@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
@@ -185,6 +185,38 @@ describe("TrustAccountingPage", () => {
     // Status badges
     expect(screen.getByText("APPROVED")).toBeInTheDocument();
     expect(screen.getByText("AWAITING APPROVAL")).toBeInTheDocument();
+  });
+
+  // G88-F23 (Phase 89 630C): REFUND moves money out of trust — outflow colour + arrow on the
+  // dashboard's recent transactions, same as the transactions and client-ledger pages.
+  it("renders REFUND as an outflow in recent transactions (no green, up-right arrow)", async () => {
+    setupDefaultMocks();
+    const data = defaultDashboardData();
+    const refund = {
+      ...data.recentTransactions[0],
+      id: "tx-3",
+      transactionType: "REFUND" as const,
+      amount: 1000,
+      reference: "REF-001",
+      description: "Refund to client",
+    };
+    mockFetchDashboardData.mockResolvedValue({
+      ...data,
+      recentTransactions: [...data.recentTransactions, refund],
+    });
+    await renderPage();
+
+    const amountSpan = (reference: string) =>
+      within(screen.getByText(reference).closest("tr") as HTMLElement)
+        .getAllByRole("cell")[3]
+        .querySelector("span") as HTMLElement;
+
+    const refundAmount = amountSpan("REF-001");
+    expect(refundAmount.className).not.toContain("text-green-600");
+    expect(refundAmount.querySelector(".lucide-arrow-up-right")).not.toBeNull();
+    expect(refundAmount.querySelector(".lucide-arrow-down-left")).toBeNull();
+
+    expect(amountSpan("DEP-001").className).toContain("text-green-600");
   });
 
   it("renders Module Not Available when trust_accounting module is disabled", async () => {

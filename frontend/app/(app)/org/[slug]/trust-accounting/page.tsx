@@ -19,10 +19,10 @@ import { Button } from "@b2mash/ui/button";
 import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
 import { fetchTrustAccounts, fetchDashboardData } from "./actions";
 import {
+  isInflowType,
   transactionTypeLabel,
   type TrustDashboardData,
   type TrustTransactionStatus,
-  type TrustTransactionType,
   type TrustAlertSeverity,
 } from "@/lib/types";
 
@@ -58,10 +58,6 @@ function statusBadgeVariant(
     default:
       return "neutral";
   }
-}
-
-function isInflowType(type: TrustTransactionType): boolean {
-  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(type);
 }
 
 function alertSeverityColor(severity: TrustAlertSeverity): string {

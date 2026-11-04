@@ -40,6 +40,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -362,8 +364,11 @@ class ClientLedgerRunningBalanceIntegrationTest {
 
   // --- OQ #3: record the plan of the production window query ---
 
+  /** A named bind ({@code :name}) that is not part of a Postgres {@code ::} cast. */
+  private static final Pattern NAMED_BIND = Pattern.compile("(?<!:):([A-Za-z_]\\w*)\\b");
+
   @Test
-  void explainWindowQuery_recordedForOq3() throws Exception {
+  void explainWindowQuery_cteEvaluatedOnceOnColdStatistics() throws Exception {
     Optional<Method> method =
         Arrays.stream(TrustTransactionRepository.class.getMethods())
             .filter(m -> m.getName().equals("findClientHistoryWithRunningBalance"))
@@ -374,16 +379,27 @@ class ClientLedgerRunningBalanceIntegrationTest {
     String sql = method.get().getAnnotation(Query.class).value();
 
     var ledger = seedLedger();
+    Map<String, String> binds =
+        Map.of(
+            "customerId", "CAST('" + ledger.clientId() + "' AS uuid)",
+            "accountId", "CAST('" + trustAccountId + "' AS uuid)",
+            "type", "NULL",
+            "status", "NULL",
+            "dateFrom", "NULL",
+            "dateTo", "NULL");
     String literalSql =
-        sql.replace(":customerId", "CAST('" + ledger.clientId() + "' AS uuid)")
-            .replace(":accountId", "CAST('" + trustAccountId + "' AS uuid)")
-            .replace(":dateFrom", "NULL")
-            .replace(":dateTo", "NULL")
-            .replace(":type", "NULL")
-            .replace(":status", "NULL");
+        NAMED_BIND
+            .matcher(sql)
+            .replaceAll(
+                m -> {
+                  String literal = binds.get(m.group(1));
+                  assertThat(literal).as("literal for bind :%s", m.group(1)).isNotNull();
+                  return Matcher.quoteReplacement(literal);
+                });
 
-    // Two plans: with the fresh tenant's (absent) statistics, then after ANALYZE — the realistic
-    // shape once autovacuum has run on a live tenant.
+    // Cold statistics first (a freshly provisioned tenant — the case where an inlined CTE let the
+    // planner re-run the window subquery per outer row), then after ANALYZE (a live tenant once
+    // autovacuum has run). Both must evaluate the materialised CTE exactly once.
     List<String> coldPlan;
     List<String> analyzedPlan;
     try (Connection conn = dataSource.getConnection();
@@ -399,13 +415,23 @@ class ClientLedgerRunningBalanceIntegrationTest {
     }
     printPlan("no statistics", coldPlan);
     printPlan("after ANALYZE trust_transactions", analyzedPlan);
-    assertThat(String.join("\n", coldPlan)).contains("WindowAgg");
-    assertThat(String.join("\n", analyzedPlan)).contains("WindowAgg");
+    assertCteEvaluatedOnce("no statistics", coldPlan);
+    assertCteEvaluatedOnce("after ANALYZE", analyzedPlan);
+  }
+
+  private static void assertCteEvaluatedOnce(String label, List<String> plan) {
+    String text = String.join("\n", plan);
+    assertThat(text).as("%s: CTE materialised and scanned", label).contains("CTE Scan on posted");
+    List<String> windowAggs = plan.stream().filter(l -> l.contains("WindowAgg")).toList();
+    assertThat(windowAggs).as("%s: one WindowAgg node", label).hasSize(1);
+    assertThat(windowAggs.getFirst())
+        .as("%s: window evaluated once, not per outer row", label)
+        .contains("loops=1)");
   }
 
   private static List<String> explain(Statement stmt, String sql) throws Exception {
     var plan = new ArrayList<String>();
-    try (ResultSet rs = stmt.executeQuery("EXPLAIN (ANALYZE, BUFFERS) " + sql)) {
+    try (ResultSet rs = stmt.executeQuery("EXPLAIN (ANALYZE, FORMAT TEXT) " + sql)) {
       while (rs.next()) {
         plan.add(rs.getString(1));
       }
@@ -415,7 +441,7 @@ class ClientLedgerRunningBalanceIntegrationTest {
 
   private static void printPlan(String label, List<String> plan) {
     System.out.println(
-        "=== 630C OQ #3 EXPLAIN (ANALYZE, BUFFERS) findClientHistoryWithRunningBalance — "
+        "=== 630C OQ #3 EXPLAIN (ANALYZE, FORMAT TEXT) findClientHistoryWithRunningBalance — "
             + label
             + " ===");
     plan.forEach(System.out::println);

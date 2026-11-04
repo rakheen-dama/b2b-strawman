@@ -16,6 +16,7 @@ import { PrintStatementButton } from "@/components/trust/print-statement-button"
 import { ClientHistoryFilters } from "@/components/trust/client-history-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
+  isInflowType,
   transactionTypeLabel,
   type TrustTransactionStatus,
   type TrustTransactionType,
@@ -39,10 +40,6 @@ function statusBadgeVariant(
     default:
       return "neutral";
   }
-}
-
-function isInflowType(type: TrustTransactionType): boolean {
-  return ["DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT"].includes(type);
 }
 
 const STATUS_OPTIONS: TrustTransactionStatus[] = [

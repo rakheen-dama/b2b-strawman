@@ -78,12 +78,18 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * balance; non-posted and REVERSAL rows get a null balance. Type sets and status filter are
    * identical to {@link #calculateClientBalanceAsOfDate}. Callers MUST pass a sort-free {@link
    * Pageable} — the ORDER BY lives in the SQL and Spring Data appends only the page window (R6.7).
+   *
+   * <p>The CTE is {@code MATERIALIZED} on purpose: Postgres inlines a once-referenced,
+   * side-effect-free CTE, and with cold statistics (a freshly provisioned tenant) the planner then
+   * re-executed the window subquery once per outer row (WindowAgg loops=N → O(n²) per client).
+   * Materialising forces a single evaluation; it is result-neutral because the CTE has no side
+   * effects and all of its predicates are internal to it.
    */
   @Query(
       nativeQuery = true,
       value =
           """
-          WITH posted AS (
+          WITH posted AS MATERIALIZED (
             SELECT t.id,
                    SUM(CASE WHEN t.transaction_type IN ('DEPOSIT','TRANSFER_IN','INTEREST_CREDIT') THEN  t.amount
                             WHEN t.transaction_type IN ('PAYMENT','TRANSFER_OUT','FEE_TRANSFER','REFUND','INTEREST_LPFF') THEN -t.amount

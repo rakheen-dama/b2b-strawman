@@ -1,19 +1,37 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.ContentHashUtil;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
+import io.b2mash.b2b.b2bstrawman.packs.PackVersionGate;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportDefinition;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.seeder.PackReconcileEntry;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.PackStatusSettings;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Seeds 7 trust accounting report definitions for tenants with the trust_accounting module enabled.
- * Idempotent: tracks applied packs in OrgSettings.reportPackStatus.
+ * Seeds the 7 Section 35 trust accounting report definitions for legal-za tenants (G88-F40, Phase
+ * 89 630A). Called right after the standard report pack by {@code TenantProvisioningService} (fresh
+ * tenants) and {@code PackReconciliationRunner} (every existing tenant, every boot). Gated on the
+ * vertical profile only — the {@code trust_accounting} module flag is deliberately not consulted
+ * (the trust reports page hides itself when the module is off; architecture §14.3.1).
+ *
+ * <p>ADR-356 (625E shape, mirrors {@code StandardReportPackSeeder}): the pack is Java-defined, so
+ * its reconcile block is the {@link #RECONCILE} constant beside {@link #PACK_VERSION}. An applied
+ * pack is reconciled only when its {@code pack_install} ledger row (type REPORT) records a lower
+ * version. Empty at v1 — bump {@link #PACK_VERSION} and add entries when a shipped definition
+ * changes ("fresh tenants only" is a review reject).
  */
 @Service
 public class TrustReportPackSeeder {
@@ -22,17 +40,45 @@ public class TrustReportPackSeeder {
   static final String PACK_ID = "trust-reports";
   static final int PACK_VERSION = 1;
 
+  /** ADR-356 reconcile entity of this pack's rows ({@code key} = the report slug). */
+  static final String REPORT_ENTITY = "report_definition";
+
+  /** The vertical profile this pack belongs to (LegalTariffSeeder precedent). */
+  private static final String LEGAL_ZA_PROFILE = "legal-za";
+
+  /** Slugs this pack ships, in install order. */
+  static final List<String> SLUGS =
+      List.of(
+          "trust-receipts-payments",
+          "client-trust-balances",
+          "client-ledger-statement",
+          "trust-reconciliation",
+          "investment-register",
+          "interest-allocation",
+          "section-35-data-pack");
+
+  /**
+   * ADR-356 reconcile block of the Java-defined trust-reports pack — empty at v1. Same entry
+   * contract as {@code StandardReportPackSeeder.RECONCILE}: {@code name} / {@code description} are
+   * strings; {@code parameterSchema} / {@code columnDefinitions} / {@code templateBody} are
+   * whole-value {@code sha256:} + {@link ContentHashUtil#hashOf}.
+   */
+  static final List<PackReconcileEntry> RECONCILE = List.of();
+
   private final ReportDefinitionRepository reportDefinitionRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final TenantTransactionHelper tenantTransactionHelper;
+  private final PackVersionGate packVersionGate;
 
   public TrustReportPackSeeder(
       ReportDefinitionRepository reportDefinitionRepository,
       OrgSettingsRepository orgSettingsRepository,
-      TenantTransactionHelper tenantTransactionHelper) {
+      TenantTransactionHelper tenantTransactionHelper,
+      PackVersionGate packVersionGate) {
     this.reportDefinitionRepository = reportDefinitionRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.tenantTransactionHelper = tenantTransactionHelper;
+    this.packVersionGate = packVersionGate;
   }
 
   public void seedForTenant(String tenantId, String orgId) {
@@ -40,32 +86,171 @@ public class TrustReportPackSeeder {
   }
 
   private void doSeed(String tenantId) {
-    var settings =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .orElseGet(
-                () -> {
-                  var newSettings = new OrgSettings("USD");
-                  return orgSettingsRepository.save(newSettings);
-                });
-
-    if (isPackAlreadyApplied(settings)) {
-      log.info("Report pack {} already applied for tenant {}, skipping", PACK_ID, tenantId);
+    var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    if (settings == null || !LEGAL_ZA_PROFILE.equals(settings.getVerticalProfile())) {
+      log.debug("Skipping trust report pack for tenant {} (not legal-za profile)", tenantId);
       return;
     }
 
-    upsertReport(trustReceiptsPaymentsDefinition());
-    upsertReport(clientTrustBalancesDefinition());
-    upsertReport(clientLedgerStatementDefinition());
-    upsertReport(trustReconciliationDefinition());
-    upsertReport(investmentRegisterDefinition());
-    upsertReport(interestAllocationDefinition());
-    upsertReport(section35DataPackDefinition());
+    if (isPackAlreadyApplied(settings)) {
+      reconcileAppliedPack(settings, tenantId);
+      return;
+    }
+
+    for (String slug : SLUGS) {
+      upsertReport(shipped(slug));
+    }
 
     settings.getPackStatus().recordReportPackApplication(PACK_ID, PACK_VERSION);
     orgSettingsRepository.save(settings);
+    packVersionGate.recordIfAbsent(PackType.REPORT, PACK_ID, String.valueOf(PACK_VERSION), PACK_ID);
 
-    log.info("Applied report pack {} v{} for tenant {}", PACK_ID, PACK_VERSION, tenantId);
+    log.info("Trust report pack seeded for tenant {}: {} definitions", tenantId, SLUGS.size());
+  }
+
+  private void reconcileAppliedPack(OrgSettings settings, String tenantId) {
+    // OQ #14 backfill (tenants that applied the pack before the ledger row existed) + version gate.
+    String appliedVersion =
+        PackStatusSettings.highestAppliedVersion(
+                settings.getPackStatus().getReportPackStatus(), PACK_ID)
+            .orElse(null);
+    if (packVersionGate.backfillAndTryOpen(
+        PackType.REPORT,
+        PACK_ID,
+        appliedVersion,
+        String.valueOf(PACK_VERSION),
+        PACK_ID,
+        tenantId)) {
+      reconcileExistingPack(tenantId);
+    }
+  }
+
+  /** Applies {@link #RECONCILE} under the ADR-356 one rule. */
+  void reconcileExistingPack(String tenantId) {
+    for (PackReconcileEntry entry : PackReconcileEntry.parse(PACK_ID, RECONCILE)) {
+      entry.applyAndLog(resolveReconcileTarget(entry), log, tenantId, PACK_ID);
+    }
+  }
+
+  /**
+   * ADR-356 resolver (copied from StandardReportPackSeeder, 628C): the {@value #REPORT_ENTITY} row
+   * an entry targets — {@code key} is the slug of a report this pack ships, ownership is the slug +
+   * {@code is_system = true} (report definitions carry no pack column; there is no firm edit path
+   * today, the one rule still applies). Fields: {@code name} / {@code description} (string {@code
+   * to} equal to the shipped value) and {@code parameterSchema} / {@code columnDefinitions} /
+   * {@code templateBody} ({@code sha256:} {@code to} equal to the hash of the shipped value; the
+   * target ignores the hash string and writes the shipped value through the managed entity).
+   * Unsupported entries are WARN-logged and skipped — nothing here throws at boot.
+   */
+  Optional<PackReconcileEntry.Target> resolveReconcileTarget(PackReconcileEntry entry) {
+    if (!REPORT_ENTITY.equals(entry.entity()) || !(entry.to() instanceof String to)) {
+      return unsupported(entry, "only report_definition entries with a string 'to' are supported");
+    }
+    ReportDefinition shipped = shipped(entry.key());
+    if (shipped == null) {
+      return unsupported(entry, "key is not a slug of this pack");
+    }
+    return switch (entry.field()) {
+      case "name" ->
+          stringTarget(entry, to, shipped.getName(), ReportDefinition::getName, d -> d::rename);
+      case "description" ->
+          stringTarget(
+              entry,
+              to,
+              shipped.getDescription(),
+              ReportDefinition::getDescription,
+              d -> d::updateDescription);
+      case "parameterSchema" ->
+          hashTarget(
+              entry,
+              to,
+              shipped.getParameterSchema(),
+              ReportDefinition::getParameterSchema,
+              d ->
+                  () ->
+                      d.updateDefinition(
+                          d.getTemplateBody(),
+                          shipped.getParameterSchema(),
+                          d.getColumnDefinitions()));
+      case "columnDefinitions" ->
+          hashTarget(
+              entry,
+              to,
+              shipped.getColumnDefinitions(),
+              ReportDefinition::getColumnDefinitions,
+              d ->
+                  () ->
+                      d.updateDefinition(
+                          d.getTemplateBody(),
+                          d.getParameterSchema(),
+                          shipped.getColumnDefinitions()));
+      case "templateBody" ->
+          hashTarget(
+              entry,
+              to,
+              shipped.getTemplateBody(),
+              ReportDefinition::getTemplateBody,
+              d -> () -> d.updateTemplate(shipped.getTemplateBody()));
+      default -> unsupported(entry, "unsupported field");
+    };
+  }
+
+  private Optional<PackReconcileEntry.Target> stringTarget(
+      PackReconcileEntry entry,
+      String to,
+      String shippedValue,
+      Function<ReportDefinition, Object> current,
+      Function<ReportDefinition, Consumer<String>> write) {
+    if (to.startsWith(PackReconcileEntry.HASH_PREFIX) || !to.equals(shippedValue)) {
+      return unsupported(entry, "'to' does not match the shipped value");
+    }
+    return systemRow(entry)
+        .map(d -> target(() -> current.apply(d), v -> write.apply(d).accept((String) v)));
+  }
+
+  private Optional<PackReconcileEntry.Target> hashTarget(
+      PackReconcileEntry entry,
+      String to,
+      Object shippedValue,
+      Function<ReportDefinition, Object> current,
+      Function<ReportDefinition, Runnable> writeShipped) {
+    if (!to.equals(PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(shippedValue))) {
+      return unsupported(entry, "'to' is not the sha256: of the shipped value");
+    }
+    // sha256: contract — the argument is the hash string; write the shipped value.
+    return systemRow(entry)
+        .map(d -> target(() -> current.apply(d), ignoredHash -> writeShipped.apply(d).run()));
+  }
+
+  private Optional<ReportDefinition> systemRow(PackReconcileEntry entry) {
+    return reportDefinitionRepository.findBySlug(entry.key()).filter(ReportDefinition::isSystem);
+  }
+
+  private static Optional<PackReconcileEntry.Target> unsupported(
+      PackReconcileEntry entry, String reason) {
+    log.warn(
+        "Reconcile entry ignored: report pack {} entry '{}'.{} (key {}) — {}",
+        PACK_ID,
+        entry.entity(),
+        entry.field(),
+        entry.key(),
+        reason);
+    return Optional.empty();
+  }
+
+  private static PackReconcileEntry.Target target(
+      Supplier<Object> current, Consumer<Object> write) {
+    return new PackReconcileEntry.Target() {
+      @Override
+      public Object currentValue() {
+        return current.get();
+      }
+
+      @Override
+      public void apply(Object to) {
+        write.accept(to);
+      }
+    };
   }
 
   private boolean isPackAlreadyApplied(OrgSettings settings) {
@@ -92,7 +277,24 @@ public class TrustReportPackSeeder {
 
   // --- Report Definition Factories ---
 
-  private ReportDefinition trustReceiptsPaymentsDefinition() {
+  /**
+   * A fresh copy of the shipped definition for {@code slug}, or {@code null} for a slug this pack
+   * does not ship.
+   */
+  static ReportDefinition shipped(String slug) {
+    return switch (slug) {
+      case "trust-receipts-payments" -> trustReceiptsPaymentsDefinition();
+      case "client-trust-balances" -> clientTrustBalancesDefinition();
+      case "client-ledger-statement" -> clientLedgerStatementDefinition();
+      case "trust-reconciliation" -> trustReconciliationDefinition();
+      case "investment-register" -> investmentRegisterDefinition();
+      case "interest-allocation" -> interestAllocationDefinition();
+      case "section-35-data-pack" -> section35DataPackDefinition();
+      default -> null;
+    };
+  }
+
+  private static ReportDefinition trustReceiptsPaymentsDefinition() {
     var parameterSchema =
         Map.<String, Object>of(
             "parameters",
@@ -138,7 +340,7 @@ public class TrustReportPackSeeder {
     return def;
   }
 
-  private ReportDefinition clientTrustBalancesDefinition() {
+  private static ReportDefinition clientTrustBalancesDefinition() {
     var parameterSchema =
         Map.<String, Object>of(
             "parameters",
@@ -214,7 +416,7 @@ public class TrustReportPackSeeder {
     return def;
   }
 
-  private ReportDefinition clientLedgerStatementDefinition() {
+  private static ReportDefinition clientLedgerStatementDefinition() {
     var parameterSchema =
         Map.<String, Object>of(
             "parameters",
@@ -277,7 +479,7 @@ public class TrustReportPackSeeder {
     return def;
   }
 
-  private ReportDefinition trustReconciliationDefinition() {
+  private static ReportDefinition trustReconciliationDefinition() {
     var parameterSchema =
         Map.<String, Object>of(
             "parameters",
@@ -324,7 +526,7 @@ public class TrustReportPackSeeder {
     return def;
   }
 
-  private ReportDefinition investmentRegisterDefinition() {
+  private static ReportDefinition investmentRegisterDefinition() {
     var parameterSchema =
         Map.<String, Object>of(
             "parameters",
@@ -410,7 +612,7 @@ public class TrustReportPackSeeder {
     return def;
   }
 
-  private ReportDefinition interestAllocationDefinition() {
+  private static ReportDefinition interestAllocationDefinition() {
     var parameterSchema =
         Map.<String, Object>of(
             "parameters",
@@ -493,7 +695,7 @@ public class TrustReportPackSeeder {
     return def;
   }
 
-  private ReportDefinition section35DataPackDefinition() {
+  private static ReportDefinition section35DataPackDefinition() {
     var parameterSchema =
         Map.<String, Object>of(
             "parameters",

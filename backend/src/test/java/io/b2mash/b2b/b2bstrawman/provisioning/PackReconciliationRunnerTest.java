@@ -3,18 +3,28 @@ package io.b2mash.b2b.b2bstrawman.provisioning;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstallRepository;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
+import io.b2mash.b2b.b2bstrawman.reporting.ReportDefinition;
+import io.b2mash.b2b.b2bstrawman.reporting.ReportDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportPackSeeder;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -37,6 +47,7 @@ class PackReconciliationRunnerTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private PackInstallRepository packInstallRepository;
+  @Autowired private ReportDefinitionRepository reportDefinitionRepository;
 
   private String tenantSchema;
   private String gateSchema;
@@ -193,6 +204,103 @@ class PackReconciliationRunnerTest {
     } finally {
       rewind("legal-za-clauses", "v1-legacy", "2");
     }
+  }
+
+  /**
+   * G88-F40 (630A, §14.7.5): an existing legal-za tenant that never had the trust-reports pack (the
+   * Keycloak / demo tenants) is seeded by the boot runner path — 7 TRUST definitions, the
+   * reportPackStatus entry and the {@code (REPORT, trust-reports, "1")} ledger row.
+   */
+  @Test
+  void runnerSeedsTrustReportsForAnExistingLegalTenantWithoutThePack() {
+    String orgId = "org_pack_reconcile_trust_reports";
+    String schema =
+        provisioningService
+            .provisionTenant(orgId, "Pack Reconcile Trust Reports Org", null)
+            .schemaName();
+    // Simulate a legal-za tenant provisioned before 630A: profile set, trust-reports never applied.
+    runInTenant(
+        schema,
+        orgId,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                  settings.setVerticalProfile("legal-za");
+                  orgSettingsRepository.save(settings);
+                }));
+    runInTenant(
+        schema,
+        orgId,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  assertThat(trustDefinitionSlugs()).as("precondition: no TRUST rows").isEmpty();
+                  assertThat(trustReportsStatus()).as("precondition: pack not applied").isEmpty();
+                  assertThat(packInstallRepository.findByPackId("trust-reports")).isEmpty();
+                }));
+
+    String seededLine = "Trust report pack seeded for tenant " + schema + ": 7 definitions";
+    assertThat(
+            captureTrustSeederLogs(
+                () -> reconciliationRunner.reconcilePacksForTenant(schema, orgId)))
+        .as("first boot after 630A: the boot log line (KC observation, §14.3.1)")
+        .containsOnlyOnce(seededLine);
+    assertThat(
+            captureTrustSeederLogs(
+                () -> reconciliationRunner.reconcilePacksForTenant(schema, orgId)))
+        .as("second boot: no-op, no second seed line")
+        .doesNotContain(seededLine);
+
+    runInTenant(
+        schema,
+        orgId,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  assertThat(trustDefinitionSlugs()).hasSize(7).contains("section-35-data-pack");
+                  assertThat(trustReportsStatus())
+                      .singleElement()
+                      .satisfies(
+                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(1));
+                  var row = packInstallRepository.findByPackId("trust-reports").orElseThrow();
+                  assertThat(row.getPackType()).isEqualTo(PackType.REPORT);
+                  assertThat(row.getPackVersion()).isEqualTo("1");
+                }));
+  }
+
+  private List<String> trustDefinitionSlugs() {
+    return reportDefinitionRepository.findAll().stream()
+        .filter(d -> "TRUST".equals(d.getCategory()))
+        .map(ReportDefinition::getSlug)
+        .toList();
+  }
+
+  private List<Map<String, Object>> trustReportsStatus() {
+    var status =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseThrow()
+            .getPackStatus()
+            .getReportPackStatus();
+    return status == null
+        ? List.of()
+        : status.stream().filter(e -> "trust-reports".equals(e.get("packId"))).toList();
+  }
+
+  private static List<String> captureTrustSeederLogs(Runnable action) {
+    ListAppender<ILoggingEvent> appender = new ListAppender<>();
+    appender.start();
+    Logger logger = (Logger) LoggerFactory.getLogger(TrustReportPackSeeder.class);
+    logger.addAppender(appender);
+    logger.setLevel(Level.INFO);
+    try {
+      action.run();
+    } finally {
+      logger.detachAppender(appender);
+      logger.setLevel(null);
+    }
+    return appender.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
   }
 
   /** Rewinds (or restores) a pack_install version with the gate's compare-and-set query. */

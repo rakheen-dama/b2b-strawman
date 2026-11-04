@@ -362,4 +362,21 @@ describe("Report actions", () => {
       error: "Failed to fetch entities.",
     });
   });
+
+  // 630A (G88-F40): the Section 35 trust_account_id parameter is entityType "trustAccount", so the
+  // report runner's "Trust Account" combobox needs trust-account options.
+  it("fetchEntityOptionsAction lists trust accounts for the trustAccount entity type", async () => {
+    mockGet.mockResolvedValueOnce([
+      { id: "acc-1", accountName: "Main Trust", bankName: "FNB" },
+      { id: "acc-2", accountName: "Investment Trust", bankName: "Absa" },
+    ]);
+
+    await expect(fetchEntityOptionsAction("trustAccount")).resolves.toEqual({
+      data: [
+        { id: "acc-1", label: "Main Trust", secondaryLabel: "FNB" },
+        { id: "acc-2", label: "Investment Trust", secondaryLabel: "Absa" },
+      ],
+    });
+    expect(mockGet).toHaveBeenCalledWith("/api/trust-accounts");
+  });
 });

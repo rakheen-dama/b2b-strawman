@@ -128,17 +128,19 @@ export function ConflictCheckResultDisplay({
                   className="border-b border-slate-100 last:border-0 dark:border-slate-800"
                 >
                   <td className="px-3 py-2 font-medium text-slate-900 dark:text-slate-100">
-                    {match.adversePartyName}
+                    {match.adversePartyName ?? match.customerName ?? "—"}
                   </td>
                   <td className="px-3 py-2">{matchTypeBadge(match.matchType)}</td>
                   <td className="px-3 py-2 font-mono text-slate-600 dark:text-slate-400">
                     {(match.similarityScore * 100).toFixed(0)}%
                   </td>
                   <td className="px-3 py-2 text-slate-600 dark:text-slate-400">
-                    {match.projectName}
+                    {match.projectName ?? "—"}
                   </td>
                   <td className="px-3 py-2 text-slate-600 dark:text-slate-400">
-                    {match.relationship.replace(/_/g, " ")}
+                    {match.relationship
+                      ? match.relationship.replace(/_/g, " ")
+                      : "Not linked to a matter"}
                   </td>
                 </tr>
               ))}

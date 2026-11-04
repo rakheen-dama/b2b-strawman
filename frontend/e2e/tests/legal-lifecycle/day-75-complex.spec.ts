@@ -9,9 +9,9 @@
  * Records come from the lifecycle run (helpers/legal-lifecycle.ts): Days 0–60 must have run on the
  * same stack.
  *
- * Adverse parties are linked to a matter before they are searched: a conflict check that matches an
- * adverse party with no matter link crashes the result panel (628E-BLOCKER,
- * components/legal/conflict-check-result.tsx:141 — see the Day 14 conflict test).
+ * Adverse parties are linked to a matter before they are searched, so the stress test shows linked
+ * matches (an unlinked match renders "Not linked to a matter" since G88-F38 — see the Day 14
+ * conflict test).
  *
  * Phase 88 628E: rewritten strict — every step is real or asserted (no `isVisible().catch` guards).
  *

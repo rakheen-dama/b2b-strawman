@@ -72,13 +72,15 @@ export type ConflictResolution = "PROCEED" | "DECLINED" | "WAIVER_OBTAINED" | "R
 
 export interface ConflictMatch {
   // Legacy keys on purpose — ConflictCheckService.ConflictDetail is JSONB-persisted (PR #1601 Q2); do not rename until storage/wire split.
-  adversePartyId: string;
-  adversePartyName: string;
-  projectId: string;
-  projectName: string;
-  customerId: string;
-  customerName: string;
-  relationship: string;
+  // Nullable per match kind: client / matter-name matches carry no adverse party, and an adverse
+  // party with no matter link carries no client, matter or relationship (G88-F38).
+  adversePartyId: string | null;
+  adversePartyName: string | null;
+  projectId: string | null;
+  projectName: string | null;
+  customerId: string | null;
+  customerName: string | null;
+  relationship: string | null;
   matchType: string; // NAME_SIMILARITY, ID_NUMBER_EXACT, REGISTRATION_NUMBER_EXACT
   similarityScore: number;
   explanation: string;

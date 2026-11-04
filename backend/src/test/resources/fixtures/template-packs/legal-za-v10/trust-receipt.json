@@ -1,0 +1,103 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "Trust Receipt" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Receipt Date:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "generatedAt" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Received from:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Trust Account:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "org.name" } },
+        { "type": "text", "text": " — Section 78(1) Trust Account" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Payment Details" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "This is to acknowledge receipt of funds deposited into the trust account of " },
+        { "type": "variable", "attrs": { "key": "org.name" } },
+        { "type": "text", "text": " on behalf of " },
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": "." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Amount:" },
+        { "type": "text", "text": " [Amount to be inserted]" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Reference:" },
+        { "type": "text", "text": " [Reference to be inserted]" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Purpose:" },
+        { "type": "text", "text": " [Purpose to be inserted]" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "These funds are held in trust in terms of Section 78(1) of the Legal Practice Act 28 of 2014 and will be applied in accordance with your instructions and the relevant mandate." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Yours faithfully," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    }
+  ]
+}

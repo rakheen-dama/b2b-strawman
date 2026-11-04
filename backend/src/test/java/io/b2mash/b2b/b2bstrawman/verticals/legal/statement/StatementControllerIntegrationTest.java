@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -323,6 +324,67 @@ class StatementControllerIntegrationTest {
                           .getVisibility();
                 }));
     assertThat(visibility[0]).isEqualTo(Document.Visibility.PORTAL);
+  }
+
+  // ==========================================================================
+  // Phase 89 C6: the statement's period comes back on POST, the list and getById (read from the
+  // generation snapshot) so the SoA dialog can default the next period from the prior periodEnd.
+  // ==========================================================================
+
+  @Test
+  void legalTenant_statementPeriod_isReturnedOnPost_list_andGetById() throws Exception {
+    final UUID[] matterId = new UUID[1];
+    runInLegalTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var matter =
+                      new Project(
+                          "Statement Period Matter " + UUID.randomUUID(),
+                          "Matter for the statement period fields",
+                          legalOwnerMemberId);
+                  matter.setCustomerId(customerId);
+                  matterId[0] = projectRepository.saveAndFlush(matter).getId();
+                }));
+
+    String body =
+        """
+        {
+          "periodStart": "2025-01-01",
+          "periodEnd": "2025-01-31",
+          "templateId": null
+        }
+        """;
+
+    var created =
+        mockMvc
+            .perform(
+                post("/api/matters/" + matterId[0] + "/statements")
+                    .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_statement_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.periodStart").value("2025-01-01"))
+            .andExpect(jsonPath("$.periodEnd").value("2025-01-31"))
+            .andReturn();
+    String statementId = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + matterId[0] + "/statements")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_statement_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(statementId))
+        .andExpect(jsonPath("$.content[0].periodStart").value("2025-01-01"))
+        .andExpect(jsonPath("$.content[0].periodEnd").value("2025-01-31"));
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + matterId[0] + "/statements/" + statementId)
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_statement_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.periodStart").value("2025-01-01"))
+        .andExpect(jsonPath("$.periodEnd").value("2025-01-31"));
   }
 
   // ==========================================================================

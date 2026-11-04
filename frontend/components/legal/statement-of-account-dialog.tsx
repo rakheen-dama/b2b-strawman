@@ -6,6 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Download, Eye, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
+import { todayInSA } from "@b2mash/shared/date";
 import { Button } from "@b2mash/ui/button";
 import {
   Dialog,
@@ -56,31 +57,26 @@ export function StatementOfAccountDialog(props: StatementOfAccountDialogProps) {
   );
 }
 
-function todayIso(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function firstOfCurrentMonth(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}-01`;
-}
-
+/** yyyy-MM-dd plus `days`, zone-free (UTC arithmetic — the runtime zone never shifts the date). */
 function addDaysIso(isoDate: string, days: number): string {
-  // Parse YYYY-MM-DD using local-date arithmetic (avoid UTC drift)
   const [y, m, d] = isoDate.split("-").map(Number);
   if (!y || !m || !d) return isoDate;
-  const dt = new Date(y, m - 1, d);
-  dt.setDate(dt.getDate() + days);
-  const yy = dt.getFullYear();
-  const mm = String(dt.getMonth() + 1).padStart(2, "0");
-  const dd = String(dt.getDate()).padStart(2, "0");
-  return `${yy}-${mm}-${dd}`;
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+/**
+ * C6 (ADR-358): the next statement starts the day after the latest prior `periodEnd` (not
+ * `generatedAt` — a statement generated today for last month leaves next period's start at the
+ * first of this month), clamped so it never passes the end; the end is today in South Africa.
+ * yyyy-MM-dd strings compare correctly as strings.
+ */
+function defaultPeriodStartFor(prior: StatementResponse[] | undefined, today: string): string {
+  const latestEnd = (prior ?? [])
+    .map((s) => s.periodEnd)
+    .filter((v): v is string => Boolean(v))
+    .reduce<string | null>((max, v) => (max === null || v > max ? v : max), null);
+  const start = latestEnd ? addDaysIso(latestEnd, 1) : `${today.slice(0, 8)}01`;
+  return start > today ? today : start;
 }
 
 /** ADR-350: what the next "Preview & Save" click does, stated exactly. */
@@ -123,23 +119,20 @@ function StatementOfAccountDialogInner({
     }
   );
 
-  // Derive the latest `generatedAt` explicitly — order-independent — and
-  // stabilise with useMemo so the open/defaultPeriodStart effect doesn't loop
-  // when `priorStatements` arrives late and changes identity.
-  const defaultPeriodStart = useMemo(() => {
-    const latestGeneratedAt = priorStatements?.content
-      ?.map((s) => s.generatedAt)
-      .filter((v): v is string => Boolean(v))
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
-    if (latestGeneratedAt) return addDaysIso(latestGeneratedAt.slice(0, 10), 1);
-    return firstOfCurrentMonth();
-  }, [priorStatements]);
+  // Today in South Africa (never the browser zone). Stabilise the derived start with useMemo so
+  // the open/defaultPeriodStart effect doesn't loop when `priorStatements` arrives late and changes
+  // identity.
+  const today = todayInSA();
+  const defaultPeriodStart = useMemo(
+    () => defaultPeriodStartFor(priorStatements?.content, today),
+    [priorStatements, today]
+  );
 
   const form = useForm<GenerateStatementFormData>({
     resolver: zodResolver(generateStatementSchema),
     defaultValues: {
       periodStart: defaultPeriodStart,
-      periodEnd: todayIso(),
+      periodEnd: today,
       templateId: "",
       shareWithClient: false,
       notifyClient: false,
@@ -169,7 +162,7 @@ function StatementOfAccountDialogInner({
     if (!form.formState.isDirty) {
       form.reset({
         periodStart: defaultPeriodStart,
-        periodEnd: todayIso(),
+        periodEnd: today,
         templateId: "",
         shareWithClient: false,
         notifyClient: false,

@@ -38,6 +38,8 @@ export interface StatementResponse {
   pdfUrl: string;
   matter: MatterRef;
   summary: StatementSummary;
+  periodStart: string | null; // ISO yyyy-MM-dd; null for a statement without a generation snapshot
+  periodEnd: string | null; // ISO yyyy-MM-dd
 }
 
 export interface PaginatedStatementsResponse {

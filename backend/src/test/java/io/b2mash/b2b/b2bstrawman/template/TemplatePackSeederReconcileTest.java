@@ -92,6 +92,28 @@ class TemplatePackSeederReconcileTest {
 
   static final String LETTER_OF_DEMAND = "letter-of-demand";
 
+  /**
+   * Client-facing bodies re-edited in v11 (Phase 89 G88-F16 letterhead), one v10 → shipped entry
+   * each, appended after the {@code primaryEntityType} entry.
+   */
+  static final List<String> V11_LETTERHEAD_KEYS =
+      List.of(
+          "statement-of-account",
+          "matter-closure-letter",
+          "client-trust-statement",
+          "trust-receipt");
+
+  /**
+   * Templates whose pack entry declares {@code requiredContextFields} in v11 (Phase 89 C1), one
+   * {@code requiredContextFields} entry each, appended last.
+   */
+  static final List<String> V11_REQUIRED_FIELDS_KEYS =
+      List.of(
+          "offer-to-purchase",
+          "deed-of-transfer",
+          "bond-cancellation-instruction",
+          "letter-of-demand");
+
   private static final ObjectMapper JSON = new ObjectMapper();
 
   private final UUID installId = UUID.randomUUID();
@@ -143,23 +165,36 @@ class TemplatePackSeederReconcileTest {
    */
   @Test
   void shippedPack_reconcileBlock_takesEachPriorBodyToTheShippedBody() {
-    assertThat(shippedPack.version()).isEqualTo(10);
+    assertThat(shippedPack.version()).isEqualTo(11);
     var entries = PackReconcileEntry.parse(PACK_ID, shippedPack.reconcile());
     var expectedKeys = new ArrayList<>(RECONCILED_KEYS);
     expectedKeys.addAll(V9_EDITED_KEYS);
     expectedKeys.addAll(V10_EDITED_KEYS);
     expectedKeys.add(LETTER_OF_DEMAND);
+    expectedKeys.addAll(V11_LETTERHEAD_KEYS);
+    expectedKeys.addAll(V11_REQUIRED_FIELDS_KEYS);
     assertThat(entries).extracting(PackReconcileEntry::key).containsExactlyElementsOf(expectedKeys);
 
     int v9Start = RECONCILED_KEYS.size();
     int v10Start = v9Start + V9_EDITED_KEYS.size();
+    int v11Start = v10Start + V10_EDITED_KEYS.size() + 1;
     for (int i = 0; i < entries.size(); i++) {
       PackReconcileEntry entry = entries.get(i);
       assertThat(entry.entity()).as(entry.key()).isEqualTo("document_template");
       assertThat(shippedPack.templates())
           .as("reconcile key %s is a templateKey of the pack", entry.key())
           .anyMatch(t -> entry.key().equals(t.templateKey()));
-      if (i == entries.size() - 1) {
+      if ("requiredContextFields".equals(entry.field())) {
+        // Phase 89 C1: from null (never declared before v11), to = sha256 of the shipped list
+        var shippedFields = shippedTemplate(entry.key()).requiredContextFields();
+        assertThat(shippedFields).as(entry.key()).isNotEmpty();
+        assertThat(entry.from()).as(entry.key()).isNull();
+        assertThat(entry.to())
+            .as("%s to = sha256 of the shipped requiredContextFields", entry.key())
+            .isEqualTo(PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(shippedFields));
+        continue;
+      }
+      if ("primaryEntityType".equals(entry.field())) {
         // G88-F12: the Letter of Demand renders with the matter (its opposing party)
         assertThat(entry.field()).isEqualTo("primaryEntityType");
         assertThat(entry.from()).isEqualTo("CUSTOMER");
@@ -168,7 +203,7 @@ class TemplatePackSeederReconcileTest {
             .isEqualTo(shippedTemplate(LETTER_OF_DEMAND).primaryEntityType());
         continue;
       }
-      String prior = i >= v10Start ? "v9" : i >= v9Start ? "v8" : "v7";
+      String prior = i >= v11Start ? "v10" : i >= v10Start ? "v9" : i >= v9Start ? "v8" : "v7";
       assertThat(entry.field()).as(entry.key()).isEqualTo("content");
       assertThat(entry.from())
           .as("%s from = sha256 of the %s body", entry.key(), prior)
@@ -199,7 +234,9 @@ class TemplatePackSeederReconcileTest {
           .isEqualTo(ContentHashUtil.hashOf(shippedBody(row.getPackTemplateKey())));
     }
     assertThat(rows.getFirst().getCss()).isEqualTo("p { margin: 0; }");
-    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile applied")).hasSize(8);
+    assertThat(logs)
+        .filteredOn(m -> m.startsWith("Reconcile applied") && m.contains("field content"))
+        .hasSize(8);
     assertThat(logs).noneMatch(m -> m.startsWith("Reconcile entry ignored"));
   }
 
@@ -293,7 +330,8 @@ class TemplatePackSeederReconcileTest {
           .isEqualTo(TemplateEntityType.PROJECT);
     }
     assertThat(logs)
-        .filteredOn(m -> m.startsWith("Reconcile applied"))
+        .filteredOn(
+            m -> m.startsWith("Reconcile applied") && !m.contains("field requiredContextFields"))
         .hasSize(V10_EDITED_KEYS.size() + 1);
     assertThat(logs).noneMatch(m -> m.startsWith("Reconcile entry ignored"));
   }

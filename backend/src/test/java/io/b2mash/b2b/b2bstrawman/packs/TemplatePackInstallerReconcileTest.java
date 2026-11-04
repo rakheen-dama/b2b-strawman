@@ -140,7 +140,16 @@ class TemplatePackInstallerReconcileTest {
     givenInstalledAt("1");
     var def =
         new TemplatePackTemplate(
-            "letter", "letter", "COVER_LETTER", "PROJECT", "letter.json", null, null, 0, null);
+            "letter",
+            "letter",
+            "COVER_LETTER",
+            "PROJECT",
+            "letter.json",
+            null,
+            null,
+            0,
+            null,
+            List.of());
     givenClasspathPack(2, List.of(def));
 
     // Pristine at v1 content; the classpath pack ships v2 content → refreshIfUnmodified updates it.
@@ -175,7 +184,16 @@ class TemplatePackInstallerReconcileTest {
     givenInstalledAt("1");
     var def =
         new TemplatePackTemplate(
-            "letter", "letter", "COVER_LETTER", "PROJECT", "letter.json", null, null, 0, null);
+            "letter",
+            "letter",
+            "COVER_LETTER",
+            "PROJECT",
+            "letter.json",
+            null,
+            null,
+            0,
+            null,
+            List.of());
     givenClasspathPack(2, List.of(def));
     var a = template("letter", body("v1 body"));
     a.setContentHash(hashOf(a));

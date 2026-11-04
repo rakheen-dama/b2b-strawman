@@ -52,10 +52,13 @@ export async function generateStatementAction(
   }
 }
 
-// TODO: expose pagination params (page, size) once UI needs them.
-export async function listStatementsAction(projectId: string): Promise<ListStatementsResult> {
+export async function listStatementsAction(
+  projectId: string,
+  page?: number,
+  size?: number
+): Promise<ListStatementsResult> {
   try {
-    const data = await listStatements(projectId);
+    const data = await listStatements(projectId, page, size);
     return { success: true, data };
   } catch (err) {
     return {

@@ -31,6 +31,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -269,7 +270,9 @@ public class StatementService {
         html,
         pdfUrl,
         new StatementResponse.MatterRef(projectId, project.getName()),
-        summary);
+        summary,
+        request.periodStart(),
+        request.periodEnd());
   }
 
   @Transactional(readOnly = true)
@@ -334,10 +337,28 @@ public class StatementService {
         null,
         pdfUrl,
         new StatementResponse.MatterRef(projectId, project.getName()),
-        summary);
+        summary,
+        snapshotDate(generatedDoc.getContextSnapshot(), "period_start"),
+        snapshotDate(generatedDoc.getContextSnapshot(), "period_end"));
   }
 
   // ---------- helpers ----------
+
+  /**
+   * A yyyy-MM-dd value from the generation snapshot (written by {@link #generate} as top-level
+   * {@code period_start} / {@code period_end}); null when the snapshot or key is absent or the
+   * value is unparseable.
+   */
+  private static LocalDate snapshotDate(Map<String, Object> snapshot, String key) {
+    if (snapshot == null || !(snapshot.get(key) instanceof String value) || value.isBlank()) {
+      return null;
+    }
+    try {
+      return LocalDate.parse(value);
+    } catch (DateTimeParseException e) {
+      return null;
+    }
+  }
 
   private DocumentTemplate resolveTemplate(UUID templateId) {
     if (templateId != null) {
@@ -441,7 +462,9 @@ public class StatementService {
         null,
         pdfUrl,
         new StatementResponse.MatterRef(project.getId(), project.getName()),
-        summary);
+        summary,
+        snapshotDate(gd.getContextSnapshot(), "period_start"),
+        snapshotDate(gd.getContextSnapshot(), "period_end"));
   }
 
   private Map<String, Object> summarySnapshotMap(StatementSummary s) {

@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 10,
+  "version": 11,
   "reconcile": [
     {
       "entity": "document_template",
@@ -35,14 +35,14 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:2666b54742b49d86e136d6883b0a19e2bd9ac2df1eacc2de34e66551770a2427",
-      "to": "sha256:4781c668eb863f979e1fad22ea328a29e7783683b5172ec551a75eccb3d9baea"
+      "to": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3"
     },
     {
       "entity": "document_template",
       "key": "matter-closure-letter",
       "field": "content",
       "from": "sha256:4e0e5f393ca9d5d4f787a99070424122a6f8dcec058acb112bf212b82351abf1",
-      "to": "sha256:37966992c10dc51041f1d33628e9bca993ef5919476a70e308fd1bfc48702cf1"
+      "to": "sha256:77745958dfad6c9a848ffccea42be3c619f70736a16158e0375dd451463ff807"
     },
     {
       "entity": "document_template",
@@ -70,14 +70,14 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:a1da22c9737608b44109abcc5e7ef5aaa8a80d9b0184d0079416573b76dcc3d1",
-      "to": "sha256:4781c668eb863f979e1fad22ea328a29e7783683b5172ec551a75eccb3d9baea"
+      "to": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3"
     },
     {
       "entity": "document_template",
       "key": "matter-closure-letter",
       "field": "content",
       "from": "sha256:a1cdbc3f8847ca0885157daaa68015b26ebe594caf0f5a1ecc075e9b7d039fc2",
-      "to": "sha256:37966992c10dc51041f1d33628e9bca993ef5919476a70e308fd1bfc48702cf1"
+      "to": "sha256:77745958dfad6c9a848ffccea42be3c619f70736a16158e0375dd451463ff807"
     },
     {
       "entity": "document_template",
@@ -113,6 +113,62 @@
       "field": "primaryEntityType",
       "from": "CUSTOMER",
       "to": "PROJECT"
+    },
+    {
+      "entity": "document_template",
+      "key": "statement-of-account",
+      "field": "content",
+      "from": "sha256:4781c668eb863f979e1fad22ea328a29e7783683b5172ec551a75eccb3d9baea",
+      "to": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3"
+    },
+    {
+      "entity": "document_template",
+      "key": "matter-closure-letter",
+      "field": "content",
+      "from": "sha256:37966992c10dc51041f1d33628e9bca993ef5919476a70e308fd1bfc48702cf1",
+      "to": "sha256:77745958dfad6c9a848ffccea42be3c619f70736a16158e0375dd451463ff807"
+    },
+    {
+      "entity": "document_template",
+      "key": "client-trust-statement",
+      "field": "content",
+      "from": "sha256:eeb6e06bf77c7875a8e7a4c262ad7e1268aa49958633d75547cb5f78b8a2ee2b",
+      "to": "sha256:c0d3bd0294d3df8b605e03e7f0daa138578d0bec1a20facfe9f0382092f4b335"
+    },
+    {
+      "entity": "document_template",
+      "key": "trust-receipt",
+      "field": "content",
+      "from": "sha256:01b2e2e8ebb16b56a43520024dc956f7602456f6bcf26757177597b68561e29e",
+      "to": "sha256:8f74c8a6142b4aa372a9c17c9e11159b94018a58a6041770e7cb233cbd011f4a"
+    },
+    {
+      "entity": "document_template",
+      "key": "offer-to-purchase",
+      "field": "requiredContextFields",
+      "from": null,
+      "to": "sha256:edc03a98950bbecda788385aabb8569f26f088ce001f23e4e6e338dac336241b"
+    },
+    {
+      "entity": "document_template",
+      "key": "deed-of-transfer",
+      "field": "requiredContextFields",
+      "from": null,
+      "to": "sha256:edc03a98950bbecda788385aabb8569f26f088ce001f23e4e6e338dac336241b"
+    },
+    {
+      "entity": "document_template",
+      "key": "bond-cancellation-instruction",
+      "field": "requiredContextFields",
+      "from": null,
+      "to": "sha256:10f47bcc74326c401058a1609d525414d8d678c36790542169133fc552226af4"
+    },
+    {
+      "entity": "document_template",
+      "key": "letter-of-demand",
+      "field": "requiredContextFields",
+      "from": null,
+      "to": "sha256:3fb682b4babc4031a337187516240058e9c0abc9643c4ab3d5df81ab041aa5d0"
     }
   ],
   "verticalProfile": "legal-za",
@@ -187,7 +243,10 @@
       "contentFile": "letter-of-demand.json",
       "cssFile": null,
       "description": "Demand letter for collections and debt recovery matters.",
-      "sortOrder": 7
+      "sortOrder": 7,
+      "requiredContextFields": [
+        { "entity": "project", "field": "customFields.opposing_party" }
+      ]
     },
     {
       "templateKey": "client-trust-statement",
@@ -250,7 +309,11 @@
       "cssFile": null,
       "description": "Offer to purchase for a conveyancing property transfer, covering parties, property, purchase price, occupation, and standard SA sale conditions (voetstoots, suspensive bond, transfer duty, FICA, rates clearance).",
       "sortOrder": 13,
-      "acceptanceEligible": true
+      "acceptanceEligible": true,
+      "requiredContextFields": [
+        { "entity": "project", "field": "customFields.seller_name" },
+        { "entity": "project", "field": "customFields.purchaser_name" }
+      ]
     },
     {
       "templateKey": "deed-of-transfer",
@@ -261,7 +324,11 @@
       "cssFile": null,
       "description": "Deed of transfer instrument lodged at the Deeds Office recording transfer of immovable property from transferor to transferee.",
       "sortOrder": 14,
-      "acceptanceEligible": false
+      "acceptanceEligible": false,
+      "requiredContextFields": [
+        { "entity": "project", "field": "customFields.seller_name" },
+        { "entity": "project", "field": "customFields.purchaser_name" }
+      ]
     },
     {
       "templateKey": "power-of-attorney-transfer",
@@ -283,7 +350,10 @@
       "cssFile": null,
       "description": "Instruction letter to the bond institution to cancel the mortgage bond and furnish the title deed and Form J consent.",
       "sortOrder": 16,
-      "acceptanceEligible": false
+      "acceptanceEligible": false,
+      "requiredContextFields": [
+        { "entity": "project", "field": "customFields.seller_name" }
+      ]
     },
     {
       "templateKey": "fee-note-za",

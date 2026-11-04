@@ -69,6 +69,8 @@ function makeStatement(overrides: Partial<StatementResponse> = {}): StatementRes
     htmlPreview: null,
     pdfUrl: "/api/documents/s-1/pdf",
     matter: { matterId: "p1", name: "Smith v Jones" },
+    periodStart: null,
+    periodEnd: null,
     summary: {
       totalFees: 42000,
       totalDisbursements: 3200,

@@ -60,7 +60,14 @@ import type { StatementResponse } from "@/lib/api/statement-of-account";
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
+  vi.unstubAllEnvs();
 });
+
+/** Moves the process zone to `zone`, guarding against a vacuous stub (631B pattern). */
+function inZone(zone: string) {
+  vi.stubEnv("TZ", zone);
+  expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(zone);
+}
 beforeEach(() => {
   vi.clearAllMocks();
   // Freeze the clock so date-default assertions are deterministic. Individual
@@ -82,6 +89,8 @@ function makeStatement(overrides: Partial<StatementResponse> = {}): StatementRes
     htmlPreview: "<html><body><h1>Statement</h1></body></html>",
     pdfUrl: "/api/documents/s1/pdf",
     matter: { matterId: "p1", name: "Smith v Jones" },
+    periodStart: "2026-04-01",
+    periodEnd: "2026-04-17",
     summary: {
       totalFees: 42000,
       totalDisbursements: 3200,
@@ -156,23 +165,29 @@ describe("StatementOfAccountDialog", () => {
     expect(endInput.value).toBe("2026-04-19");
   });
 
-  it("uses latest prior statement generatedAt + 1 day as periodStart default", async () => {
+  it("uses the latest prior statement periodEnd + 1 day as periodStart default", async () => {
     mockList.mockResolvedValue({
       success: true,
       data: {
         content: [
           makeStatement({
             id: "older",
-            generatedAt: "2026-02-10T08:00:00Z",
+            generatedAt: "2026-04-18T08:00:00Z",
+            periodStart: "2026-02-01",
+            periodEnd: "2026-02-10",
           }),
-          // Not necessarily newest-first — exercise the sort.
+          // Not necessarily newest-first — exercise the max; generatedAt order is irrelevant.
           makeStatement({
-            id: "newest",
-            generatedAt: "2026-03-15T10:00:00Z",
+            id: "latest-period",
+            generatedAt: "2026-03-16T10:00:00Z",
+            periodStart: "2026-03-01",
+            periodEnd: "2026-03-15",
           }),
           makeStatement({
             id: "middle",
-            generatedAt: "2026-02-28T14:00:00Z",
+            generatedAt: "2026-03-01T14:00:00Z",
+            periodStart: "2026-02-11",
+            periodEnd: "2026-02-28",
           }),
         ],
         page: { totalElements: 3, totalPages: 1, size: 20, number: 0 },
@@ -197,10 +212,135 @@ describe("StatementOfAccountDialog", () => {
 
     const startInput = screen.getByTestId("statement-period-start-input") as HTMLInputElement;
 
-    // Latest generatedAt is 2026-03-15 → default periodStart = 2026-03-16.
+    // Latest periodEnd is 2026-03-15 → default periodStart = 2026-03-16.
     await waitFor(() => {
       expect(startInput.value).toBe("2026-03-16");
     });
+  });
+
+  it("C6: reads every page of prior statements — a later page holding the max periodEnd drives the default", async () => {
+    // The list is ordered by generatedAt desc: a backdated-but-later-period statement can sit on page 1.
+    mockList.mockImplementation(async (_projectId: string, page?: number) =>
+      page === 1
+        ? {
+            success: true,
+            data: {
+              content: [
+                makeStatement({
+                  id: "page-1-latest-period",
+                  generatedAt: "2026-01-05T09:00:00Z",
+                  periodStart: "2026-03-01",
+                  periodEnd: "2026-03-20",
+                }),
+              ],
+              page: { totalElements: 2, totalPages: 2, size: 1, number: 1 },
+            },
+          }
+        : {
+            success: true,
+            data: {
+              content: [
+                makeStatement({
+                  id: "page-0",
+                  generatedAt: "2026-04-18T08:00:00Z",
+                  periodStart: "2026-02-01",
+                  periodEnd: "2026-02-28",
+                }),
+              ],
+              page: { totalElements: 2, totalPages: 2, size: 1, number: 0 },
+            },
+          }
+    );
+
+    render(
+      withProviders(
+        <StatementOfAccountDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />
+      )
+    );
+
+    const startInput = (await screen.findByTestId(
+      "statement-period-start-input"
+    )) as HTMLInputElement;
+    // Max periodEnd across both pages is 2026-03-20 (page 1) → default start 2026-03-21 (page 0
+    // alone would give 2026-03-01; no history would give first-of-month 2026-04-01).
+    await waitFor(() => {
+      expect(mockList).toHaveBeenCalledWith("p1", 1, 100);
+      expect(startInput.value).toBe("2026-03-21");
+    });
+    expect(mockList).toHaveBeenCalledWith("p1", 0, 100);
+    expect(mockList).toHaveBeenCalledTimes(2);
+  });
+
+  it("C6: a statement whose periodEnd is today defaults to start == end == today (no inverted range) under TZ=Pacific/Kiritimati", async () => {
+    inZone("Pacific/Kiritimati");
+    // 10:00 SAST on 4 Nov; 22:00 on 4 Nov in Kiritimati.
+    vi.setSystemTime(new Date("2026-11-04T08:00:00Z"));
+    mockList.mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          makeStatement({
+            id: "today",
+            generatedAt: "2026-11-04T07:00:00Z",
+            periodStart: "2026-10-01",
+            periodEnd: "2026-11-04",
+          }),
+        ],
+        page: { totalElements: 1, totalPages: 1, size: 20, number: 0 },
+      },
+    });
+
+    render(
+      withProviders(
+        <StatementOfAccountDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />
+      )
+    );
+
+    const startInput = (await screen.findByTestId(
+      "statement-period-start-input"
+    )) as HTMLInputElement;
+    const endInput = screen.getByTestId("statement-period-end-input") as HTMLInputElement;
+    await waitFor(() => {
+      expect(startInput.value).toBe("2026-11-04");
+    });
+    expect(endInput.value).toBe("2026-11-04");
+  });
+
+  it("C6: periodEnd defaults to the South African date, not the browser's, under TZ=Pacific/Kiritimati", async () => {
+    inZone("Pacific/Kiritimati");
+    // 23:30 SAST on 31 Oct; 11:30 on 1 Nov in Kiritimati (a different day AND month).
+    vi.setSystemTime(new Date("2026-10-31T21:30:00Z"));
+
+    render(
+      withProviders(
+        <StatementOfAccountDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />
+      )
+    );
+
+    const startInput = (await screen.findByTestId(
+      "statement-period-start-input"
+    )) as HTMLInputElement;
+    const endInput = screen.getByTestId("statement-period-end-input") as HTMLInputElement;
+    expect(endInput.value).toBe("2026-10-31");
+    expect(startInput.value).toBe("2026-10-01");
   });
 
   it("renders htmlPreview in an iframe after successful generation and fires toast.success", async () => {

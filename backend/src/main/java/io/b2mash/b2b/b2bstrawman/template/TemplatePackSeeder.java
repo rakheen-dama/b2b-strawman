@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,13 +33,24 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
 
   private static final String PACK_LOCATION = "classpath:template-packs/*/pack.json";
 
-  /** ADR-356 reconcile entity name for pack templates (fields: content, name, description). */
+  /**
+   * ADR-356 reconcile entity name for pack templates (fields: content, name, description,
+   * primaryEntityType, requiredContextFields).
+   */
   private static final String TEMPLATE_ENTITY = "document_template";
 
   private static final String CONTENT_FIELD = "content";
   private static final String NAME_FIELD = "name";
   private static final String DESCRIPTION_FIELD = "description";
   private static final String PRIMARY_ENTITY_TYPE_FIELD = "primaryEntityType";
+  private static final String REQUIRED_CONTEXT_FIELDS_FIELD = "requiredContextFields";
+
+  /**
+   * {@code currentValue()} of a {@code requiredContextFields} target whose body is not the shipped
+   * body: never equal to {@code from} (null) nor to the {@code sha256:} {@code to}, so the one rule
+   * reports LEFT_ALONE.
+   */
+  private static final String TENANT_EDITED_BODY = "tenant-edited-body";
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final PackInstallRepository packInstallRepository;
@@ -171,7 +184,13 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
    * name); the same ownership. The entity type decides which context the body renders with, so it
    * moves only together with the shipped body: a row whose body is not the shipped body (tenant
    * edited) reports no current value and the one rule leaves it alone. List this entry after the
-   * template's {@code content} entry so a body the refresh skipped is updated first. Unsupported
+   * template's {@code content} entry so a body the refresh skipped is updated first. {@code
+   * requiredContextFields} (Phase 89 C1): {@code from} null (no pack declared the list before
+   * legal-za v11) and {@code to} = {@code sha256:} + {@link ContentHashUtil#hashOf} of the list
+   * shipped in this pack (a reconcile value is scalar-only); the same ownership; like {@code
+   * primaryEntityType} it moves only while the row's body is the shipped body (a tenant-edited body
+   * reads as a sentinel that matches neither {@code from} nor {@code to}, so it is LEFT_ALONE), and
+   * {@code apply} writes a copy of the shipped list through the managed entity. Unsupported
    * entries, a {@code to} that does not match the shipped value and ambiguous rows are WARN-logged
    * and skipped; nothing here throws at boot.
    */
@@ -179,17 +198,20 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
   protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
       TemplatePackDefinition pack, PackReconcileEntry entry, Resource packResource) {
     boolean content = CONTENT_FIELD.equals(entry.field());
+    boolean requiredFields = REQUIRED_CONTEXT_FIELDS_FIELD.equals(entry.field());
+    boolean hashValued = content || requiredFields;
     boolean entityType = PRIMARY_ENTITY_TYPE_FIELD.equals(entry.field());
     boolean plainString =
         NAME_FIELD.equals(entry.field()) || DESCRIPTION_FIELD.equals(entry.field()) || entityType;
     if (!TEMPLATE_ENTITY.equals(entry.entity())
         || !(entry.to() instanceof String to)
-        || !(content || plainString)
-        || content != to.startsWith(PackReconcileEntry.HASH_PREFIX)) {
+        || !(hashValued || plainString)
+        || hashValued != to.startsWith(PackReconcileEntry.HASH_PREFIX)) {
       log.warn(
           "Reconcile entry ignored: template pack {} unsupported entity/field/value '{}'.{} (key"
-              + " {}) — only document_template content with a sha256: target, or name /"
-              + " description / primaryEntityType with a plain string target, is supported",
+              + " {}) — only document_template content / requiredContextFields with a sha256:"
+              + " target, or name / description / primaryEntityType with a plain string target,"
+              + " is supported",
           pack.packId(),
           entry.entity(),
           entry.field(),
@@ -204,6 +226,23 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
           pack.packId(),
           entry.key());
       return Optional.empty();
+    }
+    if (requiredFields) {
+      List<Map<String, String>> shippedFields = templateDef.get().requiredContextFields();
+      if (shippedFields.isEmpty()
+          || !to.equals(PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(shippedFields))) {
+        log.warn(
+            "Reconcile entry ignored: template pack {} '{}' {} 'to' does not match the shipped"
+                + " value",
+            pack.packId(),
+            entry.key(),
+            entry.field());
+        return Optional.empty();
+      }
+      Map<String, Object> shippedBody =
+          loadTemplateContent(templateDef.get(), packResource).content();
+      return packSeededRow(pack, entry)
+          .map(template -> requiredContextFieldsTarget(template, shippedBody, shippedFields));
     }
     if (entityType) {
       if (!to.equals(templateDef.get().primaryEntityType())) {
@@ -284,6 +323,42 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
     };
   }
 
+  /**
+   * {@code requiredContextFields} (Phase 89 C1): the row's declared list (null when none) while its
+   * body is the shipped body, else a sentinel so a tenant-edited row is LEFT_ALONE. {@code apply}
+   * ignores the hash argument and writes a copy of the shipped list through the managed entity.
+   */
+  private static PackReconcileEntry.Target requiredContextFieldsTarget(
+      DocumentTemplate template,
+      Map<String, Object> shippedBody,
+      List<Map<String, String>> shippedFields) {
+    String shippedHash = ContentHashUtil.hashOf(shippedBody);
+    return new PackReconcileEntry.Target() {
+      @Override
+      public Object currentValue() {
+        if (!shippedHash.equals(ContentHashUtil.hashOf(template.getContent()))) {
+          return TENANT_EDITED_BODY;
+        }
+        var current = template.getRequiredContextFields();
+        return current == null || current.isEmpty() ? null : current;
+      }
+
+      @Override
+      public void apply(Object toHash) {
+        template.setRequiredContextFields(mutableCopyOf(shippedFields));
+      }
+    };
+  }
+
+  /** Mutable copies for the JSON column — never share the pack record's immutable maps. */
+  private static List<Map<String, String>> mutableCopyOf(List<Map<String, String>> fields) {
+    var copy = new ArrayList<Map<String, String>>(fields.size());
+    for (Map<String, String> field : fields) {
+      copy.add(new LinkedHashMap<>(field));
+    }
+    return copy;
+  }
+
   /** {@code name} / {@code description}: string target written through the managed entity. */
   private static PackReconcileEntry.Target nameOrDescriptionTarget(
       DocumentTemplate template, PackReconcileEntry entry) {
@@ -348,6 +423,9 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
     dt.setPackTemplateKey(templateDef.templateKey());
     dt.setSortOrder(templateDef.sortOrder());
     dt.setAcceptanceEligible(Boolean.TRUE.equals(templateDef.acceptanceEligible()));
+    if (!templateDef.requiredContextFields().isEmpty()) {
+      dt.setRequiredContextFields(mutableCopyOf(templateDef.requiredContextFields()));
+    }
 
     documentTemplateRepository.save(dt);
   }

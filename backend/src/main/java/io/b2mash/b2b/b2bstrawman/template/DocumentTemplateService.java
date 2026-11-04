@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -754,6 +755,11 @@ public class DocumentTemplateService {
       if (field == null || field.isBlank()) {
         throw new InvalidStateException(
             "Invalid required context field", "Field name must not be blank");
+      }
+      if (Arrays.stream(field.split("\\.", -1)).anyMatch(String::isEmpty)) {
+        throw new InvalidStateException(
+            "Invalid required context field",
+            "Field path '" + field + "' must not contain empty segments");
       }
     }
   }

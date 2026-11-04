@@ -44,7 +44,9 @@ import tools.jackson.databind.ObjectMapper;
  * TemplatePackSeeder.resolveReconcileTarget} → content-hash re-pin) takes every rewritten template
  * from its v7 body (or, for the three templates re-edited in v9, its v8 body) to the shipped v9
  * body, keeps firm edits, never touches a clone, and is a no-op at equal version and on a second
- * run.
+ * run. Phase 89 v11: a v10 tenant's four client-facing bodies reach the letterhead bodies and the
+ * four contract templates receive their {@code requiredContextFields} — only while their body is
+ * the shipped body.
  *
  * <p>A v7 (v8) tenant is simulated by writing each rewritten row's exact v7 (v8) body (test fixture
  * copied from git before the edit) with its install-time hash pinned (pristine), then rewinding
@@ -59,7 +61,7 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static final String ORG_ID = "org_legal_za_template_reconcile_test";
   private static final String PACK_ID = "legal-za";
-  private static final String CURRENT_VERSION = "10";
+  private static final String CURRENT_VERSION = "11";
   private static final List<String> RECONCILED_KEYS =
       List.of(
           "engagement-letter-litigation",
@@ -82,6 +84,26 @@ class LegalZaTemplateReconcileIntegrationTest {
           "deed-of-transfer",
           "bond-cancellation-instruction",
           "letter-of-demand");
+
+  /** Client-facing bodies re-edited in v11 (Phase 89 G88-F16 letterhead), from their v10 body. */
+  private static final List<String> V11_LETTERHEAD_KEYS =
+      List.of(
+          "statement-of-account",
+          "matter-closure-letter",
+          "client-trust-statement",
+          "trust-receipt");
+
+  /** Templates whose pack entry declares requiredContextFields in v11 (Phase 89 C1). */
+  private static final Map<String, List<Map<String, String>>> V11_REQUIRED_FIELDS =
+      Map.of(
+          "offer-to-purchase",
+          List.of(field("customFields.seller_name"), field("customFields.purchaser_name")),
+          "deed-of-transfer",
+          List.of(field("customFields.seller_name"), field("customFields.purchaser_name")),
+          "bond-cancellation-instruction",
+          List.of(field("customFields.seller_name")),
+          "letter-of-demand",
+          List.of(field("customFields.opposing_party")));
 
   /**
    * A legal-za template outside the reconcile block with no clause links: deleted to force a
@@ -496,6 +518,182 @@ class LegalZaTemplateReconcileIntegrationTest {
         });
   }
 
+  /**
+   * (h) Phase 89 v11: a pristine v10 tenant's four client-facing rows reach the letterhead bodies
+   * (still pristine), and the four contract rows — which never carried a declaration — get the
+   * shipped {@code requiredContextFields}.
+   */
+  @Test
+  void pristineV10Tenant_letterheadBodies_andRequiredContextFieldsApplied() {
+    simulateV10Tenant(rows -> {}, true);
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          for (String key : V11_LETTERHEAD_KEYS) {
+            var row = packRow(key);
+            assertThat(ContentHashUtil.hashOf(row.getContent()))
+                .as("%s carries the shipped v11 body", key)
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody(key)));
+            assertThat(row.getContentHash())
+                .as("%s stays pristine", key)
+                .isEqualTo(
+                    templatePackInstaller.computeContentHash(row.getContent(), row.getCss()));
+          }
+          V11_REQUIRED_FIELDS.forEach(
+              (key, expected) ->
+                  assertThat(packRow(key).getRequiredContextFields())
+                      .as("%s requiredContextFields", key)
+                      .isEqualTo(expected));
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+    String reason = uninstallReason();
+    assertThat(reason == null ? "" : reason)
+        .as("reconciled rows must not read as edited")
+        .doesNotContain("edited");
+  }
+
+  /** (i) A firm-edited v10 statement of account keeps its body and still reads as edited. */
+  @Test
+  void firmEditedV10StatementOfAccount_survives_andIsLoggedAtInfo() {
+    Map<String, Object> edited =
+        withExtraParagraph(v10Body("statement-of-account"), "Our own statement wording");
+    var pinned = new ArrayList<String>();
+    simulateV10Tenant(
+        rows -> {
+          var soa = rows.get("statement-of-account");
+          pinned.add(soa.getContentHash()); // v10 hash stays → the edit reads as edited
+          soa.updateContent(soa.getName(), soa.getDescription(), edited, null);
+        },
+        true);
+
+    var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+    inTenantTx(
+        () -> {
+          var soa = packRow("statement-of-account");
+          assertThat(ContentHashUtil.hashOf(soa.getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(edited));
+          assertThat(soa.getContentHash()).isEqualTo(pinned.getFirst());
+          var receipt = packRow("trust-receipt");
+          assertThat(ContentHashUtil.hashOf(receipt.getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(shippedBody("trust-receipt")));
+          return null;
+        });
+    assertThat(logs)
+        .anyMatch(
+            m ->
+                m.startsWith("Reconcile skipped (edited)")
+                    && m.contains("pack=legal-za")
+                    && m.contains("'statement-of-account' field content"));
+    assertThat(uninstallReason()).contains("edited");
+  }
+
+  /**
+   * (j) {@code requiredContextFields} moves only with the shipped body: a firm-edited Offer to
+   * Purchase keeps no declaration (LEFT_ALONE, logged), while the pristine Deed of Transfer gets
+   * its list.
+   */
+  @Test
+  void firmEditedOfferToPurchase_requiredContextFieldsLeftAlone_pristineDeedGetsItsList() {
+    simulateV10Tenant(
+        rows -> {
+          var otp = rows.get("offer-to-purchase");
+          otp.updateContent(
+              otp.getName(),
+              otp.getDescription(),
+              withExtraParagraph(shippedBody("offer-to-purchase"), "Our own special conditions"),
+              otp.getCss());
+        },
+        true);
+    try {
+      var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+      inTenantTx(
+          () -> {
+            assertThat(packRow("offer-to-purchase").getRequiredContextFields()).isNull();
+            assertThat(packRow("deed-of-transfer").getRequiredContextFields())
+                .isEqualTo(V11_REQUIRED_FIELDS.get("deed-of-transfer"));
+            assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+            return null;
+          });
+      assertThat(logs)
+          .anyMatch(
+              m ->
+                  m.startsWith("Reconcile skipped (edited)")
+                      && m.contains("'offer-to-purchase' field requiredContextFields"))
+          .noneMatch(
+              m ->
+                  m.startsWith("Reconcile applied")
+                      && m.contains("'offer-to-purchase' field requiredContextFields"));
+    } finally {
+      restorePristineShippedBody("offer-to-purchase"); // not covered by simulateTenant
+    }
+  }
+
+  /**
+   * (l) A css-edited v10 client trust statement is skipped by the refresh pass; its new v10 → v11
+   * {@code content} entry applies the letterhead body, keeps the css and does not re-pin.
+   */
+  @Test
+  void cssEditedV10ClientTrustStatement_getsTheV11BodyFromTheReconcileBlock_cssKept() {
+    String css = "h1 { letter-spacing: 1pt; }";
+    var pinned = new ArrayList<String>();
+    simulateV10Tenant(
+        rows -> {
+          var row = rows.get("client-trust-statement");
+          pinned.add(row.getContentHash());
+          row.updateContent(row.getName(), row.getDescription(), row.getContent(), css);
+        },
+        true);
+    try {
+      var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+      inTenantTx(
+          () -> {
+            var row = packRow("client-trust-statement");
+            assertThat(ContentHashUtil.hashOf(row.getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody("client-trust-statement")));
+            assertThat(row.getCss()).isEqualTo(css);
+            assertThat(row.getContentHash()).isEqualTo(pinned.getFirst());
+            return null;
+          });
+      assertThat(logs)
+          .anyMatch(
+              m ->
+                  m.startsWith("Reconcile applied")
+                      && m.contains("'client-trust-statement' field content"));
+    } finally {
+      restorePristineShippedBody("client-trust-statement"); // not covered by simulateTenant
+    }
+  }
+
+  /** (k) Equal version at v11: the gate stays closed — v10 bodies and null declarations stay. */
+  @Test
+  void equalVersionV11_isANoOp_forTheLetterheadBodiesAndDeclarations() {
+    simulateV10Tenant(rows -> {}, false);
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          for (String key : V11_LETTERHEAD_KEYS) {
+            assertThat(ContentHashUtil.hashOf(packRow(key).getContent()))
+                .as("%s untouched at equal version", key)
+                .isEqualTo(ContentHashUtil.hashOf(v10Body(key)));
+          }
+          for (String key : V11_REQUIRED_FIELDS.keySet()) {
+            assertThat(packRow(key).getRequiredContextFields())
+                .as("%s untouched at equal version", key)
+                .isNull();
+          }
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+  }
+
   /** (e) Equal version: the gate stays closed and nothing is written. */
   @Test
   void equalVersion_isANoOp() {
@@ -575,6 +773,56 @@ class LegalZaTemplateReconcileIntegrationTest {
         rewind);
   }
 
+  /**
+   * A v10 tenant: the four letterhead rows carry their v10 body (pristine, fixture copied before
+   * the v11 edit), the four contract rows their shipped body (unchanged since v10, pristine) and no
+   * {@code requiredContextFields} (no pack declared them before v11), every other rewritten row its
+   * shipped body (pristine — undoes sibling tests' edits); {@code firmEdits} applied, then
+   * (optionally) rewound 11 → 10.
+   */
+  private void simulateV10Tenant(
+      Consumer<Map<String, DocumentTemplate>> firmEdits, boolean rewind) {
+    inTenantTx(
+        () -> {
+          var rows = new LinkedHashMap<String, DocumentTemplate>();
+          for (String key : V11_LETTERHEAD_KEYS) {
+            rows.put(key, packRowWithPinnedBody(key, v10Body(key)));
+          }
+          for (String key : V11_REQUIRED_FIELDS.keySet()) {
+            var row = packRowWithPinnedBody(key, shippedBody(key));
+            row.setRequiredContextFields(null);
+            rows.put(key, row);
+          }
+          for (String key : RECONCILED_KEYS) {
+            rows.computeIfAbsent(key, k -> packRowWithPinnedBody(k, shippedBody(k)));
+          }
+          firmEdits.accept(rows);
+          documentTemplateRepository.saveAll(rows.values());
+          if (rewind) {
+            assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, CURRENT_VERSION, "10"))
+                .as("rewind %s %s -> 10", PACK_ID, CURRENT_VERSION)
+                .isEqualTo(1);
+          }
+          return null;
+        });
+  }
+
+  private DocumentTemplate packRowWithPinnedBody(String key, Map<String, Object> body) {
+    var row = packRow(key);
+    row.updateContent(row.getName(), row.getDescription(), body, null);
+    row.setContentHash(templatePackInstaller.computeContentHash(body, null));
+    return row;
+  }
+
+  /** Puts a row back on its shipped body + null css with the install hash pinned (pristine). */
+  private void restorePristineShippedBody(String key) {
+    inTenantTx(() -> documentTemplateRepository.save(packRowWithPinnedBody(key, shippedBody(key))));
+  }
+
+  private static Map<String, String> field(String dottedField) {
+    return Map.of("entity", "project", "field", dottedField);
+  }
+
   private void simulateTenant(
       java.util.function.Function<String, Map<String, Object>> bodyFor,
       Consumer<Map<String, DocumentTemplate>> firmEdits,
@@ -641,6 +889,10 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static Map<String, Object> v9Body(String key) {
     return readBody("fixtures/template-packs/legal-za-v9/" + key + ".json");
+  }
+
+  private static Map<String, Object> v10Body(String key) {
+    return readBody("fixtures/template-packs/legal-za-v10/" + key + ".json");
   }
 
   private static Map<String, Object> shippedBody(String key) {

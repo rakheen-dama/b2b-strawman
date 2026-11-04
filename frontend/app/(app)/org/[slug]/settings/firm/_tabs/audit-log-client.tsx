@@ -15,7 +15,7 @@ import {
 import { Input } from "@b2mash/ui/input";
 import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
-import { formatComplianceDateWithTime } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import type {
   ActorFacet,
   AuditEventFilter,
@@ -1009,7 +1009,8 @@ function Row({ event, slug, expanded, onToggle }: RowProps) {
           </button>
         </TableCell>
         <TableCell className="font-mono text-xs whitespace-nowrap text-slate-700 dark:text-slate-300">
-          {formatComplianceDateWithTime(event.occurredAt)}
+          {/* SSR (UTC server) and hydration (browser) must print the same string → SA-pinned. */}
+          {formatDateTime(event.occurredAt)}
         </TableCell>
         <TableCell>
           <SeverityPill severity={event.severity} />

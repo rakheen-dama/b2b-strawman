@@ -81,6 +81,73 @@ class AuditEventTypeRegistryTest {
         .doesNotContain("Invoice");
   }
 
+  /**
+   * Keys a publisher actually emits under a wildcard family (grep of {@code .eventType("...")}):
+   * invoice.* from InvoiceCreationService / InvoiceTransitionService, security.* from
+   * GlobalExceptionHandler / DocumentService, ai.gate.* from AiExecutionGateService.
+   */
+  private static final List<String> PUBLISHED_WILDCARD_FAMILY_KEYS =
+      List.of(
+          "invoice.created",
+          "invoice.updated",
+          "invoice.deleted",
+          "invoice.custom_fields_updated",
+          "invoice.field_groups_updated",
+          "invoice.approved",
+          "invoice.sent",
+          "invoice.paid",
+          "invoice.partially_paid",
+          "invoice.payment_excess",
+          "invoice.payment_reversed",
+          "invoice.payment_partially_reversed",
+          "invoice.voided",
+          "security.access_denied",
+          "security.document_accessed",
+          "ai.gate.created",
+          "ai.gate.approved",
+          "ai.gate.rejected",
+          "ai.gate.expired");
+
+  @Test
+  void everyPublishedKeyUnderAWildcardFamilyHasItsOwnLabel() {
+    // G88-F17: the audit Event-type combobox shows labels only (G-D10b), so two published keys
+    // that resolve to the same family label ("Fee note", "Security Event", "AI Execution Gate
+    // Activity") are indistinguishable. Every key a publisher emits under a wildcard family must
+    // resolve to a distinct label. Stored keys are unchanged (ADR-342) — UI words only.
+    var labels =
+        PUBLISHED_WILDCARD_FAMILY_KEYS.stream().map(k -> registry.resolve(k).label()).toList();
+    assertThat(labels).doesNotHaveDuplicates();
+    assertThat(labels)
+        .doesNotContain("Fee note", "Security Event", "AI Execution Gate Activity", "Invoice");
+    assertThat(registry.resolve("invoice.created").label()).isEqualTo("Fee note created");
+    assertThat(registry.resolve("invoice.sent").label()).isEqualTo("Fee note sent");
+  }
+
+  @Test
+  void perKeyLabelsKeepTheFamilyClassification() {
+    // G88-F17: the per-key labels must not reclassify history — each published key keeps the
+    // severity and group its wildcard family gives an uncatalogued sibling. invoice.payment_excess
+    // is the one pre-existing NOTICE exception (Phase 88 Epic 622B, ADR-347).
+    for (var key : PUBLISHED_WILDCARD_FAMILY_KEYS) {
+      if (key.equals("invoice.payment_excess")) {
+        continue;
+      }
+      var sibling = registry.resolve(key.substring(0, key.lastIndexOf('.')) + ".zz_uncatalogued");
+      var resolved = registry.resolve(key);
+      assertThat(resolved.severity()).as(key).isEqualTo(sibling.severity());
+      assertThat(resolved.group()).as(key).isEqualTo(sibling.group());
+    }
+  }
+
+  @Test
+  void unknownFutureInvoiceKeyStillFallsBackToTheFeeNoteFamily() {
+    // G88-F17: the invoice.* wildcard stays as the fallback for keys not yet catalogued.
+    var resolved = registry.resolve("invoice.some_future_event");
+    assertThat(resolved.label()).isEqualTo("Fee note");
+    assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
+    assertThat(resolved.group()).isEqualTo(AuditEventGroup.FINANCIAL);
+  }
+
   @Test
   void defaultLabelLegalMapsTheFirstSegmentInSentenceCase() {
     // Phase 88 625C (D12, R-8): the six legal head mappings; the rest of the key keeps its words.

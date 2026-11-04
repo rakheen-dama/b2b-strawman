@@ -4,6 +4,7 @@ import { SetupProgressCard } from "@/components/setup/setup-progress-card";
 import { ActionCard } from "@/components/setup/action-card";
 import { Clock, ArrowRight } from "lucide-react";
 import type { SetupStep } from "@/components/setup/types";
+import type { LifecycleStatus } from "@/lib/types";
 
 // ---- helpers ----
 
@@ -125,7 +126,8 @@ describe("CustomerDetailPage — Setup Guidance Cards", () => {
 
   // Test 5: Lifecycle action prompt NOT rendered for non-PROSPECT statuses
   it("Lifecycle ActionCard is not rendered for ACTIVE customers", () => {
-    const lifecycleStatus = "ACTIVE";
+    // Widened to the union so the PROSPECT gate below is a real comparison, as on the page.
+    const lifecycleStatus = "ACTIVE" as LifecycleStatus;
     const isAdmin = true;
 
     render(

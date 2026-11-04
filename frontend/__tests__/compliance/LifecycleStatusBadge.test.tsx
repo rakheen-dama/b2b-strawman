@@ -41,6 +41,7 @@ describe("LifecycleStatusBadge", () => {
   });
 
   it("falls back to the raw status string for unknown status", () => {
+    // @ts-expect-error -- deliberately passes a status outside LifecycleStatus to exercise the fallback
     render(<LifecycleStatusBadge status="UNKNOWN_STATUS" />);
     expect(screen.getByText("UNKNOWN_STATUS")).toBeInTheDocument();
   });

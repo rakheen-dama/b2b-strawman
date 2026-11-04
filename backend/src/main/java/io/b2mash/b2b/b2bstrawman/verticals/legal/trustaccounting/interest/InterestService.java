@@ -595,9 +595,11 @@ public class InterestService {
   public void deleteInterestRun(UUID runId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Row lock: a concurrent approve that commits first is seen here as APPROVED (refused); one
+    // that comes second blocks, then fails on the deleted row.
     var run =
         interestRunRepository
-            .findById(runId)
+            .findByIdForUpdate(runId)
             .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
 
     if (!"DRAFT".equals(run.getStatus())) {

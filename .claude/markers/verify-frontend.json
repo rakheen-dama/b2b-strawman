@@ -1,7 +1,7 @@
 {
-  "commit": "a9542a99bdce1c83bdb094e8625c0ab07ced9cd7",
-  "command": "cd frontend && pnpm install && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "3cb727556",
+  "command": "pnpm install && cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test — worktree-epic-632A, PR #1727 final head",
   "exit": 0,
-  "ts": "2026-11-04T19:31:10Z",
-  "summary": "Slice 631B FE-GATE on a9542a99b (PR #1726 final head), run by orchestrator: lint 0 errors / 79 warnings (baseline), typecheck ok, format:check clean, vitest 442 files / 3613 passed / 2 skipped, build ok (clean .next; first build attempt at 19:26Z hit a transient next/font/google fetch error that also failed Portal CI — re-run green, and main's format.ts built green at the same time)"
+  "ts": "2026-11-04T20:50:58Z",
+  "summary": "lint 0 errors (79 pre-existing warnings), format clean, build OK, vitest 442 files / 3616 passed / 2 skipped"
 }

@@ -1,0 +1,44 @@
+pages=3
+Mathebula & Partners
+12 Rissik Street, 3rd Floor, Johannesburg 2001, South Africa
+Tel: +27 11 555 0100
+Email: accounts@mathebula-test.local
+Web: https://mathebula-test.local
+Statement of Account
+Reference: SOA-5c42e002-20261104
+Period: 1 November 2026 — 4 November 2026
+Generated: 4 November 2026
+To
+Lerato Mthembu
+3 Church Square Pretoria ZA
+Matter
+Matter: Lerato Mthembu — RAF Claim (MVA 2025-11-03)
+Opened: 29 October 2026
+Professional Fees
+Date Fee Earner Description Hours Rate Amount
+Total fees (excl. VAT): R0,00
+VAT: R0,00
+Total fees (incl. VAT): R0,00
+Disbursements
+Date Category Description Supplier Amount VAT
+Total disbursements: R0,00
+Trust Activity
+Opening balance: R0,00
+Deposits
+Date Reference Description Amount
+Payments
+Date Type Reference Description Amount
+Closing balance: R0,00
+Summary
+Total fees: R0,00
+Total disbursements: R0,00
+Previous balance owing: R0,00
+Payments received: R0,00
+Closing balance owing: R0,00
+Trust balance held: R0,00
+Payment Instructions
+Bank: Standard Bank
+Branch code: 051001
+Account number: 0012345678
+Account type: Cheque
+Please use your fee note number as the payment reference.

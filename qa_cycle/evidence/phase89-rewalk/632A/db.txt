@@ -1,0 +1,132 @@
+# Read-only SELECTs, 2026-11-04 22:56 SAST
+                  id                  |     external_org_id      |     schema_name     |          created_at           | shard_id 
+--------------------------------------+--------------------------+---------------------+-------------------------------+----------
+ 1a8f5817-da39-4dd8-bd34-dd22d7d8e1ec | org_phase86_squash_smoke | tenant_56399d06a773 | 2026-10-18 02:21:30.992218+00 | primary
+ 294b135c-6c31-4c52-8e24-232ac399058d | mathebula-partners       | tenant_5039f2d497cf | 2026-10-29 13:47:23.773182+00 | primary
+(2 rows)
+
+                  id                  |     external_org_id      |         name          
+--------------------------------------+--------------------------+-----------------------
+ b9f579c0-e2e6-40e7-8ba5-79fce66c23c6 | org_phase86_squash_smoke | Phase 86 Squash Smoke
+ e7943337-bd2a-4978-b57f-120ca65b8b3d | mathebula-partners       | Mathebula & Partners
+(2 rows)
+
+== tenant_56399d06a773
+ERROR:  column "status" does not exist
+LINE 1: select pack_id, pack_version, status from tenant_56399d06a77...
+                                      ^
+                slug                |       pack_template_key        |          updated_at           |                           content_hash                           |                                                   required_context_fields                                                   
+------------------------------------+--------------------------------+-------------------------------+------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------
+ bond-cancellation-instruction      | bond-cancellation-instruction  | 2026-11-04 20:56:04.455907+00 | 836e23d49deaf373bbdcbe32aff9e35bbfa8c22d180335a4219c91b85c9e9651 | [{"field": "customFields.seller_name", "entity": "project"}]
+ client-trust-statement             | client-trust-statement         | 2026-11-04 20:56:04.412816+00 | 30153ea6e9c181b3cd357fdedbd50e1177d76d503aaf242507501332f5677886 | 
+ deed-of-transfer                   | deed-of-transfer               | 2026-11-04 20:56:04.446964+00 | d9a50605752d8b8cf40bdb7fb3eb09b698f39a64a66f0a32de96f953a99438fe | [{"field": "customFields.seller_name", "entity": "project"}, {"field": "customFields.purchaser_name", "entity": "project"}]
+ engagement-letter-conveyancing     | engagement-letter-conveyancing | 2026-10-28 10:23:09.611703+00 | 6fcaf4cf5004a564ad121c1dab0f22ba246cfd210a00da38e6c736ad57311e76 | 
+ engagement-letter-general          | engagement-letter-general      | 2026-10-28 10:23:09.619757+00 | 5fe73b2ed535904c61d7f2b0dbfe4d66b4536d86e590626062772011e629dd08 | 
+ engagement-letter-litigation       | engagement-letter-litigation   | 2026-10-28 10:23:09.602401+00 | 516f7f6ec3e43a1f5b7a4aa888af2e8241e568597b3d6d4292e1fe1321085c44 | 
+ fee-note                           | fee-note-za                    | 2026-10-28 10:23:09.672302+00 | b44829712f5c7e09577a0e3e652e8bb68f54f8e6904fdd41e55a02c83281eddf | 
+ founding-affidavit                 | founding-affidavit             | 2026-10-18 02:21:30.642839+00 | bdca1f65730dee32df7d3754557839d8b50a0b7166d890c663f528f2a728976d | 
+ letter-of-demand                   | letter-of-demand               | 2026-11-04 20:56:04.543659+00 | 893fe64644406041e9a7d2daeadf367c1228d45a1adbefdeb02b61fec13aaafa | [{"field": "customFields.opposing_party", "entity": "project"}]
+ matter-closure-letter              | matter-closure-letter          | 2026-11-04 20:56:04.42617+00  | 67de72b96188e3982dbb48136d5fdd79185993808db7fdbd7d4fea0ed7a1d5b4 | 
+ notice-of-motion                   | notice-of-motion               | 2026-10-18 02:21:30.642423+00 | d7f1e02bd30324f650f92909f3516ec32f7fbe0da0f6484b36103937236ed331 | 
+ offer-to-purchase                  | offer-to-purchase              | 2026-11-04 20:56:04.440183+00 | ba4993be707b62696769ca31b70726ea030abe0fe6ebabc859c9491d3dd81734 | [{"field": "customFields.seller_name", "entity": "project"}, {"field": "customFields.purchaser_name", "entity": "project"}]
+ power-of-attorney                  | power-of-attorney              | 2026-10-18 02:21:30.641978+00 | 24652e88b31aa294e87e089f3296905407d78700b10f64d5089ec028c792b053 | 
+ power-of-attorney-to-pass-transfer | power-of-attorney-transfer     | 2026-10-18 02:21:30.646856+00 | c45382f83b9af9de65c9565fa2f8650fbdcf80991d9baeb9617acbc26da3b095 | 
+ section-35-cover-letter            | section-35-cover-letter        | 2026-10-18 02:21:30.644422+00 | 71fd1df04eecee1f37cad0538ab1aa3404aaca52496a1280c58774182648752b | 
+ statement-of-account               | statement-of-account           | 2026-11-04 20:56:04.432296+00 | 42f7820538732aa7dad8f57aa611f785e64524eeb8df2a11ba8bafd1d7d83aa4 | 
+ trust-receipt                      | trust-receipt                  | 2026-11-04 20:56:04.419246+00 | fff34b73b453cb610c7e19ebc1b031dc632368390e78d5a091bf605e3d47bee6 | 
+(17 rows)
+
+client-trust-statement|f|f|t|t
+matter-closure-letter|f|f|t|t
+statement-of-account|f|t|t|t
+trust-receipt|f|f|t|t
+== tenant_5039f2d497cf
+ERROR:  column "status" does not exist
+LINE 1: select pack_id, pack_version, status from tenant_5039f2d497c...
+                                      ^
+                slug                |       pack_template_key        |          updated_at           |                           content_hash                           |                                                   required_context_fields                                                   
+------------------------------------+--------------------------------+-------------------------------+------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------
+ bond-cancellation-instruction      | bond-cancellation-instruction  | 2026-11-04 20:56:04.991248+00 | 836e23d49deaf373bbdcbe32aff9e35bbfa8c22d180335a4219c91b85c9e9651 | [{"field": "customFields.seller_name", "entity": "project"}]
+ client-trust-statement             | client-trust-statement         | 2026-11-04 20:56:04.952835+00 | 30153ea6e9c181b3cd357fdedbd50e1177d76d503aaf242507501332f5677886 | 
+ deed-of-transfer                   | deed-of-transfer               | 2026-11-04 20:56:04.985143+00 | d9a50605752d8b8cf40bdb7fb3eb09b698f39a64a66f0a32de96f953a99438fe | [{"field": "customFields.seller_name", "entity": "project"}, {"field": "customFields.purchaser_name", "entity": "project"}]
+ engagement-letter-conveyancing     | engagement-letter-conveyancing | 2026-10-29 13:47:23.384093+00 | 6fcaf4cf5004a564ad121c1dab0f22ba246cfd210a00da38e6c736ad57311e76 | 
+ engagement-letter-general          | engagement-letter-general      | 2026-10-29 13:47:23.384713+00 | 5fe73b2ed535904c61d7f2b0dbfe4d66b4536d86e590626062772011e629dd08 | 
+ engagement-letter-litigation       | engagement-letter-litigation   | 2026-10-29 13:47:23.383213+00 | 516f7f6ec3e43a1f5b7a4aa888af2e8241e568597b3d6d4292e1fe1321085c44 | 
+ fee-note                           | fee-note-za                    | 2026-10-29 13:47:23.391154+00 | b44829712f5c7e09577a0e3e652e8bb68f54f8e6904fdd41e55a02c83281eddf | 
+ founding-affidavit                 | founding-affidavit             | 2026-10-29 13:47:23.385973+00 | bdca1f65730dee32df7d3754557839d8b50a0b7166d890c663f528f2a728976d | 
+ letter-of-demand                   | letter-of-demand               | 2026-11-04 20:56:05.063814+00 | 893fe64644406041e9a7d2daeadf367c1228d45a1adbefdeb02b61fec13aaafa | [{"field": "customFields.opposing_party", "entity": "project"}]
+ matter-closure-letter              | matter-closure-letter          | 2026-11-04 20:56:04.964389+00 | 67de72b96188e3982dbb48136d5fdd79185993808db7fdbd7d4fea0ed7a1d5b4 | 
+ notice-of-motion                   | notice-of-motion               | 2026-10-29 13:47:23.385573+00 | d7f1e02bd30324f650f92909f3516ec32f7fbe0da0f6484b36103937236ed331 | 
+ offer-to-purchase                  | offer-to-purchase              | 2026-11-04 20:56:04.976847+00 | ba4993be707b62696769ca31b70726ea030abe0fe6ebabc859c9491d3dd81734 | [{"field": "customFields.seller_name", "entity": "project"}, {"field": "customFields.purchaser_name", "entity": "project"}]
+ power-of-attorney                  | power-of-attorney              | 2026-10-29 13:47:23.38517+00  | 24652e88b31aa294e87e089f3296905407d78700b10f64d5089ec028c792b053 | 
+ power-of-attorney-to-pass-transfer | power-of-attorney-transfer     | 2026-10-29 13:47:23.390239+00 | c45382f83b9af9de65c9565fa2f8650fbdcf80991d9baeb9617acbc26da3b095 | 
+ section-35-cover-letter            | section-35-cover-letter        | 2026-10-29 13:47:23.387482+00 | 71fd1df04eecee1f37cad0538ab1aa3404aaca52496a1280c58774182648752b | 
+ statement-of-account               | statement-of-account           | 2026-11-04 20:56:04.972914+00 | 42f7820538732aa7dad8f57aa611f785e64524eeb8df2a11ba8bafd1d7d83aa4 | 
+ trust-receipt                      | trust-receipt                  | 2026-11-04 20:56:04.960132+00 | fff34b73b453cb610c7e19ebc1b031dc632368390e78d5a091bf605e3d47bee6 | 
+(17 rows)
+
+client-trust-statement|f|f|t|t
+matter-closure-letter|f|f|t|t
+statement-of-account|f|t|t|t
+trust-receipt|f|f|t|t
+
+# Note: statement-of-account 'File reference:' hit is inside conditionalBlock(fieldKey=matter.file_reference, isNotEmpty) — conditional, not unconditional.
+== tenant_56399d06a773 pack_install
+              pack_id              |     pack_type     | pack_version |         installed_at          
+-----------------------------------+-------------------+--------------+-------------------------------
+ legal-za                          | DOCUMENT_TEMPLATE | 11           | 2026-10-18 02:21:30.63839+00
+ legal-za-clauses                  | CLAUSE            | 2            | 2026-10-28 10:23:09.737799+00
+ legal-za-customer                 | FIELD             | 2            | 2026-10-28 10:23:09.451411+00
+ legal-za-liquidation-distribution | REQUEST           | 1            | 2026-10-28 10:23:10.062115+00
+ legal-za-project                  | FIELD             | 3            | 2026-10-28 10:23:09.451411+00
+(5 rows)
+
+== tenant_5039f2d497cf pack_install
+              pack_id              |     pack_type     | pack_version |         installed_at          
+-----------------------------------+-------------------+--------------+-------------------------------
+ legal-za                          | DOCUMENT_TEMPLATE | 11           | 2026-10-29 13:47:23.381006+00
+ legal-za-clauses                  | CLAUSE            | 2            | 2026-10-29 13:47:23.435072+00
+ legal-za-customer                 | FIELD             | 2            | 2026-10-29 13:47:23.262859+00
+ legal-za-liquidation-distribution | REQUEST           | 1            | 2026-10-29 13:47:23.64377+00
+ legal-za-project                  | FIELD             | 3            | 2026-10-29 13:47:23.262859+00
+(5 rows)
+
+
+== tenant_5039f2d497cf (Mathebula & Partners) org_settings letterhead
+-[ RECORD 1 ]------------+------------------------------------------
+logo_s3_key              | org/tenant_5039f2d497cf/branding/logo.png
+brand_color              | #1B3A4B
+tax_registration_number  | 
+tax_registration_label   | 
+letterhead_address_line1 | 12 Rissik Street
+letterhead_address_line2 | 3rd Floor
+letterhead_city          | Johannesburg
+letterhead_postal_code   | 2001
+letterhead_country       | South Africa
+letterhead_phone         | +27 11 555 0100
+letterhead_email         | accounts@mathebula-test.local
+letterhead_website       | https://mathebula-test.local
+
+                    name                     |            sast            |     ps     |     pe     
+---------------------------------------------+----------------------------+------------+------------
+ Sipho Dlamini v. Standard Bank (civil)      | 2026-10-29 20:49:29.771841 | 2026-10-29 | 2026-10-29
+ Sipho Dlamini v. Standard Bank (civil)      | 2026-10-29 21:44:17.255142 | 2026-10-29 | 2026-10-29
+ Estate Late Peter Moroka                    | 2026-10-29 22:01:20.702888 | 2026-10-29 | 2026-10-29
+ Lerato Mthembu — RAF Claim (MVA 2025-11-03) | 2026-11-04 22:59:13.271762 | 2026-11-01 | 2026-11-04
+(4 rows)
+
+
+== C1 generated OTP row (after Save anyway)
+                  id                  |                                      file_name                                       |            sast            |                                                                                                                               warnings                                                                                                                               |             document_id              
+--------------------------------------+--------------------------------------------------------------------------------------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------
+ 85dbcea1-01c0-44ad-8a13-adba960f3ff9 | offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-11-04.pdf | 2026-11-04 23:06:02.251003 | [{"field": "customFields.seller_name", "entity": "project", "reason": "Field not populated: project.customFields.seller_name"}, {"field": "customFields.purchaser_name", "entity": "project", "reason": "Field not populated: project.customFields.purchaser_name"}] | 48e04be2-9b01-46ee-a44a-e334b1557278
+ 168fe298-c279-4908-b76d-ce11d65e9af1 | offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-10-29.pdf | 2026-10-29 17:18:57.703638 |                                                                                                                                                                                                                                                                      | 8a8599ad-f526-47c6-8d2e-bb9022771519
+(2 rows)
+
+
+== org_settings tax after revert (UI) 23:12 SAST
+ tax_registration_number | tax_registration_label | tax_label 
+-------------------------+------------------------+-----------
+                         |                        | VAT
+(1 row)
+

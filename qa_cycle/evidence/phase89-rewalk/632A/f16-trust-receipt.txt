@@ -1,0 +1,20 @@
+pages=1
+Mathebula & Partners
+12 Rissik Street, 3rd Floor, Johannesburg 2001, South Africa
+Tel: +27 11 555 0100
+Email: accounts@mathebula-test.local
+Web: https://mathebula-test.local
+Trust Receipt
+Receipt Date: 4 November 2026
+Received from: Sipho Dlamini
+Trust Account: Mathebula & Partners — Section 78(1) Trust Account
+Payment Details
+This is to acknowledge receipt of funds deposited into the trust account of Mathebula & Partners
+on behalf of Sipho Dlamini.
+Amount: [Amount to be inserted]
+Reference: [Reference to be inserted]
+Purpose: [Purpose to be inserted]
+These funds are held in trust in terms of Section 78(1) of the Legal Practice Act 28 of 2014 and
+will be applied in accordance with your instructions and the relevant mandate.
+Yours faithfully,
+Mathebula & Partners

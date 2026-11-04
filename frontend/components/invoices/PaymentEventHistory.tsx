@@ -1,6 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import {
+  downloadPaymentReceiptAction,
+  generatePaymentReceiptAction,
+} from "@/app/(app)/org/[slug]/invoices/invoice-payment-actions";
+import { useCapabilities } from "@/lib/capabilities";
 import { formatDate, formatCurrency } from "@/lib/format";
 import type { PaymentEvent, PaymentEventStatus, PaymentMethod } from "@/lib/types";
 
@@ -39,9 +46,118 @@ const METHOD_LABELS: Record<PaymentMethod, string> = {
 
 interface PaymentEventHistoryProps {
   events: PaymentEvent[];
+  invoiceId: string;
+  slug: string;
 }
 
-export function PaymentEventHistory({ events }: PaymentEventHistoryProps) {
+interface PaymentReceiptCellProps {
+  event: PaymentEvent;
+  invoiceId: string;
+  slug: string;
+}
+
+/** "INV-0001/R1" → "INV-0001-R1.pdf" (a slash is not allowed in a file name). */
+function receiptFileName(event: PaymentEvent): string {
+  return `${(event.receiptNumber ?? `receipt-${event.id}`).replace(/\//g, "-")}.pdf`;
+}
+
+function saveBase64Pdf(pdfBase64: string, fileName: string) {
+  const byteCharacters = atob(pdfBase64);
+  const bytes = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    bytes[i] = byteCharacters.charCodeAt(i);
+  }
+  const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Phase 89 632C (G88-F32): the receipt for one payment. A COMPLETED payment with a receipt document
+ * links it ("Receipt INV-0001/R1"); without one (pre-receipt payments, or the document was deleted —
+ * the FK is ON DELETE SET NULL while the number stays) INVOICING holders can generate it. Keyed off
+ * receiptGeneratedDocumentId, never receiptNumber.
+ */
+function PaymentReceiptCell({ event, invoiceId, slug }: PaymentReceiptCellProps) {
+  const { hasCapability } = useCapabilities();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleDownload(generatedDocumentId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await downloadPaymentReceiptAction(generatedDocumentId);
+      if (result.success && result.pdfBase64) {
+        saveBase64Pdf(result.pdfBase64, receiptFileName(event));
+      } else {
+        setError(result.error ?? "Failed to download the receipt.");
+      }
+    } catch {
+      setError("Failed to download the receipt.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleGenerate() {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await generatePaymentReceiptAction(slug, invoiceId, event.id);
+      if (!result.success) {
+        setError(result.error ?? "Failed to generate the receipt.");
+      }
+    } catch {
+      setError("Failed to generate the receipt.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const documentId = event.receiptGeneratedDocumentId;
+  const canGenerate = !documentId && hasCapability("INVOICING");
+  if (event.status !== "COMPLETED" || (!documentId && !canGenerate)) {
+    return <span className="text-slate-400 dark:text-slate-500">{"—"}</span>;
+  }
+
+  return (
+    <>
+      {documentId ? (
+        <Button
+          type="button"
+          variant="link"
+          size="xs"
+          className="h-auto px-0 text-teal-700 dark:text-teal-400"
+          disabled={busy}
+          onClick={() => handleDownload(documentId)}
+          data-testid={`payment-receipt-link-${event.id}`}
+        >
+          {event.receiptNumber ? `Receipt ${event.receiptNumber}` : "Receipt"}
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="xs"
+          disabled={busy}
+          onClick={handleGenerate}
+          data-testid={`payment-receipt-generate-${event.id}`}
+        >
+          {busy ? "Generating…" : "Generate receipt"}
+        </Button>
+      )}
+      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+    </>
+  );
+}
+
+export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHistoryProps) {
   if (!events || events.length === 0) {
     return (
       <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
@@ -76,6 +192,9 @@ export function PaymentEventHistory({ events }: PaymentEventHistoryProps) {
               <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Date
               </th>
+              <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                Receipt
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -105,6 +224,9 @@ export function PaymentEventHistory({ events }: PaymentEventHistoryProps) {
                   </td>
                   <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                     {formatDate(event.createdAt)}
+                  </td>
+                  <td className="px-3 py-2 text-sm">
+                    <PaymentReceiptCell event={event} invoiceId={invoiceId} slug={slug} />
                   </td>
                 </tr>
               );

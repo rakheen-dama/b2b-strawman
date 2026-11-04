@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { InvoiceResponse, RecordPaymentRequest, ValidationCheck } from "@/lib/types";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
+import { downloadGeneratedDocumentAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions";
 
 interface InvoiceActionResult {
   success: boolean;
@@ -168,4 +169,45 @@ export async function refreshPaymentLink(
         : createMessages("errors").t(classifyError(error).messageCode);
     return { success: false, error: message };
   }
+}
+
+interface PaymentReceiptActionResult {
+  success: boolean;
+  error?: string;
+  generatedDocumentId?: string;
+}
+
+/**
+ * Phase 89 632C: the receipt for a COMPLETED payment, generated lazily when missing
+ * (POST …/payment-events/{id}/receipt, INVOICING; idempotent — an existing receipt is returned).
+ * The response carries no receipt number, so the fee-note page is revalidated to re-read the events.
+ */
+export async function generatePaymentReceiptAction(
+  slug: string,
+  invoiceId: string,
+  paymentEventId: string
+): Promise<PaymentReceiptActionResult> {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner && !caps.capabilities.includes("INVOICING")) {
+    return { success: false, error: "You do not have permission to generate receipts." };
+  }
+
+  try {
+    const { generatedDocumentId } = await api.post<{ generatedDocumentId: string }>(
+      `/api/invoices/${invoiceId}/payment-events/${paymentEventId}/receipt`
+    );
+    revalidatePath(`/org/${slug}/invoices/${invoiceId}`);
+    return { success: true, generatedDocumentId };
+  } catch (error) {
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
+  }
+}
+
+/** Phase 89 632C: the receipt PDF (the same download as the Generated Documents list). */
+export async function downloadPaymentReceiptAction(generatedDocumentId: string) {
+  return downloadGeneratedDocumentAction(generatedDocumentId);
 }

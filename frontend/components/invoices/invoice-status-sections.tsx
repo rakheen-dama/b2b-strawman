@@ -297,8 +297,14 @@ export function VoidIndicator() {
 
 interface PaymentHistorySectionProps {
   paymentEvents: PaymentEvent[];
+  invoiceId: string;
+  slug: string;
 }
 
-export function PaymentHistorySection({ paymentEvents }: PaymentHistorySectionProps) {
-  return <PaymentEventHistory events={paymentEvents} />;
+export function PaymentHistorySection({
+  paymentEvents,
+  invoiceId,
+  slug,
+}: PaymentHistorySectionProps) {
+  return <PaymentEventHistory events={paymentEvents} invoiceId={invoiceId} slug={slug} />;
 }

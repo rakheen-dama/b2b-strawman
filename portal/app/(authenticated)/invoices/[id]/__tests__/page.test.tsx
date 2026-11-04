@@ -395,3 +395,181 @@ describe("InvoiceDetailPage", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+// ── Phase 89 632C: payments with a receipt download per row (G88-F32) ──
+
+describe("InvoiceDetailPage — payments and receipts", () => {
+  // useParams() is mocked to { id: "inv-1" }, so every path uses inv-1.
+  const PAYMENTS_PATH = "/portal/invoices/inv-1/payments";
+
+  const payments = [
+    {
+      paymentEventId: "pe-1",
+      date: "2026-11-04",
+      methodLabel: "EFT",
+      amount: 5000,
+      reference: "EFT-1",
+      receiptAvailable: true,
+    },
+    {
+      paymentEventId: "pe-2",
+      date: "2026-11-05",
+      methodLabel: "Payment",
+      amount: 250,
+      reference: null,
+      receiptAvailable: false,
+    },
+  ];
+
+  function routeGet(routes: Record<string, unknown>) {
+    mockPortalGet.mockImplementation((path: string) =>
+      path in routes
+        ? Promise.resolve(routes[path])
+        : Promise.reject(new Error(`unexpected GET ${path}`)),
+    );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockWindowOpen = vi.fn<typeof window.open>();
+    vi.spyOn(window, "open").mockImplementation(mockWindowOpen);
+    window.alert = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    cleanup();
+  });
+
+  it("lists a part-paid fee note's payments, each with a Download receipt button", async () => {
+    routeGet({
+      "/portal/invoices/inv-1": mockPartiallyPaid,
+      [PAYMENTS_PATH]: payments,
+    });
+
+    render(<InvoiceDetailPage />);
+
+    const list = await screen.findByRole("list", { name: "Payments" });
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Payments" }),
+    ).toBeInTheDocument();
+    const rows = list.querySelectorAll("li");
+    expect(rows).toHaveLength(2);
+    expect(norm(rows[0].textContent)).toContain(
+      norm(formatCurrency(5000, "ZAR")),
+    );
+    expect(rows[0].textContent).toContain("EFT");
+    expect(rows[0].textContent).toContain("EFT-1");
+    // methodLabel is rendered as sent — "Payment" when no method was recorded.
+    expect(rows[1].textContent).toContain("Payment");
+    // receiptAvailable false still offers the download (generated lazily server-side).
+    expect(
+      screen.getAllByRole("button", { name: "Download receipt" }),
+    ).toHaveLength(2);
+  });
+
+  it("opens the presigned receipt URL for the clicked payment", async () => {
+    const user = userEvent.setup();
+    routeGet({
+      "/portal/invoices/inv-1": mockPartiallyPaid,
+      [PAYMENTS_PATH]: payments,
+      [`${PAYMENTS_PATH}/pe-1/receipt`]: {
+        downloadUrl: "https://s3.example.com/receipt.pdf?signed=abc",
+      },
+    });
+
+    render(<InvoiceDetailPage />);
+
+    const buttons = await screen.findAllByRole("button", {
+      name: "Download receipt",
+    });
+    await user.click(buttons[0]);
+
+    await waitFor(() => {
+      expect(mockWindowOpen).toHaveBeenCalledWith(
+        "https://s3.example.com/receipt.pdf?signed=abc",
+        "_blank",
+      );
+    });
+    expect(mockPortalGet).toHaveBeenCalledWith(`${PAYMENTS_PATH}/pe-1/receipt`);
+    expect(window.alert).not.toHaveBeenCalled();
+  });
+
+  it("alerts when the receipt download fails", async () => {
+    const user = userEvent.setup();
+    routeGet({
+      "/portal/invoices/inv-1": mockPartiallyPaid,
+      [PAYMENTS_PATH]: payments,
+    });
+
+    render(<InvoiceDetailPage />);
+
+    const buttons = await screen.findAllByRole("button", {
+      name: "Download receipt",
+    });
+    await user.click(buttons[1]);
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        "Receipt download failed. Please try again.",
+      );
+    });
+    expect(mockWindowOpen).not.toHaveBeenCalled();
+  });
+
+  it("lists payments on a PAID fee note", async () => {
+    routeGet({
+      "/portal/invoices/inv-1": {
+        ...mockInvoiceDetail,
+        status: "PAID",
+        amountPaid: 1150,
+        balanceDue: 0,
+      },
+      [PAYMENTS_PATH]: [payments[0]],
+    });
+
+    render(<InvoiceDetailPage />);
+
+    const list = await screen.findByRole("list", { name: "Payments" });
+    expect(screen.getByText("This fee note has been paid")).toBeInTheDocument();
+    expect(list.querySelectorAll("li")).toHaveLength(1);
+    expect(
+      screen.getByRole("button", { name: "Download receipt" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows no payments block and never fetches payments for a SENT fee note", async () => {
+    routeGet({ "/portal/invoices/inv-1": mockInvoiceDetail });
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-001")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId("invoice-payments")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Payments" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Download receipt" }),
+    ).not.toBeInTheDocument();
+    expect(
+      mockPortalGet.mock.calls.some(([path]) =>
+        String(path).endsWith("/payments"),
+      ),
+    ).toBe(false);
+  });
+
+  it("still renders the fee note when the payments call fails", async () => {
+    routeGet({ "/portal/invoices/inv-1": mockPartiallyPaid });
+
+    render(<InvoiceDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("INV-PP-001")).toBeInTheDocument();
+    });
+    expect(mockPortalGet).toHaveBeenCalledWith(PAYMENTS_PATH);
+    expect(screen.queryByTestId("invoice-payments")).not.toBeInTheDocument();
+  });
+});

@@ -67,6 +67,8 @@ vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
   recordPayment: (...args: unknown[]) => mockRecordPayment(...args),
   voidInvoice: (...args: unknown[]) => mockVoidInvoice(...args),
   refreshPaymentLink: (...args: unknown[]) => mockRefreshPaymentLink(...args),
+  generatePaymentReceiptAction: vi.fn(),
+  downloadPaymentReceiptAction: vi.fn(),
 }));
 
 // Stub the add-disbursements picker — it transitively imports a "use server" module
@@ -282,6 +284,8 @@ describe("InvoiceDetailClient", () => {
             paymentMethod: "EFT",
             createdAt: "2026-02-01T00:00:00Z",
             updatedAt: "2026-02-01T00:00:00Z",
+            receiptGeneratedDocumentId: null,
+            receiptNumber: null,
           },
         ]}
       />

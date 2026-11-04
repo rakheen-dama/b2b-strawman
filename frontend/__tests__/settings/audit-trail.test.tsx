@@ -701,7 +701,10 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       const user = userEvent.setup();
       await user.click(screen.getByRole("combobox", { name: "Event type" }));
       await user.type(await screen.findByPlaceholderText("Search event types…"), "inv");
-      const option = await screen.findByRole("option", { name: /Fee note.*invoice\.sent/ });
+      // "inv" only matches the key (invoice.sent), never the label "Fee note"
+      const option = await screen.findByRole("option", { name: "Fee note" });
+      // G-D10b: the stored event key is searchable but never rendered
+      expect(option).not.toHaveTextContent("invoice.sent");
       expect(screen.queryByRole("option", { name: /Matter updated/ })).not.toBeInTheDocument();
       await user.click(option);
 
@@ -806,6 +809,26 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       const trigger = screen.getByRole("combobox", { name: "Event type" });
       expect(trigger).toHaveAttribute("id", "audit-filter-event-type");
       expect(trigger).toHaveTextContent("Matter closure closed");
+      // G-D10b: the trigger shows the label only, not the stored event key
+      expect(trigger).not.toHaveTextContent("matter_closure.closed");
+    });
+
+    it("G-D10b: finds an event by its full key without rendering any key text", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab();
+
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("combobox", { name: "Event type" }));
+      const search = await screen.findByPlaceholderText("Search event types…");
+      fireEvent.change(search, { target: { value: "invoice.sent" } });
+      const option = await screen.findByRole("option", { name: "Fee note" });
+      const listbox = screen.getByRole("listbox");
+      expect(listbox).not.toHaveTextContent(/invoice\.sent|project\.updated|matter_closure\.closed/);
+      await user.click(option);
+
+      await waitFor(() => expect(pushMock).toHaveBeenCalled());
+      expect(pushedUrl()).toContain("eventType=invoice.sent");
     });
   });
 });

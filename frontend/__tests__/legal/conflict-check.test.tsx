@@ -172,6 +172,74 @@ describe("ConflictCheckResultDisplay", () => {
     expect(screen.getByRole("button", { name: /Resolve Conflict/i })).toBeInTheDocument();
   });
 
+  // G88-F38: an adverse party with no matter link comes back with null link fields
+  // (ConflictCheckService.buildAdversePartyConflict, link == null)
+  it("renders an unlinked adverse-party match without crashing", () => {
+    const check = makeConflictCheck({
+      result: "CONFLICT_FOUND",
+      conflictsFound: [
+        {
+          adversePartyId: "ap-2",
+          adversePartyName: "Road Accident Fund",
+          projectId: null,
+          projectName: null,
+          customerId: null,
+          customerName: null,
+          relationship: null,
+          matchType: "NAME_SIMILARITY",
+          similarityScore: 1.0,
+          explanation: "Name similarity match",
+        },
+      ],
+    });
+
+    render(<ConflictCheckResultDisplay result={check} slug="acme" />);
+
+    expect(screen.getByText("Road Accident Fund")).toBeInTheDocument();
+    expect(screen.getByText("Not linked to a matter")).toBeInTheDocument();
+  });
+
+  // G88-F38: client and matter-name matches carry no adverse-party name; show the client name
+  it("shows the client name as the party on client and matter-name matches", () => {
+    const check = makeConflictCheck({
+      result: "POTENTIAL_CONFLICT",
+      conflictsFound: [
+        {
+          adversePartyId: null,
+          adversePartyName: null,
+          projectId: null,
+          projectName: null,
+          customerId: "cust-1",
+          customerName: "Mabaso Holdings",
+          relationship: "EXISTING_CLIENT",
+          matchType: "NAME_SIMILARITY",
+          similarityScore: 0.9,
+          explanation: "Name similarity match",
+        },
+        {
+          adversePartyId: null,
+          adversePartyName: null,
+          projectId: "proj-9",
+          projectName: "Dlamini Estate",
+          customerId: "cust-9",
+          customerName: "Thandi Dlamini",
+          relationship: "MATTER_NAME",
+          matchType: "NAME_SIMILARITY",
+          similarityScore: 0.8,
+          explanation: "Name similarity match",
+        },
+      ],
+    });
+
+    render(<ConflictCheckResultDisplay result={check} slug="acme" />);
+
+    const rows = screen.getAllByRole("row").slice(1);
+    expect(rows[0].querySelector("td")).toHaveTextContent("Mabaso Holdings");
+    expect(rows[0]).toHaveTextContent("EXISTING CLIENT");
+    expect(rows[1].querySelector("td")).toHaveTextContent("Thandi Dlamini");
+    expect(rows[1]).toHaveTextContent("Dlamini Estate");
+  });
+
   it("displays NO_CONFLICT result with green styling", () => {
     const check = makeConflictCheck({ result: "NO_CONFLICT" });
 

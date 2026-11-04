@@ -284,20 +284,13 @@ test.describe.serial("Day 14 — Trust Deposits & Conflict Detection", () => {
   test('Bob: Conflict check "Road Accident Fund" — adverse party match (Conflict Found)', async ({
     page,
   }) => {
-    // 628E-BLOCKER (reproduced 2026-10-29 on :3001, Playwright MCP + this test): a conflict check
-    // that matches an adverse party with no matter link crashes the page ("Something went wrong";
-    // console "TypeError: Cannot read properties of null (reading 'replace')"). The backend sends
-    // `relationship: null` for an unlinked party (ConflictCheckService.buildAdversePartyConflict,
-    // link == null) and the result table calls `match.relationship.replace(…)`.
-    test.fixme(
-      true,
-      "628E-BLOCKER: conflict result crashes on an unlinked adverse-party match — components/legal/conflict-check-result.tsx:141"
-    );
+    // G88-F38: the party has no matter link yet, so the match comes back with relationship null
     await loginAs(page, "bob");
     const result = await runConflictCheck(page, ADVERSE_PARTY);
     // An exact name match on the adverse-party registry scores above the conflict threshold
     await expect(result.getByRole("heading", { level: 3 })).toHaveText("Conflict Found");
     await expect(result).toContainText(ADVERSE_PARTY);
+    await expect(result).toContainText("Not linked to a matter");
     await captureScreenshot(page, "day-14-conflict-match-found");
     await captureScreenshot(page, "conflict-check-adverse-match", { curated: true });
   });

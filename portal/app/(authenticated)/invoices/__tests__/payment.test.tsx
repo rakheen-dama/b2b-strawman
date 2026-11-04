@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { Mock } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { formatCurrency } from "@b2mash/shared/format";
@@ -63,7 +64,7 @@ vi.mock("@/hooks/use-branding", () => ({
 }));
 
 // Mock window.open
-let mockWindowOpen: ReturnType<typeof vi.fn>;
+let mockWindowOpen: Mock<typeof window.open>;
 
 import InvoiceDetailPage from "@/app/(authenticated)/invoices/[id]/page";
 import PaymentSuccessPage from "@/app/(authenticated)/invoices/[id]/payment-success/page";
@@ -114,7 +115,7 @@ function norm(text: string | null | undefined): string {
 describe("InvoiceDetailPage — Payment Section", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockWindowOpen = vi.fn();
+    mockWindowOpen = vi.fn<typeof window.open>();
     vi.spyOn(window, "open").mockImplementation(mockWindowOpen);
     window.alert = vi.fn();
   });

@@ -170,8 +170,8 @@ class FieldPackSeederReconcileTest {
           conveyancing.updateMetadata(
               conveyancing.getName(), CONVEYANCING_V1_DESC, conveyancing.getSortOrder());
           fieldGroupRepository.saveAll(List.of(legal, conveyancing));
-          rewind("legal-za-project", "3", "2");
-          rewind("conveyancing-za-project", "2", "1");
+          rewind("legal-za-project", "4", "2");
+          rewind("conveyancing-za-project", "3", "1");
           return null;
         });
 
@@ -183,8 +183,8 @@ class FieldPackSeederReconcileTest {
           assertThat(group("legal_za_matter").getName()).isEqualTo("SA Legal — Matter Details");
           assertThat(group("conveyancing_za_matter").getDescription())
               .isEqualTo(CONVEYANCING_V2_DESC);
-          assertThat(ledgerVersion("legal-za-project")).isEqualTo("3");
-          assertThat(ledgerVersion("conveyancing-za-project")).isEqualTo("2");
+          assertThat(ledgerVersion("legal-za-project")).isEqualTo("4");
+          assertThat(ledgerVersion("conveyancing-za-project")).isEqualTo("3");
           return null;
         });
   }
@@ -495,7 +495,8 @@ class FieldPackSeederReconcileTest {
    * No-Spring guard over every shipped field pack with a {@code reconcile} block: each entry
    * targets the pack's group slug ({@code field_group}) or one of its field slugs ({@code
    * field_definition}), its {@code to} equals the value shipped in the same file, and {@code from}
-   * differs — a later JSON edit without updating {@code to} fails here, not at a tenant's boot.
+   * differs ({@code membership} add-missing entries: a declared field slug, {@code to} = the pack's
+   * group slug) — a later JSON edit without updating {@code to} fails here, not at a tenant's boot.
    * Cumulative-chain convention ({@code backend/CLAUDE.md} › Pack reconcile contract): every {@code
    * to} is the head (the shipped value) and every {@code from} a value of some prior version; when
    * a field is re-edited, re-point every older entry's {@code to} to the new head and add one entry
@@ -505,6 +506,7 @@ class FieldPackSeederReconcileTest {
   void shippedFieldPackReconcileEntries_targetDeclaredKeysAndShippedValues() throws IOException {
     var mapper = new ObjectMapper();
     int checked = 0;
+    int added = 0;
     for (Resource resource :
         new PathMatchingResourcePatternResolver().getResources("classpath:field-packs/*.json")) {
       FieldPackDefinition pack;
@@ -513,6 +515,14 @@ class FieldPackSeederReconcileTest {
       }
       for (PackReconcileEntry e : PackReconcileEntry.parse(pack.packId(), pack.reconcile())) {
         String where = pack.packId() + " " + e.entity() + " '" + e.key() + "' " + e.field();
+        if ("membership".equals(e.field())) {
+          // G88-F12 add-missing step: a declared field slug into the pack's own group
+          assertThat(e.entity()).as(where).isEqualTo("field_definition");
+          assertThat(pack.fields()).as(where).anyMatch(f -> e.key().equals(f.slug()));
+          assertThat(e.to()).as(where).isEqualTo(pack.group().slug());
+          added++;
+          continue;
+        }
         assertThat(e.field()).as(where).isIn("name", "description");
         Object shipped =
             switch (e.entity()) {
@@ -538,6 +548,7 @@ class FieldPackSeederReconcileTest {
     assertThat(checked)
         .as("common-project (3) + legal-za-project (1) + conveyancing (1)")
         .isEqualTo(5);
+    assertThat(added).as("conveyancing party fields (6) + legal-za debtor (1)").isEqualTo(7);
   }
 
   /**
@@ -578,14 +589,18 @@ class FieldPackSeederReconcileTest {
                 new PackReconcileEntry("field_group", "project_info", "name", "a", 42),
                 new PackReconcileEntry("field_group", "other_group", "name", "a", "Matter Info"),
                 new PackReconcileEntry("field_group", "project_info", "name", "a", "Not shipped"),
-                new PackReconcileEntry("field_definition", "no_such_field", "name", "a", "b")));
+                new PackReconcileEntry("field_definition", "no_such_field", "name", "a", "b"),
+                new PackReconcileEntry(
+                    "field_definition", "no_such_field", "membership", null, "project_info"),
+                new PackReconcileEntry("field_definition", "category", "membership", null, "other"),
+                new PackReconcileEntry("field_definition", "category", "membership", null, 42)));
 
     var logs = new java.util.ArrayList<String>();
     assertThatCode(
             () -> logs.addAll(captureLogs(() -> seeder.reconcileInstalledPack(pack, null, "t"))))
         .doesNotThrowAnyException();
 
-    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile entry ignored")).hasSize(7);
+    assertThat(logs).filteredOn(m -> m.startsWith("Reconcile entry ignored")).hasSize(10);
     // the entity is checked first, so an unsupported entity is reported as such even when its
     // field / value are unsupported too
     assertThat(logs)

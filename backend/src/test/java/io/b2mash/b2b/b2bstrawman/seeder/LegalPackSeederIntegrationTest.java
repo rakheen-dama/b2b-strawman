@@ -101,7 +101,9 @@ class LegalPackSeederIntegrationTest {
                           "opposing_attorney",
                           "advocate_name",
                           "date_of_instruction",
-                          "estimated_value");
+                          "estimated_value",
+                          // G88-F12: the letter of demand's explicit debtor (v4)
+                          "debtor_name");
                 }));
   }
 

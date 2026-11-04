@@ -1,7 +1,7 @@
 {
-  "commit": "76b0cce26e3a6776159c1d71806b69fabaadc052",
+  "commit": "931ca6a3e97827873b4739be91dcd51793f361fd",
   "command": "cd backend && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-11-04T05:25:57+02:00",
-  "summary": "PR #1719: 6374 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML); no backend change after this commit"
+  "ts": "2026-11-04T07:08:57+02:00",
+  "summary": "PR #1720 (G88-F36, G88-M10): 6389 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe XML count)"
 }

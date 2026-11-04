@@ -1,7 +1,7 @@
 {
-  "commit": "8b7f293d291e",
-  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
+  "commit": "c3ee6bc20647",
+  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-11-04T13:45:36Z",
-  "summary": "Slice 630A FE-GATE on 8b7f293d2 (PR #1722 final head, orchestrator run): lint 0 errors / 79 warnings (unchanged vs main); format clean; build ok; vitest 436 files / 3576 passed / 2 skipped. E2E-LEGAL fresh stack: lifecycle 103 passed / 0 failed / 1 skipped (day-90 Section 35 un-fixme green); depth-ii 39/0/4 (run 1 had 1 networkidle timeout at day-14-conveyancing.spec.ts:375, untouched by this PR — re-run green)"
+  "ts": "2026-11-04T15:21:08Z",
+  "summary": "Slice 630B FE-GATE on c3ee6bc20647 (PR #1723 final head), run by orchestrator: lint 0 errors / 79 warnings (baseline), format:check clean, typecheck ok, build ok (clean .next), vitest 438 files / 3592 passed / 2 skipped"
 }

@@ -1,0 +1,128 @@
+## 630B red run 1 @ 7a1b3de1d 2026-11-04T14:14:07Z (production code untouched; red tests only)
+$ ./mvnw test -Dtest="CapabilityEndpointTest,InterestControllerTest,InterestRunDeleteIntegrationTest" -q
+           Status = 200
+[ERROR] Tests run: 10, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 13.86 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.orgrole.CapabilityEndpointTest
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.CapabilityEndpointTest.getMyCapabilities_returnsCallerMemberId -- Time elapsed: 0.020 s <<< FAILURE!
+java.lang.AssertionError: No value at JSON path "$.memberId"
+           Status = 201
+           Status = 201
+           Status = 201
+           Status = 201
+           Status = 201
+             Body = {"id":"3837a684-5cba-409e-b458-baf3b1ff232a","name":"Interest Delete Client","email":"int_del_client@test.com","phone":null,"idNumber":null,"status":"ACTIVE","notes":null,"createdBy":"33d21d5f-e4a3-4ccb-afa5-49c37a2d1e48","createdByName":"Int Del Owner","createdAt":"2026-11-04T14:13:56.571867Z","updatedAt":"2026-11-04T14:13:56.571879Z","customFields":{},"appliedFieldGroups":null,"tags":[],"lifecycleStatus":"PROSPECT","clientType":"INDIVIDUAL","lifecycleStatusChangedAt":null,"registrationNumber":null,"addressLine1":null,"addressLine2":null,"city":null,"stateProvince":null,"postalCode":null,"country":null,"taxNumber":null,"contactName":null,"contactEmail":null,"contactPhone":null,"entityType":null,"financialYearEnd":null,"collectionsExempt":false}
+           Status = 201
+           Status = 201
+           Status = 405
+           Status = 405
+           Status = 405
+           Status = 405
+           Status = 405
+[ERROR] Tests run: 5, Failures: 5, Errors: 0, Skipped: 0, Time elapsed: 1.539 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunDeleteIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunDeleteIntegrationTest.deleteWithoutManageTrust_isForbidden_andNothingIsDeleted -- Time elapsed: 0.119 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<405>
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunDeleteIntegrationTest.deleteNeverCalculatedDraft_freesItsPeriod -- Time elapsed: 0.020 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<204> but was:<405>
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunDeleteIntegrationTest.deleteUnknownRun_returns404 -- Time elapsed: 0.012 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<404> but was:<405>
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunDeleteIntegrationTest.deleteCalculatedDraft_removesRunAndAllocations_andAudits -- Time elapsed: 0.031 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<204> but was:<405>
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunDeleteIntegrationTest.deleteApprovedRun_isRefusedWithProblemDetail_andNothingIsDeleted -- Time elapsed: 0.037 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<405>
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+           Status = 201
+[ERROR] Tests run: 6, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.924 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestControllerTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestControllerTest.runResponses_carryAllocationCount -- Time elapsed: 0.017 s <<< FAILURE!
+java.lang.AssertionError: No value at JSON path "$.allocationCount"
+[ERROR]   CapabilityEndpointTest.getMyCapabilities_returnsCallerMemberId:230 No value at JSON path "$.memberId"
+[ERROR]   InterestControllerTest.runResponses_carryAllocationCount:348 No value at JSON path "$.allocationCount"
+[ERROR]   InterestRunDeleteIntegrationTest.deleteApprovedRun_isRefusedWithProblemDetail_andNothingIsDeleted:261 Status expected:<400> but was:<405>
+[ERROR]   InterestRunDeleteIntegrationTest.deleteCalculatedDraft_removesRunAndAllocations_andAudits:201 Status expected:<204> but was:<405>
+[ERROR]   InterestRunDeleteIntegrationTest.deleteNeverCalculatedDraft_freesItsPeriod:238 Status expected:<204> but was:<405>
+[ERROR]   InterestRunDeleteIntegrationTest.deleteUnknownRun_returns404:296 Status expected:<404> but was:<405>
+[ERROR]   InterestRunDeleteIntegrationTest.deleteWithoutManageTrust_isForbidden_andNothingIsDeleted:283 Status expected:<403> but was:<405>
+[ERROR] Tests run: 21, Failures: 7, Errors: 0, Skipped: 0
+
+### surefire <failure message=...>
+[CapabilityEndpointTest] getMyCapabilities_returnsCallerMemberId: <failure message="No value at JSON path &quot;$.memberId&quot;">
+[InterestControllerTest] runResponses_carryAllocationCount: <failure message="No value at JSON path &quot;$.allocationCount&quot;">
+[InterestRunDeleteIntegrationTest] deleteWithoutManageTrust_isForbidden_andNothingIsDeleted: <failure message="Status expected:&lt;403&gt; but was:&lt;405&gt;">
+[InterestRunDeleteIntegrationTest] deleteNeverCalculatedDraft_freesItsPeriod: <failure message="Status expected:&lt;204&gt; but was:&lt;405&gt;">
+[InterestRunDeleteIntegrationTest] deleteUnknownRun_returns404: <failure message="Status expected:&lt;404&gt; but was:&lt;405&gt;">
+[InterestRunDeleteIntegrationTest] deleteCalculatedDraft_removesRunAndAllocations_andAudits: <failure message="Status expected:&lt;204&gt; but was:&lt;405&gt;">
+[InterestRunDeleteIntegrationTest] deleteApprovedRun_isRefusedWithProblemDetail_andNothingIsDeleted: <failure message="Status expected:&lt;400&gt; but was:&lt;405&gt;">
+
+## 630B red run 2 (compile red) @ 7a1b3de1d 2026-11-04T14:14:44Z
+$ ./mvnw compile test-compile -q   (InterestServiceIntegrationTest#runResponse_allocationCount_tracksCalculatedAllocations added)
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-630B/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/interest/InterestServiceIntegrationTest.java:[887,23] cannot find symbol
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-630B/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/interest/InterestServiceIntegrationTest.java:[896,26] cannot find symbol
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-630B/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/interest/InterestServiceIntegrationTest.java:[904,21] invalid method reference
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-630B/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/interest/InterestServiceIntegrationTest.java:[887,23] cannot find symbol
+[ERROR]   symbol:   method allocationCount()
+[ERROR]   location: variable created of type io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService.InterestRunResponse
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-630B/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/interest/InterestServiceIntegrationTest.java:[896,26] cannot find symbol
+[ERROR]   symbol:   method allocationCount()
+[ERROR]   location: variable calculated of type io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService.InterestRunResponse
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-630B/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/interest/InterestServiceIntegrationTest.java:[904,21] invalid method reference
+[ERROR]   cannot find symbol
+[ERROR]     symbol:   method allocationCount()
+[ERROR]     location: class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService.InterestRunResponse
+
+## 630B frontend red @ 7a1b3de1d 2026-11-04T14:16:58Z (production code untouched)
+$ pnpm exec vitest run __tests__/trust/interest-runs-table.test.tsx __tests__/trust/interest-run-wizard.test.tsx
+     × an approver who did not create the run gets the lifecycle actions per status 43ms
+     × the creator sees Review with the awaiting-approval caption, never Review & approve 10ms
+     × VIEW_TRUST only: Review on a calculated draft, no Continue / Post / Delete draft 5ms
+     × APPROVE_TRUST_PAYMENT without MANAGE_TRUST: Review & approve, no Post or Delete draft 6ms
+     × the status cell renders the label map, never the raw enum 14ms
+     × Delete draft → confirm deletes the run, refreshes, and the row is gone 22ms
+     × Delete draft → cancel leaves the run untouched 22ms
+     × a refused delete surfaces the backend detail verbatim 17ms
+     × Review & approve opens the wizard on the persisted run 18ms
+     × a never-calculated draft resumes at step 2 (Calculate), never the create form 55ms
+     × a calculated draft resumes at step 3 for a second member, who can approve it 1017ms
+     × the run's creator sees Approve Run disabled with the awaiting-approval caption 1024ms
+     × an approved run resumes at step 4; Post is gated on MANAGE_TRUST 1017ms
+     × when the viewer is unknown the backend's self-approval refusal is shown verbatim 1015ms
+     × a new run's creator is offered Review (not Approve) after calculating 100ms
+     × closing and re-opening reloads the run from the server 1016ms
+
+### first assertion message per failing test
+ FAIL  __tests__/trust/interest-run-wizard.test.tsx > InterestRunWizard — resume a persisted run (630B) > a never-calculated draft resumes at step 2 (Calculate), never the create form
+   AssertionError: expected <input …(8)></input> to be null
+ FAIL  __tests__/trust/interest-run-wizard.test.tsx > InterestRunWizard — resume a persisted run (630B) > a calculated draft resumes at step 3 for a second member, who can approve it
+   TestingLibraryElementError: Unable to find an element with the text: Step 3 of 4 — Approve. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text match
+ FAIL  __tests__/trust/interest-run-wizard.test.tsx > InterestRunWizard — resume a persisted run (630B) > the run's creator sees Approve Run disabled with the awaiting-approval caption
+   TestingLibraryElementError: Unable to find an element with the text: Step 3 of 4 — Approve. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text match
+ FAIL  __tests__/trust/interest-run-wizard.test.tsx > InterestRunWizard — resume a persisted run (630B) > an approved run resumes at step 4; Post is gated on MANAGE_TRUST
+   TestingLibraryElementError: Unable to find an element with the text: Step 4 of 4 — Post. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher 
+ FAIL  __tests__/trust/interest-run-wizard.test.tsx > InterestRunWizard — resume a persisted run (630B) > when the viewer is unknown the backend's self-approval refusal is shown verbatim
+   TestingLibraryElementError: Unable to find an element with the text: Step 3 of 4 — Approve. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text match
+ FAIL  __tests__/trust/interest-run-wizard.test.tsx > InterestRunWizard — resume a persisted run (630B) > a new run's creator is offered Review (not Approve) after calculating
+   TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Review"
+ FAIL  __tests__/trust/interest-run-wizard.test.tsx > InterestRunWizard — resume a persisted run (630B) > closing and re-opening reloads the run from the server
+   AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > an approver who did not create the run gets the lifecycle actions per status
+   AssertionError: expected [] to deeply equal [ 'Continue', 'Delete draft' ]
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > the creator sees Review with the awaiting-approval caption, never Review & approve
+   AssertionError: expected [] to deeply equal [ 'Review', 'Delete draft' ]
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > VIEW_TRUST only: Review on a calculated draft, no Continue / Post / Delete draft
+   AssertionError: expected [] to deeply equal [ 'Review' ]
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > APPROVE_TRUST_PAYMENT without MANAGE_TRUST: Review & approve, no Post or Delete draft
+   AssertionError: expected [] to deeply equal [ 'Review & approve' ]
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > the status cell renders the label map, never the raw enum
+   TestingLibraryElementError: Unable to find an element by: [data-testid="run-status"]
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > Delete draft → confirm deletes the run, refreshes, and the row is gone
+   TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Delete draft"
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > Delete draft → cancel leaves the run untouched
+   TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Delete draft"
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > a refused delete surfaces the backend detail verbatim
+   TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Delete draft"
+ FAIL  __tests__/trust/interest-runs-table.test.tsx > Interest runs table — Actions column (630B) > Review & approve opens the wizard on the persisted run
+   TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Review & approve"
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed (2)
+      Tests  16 failed (16)

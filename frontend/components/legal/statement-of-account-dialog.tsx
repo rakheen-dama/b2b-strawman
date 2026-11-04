@@ -70,13 +70,35 @@ function addDaysIso(isoDate: string, days: number): string {
  * first of this month), clamped so it never passes the end; the end is today in South Africa.
  * yyyy-MM-dd strings compare correctly as strings.
  */
-function defaultPeriodStartFor(prior: StatementResponse[] | undefined, today: string): string {
+function defaultPeriodStartFor(
+  prior: StatementResponse[] | null | undefined,
+  today: string
+): string {
   const latestEnd = (prior ?? [])
     .map((s) => s.periodEnd)
     .filter((v): v is string => Boolean(v))
     .reduce<string | null>((max, v) => (max === null || v > max ? v : max), null);
   const start = latestEnd ? addDaysIso(latestEnd, 1) : `${today.slice(0, 8)}01`;
   return start > today ? today : start;
+}
+
+const PRIOR_STATEMENTS_PAGE_SIZE = 100;
+const PRIOR_STATEMENTS_MAX_PAGES = 50;
+
+/** Every prior statement on the matter, page by page (bounded); null if any page fails. */
+async function listAllPriorStatements(projectId: string): Promise<StatementResponse[] | null> {
+  const all: StatementResponse[] = [];
+  for (let page = 0; page < PRIOR_STATEMENTS_MAX_PAGES; page++) {
+    const result = await listStatementsAction(projectId, page, PRIOR_STATEMENTS_PAGE_SIZE);
+    if (!result.success) {
+      return null;
+    }
+    all.push(...result.data.content);
+    if (result.data.content.length === 0 || page >= result.data.page.totalPages - 1) {
+      break;
+    }
+  }
+  return all;
 }
 
 /** ADR-350: what the next "Preview & Save" click does, stated exactly. */
@@ -107,16 +129,11 @@ function StatementOfAccountDialogInner({
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // SWR: fetch prior statements when dialog opens so we can default `periodStart`.
-  const { data: priorStatements } = useSWR(
-    open ? ["statements-prior", projectId] : null,
-    async () => {
-      const result = await listStatementsAction(projectId);
-      if (!result.success) {
-        return null;
-      }
-      return result.data;
-    }
+  // SWR: fetch the full prior-statement history when the dialog opens so `periodStart` defaults
+  // off the latest periodEnd across every page — the list is ordered by generatedAt, so a
+  // backdated statement can sit past page 0.
+  const { data: priorStatements } = useSWR(open ? ["statements-prior", projectId] : null, () =>
+    listAllPriorStatements(projectId)
   );
 
   // Today in South Africa (never the browser zone). Stabilise the derived start with useMemo so
@@ -124,7 +141,7 @@ function StatementOfAccountDialogInner({
   // identity.
   const today = todayInSA();
   const defaultPeriodStart = useMemo(
-    () => defaultPeriodStartFor(priorStatements?.content, today),
+    () => defaultPeriodStartFor(priorStatements, today),
     [priorStatements, today]
   );
 

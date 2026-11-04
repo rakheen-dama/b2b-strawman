@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -272,6 +273,32 @@ class DocumentTemplateControllerTest {
   }
 
   // --- Round-trip test: POST Tiptap JSON, GET same structure back ---
+
+  @Test
+  @Order(12)
+  void shouldRejectRequiredContextFieldPathWithEmptySegment() throws Exception {
+    for (String badPath : new String[] {"customFields.", ".seller_name", "customFields..x"}) {
+      var requestBody = new LinkedHashMap<String, Object>();
+      requestBody.put("name", "Empty Segment " + badPath);
+      requestBody.put("category", "ENGAGEMENT_LETTER");
+      requestBody.put("primaryEntityType", "PROJECT");
+      requestBody.put("content", TestDocumentBuilder.doc().paragraph("Body").build());
+      requestBody.put(
+          "requiredContextFields", List.of(Map.of("entity", "project", "field", badPath)));
+
+      mockMvc
+          .perform(
+              post("/api/templates")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner"))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(requestBody)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.title").value("Invalid required context field"))
+          .andExpect(
+              jsonPath("$.detail")
+                  .value("Field path '" + badPath + "' must not contain empty segments"));
+    }
+  }
 
   @Test
   @Order(11)

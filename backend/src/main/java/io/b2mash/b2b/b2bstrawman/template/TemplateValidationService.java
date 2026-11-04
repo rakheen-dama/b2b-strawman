@@ -63,12 +63,14 @@ public class TemplateValidationService {
 
   /**
    * Walks a dotted path ({@code customFields.seller_name}) through nested maps; null when any
-   * segment is absent or not a map.
+   * segment is absent, empty ({@code customFields.}, {@code .x}, {@code a..b}) or not a map. The
+   * {@code -1} split limit keeps trailing empty segments so {@code customFields.} cannot resolve to
+   * the {@code customFields} map itself.
    */
   private static Object resolvePath(Map<?, ?> root, String dottedPath) {
     Object current = root;
-    for (String segment : dottedPath.split("\\.")) {
-      if (!(current instanceof Map<?, ?> map)) {
+    for (String segment : dottedPath.split("\\.", -1)) {
+      if (segment.isEmpty() || !(current instanceof Map<?, ?> map)) {
         return null;
       }
       current = map.get(segment);

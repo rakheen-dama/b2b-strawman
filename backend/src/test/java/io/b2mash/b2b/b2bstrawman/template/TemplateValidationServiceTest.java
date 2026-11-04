@@ -106,6 +106,26 @@ class TemplateValidationServiceTest {
   }
 
   @Test
+  void dottedPath_trailingEmptySegment_isAbsentEvenWhenTheMapExists() {
+    var field =
+        single(
+            required("project", "customFields."),
+            projectContext(Map.of("customFields", Map.of("seller_name", "Pieter van Wyk"))));
+
+    assertThat(field.present()).isFalse();
+    assertThat(field.reason()).isEqualTo("Field not populated: project.customFields.");
+  }
+
+  @Test
+  void dottedPath_leadingOrDoubleDotEmptySegment_isAbsent() {
+    var context =
+        projectContext(Map.of("customFields", Map.of("seller_name", "Pieter van Wyk", "x", "y")));
+
+    assertThat(single(required("project", ".seller_name"), context).present()).isFalse();
+    assertThat(single(required("project", "customFields..x"), context).present()).isFalse();
+  }
+
+  @Test
   void singleSegmentField_stillResolves() {
     var context = projectContext(Map.of("name", "Smith v Jones"));
 

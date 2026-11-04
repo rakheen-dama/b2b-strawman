@@ -218,6 +218,65 @@ describe("StatementOfAccountDialog", () => {
     });
   });
 
+  it("C6: reads every page of prior statements — a later page holding the max periodEnd drives the default", async () => {
+    // The list is ordered by generatedAt desc: a backdated-but-later-period statement can sit on page 1.
+    mockList.mockImplementation(async (_projectId: string, page?: number) =>
+      page === 1
+        ? {
+            success: true,
+            data: {
+              content: [
+                makeStatement({
+                  id: "page-1-latest-period",
+                  generatedAt: "2026-01-05T09:00:00Z",
+                  periodStart: "2026-03-01",
+                  periodEnd: "2026-03-20",
+                }),
+              ],
+              page: { totalElements: 2, totalPages: 2, size: 1, number: 1 },
+            },
+          }
+        : {
+            success: true,
+            data: {
+              content: [
+                makeStatement({
+                  id: "page-0",
+                  generatedAt: "2026-04-18T08:00:00Z",
+                  periodStart: "2026-02-01",
+                  periodEnd: "2026-02-28",
+                }),
+              ],
+              page: { totalElements: 2, totalPages: 2, size: 1, number: 0 },
+            },
+          }
+    );
+
+    render(
+      withProviders(
+        <StatementOfAccountDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />
+      )
+    );
+
+    const startInput = (await screen.findByTestId(
+      "statement-period-start-input"
+    )) as HTMLInputElement;
+    // Max periodEnd across both pages is 2026-03-20 (page 1) → default start 2026-03-21 (page 0
+    // alone would give 2026-03-01; no history would give first-of-month 2026-04-01).
+    await waitFor(() => {
+      expect(mockList).toHaveBeenCalledWith("p1", 1, 100);
+      expect(startInput.value).toBe("2026-03-21");
+    });
+    expect(mockList).toHaveBeenCalledWith("p1", 0, 100);
+    expect(mockList).toHaveBeenCalledTimes(2);
+  });
+
   it("C6: a statement whose periodEnd is today defaults to start == end == today (no inverted range) under TZ=Pacific/Kiritimati", async () => {
     inZone("Pacific/Kiritimati");
     // 10:00 SAST on 4 Nov; 22:00 on 4 Nov in Kiritimati.

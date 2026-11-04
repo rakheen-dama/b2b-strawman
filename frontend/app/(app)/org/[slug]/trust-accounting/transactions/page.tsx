@@ -20,6 +20,7 @@ import { ReversalButton } from "@/components/trust/reversal-button";
 import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
+  isInflowType,
   transactionTypeLabel,
   type OrgMember,
   type TrustTransactionStatus,
@@ -43,10 +44,6 @@ function statusBadgeVariant(
     default:
       return "neutral";
   }
-}
-
-function isInflowType(type: TrustTransactionType): boolean {
-  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(type);
 }
 
 const STATUS_OPTIONS: TrustTransactionStatus[] = [

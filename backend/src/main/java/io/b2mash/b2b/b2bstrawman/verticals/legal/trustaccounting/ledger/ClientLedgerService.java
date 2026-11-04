@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientHistoryRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
@@ -19,6 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +74,12 @@ public class ClientLedgerService {
       List<LedgerStatementLine> transactions) {}
 
   public record TotalBalanceResponse(BigDecimal balance) {}
+
+  /** Optional /history filters (ADR-361); every null field disables its predicate. */
+  public record ClientHistoryFilter(
+      String type, String status, LocalDate dateFrom, LocalDate dateTo) {
+    public static final ClientHistoryFilter NONE = new ClientHistoryFilter(null, null, null, null);
+  }
 
   public record LedgerStatementLine(
       UUID transactionId,
@@ -148,15 +156,37 @@ public class ClientLedgerService {
     return page.map(entity -> toResponse(entity, customerNames));
   }
 
+  /**
+   * A client's trust history on one account, newest first, each row carrying its server-computed
+   * running balance (ADR-361, arch §14.3.3). The filters narrow the page without changing any
+   * balance.
+   */
   @Transactional(readOnly = true)
   public Page<TrustTransactionResponse> getClientTransactionHistory(
-      UUID customerId, UUID trustAccountId, Pageable pageable) {
+      UUID customerId, UUID trustAccountId, ClientHistoryFilter filter, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
+    var f = filter != null ? filter : ClientHistoryFilter.NONE;
+    // Sort-free: the posting order is baked into the native query (R6.7). The UI still sends
+    // sort=transactionDate,desc, which must not reach a native query.
+    Pageable unsorted =
+        pageable.isPaged()
+            ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize())
+            : Pageable.unpaged();
 
     return transactionRepository
-        .findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
-            customerId, trustAccountId, pageable)
-        .map(this::toTransactionResponse);
+        .findClientHistoryWithRunningBalance(
+            customerId,
+            trustAccountId,
+            blankToNull(f.type()),
+            blankToNull(f.status()),
+            f.dateFrom(),
+            f.dateTo(),
+            unsorted)
+        .map(ClientLedgerService::toTransactionResponse);
+  }
+
+  private static String blankToNull(String value) {
+    return value == null || value.isBlank() ? null : value;
   }
 
   // --- 440.11: Historical Balance, Total Balance, and Ledger Statement ---
@@ -272,33 +302,32 @@ public class ClientLedgerService {
         entity.getUpdatedAt());
   }
 
-  private TrustTransactionResponse toTransactionResponse(
-      io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction
-          entity) {
+  private static TrustTransactionResponse toTransactionResponse(ClientHistoryRow row) {
     return new TrustTransactionResponse(
-        entity.getId(),
-        entity.getTrustAccountId(),
-        entity.getTransactionType(),
-        entity.getAmount(),
-        entity.getCustomerId(),
-        entity.getProjectId(),
-        entity.getCounterpartyCustomerId(),
-        entity.getInvoiceId(),
-        entity.getReference(),
-        entity.getDescription(),
-        entity.getTransactionDate(),
-        entity.getStatus(),
-        entity.getApprovedBy(),
-        entity.getApprovedAt(),
-        entity.getSecondApprovedBy(),
-        entity.getSecondApprovedAt(),
-        entity.getRejectedBy(),
-        entity.getRejectedAt(),
-        entity.getRejectionReason(),
-        entity.getReversalOf(),
-        entity.getReversedById(),
-        entity.getBankStatementLineId(),
-        entity.getRecordedBy(),
-        entity.getCreatedAt());
+        row.getId(),
+        row.getTrustAccountId(),
+        row.getTransactionType(),
+        row.getAmount(),
+        row.getCustomerId(),
+        row.getProjectId(),
+        row.getCounterpartyCustomerId(),
+        row.getInvoiceId(),
+        row.getReference(),
+        row.getDescription(),
+        row.getTransactionDate(),
+        row.getStatus(),
+        row.getApprovedBy(),
+        row.getApprovedAt(),
+        row.getSecondApprovedBy(),
+        row.getSecondApprovedAt(),
+        row.getRejectedBy(),
+        row.getRejectedAt(),
+        row.getRejectionReason(),
+        row.getReversalOf(),
+        row.getReversedById(),
+        row.getBankStatementLineId(),
+        row.getRecordedBy(),
+        row.getCreatedAt(),
+        row.getRunningBalance());
   }
 }

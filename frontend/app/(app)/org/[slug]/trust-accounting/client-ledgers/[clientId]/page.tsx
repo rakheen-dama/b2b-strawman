@@ -16,6 +16,7 @@ import { PrintStatementButton } from "@/components/trust/print-statement-button"
 import { ClientHistoryFilters } from "@/components/trust/client-history-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
+  isInflowType,
   transactionTypeLabel,
   type TrustTransactionStatus,
   type TrustTransactionType,
@@ -39,10 +40,6 @@ function statusBadgeVariant(
     default:
       return "neutral";
   }
-}
-
-function isInflowType(type: TrustTransactionType): boolean {
-  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(type);
 }
 
 const STATUS_OPTIONS: TrustTransactionStatus[] = [
@@ -172,38 +169,6 @@ export default async function ClientDetailPage({
     const qs = newParams.toString();
     return `/org/${slug}/trust-accounting/client-ledgers/${clientId}?${qs}`;
   }
-
-  // Compute running balance from transaction history
-  // The backend history endpoint returns transactions in descending order.
-  // Running balance is only accurate on page 0 where we can start from the
-  // current total balance and work backward. On subsequent pages the starting
-  // point is unknown (the backend doesn't return a startingBalance), so we
-  // show "—" instead of potentially incorrect numbers.
-  const showRunningBalance = currentPage === 0;
-  const transactionsWithBalance = (() => {
-    if (!historyPage || historyPage.content.length === 0) return [];
-    if (!showRunningBalance) {
-      return historyPage.content.map((tx) => ({
-        ...tx,
-        runningBalance: null as number | null,
-      }));
-    }
-    // Page 0: approximate running balance using the client's current balance
-    // and working backward from the latest transaction
-    const txs = [...historyPage.content];
-    let balance = ledgerCard.balance;
-    const result = txs.map((tx) => {
-      const currentBalance = balance;
-      // Working backward: reverse the effect of this transaction
-      if (isInflowType(tx.transactionType)) {
-        balance -= tx.amount;
-      } else {
-        balance += tx.amount;
-      }
-      return { ...tx, runningBalance: currentBalance as number | null };
-    });
-    return result;
-  })();
 
   return (
     <div className="space-y-8" data-testid="client-detail-page">
@@ -392,7 +357,7 @@ export default async function ClientDetailPage({
                       </tr>
                     </thead>
                     <tbody>
-                      {transactionsWithBalance.map((tx) => (
+                      {historyPage.content.map((tx) => (
                         <tr
                           key={tx.id}
                           className="border-b border-slate-100 last:border-0 dark:border-slate-800"
@@ -433,7 +398,8 @@ export default async function ClientDetailPage({
                             </Badge>
                           </td>
                           <td className="py-3 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                            {tx.runningBalance !== null
+                            {/* ADR-361: server-computed; null on non-posted / REVERSAL rows */}
+                            {tx.runningBalance != null
                               ? formatCurrency(tx.runningBalance, currency)
                               : "\u2014"}
                           </td>

@@ -327,7 +327,13 @@ class TrustReconciliationControllerTest {
             multipart("/api/trust-accounts/{accountId}/bank-statements", accountId)
                 .file(csvFile)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
-        .andExpect(status().isInternalServerError());
+        // C5 (Phase 89 630C, arch §14.3.4): a parse failure is a 422 ProblemDetail, not a 500.
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.status").value(422))
+        .andExpect(jsonPath("$.title").value("Bank statement could not be parsed"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value("All 2 data lines were malformed; no valid transactions parsed"));
 
     assertThat(storageService.listKeys("trust-statements/" + tenantSchema + "/" + accountId + "/"))
         .isEmpty();

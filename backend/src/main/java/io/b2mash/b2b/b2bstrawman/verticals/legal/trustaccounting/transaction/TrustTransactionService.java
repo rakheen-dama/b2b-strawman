@@ -153,7 +153,10 @@ public class TrustTransactionService {
       UUID reversedById,
       UUID bankStatementLineId,
       UUID recordedBy,
-      Instant createdAt) {}
+      Instant createdAt,
+      // ADR-361: server-computed on the client-ledger /history endpoint only; null on every other
+      // producer and on non-posted / REVERSAL rows.
+      BigDecimal runningBalance) {}
 
   public record RejectRequest(@NotBlank String reason) {}
 
@@ -1456,6 +1459,7 @@ public class TrustTransactionService {
         entity.getReversedById(),
         entity.getBankStatementLineId(),
         entity.getRecordedBy(),
-        entity.getCreatedAt());
+        entity.getCreatedAt(),
+        null);
   }
 }

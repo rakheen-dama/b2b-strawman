@@ -198,6 +198,7 @@ function makeTx(overrides: Partial<TrustTransaction> = {}): TrustTransaction {
     bankStatementLineId: null,
     recordedBy: "member-2",
     createdAt: "2026-03-01T09:00:00Z",
+    runningBalance: null,
     ...overrides,
   };
 }

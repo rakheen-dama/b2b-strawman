@@ -1,7 +1,7 @@
 {
-  "commit": "c3ee6bc20647",
-  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run build && pnpm test",
+  "commit": "50f0641a0",
+  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && rm -rf .next && pnpm run build",
   "exit": 0,
-  "ts": "2026-11-04T15:21:08Z",
-  "summary": "Slice 630B FE-GATE on c3ee6bc20647 (PR #1723 final head), run by orchestrator: lint 0 errors / 79 warnings (baseline), format:check clean, typecheck ok, build ok (clean .next), vitest 438 files / 3592 passed / 2 skipped"
+  "ts": "2026-11-04T17:06:04Z",
+  "summary": "Slice 630C FE-GATE on 50f0641a0 (PR #1724 final head), run by orchestrator: lint 0 errors / 79 warnings (baseline), format:check clean, typecheck ok, build ok (clean .next), vitest 439 files / 3597 passed / 2 skipped"
 }

@@ -312,7 +312,9 @@ Frontend (`trust-accounting/interest/page.tsx` + `InterestPageClient.tsx` + `com
 -- TrustTransactionRepository.findClientHistoryWithRunningBalance (native, Pageable; column names per the
 -- TrustTransaction @Column mapping). The window runs over POSTED rows only, in posting order, and is
 -- computed BEFORE the UI filters narrow the page: filtering by type or date must never change a balance.
-WITH posted AS (
+-- MATERIALIZED (630C, PR #1724): result-neutral; stops PG inlining the CTE so the window is evaluated once
+-- even on cold planner statistics (fresh tenants), where the inlined plan re-ran it per outer row.
+WITH posted AS MATERIALIZED (
   SELECT t.id,
          SUM(CASE WHEN t.transaction_type IN ('DEPOSIT','TRANSFER_IN','INTEREST_CREDIT') THEN  t.amount
                   WHEN t.transaction_type IN ('PAYMENT','TRANSFER_OUT','FEE_TRANSFER','REFUND','INTEREST_LPFF') THEN -t.amount

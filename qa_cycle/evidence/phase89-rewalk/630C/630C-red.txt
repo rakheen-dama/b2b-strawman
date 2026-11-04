@@ -1,0 +1,96 @@
+## 630C red run 1 @ c99955487 2026-11-04T16:20:28Z (production code untouched; red tests only)
+$ ./mvnw test -Dtest="ClientLedgerRunningBalanceIntegrationTest,BankStatementImportErrorIntegrationTest,TrustReconciliationControllerTest"
+[ERROR] Tests run: 9, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 12.35 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationControllerTest
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.517 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementImportErrorIntegrationTest
+[ERROR] Tests run: 5, Failures: 5, Errors: 0, Skipped: 0, Time elapsed: 1.127 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest
+[ERROR] Failures: 
+[ERROR]   ClientLedgerRunningBalanceIntegrationTest.explainWindowQuery_recordedForOq3:373 [TrustTransactionRepository.findClientHistoryWithRunningBalance (ADR-361)] 
+[ERROR]   ClientLedgerRunningBalanceIntegrationTest.history_filters_narrowThePage_withoutChangingAnyBalance:271 
+[ERROR]   ClientLedgerRunningBalanceIntegrationTest.history_laterPages_carryTheSameBalances:337->lambda$history_laterPages_carryTheSameBalances$0:337 
+[ERROR]   ClientLedgerRunningBalanceIntegrationTest.history_runningBalance_matchesBalanceAsOfAndStatement_andNonPostedRowsAreNull:170->lambda$history_runningBalance_matchesBalanceAsOfAndStatement_andNonPostedRowsAreNull$0:170 
+[ERROR]   ClientLedgerRunningBalanceIntegrationTest.history_toleratesTheFrontendSortParam:360 
+[ERROR]   BankStatementImportErrorIntegrationTest.malformedCsv_returns422ProblemDetail_andStoresNothing:104 Status expected:<422> but was:<500>
+[ERROR]   TrustReconciliationControllerTest.importBankStatement_parseFailure_storesNoFile:331 Status expected:<422> but was:<500>
+[ERROR] Tests run: 16, Failures: 7, Errors: 0, Skipped: 0
+
+### surefire failure messages (truncated to 400 chars)
+- history_laterPages_carryTheSameBalances ::  | Expecting actual: | {"amount"=1150.0, "approvedAt"="2026-11-04T16:20:13.892092Z", "approvedBy"="afef1abc-501b-4a3a-8598-7c8c138f10a5", "bankStatementLineId"=null, "clientId"="3de58ed2-1746-447c-adef-08586a024084", "counterpartyClientId"=null, "createdAt"="2026-11-04T16:20:13.851529Z", "description"=null, "id"="28d42995-27ea-4c8e-8eba-8b0331731d68", "invoiceId"="2fe77707-4d8a-47a1-a952-74782060e ... to contain key: "runningBalance"
+- history_runningBalance_matchesBalanceAsOfAndStatement_andNonPostedRowsAreNull ::  | Expecting actual: | {"amount"=1150.0, "approvedAt"="2026-11-04T16:20:14.049427Z", "approvedBy"="afef1abc-501b-4a3a-8598-7c8c138f10a5", "bankStatementLineId"=null, "clientId"="a70a868c-570a-47ee-bf85-9a69f9f894c5", "counterpartyClientId"=null, "createdAt"="2026-11-04T16:20:14.033522Z", "description"=null, "id"="1215dfd6-7ded-42a2-9149-af01f25cfe59", "invoiceId"="218d316d-91b6-45cf-acc0-9d4edc7bd ... to contain key: "runningBalance"
+- explainWindowQuery_recordedForOq3 :: [TrustTransactionRepository.findClientHistoryWithRunningBalance (ADR-361)] | Expecting Optional to contain a value but it was empty.
+- history_filters_narrowThePage_withoutChangingAnyBalance ::  | Expected size: 1 but was: 7 in: | [{"amount"=1150.0, "approvedAt"="2026-11-04T16:20:14.168296Z", "approvedBy"="afef1abc-501b-4a3a-8598-7c8c138f10a5", "bankStatementLineId"=null, "clientId"="a80ac165-1dc9-4d94-87ee-74de34db3813", "counterpartyClientId"=null, "createdAt"="2026-11-04T16:20:14.152655Z", "description"=null, "id"="28fc2ea6-8823-47a7-968e-c6f0fe281397", "invoiceId"="5d9aded0-1142-47db-b481-12816b285fd4", "matterId"=null, "recordedBy"="3053d0e3-f27c-46a3-adb5-ccd3ee86cf0a", "reference"="RB-FT-3", "rejec
+- history_toleratesTheFrontendSortParam ::  | Expecting all elements of: | [{"amount"=1150.0, "approvedAt"="2026-11-04T16:20:14.284879Z", "approvedBy"="afef1abc-501b-4a3a-8598-7c8c138f10a5", "bankStatementLineId"=null, "clientId"="04b328e5-060e-487d-8d28-248141aa0321", "counterpartyClientId"=null, "createdAt"="2026-11-04T16:20:14.268875Z", "description"=null, "id"="c66e9bab-8e3b-47d5-8314-70c4ce851907", "invoiceId"="a93ba1f6-2425-4715-8638 ... to contain key: "runningBalance"
+- malformedCsv_returns422ProblemDetail_andStoresNothing :: Status expected:<422> but was:<500>
+- importBankStatement_parseFailure_storesNoFile :: Status expected:<422> but was:<500>
+
+## frontend red @ c99955487 2026-11-04T16:21:40Z (production code untouched; red tests only)
+$ NODE_OPTIONS="" pnpm vitest run __tests__/trust/client-ledger-page.test.tsx __tests__/trust-transactions.test.tsx
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-630C/frontend
+     × renders server balances on page 2 (not '—') 43ms
+     × renders the server value as-is on page 0 and '—' for a null (non-posted) row 18ms
+     × renders REFUND as an outflow (no green, up-right arrow) 13ms
+     × renders REFUND as an outflow (no green, up-right arrow) 32ms
+ FAIL  __tests__/trust-transactions.test.tsx > Trust Transactions > renders REFUND as an outflow (no green, up-right arrow)
+AssertionError: expected 'inline-flex items-center gap-1 font-m…' not to contain 'text-green-600'
+Expected: "text-green-600"
+Received: "inline-flex items-center gap-1 font-mono tabular-nums text-green-600 dark:text-green-400"
+    230|       .getAllByRole("cell")[3]
+    231|       .querySelector("span") as HTMLElement;
+    232|     expect(refundAmount.className).not.toContain("text-green-600");
+    233|     expect(refundAmount.querySelector(".lucide-arrow-up-right")).not.t…
+    234|     expect(refundAmount.querySelector(".lucide-arrow-down-left")).toBe…
+ FAIL  __tests__/trust/client-ledger-page.test.tsx > Client ledger card — server running balance (630C) > renders server balances on page 2 (not '—')
+Expected element to have text content:
+Received:
+    190|     await renderDetailPage({ page: "1" });
+    191|
+    192|     expect(balanceCell("tx-ref")).toHaveTextContent(formatCurrency(900…
+    193|     expect(balanceCell("tx-dep")).toHaveTextContent(formatCurrency(100…
+    194|   });
+ FAIL  __tests__/trust/client-ledger-page.test.tsx > Client ledger card — server running balance (630C) > renders the server value as-is on page 0 and '—' for a null (non-posted) row
+Expected element to have text content:
+Received:
+    232|     await renderDetailPage();
+    233|
+    234|     expect(balanceCell("tx-rej")).toHaveTextContent("—");
+    235|     expect(balanceCell("tx-ft")).toHaveTextContent(formatCurrency(7850…
+    236|     expect(balanceCell("tx-ref")).toHaveTextContent(formatCurrency(900…
+ FAIL  __tests__/trust/client-ledger-page.test.tsx > Client ledger card — server running balance (630C) > renders REFUND as an outflow (no green, up-right arrow)
+AssertionError: expected 'inline-flex items-center gap-1 font-m…' not to contain 'text-green-600'
+Expected: "text-green-600"
+Received: "inline-flex items-center gap-1 font-mono tabular-nums text-green-600 dark:text-green-400"
+    260|
+    261|     const refund = amountSpan("tx-ref");
+    262|     expect(refund.className).not.toContain("text-green-600");
+    263|     expect(refund.querySelector(".lucide-arrow-up-right")).not.toBeNul…
+    264|     expect(refund.querySelector(".lucide-arrow-down-left")).toBeNull();
+ Test Files  2 failed (2)
+### expected/received detail (ANSI stripped)
+Expected element to have text content:
+  R 9 000,00
+Received:
+  —
+Expected element to have text content:
+  —
+Received:
+  R 7 850,00
+
+## frontend red run 2 @ c99955487 page code 2026-11-04T16:25:29Z (final test file; both page.tsx files checked out at HEAD; assertions switched to exact textContent because toHaveTextContent normalises the nbsp in formatCurrency's output)
+$ NODE_OPTIONS="" pnpm vitest run __tests__/trust/client-ledger-page.test.tsx __tests__/trust-transactions.test.tsx
+     × renders server balances on page 2 (not '—') 46ms
+     × renders the server value as-is on page 0 and '—' for a null (non-posted) row 16ms
+     × renders REFUND as an outflow (no green, up-right arrow) 12ms
+     × renders REFUND as an outflow (no green, up-right arrow) 36ms
+ FAIL  __tests__/trust-transactions.test.tsx > Trust Transactions > renders REFUND as an outflow (no green, up-right arrow)
+Expected: "text-green-600"
+Received: "inline-flex items-center gap-1 font-mono tabular-nums text-green-600 dark:text-green-400"
+ FAIL  __tests__/trust/client-ledger-page.test.tsx > Client ledger card — server running balance (630C) > renders server balances on page 2 (not '—')
+Expected: "R 9 000,00"
+Received: "—"
+ FAIL  __tests__/trust/client-ledger-page.test.tsx > Client ledger card — server running balance (630C) > renders the server value as-is on page 0 and '—' for a null (non-posted) row
+Expected: "—"
+Received: "R 7 850,00"
+ FAIL  __tests__/trust/client-ledger-page.test.tsx > Client ledger card — server running balance (630C) > renders REFUND as an outflow (no green, up-right arrow)
+Expected: "text-green-600"
+Received: "inline-flex items-center gap-1 font-mono tabular-nums text-green-600 dark:text-green-400"
+ Test Files  2 failed (2)
+      Tests  4 failed | 12 passed (16)

@@ -70,16 +70,23 @@ Existing code to understand scope (LIGHTWEIGHT — just list files, don't read c
 Create the Phase {PHASE_NUMBER} epic breakdown. Follow these rules:
 
 ### Slice Sizing Rules (CRITICAL)
-Each slice is implemented by a Builder agent that receives only a pre-written implementation
-brief (~40-50KB). The builder must complete ALL work within its remaining context:
-- A backend slice (entity + repo + service + controller + tests) should touch 6-10 files
-- A frontend slice (page + components + actions + tests) should touch 6-10 files
-- NEVER combine backend + frontend in the same slice
-- NEVER combine migration + entity + service + controller + access control + tests in one slice — split into at minimum 2 slices
-- Each slice should touch at most 8-12 files
-- Integration tests belong in the SAME slice as the code they test
-- If a slice would require reading >15 existing files for context, it's too big — split it
-- A slice should produce no more than ~800 lines of new code (the builder needs context room for build/test fix cycles)
+A slice is ONE pull request, built by one Builder agent from a pre-written brief. Builder context
+windows are large; size slices by PR cost, not by layer (founder ruling 2026-11-04, Phase 89):
+- Put the backend AND frontend/portal work for one gap or feature in the SAME slice when together
+  they stay around 12-20 files (≤ ~1500 new lines). Do not split a single fix into a backend PR that
+  ships an unread DTO field and a frontend PR that holds the only observable PASS.
+- Every backend-touching PR costs a full `./mvnw verify` plus two reviews. Group same-epic items that
+  share a file family so the number of PRs needing a backend verify is minimal; put frontend/portal/
+  docs-only work in PRs that need no verify. Mark each slice "verify: yes/no".
+- Multi-gap or multi-feature slices need the founder's explicit authorisation (root CLAUDE.md §7).
+  Propose the grouping and the verify count per epic in the breakdown summary and ask; never silently
+  over-split to avoid asking.
+- Integration tests belong in the SAME slice as the code they test; the slice that observes the
+  behaviour in the browser also removes the spec's fixme.
+- Upper bounds still apply: a slice that needs >25 files touched or >300 files in the PR diff (merge
+  hook limit) is too big — split by file family, not by layer.
+- Large, genuinely separable backend work (a new service + listener chain, a new event family) may
+  still be its own slice when its frontend consumer is independently observable.
 
 ### Epic Structure Rules
 - Number epics starting from {STARTING_EPIC_NUMBER}

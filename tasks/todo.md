@@ -46,3 +46,4 @@ Input: `requirements/claude-code-prompt-phase89.md`. Numbering: ARCHITECTURE.md 
 - [x] Step 2 — verified: 7 epics, 43 slices, all 28 architecture ids mapped, rows 8 pipes = TASKS.md layout
 - [x] Step 3 — TASKS.md rows inserted after epic 629 (line 718+), migration note on line 5 updated; breakdown pointer added under architecture §14.10
 - [x] Step 4 — summary presented 2026-11-04; next: founder rulings on §14.12 open questions, then `/phase_v2 89`
+- [x] Re-cut 2026-11-04 (founder): 43 slices / 22 verifies → 20 slices / 11 verifies (rulings §8); breakdown skill sizing rules rewritten; lesson + memory recorded

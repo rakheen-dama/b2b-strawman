@@ -1157,7 +1157,7 @@ Role hierarchy for non-owner-only capabilities: **Owner > Admin > Matter lead > 
 
 ## 14.10 Capability Slices
 
-> **Breakdown note (2026-11-04):** the task file [`tasks/phase89-go-live-readiness.md`](../tasks/phase89-go-live-readiness.md) keeps epics 630–636 but re-letters slices within each epic where a mixed-scope slice below had to split into a backend slice and a frontend/portal slice (43 task-file slices for the 28 below). Its "Architecture slice → task-file slice(s)" table maps every id used in this section and in §14.12.
+> **Breakdown note (2026-11-04):** the task file [`tasks/phase89-go-live-readiness.md`](../tasks/phase89-go-live-readiness.md) keeps epics 630–636 but re-cuts the 28 slices below into 20 PR-sized slices (backend + frontend together per gap; same-epic gaps grouped so only 11 PRs need a full backend verify — founder authorisation 2026-11-04, rulings §8). Its "Architecture slice → task-file slice(s)" table maps every id used in this section and in §14.12.
 
 Seven epics (630–636) and 28 slices for `/breakdown`, in build order: E1, E2 (go-live blockers), E3, E4, E5, E6 (the docs PR may run in parallel once E3/E4 settle which steps are built), E7. One fix per PR; the two authorised same-class clusters are 633D (portal copy) and 635A (scenario amendments). Register bookkeeping: G88-F32 is closed by 632C and §5b row 19 by 633C — the last slice of each chain is the register's single closer; 635A only amends the scenario text. Each slice ends with observed PASS evidence in the PR body and a verify marker per touched area committed in the bookkeeping step. **Obs** = needs a real-browser observer (PDF / badge map / layout, at 1024 and 1440); **Mig** = carries a migration (next free number at build time).
 

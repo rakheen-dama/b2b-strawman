@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.MemberContextNotBoundException;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactContextNotBoundException;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParseException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
@@ -138,6 +139,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     var problem = ex.getBody();
     problem.setProperty("violations", violations);
 
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problem);
+  }
+
+  /**
+   * C5 (arch §14.3.4): a well-formed bank-statement upload whose content cannot be parsed is a 422,
+   * not a 500. The parser messages are user-facing ("All 2 data lines were malformed; …"); the
+   * cause is never echoed.
+   */
+  @ExceptionHandler(BankStatementParseException.class)
+  public ResponseEntity<ProblemDetail> handleBankStatementParse(BankStatementParseException ex) {
+    log.warn("Bank statement could not be parsed: {}", ex.getMessage());
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.UNPROCESSABLE_ENTITY, "Bank statement could not be parsed", ex.getMessage());
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problem);
   }
 

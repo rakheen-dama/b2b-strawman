@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientHistoryFilter;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientLedgerCardResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.TotalBalanceResponse;
@@ -41,9 +42,19 @@ public class ClientLedgerController {
   @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{clientId}/history")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<Page<TrustTransactionResponse>> getHistory(
-      @PathVariable UUID accountId, @PathVariable UUID clientId, Pageable pageable) {
+      @PathVariable UUID accountId,
+      @PathVariable UUID clientId,
+      @RequestParam(required = false) String type,
+      @RequestParam(required = false) String status,
+      @RequestParam(required = false) LocalDate dateFrom,
+      @RequestParam(required = false) LocalDate dateTo,
+      Pageable pageable) {
     return ResponseEntity.ok(
-        clientLedgerService.getClientTransactionHistory(clientId, accountId, pageable));
+        clientLedgerService.getClientTransactionHistory(
+            clientId,
+            accountId,
+            new ClientHistoryFilter(type, status, dateFrom, dateTo),
+            pageable));
   }
 
   @GetMapping("/api/trust-accounts/{accountId}/client-ledgers/{clientId}/statement")

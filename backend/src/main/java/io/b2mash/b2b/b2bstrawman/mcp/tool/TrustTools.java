@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustBalanceDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustTransactionItem;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientHistoryFilter;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -150,7 +151,10 @@ public class TrustTools {
             String currency = orgSettingsService.getDefaultCurrency();
             var txPage =
                 clientLedgerService.getClientTransactionHistory(
-                    customerId, trustAccountId, PageRequest.of(clampedPage, clampedSize));
+                    customerId,
+                    trustAccountId,
+                    ClientHistoryFilter.NONE,
+                    PageRequest.of(clampedPage, clampedSize));
             var items =
                 txPage.getContent().stream()
                     .map(tx -> McpTrustTransactionItem.from(tx, currency))

@@ -46,7 +46,7 @@ function statusBadgeVariant(
 }
 
 function isInflowType(type: TrustTransactionType): boolean {
-  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(type);
+  return ["DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT"].includes(type);
 }
 
 const STATUS_OPTIONS: TrustTransactionStatus[] = [

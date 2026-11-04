@@ -97,6 +97,11 @@ export interface TrustTransaction {
   bankStatementLineId: string | null;
   recordedBy: string;
   createdAt: string;
+  /**
+   * ADR-361: server-computed on the client-ledger /history endpoint only; null on non-posted and
+   * REVERSAL rows (and on every other endpoint).
+   */
+  runningBalance: number | null;
 }
 
 // Client ledger types

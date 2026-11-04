@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // ── Mock server-only ─────────────────────────────────────────────
@@ -209,6 +209,34 @@ describe("Trust Transactions", () => {
     expect(screen.getByText("DEP-001")).toBeInTheDocument();
     expect(screen.getByText("PAY-001")).toBeInTheDocument();
     expect(screen.getByText("2 transactions found")).toBeInTheDocument();
+  });
+
+  // G88-F23 (Phase 89 630C): REFUND moves money out of trust — outflow colour + arrow.
+  it("renders REFUND as an outflow (no green, up-right arrow)", async () => {
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({ id: "tx-ref", reference: "REF-001", transactionType: "REFUND", amount: 1000 }),
+        makeTx({ id: "tx-dep", reference: "DEP-001", transactionType: "DEPOSIT" }),
+      ],
+      totalElements: 2,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    const refundAmount = within(screen.getByTestId("transaction-row-tx-ref"))
+      .getAllByRole("cell")[3]
+      .querySelector("span") as HTMLElement;
+    expect(refundAmount.className).not.toContain("text-green-600");
+    expect(refundAmount.querySelector(".lucide-arrow-up-right")).not.toBeNull();
+    expect(refundAmount.querySelector(".lucide-arrow-down-left")).toBeNull();
+
+    const depositAmount = within(screen.getByTestId("transaction-row-tx-dep"))
+      .getAllByRole("cell")[3]
+      .querySelector("span") as HTMLElement;
+    expect(depositAmount.className).toContain("text-green-600");
   });
 
   // Test 2: Deposit dialog submits correctly with the locked-picker pattern.

@@ -57,8 +57,71 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    */
   List<TrustTransaction> findByCustomerId(UUID customerId);
 
-  Page<TrustTransaction> findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
-      UUID customerId, UUID trustAccountId, Pageable pageable);
+  /**
+   * Filters of {@link #findClientHistoryWithRunningBalance} — shared by its page and count queries.
+   * Every nullable parameter is cast on both occurrences so Postgres can type a null bind.
+   */
+  String CLIENT_HISTORY_WHERE =
+      """
+       WHERE t.customer_id = :customerId AND t.trust_account_id = :accountId
+         AND (CAST(:type AS varchar)   IS NULL OR t.transaction_type = CAST(:type AS varchar))
+         AND (CAST(:status AS varchar) IS NULL OR t.status = CAST(:status AS varchar))
+         AND (CAST(:dateFrom AS date)  IS NULL OR t.transaction_date >= CAST(:dateFrom AS date))
+         AND (CAST(:dateTo AS date)    IS NULL OR t.transaction_date <= CAST(:dateTo AS date))
+      """;
+
+  /**
+   * A client's trust history on one account, newest first ({@code transaction_date DESC, created_at
+   * DESC, id DESC}), each row carrying its running balance (ADR-361, arch §14.3.3). The window runs
+   * over POSTED rows only ({@code status IN ('RECORDED','APPROVED')}, REVERSAL excluded) in posting
+   * order and BEFORE the filters narrow the page, so a type/status/date filter never changes a
+   * balance; non-posted and REVERSAL rows get a null balance. Type sets and status filter are
+   * identical to {@link #calculateClientBalanceAsOfDate}. Callers MUST pass a sort-free {@link
+   * Pageable} — the ORDER BY lives in the SQL and Spring Data appends only the page window (R6.7).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          WITH posted AS (
+            SELECT t.id,
+                   SUM(CASE WHEN t.transaction_type IN ('DEPOSIT','TRANSFER_IN','INTEREST_CREDIT') THEN  t.amount
+                            WHEN t.transaction_type IN ('PAYMENT','TRANSFER_OUT','FEE_TRANSFER','REFUND','INTEREST_LPFF') THEN -t.amount
+                            ELSE 0 END)
+                     OVER (ORDER BY t.transaction_date, t.created_at, t.id
+                           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_balance
+              FROM trust_transactions t
+             WHERE t.customer_id = :customerId AND t.trust_account_id = :accountId
+               AND t.status IN ('RECORDED','APPROVED')
+               AND t.transaction_type <> 'REVERSAL'
+          )
+          SELECT t.id AS id, t.trust_account_id AS trustAccountId,
+                 t.transaction_type AS transactionType, t.amount AS amount,
+                 t.customer_id AS customerId, t.project_id AS projectId,
+                 t.counterparty_customer_id AS counterpartyCustomerId, t.invoice_id AS invoiceId,
+                 t.reference AS reference, t.description AS description,
+                 t.transaction_date AS transactionDate, t.status AS status,
+                 t.approved_by AS approvedBy, t.approved_at AS approvedAt,
+                 t.second_approved_by AS secondApprovedBy, t.second_approved_at AS secondApprovedAt,
+                 t.rejected_by AS rejectedBy, t.rejected_at AS rejectedAt,
+                 t.rejection_reason AS rejectionReason, t.reversal_of AS reversalOf,
+                 t.reversed_by_id AS reversedById, t.bank_statement_line_id AS bankStatementLineId,
+                 t.recorded_by AS recordedBy, t.created_at AS createdAt,
+                 p.running_balance AS runningBalance
+            FROM trust_transactions t
+            LEFT JOIN posted p ON p.id = t.id
+          """
+              + CLIENT_HISTORY_WHERE
+              + " ORDER BY t.transaction_date DESC, t.created_at DESC, t.id DESC",
+      countQuery = "SELECT count(*) FROM trust_transactions t " + CLIENT_HISTORY_WHERE)
+  Page<ClientHistoryRow> findClientHistoryWithRunningBalance(
+      @Param("customerId") UUID customerId,
+      @Param("accountId") UUID accountId,
+      @Param("type") String type,
+      @Param("status") String status,
+      @Param("dateFrom") LocalDate dateFrom,
+      @Param("dateTo") LocalDate dateTo,
+      Pageable pageable);
 
   List<TrustTransaction> findByStatusAndTrustAccountId(String status, UUID trustAccountId);
 

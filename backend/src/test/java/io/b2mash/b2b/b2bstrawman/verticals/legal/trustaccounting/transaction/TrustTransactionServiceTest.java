@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSer
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientHistoryFilter;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
@@ -448,6 +449,7 @@ class TrustTransactionServiceTest {
                       clientLedgerService.getClientTransactionHistory(
                           customer.getId(),
                           trustAccountId,
+                          ClientHistoryFilter.NONE,
                           org.springframework.data.domain.Pageable.unpaged());
 
                   assertThat(history.getContent()).isNotEmpty();

@@ -88,6 +88,9 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
+      - name: Typecheck
+        run: pnpm run typecheck
+
       - name: Check formatting
         run: pnpm run format:check
 
@@ -188,6 +191,9 @@ jobs:
 
       - name: Lint
         run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
 
       - name: Check formatting
         run: pnpm run format:check

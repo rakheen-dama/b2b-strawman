@@ -286,3 +286,12 @@ Re-walk and closure lessons (623, 629):
 - **Keep a slice PR under 300 files.** GitHub refuses the diff past 300 and the merge-gate hook fails closed. Evidence screenshots belong in the post-merge docs commit, not the PR (628A: 338 → 265 files by moving 73 evidence files out).
 - **Scenario-amendment rulings block the re-walk.** Get founder rulings on register §5a rows *before* the Epic 629 walk starts; two restarts of 629B were spent applying rows 14 and 1–18 mid-walk.
 - **Resume-after-timeout works.** A slice that times out at 200 min with its PR open (629A, 628A) resumes cleanly on `./scripts/run-phase.sh 88`; delete only empty worktrees, never ones with commits.
+
+## Phase 89 pre-phase fixes (2026-11-03 → 2026-11-04, PRs #1716–#1721)
+
+- **Browser observation keeps paying for itself.** On #1719, both reviewers approved and every suite was green; only the Playwright-MCP walk showed that hiding audit keys left several identical "Fee note" filter options (→ G88-F17) and a React #418 on the audit page. On #1717, a browser + DB + S3 walk proved distinct keys and bytes. Budget a browser check for every UI- or document-touching PR, not only the specs.
+- **Run lifecycle first, or on its own fresh stack.** After depth-ii ran on the same stack, lifecycle failed 11 tests (the conflict check hit depth-ii's same-named clients, then cascades). On a fresh stack it was 101/0/3. A cross-suite collision is not a regression; prove it with a fresh-stack run, never by explaining it away.
+- **Never build Docker images while an agent edits the worktree.** The e2e image copied a half-written Javadoc and failed spotless; the committed head was clean. Rebuild only after the fixer has pushed.
+- **Time-boundary fixes need an in-window run.** #1716 was proven by a lifecycle run at 01:08–01:11 SAST (inside the 00:00–02:00 window that broke Phase 88), plus a DB read-back of the fee-transfer date. A UTC-only run cannot prove a zone fix.
+- **Tighten what a builder widens.** Builders made reasonable calls beyond their rulings (a new `debtor_name` field; letter-of-demand entity type); a reviewer caught that `debtor_name` duplicated `opposing_party` and would be irreversible under an additive-only reconcile. Ask reviewers to scrutinise every "judgment beyond the rulings" line explicitly.
+- **A network timeout after the PR merge command can still mean merged.** Check the PR state before retrying, then delete the remote branch by hand. (Never quote the merge command itself in a Bash heredoc: the merge-gate hook text-matches it.)

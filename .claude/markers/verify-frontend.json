@@ -1,7 +1,7 @@
 {
-  "commit": "538c8947d578d755b7f22288fce28393e01130e3",
-  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test",
+  "commit": "dbabaab6158817590525aa5543eb5d946ad544df",
+  "command": "cd frontend && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm run build && pnpm test",
   "exit": 0,
-  "ts": "2026-11-04T06:10:00+02:00",
-  "summary": "PR #1719: lint 0 errors / 79 warnings, format clean, build OK, vitest 3571 passed / 2 skipped"
+  "ts": "2026-11-04T09:20:00+02:00",
+  "summary": "PR #1721: lint 0 errors / 79 warnings, typecheck 0 errors, format clean, build OK, vitest 3571 passed / 2 skipped"
 }

@@ -274,9 +274,10 @@ function isKeyShaped(query: string): boolean {
 
 /**
  * Event type filter: a searchable Popover + Command combobox over the event-type facets. Search
- * matches the legal label or the stored key. Because the backend matches `eventType` as a prefix,
- * a typed query also offers "Event key starts with “…”", which commits the typed text. Enter picks
- * the first item, ordered so it is the one the user most likely means:
+ * matches the legal label or the stored key (the key itself is never shown). Because the backend
+ * matches `eventType` as a prefix, a typed query also offers "Event key starts with “…”", which
+ * commits the typed text. Enter picks the first item, ordered so it is the one the user most
+ * likely means:
  *  (a) the query is exactly a facet key → that option first (no prefix item);
  *  (b) a plain word (no `.` / `_`) with label matches → label matches first, then the prefix item;
  *  (c) otherwise (key-shaped, or no label match) → the prefix item first.
@@ -316,12 +317,8 @@ function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventT
   if (value === MULTI_EVENT_SENTINEL) {
     triggerText = `Preset (${presetEventCount ?? "multiple"} event types)`;
   } else if (current) {
-    triggerText = (
-      <>
-        {current.label}{" "}
-        <span className="font-mono text-[10px] text-slate-500">{current.eventType}</span>
-      </>
-    );
+    // Label only: stored event keys are searchable but never shown (G-D10b, ADR-357)
+    triggerText = current.label;
   } else if (value) {
     triggerText = <span className="font-mono text-xs">{value}</span>;
   } else {
@@ -337,10 +334,7 @@ function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventT
   const renderFacet = (f: EventTypeFacet) => (
     <CommandItem key={f.eventType} value={f.eventType} onSelect={() => select(f.eventType)}>
       <Check className={cn("size-4", value === f.eventType ? "opacity-100" : "opacity-0")} />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate">{f.label}</span>
-        <span className="block truncate font-mono text-[10px] text-slate-500">{f.eventType}</span>
-      </span>
+      <span className="min-w-0 flex-1 truncate">{f.label}</span>
       <span className="text-xs text-slate-400 tabular-nums">{f.count}</span>
     </CommandItem>
   );

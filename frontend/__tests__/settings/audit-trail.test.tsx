@@ -702,7 +702,7 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       await user.click(screen.getByRole("combobox", { name: "Event type" }));
       await user.type(await screen.findByPlaceholderText("Search event types…"), "inv");
       // "inv" only matches the key (invoice.sent), never the label "Fee note"
-      const option = await screen.findByRole("option", { name: "Fee note" });
+      const option = await screen.findByRole("option", { name: /^Fee note/ });
       // G-D10b: the stored event key is searchable but never rendered
       expect(option).not.toHaveTextContent("invoice.sent");
       expect(screen.queryByRole("option", { name: /Matter updated/ })).not.toBeInTheDocument();
@@ -822,9 +822,11 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       await user.click(screen.getByRole("combobox", { name: "Event type" }));
       const search = await screen.findByPlaceholderText("Search event types…");
       fireEvent.change(search, { target: { value: "invoice.sent" } });
-      const option = await screen.findByRole("option", { name: "Fee note" });
+      const option = await screen.findByRole("option", { name: /^Fee note/ });
       const listbox = screen.getByRole("listbox");
-      expect(listbox).not.toHaveTextContent(/invoice\.sent|project\.updated|matter_closure\.closed/);
+      expect(listbox).not.toHaveTextContent(
+        /invoice\.sent|project\.updated|matter_closure\.closed/
+      );
       await user.click(option);
 
       await waitFor(() => expect(pushMock).toHaveBeenCalled());

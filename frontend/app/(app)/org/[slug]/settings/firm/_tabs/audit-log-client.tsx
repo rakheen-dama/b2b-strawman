@@ -320,7 +320,9 @@ function EventTypeCombobox({ value, facets, presetEventCount, onCommit }: EventT
     // Label only: stored event keys are searchable but never shown (G-D10b, ADR-357)
     triggerText = current.label;
   } else if (value) {
-    triggerText = <span className="font-mono text-xs">{value}</span>;
+    // No facet for the active filter (a typed prefix, or the date range dropped it): describe the
+    // filter the way the prefix option does — the backend matches eventType as a prefix.
+    triggerText = `Event key starts with “${value}”`;
   } else {
     triggerText = "All event types";
   }

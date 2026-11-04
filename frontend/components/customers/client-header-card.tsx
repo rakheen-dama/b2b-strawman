@@ -171,7 +171,7 @@ export function ClientHeaderCard({
 
         {/* Row 5 — Actions */}
         <div
-          className="flex shrink-0 items-center gap-2 self-end sm:self-auto"
+          className="flex flex-wrap items-center justify-end gap-2 self-end sm:self-auto"
           data-testid="client-header-actions"
         >
           {smartAction && (

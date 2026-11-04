@@ -853,6 +853,15 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
       expect(trigger).not.toHaveTextContent("matter_closure.closed");
     });
 
+    it("describes an active filter that has no facet as a key prefix, not a bare key", async () => {
+      mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
+
+      await renderTab({ eventType: "invoice." });
+
+      const trigger = screen.getByRole("combobox", { name: "Event type" });
+      expect(trigger).toHaveTextContent("Event key starts with “invoice.”");
+    });
+
     it("G-D10b: finds an event by its full key without rendering any key text", async () => {
       mockListAuditEvents.mockResolvedValue(EMPTY_PAGE);
 

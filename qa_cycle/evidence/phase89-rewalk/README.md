@@ -1,6 +1,6 @@
 # Phase 89 exit gate — 636B targeted Keycloak re-walk — evidence index
 
-> **DRAFT SKELETON** (written by the 636B scout, 2026-11-05). Session 636B.1 fills every `<…>` placeholder; session 636B.2 completes its sections. Delete this note when final.
+> Final (636B.3, 2026-11-06 01:2x SAST). Sessions: 636B.1 (2026-11-05 21:34–22:53 SAST), 636B.2 (22:54–23:26 SAST), 636B.3 (2026-11-06 00:42–01:25 SAST, **inside 00:00–02:00 SAST under the founder's amendment** — every date the product printed in that window was the SA date). Orchestrator rulings 0.R / 0.R2 / 0.R3 / 0.R4 are in the uncommitted brief and in `HANDOFF.md`.
 
 Scenarios:
 - `qa/testplan/demos/legal-za-90day-keycloak.md` (as amended by 635A / PR #1738);
@@ -64,7 +64,7 @@ Full expectations are in the walker brief (§4, uncommitted). Each step file rep
   NOTE: P-45.1–45.5, Sipho `/deadlines`, portal restore.
 - Exit: legal **E.1–E.11** and portal **P-E.1–P-E.11**, computed in `steps/exit-checkpoints.md`.
 
-**Not walked (SKIP — not targeted, not a prerequisite):** session 636B.1: 0.49–0.58, 1.4, 2.9, 3.9–3.10, 6.4, 6.6, 10.2, 14.1, 14.6, 14.9–14.13, 15.4, 16.1–21.1, 23.4–23.6, 24.1, 26.1, 28.1, 30.1 (Carol), 30.7, 32.1, 36.x detail, 38.3–38.4, 45.11 — reason: not targeted. **Carried to 636B.2 by the session-1 stop (not SKIP):** S1-78 (45.6–45.8), S1-79 (45.9), S1-80 (45.10) — blocked by a brief-internal conflict (S1-72 billed every Sipho disbursement; see `HANDOFF.md`). Session 636B.2 list: `<636B.2 fills>`.
+**Not walked (SKIP — not targeted, not a prerequisite):** session 636B.1: 0.49–0.58, 1.4, 2.9, 3.9–3.10, 6.4, 6.6, 10.2, 14.1, 14.6, 14.9–14.13, 15.4, 16.1–21.1, 23.4–23.6, 24.1, 26.1, 28.1, 30.1 (Carol), 30.7, 32.1, 36.x detail, 38.3–38.4, 45.11 — reason: not targeted. **Carried to 636B.2 by the session-1 stop (not SKIP):** S1-78 (45.6–45.8), S1-79 (45.9), S1-80 (45.10) — blocked by a brief-internal conflict (S1-72 billed every Sipho disbursement; see `HANDOFF.md`). Sessions 636B.2 / 636B.3 (S1-78…S1-80 were walked by 636B.2): 50.1, 62.1, 65.1, 70.1 (Carol time), 75.10–75.11, 80.1–80.4, 85.1–85.5 (Bob pass), 85.7–85.9, 85.16–85.17, 88.x detail, 90.2–90.6 sweeps, portal Day 7, P-0.6, P-0.10, P-3.1, P-3.3, P-3.5–3.6, P-21.4–21.6, P-60.1/60.3/60.4 (driven inside S2-51), P-85.3–85.6, P-90.3, P-90.6 — reason: not targeted. **Ruled deviations:** D-2 (portal /deadlines narrated as Lerato), 0.R2 (D-3(h) extra disbursement for 45.6), 0.R4 (S2-13 corrective R 1,34 entry `CORR/G89-F12`; S2-12 re-scored FAIL), D-6 fallback (Day 30 on 5 Nov, Day 75 on 6 Nov SAST). Order deviations are recorded in the step files (portal Sipho rows in the Day-68 sign-in; C3 before POPIA-2).
 
 **Suite-only gaps (no walk step in `full/gaps.md`; D-4):**
 - G88-F48 / G88-F49: observable only 00:00–02:00 SAST; covered by #1716's tests and 636A lifecycle 105/0/0.
@@ -80,12 +80,12 @@ Full expectations are in the walker brief (§4, uncommitted). Each step file rep
 | 636B.1 | `steps/days-01-07.md` | 15 | 14 / 1 / 0 / 0 / 0 | 6 |
 | 636B.1 | `steps/days-08-21.md` | 11 | 11 / 0 / 0 / 0 / 0 | 5 |
 | 636B.1 | `steps/days-22-45.md` | 18 (of 20; S1-79, S1-80 carried) | 17 / 0 / 1 / 0 / 0 | 4 (S1-78 carried) |
-| 636B.2 | `steps/days-46-90.md` | `<n>` | `<…>` | `<n>` |
-| 636B.2 | `steps/portal.md` | `<n>` | `<…>` | `<n>` |
-| 636B.2 | `steps/exit-checkpoints.md` | `<n>` | `<…>` | — |
-| | **Total** | `<n>` | `<…>` | `<n>` |
+| 636B.2 + 636B.3 | `steps/days-46-90.md` | 20 | 18 / 2 / 0 / 0 / 0 | 12 (+1 superseded BLOCKED row) |
+| 636B.2 + 636B.3 | `steps/portal.md` | 31 (+2 N/A rows) | 28 / 3 / 0 / 0 / 2 | 3 |
+| 636B.3 | `steps/exit-checkpoints.md` | 21 computed (E.1–E.11, P-E.1–P-E.11 without P-E.7) | 11 / 4 / 2 / 0 / 4 (DEFERRED 0; P-E.8 PARTIAL carries a DEFERRED Day-7 sub-item) | — |
+| | **Total (walk rows)** | **105** (+2 N/A rows) | **97 / 6 / 2 / 0 / 2** | — |
 
-Browser calls: 636B.1 **177** / 200 (Playwright MCP tool calls, incl. 1 `browser_close`, 3 snapshots/evaluates and 1 click; most UI actions batched in `browser_run_code_unsafe`) · 636B.2 `<n>`.
+Browser calls: 636B.1 **177** / 200 (Playwright MCP tool calls, incl. 1 `browser_close`, 3 snapshots/evaluates and 1 click; most UI actions batched in `browser_run_code_unsafe`) · 636B.2 ≈109 / 250 · 636B.3 **88** / 250 (fresh MCP browser; isolated contexts sipho3 / moroka3 / lerato3).
 
 ## Wow frames (E.2 / P-E.2 inputs; 636C re-shoots the deck on a production build)
 
@@ -94,19 +94,19 @@ Browser calls: 636B.1 **177** / 200 (Playwright MCP tool calls, incl. 1 `browser
 | Legal wow 1 — Home | 0.25 | `screenshots/wow-1-home.png` | 636B.1: captured (fresh tenant, empty-state Home, 6 zones); no defect noted |
 | Legal wow 2 — engagement letter accepted | 4.3c | `screenshots/wow-2-accepted.png` | 636B.1: captured (Generated documents row "Accepted"); no defect noted |
 | Legal wow 3 — conflict check No Conflict | 1.4 | `screenshots/wow-3-conflict.png` | 636B.1: captured ("No Conflict"); no defect noted |
-| Legal wow 4 — matter detail | 5.4 | `screenshots/wow-4-matter.png` | 636B.1: captured after reload (first pass showed stale "0.0h", G89-F2 candidate) |
+| Legal wow 4 — matter detail | 5.4 | `screenshots/wow-4-matter.png` | 636B.1: captured after reload (first pass showed stale "0.0h", G89-F5 candidate) |
 | Legal wow 5 — profitability | 33.5 | `screenshots/wow-5-profitability.png` | 636B.1: captured; no defect noted |
 | Legal wow 6 — fee note PDF | 47.3 | `screenshots/wow-6-fee-note-pdf.png` | 636B.1: captured from the firm HTML **Preview** (`/api/invoices/<id>/preview`), not a rendered PDF — S1-76 PARTIAL; no banking block (never configured) |
-| Legal wow 7 — activity feed | 88.3 | `screenshots/wow-7-activity.png` | `<…>` |
-| Portal wow 1 — home | P-0.6 | `screenshots/p-wow-1-home.png` | `<…>` |
-| Portal wow 2 — trust balance | P-21.6 | `screenshots/p-wow-2-trust.png` | `<…>` |
-| Portal wow 3 — fee note paid / receipt | P-45.7 | `screenshots/p-wow-3-paid.png` | `<…>` |
-| Portal wow 4 — document downloaded | P-60.6 | `screenshots/p-wow-4-document.png` | `<…>` |
+| Legal wow 7 — activity feed | 88.3 | `screenshots/wow-7-activity.png` | 636B.3: captured (estate Activity after the override close); shows raw "status to DONE / IN_PROGRESS" (G88-F24, open LOW, cited) |
+| Portal wow 1 — home | P-0.6 | `screenshots/p-wow-1-home.png` | 636B.3 review: four cards, no layout defect |
+| Portal wow 2 — trust balance | P-21.6 | `screenshots/p-wow-2-trust.png` | 636B.3: layout clean; content shows the G89-F12 artefacts (running balance -R 1,34, the CORR entry) — not a deck candidate as-is |
+| Portal wow 3 — fee note paid / receipt | P-45.7 | `screenshots/p-wow-3-paid.png` | 636B.3: clean (Paid badge, Payments row, Download receipt); taken at the popup default 1698 px |
+| Portal wow 4 — document downloaded | P-60.6 | `screenshots/p-wow-4-document.png` | 636B.3: Documents row at the bottom edge (re-shoot should scroll); description shows "Matter type: LITIGATION" (G89-F26) |
 | Portal wow 5 | — | dropped (Phase 89 decision 7 / G88-F34) | N/A |
 
 ## Results
 
-- Register: `gaps.md` — exit rule **0 HIGH + 0 MEDIUM**. Verdict: `<…>`.
+- Register: `gaps.md` — exit rule **0 HIGH + 0 MEDIUM**. Verdict: **FAIL** — 2 HIGH (G89-F11, G89-F12, confirmed) + 6 MEDIUM (G89-F13 confirmed; F14, F16, F17, F18, F22 proposed) + 18 LOW open; 3 scenario mismatches (F4, F24, F25) for founder §6. Closed-gap re-verification: 31 VERIFIED · 3 PARTIAL · 2 FAIL (G88-F40 → F18; G88-F23 → F12/F22) · 2 suite-covered (F48, F49).
 - Marker audit: `markers.md`. Scout pre-check: 26/26 PRs #1716–#1741 exit 0 with `--committed-only`; 11 backend markers on #1722+.
 
 ## Stack state left by 636B.1 / for 636B.2
@@ -115,4 +115,6 @@ See `HANDOFF.md`. Services unchanged since KC-STACK (backend 76758, gateway 7562
 
 ## Stack state left by 636B.2 / for 636C
 
-`<services, portal restored, tenant data summary for the deck re-shoot, Mailpit count, $MAIN status>`
+Services (01:11 SAST): backend :8080 76758, gateway :8443 75625, frontend :3000 75682 (`next dev`), **portal restored to svc `next dev`** (svc 19714 / next-server 19757) — prod build 99129/99092 killed by exact PID (`logs/portal-restore.txt`). `$MAIN` HEAD `86e0fd5de`, status = pre-walk (`portal/next-env.d.ts` back to its pre-walk content, `tasks/insights/latest.stats.json`). Mailpit total 19.
+
+Tenant `tenant_5039f2d497cf` for the 636C deck re-shoot: clients Sipho (matter **CLOSED** 6 Nov, client trust R 1,34 = interest), Moroka (estate **CLOSED** under override, trust R 38 017,81, INV-0002 **PAID** by card), Khumalo (OTP matter ACTIVE), Lerato (RAF ACTIVE: Hearing 13 Nov, Case Management 20 Dec, prescription 26 Nov), Nomvula (Debt Recovery ACTIVE), "POPIA Scratch p89rw" (anonymised). INV-0001 PAID (EFT). Trust account R 38 019,15. Caveat for the deck: Sipho's trust frames carry the G89-F12 artefacts (-R 1,34 row, CORR entry).

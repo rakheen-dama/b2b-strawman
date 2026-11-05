@@ -73,3 +73,18 @@ inside the 00:00–02:00 SAST window, on the basis that `KaziTime` (PR #1716) ma
 regardless of the UTC process clock. 636B.3 must record in `steps/days-46-90.md` that it ran inside the window, and
 any date-sensitive anomaly (closure date, retention date, SoA period, portal dates) is a product signal to be read and
 filed, not a zone artefact to be explained away.
+
+---
+
+# 636B HANDOFF — appended by 636B.3 walker at 2026-11-06T01:19:59+0200 (SAST) — **walk COMPLETE; gaps.md + markers.md written**
+
+- **Clock:** ran 00:42–01:25 SAST 2026-11-06, inside 00:00–02:00 under the founder's amendment; recorded in `steps/days-46-90.md`. Every in-window date printed by the product was the SA date (no zone anomaly observed).
+- **Build:** unchanged `86e0fd5de` (= origin/main, fetched 00:42). backend :8080 76758, gateway :8443 75625, frontend :3000 75682. **Portal restored (S2-65):** prod build 99129/99092 killed by exact PID; svc portal 19714 / next-server **19757** (`next dev`); `portal/next-env.d.ts` back to its pre-walk content. `$MAIN` status = pre-walk (`portal/next-env.d.ts`, `tasks/insights/latest.stats.json`).
+- **Ruling 0.R4 applied:** corrective deposit **R 1,34 `CORR/G89-F12`** on Sipho's matter via Trust tab › Record Deposit (txn 73f9baff-…, matter -1,34 → 0,00, audit `trust_deposit.recorded`) as a NOTE; S2-12 re-scored **FAIL (G89-F12)**; 0.R3 option (c) supersession recorded.
+- **Rows done this session:** CORR, S2-13…S2-29 (firm), S2-42…S2-65 (portal, restore incl.), E.1–E.11 + P-E.1–P-E.11 (`steps/exit-checkpoints.md`). Nothing left to walk. **NEXT: none — orchestrator review of `gaps.md` (confirm proposed MEDIUMs F14, F16, F17, F18, F22; founder §6 on F4, F24, F25), then the evidence PR.**
+- **Totals:** 105 scored rows → PASS 97 · FAIL 6 · PARTIAL 2 · DEFERRED 0 (+2 N/A rows). Register 26 ids: HIGH 2 · MEDIUM 6 · LOW 18 → **exit FAIL**. Markers 26/26 exit 0.
+- **New this session (G89-F14…F26):** F14 MEDIUM matter Trust tab shows client ledger · F15 LOW 1024 documents table · F16 MEDIUM closure SoA counts written-off disbursement, "owing R500" · F17 MEDIUM reconciliation list always fails · F18 MEDIUM Section 35 pack hollow (re-opens G88-F40, S2-25 FAIL) · F19 LOW "trustaccount" placeholder · F20 LOW DSAR raw status · F21 LOW closure-letter ISO date · F22 MEDIUM portal trust ≠ firm client ledger (S2-45 FAIL) · F23 LOW portal activity announces internal drafts · F24/F25 LOW scenario mismatches (P-75.1, P-75.6) · F26 LOW "Matter type: LITIGATION" on portal.
+- **Entities added:** trust txn CORR 73f9baff-4c04-4833-9f35-e345b854a1d8; Sipho matter CLOSED (closure letter + SoA INTERNAL); estate CLOSED (override); Hearing 3346fe45-… 2026-11-13 + prescription 45ae1185-… 2026-11-26 on RAF; client "POPIA Scratch p89rw" 1078b1c6-… (anonymised); DSAR 10e61cab-… COMPLETED; INV-0002 PAID (card, receipt INV-0002/R1).
+- **Mailpit:** total 19. Magic links: Sipho Cf4e45QLfW3BmKYhh34oVJ, Moroka cbTnG3q9AL74oq8Rv5TPDz, Lerato QvyZWKT9uQNG4qhtmaTtnS.
+- **Browser calls this session: 88 / 250.** Default context last actor Thandi (not cleared); isolated contexts sipho3 / moroka3 / lerato3 signed in.
+- **Power:** AC, 100 %; caffeinate 74574 expires ~01:34, run-phase caffeinate 10620 still held.

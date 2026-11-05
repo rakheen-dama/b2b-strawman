@@ -88,3 +88,9 @@ filed, not a zone artefact to be explained away.
 - **Mailpit:** total 19. Magic links: Sipho Cf4e45QLfW3BmKYhh34oVJ, Moroka cbTnG3q9AL74oq8Rv5TPDz, Lerato QvyZWKT9uQNG4qhtmaTtnS.
 - **Browser calls this session: 88 / 250.** Default context last actor Thandi (not cleared); isolated contexts sipho3 / moroka3 / lerato3 signed in.
 - **Power:** AC, 100 %; caffeinate 74574 expires ~01:34, run-phase caffeinate 10620 still held.
+
+---
+
+# ORCHESTRATOR RULING 0.R5 — 2026-11-06 ~01:35 SAST, after 636B.3 (walk complete)
+- Confirmed MEDIUM: G89-F14, F16, F17, F18 (code read at `86e0fd5de`). Raised: **G89-F22 → HIGH** (portal trust balance ≠ firm client ledger; trust money path), **G89-F23 → MEDIUM** (internal-draft generation surfaced on the client's activity feed). Register now 3 HIGH · 6 MEDIUM · 17 LOW; exit **FAIL**. Full text in `gaps.md` §1.
+- 636B is complete as an evidence slice; HIGH/MEDIUM go to the post-Phase-89 follow-up batch (never fixed inside 636). 636C proceeds with the deck caveat that Sipho's portal trust frames show G89-F12 artefacts.

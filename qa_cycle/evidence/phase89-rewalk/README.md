@@ -106,7 +106,7 @@ Browser calls: 636B.1 **177** / 200 (Playwright MCP tool calls, incl. 1 `browser
 
 ## Results
 
-- Register: `gaps.md` — exit rule **0 HIGH + 0 MEDIUM**. Verdict: **FAIL** — 2 HIGH (G89-F11, G89-F12, confirmed) + 6 MEDIUM (G89-F13 confirmed; F14, F16, F17, F18, F22 proposed) + 18 LOW open; 3 scenario mismatches (F4, F24, F25) for founder §6. Closed-gap re-verification: 31 VERIFIED · 3 PARTIAL · 2 FAIL (G88-F40 → F18; G88-F23 → F12/F22) · 2 suite-covered (F48, F49).
+- Register: `gaps.md` — exit rule **0 HIGH + 0 MEDIUM**. Verdict: **FAIL** — 3 HIGH (G89-F11, G89-F12, G89-F22) + 6 MEDIUM (G89-F13, F14, F16, F17, F18, F23) + 17 LOW open, all HIGH/MEDIUM confirmed by the orchestrator (0.R3, 0.R5 in `gaps.md`); 3 scenario mismatches (F4, F24, F25) for founder §6. Closed-gap re-verification: 31 VERIFIED · 3 PARTIAL · 2 FAIL (G88-F40 → F18; G88-F23 → F12/F22) · 2 suite-covered (F48, F49).
 - Marker audit: `markers.md`. Scout pre-check: 26/26 PRs #1716–#1741 exit 0 with `--committed-only`; 11 backend markers on #1722+.
 
 ## Stack state left by 636B.1 / for 636B.2

@@ -4,10 +4,7 @@ import Link from "next/link";
 import { Scale, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatCurrency, formatRelativeDate } from "@b2mash/shared/format";
-import {
-  formatMatterLabel,
-  type PortalTrustMatterSummary,
-} from "@/lib/api/trust";
+import type { PortalTrustMatterSummary } from "@/lib/api/trust";
 
 interface MatterSelectorProps {
   matters: PortalTrustMatterSummary[];
@@ -17,7 +14,7 @@ interface MatterSelectorProps {
 
 /**
  * Lists the matters with trust activity as clickable cards. Each card shows
- * the matter label, current balance, and a relative "last activity" hint.
+ * the matter name, current balance, and a relative "last activity" hint.
  * Renders an empty state when no matters have activity.
  */
 export function MatterSelector({
@@ -54,7 +51,7 @@ export function MatterSelector({
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base text-slate-900">
                 <Scale className="size-4 text-slate-400" aria-hidden="true" />
-                {formatMatterLabel(matter.matterId)}
+                {matter.matterName ?? "Matter"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">

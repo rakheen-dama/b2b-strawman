@@ -5,13 +5,15 @@ import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { Skeleton } from "@b2mash/ui/skeleton";
+import { labelFor, REQUEST_STATUS_LABELS } from "@/lib/labels";
 
 interface PortalRequest {
   id: string;
   requestNumber: string;
   status: string;
-  matterId: string;
-  matterName: string;
+  /** Null for a client-level request (no matter) — the title falls back to the number. */
+  matterId: string | null;
+  matterName: string | null;
   totalItems: number;
   submittedItems: number;
   acceptedItems: number;
@@ -86,11 +88,11 @@ export default function RequestsPage() {
                       {r.requestNumber}
                     </p>
                     <p className="mt-1 font-medium text-slate-900">
-                      {r.matterName}
+                      {r.matterName ?? `Request ${r.requestNumber}`}
                     </p>
                   </div>
                   <div className="text-right text-sm text-slate-600">
-                    <p>{r.status}</p>
+                    <p>{labelFor(REQUEST_STATUS_LABELS, r.status)}</p>
                     <p className="mt-1 text-xs">
                       {r.status === "COMPLETED"
                         ? `${r.acceptedItems}/${r.totalItems} accepted`

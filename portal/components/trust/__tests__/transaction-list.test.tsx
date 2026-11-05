@@ -113,12 +113,46 @@ describe("TransactionList", () => {
     );
   });
 
+  it("labels the transaction type in sentence case, never the enum (G88-F31)", async () => {
+    mockGetMatterTransactions.mockResolvedValueOnce(
+      buildPage([
+        {
+          id: "t-fee",
+          transactionType: "FEE_TRANSFER",
+          amount: -250,
+          runningBalance: 750,
+          occurredAt: "2026-04-15T08:30:00Z",
+          description: "Transfer to business account",
+          reference: "FT-1",
+        },
+        {
+          id: "t-ref",
+          transactionType: "REFUND",
+          amount: -100,
+          runningBalance: 650,
+          occurredAt: "2026-04-16T08:30:00Z",
+          description: "Refund to client",
+          reference: "RF-1",
+        },
+      ]),
+    );
+
+    render(<TransactionList matterId="matter-1" />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Fee transfer").length).toBeGreaterThan(0),
+    );
+    expect(screen.getAllByText("Refund").length).toBeGreaterThan(0);
+    expect(screen.queryByText("FEE_TRANSFER")).toBeNull();
+    expect(screen.queryByText(/REFUND/)).toBeNull();
+  });
+
   it("synthesises a fallback description when the backend sends an empty one", async () => {
     mockGetMatterTransactions.mockResolvedValueOnce(
       buildPage([
         {
           id: "txn-empty",
-          transactionType: "INTEREST_POSTED",
+          transactionType: "INTEREST_CREDIT",
           amount: 12.5,
           runningBalance: 1262.5,
           occurredAt: "2026-04-15T08:30:00Z",
@@ -132,7 +166,7 @@ describe("TransactionList", () => {
 
     await waitFor(() =>
       expect(
-        screen.getAllByText(/Interest Posted — INT-001/).length,
+        screen.getAllByText(/Interest credited — INT-001/).length,
       ).toBeGreaterThan(0),
     );
   });

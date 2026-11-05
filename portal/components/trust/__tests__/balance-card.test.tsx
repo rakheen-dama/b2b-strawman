@@ -24,10 +24,10 @@ describe("BalanceCard", () => {
     cleanup();
   });
 
-  it("renders balance in ZAR, as-of date, and matter label", () => {
+  it("renders balance in ZAR, as-of date, and the matter name", () => {
     render(
       <BalanceCard
-        matterId="ab12cd34-ef56-7890-abcd-ef0123456789"
+        matterName="Estate Late J Mokoena"
         currentBalance={1250}
         lastTransactionAt="2026-04-15T08:30:00Z"
       />,
@@ -43,7 +43,19 @@ describe("BalanceCard", () => {
     // As-of date formatted as "15 Apr 2026"
     expect(screen.getByText(/15 Apr 2026/)).toBeInTheDocument();
 
-    // Matter label — short-id fallback uses first 8 hex chars after stripping hyphens
-    expect(screen.getByText("Matter ab12cd34")).toBeInTheDocument();
+    // Matter name from the trust summary (G88-F31) — never a short-id "Matter ab12cd34".
+    expect(screen.getByText("Estate Late J Mokoena")).toBeInTheDocument();
+    expect(screen.queryByText(/^Matter [0-9a-f]{8}$/)).toBeNull();
+  });
+
+  it("falls back to 'Matter' when the summary has no matter name", () => {
+    render(
+      <BalanceCard
+        matterName={null}
+        currentBalance={0}
+        lastTransactionAt="2026-04-15T08:30:00Z"
+      />,
+    );
+    expect(screen.getByText("Matter")).toBeInTheDocument();
   });
 });

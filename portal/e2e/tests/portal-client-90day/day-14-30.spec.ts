@@ -100,7 +100,9 @@ test.describe
       .getByRole("table", { name: "Trust transactions" })
       .getByRole("row")
       .filter({ hasText: DESCRIPTION });
-    await expect(row).toContainText("DEPOSIT");
+    // Phase 89 633C (G88-F31): the Type cell (Date, Type, Description, …) reads the label.
+    await expect(row.getByRole("cell").nth(1)).toHaveText("Deposit");
+    await expect(row).not.toContainText("DEPOSIT");
     await expect(row).toContainText(/1\s?500,00/);
 
     // /trust reaches the same matter: it redirects when the client has exactly one trust matter

@@ -150,7 +150,8 @@ const PAGES: Array<{
     name: "deadlines-list",
     ready: async (page) => {
       await h1(page, "Diary dates");
-      // No portal-visible deadline exists on the e2e tenant (90-day Day 7).
+      // No portal-visible deadline exists on the e2e tenant: the boot seed has none and the
+      // 90-day Day 75 case removes its own.
       await expect(page.getByTestId("deadline-list-empty")).toBeVisible();
     },
   },

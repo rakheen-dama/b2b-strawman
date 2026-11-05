@@ -15,7 +15,7 @@ import {
  * (checkpoints 1–3 of `qa/testplan/demos/portal-client-90day-keycloak.md`).
  *   - Day 0: the client lands on /home, sees the pending info request, opens it
  *   - Day 3: the client uploads the requested document and submits the request
- *   - Day 7: the client opens /deadlines (no portal-visible deadline exists on the e2e tenant)
+ *   - Day 7: the client opens /deadlines (the boot seed carries no portal-visible deadline)
  *
  * Phase 88 628G (R-1): `beforeAll` sends a RUN-UNIQUE information request (one FILE_UPLOAD item) to
  * the Acme contact on Website Redesign through the firm API, and Day 0 / Day 3 drive that request.
@@ -161,7 +161,8 @@ test.describe
       page.getByRole("heading", { level: 1, name: SEED.matter }),
     ).toBeVisible();
     await expect(page.getByText(requestNumber, { exact: true })).toBeVisible();
-    await expect(page.getByText("0/1 submitted • status SENT")).toBeVisible();
+    // Phase 89 633C (G88-F29): client copy, not the enum — SENT reads "Requested" (D1).
+    await expect(page.getByText("0/1 submitted • Requested")).toBeVisible();
     await expect(page.getByLabel(`Upload file for ${ITEM}`)).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Upload and submit" }),
@@ -190,12 +191,10 @@ test.describe
     await expect(submit).toBeEnabled();
     await submit.click();
 
-    await expect(page.getByText("Submitted — status: SUBMITTED")).toBeVisible({
+    await expect(page.getByText("Submitted", { exact: true })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(
-      page.getByText("1/1 submitted • status IN_PROGRESS"),
-    ).toBeVisible();
+    await expect(page.getByText("1/1 submitted • In progress")).toBeVisible();
 
     await expect(page).toHaveScreenshot("day-03-info-request-submitted.png", {
       fullPage: true,
@@ -210,10 +209,10 @@ test.describe
   });
 
   // ── Checkpoint 3 — Day 7: /deadlines ───────────────────────────────────
-  // No portal-visible deadline can be produced on the e2e tenant: the COURT_DATE / PRESCRIPTION /
-  // FILING portal sync is dormant (customerbackend/service/DeadlinePortalSyncService.java:36-44)
-  // and the custom-field source fires only from the 06:00 scanner. The digest CTA goes to /home
-  // (templates/email/portal-weekly-digest.html:72). So Day 7 checks what the client gets today.
+  // The boot seed carries no court date or prescription, and the Day 75 case removes the ones it
+  // creates (cancel / interrupt delete the portal rows — Phase 89 633C), so Day 7 still sees the
+  // empty Diary; the custom-field source fires only from the 06:00 scanner. The digest CTA goes to
+  // /home (templates/email/portal-weekly-digest.html:72).
   test("Day 7: Diary dates page renders for the client (no portal-visible deadlines on the e2e tenant)", async ({
     page,
   }) => {

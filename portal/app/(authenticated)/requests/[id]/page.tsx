@@ -4,6 +4,11 @@ import { use, useCallback, useEffect, useState } from "react";
 import { portalFetch, portalGet, portalPost } from "@/lib/api-client";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import {
+  labelFor,
+  REQUEST_ITEM_STATUS_LABELS,
+  REQUEST_STATUS_LABELS,
+} from "@/lib/labels";
 
 interface RequestItem {
   id: string;
@@ -23,8 +28,9 @@ interface RequestDetail {
   id: string;
   requestNumber: string;
   status: string;
-  matterId: string;
-  matterName: string;
+  /** Null for a client-level request (no matter) — the heading falls back to the number. */
+  matterId: string | null;
+  matterName: string | null;
   totalItems: number;
   submittedItems: number;
   acceptedItems: number;
@@ -90,13 +96,13 @@ export default function RequestDetailPage({
           {detail.requestNumber}
         </p>
         <h1 className="font-display mt-1 text-2xl font-semibold text-slate-900">
-          {detail.matterName}
+          {detail.matterName ?? `Request ${detail.requestNumber}`}
         </h1>
         <p className="mt-2 text-sm text-slate-600">
           {detail.status === "COMPLETED"
             ? `${detail.acceptedItems}/${detail.totalItems} accepted`
             : `${detail.submittedItems}/${detail.totalItems} submitted`}{" "}
-          • status {detail.status}
+          • {labelFor(REQUEST_STATUS_LABELS, detail.status)}
         </p>
       </div>
       <ul className="space-y-4">
@@ -187,7 +193,7 @@ function ItemCard({
       <CardContent>
         {done ? (
           <p className="text-sm text-teal-700">
-            Submitted — status: {item.status}
+            {labelFor(REQUEST_ITEM_STATUS_LABELS, item.status)}
           </p>
         ) : item.responseType === "FILE_UPLOAD" ? (
           <div className="flex flex-col gap-2">

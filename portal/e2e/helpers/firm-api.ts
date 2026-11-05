@@ -3,7 +3,9 @@ import { todayInSA } from "@b2mash/shared/date";
 
 /**
  * Phase 88 628G — firm-side setup for the portal suites: the run-unique rows the boot seed does not
- * carry (an information request to submit, a trust deposit) plus read-only seed lookups.
+ * carry (an information request to submit, a trust deposit) plus read-only seed lookups. Phase 89
+ * 633C adds a court date and a prescription tracker (Day 75) — the spec cancels / interrupts them
+ * again, which deletes their portal rows, so the client's Diary dates is empty for the other specs.
  *
  * Portal-local on purpose: the portal does not import from frontend/e2e (628B R-1). Mirrors
  * frontend/e2e/helpers/{api,seed}.ts. The boot-seed rows (compose/seed/seed.sh) are READ-ONLY for
@@ -184,6 +186,96 @@ export async function sendAcmeInfoRequest(
   return firmApiOk<{ id: string; requestNumber: string; status: string }>(
     `/api/information-requests/${created.id}/send`,
     { method: "POST" },
+  );
+}
+
+/** yyyy-MM-dd `days` after the yyyy-MM-dd date `iso` (zone-free UTC arithmetic). */
+export function addDaysIso(iso: string, days: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+/** yyyy-MM-dd `years` before `iso` (29 Feb normalises to 1 Mar — the result stays in range). */
+function minusYearsIso(iso: string, years: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y - years, m - 1, d)).toISOString().slice(0, 10);
+}
+
+type FirmCourtDate = { id: string; status: string; scheduledDate: string };
+type FirmPrescriptionTracker = {
+  id: string;
+  status: string;
+  prescriptionDate: string;
+};
+
+/**
+ * Phase 89 633C (§5b row 19) — a run-unique HEARING on Website Redesign (owned by Acme) carrying
+ * firm-only judge / notes text the portal must never show (ADR-363 copy rule). The caller cancels
+ * it (cancelCourtDate) so the portal row is deleted and /deadlines is empty again for Day 7 and the
+ * responsive deadlines-list page; the CANCELLED firm row stays (one per run).
+ */
+export async function scheduleAcmeCourtDate(input: {
+  courtName: string;
+  courtReference: string;
+  scheduledDate: string;
+  judgeMagistrate: string;
+  description: string;
+}): Promise<FirmCourtDate> {
+  return firmApiOk<FirmCourtDate>("/api/court-dates", {
+    method: "POST",
+    body: {
+      matterId: await websiteRedesignId(),
+      dateType: "HEARING",
+      scheduledTime: "10:00:00",
+      reminderDays: 7,
+      ...input,
+    },
+  });
+}
+
+/** Cancels a court date (CANCELLED) — its portal deadline row is deleted (B4). */
+export async function cancelCourtDate(
+  id: string,
+  reason: string,
+): Promise<FirmCourtDate> {
+  return firmApiOk<FirmCourtDate>(`/api/court-dates/${id}/cancel`, {
+    method: "POST",
+    body: { reason },
+  });
+}
+
+/**
+ * Phase 89 633C — a RUNNING GENERAL_3Y prescription on Website Redesign whose prescription date is
+ * `due` (the cause of action is `due` − 3 years), with firm-only `notes`. The caller interrupts it
+ * (interruptPrescription) — the portal row is deleted; the INTERRUPTED firm row stays (one per run).
+ */
+export async function startAcmePrescription(input: {
+  due: string;
+  notes: string;
+}): Promise<FirmPrescriptionTracker> {
+  return firmApiOk<FirmPrescriptionTracker>("/api/prescription-trackers", {
+    method: "POST",
+    body: {
+      matterId: await websiteRedesignId(),
+      causeOfActionDate: minusYearsIso(input.due, 3),
+      prescriptionType: "GENERAL_3Y",
+      notes: input.notes,
+    },
+  });
+}
+
+/** Interrupts a prescription tracker (INTERRUPTED) — its portal deadline row is deleted (B4). */
+export async function interruptPrescription(
+  id: string,
+  interruptionDate: string,
+  interruptionReason: string,
+): Promise<FirmPrescriptionTracker> {
+  return firmApiOk<FirmPrescriptionTracker>(
+    `/api/prescription-trackers/${id}/interrupt`,
+    {
+      method: "POST",
+      body: { interruptionDate, interruptionReason },
+    },
   );
 }
 

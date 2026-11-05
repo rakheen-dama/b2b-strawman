@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.PortalTaskEventPublisher;
+import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
@@ -69,6 +70,7 @@ class PortalTaskBackfillRunnerTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private PortalReadModelRepository readModelRepo;
   @Autowired private PortalTaskBackfillRunner runner;
+  @Autowired private PortalTaskBackfillService backfillService;
   @Autowired private PlatformTransactionManager transactionManager;
 
   @Autowired
@@ -212,6 +214,39 @@ class PortalTaskBackfillRunnerTest {
 
     readModelRepo.upsertPortalTask(taskId, ORG_ID, projectId, "Renamed", "IN_PROGRESS", null, 3);
     assertThat(row(taskId).sortOrder()).isEqualTo(5);
+  }
+
+  @Test
+  void aTaskDeletedBetweenTheBackfillReadAndItsInsertIsRemovedByTheReconcile() {
+    // Race (CodeRabbit, PR #1730): the backfill read task B, B was deleted and its AFTER_COMMIT
+    // listener removed the (not yet written) portal row, then the backfill inserted B. The
+    // reconcile re-reads the tenant and removes B's stale row; A, still present, is kept.
+    var tenantTx = new TransactionTemplate(transactionManager);
+    UUID keptId = taskIds.getFirst();
+    UUID deletedId =
+        inTenant(
+            () ->
+                tenantTx.execute(
+                    s ->
+                        taskRepository
+                            .save(
+                                new Task(
+                                    projectId, "Deleted mid-run", null, null, null, null, memberId))
+                            .getId()));
+    readModelRepo.insertPortalTaskIfAbsent(keptId, ORG_ID, projectId, "Kept", "OPEN", null, 0);
+    readModelRepo.insertPortalTaskIfAbsent(deletedId, ORG_ID, projectId, "Gone", "OPEN", null, 0);
+    inTenant(
+        () -> {
+          tenantTx.executeWithoutResult(s -> taskRepository.deleteById(deletedId));
+          return null;
+        });
+
+    int removed =
+        backfillService.reconcileDeleted(
+            ORG_ID, mapping.getSchemaName(), mapping.getShardId(), List.of(keptId, deletedId));
+
+    assertThat(removed).isEqualTo(1);
+    assertThat(rows()).extracting(PortalTaskView::id).contains(keptId).doesNotContain(deletedId);
   }
 
   @Test

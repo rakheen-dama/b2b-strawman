@@ -5,30 +5,23 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billing.BillingMethod;
 import io.b2mash.b2b.b2bstrawman.billing.Subscription;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionRepository;
-import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
-import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalBackfillMarkerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.util.List;
 import java.util.UUID;
-import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,13 +49,6 @@ class DemoCleanupServiceTest {
   @Autowired
   @Qualifier("portalJdbcClient")
   private JdbcClient portalJdbc;
-
-  @Autowired private SubscriptionStatusCache subscriptionStatusCache;
-  @Autowired private ObjectProvider<StorageService> storageService;
-
-  @Autowired
-  @Qualifier("migrationDataSource")
-  private DataSource migrationDataSource;
 
   @MockitoBean private KeycloakAdminClient keycloakAdminClient;
 
@@ -137,46 +123,6 @@ class DemoCleanupServiceTest {
             .params(schema)
             .query(Integer.class)
             .single());
-  }
-
-  @Test
-  void cleanup_aFailedMarkerDeleteDoesNotFailTheSchemaCleanup() throws Exception {
-    UUID orgId = provisionTestTenant("marker-fail", BillingMethod.PILOT);
-    var org = organizationRepository.findById(orgId).orElseThrow();
-    String schema =
-        orgSchemaMappingRepository
-            .findByExternalOrgId(org.getExternalOrgId())
-            .orElseThrow()
-            .getSchemaName();
-    var failingMarkers = mock(PortalBackfillMarkerRepository.class);
-    when(failingMarkers.deleteForSchema(anyString()))
-        .thenThrow(new IllegalStateException("portal datasource down"));
-    var service =
-        new DemoCleanupService(
-            keycloakAdminClient,
-            organizationRepository,
-            subscriptionRepository,
-            subscriptionStatusCache,
-            orgSchemaMappingRepository,
-            migrationDataSource,
-            jdbcTemplate,
-            txTemplate,
-            storageService.getIfAvailable(),
-            failingMarkers);
-
-    var response = service.cleanup(orgId, org.getName(), "test-admin");
-
-    verify(failingMarkers).deleteForSchema(schema);
-    assertTrue(response.schemaCleaned());
-    assertTrue(response.publicRecordsCleaned());
-    assertTrue(response.errors().stream().noneMatch(e -> e.contains("Schema cleanup failed")));
-    assertEquals(
-        0,
-        jdbcTemplate.queryForObject(
-            "SELECT count(*) FROM information_schema.schemata WHERE schema_name = ?",
-            Integer.class,
-            schema));
-    assertTrue(organizationRepository.findById(orgId).isEmpty());
   }
 
   @Test

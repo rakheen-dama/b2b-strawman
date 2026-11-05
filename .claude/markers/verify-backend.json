@@ -1,7 +1,7 @@
 {
-  "commit": "94adbff7b",
-  "command": "./mvnw clean verify -q (caffeinate; verify.sh preflight skipped — it would SIGKILL the 5h KC dev spring-boot:run JVM)",
+  "commit": "a8d5b86ae",
+  "command": "./mvnw clean verify -q (caffeinate; verify.sh preflight skipped — it would SIGKILL the 6h KC dev spring-boot:run JVM)",
   "exit": 0,
-  "ts": "2026-11-05T11:16:20Z",
-  "summary": "PR #1734 (634B) head 94adbff7b: 6561 testcases / 0 failures / 0 errors / 26 skipped — ~21 min; Backend CI pass on 94adbff7b"
+  "ts": "2026-11-05T12:30:37Z",
+  "summary": "PR #1735 (634C) head a8d5b86ae: 6579 testcases / 0 failures / 0 errors / 26 skipped — ~19.5 min; Backend CI pass on a8d5b86ae"
 }

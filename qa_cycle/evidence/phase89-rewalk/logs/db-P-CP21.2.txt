@@ -1,0 +1,29 @@
+== S2-45 read-only 2026-11-06 01:05:09 SAST
+-[ RECORD 1 ]-------+-------------------------------------
+customer_id         | 79546474-0f5b-4e2d-ade4-0263d70d3eeb
+matter_id           | cd0ef789-214e-4001-978f-90c0b240ed95
+current_balance     | 0.00
+last_transaction_at | 2026-11-05 22:44:31.817201+00
+last_synced_at      | 2026-11-05 22:44:31.876048+00
+
+-[ RECORD 1 ]----+-------------------------------------
+transaction_type | DEPOSIT
+amount           | 5000.00
+matter_id        | cd0ef789-214e-4001-978f-90c0b240ed95
+occurred_at      | 2026-11-05 20:10:35.839489+00
+-[ RECORD 2 ]----+-------------------------------------
+transaction_type | PAYMENT
+amount           | 1250.00
+matter_id        | cd0ef789-214e-4001-978f-90c0b240ed95
+occurred_at      | 2026-11-05 20:11:16.581303+00
+-[ RECORD 3 ]----+-------------------------------------
+transaction_type | REFUND
+amount           | 3751.34
+matter_id        | cd0ef789-214e-4001-978f-90c0b240ed95
+occurred_at      | 2026-11-05 21:23:24.273149+00
+-[ RECORD 4 ]----+-------------------------------------
+transaction_type | DEPOSIT
+amount           | 1.34
+matter_id        | cd0ef789-214e-4001-978f-90c0b240ed95
+occurred_at      | 2026-11-05 22:44:31.817201+00
+

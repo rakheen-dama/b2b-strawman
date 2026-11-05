@@ -1,0 +1,69 @@
+== 636B.3 Mailpit at 2026-11-06 01:04:13 SAST (tokens redacted)
+16
+kaSZgpuVeeMKh5vPeeewFo 2026-11-05T22:44:31.989Z sipho.dlamini@email.co.za | Mathebula & Partners: Trust account activity
+htwGiQjhaVeFCiBCedYZTP 2026-11-05T21:23:24.372Z sipho.dlamini@email.co.za | Mathebula & Partners: Trust account activity
+SJpjzZZuGfdyN9juKta8N6 2026-11-05T21:18:05.452Z moroka.trust@email.co.za | Mathebula & Partners: Trust account activity
+j7qLGscQ7UDFBzyY5wU9SB 2026-11-05T21:13:52.4Z sipho.dlamini@email.co.za | Your portal access link from Mathebula & Partners
+4gXPU2wZfqGSj4EWa8eVdt 2026-11-05T20:48:44.435Z moroka.trust@email.co.za | Fee Note INV-0002 from Mathebula & Partners
+CKrRixrrMCqjvDexyHp7Gs 2026-11-05T20:44:52.105Z sipho.dlamini@email.co.za | Fee Note INV-0001 from Mathebula & Partners
+6QgrLkN8mdRFRMk8mD7ocP 2026-11-05T20:23:14.239Z moroka.trust@email.co.za | Mathebula & Partners: Trust account activity
+CPaNtApdA3HvV5BgQNMeZJ 2026-11-05T20:18:28.168Z sipho.dlamini@email.co.za | Information request REQ-0001 from Mathebula & Partners
+RJ9uywgG66UkARFhEHomSi 2026-11-05T20:11:16.638Z sipho.dlamini@email.co.za | Mathebula & Partners: Trust account activity
+E8VvtF55g8KrKtr7eWhnA5 2026-11-05T20:10:35.924Z sipho.dlamini@email.co.za | Mathebula & Partners: Trust account activity
+XvLLPBQQ3zEQLsWcaSixMQ 2026-11-05T20:07:00.514Z sipho.dlamini@email.co.za | Confirmed: You have accepted engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-11-05.pdf
+ebx8eMxFz3VvybJei2Xd8q 2026-11-05T20:06:36.452Z sipho.dlamini@email.co.za | Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-11-05.pdf
+NWEYDY3wDATW8RxndsUzj9 2026-11-05T19:46:40.964Z carol@mathebula-test.local | Invitation to join the Mathebula & Partners organization
+5gcdFLLaBqiivHcBphMBqt 2026-11-05T19:46:36.867Z bob@mathebula-test.local | Invitation to join the Mathebula & Partners organization
+UdyK9kQ4nsXsYSS8htSpuf 2026-11-05T19:45:03.277Z thandi@mathebula-test.local | Invitation to join the Mathebula & Partners organization
+gewJMnZMogtURxC3z3gGr4 2026-11-05T19:39:28.808Z thandi@mathebula-test.local | Your Kazi verification code
+== body E8VvtF55g8KrKtr7eWhnA5
+Mathebula & Partners: Trust account activity
+ Mathebula & Partners
+ Trust account activity
+ Hi Sipho Dlamini,
+ A new transaction has been recorded in your trust account.
+ Date
+ 5 Nov 2026
+ Type
+ DEPOSIT
+ Amount
+ R 5 000,00
+ View trust ledger
+ (http://localhost:3002/trust/cd0ef789-214e-4001-978f-90c0b240ed95?orgId=mathebula-partners)
+ Best,
+ Mathebula & Partners
+ Mathebula & Partners
+== body htwGiQjhaVeFCiBCedYZTP
+Mathebula & Partners: Trust account activity
+ Mathebula & Partners
+ Trust account activity
+ Hi Sipho Dlamini,
+ A new transaction has been recorded in your trust account.
+ Date
+ 5 Nov 2026
+ Type
+ REFUND
+ Amount
+ R 3 751,34
+ View trust ledger
+ (http://localhost:3002/trust/cd0ef789-214e-4001-978f-90c0b240ed95?orgId=mathebula-partners)
+ Best,
+ Mathebula & Partners
+ Mathebula & Partners
+== body kaSZgpuVeeMKh5vPeeewFo
+Mathebula & Partners: Trust account activity
+ Mathebula & Partners
+ Trust account activity
+ Hi Sipho Dlamini,
+ A new transaction has been recorded in your trust account.
+ Date
+ 6 Nov 2026
+ Type
+ DEPOSIT
+ Amount
+ R 1,34
+ View trust ledger
+ (http://localhost:3002/trust/cd0ef789-214e-4001-978f-90c0b240ed95?orgId=mathebula-partners)
+ Best,
+ Mathebula & Partners
+ Mathebula & Partners

@@ -1,0 +1,9 @@
+== S2-48 P-45.6 2026-11-06 01:08:29 SAST
+-rw-r--r--@ 1 rakheendama  staff  4064 Nov  6 01:08 /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/P-45.6-fee-note-INV-0002.pdf
+-rw-r--r--@ 1 rakheendama  staff  2757 Nov  6 01:08 /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/P-45.6-receipt-INV-0002-R1.pdf
+5dbfd6d5bd78068c4f6b70bda7d0de43e1bb58da  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/P-45.6-fee-note-INV-0002.pdf
+95302ef4f25dd7ecf29e80c24b8e93528f7abd5a  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/P-45.6-receipt-INV-0002-R1.pdf
+== P-45.6-receipt-INV-0002-R1.pdf chars 517 image True
+Mathebula & Partners PAYMENT RECEIPT Receipt INV-0002/R1 To:  Moroka Family Trust Fee Note Number:  INV-0002 Matter:  Estate Late Peter Moroka Payment received Amount received: Date received:  6 November 2026 Method:  Card Reference:  MOCK-PAY-9ddef216-ded0-49b9-b666-b9c4619aae37 Balance after this payment:  R0,00 Payments on this fee note Date Method Reference Amount Balance  after 6 November  2026 Card MOCK-PAY-9ddef216-ded0-49b9-b666- b9c4619aae37 R0,00 Fee note total: Amount paid to date: Ba
+== P-45.6-fee-note-INV-0002.pdf chars 643 image True
+Mathebula & Partners FEE NOTE To:  Moroka Family Trust 8 Rissik St Johannesburg ZA Client VAT Number:  9123456789 Matter:  Estate Late Peter Moroka Fee Note Number:  INV-0002 Issue Date:  5 November 2026 Due Date:  5 December 2026 Currency:  ZAR Fees and Disbursements Description Qty Unit Price  \(excl.  VAT\) VAT Total  \(incl.  VAT\) 1,5 R270,00 1 R550,00 R82,50 R632,50 3 3\(a\) - Letters written \(per folio\) 4 R195,00 R117,00 R897,00 Amount Summary Subtotal \(excl. VAT\): VAT: Total Due: Whe

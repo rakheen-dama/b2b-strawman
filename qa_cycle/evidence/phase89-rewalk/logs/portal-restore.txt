@@ -1,0 +1,25 @@
+== S2-65 portal restore 2026-11-06 01:10:55 SAST
+$MAIN status before:
+ M tasks/insights/latest.stats.json
+99129/99092 gone
+:3002 free
+
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+next-env diff vs pre-walk diff:
+next-env.d.ts == pre-walk state
+:3002 holder 19757 00:03 next-server (v16.3.8) 
+:3002/login 200
+  -------      ---      -------  -------  ----
+  backend      76597    yes      yes      8080
+  gateway      75499    yes      yes      8443
+  frontend     75638    yes      yes      3000
+  portal       19714    yes      yes      3002
+
+
+Done.
+$MAIN status after:
+ M portal/next-env.d.ts
+ M tasks/insights/latest.stats.json

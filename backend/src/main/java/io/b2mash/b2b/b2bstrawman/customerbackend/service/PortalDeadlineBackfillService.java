@@ -34,6 +34,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class PortalDeadlineBackfillService {
 
   private static final String SCHEDULED = "SCHEDULED";
+
+  /**
+   * Tracker statuses that are no longer a portal deadline — shared by {@link #collect} and {@link
+   * #currentTracker} so the backfill read and the reconcile re-read cannot drift.
+   */
   private static final List<String> DEAD_TRACKER_STATUSES = List.of("INTERRUPTED", "EXPIRED");
 
   private final CourtDateRepository courtDateRepository;
@@ -100,8 +105,9 @@ public class PortalDeadlineBackfillService {
    * our tenant read and our upsert had its live listener run first, so our upsert may have
    * re-created or overwritten its row. Re-reads the written ids in the tenant and re-syncs them
    * from current state: a court date that is gone, CANCELLED or POSTPONED and a tracker that is
-   * gone or INTERRUPTED are deleted; the rest are re-upserted (HEARD → COMPLETED). Never touches
-   * ids this run did not write. Returns how many rows were removed. Package-private for tests.
+   * gone, INTERRUPTED or EXPIRED are deleted; the rest are re-upserted (HEARD → COMPLETED). Never
+   * touches ids this run did not write. Returns how many rows were removed. Package-private for
+   * tests.
    */
   int reconcile(
       String orgId, String tenantSchema, @Nullable String shardId, List<DeadlineSource> written) {
@@ -153,7 +159,7 @@ public class PortalDeadlineBackfillService {
 
   /** Current mapping of a tracker, or null when it is no longer a portal deadline. */
   private DeadlineSource currentTracker(@Nullable PrescriptionTracker t) {
-    if (t == null || "INTERRUPTED".equals(t.getStatus())) {
+    if (t == null || DEAD_TRACKER_STATUSES.contains(t.getStatus())) {
       return null;
     }
     return prescriptionSource(t);

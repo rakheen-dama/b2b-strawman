@@ -263,6 +263,56 @@ class PortalDeadlineBackfillRunnerTest {
   }
 
   @Test
+  void reconcileRemovesARowWhoseTrackerExpiredMidRun() {
+    // Race: the backfill read X (RUNNING) and Y (WARNED); the reminder job then flipped X to
+    // EXPIRED (it publishes no event) before reconcile. Reconcile must drop X (the backfill read's
+    // dead-status rule) and keep re-syncing the still-live Y.
+    UUID[] ids = new UUID[2];
+    inTenantTx(
+        () -> {
+          ids[0] = tracker("RUNNING", LocalDate.of(2030, 5, 1));
+          ids[1] = tracker("WARNED", LocalDate.of(2030, 5, 2));
+          return null;
+        });
+    try {
+      var written =
+          List.of(
+              DeadlinePortalSyncService.prescriptionSource(
+                  ids[0], ownerId, matterId, "GENERAL_3Y", LocalDate.of(2030, 5, 1)),
+              DeadlinePortalSyncService.prescriptionSource(
+                  ids[1], ownerId, matterId, "GENERAL_3Y", LocalDate.of(2030, 5, 2)));
+      written.forEach(syncService::upsertFromDeadline);
+      inTenantTx(
+          () -> {
+            var x = prescriptionTrackerRepository.findById(ids[0]).orElseThrow();
+            x.setStatus("EXPIRED");
+            prescriptionTrackerRepository.save(x);
+            return null;
+          });
+
+      int removed =
+          fixedClockService.reconcile(
+              ORG_ID, mapping.getSchemaName(), mapping.getShardId(), written);
+
+      assertThat(removed).isEqualTo(1);
+      assertThat(
+              deadlineRepo.findByCustomerIdAndSourceEntityAndId(
+                  ownerId, "PRESCRIPTION_TRACKER", ids[0]))
+          .isEmpty();
+      assertThat(ownerRow("PRESCRIPTION_TRACKER", ids[1]).dueDate())
+          .isEqualTo(LocalDate.of(2030, 5, 2));
+    } finally {
+      // Y is still live and future-dated: drop both so the count-based backfill tests in this
+      // PER_CLASS tenant are order-independent.
+      inTenantTx(
+          () -> {
+            prescriptionTrackerRepository.deleteAllById(List.of(ids[0], ids[1]));
+            return null;
+          });
+    }
+  }
+
+  @Test
   void runSmokeCheckBackfillsAnUnmarkedTenant() {
     UUID soon = inTenantTx(() -> court("SCHEDULED", LocalDate.now(KaziTime.ZONE).plusDays(10)));
 

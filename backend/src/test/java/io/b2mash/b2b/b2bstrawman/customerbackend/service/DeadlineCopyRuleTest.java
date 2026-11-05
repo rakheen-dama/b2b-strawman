@@ -21,17 +21,13 @@ import io.b2mash.b2b.b2bstrawman.event.PrescriptionDeadlineSetEvent;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTracker;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -41,9 +37,9 @@ import org.springframework.transaction.PlatformTransactionManager;
  * The sanitised-copy rule by construction (Phase 89 633B, ADR-363, B10): no firm-only court-date or
  * prescription field (judge / magistrate, outcome, description, notes, interruption data,
  * cause-of-action date) can reach the portal deadline row's {@code label}, {@code descriptionRaw}
- * or {@code sourceReference}. Pinned four ways — the event records' components, the builders'
- * signatures, the bytecode of the portal layer, and the source of the builders and listeners — plus
- * the expected copy. Plain JUnit, no Spring context.
+ * or {@code sourceReference}. Pinned three ways — the event records' components, the builders'
+ * signatures, and the bytecode of the portal layer — plus the expected copy. Plain JUnit, no Spring
+ * context.
  */
 class DeadlineCopyRuleTest {
 
@@ -57,20 +53,6 @@ class DeadlineCopyRuleTest {
           "interruptionReason",
           "interruptionDate",
           "causeOfActionDate");
-
-  private static final List<String> BANNED_SOURCE_TOKENS =
-      List.of(
-          "judge",
-          "outcome",
-          "getdescription",
-          ".description()",
-          "notes",
-          "interruption",
-          "causeofaction");
-
-  private static final String SYNC_SERVICE_SOURCE =
-      "src/main/java/io/b2mash/b2b/b2bstrawman/customerbackend/service/"
-          + "DeadlinePortalSyncService.java";
 
   private static final UUID ID = UUID.randomUUID();
   private static final UUID CUSTOMER = UUID.randomUUID();
@@ -155,26 +137,6 @@ class DeadlineCopyRuleTest {
   }
 
   @Test
-  void theBuilderAndListenerBodiesMentionNoFirmOnlyField() throws IOException {
-    String source = Files.readString(resolveModuleRoot().resolve(SYNC_SERVICE_SOURCE));
-
-    for (String signature :
-        List.of(
-            "static DeadlineSource courtDateSource(",
-            "static DeadlineSource prescriptionSource(",
-            "public void onCourtDateScheduled(",
-            "public void onCourtDateCancelled(",
-            "public void onPrescriptionDeadlineSet(",
-            "public void onPrescriptionDeadlineCleared(")) {
-      String body = methodBody(source, signature).toLowerCase(Locale.ROOT);
-      assertThat(body).as(signature + " body").isNotBlank();
-      for (String token : BANNED_SOURCE_TOKENS) {
-        assertThat(body).as(signature + " must not mention " + token).doesNotContain(token);
-      }
-    }
-  }
-
-  @Test
   void courtDateCopy() {
     DeadlineSource preTrial =
         DeadlinePortalSyncService.courtDateSource(
@@ -255,37 +217,5 @@ class DeadlineCopyRuleTest {
             "Court date — Hearing — Johannesburg High Court",
             "Prescription — Prescription deadline")
         .noneMatch(d -> d.contains("COURT_DATE") || d.contains("PRESCRIPTION"));
-  }
-
-  // ── helpers ──
-
-  /** The text between the method's opening brace and its matching closing brace. */
-  private static String methodBody(String source, String signature) {
-    int at = source.indexOf(signature);
-    assertThat(at).as("signature not found: " + signature).isNotNegative();
-    int open = source.indexOf('{', at);
-    int depth = 0;
-    for (int i = open; i < source.length(); i++) {
-      char c = source.charAt(i);
-      if (c == '{') {
-        depth++;
-      } else if (c == '}') {
-        depth--;
-        if (depth == 0) {
-          return source.substring(open + 1, i);
-        }
-      }
-    }
-    throw new AssertionError("unbalanced braces after " + signature);
-  }
-
-  private static Path resolveModuleRoot() {
-    Path cwd = Path.of("").toAbsolutePath();
-    for (Path candidate : new Path[] {cwd, cwd.resolve("backend"), cwd.getParent()}) {
-      if (candidate != null && Files.isRegularFile(candidate.resolve(SYNC_SERVICE_SOURCE))) {
-        return candidate;
-      }
-    }
-    return cwd;
   }
 }

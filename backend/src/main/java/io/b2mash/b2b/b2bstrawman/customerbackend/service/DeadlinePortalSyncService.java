@@ -165,9 +165,10 @@ public class DeadlinePortalSyncService {
    */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCourtDateScheduled(CourtDateScheduledEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             UUID customerId = resolveOwningCustomer(event.customerId(), event.projectId());
@@ -200,9 +201,10 @@ public class DeadlinePortalSyncService {
   /** Court date cancelled, or the original row of a postpone — the portal row is DELETED (B4). */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCourtDateCancelled(CourtDateCancelledEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             portalTxTemplate.executeWithoutResult(
@@ -225,9 +227,10 @@ public class DeadlinePortalSyncService {
    */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onPrescriptionDeadlineSet(PrescriptionDeadlineSetEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             UUID customerId = resolveOwningCustomer(event.customerId(), event.projectId());
@@ -258,9 +261,10 @@ public class DeadlinePortalSyncService {
   /** Prescription tracker interrupted — the portal row is DELETED (B4). */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onPrescriptionDeadlineCleared(PrescriptionDeadlineClearedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             portalTxTemplate.executeWithoutResult(

@@ -83,10 +83,12 @@ fi
 # 2. Areas. `gh pr view --json files` truncates at 100 files; the REST API paginates.
 files=$(gh api "repos/{owner}/{repo}/pulls/$pr/files" --paginate --jq '.[].filename' 2>/dev/null) \
   || die "could not list the files of PR #$pr"
+# Here-strings, not `printf | grep -q`: under pipefail grep -q's early exit SIGPIPEs printf
+# on a long list (status 141), which `if` would read as "no match" and drop the area.
 areas=""
-if printf '%s\n' "$files" | grep -qE '^backend/'; then areas="$areas backend"; fi
-if printf '%s\n' "$files" | grep -qE '^(frontend|packages)/'; then areas="$areas frontend"; fi
-if printf '%s\n' "$files" | grep -qE '^(portal|packages)/'; then areas="$areas portal"; fi
+if grep -qE '^backend/' <<<"$files"; then areas="$areas backend"; fi
+if grep -qE '^(frontend|packages)/' <<<"$files"; then areas="$areas frontend"; fi
+if grep -qE '^(portal|packages)/' <<<"$files"; then areas="$areas portal"; fi
 if [ -z "$areas" ]; then
   echo "$PROG: PR #$pr touches no backend/, frontend/, packages/ or portal/ path — docs/tooling-only, no verify marker required"
   exit 0
@@ -98,7 +100,7 @@ if ! git cat-file -e "${merge_oid}^{commit}" 2>/dev/null \
   die "HEAD does not contain PR #$pr's merge commit ${merge_oid:0:9} — run 'git pull origin main' first"
 fi
 if ! git cat-file -e "${head_oid}^{commit}" 2>/dev/null; then
-  git fetch --quiet origin "pull/$pr/head" 2>/dev/null \
+  git fetch --quiet origin "pull/$pr/head" \
     || die "cannot fetch PR #$pr head ${head_oid:0:9} (git fetch origin pull/$pr/head)"
   git cat-file -e "${head_oid}^{commit}" 2>/dev/null \
     || die "PR #$pr head ${head_oid:0:9} is still unknown after fetching pull/$pr/head"
@@ -121,11 +123,22 @@ qualifies() {
     echo "  note: $2 marker commit $mc is not a known commit (unknown or ambiguous) — skipped" >&2
     return 1
   fi
-  if ! git merge-base --is-ancestor "$full" "$head_oid"; then
+  # --is-ancestor: 0 = ancestor, 1 = not, anything else (128) = git error — never qualifies.
+  local rc=0
+  git merge-base --is-ancestor "$full" "$head_oid" || rc=$?
+  if [ "$rc" -eq 1 ]; then
+    return 1
+  elif [ "$rc" -ne 0 ]; then
+    echo "  note: $2 git merge-base --is-ancestor $mc ${head_oid:0:9} failed (exit $rc) — skipped" >&2
     return 1
   fi
-  if git merge-base --is-ancestor "$full" "$branch_point"; then
+  rc=0
+  git merge-base --is-ancestor "$full" "$branch_point" || rc=$?
+  if [ "$rc" -eq 0 ]; then
     echo "  note: $2 marker commit $mc is already on main before the PR (ancestor of ${merge_oid:0:9}^) — not a PR-branch verify, skipped" >&2
+    return 1
+  elif [ "$rc" -ne 1 ]; then
+    echo "  note: $2 git merge-base --is-ancestor $mc ${merge_oid:0:9}^ failed (exit $rc) — skipped" >&2
     return 1
   fi
   return 0

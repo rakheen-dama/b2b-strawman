@@ -50,7 +50,7 @@ EOF
 
 If the verify failed (exit != 0), do **not** write a marker. Fix the failure, re-run, then write.
 
-## Post-merge check — `scripts/check-verify-markers.sh`
+## Marker-commit check (post-merge, before the bookkeeping commit) — `scripts/check-verify-markers.sh`
 
 The hook reads the marker files in the working tree at merge time; it cannot tell whether they were ever committed (G88-F35: five Epic-624 PRs merged with a valid marker that no commit recorded). `scripts/check-verify-markers.sh <pr-number>` closes that gap: for a merged PR it lists the areas touched (`backend/` → backend, `frontend/` → frontend, `portal/` → portal, `packages/` → both frontend and portal — the same mapping as the hook) and, per area, requires a `verify-<area>.json` either committed since the PR's merge commit or staged in the current index, whose `commit` is the PR's merged head or a PR-branch ancestor of it (`git merge-base --is-ancestor` to the head, and not already an ancestor of the merge commit's parent on `main`). Exit 0 = every area covered (docs-only PRs pass with a note), 1 = the named areas have no marker, 2 = usage/environment error. `/epic_v2` Step 5 runs it after `git add` and before the bookkeeping commit and fails the step on non-zero — write the missing marker from the gate that actually ran; never bypass. The same script audits any merged PR after the fact (Phase 89 exit gate, 636B).
 

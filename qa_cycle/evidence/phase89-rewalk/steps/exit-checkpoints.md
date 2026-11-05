@@ -1,12 +1,12 @@
 # Exit checkpoints — legal E.1–E.11 and portal P-E.1–P-E.11 (computed by 636B.3 after the register was final)
 
-Inputs: `steps/*.md` (106 scored rows, S2-13 scored per ruling 0.R4), `gaps.md` (26 open ids: 3 HIGH, 6 MEDIUM, 17 LOW after ruling 0.R5), `markers.md` (26/26 exit 0). Scoring rules per brief §4.2 / D-5: E.1 is scored over the SCORED rows only; SKIP rows are "not walked — targeted re-walk (decisions 2–3)".
+Inputs: `steps/*.md` (106 scored rows, S2-13 scored per ruling 0.R4), `gaps.md` (27 open ids: 3 HIGH, 6 MEDIUM, 18 LOW after ruling 0.R5 and the CodeRabbit re-score, which added G89-F27), `markers.md` (26/26 exit 0). Scoring rules per brief §4.2 / D-5: E.1 is scored over the SCORED rows only; SKIP rows are "not walked — targeted re-walk (decisions 2–3)".
 
 ## Legal (L `:578-593`)
 
 | Row | Checkpoint | Result | Evidence (how scored) | Gap |
 |---|---|---|---|---|
-| E.1 | Every step above is checked | FAIL | 106 scored rows: 98 PASS · 6 FAIL (S1-29, S2-12, S2-25, S2-45, S2-55, S2-59) · 2 PARTIAL (S1-02, S1-76). SKIP rows listed in README "Not walked" | G89-F4, F12, F18, F22, F24, F25 |
+| E.1 | Every step above is checked | FAIL | 106 scored rows: 95 PASS · 8 FAIL (S1-29, S2-12, S2-25, S2-41, S2-45, S2-55, S2-56, S2-59) · 3 PARTIAL (S1-02, S1-65, S1-76). SKIP rows listed in README "Not walked" | G89-F4, F12, F18, F22, F24, F25, F27 |
 | E.2 | All 7 wow moments captured without visual regression | PARTIAL | All 7 captured: `wow-1-home.png` (S1-06), `wow-2-accepted.png` (S1-27), `wow-3-conflict.png` (S1-20), `wow-4-matter.png` (S1-30), `wow-5-profitability.png` (S1-70), `wow-6-fee-note-pdf.png` (S1-76), `wow-7-activity.png` (S2-22). Reviewed: wow-6 is the HTML preview, not the rendered PDF, and has no banking block (S1-76 PARTIAL); wow-7 shows "status to DONE / IN_PROGRESS" (G88-F24, open LOW, cited); wow-4 was retaken after reload (G89-F5); 1–3 and 5 no defect | G89-F5; G88-F24 (cited) |
 | E.3 | Zero BLOCKER or HIGH in `gaps.md` | FAIL | 3 HIGH open (G89-F11, G89-F12, G89-F22 — all confirmed, 0.R3/0.R5) | G89-F11, G89-F12, G89-F22 |
 | E.4 | Tier removal on 3+ screens | PASS | S1-18 Subscription flat + "Managed Account"; S1-07/S1-08 team invite inline form, no "Upgrade to Pro"; S2-24 "3 members · 0 pending invitations", Subscription "Billing · Trial · Manual · Managed Account" | — |
@@ -24,7 +24,7 @@ Legal: PASS 6 · FAIL 2 · PARTIAL 1 · N/A 2.
 
 | Row | Checkpoint | Result | Evidence | Gap |
 |---|---|---|---|---|
-| P-E.1 | Every step checked (or N/A with rationale) | FAIL | Portal rows: 28 PASS · 3 FAIL (S2-45; S2-55, S2-59 as written) · 2 N/A rows (`Removed —` P-75.4/75.5, P-90.1/90.2). Only the legal-za profile was exercised (targeted walk) | G89-F22, F24, F25 |
+| P-E.1 | Every step checked (or N/A with rationale) | FAIL | Portal rows: 26 PASS · 5 FAIL (S2-45; S2-41, S2-55, S2-56, S2-59 as written) · 2 N/A rows (`Removed —` P-75.4/75.5, P-90.1/90.2). Only the legal-za profile was exercised (targeted walk) | G89-F22, F24, F25, F27 |
 | P-E.2 | 4 wow frames captured (wow 5 dropped), each reviewed (P-E.2b) | PARTIAL | All 4 captured and reviewed, but only 2 are clean: `p-wow-1-home.png` (S2-36) four cards, no defect · `p-wow-3-paid.png` (S2-48) clean content (captured at 1698 px — see P-E.10). **Defects in the frames:** `p-wow-2-trust.png` (S2-44) layout clean, but its **content** shows the G89-F12 artefacts (running balance -R 1,34, the CORR description) — not a deck candidate as-is; `p-wow-4-document.png` (S2-52) prints the raw enum "Matter type: LITIGATION" (G89-F26) and the Documents row sits at the bottom edge (composition — 636C should scroll) | G89-F12 (p-wow-2 content), G89-F26 (p-wow-4 copy) |
 | P-E.3 | Zero BLOCKER or HIGH in `gaps.md` | FAIL | 3 HIGH open (G89-F11, G89-F12, G89-F22 — F22 is the portal trust balance) | G89-F11, G89-F12, G89-F22 |
 | P-E.4 | Profile gating (`/trust`, `/deadlines` legal-za only) | N/A | Only the legal-za tenant was walked (targeted re-walk); `/trust` and `/deadlines` render for legal-za without error | — |

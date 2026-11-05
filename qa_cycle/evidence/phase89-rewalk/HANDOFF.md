@@ -46,11 +46,13 @@ The walker brief (`.epic-brief.md`) is uncommitted. This index lets a reader rec
   - Register: 3 HIGH · 6 MEDIUM · 17 LOW; exit FAIL.
 
 **Final counts (after the review fixes; these supersede the 636B.3 block's "Totals" line):**
-- Walk rows: 106 scored → PASS 98 · FAIL 6 · PARTIAL 2 · DEFERRED 0 (+2 N/A rows).
+- Walk rows: 106 scored → PASS 95 · FAIL 8 · PARTIAL 3 · DEFERRED 0 (+2 N/A rows).
 - Exit checkpoints:
   - legal E: PASS 6 · FAIL 2 · PARTIAL 1 · N/A 2;
   - portal P-E: PASS 3 · FAIL 2 · PARTIAL 3 · N/A 2, with one DEFERRED sub-item (P-E.8 Day-7 digest; cron Monday 08:00 SAST not reached).
-- Register: 26 ids — HIGH 3 · MEDIUM 6 · LOW 17. Next free id: G89-F27.
+- Register: 27 ids — HIGH 3 · MEDIUM 6 · LOW 18. Next free id: G89-F28.
+- Closed-gap re-verification: 29 VERIFIED · 5 PARTIAL · 2 FAIL · 2 suite-covered.
+- *Counts updated 2026-11-06 after the CodeRabbit review of PR #1742: S1-65 PASS → PARTIAL, S2-41 PASS → FAIL as written (new G89-F27 LOW scenario mismatch, P-3.4 request state), S2-56 PASS → FAIL as written (G89-F24 root); G88-F16 and G88-F29 VERIFIED → PARTIAL. Exit-checkpoint tallies unchanged.*
 
 ---
 

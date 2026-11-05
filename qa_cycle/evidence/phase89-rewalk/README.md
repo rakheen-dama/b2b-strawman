@@ -79,10 +79,10 @@ Full expectations are in the walker brief (§4, uncommitted). Each step file rep
 | 636B.1 | `steps/day-00.md` | 8 | 7 / 0 / 1 / 0 / 0 | 9 |
 | 636B.1 | `steps/days-01-07.md` | 15 | 14 / 1 / 0 / 0 / 0 | 6 |
 | 636B.1 | `steps/days-08-21.md` | 11 | 11 / 0 / 0 / 0 / 0 | 5 |
-| 636B.1 + 636B.2 | `steps/days-22-45.md` | 20 (18 by 636B.1; S1-79, S1-80 by 636B.2) | 19 / 0 / 1 / 0 / 0 | 6 (4 by 636B.1; D-3(h), S1-78 by 636B.2) |
+| 636B.1 + 636B.2 | `steps/days-22-45.md` | 20 (18 by 636B.1; S1-79, S1-80 by 636B.2) | 18 / 0 / 2 / 0 / 0 | 6 (4 by 636B.1; D-3(h), S1-78 by 636B.2) |
 | 636B.2 + 636B.3 | `steps/days-46-90.md` | 21 (S2-13 scored per ruling 0.R4) | 19 / 2 / 0 / 0 / 0 | 11 (+1 superseded BLOCKED row) |
-| 636B.2 + 636B.3 | `steps/portal.md` | 31 (+2 N/A rows) | 28 / 3 / 0 / 0 / 2 | 3 |
-| | **Total (walk rows = sum of the rows above)** | **106** (+2 N/A rows) | **98 / 6 / 2 / 0 / 2** | 48 |
+| 636B.2 + 636B.3 | `steps/portal.md` | 31 (+2 N/A rows) | 26 / 5 / 0 / 0 / 2 | 3 |
+| | **Total (walk rows = sum of the rows above)** | **106** (+2 N/A rows) | **95 / 8 / 3 / 0 / 2** | 48 |
 | 636B.3 | `steps/exit-checkpoints.md` (not walk rows; not in the total) | 21 computed (E.1–E.11, P-E.1–P-E.11 without P-E.7) | 9 / 4 / 4 / 0 / 4 — row-level DEFERRED 0; **1 DEFERRED sub-item**: P-E.8 Day-7 weekly digest (cron Monday 08:00 SAST never elapsed in the Thu 21:34 → Fri 01:25 walk window, `PortalDigestScheduler.java:106`) | — |
 
 Browser calls: 636B.1 **177** / 200 (Playwright MCP tool calls, incl. 1 `browser_close`, 3 snapshots/evaluates and 1 click; most UI actions batched in `browser_run_code_unsafe`) · 636B.2 ≈109 / 250 · 636B.3 **88** / 250 (fresh MCP browser; isolated contexts sipho3 / moroka3 / lerato3).
@@ -106,8 +106,8 @@ Browser calls: 636B.1 **177** / 200 (Playwright MCP tool calls, incl. 1 `browser
 
 ## Results
 
-- Register: `gaps.md` — exit rule **0 HIGH + 0 MEDIUM**. Verdict: **FAIL** — 3 HIGH (G89-F11, G89-F12, G89-F22; F11 is recorded HIGH, the founder may downgrade it to MEDIUM in 636C if ruled an input-validation edge — ruling 0.R4 item 2) + 6 MEDIUM (G89-F13, F14, F16, F17, F18, F23) + 17 LOW open, all HIGH/MEDIUM confirmed by the orchestrator (0.R3, 0.R5 in `gaps.md`); 3 scenario mismatches (F4, F24, F25) for founder §6. Closed-gap re-verification: 31 VERIFIED · 3 PARTIAL · 2 FAIL (G88-F40 → F18; G88-F23 → F12/F22) · 2 suite-covered (F48, F49).
-- Walk rows: **106 scored → PASS 98 · FAIL 6 · PARTIAL 2 · DEFERRED 0** (+2 N/A rows). Exit checkpoints: legal E PASS 6 · FAIL 2 · PARTIAL 1 · N/A 2; portal P-E PASS 3 · FAIL 2 · PARTIAL 3 · N/A 2 (one DEFERRED sub-item inside P-E.8).
+- Register: `gaps.md` — exit rule **0 HIGH + 0 MEDIUM**. Verdict: **FAIL** — 3 HIGH (G89-F11, G89-F12, G89-F22; F11 is recorded HIGH, the founder may downgrade it to MEDIUM in 636C if ruled an input-validation edge — ruling 0.R4 item 2) + 6 MEDIUM (G89-F13, F14, F16, F17, F18, F23) + 18 LOW open (27 ids), all HIGH/MEDIUM confirmed by the orchestrator (0.R3, 0.R5 in `gaps.md`); 4 scenario mismatches (F4, F24, F25, F27) for founder §6. Closed-gap re-verification: 29 VERIFIED · 5 PARTIAL · 2 FAIL (G88-F40 → F18; G88-F23 → F12/F22) · 2 suite-covered (F48, F49).
+- Walk rows: **106 scored → PASS 95 · FAIL 8 · PARTIAL 3 · DEFERRED 0** (+2 N/A rows) — after the CodeRabbit re-score of S1-65 (→ PARTIAL), S2-41 and S2-56 (→ FAIL as written). Exit checkpoints: legal E PASS 6 · FAIL 2 · PARTIAL 1 · N/A 2; portal P-E PASS 3 · FAIL 2 · PARTIAL 3 · N/A 2 (one DEFERRED sub-item inside P-E.8).
 - Marker audit: `markers.md`. Scout pre-check: 26/26 PRs #1716–#1741 exit 0 with `--committed-only`; 11 backend markers on #1722+.
 
 ## Stack state left by 636B.1 / for 636B.2

@@ -8,6 +8,7 @@ import {
   getMatterTransactions,
   type PortalTrustTransactionResponse,
 } from "@/lib/api/trust";
+import { labelFor, TRUST_TRANSACTION_TYPE_LABELS } from "@/lib/labels";
 
 interface TransactionListProps {
   matterId: string;
@@ -15,6 +16,11 @@ interface TransactionListProps {
   currency?: string;
   /** Page size — defaults to 20 (also the backend default). */
   pageSize?: number;
+}
+
+/** The client-facing transaction type ("Fee transfer") — never the raw enum (G88-F31). */
+function typeLabel(txn: PortalTrustTransactionResponse): string {
+  return labelFor(TRUST_TRANSACTION_TYPE_LABELS, txn.transactionType);
 }
 
 /**
@@ -27,11 +33,7 @@ function describeTransaction(txn: PortalTrustTransactionResponse): string {
   if (txn.description && txn.description.trim().length > 0) {
     return txn.description;
   }
-  const humanType = txn.transactionType
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  const humanType = typeLabel(txn);
   return txn.reference ? `${humanType} — ${txn.reference}` : humanType;
 }
 
@@ -130,7 +132,7 @@ export function TransactionList({
                   {describeTransaction(txn)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
-                  {formatDate(txn.occurredAt)} · {txn.transactionType}
+                  {formatDate(txn.occurredAt)} · {typeLabel(txn)}
                 </p>
               </div>
               <div className="text-right">
@@ -177,9 +179,7 @@ export function TransactionList({
                 <td className="px-4 py-3 text-slate-700">
                   {formatDate(txn.occurredAt)}
                 </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {txn.transactionType}
-                </td>
+                <td className="px-4 py-3 text-slate-700">{typeLabel(txn)}</td>
                 <td className="px-4 py-3 text-slate-900">
                   {describeTransaction(txn)}
                 </td>

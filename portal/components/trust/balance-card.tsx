@@ -4,10 +4,10 @@ import Link from "next/link";
 import { Scale } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatCurrency, formatDate } from "@b2mash/shared/format";
-import { formatMatterLabel } from "@/lib/api/trust";
 
 interface BalanceCardProps {
-  matterId: string;
+  /** The portal matter name (PortalTrustMatterSummary.matterName); null → "Matter". */
+  matterName: string | null;
   currentBalance: number;
   lastTransactionAt: string;
   /** When present, the matter name/label wraps in a link to the matter detail page. */
@@ -18,16 +18,16 @@ interface BalanceCardProps {
 
 /**
  * Trust balance summary for a single matter. Renders a large ZAR figure,
- * "as of" date, and the matter label. Full width below `md` for mobile.
+ * "as of" date, and the matter name. Full width below `md` for mobile.
  */
 export function BalanceCard({
-  matterId,
+  matterName,
   currentBalance,
   lastTransactionAt,
   href,
   currency = "ZAR",
 }: BalanceCardProps) {
-  const label = formatMatterLabel(matterId);
+  const label = matterName ?? "Matter";
   const title = (
     <span className="flex items-center gap-2 text-sm font-medium text-slate-600">
       <Scale className="size-4" aria-hidden="true" />

@@ -1,0 +1,12 @@
+[
+  {
+    "component": "StatusBadge",
+    "file": "components/status-badge.tsx",
+    "reason": "label map — PROJECT_STATUS_LABELS (project) / humaniseStatus (task) before render"
+  },
+  {
+    "component": "InvoiceStatusBadge",
+    "file": "components/invoice-status-badge.tsx",
+    "reason": "label map — INVOICE_STATUS_LABELS / humaniseStatus before render"
+  }
+]

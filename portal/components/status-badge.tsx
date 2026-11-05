@@ -15,8 +15,8 @@ const PROJECT_STATUS_COLORS: Record<string, string> = {
     "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
 };
 
-// Phase 88 624H (G-D19): clients read "Closed", not "CLOSED". Task badges keep their
-// raw enum text (formatStatus below).
+// Phase 88 624H (G-D19): clients read "Closed", not "CLOSED". Phase 89 633C (G88-F20): task badges
+// read "Open" / "In progress" / "Done" too (humaniseStatus).
 const PROJECT_STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Active",
   CLOSED: "Closed",
@@ -44,10 +44,6 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-function formatStatus(status: string): string {
-  return status.replace(/_/g, " ");
-}
-
 export function StatusBadge({
   status,
   variant = "project",
@@ -64,7 +60,7 @@ export function StatusBadge({
     "";
   const label = isProject
     ? (PROJECT_STATUS_LABELS[status] ?? humaniseStatus(status))
-    : formatStatus(status);
+    : humaniseStatus(status);
 
   return <Badge className={cn(colorClasses, className)}>{label}</Badge>;
 }

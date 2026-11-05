@@ -10,6 +10,8 @@ import { portalGet } from "@/lib/api-client";
 
 export interface PortalTrustMatterSummary {
   matterId: string;
+  /** The client's portal matter name; null when the matter is not in the portal read model (633B). */
+  matterName: string | null;
   /** BigDecimal serialised as a number via Jackson. */
   currentBalance: number;
   /** ISO 8601 instant. */
@@ -24,7 +26,10 @@ export interface PortalTrustSummaryResponse {
 
 export interface PortalTrustTransactionResponse {
   id: string;
-  /** e.g. "DEPOSIT" | "WITHDRAWAL" | "INTEREST_POSTED" | "RECONCILIATION" */
+  /**
+   * DEPOSIT | PAYMENT | REFUND | FEE_TRANSFER | INTEREST_CREDIT | INTEREST_LPFF | TRANSFER_IN |
+   * TRANSFER_OUT | REVERSAL (tenant chk_trust_txn_type) — label via lib/labels.ts, never rendered raw.
+   */
   transactionType: string;
   amount: number;
   runningBalance: number;
@@ -97,14 +102,4 @@ export async function getMatterStatementDocuments(
   return portalGet<PortalTrustStatementDocumentResponse[]>(
     `/portal/trust/matters/${encodeURIComponent(matterId)}/statement-documents`,
   );
-}
-
-/**
- * Builds a human-readable matter label. The 495A DTO does NOT expose a matter
- * display name, so we fall back to a short-id ("Matter ab12cd34"). Replace
- * once a richer endpoint lands.
- */
-export function formatMatterLabel(matterId: string): string {
-  const short = matterId.replace(/-/g, "").slice(0, 8);
-  return `Matter ${short}`;
 }

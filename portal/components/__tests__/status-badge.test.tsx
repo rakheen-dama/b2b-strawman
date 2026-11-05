@@ -12,13 +12,22 @@ describe("StatusBadge", () => {
     expect(screen.getByText("On hold")).toBeInTheDocument();
   });
 
-  it("renders task status with correct color classes", () => {
+  it("renders task status in sentence case with the colour classes", () => {
     const { container } = render(
       <StatusBadge status="IN_PROGRESS" variant="task" />,
     );
-    expect(screen.getByText("IN PROGRESS")).toBeInTheDocument();
+    expect(screen.getByText("In progress")).toBeInTheDocument();
+    expect(screen.queryByText("IN PROGRESS")).toBeNull();
     const badge = container.querySelector("[data-slot='badge']");
     expect(badge?.className).toContain("bg-blue-100");
+  });
+
+  it("renders OPEN and DONE task statuses in sentence case (G88-F20)", () => {
+    render(<StatusBadge status="OPEN" variant="task" />);
+    expect(screen.getByText("Open")).toBeInTheDocument();
+    cleanup();
+    render(<StatusBadge status="DONE" variant="task" />);
+    expect(screen.getByText("Done")).toBeInTheDocument();
   });
 
   it("renders CLOSED project status with the muted slate variant", () => {

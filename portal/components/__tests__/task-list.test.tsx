@@ -34,11 +34,11 @@ describe("TaskList", () => {
     expect(
       screen.getAllByText("Design homepage").length,
     ).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("IN PROGRESS").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("In progress").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Alice").length).toBeGreaterThanOrEqual(1);
 
     expect(screen.getAllByText("Write tests").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("OPEN").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Open").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Unassigned").length).toBeGreaterThanOrEqual(1);
   });
 
@@ -63,6 +63,6 @@ describe("TaskList", () => {
       />,
     );
 
-    expect(screen.getAllByText("DONE").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Done").length).toBeGreaterThanOrEqual(1);
   });
 });

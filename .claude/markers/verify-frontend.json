@@ -1,7 +1,7 @@
 {
-  "commit": "a8d5b86ae",
+  "commit": "422ddd3a8",
   "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-11-05T12:31:00Z",
-  "summary": "PR #1735 (634C) head a8d5b86ae: lint 0 errors (79 pre-existing warnings), typecheck/format pass, vitest 444 files / 3659 passed / 2 skipped, build pass; Frontend CI pass"
+  "ts": "2026-11-05T14:41:32Z",
+  "summary": "PR #1736 (634D) head 422ddd3a8, orchestrator re-run: lint 0 errors, typecheck/format pass, vitest 444 files / 3669 passed / 2 skipped, build pass; Frontend CI pass; E2E legal-depth-ii 39/4 skipped (fresh stacks G, I), legal-lifecycle 105/105 (fresh stack H), default 164/14 skipped"
 }

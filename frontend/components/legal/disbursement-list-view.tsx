@@ -69,6 +69,48 @@ export function categoryLabel(category: DisbursementCategory): string {
     .join(" ");
 }
 
+/**
+ * Column priority by the table's own container width (a container query, so the sidebar, the page's
+ * max width and the matter tab's extra padding are all accounted for). As the container narrows,
+ * Supplier hides first, then Category, then Matter; a hidden column's value moves to a muted second
+ * line under the Description, hidden again at the same breakpoint its column comes back, so nothing
+ * is lost and nothing shows twice. Billing and Actions are never hidden: below 58rem the Billing
+ * badge stacks under the Approval badge, the cells tighten to `px-2`, Description caps at 20ch and
+ * the Amount header may wrap.
+ *
+ * Measured containers (`[data-testid="disbursement-list"]` clientWidth on today's shell): firm list
+ * 704 / 960 / 1120 px at 1024 / 1280 / 1440 viewports (≈1200 max); matter Fees › Disbursements tab
+ * 656 / 912 / 1072 px (≈1152 max). Measured table min-content widths (Description at 28ch, `px-4`):
+ * Date + Description + Amount + Approval + Billing + Actions 907 px (→ 58rem); + Matter 1033
+ * (→ 66rem); + Category, at its widest label "Deeds Office Fees", 1193 (→ 75rem); + Supplier 1328
+ * (→ 84rem). The compact layout measured 656 px before the Amount header could wrap. So at 1440 both
+ * mounts show Matter, with Category and Supplier on the second line, and on today's shell Supplier
+ * never gets its column. Re-measure these thresholds if a column, a cap or the shell width changes.
+ */
+const COLUMN_CLASS = {
+  matter: "hidden @min-[66rem]:table-cell",
+  category: "hidden @min-[75rem]:table-cell",
+  supplier: "hidden @min-[84rem]:table-cell",
+  billing: "hidden @min-[58rem]:table-cell",
+} as const;
+
+/** The second-line fragment for a hidden column: hidden again where its column reappears. */
+const SECONDARY_CLASS = {
+  matter: "@min-[66rem]:hidden",
+  category: "@min-[75rem]:hidden",
+  supplier: "@min-[84rem]:hidden",
+  /** Billing badge stacked under Approval while the Billing column is hidden. */
+  billing: "@min-[58rem]:hidden",
+} as const;
+
+/** Horizontal cell padding: tight in the compact layout, the usual `px-4` once Billing has its column. */
+const CELL = "px-2 py-3 @min-[58rem]:px-4";
+
+const HEADER_TEXT =
+  "text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400";
+const SORT_BUTTON =
+  "h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400";
+
 function canEditStatus(status: DisbursementApprovalStatus): boolean {
   return status === "DRAFT" || status === "PENDING_APPROVAL";
 }
@@ -124,70 +166,64 @@ export function DisbursementListView({
   return (
     // relative: the row Actions trigger's sr-only label is position:absolute — without a positioned
     // ancestor inside this scroll box it escapes the clip and widens the document (G88-M4).
-    <div className="relative overflow-x-auto" data-testid="disbursement-list">
+    // `@container`: the column-priority queries measure this box, and inline-size containment keeps
+    // the table's width from feeding back into the page layout. overflow-x-auto stays as the safety
+    // net for content wider than the measured thresholds allow for.
+    <div className="@container relative overflow-x-auto" data-testid="disbursement-list">
       <table className="w-full">
         <thead>
           <tr className="border-b border-slate-200 dark:border-slate-800">
-            <th className="px-4 py-3 text-left">
+            <th className={cn(CELL, "text-left")}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("incurredDate")}
-                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
+                className={SORT_BUTTON}
               >
                 Date <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Matter
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Category
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Description
-            </th>
-            <th className="px-4 py-3 text-left">
+            <th className={cn(CELL, "text-left", HEADER_TEXT, COLUMN_CLASS.matter)}>Matter</th>
+            <th className={cn(CELL, "text-left", HEADER_TEXT, COLUMN_CLASS.category)}>Category</th>
+            <th className={cn(CELL, "text-left", HEADER_TEXT)}>Description</th>
+            <th className={cn(CELL, "text-left", COLUMN_CLASS.supplier)}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("supplierName")}
-                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
+                className={SORT_BUTTON}
               >
                 Supplier <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-right">
+            <th className={cn(CELL, "text-right")}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("amount")}
-                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
+                className={cn(SORT_BUTTON, "whitespace-normal @min-[58rem]:whitespace-nowrap")}
               >
                 Amount (incl VAT) <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left">
+            <th className={cn(CELL, "text-left")}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("approvalStatus")}
-                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
+                className={SORT_BUTTON}
               >
                 Approval <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Billing
-            </th>
-            <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Actions
-            </th>
+            <th className={cn(CELL, "text-left", HEADER_TEXT, COLUMN_CLASS.billing)}>Billing</th>
+            <th className={cn(CELL, "text-right", HEADER_TEXT)}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {sorted.map((d) => {
             const inclVat = d.amount + d.vatAmount;
+            const matterName = projectNames?.[d.matterId];
             const editable = canEditStatus(d.approvalStatus);
             const edit = editable ? onEdit : undefined;
             const uploadReceipt = editable ? onUploadReceipt : undefined;
@@ -205,27 +241,96 @@ export function DisbursementListView({
                 onClick={() => onSelect?.(d)}
                 data-testid={`disbursement-row-${d.id}`}
               >
-                <td className="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400">
+                <td
+                  className={cn(
+                    CELL,
+                    "font-mono text-sm whitespace-nowrap text-slate-600 dark:text-slate-400"
+                  )}
+                >
                   {d.incurredDate}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                  {projectNames?.[d.matterId] ?? "\u2014"}
+                <td
+                  className={cn(
+                    CELL,
+                    "text-sm text-slate-700 dark:text-slate-300",
+                    COLUMN_CLASS.matter
+                  )}
+                >
+                  {matterName ?? "\u2014"}
                 </td>
-                <td className="px-4 py-3">
+                <td className={cn(CELL, COLUMN_CLASS.category)}>
                   <Badge variant="outline">{categoryLabel(d.category)}</Badge>
                 </td>
-                <td className="max-w-sm truncate px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                  {d.description}
+                <td
+                  className={cn(
+                    CELL,
+                    "max-w-[20ch] text-sm text-slate-700 @min-[58rem]:max-w-[28ch] dark:text-slate-300"
+                  )}
+                >
+                  <div className="truncate" title={d.description}>
+                    {d.description}
+                  </div>
+                  {/* The hidden columns' values: Matter, then Category, then Supplier. A separator
+                      travels with the fragment before it (so it never starts a wrapped line) and
+                      hides with it; Supplier is the last column to come back, so whenever a
+                      fragment shows, Supplier follows it. */}
+                  <div
+                    className={cn(
+                      "mt-0.5 flex flex-wrap gap-x-1.5 text-xs text-slate-500 dark:text-slate-400",
+                      SECONDARY_CLASS.supplier
+                    )}
+                  >
+                    {matterName && (
+                      <span
+                        className={cn("flex max-w-full min-w-0 gap-x-1.5", SECONDARY_CLASS.matter)}
+                      >
+                        <span className="truncate" title={matterName}>
+                          {matterName}
+                        </span>
+                        <span aria-hidden="true">&middot;</span>
+                      </span>
+                    )}
+                    <span
+                      className={cn("flex max-w-full min-w-0 gap-x-1.5", SECONDARY_CLASS.category)}
+                    >
+                      <span className="truncate">{categoryLabel(d.category)}</span>
+                      <span aria-hidden="true">&middot;</span>
+                    </span>
+                    <span
+                      className={cn("max-w-full truncate", SECONDARY_CLASS.supplier)}
+                      title={d.supplierName}
+                    >
+                      {d.supplierName}
+                    </span>
+                  </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
+                <td
+                  className={cn(
+                    CELL,
+                    "text-sm text-slate-700 dark:text-slate-300",
+                    COLUMN_CLASS.supplier
+                  )}
+                >
                   {d.supplierName}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-sm text-slate-950 tabular-nums dark:text-slate-50">
+                <td
+                  className={cn(
+                    CELL,
+                    "text-right font-mono text-sm whitespace-nowrap text-slate-950 tabular-nums dark:text-slate-50"
+                  )}
+                >
                   {formatCurrency(inclVat, "ZAR")}
                 </td>
-                <td className="px-4 py-3">{approvalStatusBadge(d.approvalStatus)}</td>
-                <td className="px-4 py-3">{billingStatusBadge(d.billingStatus)}</td>
-                <td className="px-4 py-3 text-right">
+                <td className={CELL}>
+                  {approvalStatusBadge(d.approvalStatus)}
+                  <div className={cn("mt-1", SECONDARY_CLASS.billing)}>
+                    {billingStatusBadge(d.billingStatus)}
+                  </div>
+                </td>
+                <td className={cn(CELL, COLUMN_CLASS.billing)}>
+                  {billingStatusBadge(d.billingStatus)}
+                </td>
+                <td className={cn(CELL, "text-right")}>
                   {hasActions && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

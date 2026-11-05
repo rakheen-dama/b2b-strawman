@@ -69,6 +69,10 @@ export function EditCommentDialog({
     projectId,
     existingCount: kept.length,
   });
+  // Matter (PROJECT) comments stay SHARED (634E): the backend update path does not guard a PROJECT
+  // target, so the dialog must not offer INTERNAL. `undefined` visibility = unchanged.
+  const visibilityLocked = comment.entityType === "PROJECT";
+  const showVisibility = canManageVisibility && !visibilityLocked;
 
   // onSubmit + startTransition rather than `<form action>`: the same transition, minus React's
   // automatic form reset, which a controlled <select> does not survive (its DOM would fall back to
@@ -110,7 +114,7 @@ export function EditCommentDialog({
         projectId,
         comment.id,
         trimmedBody,
-        canManageVisibility ? visibility : undefined,
+        showVisibility ? visibility : undefined,
         attachmentDocumentIds
       );
       if (result.success) {
@@ -184,7 +188,7 @@ export function EditCommentDialog({
             />
           </div>
 
-          {canManageVisibility && (
+          {showVisibility && (
             <div className="space-y-2">
               <Label htmlFor="edit-comment-visibility">Visibility</Label>
               <select
@@ -208,7 +212,7 @@ export function EditCommentDialog({
               setKept((prev) => prev.filter((a) => a.documentId !== documentId))
             }
             disabled={isSubmitting}
-            shared={canManageVisibility && visibility === "SHARED"}
+            shared={visibilityLocked || (canManageVisibility && visibility === "SHARED")}
           />
 
           {error && <p className="text-destructive text-sm">{error}</p>}

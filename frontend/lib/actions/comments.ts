@@ -43,38 +43,6 @@ export async function fetchComments(
   return listMatterComments(projectId, { entityType, entityId });
 }
 
-export async function fetchProjectComments(projectId: string): Promise<Comment[]> {
-  return listMatterComments(projectId, { entityType: "PROJECT", size: 50 });
-}
-
-export async function createProjectComment(
-  orgSlug: string,
-  projectId: string,
-  body: string
-): Promise<ActionResult> {
-  if (!body.trim()) {
-    return { success: false, error: "Comment cannot be empty." };
-  }
-
-  try {
-    await createMatterComment(projectId, {
-      entityType: "PROJECT",
-      entityId: projectId,
-      body: body.trim(),
-      visibility: "SHARED",
-    });
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: "An unexpected error occurred." };
-  }
-
-  revalidatePath(`/org/${orgSlug}/matters/${projectId}`);
-
-  return { success: true };
-}
-
 export async function createComment(
   orgSlug: string,
   projectId: string,

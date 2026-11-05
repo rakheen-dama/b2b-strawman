@@ -25,7 +25,7 @@ interface MatterTabsProps {
   financialsPanel?: ReactNode;
   generatedPanel?: ReactNode;
   requestsPanel?: ReactNode;
-  customerCommentsPanel?: ReactNode;
+  commentsPanel?: ReactNode;
   courtDatesPanel?: ReactNode;
   adversePartiesPanel?: ReactNode;
   trustPanel?: ReactNode;
@@ -50,7 +50,7 @@ type TabId =
   | "rates"
   | "generated"
   | "requests"
-  | "customer-comments"
+  | "comments"
   | "court-dates"
   | "adverse-parties"
   | "trust"
@@ -75,7 +75,7 @@ const validTabIds = new Set<string>([
   "rates",
   "generated",
   "requests",
-  "customer-comments",
+  "comments",
   "court-dates",
   "adverse-parties",
   "trust",
@@ -100,7 +100,7 @@ export function MatterTabs({
   financialsPanel,
   generatedPanel,
   requestsPanel,
-  customerCommentsPanel,
+  commentsPanel,
   courtDatesPanel,
   adversePartiesPanel,
   trustPanel,
@@ -150,7 +150,7 @@ export function MatterTabs({
       rates: !!ratesPanel,
       financials: !!financialsPanel,
       requests: !!requestsPanel,
-      "customer-comments": !!customerCommentsPanel,
+      comments: !!commentsPanel,
       // Module-gated tabs
       "court-dates": showCourtDates,
       "adverse-parties": showAdverseParties,
@@ -176,7 +176,7 @@ export function MatterTabs({
     ratesPanel,
     financialsPanel,
     requestsPanel,
-    customerCommentsPanel,
+    commentsPanel,
     showCourtDates,
     showAdverseParties,
     showTrust,
@@ -269,9 +269,9 @@ export function MatterTabs({
           {requestsPanel}
         </TabsPrimitive.Content>
       )}
-      {customerCommentsPanel && (
-        <TabsPrimitive.Content value="customer-comments" className="pt-6 outline-none">
-          {customerCommentsPanel}
+      {commentsPanel && (
+        <TabsPrimitive.Content value="comments" className="pt-6 outline-none">
+          {commentsPanel}
         </TabsPrimitive.Content>
       )}
       {showCourtDates && (

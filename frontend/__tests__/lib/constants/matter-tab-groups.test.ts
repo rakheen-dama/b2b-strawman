@@ -64,7 +64,7 @@ describe("MATTER_TAB_GROUPS", () => {
       [
         ["clients", "Clients"],
         ["requests", "Information requests"],
-        ["customer-comments", "Client comments"],
+        ["comments", "Comments"],
         ["adverse-parties", "Adverse parties"],
       ],
       [["court-dates", "Court dates"]],
@@ -91,6 +91,7 @@ describe("MATTER_TAB_GROUPS", () => {
     expect(ids).not.toContain("expenses");
     expect(ids).not.toContain("customers");
     expect(ids).not.toContain("members");
+    expect(ids).not.toContain("customer-comments");
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
@@ -102,6 +103,7 @@ describe("LEGACY_TAB_IDS / aliasLegacyTabId", () => {
       projects: "matters",
       expenses: "disbursements",
       members: "team",
+      "customer-comments": "comments",
     });
   });
 
@@ -110,6 +112,7 @@ describe("LEGACY_TAB_IDS / aliasLegacyTabId", () => {
     expect(aliasLegacyTabId("expenses")).toBe("disbursements");
     expect(aliasLegacyTabId("projects")).toBe("matters");
     expect(aliasLegacyTabId("members")).toBe("team");
+    expect(aliasLegacyTabId("customer-comments")).toBe("comments");
     expect(aliasLegacyTabId("time")).toBe("time");
     expect(aliasLegacyTabId(null)).toBeNull();
     // Own-property check — prototype keys are not aliases.
@@ -130,6 +133,11 @@ describe("LEGACY_TAB_IDS / aliasLegacyTabId", () => {
     expect(resolveTabFromUrl(aliasLegacyTabId("members"), MATTER_TAB_GROUPS)).toEqual({
       groupId: "details",
       tabId: "team",
+    });
+    // The old Client comments tab became the Comments tab (Phase 89 634E).
+    expect(resolveTabFromUrl(aliasLegacyTabId("customer-comments"), MATTER_TAB_GROUPS)).toEqual({
+      groupId: "client",
+      tabId: "comments",
     });
   });
 });

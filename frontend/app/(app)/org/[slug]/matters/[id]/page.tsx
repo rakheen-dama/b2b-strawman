@@ -72,7 +72,7 @@ import { BudgetPanel } from "@/components/budget/budget-panel";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
 import { OverviewTab } from "@/components/projects/overview-tab";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
-import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
+import { CommentSectionClient } from "@/components/comments/comment-section-client";
 import {
   getProjectRequests,
   type InformationRequestResponse,
@@ -636,10 +636,17 @@ export default async function ProjectDetailPage({
             </div>
           ) : undefined
         }
-        customerCommentsPanel={
-          customers && customers.length > 0 ? (
-            <ProjectCommentsSection projectId={id} orgSlug={slug} />
-          ) : undefined
+        commentsPanel={
+          // Matter (PROJECT-target) comments — mounted unconditionally so a comment notification's
+          // ?tab=comments&commentId= deep link always has a landing surface (634E, rulings §9.5).
+          <CommentSectionClient
+            projectId={id}
+            entityType="PROJECT"
+            entityId={id}
+            orgSlug={slug}
+            currentMemberId={currentMemberId ?? ""}
+            canManageVisibility={canManage}
+          />
         }
         courtDatesPanel={
           <ProjectCourtDatesTab projectId={id} slug={slug} canManageLegal={canManageLegal} />

@@ -35,14 +35,7 @@ vi.mock("@/lib/api", () => ({ api: apiMock, ApiError: MockApiError }));
 vi.mock("@/lib/api/client", () => ({ api: apiMock, ApiError: MockApiError }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import {
-  fetchComments,
-  fetchProjectComments,
-  createProjectComment,
-  createComment,
-  updateComment,
-  deleteComment,
-} from "@/lib/actions/comments";
+import { fetchComments, createComment, updateComment, deleteComment } from "@/lib/actions/comments";
 import { fetchProjectActivity } from "@/lib/actions/activity";
 import { fetchPortalContacts } from "@/lib/actions/acceptance-actions";
 // 614B: the dashboard wrapper fetchAggregatedCompleteness was deleted with the admin stats
@@ -72,9 +65,12 @@ describe("lib/actions callers", () => {
     expect(mockGet).toHaveBeenLastCalledWith(
       "/api/matters/m1/comments?entityType=TASK&entityId=t1"
     );
-    await fetchProjectComments("m1");
-    expect(mockGet).toHaveBeenLastCalledWith("/api/matters/m1/comments?entityType=PROJECT&size=50");
-    await createProjectComment("acme", "m1", " hi ");
+    // Matter (PROJECT-target) comments go through the generic actions (634E — the Comments tab).
+    await fetchComments("m1", "PROJECT", "m1");
+    expect(mockGet).toHaveBeenLastCalledWith(
+      "/api/matters/m1/comments?entityType=PROJECT&entityId=m1"
+    );
+    await createComment("acme", "m1", "PROJECT", "m1", " hi ", "SHARED");
     expect(mockPost).toHaveBeenLastCalledWith("/api/matters/m1/comments", {
       entityType: "PROJECT",
       entityId: "m1",

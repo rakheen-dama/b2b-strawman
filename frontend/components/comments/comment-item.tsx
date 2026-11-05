@@ -72,6 +72,8 @@ export function CommentItem({
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
             {authorName}
           </span>
+          {/* Portal-authored (client) comments — parity with the retired Client comments section (628A). */}
+          {comment.source === "PORTAL" && <Badge variant="outline">Client</Badge>}
           <span className="text-xs text-slate-500 dark:text-slate-400">
             <RelativeDate iso={comment.createdAt} />
           </span>

@@ -315,4 +315,79 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     await expect(target).toBeInViewport();
     await expect(target).toContainText(commentBody);
   });
+
+  // §14.12 #6 / B7 (Phase 89 634E): a matter (PROJECT-target) comment notification opens the matter's
+  // Comments tab with that comment in view and highlighted. Posted through the panel itself (proves
+  // the SHARED lock — no visibility select). Carol is mentioned for the same reason as case 8.
+  test("9. Matter comment notification deep-links to the highlighted comment on the Comments tab (B7)", async ({
+    page,
+  }) => {
+    const commentBody = `@Carol matter thread ${RUN_ID}`;
+
+    await loginAs(page, "alice");
+    await page.goto(`${BASE}/matters/${projectId}`);
+    await openGroupedTab(page, "client", "comments");
+    const panel = page.getByRole("tabpanel");
+    await expect(panel.getByText("Shared with client")).toBeVisible({ timeout: 15_000 });
+    await expect(panel.getByLabel("Visibility")).toHaveCount(0);
+    const composer = panel.getByLabel("Add a comment");
+    await composer.fill(commentBody);
+    await panel.getByRole("button", { name: "Post Comment" }).click();
+    // The draft is cleared only on success; then the posted item (div#comment-<id>, not the
+    // textarea#comment-body) lists the body.
+    await expect(composer).toHaveValue("", { timeout: 15_000 });
+    await expect(panel.locator('div[id^="comment-"]').filter({ hasText: commentBody })).toHaveCount(
+      1,
+      { timeout: 15_000 }
+    );
+
+    const comments = await apiOk<Array<{ id: string; body: string; visibility: string }>>(
+      `/api/matters/${projectId}/comments?entityType=PROJECT`
+    );
+    const comment = comments.find((c) => c.body === commentBody);
+    expect(comment, "posted matter comment").toBeDefined();
+    expect(comment!.visibility).toBe("SHARED");
+
+    // Notifications are written after commit — wait until Carol's exists before opening the bell.
+    // (Never mark-all-read for Carol: notifications/notification-bell.spec.ts relies on her unread state.)
+    await expect
+      .poll(
+        async () => {
+          const res = await apiOk<{ content: Array<{ referenceCommentId: string | null }> }>(
+            "/api/notifications?size=20",
+            {},
+            "carol"
+          );
+          return res.content.some((n) => n.referenceCommentId === comment!.id);
+        },
+        { timeout: 15_000 }
+      )
+      .toBe(true);
+
+    await loginAs(page, "carol");
+    await page.goto(`${BASE}/dashboard`);
+    await page.getByRole("button", { name: "Notifications", exact: true }).click();
+    const popover = page.getByRole("dialog", { name: "Notifications" });
+    // PROJECT titles carry no matter name ("<actor> commented on matter"); newest first, so ours is
+    // first — the exact commentId in the URL below fails loudly on a wrong pick.
+    const item = popover.getByRole("button").filter({ hasText: "commented on matter" }).first();
+    await expect(item).toBeVisible({ timeout: 15_000 });
+    await item.click();
+
+    await expect(page).toHaveURL(
+      new RegExp(`/matters/${projectId}\\?tab=comments&commentId=${comment!.id}`),
+      { timeout: 15_000 }
+    );
+    await expect(popover).toHaveCount(0);
+    const target = page.locator(`#comment-${comment!.id}`);
+    await expect(target).toBeVisible({ timeout: 15_000 });
+    // The ring lasts ~2 s after mount — assert it before anything slower.
+    await expect(target).toHaveAttribute("data-highlighted", "true");
+    await expect(target).toBeInViewport();
+    await expect(target).toContainText(commentBody);
+    await expect(page.getByTestId("tab-group-client").filter({ visible: true })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+  });
 });

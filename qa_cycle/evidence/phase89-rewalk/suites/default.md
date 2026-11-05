@@ -56,7 +56,7 @@ Website Redesign|ACTIVE
 E2E closure override 5rld|CLOSED
 ```
 
-The seed matter `Website Redesign` is still ACTIVE. `matter-closure-audit-tab.spec.ts` created and closed its own run-unique `E2E closure override <RUN_ID>` matter, so the #1739 fix holds. The table held 25 projects after all three G1 suites.
+The seed matter `Website Redesign` is still ACTIVE. `matter-closure-audit-tab.spec.ts` created and closed its own run-unique `E2E closure override <RUN_ID>` matter, so the #1739 fix holds. These 2 rows are the whole table after all three G1 suites (`raw/stacks.txt` → "G1 projects after default").
 
 ## Failures
 

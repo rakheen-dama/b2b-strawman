@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useRef, useState, type FormEvent } from "react";
+import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
@@ -10,7 +11,7 @@ import { useCommentAttachments } from "@/components/comments/use-comment-attachm
 
 interface AddCommentFormProps {
   projectId: string;
-  entityType: "TASK" | "DOCUMENT";
+  entityType: "TASK" | "DOCUMENT" | "PROJECT";
   entityId: string;
   orgSlug: string;
   canManageVisibility: boolean;
@@ -36,6 +37,9 @@ export function AddCommentForm({
   const [body, setBody] = useState("");
   const [visibility, setVisibility] = useState(DEFAULT_VISIBILITY);
   const attachments = useCommentAttachments({ slug: orgSlug, projectId });
+  // Matter (PROJECT) comments are always client-visible: the backend rejects anything but SHARED for
+  // a PROJECT target ("PROJECT-level comments must have SHARED visibility"), so there is no choice.
+  const visibilityLocked = entityType === "PROJECT";
 
   // onSubmit + startTransition rather than `<form action>`: the same transition, minus React's
   // automatic form reset, which a controlled <select> does not survive (its DOM would fall back to
@@ -71,7 +75,7 @@ export function AddCommentForm({
         entityType,
         entityId,
         trimmedBody,
-        canManageVisibility ? visibility : undefined,
+        visibilityLocked ? "SHARED" : canManageVisibility ? visibility : undefined,
         confirmed.documentIds
       );
       if (result.success) {
@@ -110,27 +114,33 @@ export function AddCommentForm({
         />
       </div>
 
-      {canManageVisibility && (
-        <div className="space-y-2">
-          <Label htmlFor="comment-visibility">Visibility</Label>
-          <select
-            id="comment-visibility"
-            name="visibility"
-            value={visibility}
-            onChange={(e) => setVisibility(e.target.value)}
-            disabled={isSubmitting}
-            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
-          >
-            <option value="INTERNAL">Internal only</option>
-            <option value="SHARED">Client visible</option>
-          </select>
+      {visibilityLocked ? (
+        <div>
+          <Badge variant="neutral">Shared with client</Badge>
         </div>
+      ) : (
+        canManageVisibility && (
+          <div className="space-y-2">
+            <Label htmlFor="comment-visibility">Visibility</Label>
+            <select
+              id="comment-visibility"
+              name="visibility"
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value)}
+              disabled={isSubmitting}
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
+            >
+              <option value="INTERNAL">Internal only</option>
+              <option value="SHARED">Client visible</option>
+            </select>
+          </div>
+        )
       )}
 
       <CommentAttachmentsField
         attachments={attachments}
         disabled={isSubmitting}
-        shared={canManageVisibility && visibility === "SHARED"}
+        shared={visibilityLocked || (canManageVisibility && visibility === "SHARED")}
       />
 
       {error && <p className="text-destructive text-sm">{error}</p>}

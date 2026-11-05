@@ -9,12 +9,17 @@
  *
  * `members` → `team` (Phase 88, ADR-346): the old "Team members added" setup-step link and bookmarks
  * open the matter Team tab. On a client page `team` is not a tab, so it still falls to Overview.
+ *
+ * `customer-comments` → `comments` (Phase 89 634E, rulings §9.5): the matter's Client comments tab
+ * became the Comments tab (`CommentSectionClient`, PROJECT target); old bookmarks and the scenario
+ * note keep resolving. On a client page `comments` is not a tab, so it still falls to Overview.
  */
 export const LEGACY_TAB_IDS = {
   customers: "clients",
   projects: "matters",
   expenses: "disbursements",
   members: "team",
+  "customer-comments": "comments",
 } as const satisfies Readonly<Record<string, string>>;
 
 /** Map a raw `?tab=` value through {@link LEGACY_TAB_IDS}; unknown values pass through unchanged. */

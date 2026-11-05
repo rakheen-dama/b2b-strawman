@@ -12,7 +12,7 @@ import { CommentItem } from "@/components/comments/comment-item";
 
 interface CommentSectionClientProps {
   projectId: string;
-  entityType: "TASK" | "DOCUMENT";
+  entityType: "TASK" | "DOCUMENT" | "PROJECT";
   entityId: string;
   orgSlug: string;
   currentMemberId: string;

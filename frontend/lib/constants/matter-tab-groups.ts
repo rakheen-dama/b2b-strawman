@@ -4,9 +4,9 @@
  * 7 top-level groups / 22 sub-tabs (Phase 87 §12.6.5; Team added Phase 88 §13.3.4, ADR-346).
  * Labels are the legal words — there is no runtime vocabulary layer (ADR-338). Group ids and deep-linked tab ids (`court-dates`,
  * `disbursements`, `statements`, `trust`, `time`, `documents`) are stable: specs and scenario docs
- * address them as `tab-group-{groupId}` / `tab-item-{tabId}` / `?tab=`. The renamed id
- * (`customers` → `clients`) and the old setup-step id (`members` → `team`) are aliased in
- * `legacy-tab-ids.ts`.
+ * address them as `tab-group-{groupId}` / `tab-item-{tabId}` / `?tab=`. The renamed ids
+ * (`customers` → `clients`, `customer-comments` → `comments` — Phase 89 634E) and the old setup-step
+ * id (`members` → `team`) are aliased in `legacy-tab-ids.ts`.
  *
  * Architecture: Section 11.4.1, Section 12.6.5, ADR-287, ADR-340 (no Expenses tab).
  */
@@ -67,7 +67,7 @@ export const MATTER_TAB_GROUPS: readonly TabGroup[] = [
     tabs: [
       { id: "clients", label: "Clients" },
       { id: "requests", label: "Information requests" },
-      { id: "customer-comments", label: "Client comments" },
+      { id: "comments", label: "Comments" },
       { id: "adverse-parties", label: "Adverse parties" },
     ],
     visible: true,

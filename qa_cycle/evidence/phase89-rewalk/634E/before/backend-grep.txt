@@ -1,0 +1,8 @@
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:187:    if ("PROJECT".equals(entityType)) {
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:192:            "PROJECT-level comments must have SHARED visibility");
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:197:            "entityId must match projectId for PROJECT-level comments");
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:201:          "Invalid entity type", "entityType must be TASK, DOCUMENT, or PROJECT");
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:207:    if ("SHARED".equals(resolvedVisibility) && !access.canEdit() && !"PROJECT".equals(entityType)) {
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:513:        "PROJECT", projectId, projectId, from, pageable);
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:521:    if ("PROJECT".equals(entityType)) {
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java:681:    if ("PROJECT".equals(entityType)) {

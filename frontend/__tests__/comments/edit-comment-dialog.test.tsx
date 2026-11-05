@@ -168,6 +168,45 @@ describe("EditCommentDialog", () => {
     expect(screen.getByLabelText("Visibility")).toBeInTheDocument();
   });
 
+  // Phase 89 634E (D2): a matter (PROJECT) comment is always SHARED — the backend update path has
+  // no PROJECT guard, so the dialog never offers INTERNAL and never sends a visibility change.
+  it("locks a matter (PROJECT) comment to SHARED: no visibility select, visibility unchanged", async () => {
+    const user = userEvent.setup();
+
+    renderDialog(
+      "Edit matter comment",
+      makeComment({
+        entityType: "PROJECT",
+        entityId: "p1",
+        visibility: "SHARED",
+        attachments: [LETTER],
+      }),
+      true
+    );
+    await user.click(screen.getByRole("button", { name: "Edit matter comment" }));
+
+    expect(screen.queryByLabelText("Visibility")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Attachments on a client-visible comment are shared with the client.")
+    ).toBeInTheDocument();
+
+    const textarea = screen.getByLabelText("Comment");
+    await user.clear(textarea);
+    await user.type(textarea, "Edited matter comment");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(mockUpdateComment).toHaveBeenCalledWith(
+        "acme",
+        "p1",
+        "c1",
+        "Edited matter comment",
+        undefined,
+        undefined
+      );
+    });
+  });
+
   it("shows the comment's existing attachments as removable chips", async () => {
     const user = userEvent.setup();
 

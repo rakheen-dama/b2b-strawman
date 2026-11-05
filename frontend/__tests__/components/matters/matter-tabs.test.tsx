@@ -227,6 +227,40 @@ describe("MatterTabs with GroupedTabBar integration", () => {
     expect(screen.queryByTestId("tab-item-expenses")).not.toBeInTheDocument();
   });
 
+  // Phase 89 634E (§14.12 #6 / B7, rulings §9.5): the matter Comments tab (PROJECT-target comments).
+  it("opens the Comments tab from ?tab=comments (notification deep link)", () => {
+    mockSearchParams = new URLSearchParams("tab=comments&commentId=c-1");
+
+    render(<MatterTabs {...baseProps} commentsPanel={<div>Matter comments panel</div>} />);
+
+    expect(screen.getByTestId("tab-group-client")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("Matter comments panel")).toBeInTheDocument();
+  });
+
+  it("resolves the legacy ?tab=customer-comments link to the Comments tab", () => {
+    mockSearchParams = new URLSearchParams("tab=customer-comments");
+
+    render(<MatterTabs {...baseProps} commentsPanel={<div>Matter comments panel</div>} />);
+
+    expect(screen.getByTestId("tab-group-client")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("Matter comments panel")).toBeInTheDocument();
+  });
+
+  it("labels the Client sub-tab Comments (no Client comments item)", () => {
+    mockSearchParams = new URLSearchParams("tab=comments");
+
+    render(<MatterTabs {...baseProps} commentsPanel={<div>Matter comments panel</div>} />);
+
+    // Client is the active group, so clicking its trigger opens the dropdown.
+    const clientGroup = screen.getByTestId("tab-group-client");
+    fireEvent.pointerDown(clientGroup, { button: 0, pointerType: "mouse" });
+    fireEvent.click(clientGroup);
+
+    expect(screen.getByTestId("tab-item-comments")).toHaveTextContent("Comments");
+    expect(screen.queryByTestId("tab-item-customer-comments")).not.toBeInTheDocument();
+    expect(screen.queryByText("Client comments")).not.toBeInTheDocument();
+  });
+
   it("resolves every MATTER_TAB_GROUPS tab id from ?tab= (validTabIds == constants)", () => {
     const allPanels = {
       ...baseProps,
@@ -239,7 +273,7 @@ describe("MatterTabs with GroupedTabBar integration", () => {
       financialsPanel: <div>Financials</div>,
       generatedPanel: <div>Generated</div>,
       requestsPanel: <div>Requests</div>,
-      customerCommentsPanel: <div>Comments</div>,
+      commentsPanel: <div>Comments panel</div>,
       courtDatesPanel: <div>Court dates</div>,
       adversePartiesPanel: <div>Adverse parties</div>,
       trustPanel: <div>Trust</div>,

@@ -1,0 +1,80 @@
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-634E/frontend
+ ❯ __tests__/components/matters/matter-tabs.test.tsx (19 tests | 4 failed) 354ms
+     × opens the Comments tab from ?tab=comments (notification deep link) 11ms
+     × resolves the legacy ?tab=customer-comments link to the Comments tab 7ms
+     × labels the Client sub-tab Comments (no Client comments item) 9ms
+     × resolves every MATTER_TAB_GROUPS tab id from ?tab= (validTabIds == constants) 162ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/components/matters/matter-tabs.test.tsx > MatterTabs with GroupedTabBar integration > opens the Comments tab from ?tab=comments (notification deep link)
+Error: expect(element).toHaveAttribute("aria-selected", "true") // element.getAttribute("aria-selected") === "true"
+Expected the element to have attribute:
+  aria-selected="true"
+Received:
+  aria-selected="false"
+ ❯ __tests__/components/matters/matter-tabs.test.tsx:236:52
+    234|     render(<MatterTabs {...baseProps} commentsPanel={<div>Matter comme…
+    235|
+    236|     expect(screen.getByTestId("tab-group-client")).toHaveAttribute("ar…
+       |                                                    ^
+    237|     expect(screen.getByText("Matter comments panel")).toBeInTheDocumen…
+    238|   });
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+ FAIL  __tests__/components/matters/matter-tabs.test.tsx > MatterTabs with GroupedTabBar integration > resolves the legacy ?tab=customer-comments link to the Comments tab
+Error: expect(element).toHaveAttribute("aria-selected", "true") // element.getAttribute("aria-selected") === "true"
+Expected the element to have attribute:
+  aria-selected="true"
+Received:
+  aria-selected="false"
+ ❯ __tests__/components/matters/matter-tabs.test.tsx:245:52
+    243|     render(<MatterTabs {...baseProps} commentsPanel={<div>Matter comme…
+    244|
+    245|     expect(screen.getByTestId("tab-group-client")).toHaveAttribute("ar…
+       |                                                    ^
+    246|     expect(screen.getByText("Matter comments panel")).toBeInTheDocumen…
+    247|   });
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+ FAIL  __tests__/components/matters/matter-tabs.test.tsx > MatterTabs with GroupedTabBar integration > labels the Client sub-tab Comments (no Client comments item)
+TestingLibraryElementError: Unable to find an element by: [data-testid="tab-item-comments"]
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      data-orientation="horizontal"
+      dir="ltr"
+    >
+      <div
+        class="relative flex gap-6 border-b border-slate-200 dark:border-slate-800"
+        data-testid="grouped-tab-bar"
+        role="tablist"
+      >
+        <button
+          aria-expanded="false"
+          aria-haspopup="menu"
+          aria-selected="false"
+          class="relative pb-3 text-sm font-medium transition-colors outline-none cursor-pointer text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 inline-flex items-center gap-1"
+          data-slot="dropdown-menu-trigger"
+          data-state="closed"
+          data-testid="tab-group-details"
+          id="radix-_r_2v_"
+          role="tab"
+          type="button"
+        >
+          Details
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-chevron-down size-3 opacity-50"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m6 9 6 6 6-6"
+            />
+          </svg>
+        </button>

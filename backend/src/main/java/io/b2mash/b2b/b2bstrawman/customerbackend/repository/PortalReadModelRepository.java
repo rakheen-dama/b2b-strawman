@@ -629,6 +629,15 @@ public class PortalReadModelRepository {
 
   // ── Task methods ─────────────────────────────────────────────────────
 
+  /**
+   * Live projection write. {@code sortOrder} is effectively write-once: the firm {@code Task} has
+   * no sort order of its own, so update events carry 0 and must not overwrite the template order
+   * the instantiation loop wrote (Phase 89 633A, B5). The one exception is a 0 placeholder: when
+   * the stored value is 0 and the incoming value is positive, the incoming value wins — this covers
+   * the startup backfill ({@link #insertPortalTaskIfAbsent}, sort order 0) racing ahead of the live
+   * {@code onTaskCreated} write carrying the template order. A positive stored value is never
+   * changed (R7.2).
+   */
   public void upsertPortalTask(
       UUID id,
       String orgId,
@@ -646,8 +655,35 @@ public class PortalReadModelRepository {
             DO UPDATE SET name = EXCLUDED.name,
                           status = EXCLUDED.status,
                           assignee_name = EXCLUDED.assignee_name,
-                          sort_order = EXCLUDED.sort_order,
+                          sort_order = CASE
+                              WHEN portal_tasks.sort_order = 0 AND EXCLUDED.sort_order > 0
+                                  THEN EXCLUDED.sort_order
+                              ELSE portal_tasks.sort_order
+                          END,
                           synced_at = now()
+            """)
+        .params(id, orgId, portalProjectId, name, status, assigneeName, sortOrder)
+        .update();
+  }
+
+  /**
+   * Backfill write (Phase 89 633A, R7.2): inserts the row only when absent — never overwrites a row
+   * the live listener wrote. Returns 1 when inserted, 0 when the task was already projected.
+   */
+  public int insertPortalTaskIfAbsent(
+      UUID id,
+      String orgId,
+      UUID portalProjectId,
+      String name,
+      String status,
+      String assigneeName,
+      int sortOrder) {
+    return jdbc.sql(
+            """
+            INSERT INTO portal.portal_tasks
+                (id, org_id, portal_project_id, name, status, assignee_name, sort_order, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, now())
+            ON CONFLICT (id) DO NOTHING
             """)
         .params(id, orgId, portalProjectId, name, status, assigneeName, sortOrder)
         .update();

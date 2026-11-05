@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestDraftCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
@@ -45,6 +46,7 @@ import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTag;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
+import io.b2mash.b2b.b2bstrawman.task.PortalTaskEventPublisher;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskItem;
 import io.b2mash.b2b.b2bstrawman.task.TaskItemRepository;
@@ -94,6 +96,7 @@ public class ProjectTemplateService {
   private final PortalContactRepository portalContactRepository;
   private final MemberRepository memberRepository;
   private final RequestTemplateRepository requestTemplateRepository;
+  private final PortalTaskEventPublisher portalTaskEventPublisher;
   private final Clock clock;
 
   public ProjectTemplateService(
@@ -119,6 +122,7 @@ public class ProjectTemplateService {
       PortalContactRepository portalContactRepository,
       MemberRepository memberRepository,
       RequestTemplateRepository requestTemplateRepository,
+      PortalTaskEventPublisher portalTaskEventPublisher,
       Clock clock) {
     this.templateRepository = templateRepository;
     this.templateTaskRepository = templateTaskRepository;
@@ -142,6 +146,7 @@ public class ProjectTemplateService {
     this.portalContactRepository = portalContactRepository;
     this.memberRepository = memberRepository;
     this.requestTemplateRepository = requestTemplateRepository;
+    this.portalTaskEventPublisher = portalTaskEventPublisher;
     this.clock = clock;
   }
 
@@ -612,6 +617,10 @@ public class ProjectTemplateService {
             null);
       }
       projectTaskRepository.save(task);
+      // G88-F19 (B5): project the task to the portal in template order; the customer_projects
+      // row from step 6 makes the matter client-linked.
+      portalTaskEventPublisher.publishIfLinked(
+          task, tt.getSortOrder(), PortalTaskCreatedEvent::new);
       for (var ti : templateItemsByTaskId.getOrDefault(tt.getId(), List.of())) {
         taskItemRepository.save(new TaskItem(task.getId(), ti.getTitle(), ti.getSortOrder()));
       }

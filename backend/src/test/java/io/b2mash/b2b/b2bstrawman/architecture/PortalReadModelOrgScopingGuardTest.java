@@ -229,6 +229,24 @@ class PortalReadModelOrgScopingGuardTest {
         "portal_contact_directory_backfill has no org_id/customer_id column; keyed by"
             + " tenant_schema; written only by the trusted startup backfill runner. INSERT.");
 
+    // ── portal_backfill_markers (Phase 89 633A, global V3): shared backfill-runner markers ──
+    String markers = "PortalBackfillMarkerRepository#";
+    m.put(
+        markers + "hasMarker",
+        "portal_backfill_markers has no org_id/customer_id column; keyed by (backfill_name,"
+            + " tenant_schema); read only by the trusted startup backfill runners.");
+    m.put(
+        markers + "insertMarker",
+        "portal_backfill_markers has no org_id/customer_id column; keyed by (backfill_name,"
+            + " tenant_schema); written only by the trusted startup backfill runners. INSERT.");
+    m.put(
+        markers + "deleteForSchema",
+        "portal_backfill_markers has no org_id/customer_id column; keyed by (backfill_name,"
+            + " tenant_schema); deleted only by TenantProvisioningService before createSchema and"
+            + " DemoCleanupService after the schema drop, best-effort (B3); never reachable from"
+            + " a portal"
+            + " request.");
+
     return m;
   }
 

@@ -287,6 +287,7 @@ class EngagementPrerequisiteTest {
         null, // portalContactRepository
         null, // memberRepository
         null, // requestTemplateRepository
+        null, // portalTaskEventPublisher
         Clock.system(KaziTime.ZONE));
   }
 }

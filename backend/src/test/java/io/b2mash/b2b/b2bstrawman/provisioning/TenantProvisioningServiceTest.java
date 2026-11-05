@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
+import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalBackfillMarkerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
@@ -81,6 +82,7 @@ class TenantProvisioningServiceTest {
   @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private VerticalProfileRegistry verticalProfileRegistry;
   @Mock private ObjectProvider<ShardRegistry> shardRegistryProvider;
+  @Mock private PortalBackfillMarkerRepository portalBackfillMarkerRepository;
 
   @Spy @InjectMocks private TenantProvisioningService service;
 

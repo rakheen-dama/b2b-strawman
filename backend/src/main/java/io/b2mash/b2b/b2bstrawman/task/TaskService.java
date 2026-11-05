@@ -69,6 +69,7 @@ public class TaskService {
   private final ProjectRepository projectRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final ProjectLifecycleGuard projectLifecycleGuard;
+  private final PortalTaskEventPublisher portalTaskEventPublisher;
   private final Clock clock;
 
   public TaskService(
@@ -86,6 +87,7 @@ public class TaskService {
       ProjectRepository projectRepository,
       TimeEntryRepository timeEntryRepository,
       ProjectLifecycleGuard projectLifecycleGuard,
+      PortalTaskEventPublisher portalTaskEventPublisher,
       Clock clock) {
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
@@ -101,6 +103,7 @@ public class TaskService {
     this.projectRepository = projectRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.projectLifecycleGuard = projectLifecycleGuard;
+    this.portalTaskEventPublisher = portalTaskEventPublisher;
     this.clock = clock;
   }
 
@@ -348,7 +351,7 @@ public class TaskService {
             .build());
 
     // Publish portal task event if project is customer-linked
-    publishPortalTaskEventIfLinked(task, PortalTaskCreatedEvent::new);
+    portalTaskEventPublisher.publishIfLinked(task, PortalTaskCreatedEvent::new);
 
     return task;
   }
@@ -623,7 +626,7 @@ public class TaskService {
     }
 
     // Publish portal task event if project is customer-linked
-    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+    portalTaskEventPublisher.publishIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;
   }
@@ -749,7 +752,7 @@ public class TaskService {
             task.getTitle()));
 
     // Publish portal task updated event if project is customer-linked
-    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+    portalTaskEventPublisher.publishIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;
   }
@@ -794,7 +797,7 @@ public class TaskService {
             .build());
 
     // Publish portal task updated event if project is customer-linked
-    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+    portalTaskEventPublisher.publishIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;
   }
@@ -855,7 +858,7 @@ public class TaskService {
             actor.memberId(),
             task.getTitle()));
 
-    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+    portalTaskEventPublisher.publishIfLinked(task, PortalTaskUpdatedEvent::new);
 
     // --- Recurrence auto-creation ---
     Task nextInstance = null;
@@ -957,7 +960,7 @@ public class TaskService {
             nextTask.getParentTaskId()));
 
     // Publish portal event if project is customer-linked
-    publishPortalTaskEventIfLinked(nextTask, PortalTaskCreatedEvent::new);
+    portalTaskEventPublisher.publishIfLinked(nextTask, PortalTaskCreatedEvent::new);
 
     return nextTask;
   }
@@ -1012,7 +1015,7 @@ public class TaskService {
             task.getAssigneeId(),
             task.getTitle()));
 
-    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+    portalTaskEventPublisher.publishIfLinked(task, PortalTaskUpdatedEvent::new);
 
     // Recurrence note: no new instance is created on cancel. Recurrence stops silently.
     // The user can reopen the task and complete it normally to resume recurrence.
@@ -1075,48 +1078,9 @@ public class TaskService {
             task.getTitle(),
             previousStatus));
 
-    publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
+    portalTaskEventPublisher.publishIfLinked(task, PortalTaskUpdatedEvent::new);
 
     return task;
-  }
-
-  /**
-   * Publishes a portal task event if the task's project is linked to any customer. The event
-   * factory is used to construct the correct event subtype (created, updated, deleted).
-   */
-  private void publishPortalTaskEventIfLinked(Task task, PortalTaskEventFactory eventFactory) {
-    var customerLinks = customerProjectRepository.findByProjectId(task.getProjectId());
-    if (!customerLinks.isEmpty()) {
-      String tenantId = RequestScopes.requireTenantId();
-      String orgId = RequestScopes.requireOrgId();
-      String assigneeName =
-          task.getAssigneeId() != null
-              ? memberNameResolver.resolveNameOrNull(task.getAssigneeId())
-              : null;
-      eventPublisher.publishEvent(
-          eventFactory.create(
-              task.getId(),
-              task.getProjectId(),
-              task.getTitle(),
-              task.getStatus().name(),
-              assigneeName,
-              0,
-              orgId,
-              tenantId));
-    }
-  }
-
-  @FunctionalInterface
-  private interface PortalTaskEventFactory {
-    Object create(
-        UUID taskId,
-        UUID projectId,
-        String name,
-        String status,
-        String assigneeName,
-        int sortOrder,
-        String orgId,
-        String tenantId);
   }
 
   private String resolveActorName(UUID memberId) {

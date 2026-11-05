@@ -55,6 +55,7 @@ class TaskServiceTest {
   @Mock private FieldGroupService fieldGroupService;
   @Mock private ProjectRepository projectRepository;
   @Mock private TimeEntryRepository timeEntryRepository;
+  @Mock private PortalTaskEventPublisher portalTaskEventPublisher;
   @Spy private Clock clock = Clock.system(KaziTime.ZONE);
   @InjectMocks private TaskService service;
 

@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.demo;
 
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionRepository;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
+import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalBackfillMarkerRepository;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoCleanupResponse;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -38,6 +39,7 @@ public class DemoCleanupService {
   private final JdbcTemplate jdbcTemplate;
   private final TransactionTemplate transactionTemplate;
   private final StorageService storageService;
+  private final PortalBackfillMarkerRepository portalBackfillMarkerRepository;
 
   public DemoCleanupService(
       @Nullable KeycloakAdminClient keycloakAdminClient,
@@ -48,7 +50,8 @@ public class DemoCleanupService {
       @Qualifier("migrationDataSource") DataSource migrationDataSource,
       JdbcTemplate jdbcTemplate,
       TransactionTemplate transactionTemplate,
-      @Nullable StorageService storageService) {
+      @Nullable StorageService storageService,
+      PortalBackfillMarkerRepository portalBackfillMarkerRepository) {
     this.keycloakAdminClient = keycloakAdminClient;
     this.organizationRepository = organizationRepository;
     this.subscriptionRepository = subscriptionRepository;
@@ -58,6 +61,7 @@ public class DemoCleanupService {
     this.jdbcTemplate = jdbcTemplate;
     this.transactionTemplate = transactionTemplate;
     this.storageService = storageService;
+    this.portalBackfillMarkerRepository = portalBackfillMarkerRepository;
   }
 
   /**
@@ -201,11 +205,30 @@ public class DemoCleanupService {
       String schemaName = mapping.get().getSchemaName();
       dropSchema(schemaName);
       log.info("Dropped schema {} for org {}", schemaName, externalOrgId);
+      deleteBackfillMarkers(schemaName);
       return true;
     } catch (Exception e) {
       log.error("Schema cleanup failed for org {}: {}", externalOrgId, e.getMessage());
       errors.add("Schema cleanup failed: " + e.getMessage());
       return false;
+    }
+  }
+
+  /**
+   * B3: the schema name is deterministic, so the dropped schema's portal backfill markers are
+   * removed after the schema drop, best-effort. A failure only logs a WARN and never affects the
+   * schema-cleanup result: a stale marker for a dropped schema is harmless because {@code
+   * TenantProvisioningService.provisionTenant} deletes the schema's markers before creating it.
+   */
+  private void deleteBackfillMarkers(String schemaName) {
+    try {
+      portalBackfillMarkerRepository.deleteForSchema(schemaName);
+    } catch (Exception e) {
+      log.warn(
+          "Portal backfill marker delete failed for dropped schema {} (re-provisioning clears it):"
+              + " {}",
+          schemaName,
+          e.getMessage());
     }
   }
 

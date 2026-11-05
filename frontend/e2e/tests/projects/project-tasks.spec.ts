@@ -330,9 +330,16 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     const panel = page.getByRole("tabpanel");
     await expect(panel.getByText("Shared with client")).toBeVisible({ timeout: 15_000 });
     await expect(panel.getByLabel("Visibility")).toHaveCount(0);
-    await panel.getByLabel("Add a comment").fill(commentBody);
+    const composer = panel.getByLabel("Add a comment");
+    await composer.fill(commentBody);
     await panel.getByRole("button", { name: "Post Comment" }).click();
-    await expect(panel.getByText(commentBody)).toBeVisible({ timeout: 15_000 });
+    // The draft is cleared only on success; then the posted item (div#comment-<id>, not the
+    // textarea#comment-body) lists the body.
+    await expect(composer).toHaveValue("", { timeout: 15_000 });
+    await expect(panel.locator('div[id^="comment-"]').filter({ hasText: commentBody })).toHaveCount(
+      1,
+      { timeout: 15_000 }
+    );
 
     const comments = await apiOk<Array<{ id: string; body: string; visibility: string }>>(
       `/api/matters/${projectId}/comments?entityType=PROJECT`

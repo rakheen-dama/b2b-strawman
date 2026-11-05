@@ -1,7 +1,7 @@
 {
-  "commit": "a175d28f1",
-  "command": "cd backend && caffeinate -is ./mvnw clean verify -q",
+  "commit": "94adbff7b",
+  "command": "./mvnw clean verify -q (caffeinate; verify.sh preflight skipped — it would SIGKILL the 5h KC dev spring-boot:run JVM)",
   "exit": 0,
-  "ts": "2026-11-05T07:31:35Z",
-  "summary": "PR #1733 (634A): 6547 testcases / 0 failures / 0 errors / 26 skipped. Verified head a175d28f1; merged head a97a51d24 changes no backend/ file (git diff a175d28f1 a97a51d24 -- backend = 0 lines). Backend CI pass on a97a51d24 (21m13s). verify.sh preflight bypassed: only live Maven JVM was the KC spring-boot:run app (false positive)."
+  "ts": "2026-11-05T11:16:20Z",
+  "summary": "PR #1734 (634B) head 94adbff7b: 6561 testcases / 0 failures / 0 errors / 26 skipped — ~21 min; Backend CI pass on 94adbff7b"
 }

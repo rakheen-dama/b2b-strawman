@@ -1,0 +1,14 @@
+                  id                  |          portal_project_id           | author_name |                            content                             |         created_at         
+--------------------------------------+--------------------------------------+-------------+----------------------------------------------------------------+----------------------------
+ 678dd445-4dd8-47e5-a8a5-e89dabfc2297 | 94ba0c13-5528-4a8d-97b6-ec051ae4b298 | Alice Owner | @Bob Admin please review the transfer docs 634E-before         | 2026-11-05 14:57:11.345511
+ aa791051-89e0-4b51-b92a-bf407a45f575 | 94ba0c13-5528-4a8d-97b6-ec051ae4b298 | Alice Owner | manual probe 634E                                              | 2026-11-05 15:07:20.515085
+ 8ee1f1e8-04aa-438a-9589-a9f3c636287d | 94ba0c13-5528-4a8d-97b6-ec051ae4b298 | Alice Owner | @Bob Admin signed offer attached — please file 634E-after-1440 | 2026-11-05 15:10:13.7892
+ a45ac7ab-55ba-4cf5-8dd9-7efa6e72b220 | 94ba0c13-5528-4a8d-97b6-ec051ae4b298 | Alice Owner | @Bob Admin FICA letter for the file 634E-after-1024            | 2026-11-05 15:11:01.384457
+(4 rows)
+
+         file_name          | visibility 
+----------------------------+------------
+ offer-to-purchase-634E.pdf | SHARED
+ fica-letter-634E-1024.pdf  | SHARED
+(2 rows)
+

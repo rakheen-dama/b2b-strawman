@@ -788,10 +788,19 @@ Then update task status — **for EACH slice implemented in this PR** (all slice
 In **full-epic mode**, you must update ALL slices (e.g., both 450A and 450B) in a single pass. Do not mark only one slice.
 
 - Commit and push from main repo. The bookkeeping commit **must** stage the verify markers this PR's
-  merge used, alongside the task files: `git add .claude/markers/verify-*.json <task files>`. Before
-  committing, check that every area the PR touched (backend / frontend / portal) has a marker whose
-  `commit` is the merged PR head: `git diff --cached --stat -- .claude/markers` must list them. A merge
-  whose marker is not committed cannot be audited later (G88-F35: five Epic-624 PRs lost theirs).
+  merge used, alongside the task files: `git add .claude/markers/verify-*.json <task files>`. Then,
+  **after `git add` and before `git commit`**, run the marker check from the same checkout:
+  `bash scripts/check-verify-markers.sh {PR_NUMBER}`. For every area the PR touched (backend /
+  frontend / portal; `packages/` counts as frontend + portal) it requires a `verify-<area>.json` —
+  committed since the PR's merge commit or staged in this index — whose `commit` is the merged PR
+  head or a PR-branch ancestor of it (not a pre-branch `main` commit).
+  **A non-zero exit fails this step.** Exit 1 names every area with no marker: write that marker from
+  the gate that actually ran (Step 4.6 / `.claude/markers/README.md`), `git add` it and re-run the
+  check. Exit 2 is a usage/environment error (PR not merged, `gh`/`jq` missing, merge commit not in
+  HEAD → `git pull origin main`) — fix it and re-run. Never commit past a failing check, never edit a
+  marker's `commit` to make it pass, never write a marker for a gate that did not run; if the gate
+  cannot be run, STOP and report (in auto-merge mode exit with a clear error). A merge whose marker is
+  not committed cannot be audited later (G88-F35: five Epic-624 PRs lost theirs).
 
 ## Guardrails
 

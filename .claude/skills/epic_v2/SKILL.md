@@ -792,7 +792,7 @@ In **full-epic mode**, you must update ALL slices (e.g., both 450A and 450B) in 
   **after `git add` and before `git commit`**, run the marker check from the same checkout:
   `bash scripts/check-verify-markers.sh {PR_NUMBER}`. For every area the PR touched (backend /
   frontend / portal; `packages/` counts as frontend + portal) it requires a `verify-<area>.json` —
-  committed since the PR's merge commit or staged in this index — whose `commit` is the merged PR
+  committed since the PR's merge commit or staged in this index — whose `exit` is `0` and whose `commit` is the merged PR
   head or a PR-branch ancestor of it (not a pre-branch `main` commit).
   **A non-zero exit fails this step.** Exit 1 names every area with no marker: write that marker from
   the gate that actually ran (Step 4.6 / `.claude/markers/README.md`), `git add` it and re-run the

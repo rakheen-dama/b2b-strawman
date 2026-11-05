@@ -4,13 +4,20 @@
 #
 # The merge-gate hook reads .claude/markers/verify-<area>.json from the working tree at
 # merge time; it cannot tell whether the marker was ever committed. This script can: for
-# every area the PR touched it requires a verify-<area>.json whose "commit" field is a
-# commit FROM THE PR BRANCH — the merged PR head or an ancestor of it that is not already
+# every area the PR touched it requires a verify-<area>.json whose "exit" field is the JSON
+# number 0 (as the hook requires) and whose "commit" field is a commit FROM THE PR BRANCH — the merged PR head or an ancestor of it that is not already
 # an ancestor of main at the branch point (<mergeCommit>^) — and that marker must be
 #   (a) committed: in a commit of <mergeCommit>^..HEAD touching the marker file
 #       (inclusive of the squash-merge commit itself), or
 #   (b) staged: in the current index, when the index differs from HEAD for that path.
+#       Skipped entirely under --committed-only.
 # Unstaged working-tree edits are never read.
+#
+# Modes:
+#   default           committed OR staged — /epic_v2 Step 5 runs this after `git add` and
+#                     before the bookkeeping commit.
+#   --committed-only  committed only; the index is ignored. Use for post-hoc audits (e.g.
+#                     Phase 89 exit gate 636.5) so nothing in the auditor's index can pass.
 #
 # Areas (same mapping as .claude/hooks/pre-pr-merge-gate.sh):
 #   backend/  → backend     frontend/ → frontend     portal/ → portal
@@ -21,15 +28,17 @@
 # stages markers in whatever checkout does the bookkeeping commit.
 #
 # Usage:
-#   scripts/check-verify-markers.sh <pr-number>
+#   scripts/check-verify-markers.sh [--committed-only] <pr-number>
+#   (--committed-only may also follow the PR number)
 #
 # Examples:
-#   bash scripts/check-verify-markers.sh 1737     # after `git add .claude/markers/...`
+#   bash scripts/check-verify-markers.sh 1737                    # after `git add .claude/markers/...`
+#   bash scripts/check-verify-markers.sh --committed-only 1737   # post-hoc audit
 #
 # Exit codes:
 #   0  every touched area has a qualifying marker (or the PR is docs/tooling-only)
 #   1  at least one area has no qualifying marker (all missing areas are named)
-#   2  usage / environment / PR-state error (bad arg, unknown or unmerged PR, gh/jq/git
+#   2  usage / environment / PR-state error (bad arg or option, unknown or unmerged PR, gh/jq/git
 #      missing, not in a git checkout, merge commit not in HEAD, PR head not fetchable)
 #
 # Requires: git, gh (authenticated), jq. Portable to macOS /bin/bash 3.2.
@@ -38,27 +47,50 @@ set -euo pipefail
 
 PROG=check-verify-markers
 
+# usage: print the CLI synopsis and exit-code contract to stderr.
 usage() {
-  echo "Usage: scripts/check-verify-markers.sh <pr-number>" >&2
-  echo "  exit 0 = every touched area (backend/frontend/portal) has a committed or staged" >&2
-  echo "           verify marker from the PR branch, or the PR is docs/tooling-only" >&2
+  echo "Usage: scripts/check-verify-markers.sh [--committed-only] <pr-number>" >&2
+  echo "  --committed-only  ignore the index; only committed markers count (post-hoc audits)" >&2
+  echo "  exit 0 = every touched area (backend/frontend/portal) has a committed (or, without" >&2
+  echo "           --committed-only, staged) verify marker with exit 0 from the PR branch," >&2
+  echo "           or the PR is docs/tooling-only" >&2
   echo "  exit 1 = at least one area has no qualifying marker" >&2
   echo "  exit 2 = usage / environment / PR-state error" >&2
 }
 
+# die <msg>: report an environment / PR-state error and exit 2.
 die() {
   echo "$PROG: $*" >&2
   exit 2
 }
 
-if [ $# -ne 1 ]; then
+committed_only=0
+pr=""
+pr_seen=0
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help) usage; exit 0 ;;
+    --committed-only) committed_only=1 ;;
+    -*)
+      echo "$PROG: unknown option '$arg'" >&2
+      usage
+      exit 2
+      ;;
+    *)
+      if [ "$pr_seen" -eq 1 ]; then
+        echo "$PROG: more than one PR number ('$pr', '$arg')" >&2
+        usage
+        exit 2
+      fi
+      pr=$arg
+      pr_seen=1
+      ;;
+  esac
+done
+if [ "$pr_seen" -ne 1 ]; then
   usage
   exit 2
 fi
-case "$1" in
-  -h|--help) usage; exit 0 ;;
-esac
-pr=$1
 if ! [[ "$pr" =~ ^[0-9]+$ ]]; then
   echo "$PROG: '$pr' is not a PR number" >&2
   usage
@@ -107,12 +139,31 @@ if ! git cat-file -e "${head_oid}^{commit}" 2>/dev/null; then
 fi
 branch_point="${merge_oid}^"
 
-echo "$PROG: PR #$pr merge ${merge_oid:0:9} head ${head_oid:0:9} — areas:$areas"
+if [ "$committed_only" -eq 1 ]; then
+  mode="committed-only"
+else
+  mode="committed or staged"
+fi
+echo "$PROG: PR #$pr merge ${merge_oid:0:9} head ${head_oid:0:9} — areas:$areas — mode: $mode"
 
-# qualifies <marker-json> <label>: 0 when the marker's commit is the PR head or a PR-branch
-# ancestor of it. Sets $mc (the marker's commit field) for the caller's report line.
+# qualifies <marker-json> <label>: 0 when the marker's "exit" is the JSON number 0 and its
+# commit is the PR head or a PR-branch ancestor of it. Sets $mc (the marker's commit field)
+# for the caller's report line.
 mc=""
 qualifies() {
+  # "exit" must be the JSON integer 0 — never weaker than the hook (pre-pr-merge-gate.sh,
+  # regex "exit"\s*:\s*[0-9]+), which only accepts a bare unsigned number: the string "0",
+  # -0 and non-zero values are all rejected (tojson == "0" pins the plain integer form).
+  local ex
+  ex=$(printf '%s' "$1" | jq -r '.exit
+      | if . == null then "missing"
+        elif type != "number" then "non-numeric \(tojson)"
+        elif . == 0 and tojson == "0" then "0"
+        else tojson end' 2>/dev/null) || ex=""
+  if [ "$ex" != "0" ]; then
+    echo "  note: $2 marker exit is '${ex:-unreadable}', must be the number 0 — skipped" >&2
+    return 1
+  fi
   mc=$(printf '%s' "$1" | jq -r '.commit // empty' 2>/dev/null) || mc=""
   if ! [[ "$mc" =~ ^[0-9a-f]{7,40}$ ]]; then
     echo "  note: $2 has no usable commit field ('$mc') — skipped" >&2
@@ -157,8 +208,9 @@ for area in $areas; do
       break
     fi
   done < <(git log --format=%H "${merge_oid}^..HEAD" -- "$path")
-  # (b) staged in the index (only when the index differs from HEAD for this path)
-  if [ -z "$found" ] && ! git diff --cached --quiet -- "$path"; then
+  # (b) staged in the index (only when the index differs from HEAD for this path;
+  #     never under --committed-only)
+  if [ -z "$found" ] && [ "$committed_only" -eq 0 ] && ! git diff --cached --quiet -- "$path"; then
     content=$(git show ":$path" 2>/dev/null) || content=""
     if qualifies "$content" "$area staged (index)"; then
       found="staged in index (marker commit $mc)"
@@ -166,8 +218,11 @@ for area in $areas; do
   fi
   if [ -n "$found" ]; then
     echo "  $area: OK — $found"
+  elif [ "$committed_only" -eq 1 ]; then
+    echo "  $area: MISSING — no $path committed since ${merge_oid:0:9} with exit 0 and commit ${head_oid:0:9} or a PR-branch ancestor of it (index ignored: --committed-only)"
+    missing="$missing $area"
   else
-    echo "  $area: MISSING — no $path committed since ${merge_oid:0:9} or staged whose commit is ${head_oid:0:9} or a PR-branch ancestor of it"
+    echo "  $area: MISSING — no $path committed since ${merge_oid:0:9} or staged with exit 0 and commit ${head_oid:0:9} or a PR-branch ancestor of it"
     missing="$missing $area"
   fi
 done

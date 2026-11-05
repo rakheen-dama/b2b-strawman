@@ -64,7 +64,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Organization: **Mathebula & Partners**
   - Country: **South Africa**
   - Industry: **Legal Services**
-- [ ] **0.5** Click **Submit** → transitions to OTP verification step (same page, step 2)
+- [ ] **0.5** Click **Request Access** (the form's only button; it reads "Submitting..." while in flight) → transitions to OTP verification step (same page, step 2) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the submit button is labelled "Request Access", `request-access-form.tsx:396-412`)
 - [ ] **0.6** Open Mailpit (`http://localhost:8025`) → verify OTP email arrived for `thandi@mathebula-test.local`. Subject line contains "verification" or similar
 - [ ] **0.7** Copy 6-digit OTP from email → enter in verification form → click **Verify**
 - [ ] **0.8** Success card appears: "Your request has been submitted for review"
@@ -79,7 +79,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.12** Navigate to `/platform-admin/access-requests`
 - [ ] **0.13** Verify **Mathebula & Partners** appears in the Pending tab with Industry = Legal Services, Country = South Africa
 - [ ] **0.14** Verify the request's row (`data-testid="request-row-Mathebula & Partners"`) shows inline all fields Thandi submitted — Org Name, Email, Name, Country, Industry — plus the Submitted time and Status; there is no separate detail view (the row carries **Approve** / **Reject**) (Phase 88, ADR-344 + register §5 row 6 — wording amendment, founder-authorised 2026-10-22: G-A1, the access-request table shows every field inline, `access-requests-table.tsx:55-98`)
-- [ ] **0.15** Click **Approve** → AlertDialog confirmation appears → click **Confirm**
+- [ ] **0.15** Click **Approve** → the "Approve Access Request" AlertDialog appears → click **Approve** in the dialog (`data-testid="confirm-approve-btn"`; the other button is Cancel) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the dialog's buttons are Cancel / Approve, `approve-dialog.tsx:59,69-78`)
 - [ ] **0.16** Verify status changes to **Approved** with no provisioning error banner
 - [ ] **0.17** Verify vertical profile auto-assigned to `legal-za`: the approval UI does not display it, so confirm it in the browser once Thandi is signed in (0.24: the legal six-zone nav with **Matters** / **Clients**) and record the state with a read-only SELECT — `SELECT vertical_profile FROM <tenant schema>.org_settings;` → `legal-za` (the tenant schema is the org's `schema_name` in `public.org_schema_mapping`) (Phase 88, ADR-344 + register §5 row 3 — wording amendment, founder-authorised 2026-10-22: QA drives the browser and reads state with read-only SELECTs, never REST)
 - [ ] **0.18** Check Mailpit for Keycloak invitation email to `thandi@mathebula-test.local`. Subject contains "Invitation"
@@ -102,8 +102,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **0.26** Navigate to **Team** (Firm zone → **Team**, `/team`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: Team is a Firm-zone page, not a settings tab; `/settings/team` 308s to `/team`)
 - [ ] **0.27** Verify Thandi is listed as Owner. Confirm **no "Upgrade to Pro" gate** exists when inviting members
-- [ ] **0.28** Click **Invite Member** → Email = `bob@mathebula-test.local`, Role = **Admin** → Send
-- [ ] **0.29** Click **Invite Member** → Email = `carol@mathebula-test.local`, Role = **Member** → Send
+- [ ] **0.28** In the inline **Invite a team member** form: Email = `bob@mathebula-test.local`, Role = **Admin** → click **Send Invite** (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: there is no "Invite Member" button; the Team page renders the invite form inline for admins, `team/page.tsx:41-44`, submit "Send Invite", `invite-member-form.tsx:301`)
+- [ ] **0.29** In the same **Invite a team member** form: Email = `carol@mathebula-test.local`, Role = **Member** → click **Send Invite** (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: as 0.28, `invite-member-form.tsx:301`)
 - [ ] **0.30** Open Mailpit → verify two Keycloak invitation emails arrived
 
 **Actor**: Bob Ndlovu (accepting invite)
@@ -139,7 +139,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Phase F: Rates & tax
 
-- [ ] **0.41** Navigate to **Settings › Fees & Trust › Tariffs** (`/settings/fees?tab=tariffs`; panel heading "Rates & Currency") (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
+- [ ] **0.41** Navigate to **Settings › Fees & Trust › Rates** (`/settings/fees?tab=tariffs`; panel heading "Rates & Currency") (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the tab is labelled "Rates" and keeps the id `tariffs` (ADR-341); the LSSA tariffs live at Fees › Tariffs, `/legal/tariffs`, `settings-nav.ts:221-224`)
 - [ ] **0.42** Verify rate cards section renders. If not pre-seeded, create org-level billing rates:
   - Thandi (Senior Partner): **R2,500/hr** (ZAR)
   - Bob (Associate): **R1,200/hr**
@@ -214,7 +214,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **1.1** Login as Bob
 - [ ] **1.2** Navigate to **Conflict check** (Matters zone) (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Conflict check moved to the Matters zone (612A), sentence-case label)
-- [ ] **1.3** Search for **"Sipho Dlamini"** → verify result is **CLEAR** (green — no existing matches)
+- [ ] **1.3** Search for **"Sipho Dlamini"** → verify the result card reads **No Conflict** (green — no existing matches) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: `NO_CONFLICT` is labelled "No Conflict"; the only labels are No Conflict / Potential Conflict / Conflict Found, `conflict-check-result.tsx:22-31`)
 - [ ] **1.4** 📸 **Screenshot**: Conflict check clear result
 - [ ] **1.5** Navigate to **Clients** list
 - [ ] **1.6** Click **New Client**
@@ -248,14 +248,15 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **3.4** Save → matter created from template with pre-populated task list
 - [ ] **3.5** Verify matter appears under Sipho's matter list
 - [ ] **3.6** Navigate to matter detail → verify task list is pre-populated from template (expect 5+ tasks)
+- [ ] **3.6a** As Bob: on the matter open the **Details** group → **Team** sub-tab (`tab-group-details` → `tab-item-team`) → **Add Member** → in "Add Member" pick **Carol Mokoena** → the Members list now includes Carol Mokoena with a **Member** badge (org Members see a matter only through its team, and 3.7's assignee list offers the matter's members only) (Phase 89 decision 7 / G88-F7 — step added, founder-authorised 2026-11-03: ADR-346 — membership-only visibility, managed on the Details › Team sub-tab, `matter-tab-groups.ts:29`, `add-member-dialog.tsx:96-98`; task assignees are the matter's members, `matters/[id]/page.tsx:202,573`; the Phase 88 619E Day-1 "Add Carol to the Sipho matter team" shape)
 - [ ] **3.7** Assign first task to Bob, second task to Carol
-- [ ] **3.8** Verify terminology: page heading says "Matter" (not "Project"), breadcrumb shows Clients > Sipho Dlamini > Matter > ...
+- [ ] **3.8** Verify terminology: page heading says "Matter" (not "Project"), breadcrumb shows **Mathebula & Partners › Matters › Sipho Dlamini v. Standard Bank (civil)** (no client crumb) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the breadcrumb follows the URL `/matters/<id>`, which has no client segment, `breadcrumbs.tsx:135-138,168-171`; `matters` → "Matters", `:12`)
 - [ ] **3.9** **Correspondence tab (Phase 81)**: on the matter detail, open **Work** tab group → **Correspondence** sub-tab (`tab-group-work` → `tab-item-correspondence`) → read-only list renders its empty state: "No correspondence yet" with the description that email is filed via the firm's own Claude using the Kazi MCP tools (there is no in-app compose/write path — `file_correspondence` is MCP-only)
 - [ ] **3.10** Verify the Work group dropdown lists **four** sub-tabs: Tasks, Documents, Correspondence, Generated documents (Staffing removed — Epic 599 #1570) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 
 ### Day 4 — Engagement letter & first time entry
 
-- [ ] **4.1** Generate engagement letter from matter detail (Document Templates → Engagement Letter)
+- [ ] **4.1** Generate engagement letter from matter detail (matter header **Generate Document** → Engagement Letter) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the only entry point is the header's "Generate Document" menu, `GenerateDocumentDropdown.tsx:74,89`, mounted by `overflow-actions-menu.tsx:82-84`)
 - [ ] **4.2** Preview PDF → verify Mathebula letterhead + brand colour applied + client details filled from context
 - [ ] **4.3** Save generated document → verify it appears under matter's Documents tab
 - [ ] **4.3a** On the saved engagement letter (**Work** → **Generated documents**) click **Send for Acceptance** → Recipient = Sipho Dlamini (portal contact), Expiry (days) = 7 → **Send** → acceptance status badge on the document reads **Awaiting Acceptance** (status SENT; becomes **Viewed** once the link is opened) (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.5: ADR-336 replaces the deleted proposal flow with document + acceptance) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
@@ -292,12 +293,13 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Days 6–7 — More activity on Sipho's matter
 
-- [ ] **6.1** Carol logs 2.0 hours: "Legal research — precedent review"
+- [ ] **6.1** Carol logs in → **Matters** lists Sipho's matter (she is on its team since 3.6a) → opens it and logs 2.0 hours: "Legal research — precedent review" (Phase 89 decision 7 / G88-F7 — step amended, founder-authorised 2026-11-03: Members see only matters they are on, ADR-346; the Phase 88 619E Day-7 Carol lookup, `day-07-14-work-trust.spec.ts:62-66`)
 - [ ] **6.2** Bob adds a comment on a task (or a document) of the matter: "Need to confirm court date by Monday" with `@Carol` mention (Phase 88, register §5a row 4 — wording amendment, founder-authorised 2026-10-29: there is no matter-level comment thread; comments attach to a `TASK` or a `DOCUMENT`, `comment-section-client.tsx:14`, `task-detail-sheet.tsx:366`, `documents-panel.tsx:553`)
 - [ ] **6.3** Carol logs in → sees notification bell with at least 1 unread (the earlier member-added and task-assigned notifications also count) → clicks → notification routes to the matter comment (Phase 88, register §5a row 5 — wording amendment, founder-authorised 2026-10-29: the 623A walk showed 3 unread, `qa_cycle/evidence/phase88-rewalk/mid/days-01-07.md:116`)
 - [ ] **6.4** Carol replies to comment: "Confirmed, court date is 2026-05-12"
-- [ ] **6.5** Bob uploads a PDF document to matter (label: "Particulars of Claim — draft v1")
+- [ ] **6.5** Bob uploads a PDF named "Particulars of Claim — draft v1.pdf" to the matter (**Work** → **Documents**); the document is named by its file name — there is no separate label field (Phase 89 decision 7 / G88-F37 — amended, not built, founder-authorised 2026-11-03: the upload takes only file name, content type and size, `DocumentController.java:116-123` `UploadInitRequest`)
 - [ ] **6.6** Verify activity feed for the matter shows all events in reverse-chronological order
+- [ ] **7.1** As Thandi: open Sipho Dlamini's client record → **FICA & compliance** group → **Information requests** sub-tab → **New Request** → "Create Information Request": template **Ad-hoc (no template)**, Portal Contact = Sipho Dlamini (`sipho.dlamini@email.co.za`), Reminder Interval (days) 5 (default), Due Date = 7 days from today → **Add Item**: Name "Certified copy of ID document", Description "Please upload a certified copy of your ID document", Response type **File upload**, **Required** ticked → **Send Now** → the list row reads **REQ-0001** · **Sent**; Mailpit shows "Information request REQ-0001 from Mathebula & Partners" to Sipho. This client-level request (no matter) is the portal file's Day 0 / Day 3 prerequisite and does not gate Day 75's matter closure (Phase 89 decision 7 / G88-F28 — step added, founder-authorised 2026-11-03: the portal file's Prerequisites expect "info requests" from this file, `portal-client-90day-keycloak.md:41`; dialog `create-request-dialog.tsx:223-496`; email subject `InformationRequestEmailService.java:69`; the closure gate counts the matter's own requests only, `AllInfoRequestsClosedGate.java:45-47`)
 
 ---
 
@@ -307,7 +309,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner — senior partner handles estate work)
 
-- [ ] **8.1** Conflict check for "Moroka Family Trust" and "Peter Moroka" (deceased) → both CLEAR
+- [ ] **8.1** Conflict check for "Moroka Family Trust" and "Peter Moroka" (deceased) → both result cards read **No Conflict** (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: as 1.3, `conflict-check-result.tsx:22-31`)
 - [ ] **8.2** Create new client: Name = **Moroka Family Trust**, `client_type` = **TRUST**, `registration_number` = "IT000456/2018", Tax Number = "9123456789", Address Line 1 = "8 Rissik St", City = "Johannesburg", Country = **ZA** (activation prerequisites — TRUST and COMPANY clients also need the tax number)
 - [ ] **8.3** Beneficial owners are recorded via the Trust checklist item **Beneficial Ownership Declaration** (8.5), not a custom field — note the three names (Grace Moroka, James Moroka, Ruth Moroka) in that item's completion note (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: beneficial_owners is not a pack field; the trust pack carries the declaration item)
 - [ ] **8.4** Header card → **Start Onboarding** → confirm → badge **ONBOARDING** (as 2.1)
@@ -320,6 +322,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **9.2** Matter name: "Estate Late Peter Moroka"
 - [ ] **9.3** Work Type = **ESTATES** (inherited from the template)
 - [ ] **9.4** Verify the 9 template-instantiated tasks: "Obtain death certificate & will", "Report estate to Master of High Court", "Obtain Letters of Executorship", "Advertise for creditors (Gazette + local newspaper)", "Inventory of assets & liabilities", "Open estate bank account", "Prepare Liquidation & Distribution account", "Lodge L&D account with Master", "Distribute estate & file final account" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: task names re-derived from project-template-packs/legal-za.json)
+- [ ] **9.4a** As Thandi: on the estate matter open **Details** → **Team** → **Add Member** → **Bob Ndlovu**, then **Add Member** → **Carol Mokoena** → the Members list includes Thandi, Bob and Carol (9.5 assigns tasks to Bob — assignees are the matter's members — and Carol records time on the estate at 13.1, 16.1 and 70.1) (Phase 89 decision 7 / G88-F7 — step added, founder-authorised 2026-11-03: ADR-346 membership-only visibility; `matter-tab-groups.ts:29`; `matters/[id]/page.tsx:202,573`)
 - [ ] **9.5** Assign the first 4 tasks to Thandi, the remaining 5 to Bob
 
 ### Days 10–14 — Estate admin work
@@ -327,9 +330,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **10.1** Thandi logs 3.0 hours: "Initial consultation with heirs + document gathering"
 - [ ] **10.2** Thandi uploads trust deed PDF to matter documents
 - [ ] **11.1** Bob logs 1.5 hours: "Master of High Court filing preparation"
-- [ ] **12.1** Thandi marks "Obtain death certificate & will" task as DONE
-- [ ] **12.2** Thandi creates an entry in trust accounting: deposit R50,000 for estate admin, source = "Moroka Trust operating account", reference = "Initial fund for estate admin"
-- [ ] **12.3** Verify trust account balance updates to R50,000
+- [ ] **12.1** Thandi moves the "Obtain death certificate & will" task to **In Progress**, then to **Done** (the status select offers Done only from In Progress) (Phase 89 decision 7 / G88-F1 — behaviour amendment, founder-authorised 2026-11-03: OPEN → {IN_PROGRESS, CANCELLED}, DONE only from IN_PROGRESS, `TaskStatus.java:13-18`, mirrored by `task-status-select.tsx:21-26`)
+- [ ] **12.2** Thandi creates an entry in trust accounting: deposit R50,000 for estate admin, reference = "Initial fund for estate admin", description = "From Moroka Trust operating account" (the Record Deposit dialog has no source field) (Phase 89 decision 7 / G88-F37 — amended, not built, founder-authorised 2026-11-03: the dialog's fields are Client · Matter (Optional) · Amount · Reference · Description (Optional) · Transaction Date, `RecordDepositDialog.tsx:126-213`; `RecordDepositRequest(clientId, matterId, amount, reference, description, transactionDate)`, `TrustTransactionService.java:96-102`)
+- [ ] **12.3** Verify the trust account balance (**Trust** → **Overview**, "Trust Balance") updates to **R 53 750,00** — the R50,000 estate deposit plus the R 3 750 Sipho's matter still holds from 5.8a–5.8c — and the Moroka Family Trust client ledger (**Trust** → **Client ledgers**) reads **R 50 000,00** (Phase 89 decision 7 / G88-F11 — wording amendment, founder-authorised 2026-11-03: the cashbook balance is one sum over the account, `TrustTransactionRepository.java:175-195` `calculateCashbookBalance`; each client has its own ledger card, `ClientLedgerCardRepository.java:28-32`; a knock-on of register §5 row 5)
 - [ ] **13.1** Carol logs 1.0 hour: "Drafting Section 29 advertisement notice"
 - [ ] **14.1** Thandi uploads "Master's appointment.pdf" to the matter's **Work › Documents**, opens its comment thread and comments "Master's appointment received" with the PDF attached (Phase 88, ADR-344 + register §5 row 7 — product decision, wording amendment, founder-authorised 2026-10-22: comments live on a task or document, `comment-section-client.tsx:14`; attachments built in 627H/627I (PRs #1699/#1700))
 
@@ -342,7 +345,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **14.4** On matter detail, navigate to **Details > Custom fields** tab, verify the conveyancing field group (field pack `conveyancing_za_matter`) shows **14 fields visible** while empty: `conveyancing_type`, `property_address`, `erf_number`, `deeds_office`, `lodgement_date`, `purchase_price`, `transfer_duty`, `bond_institution`, `seller_name`, `seller_id_number`, `purchaser_name`, `purchaser_id_number`, `occupation_date`, `bond_number`; `registration_date` appears once `lodgement_date` is filled and `deed_number` once `registration_date` is filled (16 fields in all) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged) (Phase 88, ADR-344 + register §5 row 8 — product decision kept, wording amendment, founder-authorised 2026-10-22: pack visibility conditions in `field-packs/conveyancing-za-project.json` v2, evaluated by `CustomFieldSection.tsx:191`) (G88-F12 amendment, founder authorisation 2026-11-03: contract parties are explicit matter fields — `field-packs/conveyancing-za-project.json` v3 appends the six seller / purchaser / occupation / bond fields)
 - [ ] **14.5** On the Custom fields tab, fill the minimum Day 14 set: `property_address = "12 Rivonia Road, Sandton, 2196"`, `erf_number = "1234"`, `deeds_office = JOHANNESBURG`, and fill Seller and Purchaser: `seller_name = "Johannes van der Merwe"`, `purchaser_name = "Khumalo Property Holdings"` → save (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged) (G88-F12 amendment, founder authorisation 2026-11-03: the Offer to Purchase parties and its Voetstoots clause bind `seller_name` / `purchaser_name`, never the firm or the client record)
 - [ ] **14.6** Verify promoted / inline fields re-render with new values
-- [ ] **14.7** Navigate to Document Templates from matter → select **Offer to Purchase** (key `offer-to-purchase`, `acceptanceEligible: true`) → generate document
+- [ ] **14.7** On the matter header click **Generate Document** → select **Offer to Purchase** (key `offer-to-purchase`, `acceptanceEligible: true`) → generate document (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: as 4.1, `GenerateDocumentDropdown.tsx:74,89`, `overflow-actions-menu.tsx:82-84`)
 - [ ] **14.8** Verify generated OTP document contains the conveyancing clauses inserted from clause pack `conveyancing-za-clauses` (Phase 492 clause injection)
 - [ ] **14.9** On the generated OTP document detail → click **Send for Acceptance** (Phase 28 flow — button only shown because template has `acceptanceEligible: true`)
 - [ ] **14.10** Fill acceptance request: recipient = client contact email, expiry = 7 days → submit
@@ -354,7 +357,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **15.1** Navigate to Estate matter → **Fees** group → **Fee estimate** sub-tab (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **15.2** Set estate matter budget: 40 hours total, R80,000 cap (hours + currency mode)
-- [ ] **15.3** Verify current burn: ~5.5 hours, ~R11,000 (based on days 10–14 entries)
+- [ ] **15.3** Verify current burn: 5.5 hours, **R 9 850,00** (based on days 10–14 entries: Thandi 3.0 h × R2,500 + Bob 1.5 h × R1,200 + Carol 1.0 h × R550 at the Day 0 rates) (Phase 89 decision 7 / G88-F14 — wording amendment, founder-authorised 2026-11-03: amount consumed = Σ(billing-rate snapshot × hours) over the matter's billable entries, `TimeEntryRepository.java:372-390` `budgetAmountConsumed`, `ProjectBudgetService.java:168-179`)
 - [ ] **15.4** Verify budget status indicator shows "on track" (< 50% consumed)
 
 ### Days 16–21 — More estate work
@@ -372,7 +375,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Bob (Admin)
 
-- [ ] **22.1** Conflict check "Lerato Mthembu" → CLEAR
+- [ ] **22.1** Conflict check "Lerato Mthembu" → the result card reads **No Conflict** (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: as 1.3, `conflict-check-result.tsx:22-31`)
 - [ ] **22.2** Create individual client, standard fields + promoted (client_type = INDIVIDUAL, id_passport_number); fill Address Line 1 = "3 Church Square", City = "Pretoria", Country = **ZA** (activation prerequisites)
 - [ ] **22.3** **Start Onboarding** → complete the 9-item individual checklist (as Day 2) → auto-transitions to ACTIVE on the last required Confirm (else **Activate Customer**) → client ACTIVE
 - [ ] **22.4** Create matter from template **Litigation (Road Accident Fund -- RAF)** → Work Type **LITIGATION** (the RAF template carries LITIGATION; "Road Accident Fund" is the template, not a work type), case_number = "RAF/2026/0042" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: expected value changed by #1580/#1581)
@@ -382,7 +385,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **23.1** Add adverse party: "Road Accident Fund" (entity type = Government) (Phase 88, ADR-344 + register §5 row 10 — product decision, built in 627F (PR #1698, U20); step unchanged: party type "Government / organ of state", `adverse-party-dialog.tsx:40`)
 - [ ] **23.2** Navigate to **Diary** (Today zone) (Phase 87, ADR-344 — nav amendment, Epic 613D, PR #1624: /court-calendar is now /diary)
-- [ ] **23.3** Create court event: Matter = RAF claim, Type = "Case Management Conference", Date = Day 45 from today, Court = "Gauteng High Court"
+- [ ] **23.3** Create court event: Matter = RAF claim, Type = **Case Management**, Date = Day 45 from today, Court = "Gauteng High Court" (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the Type list is Hearing · Trial · Motion · Mediation · Arbitration · Pre-Trial · Case Management · Taxation · Other, `create-court-date-dialog.tsx:38-48`, validated by `CourtCalendarService.java:34-44`)
 - [ ] **23.4** Verify event appears in the **Diary** (navigate to the event's date) (Phase 87, ADR-344 — nav amendment, Epic 613D, PR #1624: the court calendar view is the Diary)
 - [ ] **23.5** Verify the event also appears on the matter detail Activity group → Activity sub-tab
 - [ ] **23.6** 📸 **Screenshot**: Diary with the RAF event highlighted (Phase 87, ADR-344 — nav amendment, Epic 613D, PR #1624: court calendar → Diary)
@@ -392,10 +395,11 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **24.1** Bob logs 4.0 hours: "Medical records collation"
 - [ ] **26.1** Bob logs 3.0 hours: "Expert witness statements"
 - [ ] **28.1** Bob uploads medical report PDFs to matter documents
+- [ ] **28.1a** As Bob (the RAF matter's lead): on the RAF matter open **Details** → **Team** → **Add Member** → **Carol Mokoena** → the Members list includes Carol (she records time on the RAF matter at 30.1) (Phase 89 decision 7 / G88-F7 — step added, founder-authorised 2026-11-03: ADR-346 membership-only visibility; `matter-tab-groups.ts:29`)
 - [ ] **30.1** Carol logs 2.0 hours: "Legal research — RAF tariff"
 - [ ] **32.1** Add LSSA tariff line item to matter (if LSSA tariff module surfaces this UI)
 - [ ] **33.1** Thandi reviews the matter, adds comment: "Ready for summons" with @Bob mention
-- [ ] **35.1** Bob marks 4 template tasks as DONE
+- [ ] **35.1** Bob moves 4 template tasks to **In Progress**, then to **Done** (Done is offered only from In Progress) (Phase 89 decision 7 / G88-F1 — behaviour amendment, founder-authorised 2026-11-03: as 12.1, `TaskStatus.java:13-18`, `task-status-select.tsx:21-26`)
 
 ---
 
@@ -417,9 +421,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **30.1** Navigate to the **oldest active matter** (Sipho's litigation) → click **Fees** group tab → click **Statements of account** sub-tab (`data-testid="project-statements-tab"` — content panel, still valid) (Phase 87, ADR-344 — label amendment, Epic 615E, PR #1631: matter/client tab groups relabelled per §12.6.5; testids unchanged)
 - [ ] **30.2** Click **"Generate Statement of Account"** → dialog opens (`data-testid="statement-of-account-dialog"`)
-- [ ] **30.3** Fill period: start = matter-opened date (Day 3), end = today (Day 30) → click **Generate**
+- [ ] **30.3** Fill period: start = matter-opened date (Day 3), end = today (Day 30) → click **Preview & Save** (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the dialog's only generate action is "Preview & Save" (then "Regenerate"), `statement-of-account-dialog.tsx:433-443`)
 - [ ] **30.4** Preview pane (`data-testid="statement-preview-container"`) renders HTML with: fees section (time entries from Days 4–7), disbursements section (sheriff fee + deeds-office fee from Day 5), trust activity section, and summary totals block
-- [ ] **30.5** Click **Save** → statement persisted as a `GeneratedDocument` row → appears in matter's Documents tab
+- [ ] **30.5** There is no separate Save: the 30.3 **Preview & Save** click persisted the statement as a `GeneratedDocument` row (the button now reads **Regenerate**) → verify it appears in matter's Documents tab (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: one `statement-generate-btn` generates and saves, `statement-of-account-dialog.tsx:433-443`)
 - [ ] **30.6** Click **Download PDF** → PDF downloads with identical layout
 - [ ] **30.7** 📸 **Screenshot**: Statement of Account dialog with HTML preview visible + summary block visible (curated for documentation)
 
@@ -457,7 +461,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **45.7** Click **Write off** (`data-testid="disbursement-write-off-confirm-button"`) → the dialog closes with no error. The write-off runs as a server action (no `POST …/write-off` appears in the browser network panel), so confirm it by the detail-page change (45.8) and a read-only SELECT on `legal_disbursements`: `billing_status` `UNBILLED → WRITTEN_OFF`, `write_off_reason` set (Phase 88, ADR-344 + register §5 row 3 — wording amendment, founder-authorised 2026-10-22: QA drives the browser and reads state with read-only SELECTs, never REST; `legal/disbursements/actions.ts:222-238`)
 - [ ] **45.8** Verify the billing status badge on the detail page reads **Written off** (the label; `WRITTEN_OFF` is the stored value) and `writeOffReason` text renders inline (Phase 88, register §5a row 7 — wording amendment, founder-authorised 2026-10-29: the badge renders the label, `disbursement-list-view.tsx:58-59`, used by `disbursements/[id]/detail-client.tsx:180`)
 - [ ] **45.9** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) → filter **Entity type** = **Disbursement** and **Event type** = `disbursement.written_off` (there is no "action" filter) → verify event recorded with the reason string in the details JSON (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Audit Log is the Firm-zone Audit trail (612A/616A)) (Phase 88, register §5a row 8 — wording amendment, founder-authorised 2026-10-29: the audit trail filters by an Entity type select and an Event type combobox, `audit-log-client.tsx:810,833`; `legal_disbursement` is labelled Disbursement, `entity-type-labels.ts:25`)
-- [ ] **45.10** Navigate to Sipho's matter → open a **new fee note draft** from unbilled items → verify the written-off disbursement is **NOT** present in the selectable items list (excluded from next invoice draft)
+- [ ] **45.10** Navigate to Sipho Dlamini's client record → **Fees** group → **Fee notes** sub-tab → **New fee note** (as 36.1 — a matter has no fee-note entry point) → verify the written-off disbursement is **NOT** present in the selectable items list (excluded from next invoice draft) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the matter Fees group has no Fee notes tab, `matter-tab-groups.ts:50-62`; fee notes are raised per client, `client-tab-groups.ts:50`)
 - [ ] **45.11** Verify terminology: the detail page shows the **Written off** badge and a **Write-off reason** row; the phrase "Disbursement written off" is not shown on the detail page (it is the write-off success toast, and the activity feed reads "<actor> wrote off a disbursement") — never "Expense written off" (Phase 88, register §5a row 9 — wording amendment, founder-authorised 2026-10-29: `detail-client.tsx:296` (Write-off reason row); `ActivityMessageFormatter.java:237`; toast in `use-disbursement-write-off.tsx:64`)
 
 ### Day 47 — 📸 Fee note PDF wow moment
@@ -478,13 +482,16 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ## Days 61–75 — Additional cycles & portal interaction
 
 - [ ] **61.1** Create another client (individual, collections matter from template) — compressed onboarding (happy path only); in a full walk this is the 5th client and 5th matter (Phase 88, register §5a row 10 — wording amendment, founder-authorised 2026-10-29: Khumalo (14.2/14.3) and Lerato (22.2/22.4) are created before Day 61, after Sipho and Moroka)
+- [ ] **61.1a** On the new matter (61.1) open **Details** → **Team** → **Add Member** → **Carol Mokoena** (and any other fee earner not yet on the team) → the Members list includes every member who logs time at 62.1 (Phase 89 decision 7 / G88-F7 — step added, founder-authorised 2026-11-03: ADR-346 membership-only visibility; `matter-tab-groups.ts:29`)
 - [ ] **62.1** Log 4 time entries across the team on the new matter (61.1) (Phase 88, register §5a row 10 — wording amendment, founder-authorised 2026-10-29: it is the 5th matter in a full walk, see 61.1)
 - [ ] **65.1** Generate fee note → approve → send
 - [ ] **68.1** **Portal**: Sipho's portal contact was auto-created when the client was created (`PortalContactAutoProvisioner`). In an incognito context open http://localhost:3002/login → enter Sipho's email → request the login link → Mailpit → open the link (lands on `/auth/exchange?token=…`) → portal `/matters` loads with Sipho's matters; open **Home** (`/home`) → it shows his fee notes and requests (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.3: firm-side magic-link generator and the in-app /portal copy removed, Epic 597 #1566) (Phase 88, ADR-344 + register §5 row 13 — wording amendment, founder-authorised 2026-10-22: the link exchange lands on `/matters`, `portal/app/auth/exchange/page.tsx:74`; `/home` carries the Pending info requests and Recent fee notes cards)
 - [ ] **68.2** On the portal, verify Sipho can view (but not edit) matter status + fee notes
 - [ ] **70.1** Back in the app, Carol logs additional time on Moroka estate
 - [ ] **72.1** Thandi adds a trust accounting entry: withdrawal from Moroka trust account for R12,000 (disbursement to third party)
+- [ ] **72.1a** As Bob (Admin): **Trust** → **Transactions** → on Thandi's R12,000 payment row (**AWAITING APPROVAL**) click **Approve** → the row reads **APPROVED** (every trust payment waits for approval and its recorder cannot approve it alone; 72.2's balance moves only once it is approved) (Phase 89 decision 7 / G88-F21 — step added, founder-authorised 2026-11-03: single-approval mode refuses the recorder, `TrustTransactionService.java:789-797`; the same record-then-approve pair as 5.8b–5.8c)
 - [ ] **72.2** Verify trust balance updates correctly
+- [ ] **74.1** As Thandi: on Sipho's litigation matter open **Work** → **Tasks** and resolve every template task — move each to **In Progress**, then **Done** (or **Cancelled** for one the firm did not perform) — until no task is Open or In Progress (Complete refuses while any task is open) (Phase 89 decision 7 / G88-F22 — step added, founder-authorised 2026-11-03: "Matter has N open task(s). Complete or cancel all tasks before completing the matter.", `ProjectService.java:924-933`; Done only from In Progress, `TaskStatus.java:13-18`)
 - [ ] **75.1** Mark Sipho's litigation matter as COMPLETED (or CLOSED) → verify state transition allowed; on the COMPLETED matter the header still offers **Close Matter**, so 75.2 follows directly — no Reopen (Phase 88, ADR-344 + register §5 row 2 — wording amendment, founder-authorised 2026-10-22: COMPLETED matters can be closed since 627A (U16, G-D2), `matter-closure-action.tsx:29`)
 
 #### Phase 67 — Day 75: Matter closure (happy path) (Epic 489)
@@ -514,7 +521,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **80.2** Verify cross-matter/cross-client dashboard loads with 90 days of data
 - [ ] **80.3** Verify utilization metrics (billable % per team member) render
 - [ ] **80.4** Export a report to CSV → verify file downloads with expected columns
-- [ ] **80.5** Navigate to **My work** (Today zone) (as Bob) → verify Bob's assigned tasks, time summary, and upcoming court events render (Phase 87, ADR-344 — label amendment, Epic 617B, PR #1640: sentence-case, Today zone (612A))
+- [ ] **80.4a** As Bob: **Diary** (Today zone) → **New Court Date** → "Schedule Court Date": Matter = the RAF claim, Type = **Hearing**, Date = 7 days from today, Court Name = "Gauteng High Court" → **Schedule Court Date** → the court date shows in the Diary on that date (My work's Upcoming band covers tomorrow … today + 14, so the 23.3 date is outside it) (Phase 89 decision 7 / G88-F25 — step added, founder-authorised 2026-11-03: `UPCOMING_DIARY_DAYS = 14`, `diary-types.ts:116`; the Upcoming list runs from tomorrow to today + 14 and is scoped to the task assignee or matter lead, `todays-diary.ts:47-69`)
+- [ ] **80.5** Navigate to **My work** (Today zone) (as Bob) → verify Bob's assigned tasks, time summary, and upcoming court events render — the 80.4a court date is listed under **Upcoming · next 14 days** (Phase 87, ADR-344 — label amendment, Epic 617B, PR #1640: sentence-case, Today zone (612A)) (Phase 89 decision 7 / G88-F25 — wording amendment, founder-authorised 2026-11-03: the band is "Upcoming · next 14 days", `upcoming-diary-list.tsx:43`; Bob leads the RAF matter, so its court dates are his, `todays-diary.ts:47-57`)
 
 ### Day 85 — Audit log sweep
 
@@ -545,7 +553,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **85.15** Click **Close matter** → success toast (Phase 88, register §5a row 12 — wording amendment, founder-authorised 2026-10-29: the Step 2 submit button reads "Close matter", `matter-closure-dialog.tsx:520-528`)
 - [ ] **85.16** Verify matter status transitions to **CLOSED**
 - [ ] **85.17** Navigate to **Firm** zone → **Audit trail** (`/settings/firm?tab=audit-trail`) → filter **Entity type** = **Matter** and **Event type** = `matter_closure.closed` (there is no "action" filter) → verify event includes `override_used = true` and the justification text verbatim in the details JSON (Phase 87, ADR-344 — nav amendment, Epic 617B, PR #1640: Audit Log is the Firm-zone Audit trail (612A/616A)) (Phase 88, ADR-344 + register §5 row 12 — product decision, built in 625A (PR #1679, D3); step unchanged: `matter_closure.closed` details carry `justification`, `MatterClosureService.java:285-290`) (Phase 88, register §5a row 8 — wording amendment, founder-authorised 2026-10-29: Entity type select + Event type combobox, `audit-log-client.tsx:810,833`; the closure event is `matter_closure.closed` on entity type `project`, labelled Matter, `MatterClosureService.java:275-277`, `entity-type-labels.ts:15`)
-- [ ] **85.18** 📸 **Screenshot**: Matter closure dialog with gate report failing + override toggle + justification input visible
+- [ ] **85.18** 📸 **Screenshot** (two shots): Step 1 with the failing trust-balance gate (85.11), and Step 2 with the override toggle on and the justification input filled (85.13–85.14) — the dialog never shows the gate report and the override together (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: Step 1 renders the gate report, Step 2 the override form, `matter-closure-dialog.tsx:104,241-256,280-285,447-497`)
 
 ### Day 88 — 📸 Activity feed wow moment
 

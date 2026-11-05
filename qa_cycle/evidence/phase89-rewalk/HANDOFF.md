@@ -67,3 +67,9 @@ session-1 and session-2 commit; nothing was lost. **636B.3 starts here, after 02
    gotcha from session 1 still apply.
 
 This ruling is the orchestrator's; the founder can override it before 02:05 by editing this section.
+
+**Amendment (founder, 2026-11-06 00:4x SAST):** ruling item 4 is lifted. The founder authorised 636B.3 to start now,
+inside the 00:00–02:00 SAST window, on the basis that `KaziTime` (PR #1716) makes every business "today" SA time
+regardless of the UTC process clock. 636B.3 must record in `steps/days-46-90.md` that it ran inside the window, and
+any date-sensitive anomaly (closure date, retention date, SoA period, portal dates) is a product signal to be read and
+filed, not a zone artefact to be explained away.

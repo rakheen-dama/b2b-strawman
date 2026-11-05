@@ -1,7 +1,7 @@
 {
-  "commit": "6e6c9a242",
+  "commit": "ef20a6ea9",
   "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-11-05T15:26:31Z",
-  "summary": "634E PR #1737 FE-GATE (orchestrator): lint 0, typecheck 0, format:check 0, vitest Test Files 444 passed / Tests 3672 passed | 2 skipped (3674), build 0"
+  "ts": "2026-11-05T16:40:46Z",
+  "summary": "PR #1739 (closure-spec R-5 fix) FE-GATE on ef20a6ea9 (orchestrator, worktree-fix-closure-spec): lint 0 errors / 79 pre-existing warnings, typecheck ok, format:check ok, vitest Test Files 444 passed / Tests 3672 passed | 2 skipped (3674), build ok"
 }

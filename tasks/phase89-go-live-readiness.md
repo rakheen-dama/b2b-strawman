@@ -530,7 +530,7 @@ PR rules restated (non-negotiable):
   - (1) Comment lists load only the backend's first page (50, oldest first), so a deep link to comment #51 or later won't highlight. This is shared with task comments (CodeRabbit Major, declined as a cross-entity scope expansion).
   - (2) Backend `CommentService.updateComment` lacks the PROJECT ⇒ SHARED guard that create has, so a direct PUT can make a matter comment INTERNAL. The fix needs a reproduce-first integration test and a backend verify.
   - (3) Extract a shared PROJECT ⇒ SHARED helper; it is duplicated in the add form and the edit dialog.
-  - (4) `matter-closure-audit-tab.spec.ts` closes the seed matter "Website Redesign" on a pristine stack and breaks two seed lookups (628F R-5). The spec should close its own run-unique matter.
+  - (4) `matter-closure-audit-tab.spec.ts` closes the seed matter "Website Redesign" on a pristine stack and breaks two seed lookups (628F R-5). The spec should close its own run-unique matter. **Fixed** — PR #1739 (merged `0827ce3f9`, 2026-11-05, founder-authorised): the spec creates `E2E closure override <RUN_ID>` via `helpers/api` and closes that; fresh-stack default suite 165 passed / 0 failed with `Website Redesign` still ACTIVE (was 159 / 2). 636A inherits a clean default-suite baseline.
   - (5) Portal-authored comments show the author as "Unknown" (backend).
   - (6) `qa/testplan/demos/legal-za-90day-keycloak.md:272`, `legal-za-full-lifecycle-keycloak.md:37,271` and `qa/testplan/MIGRATION-NOTES.md:41,123` still say "Client comments" (635A).
 

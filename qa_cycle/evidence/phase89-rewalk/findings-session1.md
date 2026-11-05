@@ -1,5 +1,7 @@
 # 636B.1 candidate findings (running list — NOT the final `gaps.md` register)
 
+> Superseded by `gaps.md` (authoritative IDs and severities after rulings 0.R2/0.R3/0.R5); retained as the walker's candidate list.
+
 Walker 636B.1. Severities are **proposed** (rating precedent Phase 88 O-4: new product failure → MEDIUM; trust money path / client-data confidentiality → HIGH; copy, layout, scenario-wording drift → LOW). The orchestrator confirms every HIGH/MEDIUM.
 
 Numbering note: ids run from G89-F1 as the 636B.1 brief instructs. The brief §5.3 also seeds the final register with the three 636A tooling LOWs (636A-c1/c2/c3); if those take G89-F1…F3 in `gaps.md`, renumber these candidates by +3 when the register is assembled.

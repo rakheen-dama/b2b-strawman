@@ -79,6 +79,8 @@ export function TaskListPanel({
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedTaskId = searchParams.get("taskId");
+  // G88-M6: a comment notification deep link targets one comment on the task.
+  const selectedCommentId = searchParams.get("commentId");
   const [activeStatuses, setActiveStatuses] = useState<Set<TaskStatus>>(new Set(DEFAULT_STATUSES));
   const [myTasksActive, setMyTasksActive] = useState(false);
   const [recurringActive, setRecurringActive] = useState(false);
@@ -103,12 +105,15 @@ export function TaskListPanel({
   function openTask(id: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("taskId", id);
+    // A stale comment target must not force the next task open on its Comments tab.
+    params.delete("commentId");
     router.push(`?${params.toString()}`, { scroll: false });
   }
 
   function closeTask() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("taskId");
+    params.delete("commentId");
     router.push(`?${params.toString()}`, { scroll: false });
   }
 
@@ -381,6 +386,7 @@ export function TaskListPanel({
       )}
       <TaskDetailSheet
         taskId={selectedTaskId}
+        commentId={selectedCommentId}
         onClose={closeTask}
         projectId={projectId}
         slug={slug}

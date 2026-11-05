@@ -78,7 +78,8 @@ public class NotificationController {
       UUID referenceEntityId,
       UUID referenceMatterId,
       boolean isRead,
-      Instant createdAt) {
+      Instant createdAt,
+      UUID referenceCommentId) {
 
     public static NotificationResponse from(Notification notification) {
       return new NotificationResponse(
@@ -90,7 +91,8 @@ public class NotificationController {
           notification.getReferenceEntityId(),
           notification.getReferenceProjectId(),
           notification.isRead(),
-          notification.getCreatedAt());
+          notification.getCreatedAt(),
+          notification.getReferenceCommentId());
     }
   }
 

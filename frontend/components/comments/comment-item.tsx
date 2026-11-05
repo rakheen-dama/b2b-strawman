@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
@@ -8,6 +9,7 @@ import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog
 import { CommentAttachmentChip } from "@/components/comments/comment-attachment-chip";
 import { RelativeDate } from "@/components/ui/relative-date";
 import type { Comment } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface CommentItemProps {
   comment: Comment;
@@ -16,7 +18,11 @@ interface CommentItemProps {
   orgSlug: string;
   projectId: string;
   onCommentChange?: () => void;
+  /** Targeted by a notification deep link (G88-M6): scrolled into view and ringed for ~2 s. */
+  highlighted?: boolean;
 }
+
+const HIGHLIGHT_MS = 2000;
 
 export function CommentItem({
   comment,
@@ -25,13 +31,32 @@ export function CommentItem({
   orgSlug,
   projectId,
   onCommentChange,
+  highlighted = false,
 }: CommentItemProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [ringOn, setRingOn] = useState(highlighted);
+
+  useEffect(() => {
+    if (!highlighted) return;
+    ref.current?.scrollIntoView({ block: "center" });
+    const timer = setTimeout(() => setRingOn(false), HIGHLIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [highlighted]);
+
   const isOwnComment = comment.authorMemberId === currentMemberId;
   const authorName = comment.authorName ?? "Unknown";
   const attachments = comment.attachments ?? [];
 
   return (
-    <div className="flex gap-3">
+    <div
+      ref={ref}
+      id={`comment-${comment.id}`}
+      data-highlighted={ringOn ? "true" : undefined}
+      className={cn(
+        "flex gap-3 rounded-md transition-shadow",
+        ringOn && "ring-2 ring-teal-500 ring-offset-2 dark:ring-offset-slate-950"
+      )}
+    >
       <AvatarCircle name={authorName} size={32} className="mt-0.5 shrink-0" />
 
       <div className="min-w-0 flex-1">

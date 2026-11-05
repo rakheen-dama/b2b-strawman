@@ -684,6 +684,34 @@ describe("TaskListPanel", () => {
     expect(pushCall).not.toContain("taskId");
   });
 
+  // G88-M6 (634C): a comment deep link opens the sheet on Comments; closing clears the target
+  it("opens the sheet on Comments for ?commentId= and clears commentId on close", async () => {
+    mockSearchParams = new URLSearchParams("tab=tasks&taskId=t1&commentId=c1");
+
+    const user = userEvent.setup();
+
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />
+    );
+
+    const commentsTab = await screen.findByRole("tab", { name: "Comments" });
+    expect(commentsTab).toHaveAttribute("aria-selected", "true");
+
+    const closeButton = await screen.findByRole("button", { name: /Close task detail/i });
+    await user.click(closeButton);
+
+    const pushCall = mockPush.mock.calls[0][0] as string;
+    expect(pushCall).toContain("tab=tasks");
+    expect(pushCall).not.toContain("taskId");
+    expect(pushCall).not.toContain("commentId");
+  });
+
   // 130B: Inline expansion row is fully removed
   it("does not render an inline expanded row (colSpan row) when task is clicked", async () => {
     const user = userEvent.setup();

@@ -269,4 +269,50 @@ test.describe.serial("PROJ-02: Project Tasks", () => {
     await openTasksTab(page, projectId);
     await expect(taskRow(page, ASSIGNABLE_TITLE)).toContainText(carol!.name, { timeout: 10_000 });
   });
+
+  // G88-M6 (Phase 89 634C): a comment notification opens the task sheet on Comments with the
+  // comment in view. Alice mentions Carol (on the matter since beforeAll — also the C2 filter's
+  // positive path for a plain member); Carol, not Bob, so parallel admin fan-out cannot push the
+  // row out of the 10-item dropdown.
+  test("8. Comment notification deep-links to the comment in the task sheet (G88-M6)", async ({
+    page,
+  }) => {
+    const title = `Deep Link Task ${RUN_ID}`;
+    const commentBody = `@Carol please review ${RUN_ID}`;
+    const { status: created, data: task } = await apiStatus(`/api/matters/${projectId}/tasks`, {
+      method: "POST",
+      body: { title },
+    });
+    expect(created).toBe(201);
+    const { status, data: comment } = await apiStatus(`/api/matters/${projectId}/comments`, {
+      method: "POST",
+      body: { entityType: "TASK", entityId: task.id, body: commentBody, visibility: "INTERNAL" },
+    });
+    expect(status).toBe(201);
+
+    await loginAs(page, "carol");
+    await page.goto(`${BASE}/dashboard`);
+    await page.getByRole("button", { name: "Notifications", exact: true }).click();
+    const popover = page.getByRole("dialog", { name: "Notifications" });
+    const item = popover.getByRole("button").filter({ hasText: title });
+    await expect(item).toHaveCount(1, { timeout: 15_000 });
+    await item.click();
+
+    await expect(page).toHaveURL(
+      new RegExp(`/matters/${projectId}\\?tab=tasks&taskId=${task.id}&commentId=${comment.id}`),
+      { timeout: 15_000 }
+    );
+    // D13: the popover closes on navigation, so it cannot cover the sheet
+    await expect(popover).toHaveCount(0);
+    const sheet = page.getByRole("dialog", { name: "Task Detail" });
+    await expect(sheet.getByRole("tab", { name: "Comments" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+      { timeout: 15_000 }
+    );
+    const target = page.locator(`#comment-${comment.id}`);
+    await expect(target).toBeVisible({ timeout: 15_000 });
+    await expect(target).toBeInViewport();
+    await expect(target).toContainText(commentBody);
+  });
 });

@@ -73,6 +73,8 @@ function sheetReducer(state: SheetState, action: SheetAction): SheetState {
 
 interface TaskDetailSheetProps {
   taskId: string | null;
+  /** A comment targeted by a notification deep link (G88-M6) — opens the sheet on Comments. */
+  commentId?: string | null;
   onClose: () => void;
   projectId: string | null;
   slug: string;
@@ -90,6 +92,7 @@ interface TaskDetailSheetProps {
 
 export function TaskDetailSheet({
   taskId,
+  commentId = null,
   onClose,
   projectId,
   slug,
@@ -339,7 +342,11 @@ export function TaskDetailSheet({
 
             {/* Tabbed content */}
             <div className="flex-1 px-6 py-4">
-              <Tabs defaultValue="time-entries">
+              {/* The key remounts the uncontrolled Tabs when a deep link re-targets a comment. */}
+              <Tabs
+                key={commentId ?? "no-comment"}
+                defaultValue={commentId ? "comments" : "time-entries"}
+              >
                 <TabsList>
                   <TabsTrigger value="time-entries">Time Entries</TabsTrigger>
                   <TabsTrigger value="comments">Comments</TabsTrigger>

@@ -21,8 +21,11 @@ import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskRecurrenceCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTerminology;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -63,6 +66,7 @@ public class NotificationService {
   private final MemberRepository memberRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final EmailTerminology emailTerminology;
+  private final ProjectAccessService projectAccessService;
 
   public NotificationService(
       NotificationRepository notificationRepository,
@@ -73,7 +77,8 @@ public class NotificationService {
       ProjectMemberRepository projectMemberRepository,
       MemberRepository memberRepository,
       OrgSettingsRepository orgSettingsRepository,
-      EmailTerminology emailTerminology) {
+      EmailTerminology emailTerminology,
+      ProjectAccessService projectAccessService) {
     this.notificationRepository = notificationRepository;
     this.notificationPreferenceRepository = notificationPreferenceRepository;
     this.commentRepository = commentRepository;
@@ -83,6 +88,7 @@ public class NotificationService {
     this.memberRepository = memberRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.emailTerminology = emailTerminology;
+    this.projectAccessService = projectAccessService;
   }
 
   /**
@@ -302,7 +308,7 @@ public class NotificationService {
     // Parse @mentions from comment body and resolve to member IDs
     var body = (String) event.details().get("body");
     if (body != null) {
-      var mentionedIds = resolveMentionedMemberIds(body);
+      var mentionedIds = resolveMentionedMemberIds(body, event.projectId());
       recipients.addAll(mentionedIds);
     }
 
@@ -319,7 +325,9 @@ public class NotificationService {
               null,
               event.targetEntityType(),
               event.targetEntityId(),
-              event.projectId());
+              event.projectId(),
+              // G88-M6 (634C): the comment itself, so the bell can deep-link to it.
+              event.entityId());
       if (notification != null) {
         created.add(notification);
       }
@@ -838,8 +846,13 @@ public class NotificationService {
    * names and single-word full names, so {@code @Bob please review} still resolves Bob (G88-F36).
    * Every member a mention matches is included (two members named Bob are both notified by
    * {@code @Bob}).
+   *
+   * <p>C2 (634C, ADR-346): when the comment is on a matter ({@code projectId != null}), only
+   * members who can view that matter are candidates — filtered before the name match — because the
+   * notification title carries the task title or document name. Owners and admins can view every
+   * matter, so they are always mentionable.
    */
-  Set<UUID> resolveMentionedMemberIds(String body) {
+  Set<UUID> resolveMentionedMemberIds(String body, UUID projectId) {
     var mentions = new ArrayList<Mention>();
     Matcher matcher = MENTION_PATTERN.matcher(body);
     while (matcher.find()) {
@@ -855,6 +868,8 @@ public class NotificationService {
     var members =
         memberRepository.findAll().stream()
             .filter(member -> member.getName() != null && !member.getName().isBlank())
+            // C2 (634C): a member who cannot view the matter is never a mention candidate.
+            .filter(member -> projectId == null || canViewMatter(projectId, member))
             .map(
                 member -> {
                   var nameWords = member.getName().trim().split("\\s+");
@@ -881,6 +896,12 @@ public class NotificationService {
           .forEach(m -> matched.add(m.id()));
     }
     return matched;
+  }
+
+  private boolean canViewMatter(UUID projectId, Member member) {
+    return projectAccessService
+        .checkAccess(projectId, new ActorContext(member.getId(), member.getOrgRole()))
+        .canView();
   }
 
   private static String lower(String value) {
@@ -923,6 +944,31 @@ public class NotificationService {
       String refEntityType,
       UUID refEntityId,
       UUID refProjectId) {
+    return createIfEnabled(
+        recipientMemberId,
+        notificationType,
+        title,
+        body,
+        refEntityType,
+        refEntityId,
+        refProjectId,
+        null);
+  }
+
+  /**
+   * As {@link #createIfEnabled(UUID, String, String, String, String, UUID, UUID)}, also recording
+   * the comment the notification is about ({@code refCommentId}, G88-M6; {@code null} for
+   * non-comment notifications).
+   */
+  public Notification createIfEnabled(
+      UUID recipientMemberId,
+      String notificationType,
+      String title,
+      String body,
+      String refEntityType,
+      UUID refEntityId,
+      UUID refProjectId,
+      UUID refCommentId) {
     if (isInAppEnabled(recipientMemberId, notificationType)) {
       var notification =
           new Notification(
@@ -932,7 +978,8 @@ public class NotificationService {
               body,
               refEntityType,
               refEntityId,
-              refProjectId);
+              refProjectId,
+              refCommentId);
       return notificationRepository.save(notification);
     }
     return null;

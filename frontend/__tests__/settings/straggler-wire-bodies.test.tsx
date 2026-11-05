@@ -140,6 +140,7 @@ describe("staff-frontend straggler wire bodies (Phase 87 S3, 609F)", () => {
       referenceEntityType: "DOCUMENT",
       referenceEntityId: "d1",
       referenceMatterId: "m-1",
+      referenceCommentId: null,
       isRead: false,
       createdAt: "2026-10-20T10:00:00Z",
     };

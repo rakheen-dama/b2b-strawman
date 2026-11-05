@@ -38,6 +38,14 @@ public class Notification {
   @Column(name = "reference_project_id")
   private UUID referenceProjectId;
 
+  /**
+   * The comment a COMMENT_ADDED notification is about (G88-M6, tenant V11), so the bell can open
+   * the comment itself. No FK: a deleted comment leaves the notification and its link degrades to
+   * the entity-level tab. NULL for every other notification type and for pre-V11 rows.
+   */
+  @Column(name = "reference_comment_id")
+  private UUID referenceCommentId;
+
   @Column(name = "is_read", nullable = false)
   private boolean isRead;
 
@@ -54,6 +62,26 @@ public class Notification {
       String referenceEntityType,
       UUID referenceEntityId,
       UUID referenceProjectId) {
+    this(
+        recipientMemberId,
+        type,
+        title,
+        body,
+        referenceEntityType,
+        referenceEntityId,
+        referenceProjectId,
+        null);
+  }
+
+  public Notification(
+      UUID recipientMemberId,
+      String type,
+      String title,
+      String body,
+      String referenceEntityType,
+      UUID referenceEntityId,
+      UUID referenceProjectId,
+      UUID referenceCommentId) {
     this.recipientMemberId = recipientMemberId;
     this.type = type;
     this.title = title;
@@ -61,6 +89,7 @@ public class Notification {
     this.referenceEntityType = referenceEntityType;
     this.referenceEntityId = referenceEntityId;
     this.referenceProjectId = referenceProjectId;
+    this.referenceCommentId = referenceCommentId;
     this.isRead = false;
     this.createdAt = Instant.now();
   }
@@ -99,6 +128,10 @@ public class Notification {
 
   public UUID getReferenceProjectId() {
     return referenceProjectId;
+  }
+
+  public UUID getReferenceCommentId() {
+    return referenceCommentId;
   }
 
   public boolean isRead() {

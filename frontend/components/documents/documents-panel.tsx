@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   FileText,
   FileImage,
@@ -170,11 +170,15 @@ export function DocumentsPanel({
   templates = [],
 }: DocumentsPanelProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = createMessages("empty-states");
   const [uploads, dispatch] = useReducer(uploadReducer, []);
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
   const fileMapRef = useRef<Map<string, { file: File; mimeType: string }>>(new Map());
-  const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+  // G88-M6: a document comment notification (?documentId=) opens with that document expanded.
+  const [expandedDocId, setExpandedDocId] = useState<string | null>(
+    () => searchParams?.get("documentId") ?? null
+  );
   const [reviewDocId, setReviewDocId] = useState<string | null>(null);
   const [draftingOpen, setDraftingOpen] = useState(false);
 

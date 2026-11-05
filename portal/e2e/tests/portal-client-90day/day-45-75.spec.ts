@@ -175,8 +175,8 @@ test.describe
   // Phase 89 633C closes §5b row 19 (633B built the sync — ADR-363). The firm schedules a hearing
   // and starts a prescription on Website Redesign (owned by Acme) with firm-only judge / notes text;
   // the client sees the sanitised rows on /deadlines and never that text. There is no mark-read
-  // control (Phase 89 decision 7). Cancel / interrupt DELETE the portal rows (B4), and the finally
-  // block guarantees it, so /deadlines is empty again for Day 7 and the responsive suite. The
+  // control (Phase 89 decision 7). Cancel / interrupt DELETE the portal rows (B4), and the cleanup
+  // after the try guarantees it, so /deadlines is empty again for Day 7 and the responsive suite. The
   // default window is today..+60 days (deadlines/page.tsx defaultWindow), so both dates sit inside.
   test("Day 75 [legal-za]: Client sees the court date and the prescription on Diary dates, sanitised, until the firm removes them", async ({
     page,
@@ -198,6 +198,7 @@ test.describe
     });
     let hearingLive = true;
     let tracker: { id: string } | null = null;
+    let primaryError: unknown = undefined;
     try {
       tracker = await startAcmePrescription({
         due: addDaysIso(today, 21),
@@ -278,16 +279,25 @@ test.describe
       await expect(
         page.getByTestId(`deadline-row-PRESCRIPTION_TRACKER-${trackerId}`),
       ).toHaveCount(0);
-    } finally {
-      // Cleanup, not an assertion: never leave a portal row behind for Day 7 / responsive.
-      if (hearingLive)
-        await cancelCourtDate(hearing.id, `633C e2e cleanup ${RUN_ID}`);
-      if (tracker)
-        await interruptPrescription(
-          tracker.id,
-          today,
-          `633C e2e cleanup ${RUN_ID}`,
-        );
+    } catch (error) {
+      primaryError = error;
     }
+    // Cleanup, not an assertion: never leave a portal row behind for Day 7 / responsive.
+    // Each step runs independently; a cleanup failure never masks the primary error, but still
+    // fails an otherwise-green test so leaked state is visible.
+    const cleanup = await Promise.allSettled([
+      hearingLive
+        ? cancelCourtDate(hearing.id, `633C e2e cleanup ${RUN_ID}`)
+        : Promise.resolve(),
+      tracker
+        ? interruptPrescription(tracker.id, today, `633C e2e cleanup ${RUN_ID}`)
+        : Promise.resolve(),
+    ]);
+    const cleanupErrors = cleanup
+      .filter((r): r is PromiseRejectedResult => r.status === "rejected")
+      .map((r) => r.reason as unknown);
+    for (const e of cleanupErrors) console.error("Day 75 cleanup failed:", e);
+    if (primaryError !== undefined) throw primaryError;
+    if (cleanupErrors.length > 0) throw cleanupErrors[0];
   });
 });

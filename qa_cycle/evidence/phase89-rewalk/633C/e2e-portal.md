@@ -69,3 +69,34 @@ After the 90-day gate run (Day 75 cleanup held): `select count(*) from portal.po
   `docker restart e2e-backend` (health UP before the run); no 429 observed.
 - KC portal restored: `svc.sh status` → `portal 78548 yes yes 3002` (cwd
   `/Users/rakheendama/Projects/2026/b2b-strawman/portal`).
+
+## Fix-pass re-run (review findings, 2026-11-05)
+
+Base head `6d9fe45fe` + the fix-pass working tree (committed as the next head): only
+`day-00-07.spec.ts` (`{ exact: true }` on the two "n/1 submitted • …" assertions) and
+`day-45-75.spec.ts` (Day 75 cleanup: independent `Promise.allSettled` steps after the try, primary
+error rethrown first, a cleanup failure fails an otherwise-green run) changed among the specs, so only
+the 90-day suite was re-run; responsive / portal-data-isolation are unaffected and stand as recorded
+above. Same procedure as the gate run: KC portal stopped with the main checkout's `svc.sh stop
+portal`; `:3002` left free so the config's `webServer` self-served `pnpm dev` from this worktree
+against :8081; `cd portal && pnpm test:e2e:portal-client-90day --reporter=line` (no `--`).
+
+1. **Capture stack** (`e2e-down.sh && docker builder prune -f && e2e-up.sh`, fresh volumes): 2 passed
+   / 11 failed, all 11 `A snapshot doesn't exist … writing actual` (Day 75 passed) — identical to the
+   documented capture pattern.
+2. **Gate stack** (fresh again; `portal.portal_deadline_view` = 0 before): **13 passed / 0 skipped
+   (20.1s)**; `portal.portal_deadline_view` = **0** afterwards (Day 75 cleanup held; firm residue
+   `CANCELLED | Johannesburg High Court 44twh` + an INTERRUPTED tracker, the documented per-run residue).
+
+```
+[2/13]  day-00-07.spec.ts:140  Day 0: Client opens the new info request from Home and sees its upload slot
+[3/13]  day-00-07.spec.ts:180  Day 3: Client uploads the document and submits the info request
+[4/13]  day-00-07.spec.ts:220  Day 7: Diary dates page renders for the client (no portal-visible deadlines on the e2e tenant)
+[10/13] day-45-75.spec.ts:181  Day 75 [legal-za]: Client sees the court date and the prescription on Diary dates, sanitised, until the firm removes them
+[13/13] day-85-90.spec.ts:110  Day 90: Activity trail shows this run's submit and download
+  13 passed (20.1s)
+```
+
+Afterwards: captured PNGs under `portal/e2e/screenshots/portal-v2/**` deleted (only `.gitkeep` /
+README remain); `portal/next-env.d.ts` (rewritten by `next dev`) restored; KC portal restarted —
+`svc.sh status` → `portal 83521 yes yes 3002` (cwd `/Users/rakheendama/Projects/2026/b2b-strawman/portal`).

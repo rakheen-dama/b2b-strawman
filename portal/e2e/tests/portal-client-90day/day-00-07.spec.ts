@@ -162,7 +162,9 @@ test.describe
     ).toBeVisible();
     await expect(page.getByText(requestNumber, { exact: true })).toBeVisible();
     // Phase 89 633C (G88-F29): client copy, not the enum — SENT reads "Requested" (D1).
-    await expect(page.getByText("0/1 submitted • Requested")).toBeVisible();
+    await expect(
+      page.getByText("0/1 submitted • Requested", { exact: true }),
+    ).toBeVisible();
     await expect(page.getByLabel(`Upload file for ${ITEM}`)).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Upload and submit" }),
@@ -194,7 +196,9 @@ test.describe
     await expect(page.getByText("Submitted", { exact: true })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText("1/1 submitted • In progress")).toBeVisible();
+    await expect(
+      page.getByText("1/1 submitted • In progress", { exact: true }),
+    ).toBeVisible();
 
     await expect(page).toHaveScreenshot("day-03-info-request-submitted.png", {
       fullPage: true,

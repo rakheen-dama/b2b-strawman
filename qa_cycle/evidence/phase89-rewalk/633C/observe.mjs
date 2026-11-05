@@ -31,17 +31,20 @@ note(`firm: tasks ${tA.status} / ${(await firm(`/api/tasks/${tB.id}`)).status} /
 const today = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10);
 const add = (d, n) => { const [y, m, dd] = d.split("-").map(Number); return new Date(Date.UTC(y, m - 1, dd + n)).toISOString().slice(0, 10); };
 const due = add(today, 21); const [yy, mm, ddd] = due.split("-").map(Number);
-const cd = await firm("/api/court-dates", "POST", { matterId: wr.id, dateType: "HEARING", scheduledDate: add(today, 14), scheduledTime: "10:00:00", courtName: `Johannesburg High Court OBS-${RUN}`, courtReference: `JHB-OBS-${RUN}`, judgeMagistrate: `Judge FIRM-ONLY-${RUN}`, description: `FIRM-ONLY-NOTES ${RUN}`, reminderDays: 7 });
-const pt = await firm("/api/prescription-trackers", "POST", { matterId: wr.id, causeOfActionDate: new Date(Date.UTC(yy - 3, mm - 1, ddd)).toISOString().slice(0, 10), prescriptionType: "GENERAL_3Y", notes: `FIRM-ONLY-NOTES ${RUN}` });
+// Everything that creates firm state or opens a browser sits inside the try, so the finally
+// always runs; each cleanup step is guarded and independent (one failing never skips the next).
+let cd = null, pt = null, sess = null, browser = null;
+const pget = async (p) => (await fetch(B + p, { headers: { Authorization: `Bearer ${sess.token}` } })).json();
+try {
+cd = await firm("/api/court-dates", "POST", { matterId: wr.id, dateType: "HEARING", scheduledDate: add(today, 14), scheduledTime: "10:00:00", courtName: `Johannesburg High Court OBS-${RUN}`, courtReference: `JHB-OBS-${RUN}`, judgeMagistrate: `Judge FIRM-ONLY-${RUN}`, description: `FIRM-ONLY-NOTES ${RUN}`, reminderDays: 7 });
+pt = await firm("/api/prescription-trackers", "POST", { matterId: wr.id, causeOfActionDate: new Date(Date.UTC(yy - 3, mm - 1, ddd)).toISOString().slice(0, 10), prescriptionType: "GENERAL_3Y", notes: `FIRM-ONLY-NOTES ${RUN}` });
 // Portal session
 const link = await (await fetch(B + "/portal/auth/request-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: EMAIL, orgId: ORG }) })).json();
 const token = link.magicLink.split("token=").pop().split("&")[0];
-const sess = await (await fetch(B + "/portal/auth/exchange", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, orgId: ORG }) })).json();
-const pget = async (p) => (await fetch(B + p, { headers: { Authorization: `Bearer ${sess.token}` } })).json();
+sess = await (await fetch(B + "/portal/auth/exchange", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, orgId: ORG }) })).json();
 const trust = await pget("/portal/trust/summary");
 note(`portal: trust summary ${JSON.stringify(trust.matters.map((m) => ({ matterId: m.matterId, matterName: m.matterName })))}`);
-const browser = await chromium.launch();
-try {
+browser = await chromium.launch();
 const RAW = /\b(OPEN|IN_PROGRESS|IN PROGRESS|DONE|SENT|SUBMITTED|DEPOSIT|PAYMENT|REFUND|FEE_TRANSFER)\b|Matter [0-9a-f]{8}\b/;
 for (const [w, h] of [[1024, 768], [1440, 900]]) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h } });
@@ -74,10 +77,13 @@ for (const [w, h] of [[1024, 768], [1440, 900]]) {
   await ctx.close();
 }
 } finally {
-await firm(`/api/court-dates/${cd.id}/cancel`, "POST", { reason: `633C obs ${RUN}` });
-await firm(`/api/prescription-trackers/${pt.id}/interrupt`, "POST", { interruptionDate: today, interruptionReason: `633C obs ${RUN}` });
-const left = (await pget("/portal/deadlines")).filter((d) => d.id === cd.id || d.id === pt.id);
-note(`after cancel/interrupt: portal rows for the two = ${left.length}`);
+  const step = async (name, fn) => { try { await fn(); } catch (e) { note(`cleanup ${name} FAILED: ${e?.message ?? e}`); } };
+  if (cd) await step("cancel court date", () => firm(`/api/court-dates/${cd.id}/cancel`, "POST", { reason: `633C obs ${RUN}` }));
+  if (pt) await step("interrupt prescription", () => firm(`/api/prescription-trackers/${pt.id}/interrupt`, "POST", { interruptionDate: today, interruptionReason: `633C obs ${RUN}` }));
+  if (sess && (cd || pt)) await step("check portal rows", async () => {
+    const left = (await pget("/portal/deadlines")).filter((d) => d.id === cd?.id || d.id === pt?.id);
+    note(`after cancel/interrupt: portal rows for the two = ${left.length}`);
+  });
+  if (browser) await step("browser close", () => browser.close());
+  await step("write log", async () => (await import("node:fs")).writeFileSync(`${OUT}/observe-log.md`, log.join("\n")));
 }
-await browser.close();
-(await import("node:fs")).writeFileSync(`${OUT}/observe-log.md`, log.join("\n"));

@@ -20,7 +20,12 @@ that timed out on a hidden mobile duplicate left REQ-0003…0005 and two more ta
 court dates / trackers were cancelled / interrupted by hand — `portal.portal_deadline_view` = 0
 rows afterwards.)
 
-Every page at both widths: **raw enum/id: none; no horizontal overflow: true** (`observe-log.md`).
+Every page at both widths: **no horizontal overflow: true**, and **none of the scanned values** (the
+regex above: the task / request / trust-type enums and `Matter <8 hex>` short ids — the four registered
+gaps) appears (`observe-log.md`). **Known exception, not in the regex:** `/deadlines` shows the raw
+deadline status **"UPCOMING"** in every row and in both detail panels at both widths
+(`observe-log.md` lines 133, 156/164/173, 179 and 309, 332/340/349, 355) — decision **D2**, deliberately
+not fixed in this PR, proposed `G89-` follow-up (see "Visible but out of scope").
 
 ## Per gap
 

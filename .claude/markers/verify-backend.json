@@ -1,7 +1,7 @@
 {
-  "commit": "ec2aaa3ad",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q   (./mvnw verify under caffeinate + preflight)",
+  "commit": "ee1c560c8a4e",
+  "command": "caffeinate -is ./mvnw clean verify -q (backend/, worktree-epic-633A; scripts/verify.sh preflight refused only because of the KC dev backend spring-boot:run JVM pid 83495 — no concurrent verify)",
   "exit": 0,
-  "ts": "2026-11-04T22:58:28Z",
-  "summary": "6476 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe <testcase> count) — 17 min — PR #1728 (632B) head ec2aaa3ad8c3ad36f7676d43622f16338582bab7"
+  "ts": "2026-11-05T02:28:13Z",
+  "summary": "633A PR #1730 head ee1c560c8: 6506 testcases / 0 failures / 0 errors / 26 skipped — 17 min"
 }

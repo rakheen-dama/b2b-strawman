@@ -63,6 +63,8 @@ vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
   recordPayment: (...args: unknown[]) => mockRecordPayment(...args),
   voidInvoice: vi.fn(),
   refreshPaymentLink: (...args: unknown[]) => mockRefreshPaymentLink(...args),
+  generatePaymentReceiptAction: vi.fn(),
+  downloadPaymentReceiptAction: vi.fn(),
 }));
 
 function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse {
@@ -125,6 +127,8 @@ function makePaymentEvent(overrides: Partial<PaymentEvent> = {}): PaymentEvent {
     paymentMethod: "CARD",
     createdAt: "2026-02-25T10:00:00Z",
     updatedAt: "2026-02-25T10:05:00Z",
+    receiptGeneratedDocumentId: null,
+    receiptNumber: null,
     ...overrides,
   };
 }
@@ -145,7 +149,7 @@ describe("PaymentEventHistory", () => {
         paymentReference: null,
       }),
     ];
-    render(<PaymentEventHistory events={events} />);
+    render(<PaymentEventHistory events={events} invoiceId="inv-1" slug="test-org" />);
 
     expect(screen.getByText("Payment History")).toBeInTheDocument();
     expect(screen.getByText("Completed")).toBeInTheDocument();
@@ -163,7 +167,7 @@ describe("PaymentEventHistory", () => {
       }),
       makePaymentEvent({ id: "pe-legacy", providerSlug: "manual", paymentMethod: null }),
     ];
-    render(<PaymentEventHistory events={events} />);
+    render(<PaymentEventHistory events={events} invoiceId="inv-1" slug="test-org" />);
 
     expect(screen.getByRole("columnheader", { name: "Method" })).toBeInTheDocument();
     expect(screen.getByText("EFT")).toBeInTheDocument();
@@ -173,7 +177,7 @@ describe("PaymentEventHistory", () => {
   });
 
   it("shows empty state when no events", () => {
-    render(<PaymentEventHistory events={[]} />);
+    render(<PaymentEventHistory events={[]} invoiceId="inv-1" slug="test-org" />);
 
     expect(screen.getByText("Payment History")).toBeInTheDocument();
     expect(screen.getByText("No payment events yet.")).toBeInTheDocument();

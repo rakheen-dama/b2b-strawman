@@ -5,14 +5,23 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, CreditCard, Download } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@b2mash/shared/format";
+import { listPayments, receiptDownload } from "@/lib/api/invoices";
+import {
+  formatCurrency,
+  formatDate,
+  formatLocalDate,
+} from "@b2mash/shared/format";
 import { useBranding } from "@/hooks/use-branding";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { InvoiceLineTable } from "@/components/invoice-line-table";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import { hasKnownPartPayment, partPaymentContactMessage } from "@/lib/utils";
-import type { PortalInvoiceDetail, PortalDownload } from "@/lib/types";
+import type {
+  PortalDownload,
+  PortalInvoiceDetail,
+  PortalInvoicePayment,
+} from "@/lib/types";
 
 function PageSkeleton() {
   return (
@@ -31,6 +40,7 @@ export default function InvoiceDetailPage() {
   const { orgName } = useBranding();
 
   const [invoice, setInvoice] = useState<PortalInvoiceDetail | null>(null);
+  const [payments, setPayments] = useState<PortalInvoicePayment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +52,17 @@ export default function InvoiceDetailPage() {
         `/portal/invoices/${invoiceId}`,
       );
       setInvoice(data);
+      // Phase 89 632C: payments (each with a receipt) once something has been paid — never on SENT.
+      if (data.status === "PAID" || data.status === "PARTIALLY_PAID") {
+        try {
+          const rows = await listPayments(invoiceId);
+          setPayments(Array.isArray(rows) ? rows : []);
+        } catch {
+          setPayments([]); // non-fatal: the fee note still renders
+        }
+      } else {
+        setPayments([]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load fee note");
     } finally {
@@ -63,6 +84,25 @@ export default function InvoiceDetailPage() {
       window.open(data.downloadUrl, "_blank");
     } catch {
       alert("Download failed. Please try again.");
+    }
+  }
+
+  async function handleReceiptDownload(paymentEventId: string) {
+    // Open the tab synchronously, while the click's user activation is still live — strict
+    // browsers (Safari) block a window.open issued after the await. Not "noopener": that makes
+    // window.open return null, so the opener is severed by hand instead.
+    const popup = window.open("", "_blank");
+    if (!popup) {
+      alert("Pop-up blocked. Allow pop-ups for this site and try again.");
+      return;
+    }
+    popup.opener = null;
+    try {
+      const data = await receiptDownload(invoiceId, paymentEventId);
+      popup.location.href = data.downloadUrl;
+    } catch {
+      popup.close();
+      alert("Receipt download failed. Please try again.");
     }
   }
 
@@ -198,6 +238,47 @@ export default function InvoiceDetailPage() {
             </p>
           </div>
         )}
+
+        {/* Payments — one receipt per payment (Phase 89 632C, G88-F32) */}
+        {(invoice.status === "PAID" || isPartiallyPaid) &&
+          payments.length > 0 && (
+            <section data-testid="invoice-payments">
+              <h2 className="font-display mb-4 text-lg font-semibold text-slate-900">
+                Payments
+              </h2>
+              <ul
+                aria-label="Payments"
+                className="divide-y divide-slate-200 rounded-lg border border-slate-200"
+              >
+                {payments.map((payment) => (
+                  <li
+                    key={payment.paymentEventId}
+                    className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div className="text-sm text-slate-600">
+                      <p className="font-medium text-slate-900 tabular-nums">
+                        {formatCurrency(payment.amount, invoice.currency)}
+                      </p>
+                      <p>
+                        {formatLocalDate(payment.date)} · {payment.methodLabel}
+                        {payment.reference ? ` · ${payment.reference}` : ""}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleReceiptDownload(payment.paymentEventId)
+                      }
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-teal-700 ring-1 ring-teal-200 hover:bg-teal-50 md:min-h-9"
+                    >
+                      <Download className="size-4" />
+                      Download receipt
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
         {/* Tax Registration */}
         {invoice.taxRegistrationNumber && (

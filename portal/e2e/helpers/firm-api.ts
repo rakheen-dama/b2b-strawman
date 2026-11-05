@@ -8,6 +8,9 @@ import { todayInSA } from "@b2mash/shared/date";
  * Portal-local on purpose: the portal does not import from frontend/e2e (628B R-1). Mirrors
  * frontend/e2e/helpers/{api,seed}.ts. The boot-seed rows (compose/seed/seed.sh) are READ-ONLY for
  * specs (628F R-5): helpers here CREATE run-unique rows; they never edit or consume the seed's.
+ * One exception to "run-unique": ensurePartPaidAcmeFeeNote() (Phase 89 632C) finds-or-creates ONE
+ * stable Acme fee note by a notes marker, so a stack gains exactly one extra fee note across re-runs
+ * — it never touches the seed's INV-0001 (still SENT for Day 45).
  * Every call asserts its answer, so a refused setup step fails the test where it happened.
  */
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
@@ -182,6 +185,96 @@ export async function sendAcmeInfoRequest(
     `/api/information-requests/${created.id}/send`,
     { method: "POST" },
   );
+}
+
+/** The stable notes marker of the 632C receipt fee note (find-or-create — never RUN_ID). */
+export const RECEIPT_FEE_NOTE_MARKER = "Portal receipt case (632C)";
+/** The payment reference of its one part payment. */
+export const RECEIPT_PAYMENT_REFERENCE = "RCPT-632C";
+/** Its part payment: 500.00 of a 2 000.00 fee note, so it stays PARTIALLY_PAID. */
+export const RECEIPT_PART_PAYMENT = 500;
+
+type FirmFeeNote = {
+  id: string;
+  invoiceNumber: string | null;
+  status: string;
+  notes: string | null;
+  lines?: unknown[];
+};
+
+/**
+ * Phase 89 632C (OQ #10, G88-F32) — the PARTIALLY_PAID Acme fee note the portal receipt case reads.
+ * Find-or-create by RECEIPT_FEE_NOTE_MARKER (as compose/seed/lib/invoices.sh does for the seed's
+ * fee notes): create + line if absent, then advance it from whatever state a previous run left —
+ * DRAFT → approve, APPROVED → send (overrideWarnings:false), SENT → record the 500.00 EFT part
+ * payment (reference RECEIPT_PAYMENT_REFERENCE). A PARTIALLY_PAID note is reused as is, so re-runs
+ * add no rows. The receipt itself is written by PaymentReceiptListener after the payment commits.
+ */
+export async function ensurePartPaidAcmeFeeNote(): Promise<{
+  id: string;
+  invoiceNumber: string;
+}> {
+  const clientId = await acmeId();
+  const existing = (
+    await firmApiOk<FirmFeeNote[]>(`/api/invoices?clientId=${clientId}`)
+  ).find((n) => n.notes === RECEIPT_FEE_NOTE_MARKER && n.status !== "VOID");
+
+  let id: string;
+  if (existing) {
+    id = existing.id;
+  } else {
+    const created = await firmApiOk<FirmFeeNote>("/api/invoices", {
+      method: "POST",
+      body: {
+        clientId,
+        currency: "ZAR",
+        notes: RECEIPT_FEE_NOTE_MARKER,
+        paymentTerms: "Net 30",
+      },
+    });
+    id = created.id;
+  }
+
+  let note = await firmApiOk<FirmFeeNote>(`/api/invoices/${id}`);
+  if (note.status === "DRAFT" && (note.lines?.length ?? 0) === 0) {
+    note = await firmApiOk<FirmFeeNote>(`/api/invoices/${id}/lines`, {
+      method: "POST",
+      body: {
+        matterId: await websiteRedesignId(),
+        description: "Consultation — portal receipt case",
+        quantity: 1,
+        unitPrice: 2000,
+        sortOrder: 0,
+      },
+    });
+  }
+  if (note.status === "DRAFT") {
+    note = await firmApiOk<FirmFeeNote>(`/api/invoices/${id}/approve`, {
+      method: "POST",
+    });
+  }
+  if (note.status === "APPROVED") {
+    note = await firmApiOk<FirmFeeNote>(`/api/invoices/${id}/send`, {
+      method: "POST",
+      body: { overrideWarnings: false },
+    });
+  }
+  if (note.status === "SENT") {
+    note = await firmApiOk<FirmFeeNote>(`/api/invoices/${id}/payment`, {
+      method: "POST",
+      body: {
+        amount: RECEIPT_PART_PAYMENT,
+        paymentMethod: "EFT",
+        paymentReference: RECEIPT_PAYMENT_REFERENCE,
+      },
+    });
+  }
+  expect(
+    note.status,
+    `632C receipt fee note ${note.invoiceNumber ?? id} state`,
+  ).toBe("PARTIALLY_PAID");
+  expect(note.invoiceNumber).toBeTruthy();
+  return { id, invoiceNumber: note.invoiceNumber! };
 }
 
 /** A portal API GET as the signed-in contact (JWT from helpers/auth.ts getPortalJwt). */

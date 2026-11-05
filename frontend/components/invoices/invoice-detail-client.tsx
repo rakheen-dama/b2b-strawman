@@ -117,7 +117,11 @@ export function InvoiceDetailClient({
 
       {/* Payment Event History */}
       {(h.isSent || h.isPartiallyPaid || h.isPaid) && (
-        <PaymentHistorySection paymentEvents={paymentEvents ?? []} />
+        <PaymentHistorySection
+          paymentEvents={paymentEvents ?? []}
+          invoiceId={h.invoice.id}
+          slug={slug}
+        />
       )}
 
       {/* Void indicator */}

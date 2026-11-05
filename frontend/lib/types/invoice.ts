@@ -137,6 +137,10 @@ export interface PaymentEvent {
   paymentMethod: PaymentMethod | null;
   createdAt: string;
   updatedAt: string;
+  /** Phase 89 632B: the receipt (a generated document); null until one exists or after it was deleted. */
+  receiptGeneratedDocumentId: string | null;
+  /** Phase 89 632B: the stored receipt number, e.g. "INV-0001/R1"; null until a receipt exists. */
+  receiptNumber: string | null;
 }
 
 export interface CreateInvoiceDraftRequest {

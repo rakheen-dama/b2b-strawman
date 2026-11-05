@@ -149,6 +149,16 @@ export interface PortalDownload {
   downloadUrl: string;
 }
 
+/** One COMPLETED payment on a fee note (Phase 89 632B `PortalInvoicePayment`). */
+export interface PortalInvoicePayment {
+  paymentEventId: string;
+  date: string; // ISO date (YYYY-MM-DD), SA business date
+  methodLabel: string; // "EFT" | "Card" | "Cash" | "Trust transfer" | "Xero" | "Other" | "Payment" (no method recorded)
+  amount: number;
+  reference: string | null;
+  receiptAvailable: boolean; // false → the download generates the receipt first
+}
+
 // === Payment ===
 
 export interface PaymentStatusResponse {

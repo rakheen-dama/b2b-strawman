@@ -1,7 +1,11 @@
 "use server";
 
 import { api } from "@/lib/api";
+import { matterPath } from "@/lib/api/matters";
+import { settle } from "@/lib/settle";
+import type { WidgetResult } from "@/lib/dashboard-home";
 import type {
+  MatterTrustBalance,
   TrustAccount,
   TrustTransaction,
   CashbookBalance,
@@ -26,6 +30,19 @@ interface PaginatedResponse<T> {
 
 export async function fetchTrustAccounts(): Promise<TrustAccount[]> {
   return api.get<TrustAccount[]>("/api/trust-accounts");
+}
+
+/**
+ * Matter Overview "Trust balance" tile (Phase 89 §14.3.18, G88-M13): the sum of the matter's
+ * RECORDED/APPROVED trust transactions. 403 (no VIEW_TRUST) and 404 (matter not visible) settle to
+ * "absent" — the tile drops out; 401 → branded re-login; anything else → "error".
+ */
+export async function fetchMatterTrustBalance(
+  matterId: string
+): Promise<WidgetResult<MatterTrustBalance>> {
+  return settle(true, "matter trust balance", () =>
+    api.get<MatterTrustBalance>(matterPath(matterId, "trust-balance"))
+  );
 }
 
 export interface CreateTrustAccountInput {

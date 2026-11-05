@@ -4,10 +4,15 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.dto.MatterTrustBalanceResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -32,6 +37,9 @@ public class TrustAccountService {
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final Clock clock;
+  private final ProjectAccessService projectAccessService;
+  private final TrustTransactionRepository trustTransactionRepository;
+  private final OrgSettingsService orgSettingsService;
 
   public TrustAccountService(
       TrustAccountRepository trustAccountRepository,
@@ -39,13 +47,19 @@ public class TrustAccountService {
       LpffRateRepository lpffRateRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
-      Clock clock) {
+      Clock clock,
+      ProjectAccessService projectAccessService,
+      TrustTransactionRepository trustTransactionRepository,
+      OrgSettingsService orgSettingsService) {
     this.trustAccountRepository = trustAccountRepository;
     this.ledgerCardRepository = ledgerCardRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.clock = clock;
+    this.projectAccessService = projectAccessService;
+    this.trustTransactionRepository = trustTransactionRepository;
+    this.orgSettingsService = orgSettingsService;
   }
 
   // --- DTO Records ---
@@ -104,6 +118,29 @@ public class TrustAccountService {
       Instant createdAt) {}
 
   // --- Service Methods ---
+
+  /**
+   * The matter Overview "Trust balance" tile (Phase 89 §14.3.18, G88-M13): the sum of the matter's
+   * RECORDED/APPROVED trust transactions (only transactions tagged with this matter — client money
+   * held without a matter tag counts on no matter). Deliberately NOT module-guarded (no 403),
+   * unlike every other method here: with trust accounting off the matter reports nothing — 200 with
+   * zero, even if trust rows were recorded before the profile was cleared — and the frontend hides
+   * the tile ({@code trust_transactions} exists in every tenant). Matter visibility is checked
+   * first, so a caller who cannot view the matter (or an unknown id) gets 404 via {@link
+   * ProjectAccessService#requireViewAccess} regardless of the module. Pure read — no audit.
+   */
+  @Transactional(readOnly = true)
+  public MatterTrustBalanceResponse matterBalance(UUID projectId, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
+    BigDecimal balance =
+        moduleGuard.isModuleEnabled(MODULE_ID)
+            ? trustTransactionRepository.calculateBalanceByProjectId(projectId)
+            : null;
+    return new MatterTrustBalanceResponse(
+        projectId,
+        balance != null ? balance : BigDecimal.ZERO,
+        orgSettingsService.getDefaultCurrency());
+  }
 
   @Transactional(readOnly = true)
   public List<TrustAccountResponse> listTrustAccounts() {

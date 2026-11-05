@@ -75,7 +75,9 @@ public class ActivityMessageFormatter {
         event.getEntityId(),
         entityName,
         event.getEventType(),
-        event.getOccurredAt());
+        event.getOccurredAt(),
+        event.getActorType(),
+        event.getSource());
   }
 
   private String formatMessage(

@@ -146,6 +146,16 @@ export interface TotalBalance {
   balance: number;
 }
 
+/**
+ * `GET /api/matters/{matterId}/trust-balance` (Phase 89 §14.2.6, G88-M13): the matter's trust
+ * balance — its RECORDED/APPROVED trust transactions only — in the org default currency.
+ */
+export interface MatterTrustBalance {
+  matterId: string;
+  balance: number;
+  currency: string;
+}
+
 // Client ledger statement types
 
 export interface LedgerStatementEntry {

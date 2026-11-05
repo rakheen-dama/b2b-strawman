@@ -79,14 +79,19 @@ export async function fetchInvoices(
 }
 
 /**
- * Fee notes page tiles (Phase 88 U3, §13.4.3): the debtor-book definition, in the org default
- * currency. The summary is gated on FINANCIAL_VISIBILITY while the page is gated on INVOICING, so a
- * 403 (or 404) is "absent", not an error — the page drops the tiles instead of crashing. Same
- * `settle` as Home's widgets: 401 → branded re-login, anything else → "error".
+ * Fee notes page tiles (Phase 88 U3, §13.4.3) — and, with `matterId`, the matter Overview
+ * "Outstanding fee notes" tile (Phase 89 §14.3.18: fee notes with a line on the matter): the
+ * debtor-book definition, in the org default currency. The summary is gated on FINANCIAL_VISIBILITY
+ * while the page is gated on INVOICING, so a 403 (or 404) is "absent", not an error — the page
+ * drops the tiles instead of crashing. Same `settle` as Home's widgets: 401 → branded re-login,
+ * anything else → "error".
  */
-export async function fetchOutstandingSummaryAction(): Promise<WidgetResult<OutstandingSummary>> {
+export async function fetchOutstandingSummaryAction(
+  matterId?: string
+): Promise<WidgetResult<OutstandingSummary>> {
+  const query = matterId ? `?matterId=${encodeURIComponent(matterId)}` : "";
   return settle(true, "outstanding summary", () =>
-    api.get<OutstandingSummary>("/api/invoices/outstanding-summary")
+    api.get<OutstandingSummary>(`/api/invoices/outstanding-summary${query}`)
   );
 }
 

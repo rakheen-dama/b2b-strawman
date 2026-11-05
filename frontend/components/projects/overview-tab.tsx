@@ -1,6 +1,12 @@
 import { KPIDashboard } from "@/components/projects/kpi-dashboard";
 import type { SetupStep } from "@/components/setup/types";
-import type { MatterSetupStatus, FicaStatus } from "@/lib/types";
+import type { WidgetResult } from "@/lib/dashboard-home";
+import type {
+  MatterSetupStatus,
+  FicaStatus,
+  MatterTrustBalance,
+  OutstandingSummary,
+} from "@/lib/types";
 
 interface OverviewTabProps {
   projectId: string;
@@ -16,7 +22,8 @@ interface OverviewTabProps {
   retentionClockStartedAt: string | null;
   retentionEndsOn: string | null;
   trustEnabled: boolean;
-  disbursementsEnabled: boolean;
+  outstandingSummary: WidgetResult<OutstandingSummary>;
+  trustBalance: WidgetResult<MatterTrustBalance>;
   projectDueDate?: string | null;
 }
 
@@ -34,7 +41,8 @@ export async function OverviewTab({
   retentionClockStartedAt,
   retentionEndsOn,
   trustEnabled,
-  disbursementsEnabled,
+  outstandingSummary,
+  trustBalance,
   projectDueDate,
 }: OverviewTabProps) {
   return (
@@ -52,7 +60,8 @@ export async function OverviewTab({
       retentionClockStartedAt={retentionClockStartedAt}
       retentionEndsOn={retentionEndsOn}
       trustEnabled={trustEnabled}
-      disbursementsEnabled={disbursementsEnabled}
+      outstandingSummary={outstandingSummary}
+      trustBalance={trustBalance}
       projectDueDate={projectDueDate}
     />
   );

@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ProjectMembersPanel } from "./project-members-panel";
 import type { MatterMember } from "@/lib/types";
@@ -266,8 +266,29 @@ describe("ProjectMembersPanel", () => {
     });
   });
 
-  describe("org role badge display", () => {
-    it("displays Admin badge when member has orgRole admin", () => {
+  // G88-M2 (Phase 89 §14.3.17): the badge is the MATTER role; the firm role is muted text.
+  describe("matter role badge with org role as secondary text", () => {
+    it("owner who is lead shows Lead, with Owner as secondary text (G88-M2)", () => {
+      const ownerLead: MatterMember = {
+        id: "pm6",
+        memberId: "user6",
+        name: "Olivia Owner",
+        email: "olivia@example.com",
+        avatarUrl: null,
+        matterRole: "lead",
+        orgRole: "owner",
+        createdAt: "2024-01-25T10:00:00Z",
+      };
+
+      render(<ProjectMembersPanel {...defaultProps} members={[ownerLead]} />);
+
+      const row = screen.getByRole("row", { name: /Olivia Owner/ });
+      expect(within(row).getByText("Lead")).toHaveAttribute("data-variant", "lead");
+      const secondary = within(row).getByText("Owner");
+      expect(secondary).not.toHaveAttribute("data-slot", "badge");
+    });
+
+    it("admin on the matter as member shows the Member badge with Admin as secondary text", () => {
       const adminMember: MatterMember = {
         id: "pm3",
         memberId: "user3",
@@ -281,15 +302,13 @@ describe("ProjectMembersPanel", () => {
 
       render(<ProjectMembersPanel {...defaultProps} members={[adminMember]} />);
 
-      expect(screen.getByText("Admin")).toBeInTheDocument();
-      // The "Member" text should only appear as the table column header, not as a role badge
-      const memberTexts = screen.getAllByText("Member");
-      // Only the table column header should contain "Member", not a badge
-      expect(memberTexts).toHaveLength(1);
-      expect(memberTexts[0].tagName).toBe("TH");
+      const row = screen.getByRole("row", { name: /Carol Admin/ });
+      expect(within(row).getByText("Member")).toHaveAttribute("data-variant", "member");
+      const secondary = within(row).getByText("Admin");
+      expect(secondary).not.toHaveAttribute("data-slot", "badge");
     });
 
-    it("displays Owner badge when member has orgRole owner", () => {
+    it("owner on the matter as member shows the Member badge with Owner as secondary text", () => {
       const ownerMember: MatterMember = {
         id: "pm4",
         memberId: "user4",
@@ -303,11 +322,10 @@ describe("ProjectMembersPanel", () => {
 
       render(<ProjectMembersPanel {...defaultProps} members={[ownerMember]} />);
 
-      expect(screen.getByText("Owner")).toBeInTheDocument();
-      // The "Member" text should only appear as the table column header, not as a role badge
-      const memberTexts = screen.getAllByText("Member");
-      expect(memberTexts).toHaveLength(1);
-      expect(memberTexts[0].tagName).toBe("TH");
+      const row = screen.getByRole("row", { name: /Dave Owner/ });
+      expect(within(row).getByText("Member")).toHaveAttribute("data-variant", "member");
+      const secondary = within(row).getByText("Owner");
+      expect(secondary).not.toHaveAttribute("data-slot", "badge");
     });
 
     it("displays project role badge when orgRole is member", () => {
@@ -325,6 +343,8 @@ describe("ProjectMembersPanel", () => {
       render(<ProjectMembersPanel {...defaultProps} members={[regularMember]} />);
 
       expect(screen.getByText("Lead")).toBeInTheDocument();
+      expect(screen.queryByText("Owner")).not.toBeInTheDocument();
+      expect(screen.queryByText("Admin")).not.toBeInTheDocument();
     });
   });
 });

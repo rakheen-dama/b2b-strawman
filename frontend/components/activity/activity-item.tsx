@@ -7,6 +7,7 @@ import {
   Activity,
   type LucideIcon,
 } from "lucide-react";
+import { Badge } from "@b2mash/ui/badge";
 import { RelativeDate } from "@/components/ui/relative-date";
 import type { ActivityItem as ActivityItemType } from "@/lib/types";
 
@@ -34,9 +35,12 @@ function getInitials(name: string): string {
 
 export function ActivityItem({ item }: ActivityItemProps) {
   const Icon = ENTITY_ICON_MAP[item.entityType] ?? Activity;
+  // G-B8 (Phase 89 §14.3.21): mark actions the client took in the portal (acceptance, downloads,
+  // uploads) — firm actions carry no marker.
+  const fromClientPortal = item.source === "PORTAL" || item.actorType === "PORTAL_CONTACT";
 
   return (
-    <div className="flex items-start gap-3 px-3 py-2.5">
+    <div data-testid="activity-item" className="flex items-start gap-3 px-3 py-2.5">
       {/* Avatar */}
       {item.actorAvatarUrl ? (
         <img
@@ -55,6 +59,11 @@ export function ActivityItem({ item }: ActivityItemProps) {
         <div className="flex items-center gap-1.5">
           <Icon className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
           <p className="text-sm text-slate-700 dark:text-slate-300">{item.message}</p>
+          {fromClientPortal && (
+            <Badge variant="neutral" className="shrink-0">
+              Client portal
+            </Badge>
+          )}
         </div>
         <RelativeDate
           iso={item.occurredAt}

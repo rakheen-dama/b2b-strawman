@@ -276,6 +276,7 @@ export interface ValidationCheck {
 /**
  * Fee notes page tiles on the debtor-book definition (backend `OutstandingSummaryResponse`).
  * Amounts are in `currency`, the org default currency — fee notes in other currencies are excluded.
+ * With `?matterId=` (Phase 89, the matter Overview tile) only fee notes with a line on the matter.
  */
 export interface OutstandingSummary {
   currency: string;

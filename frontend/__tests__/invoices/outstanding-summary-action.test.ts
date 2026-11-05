@@ -66,6 +66,16 @@ describe("fetchOutstandingSummaryAction (Phase 88 620C)", () => {
     expect(mockGet).toHaveBeenCalledWith("/api/invoices/outstanding-summary");
   });
 
+  it("matterId → narrows the summary with ?matterId= (Phase 89 G88-M13)", async () => {
+    mockGet.mockResolvedValue(SUMMARY);
+
+    await expect(fetchOutstandingSummaryAction("m-1")).resolves.toEqual({
+      state: "ok",
+      data: SUMMARY,
+    });
+    expect(mockGet).toHaveBeenCalledWith("/api/invoices/outstanding-summary?matterId=m-1");
+  });
+
   it("403 (no FINANCIAL_VISIBILITY) → absent", async () => {
     mockGet.mockRejectedValue(new MockApiError(403, "Insufficient permissions for this operation"));
 

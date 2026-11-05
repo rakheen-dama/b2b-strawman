@@ -15,6 +15,8 @@ import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.dto.MatterTrustBalanceResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -45,18 +47,21 @@ public class ProjectController {
   private final ProjectSetupStatusService projectSetupStatusService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final ProjectUpcomingDeadlinesService projectUpcomingDeadlinesService;
+  private final TrustAccountService trustAccountService;
 
   public ProjectController(
       ProjectService projectService,
       EntityTagService entityTagService,
       ProjectSetupStatusService projectSetupStatusService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
-      ProjectUpcomingDeadlinesService projectUpcomingDeadlinesService) {
+      ProjectUpcomingDeadlinesService projectUpcomingDeadlinesService,
+      TrustAccountService trustAccountService) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
     this.projectSetupStatusService = projectSetupStatusService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.projectUpcomingDeadlinesService = projectUpcomingDeadlinesService;
+    this.trustAccountService = trustAccountService;
   }
 
   @GetMapping
@@ -225,6 +230,14 @@ public class ProjectController {
   public ResponseEntity<List<MatterUpcomingDeadline>> getUpcomingDeadlines(
       @PathVariable UUID matterId, ActorContext actor) {
     return ResponseEntity.ok(projectUpcomingDeadlinesService.getUpcomingDeadlines(matterId, actor));
+  }
+
+  /** Matter Overview "Trust balance" tile (Phase 89 §14.3.18, G88-M13); 404 off-matter. */
+  @GetMapping("/{matterId}/trust-balance")
+  @RequiresCapability("VIEW_TRUST")
+  public ResponseEntity<MatterTrustBalanceResponse> getTrustBalance(
+      @PathVariable UUID matterId, ActorContext actor) {
+    return ResponseEntity.ok(trustAccountService.matterBalance(matterId, actor));
   }
 
   public record CompleteMatterRequest(Boolean acknowledgeUnbilledTime) {}

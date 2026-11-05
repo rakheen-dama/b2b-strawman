@@ -99,6 +99,18 @@ vi.mock("@/lib/utils", () => ({
 
 import { KPIDashboard } from "@/components/projects/kpi-dashboard";
 
+const ABSENT = { state: "absent" } as const;
+
+const SUMMARY = {
+  currency: "ZAR",
+  outstandingTotal: 3450,
+  outstandingCount: 1,
+  overdueTotal: 0,
+  overdueCount: 0,
+  approvedUnsentTotal: 0,
+  approvedUnsentCount: 0,
+};
+
 const defaultProps = {
   projectId: "proj-1",
   projectName: "Test Matter",
@@ -113,7 +125,8 @@ const defaultProps = {
   retentionClockStartedAt: null,
   retentionEndsOn: null,
   trustEnabled: false,
-  disbursementsEnabled: false,
+  outstandingSummary: ABSENT,
+  trustBalance: ABSENT,
   projectDueDate: null,
 };
 
@@ -162,23 +175,89 @@ describe("KPIDashboard", () => {
     expect(screen.queryByTestId("metric-card-trust")).not.toBeInTheDocument();
   });
 
-  // Hides the outstanding fee notes card when disbursementsEnabled is false
-  it("hides outstanding fee notes card when disbursementsEnabled is false", async () => {
-    const jsx = await KPIDashboard({ ...defaultProps, disbursementsEnabled: false });
+  // --- G88-M13 (Phase 89 §14.3.18): the Overview money tiles render real values ---
+
+  it("renders the matter's outstanding fee-note balance (G88-M13)", async () => {
+    const jsx = await KPIDashboard({
+      ...defaultProps,
+      outstandingSummary: { state: "ok", data: SUMMARY },
+    });
+    render(jsx);
+
+    const card = screen.getByTestId("metric-card-invoices");
+    expect(card).toHaveTextContent("R 3 450,00");
+    expect(card).not.toHaveTextContent("--");
+    const link = screen.getByRole("link", { name: /Outstanding fee notes/i });
+    expect(link).toHaveAttribute("href", "?tab=statements");
+    expect(link).toContainElement(card);
+  });
+
+  it("renders R 0,00 when the matter owes nothing", async () => {
+    const jsx = await KPIDashboard({
+      ...defaultProps,
+      outstandingSummary: {
+        state: "ok",
+        data: { ...SUMMARY, outstandingTotal: 0, outstandingCount: 0 },
+      },
+    });
+    render(jsx);
+
+    expect(screen.getByTestId("metric-card-invoices")).toHaveTextContent("R 0,00");
+  });
+
+  it("hides the fee-note tile without FINANCIAL_VISIBILITY (absent) — never '--'", async () => {
+    const jsx = await KPIDashboard({ ...defaultProps, outstandingSummary: ABSENT });
     render(jsx);
 
     expect(screen.queryByTestId("metric-card-invoices")).not.toBeInTheDocument();
     expect(screen.queryByText("Outstanding fee notes")).not.toBeInTheDocument();
   });
 
-  // Shows the outstanding fee notes card when disbursementsEnabled is true
-  it("shows outstanding fee notes card when disbursementsEnabled is true", async () => {
-    const jsx = await KPIDashboard({ ...defaultProps, disbursementsEnabled: true });
+  it("shows '--' on a fee-note read error", async () => {
+    const jsx = await KPIDashboard({ ...defaultProps, outstandingSummary: { state: "error" } });
     render(jsx);
 
-    const link = screen.getByRole("link", { name: /Outstanding fee notes/i });
-    expect(link).toHaveAttribute("href", "?tab=statements");
-    expect(link).toContainElement(screen.getByTestId("metric-card-invoices"));
+    expect(screen.getByTestId("metric-card-invoices")).toHaveTextContent("--");
+  });
+
+  it("renders the matter trust balance when trust accounting is on", async () => {
+    const jsx = await KPIDashboard({
+      ...defaultProps,
+      trustEnabled: true,
+      trustBalance: {
+        state: "ok",
+        data: { matterId: "proj-1", balance: 50000, currency: "ZAR" },
+      },
+    });
+    render(jsx);
+
+    const card = screen.getByTestId("metric-card-trust");
+    expect(card).toHaveTextContent("R 50 000,00");
+    expect(screen.getByRole("link", { name: /Trust balance/i })).toHaveAttribute(
+      "href",
+      "?tab=trust"
+    );
+  });
+
+  it("hides the trust tile when the module is off, even with a balance", async () => {
+    const jsx = await KPIDashboard({
+      ...defaultProps,
+      trustEnabled: false,
+      trustBalance: {
+        state: "ok",
+        data: { matterId: "proj-1", balance: 50000, currency: "ZAR" },
+      },
+    });
+    render(jsx);
+
+    expect(screen.queryByTestId("metric-card-trust")).not.toBeInTheDocument();
+  });
+
+  it("hides the trust tile when the read is absent (no VIEW_TRUST)", async () => {
+    const jsx = await KPIDashboard({ ...defaultProps, trustEnabled: true, trustBalance: ABSENT });
+    render(jsx);
+
+    expect(screen.queryByTestId("metric-card-trust")).not.toBeInTheDocument();
   });
 
   // Test 5: Renders upcoming deadlines list

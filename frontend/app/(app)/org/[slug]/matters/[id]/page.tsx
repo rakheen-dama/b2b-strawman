@@ -26,6 +26,9 @@ import {
   listMatterTasks,
 } from "@/lib/api/matters";
 import { getClientFicaStatus } from "@/lib/api/clients";
+import { fetchOutstandingSummaryAction } from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
+import { fetchMatterTrustBalance } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import { hasCapability, type WidgetResult } from "@/lib/dashboard-home";
 import type {
   OrgMember,
   Matter,
@@ -46,6 +49,8 @@ import type {
   TagResponse,
   TemplateListResponse,
   SavedViewResponse,
+  MatterTrustBalance,
+  OutstandingSummary,
 } from "@/lib/types";
 import { MatterHeaderCard } from "@/components/projects/matter-header-card";
 import { MatterDetailsTab } from "@/components/projects/matter-details-tab";
@@ -260,8 +265,18 @@ export default async function ProjectDetailPage({
     // Non-fatal: show empty time summary if fetch fails
   }
 
-  // Disbursements module flag for the Overview KPI card (ADR-340: one Disbursements tab, module-derived)
-  const disbursementsEnabled = await isModuleEnabledServer("disbursements");
+  // Overview money tiles (Phase 89 §14.3.18, G88-M13): the trust module from the org's enabled
+  // modules; each read only for callers holding its capability — otherwise "absent" (tile hidden).
+  const trustEnabled = await isModuleEnabledServer("trust_accounting");
+  const absent = { state: "absent" } as const;
+  const [outstandingSummary, matterTrustBalance] = await Promise.all([
+    hasCapability(caps, "FINANCIAL_VISIBILITY")
+      ? fetchOutstandingSummaryAction(id)
+      : Promise.resolve<WidgetResult<OutstandingSummary>>(absent),
+    trustEnabled && hasCapability(caps, "VIEW_TRUST")
+      ? fetchMatterTrustBalance(id)
+      : Promise.resolve<WidgetResult<MatterTrustBalance>>(absent),
+  ]);
 
   // Billing rates + settings for the "Rates" tab (only fetched for users who can manage)
   let projectBillingRates: BillingRate[] = [];
@@ -517,8 +532,9 @@ export default async function ProjectDetailPage({
             ficaStatus={ficaStatus}
             retentionClockStartedAt={project.retentionClockStartedAt}
             retentionEndsOn={project.retentionEndsOn}
-            trustEnabled={false} // TODO: derive from org module flags
-            disbursementsEnabled={disbursementsEnabled}
+            trustEnabled={trustEnabled}
+            outstandingSummary={outstandingSummary}
+            trustBalance={matterTrustBalance}
             projectDueDate={project.dueDate ?? null}
           />
         }

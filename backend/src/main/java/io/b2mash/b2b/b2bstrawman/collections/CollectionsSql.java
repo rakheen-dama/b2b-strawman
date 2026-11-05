@@ -6,11 +6,11 @@ import java.util.Set;
 /**
  * The debtor-book definition (Phase 88, §13.8.4, OQ #12): ONE predicate and ONE amount expression
  * shared by every debtor-book SQL site — the debtor book, its count and drill-in ({@link
- * CollectionsReadService}), the outstanding summary ({@code GET
- * /api/invoices/outstanding-summary}), the client list ({@code ClientListRowRepository}), the cash
- * digest ({@link CashDigestService}), the aging report ({@code InvoiceAgingReportQuery}) and the
- * dunning scan ({@link CollectionsScanService}) — so no two surfaces can disagree about what a
- * client owes (ADR-347).
+ * CollectionsReadService}), the outstanding summary ({@code GET /api/invoices/outstanding-summary},
+ * firm-wide and — with {@code ?matterId=}, Phase 89 — the matter-filtered Overview tile), the
+ * client list ({@code ClientListRowRepository}), the cash digest ({@link CashDigestService}), the
+ * aging report ({@code InvoiceAgingReportQuery}) and the dunning scan ({@link
+ * CollectionsScanService}) — so no two surfaces can disagree about what a client owes (ADR-347).
  *
  * <p>Both expressions assume the invoices table is aliased {@code i} at every site (adjust the
  * alias at the site, never the constant). Both are compile-time constants so they can be

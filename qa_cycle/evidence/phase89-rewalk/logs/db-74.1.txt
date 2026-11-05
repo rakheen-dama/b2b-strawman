@@ -1,0 +1,9 @@
+Initial consultation & case assessment|DONE|2026-11-05 21:20:20.901224+00
+Letter of demand|DONE|2026-11-05 21:21:39.657831+00
+Issue summons / combined summons|DONE|2026-11-05 21:20:12.831297+00
+File plea / exception / counterclaim|DONE|2026-11-05 21:21:31.32439+00
+Discovery -- request & exchange documents|DONE|2026-11-05 21:20:04.794172+00
+Pre-trial conference preparation|DONE|2026-11-05 21:21:23.007067+00
+Trial / hearing attendance|DONE|2026-11-05 21:19:56.742146+00
+Post-judgment -- taxation of costs / appeal|DONE|2026-11-05 21:21:14.665656+00
+Execution -- warrant / attachment|DONE|2026-11-05 21:19:48.500741+00

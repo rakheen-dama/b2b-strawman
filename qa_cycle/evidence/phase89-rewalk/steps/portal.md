@@ -23,3 +23,5 @@ Walker 636B.2 · scenario P (`qa/testplan/demos/portal-client-90day-keycloak.md`
 | Row | Step | Status | Evidence |
 |---|---|---|---|
 | S2-54 | Sipho `/deadlines` (D-2) | NOTE | "Diary dates" filters Status (All / Upcoming / Due soon / Overdue / Completed / Cancelled) and Type (All / Filing / Court date / Prescription / Custom date) → "**No deadlines in this view** · Deadlines your firm surfaces to the portal will appear here." — empty, as expected (no deadlines on Sipho's matters; 633B owning-client rule). `S2-54-1440-sipho-deadlines-empty.png` |
+
+PASS 12 · FAIL 0 · PARTIAL 0 · DEFERRED 0 · N/A 0 (+ NOTE 1) — remaining portal rows (S2-42…S2-53, S2-55…S2-60, S2-62…S2-65) not yet run; prod portal left running for 636B.3 (HANDOFF)

@@ -1,7 +1,7 @@
 {
-  "commit": "3761be4fd",
+  "commit": "9b67f713b",
   "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-11-05T00:17:20Z",
-  "summary": "632C PR #1729 — lint/typecheck/format/build 0; vitest 45 files / 264 passed; E2E-PORTAL fresh stack: 90-day 12 passed/1 skipped (fixme), responsive 21 passed, data-isolation 2 passed"
+  "ts": "2026-11-05T05:39:07Z",
+  "summary": "633C PR #1732 — orchestrator-run on head 9b67f713b: lint/typecheck/format/build 0; vitest 47 files / 273 passed; E2E-PORTAL fresh stack: 90-day 13 passed/0 skipped (re-run on 9b67f713b), responsive 21 passed + data-isolation 2 passed (on 6d9fe45fe; fix pass touched only 90-day specs + evidence)"
 }

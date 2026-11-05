@@ -1,0 +1,36 @@
+# KC backend boot evidence — captured 2026-11-05 07:47:07 SAST
+main HEAD: 2c6e6fd39ecf7739c8267eb0d9e313ce4c5fbb93
+compile: ./mvnw -q clean compile -DskipTests -> exit 0 (07:45 SAST)
+old :8080 holder PID 28024 (svc PID 27825) stopped; port confirmed free
+svc.sh start backend at 07:46:02 SAST; new :8080 holder PID 86551 (svc wrapper PID 86354)
+    PID STARTED                      ELAPSED
+  86551 Thu Nov  5 07:46:15 2026       00:52
+health: {"groups":["liveness","readiness"],"status":"UP"}
+
+## Start/Started lines
+"@timestamp":"2026-11-05T05:46:16.193607Z"	"message":"Starting BackendApplication using Java 25.0.1 with PID 86551 (/Users/rakheendama/Projects/2026/b2b-strawman/backend/target/classes started by rakheendama in /Us
+"@timestamp":"2026-11-05T05:46:26.900058Z"	"message":"Started BackendApplication in 10.926 seconds (process running for 11.107)
+
+## Migration lines
+"@timestamp":"2026-11-05T05:46:18.351520Z"	"message":"Successfully validated 3 migrations (execution time 00:00.013s)
+"@timestamp":"2026-11-05T05:46:18.374501Z"	"message":"Current version of schema \
+"@timestamp":"2026-11-05T05:46:18.376947Z"	"message":"Schema \
+"@timestamp":"2026-11-05T05:46:26.988559Z"	"message":"Running tenant migrations for 2 schemas
+"@timestamp":"2026-11-05T05:46:27.011240Z"	"message":"Successfully validated 10 migrations (execution time 00:00.008s)
+"@timestamp":"2026-11-05T05:46:27.016214Z"	"message":"Current version of schema \
+"@timestamp":"2026-11-05T05:46:27.016635Z"	"message":"Schema \
+"@timestamp":"2026-11-05T05:46:27.018531Z"	"message":"Migrated schema tenant_56399d06a773 — 0 migrations applied
+"@timestamp":"2026-11-05T05:46:27.036798Z"	"message":"Successfully validated 10 migrations (execution time 00:00.005s)
+"@timestamp":"2026-11-05T05:46:27.041176Z"	"message":"Current version of schema \
+"@timestamp":"2026-11-05T05:46:27.041560Z"	"message":"Schema \
+"@timestamp":"2026-11-05T05:46:27.043229Z"	"message":"Migrated schema tenant_5039f2d497cf — 0 migrations applied
+"@timestamp":"2026-11-05T05:46:27.043343Z"	"message":"Tenant migration runner completed
+(note: 'Migrating schema' does not appear — all schemas already up to date: 'Migrated schema … — 0 migrations applied')
+
+## Backfill lines (verbatim)
+"@timestamp":"2026-11-05T05:46:27.069616Z"	"message":"Portal contact directory backfill: 0 tenants scanned, 2 skipped (already marked), 0 failed, 0 rows upserted"
+"@timestamp":"2026-11-05T05:46:27.075451Z"	"message":"Portal task backfill: 0 tenants scanned, 2 skipped (already marked), 0 failed, 0 rows upserted"
+"@timestamp":"2026-11-05T05:46:27.119140Z"	"message":"Portal deadline backfill: 2 tenants scanned, 0 skipped (already marked), 0 failed, 1 rows upserted"
+
+## ERROR lines since start: 0
+## WARN lines since start: 8 (BeanPostProcessorChecker x5, HHH90000025 dialect, CglibAopProxy GenericFilterBean.init, LibreOffice not found)

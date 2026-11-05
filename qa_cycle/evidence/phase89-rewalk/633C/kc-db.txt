@@ -1,0 +1,38 @@
+# KC DB read-only evidence — 2026-11-05 07:46:59 SAST, main 2c6e6fd39
+ source_entity | deadline_type |                label                 |  due_date  |  status  |               description_sanitised               |             customer_id              
+---------------+---------------+--------------------------------------+------------+----------+---------------------------------------------------+--------------------------------------
+ COURT_DATE    | COURT_DATE    | Case management — Gauteng High Court | 2026-12-13 | UPCOMING | Court date — Case management — Gauteng High Court | d3f6be49-b1d3-4de7-96e8-62e5481dad37
+(1 row)
+
+      backfill_name       |    tenant_schema    |         backfilled_at         | row_count 
+--------------------------+---------------------+-------------------------------+-----------
+ portal_deadline_backfill | tenant_5039f2d497cf | 2026-11-05 05:46:27.118137+00 |         1
+ portal_deadline_backfill | tenant_56399d06a773 | 2026-11-05 05:46:27.100492+00 |         0
+ portal_task_backfill     | tenant_5039f2d497cf | 2026-11-05 02:32:27.615402+00 |        26
+ portal_task_backfill     | tenant_56399d06a773 | 2026-11-05 02:32:27.527876+00 |         0
+(4 rows)
+
+    date_type    | scheduled_date |  status   |     court_name     | court_reference | judge_magistrate |        description         
+-----------------+----------------+-----------+--------------------+-----------------+------------------+----------------------------
+ CASE_MANAGEMENT | 2026-12-13     | SCHEDULED | Gauteng High Court |                 |                  | Case Management Conference
+(1 row)
+
+
+# Sipho read-only (added 07:49:21 SAST)
+                  id                  | request_number | project_id | project_name |   status    | total_items | submitted_items 
+--------------------------------------+----------------+------------+--------------+-------------+-------------+-----------------
+ 2c92a127-3187-4f2f-997d-2a772e8598f6 | REQ-0001       |            |              | IN_PROGRESS |           1 |               1
+(1 row)
+
+             name              |  status   
+-------------------------------+-----------
+ Certified copy of ID document | SUBMITTED
+(1 row)
+
+
+# Sipho matter tasks + trust (read-only, 07:49:45 SAST)
+ status | count 
+--------+-------
+ DONE   |     9
+(1 row)
+

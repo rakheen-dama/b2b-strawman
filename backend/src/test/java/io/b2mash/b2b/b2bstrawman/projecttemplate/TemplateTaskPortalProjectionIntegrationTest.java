@@ -6,10 +6,12 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTaskView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +55,7 @@ class TemplateTaskPortalProjectionIntegrationTest {
   @Autowired private TemplateTaskRepository templateTaskRepository;
   @Autowired private CustomerService customerService;
   @Autowired private PortalReadModelRepository readModelRepo;
+  @Autowired private TaskService taskService;
   @Autowired private PlatformTransactionManager transactionManager;
 
   private String tenantSchema;
@@ -137,6 +140,46 @@ class TemplateTaskPortalProjectionIntegrationTest {
   }
 
   @Test
+  void editingATemplateTaskKeepsItsPortalSortOrder() {
+    UUID projectId = instantiateLinked("Sort Order Edit Client", "sort-order-edit@test.com");
+    List<PortalTaskView> before = readModelRepo.findTasksByProject(projectId, ORG_ID);
+    // A task from the middle of the template, whose sort order is not the lowest.
+    PortalTaskView edited = before.get(4);
+    assertThat(edited.sortOrder()).isEqualTo(templateTasks.get(4).getSortOrder());
+    var actor = new ActorContext(memberId, "owner");
+
+    // Firm-side edit through the real TaskService path → PortalTaskUpdatedEvent (sort order 0) →
+    // PortalEventHandler.onTaskUpdated → upsertPortalTask.
+    inTenant(
+        () ->
+            tenantTx.execute(
+                s -> {
+                  var task = taskService.getTask(edited.id(), actor);
+                  return taskService.updateTask(
+                      task.getId(),
+                      edited.name() + " (edited)",
+                      task.getDescription(),
+                      task.getPriority().name(),
+                      "IN_PROGRESS",
+                      task.getType(),
+                      task.getDueDate(),
+                      task.getAssigneeId(),
+                      actor);
+                }));
+
+    List<PortalTaskView> after = readModelRepo.findTasksByProject(projectId, ORG_ID);
+    var editedAfter = after.stream().filter(r -> r.id().equals(edited.id())).findFirst();
+    assertThat(editedAfter).isPresent();
+    assertThat(editedAfter.get().name()).isEqualTo(edited.name() + " (edited)");
+    assertThat(editedAfter.get().status()).isEqualTo("IN_PROGRESS");
+    // B5: the edit must not reset the template sort order, so the list order is unchanged.
+    assertThat(editedAfter.get().sortOrder()).isEqualTo(edited.sortOrder());
+    assertThat(after)
+        .extracting(PortalTaskView::id)
+        .containsExactlyElementsOf(before.stream().map(PortalTaskView::id).toList());
+  }
+
+  @Test
   void instantiatingWithoutAClientProjectsNoTasks() {
     UUID projectId =
         inTenant(
@@ -158,6 +201,30 @@ class TemplateTaskPortalProjectionIntegrationTest {
                             .getId()));
 
     assertThat(readModelRepo.findTasksByProject(projectId, ORG_ID)).isEmpty();
+  }
+
+  private UUID instantiateLinked(String clientName, String clientEmail) {
+    return inTenant(
+        () ->
+            tenantTx.execute(
+                s -> {
+                  var customer =
+                      customerService.createCustomer(
+                          clientName, clientEmail, null, null, null, memberId);
+                  return templateService
+                      .instantiateTemplate(
+                          templateId,
+                          new InstantiateTemplateRequest(
+                              clientName + " Matter",
+                              customer.getId(),
+                              memberId,
+                              null,
+                              null,
+                              null,
+                              null),
+                          memberId)
+                      .getId();
+                }));
   }
 
   private <T> T inTenant(Callable<T> action) {

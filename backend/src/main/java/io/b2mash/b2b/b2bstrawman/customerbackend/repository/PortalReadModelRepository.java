@@ -629,6 +629,11 @@ public class PortalReadModelRepository {
 
   // ── Task methods ─────────────────────────────────────────────────────
 
+  /**
+   * Live projection write. {@code sortOrder} is set only when the row is first inserted: the firm
+   * {@code Task} has no sort order of its own, so update events carry 0 and must not overwrite the
+   * template order the instantiation loop wrote (Phase 89 633A, B5).
+   */
   public void upsertPortalTask(
       UUID id,
       String orgId,
@@ -646,7 +651,6 @@ public class PortalReadModelRepository {
             DO UPDATE SET name = EXCLUDED.name,
                           status = EXCLUDED.status,
                           assignee_name = EXCLUDED.assignee_name,
-                          sort_order = EXCLUDED.sort_order,
                           synced_at = now()
             """)
         .params(id, orgId, portalProjectId, name, status, assigneeName, sortOrder)

@@ -44,7 +44,7 @@ public class PortalBackfillMarkerRepository {
 
   /**
    * B3: schema names are deterministic, so provisioning (before {@code createSchema}) and demo
-   * cleanup (after the schema drop) remove the schema's markers — a stale marker would otherwise
+   * cleanup (before the schema drop) remove the schema's markers — a stale marker would otherwise
    * skip the backfill on a re-provisioned tenant. Returns the number of markers deleted.
    */
   public int deleteForSchema(String tenantSchema) {

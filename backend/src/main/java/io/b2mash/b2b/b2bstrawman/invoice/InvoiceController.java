@@ -23,7 +23,6 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -108,8 +107,7 @@ public class InvoiceController {
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<OutstandingSummaryResponse> getOutstandingSummary(
       @RequestParam(required = false) UUID matterId) {
-    return ResponseEntity.ok(
-        collectionsReadService.outstandingSummary(Optional.ofNullable(matterId)));
+    return ResponseEntity.ok(collectionsReadService.outstandingSummary(matterId));
   }
 
   @GetMapping

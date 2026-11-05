@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.project;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,8 +40,9 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 /**
  * G88-M13 (Phase 89 §14.3.18): {@code GET /api/matters/{matterId}/trust-balance} — VIEW_TRUST +
  * matter visibility (404 off-matter), the per-matter RECORDED/APPROVED sum, and 200 + zero when the
- * trust module is off (the frontend hides the tile). Deposits go through the real API write path in
- * a dedicated legal-za tenant.
+ * trust module is off (the frontend hides the tile) — including a tenant that recorded trust money
+ * under legal-za and then cleared its profile. Deposits go through the real API write path in
+ * dedicated legal-za tenants.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -65,6 +67,11 @@ class MatterTrustBalanceEndpointTest {
 
   private static final String OFF_OWNER = "user_mtb_off_owner";
 
+  /** legal-za at deposit time, then the owner clears the vertical profile → trust module off. */
+  private static final String FLIPPED_ORG_ID = "org_matter_trust_balance_flipped";
+
+  private static final String FLIPPED_OWNER = "user_mtb_flipped_owner";
+
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Autowired private MockMvc mockMvc;
@@ -79,6 +86,7 @@ class MatterTrustBalanceEndpointTest {
   private UUID matterEmpty;
   private UUID matterShared;
   private UUID matterOff;
+  private UUID matterFlipped;
 
   @BeforeAll
   void setup() throws Exception {
@@ -121,34 +129,14 @@ class MatterTrustBalanceEndpointTest {
               matterShared = saveMatter("Trust Matter Shared", client[0], ownerId);
             });
 
-    String trustAccountId =
-        TestEntityHelper.extractId(
-            mockMvc
-                .perform(
-                    post("/api/trust-accounts")
-                        .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(
-                            """
-                            {
-                              "accountName": "634B Trust Account",
-                              "bankName": "Test Bank",
-                              "branchCode": "250655",
-                              "accountNumber": "62000000634",
-                              "accountType": "GENERAL",
-                              "isPrimary": false,
-                              "requireDualApproval": false,
-                              "openedDate": "2026-01-15"
-                            }
-                            """))
-                .andExpect(status().isCreated())
-                .andReturn());
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    String trustAccountId = createTrustAccount(ownerJwt, "62000000634");
 
-    deposit(trustAccountId, client[0], matterA, "50000.00", "DEP/634B/A");
-    deposit(trustAccountId, client[0], matterB, "12000.00", "DEP/634B/B");
+    deposit(ownerJwt, trustAccountId, client[0], matterA, "50000.00", "DEP/634B/A");
+    deposit(ownerJwt, trustAccountId, client[0], matterB, "12000.00", "DEP/634B/B");
     // Client money not tagged to any matter — counts on no matter's balance.
-    deposit(trustAccountId, client[0], null, "3000.00", "DEP/634B/NONE");
-    deposit(trustAccountId, client[0], matterShared, "750.00", "DEP/634B/SHARED");
+    deposit(ownerJwt, trustAccountId, client[0], null, "3000.00", "DEP/634B/NONE");
+    deposit(ownerJwt, trustAccountId, client[0], matterShared, "750.00", "DEP/634B/SHARED");
 
     mockMvc
         .perform(
@@ -165,6 +153,54 @@ class MatterTrustBalanceEndpointTest {
         UUID.fromString(
             TestEntityHelper.createProject(
                 mockMvc, TestJwtFactory.ownerJwt(OFF_ORG_ID, OFF_OWNER), "No Trust Matter"));
+
+    setupFlippedTenant();
+  }
+
+  /**
+   * Records trust money on a matter while legal-za is active, then clears the profile through the
+   * real owner endpoint — the trust rows stay, the module goes off.
+   */
+  private void setupFlippedTenant() throws Exception {
+    provisioningService.provisionTenant(FLIPPED_ORG_ID, "Matter Trust Flipped Org", "legal-za");
+    String schema =
+        orgSchemaMappingRepository.findByClerkOrgId(FLIPPED_ORG_ID).orElseThrow().getSchemaName();
+    UUID ownerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                FLIPPED_ORG_ID,
+                FLIPPED_OWNER,
+                "mtb_flipped_owner@test.com",
+                "MTB Flipped Owner",
+                "owner"));
+    UUID[] client = new UUID[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, FLIPPED_ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              client[0] =
+                  customerRepository
+                      .saveAndFlush(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Flipped Trust Client", "mtb_flipped_client@test.com", ownerId))
+                      .getId();
+              matterFlipped = saveMatter("Flipped Trust Matter", client[0], ownerId);
+            });
+
+    var ownerJwt = TestJwtFactory.ownerJwt(FLIPPED_ORG_ID, FLIPPED_OWNER);
+    String trustAccountId = createTrustAccount(ownerJwt, "62000000635");
+    deposit(ownerJwt, trustAccountId, client[0], matterFlipped, "4200.00", "DEP/634B/FLIP");
+
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"verticalProfile\": null}"))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -227,6 +263,14 @@ class MatterTrustBalanceEndpointTest {
     assertThat(body.get("currency").asText()).isEqualTo("ZAR");
   }
 
+  @Test
+  void trustModuleTurnedOffAfterDeposits_still200WithZero() throws Exception {
+    JsonNode body = getOk(matterFlipped, TestJwtFactory.ownerJwt(FLIPPED_ORG_ID, FLIPPED_OWNER));
+    assertThat(body.get("matterId").asText()).isEqualTo(matterFlipped.toString());
+    assertThat(body.get("balance").decimalValue()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(body.get("currency").asText()).isEqualTo("ZAR");
+  }
+
   // --- helpers ---
 
   private UUID saveMatter(String name, UUID clientId, UUID ownerId) {
@@ -235,14 +279,45 @@ class MatterTrustBalanceEndpointTest {
     return projectRepository.saveAndFlush(project).getId();
   }
 
+  private String createTrustAccount(RequestPostProcessor ownerJwt, String accountNumber)
+      throws Exception {
+    return TestEntityHelper.extractId(
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "634B Trust Account",
+                          "bankName": "Test Bank",
+                          "branchCode": "250655",
+                          "accountNumber": "%s",
+                          "accountType": "GENERAL",
+                          "isPrimary": false,
+                          "requireDualApproval": false,
+                          "openedDate": "2026-01-15"
+                        }
+                        """
+                            .formatted(accountNumber)))
+            .andExpect(status().isCreated())
+            .andReturn());
+  }
+
   private void deposit(
-      String trustAccountId, UUID clientId, UUID matterId, String amount, String reference)
+      RequestPostProcessor ownerJwt,
+      String trustAccountId,
+      UUID clientId,
+      UUID matterId,
+      String amount,
+      String reference)
       throws Exception {
     String matterField = matterId == null ? "" : "\"matterId\": \"%s\",".formatted(matterId);
     mockMvc
         .perform(
             post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .with(ownerJwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """

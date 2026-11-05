@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -264,9 +263,11 @@ public class CollectionsReadService {
    * all three tile pairs — outstanding, overdue, approved-unsent — narrow to fee notes with at
    * least one line on the matter. {@code FINANCIAL_VISIBILITY} stays the whole authorization: no
    * matter-visibility check, because the caller already sees the firm-wide figure.
+   *
+   * @param matterId the matter to narrow to, or {@code null} for the firm-wide figure
    */
   @Transactional(readOnly = true)
-  public OutstandingSummaryResponse outstandingSummary(Optional<UUID> matterId) {
+  public OutstandingSummaryResponse outstandingSummary(UUID matterId) {
     String currency =
         orgSettingsRepository
             .findForCurrentTenant()
@@ -274,11 +275,13 @@ public class CollectionsReadService {
             .orElse(OrgSettingsService.DEFAULT_CURRENCY);
     var query =
         entityManager.createNativeQuery(
-            matterId.isPresent() ? OUTSTANDING_SUMMARY_FOR_MATTER_SQL : OUTSTANDING_SUMMARY_SQL,
+            matterId != null ? OUTSTANDING_SUMMARY_FOR_MATTER_SQL : OUTSTANDING_SUMMARY_SQL,
             Tuple.class);
     query.setParameter("currency", currency);
     query.setParameter("today", LocalDate.now(clock));
-    matterId.ifPresent(id -> query.setParameter("matterId", id.toString()));
+    if (matterId != null) {
+      query.setParameter("matterId", matterId.toString());
+    }
     Tuple t = (Tuple) query.getSingleResult();
     return new OutstandingSummaryResponse(
         currency,

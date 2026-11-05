@@ -122,16 +122,20 @@ public class TrustAccountService {
   /**
    * The matter Overview "Trust balance" tile (Phase 89 §14.3.18, G88-M13): the sum of the matter's
    * RECORDED/APPROVED trust transactions (only transactions tagged with this matter — client money
-   * held without a matter tag counts on no matter). Deliberately NOT module-guarded, unlike every
-   * other method here: with trust accounting off the matter simply holds nothing — 200 with zero,
-   * and the frontend hides the tile ({@code trust_transactions} exists in every tenant). Matter
-   * visibility is enforced: a caller who cannot view the matter (or an unknown id) gets 404 via
-   * {@link ProjectAccessService#requireViewAccess}. Pure read — no audit.
+   * held without a matter tag counts on no matter). Deliberately NOT module-guarded (no 403),
+   * unlike every other method here: with trust accounting off the matter reports nothing — 200 with
+   * zero, even if trust rows were recorded before the profile was cleared — and the frontend hides
+   * the tile ({@code trust_transactions} exists in every tenant). Matter visibility is checked
+   * first, so a caller who cannot view the matter (or an unknown id) gets 404 via {@link
+   * ProjectAccessService#requireViewAccess} regardless of the module. Pure read — no audit.
    */
   @Transactional(readOnly = true)
   public MatterTrustBalanceResponse matterBalance(UUID projectId, ActorContext actor) {
     projectAccessService.requireViewAccess(projectId, actor);
-    BigDecimal balance = trustTransactionRepository.calculateBalanceByProjectId(projectId);
+    BigDecimal balance =
+        moduleGuard.isModuleEnabled(MODULE_ID)
+            ? trustTransactionRepository.calculateBalanceByProjectId(projectId)
+            : null;
     return new MatterTrustBalanceResponse(
         projectId,
         balance != null ? balance : BigDecimal.ZERO,

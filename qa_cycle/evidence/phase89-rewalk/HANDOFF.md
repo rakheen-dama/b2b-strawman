@@ -91,6 +91,6 @@ filed, not a zone artefact to be explained away.
 
 ---
 
-# ORCHESTRATOR RULING 0.R5 — 2026-11-06 ~01:35 SAST, after 636B.3 (walk complete)
+# ORCHESTRATOR RULING 0.R5 — 2026-11-06 ~01:20 SAST, after 636B.3 (walk complete)
 - Confirmed MEDIUM: G89-F14, F16, F17, F18 (code read at `86e0fd5de`). Raised: **G89-F22 → HIGH** (portal trust balance ≠ firm client ledger; trust money path), **G89-F23 → MEDIUM** (internal-draft generation surfaced on the client's activity feed). Register now 3 HIGH · 6 MEDIUM · 17 LOW; exit **FAIL**. Full text in `gaps.md` §1.
 - 636B is complete as an evidence slice; HIGH/MEDIUM go to the post-Phase-89 follow-up batch (never fixed inside 636). 636C proceeds with the deck caveat that Sipho's portal trust frames show G89-F12 artefacts.

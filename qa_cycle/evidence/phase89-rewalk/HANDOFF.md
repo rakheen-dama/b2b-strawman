@@ -38,3 +38,32 @@
 - **Mailpit:** total **15** (unread 9) at 23:25; latest: htwGiQjhaVeFCiBCedYZTP 2026-11-05T21:23:24.372Z Mathebula & Partners: Trust account activity → sipho.dlamini@email.co.za. Sipho has a "Trust account activity" email (refund) for P-21.1 / P-21.2.
 - **Open candidates (session 2, `findings-session2.md`):** G89-F7 LOW Overview 4th KPI tile wraps alone · G89-F8 LOW Settings › Documents OTHER table 1621/856 · G89-F9 LOW 1024 Payment History wraps + 9 px scroll · G89-F10 LOW interest wizard shows client UUIDs · **G89-F11 HIGH (proposed)** interest run with a future period end accepted + posted, credits dated tomorrow · **G89-F12 HIGH (proposed)** matter-linked refund may exceed the matter's trust balance (matter -R 1,34; interest credit client-level) — blocks S2-13 · G89-F13 MEDIUM (proposed) ledger "Total Payments" excludes refunds.
 - **Deviations:** portal swap moved from S2-00 to just before S2-06; Sipho portal rows P-0…P-3.4 + /deadlines + /profile run in the Day-68 sign-in; isolated-context default viewport was 1698 px — first 68.2 frame retaken at 1440; P-0.1 screenshot discarded (dev-mode link shows a live token).
+
+---
+
+# ORCHESTRATOR RULING — written by the phase orchestrator at 2026-11-05T23:50+0200 (SAST), for 636B.3
+
+Context: the 636B.2 walker paused for the 23:45 SAST rule and asked for a ruling on S2-13. The `claude -p` invocation
+for 636B was stopped by the orchestrator at 23:42 (it was idle, waiting past 02:00, beyond the runner's 200-min cap);
+`./scripts/run-phase.sh 89 636B` is scheduled to resume at 02:05 SAST. The worktree and this branch carry every
+session-1 and session-2 commit; nothing was lost. **636B.3 starts here, after 02:00 SAST, with this ruling applied.**
+
+1. **G89-F12 — CONFIRMED HIGH, stays open.** A matter-linked REFUND must not exceed the matter's trust balance
+   (`TrustTransactionService.recordRefund` / approval checks the client ledger-card balance only; interest credits are
+   client-level). It is a trust money-path product bug; it is NOT a scenario mismatch and §9.10 is NOT amended.
+   Disposition: G89 register (636C) → fix in the post-Phase-89 bug batch; do not fix in 636B.
+2. **G89-F11 — CONFIRMED HIGH** (interest run with a future period end accepted and posted; credits dated tomorrow).
+   Founder may downgrade to MEDIUM in 636C if ruled an input-validation edge; record it HIGH now.
+3. **S2-13 / S2-14 and the dependent portal rows (S2-50…S2-52): option (a).** Before S2-13, make ONE corrective trust
+   entry of **R 1,34 on Sipho's matter through the product UI** (a transfer-in / deposit as the firm would do to
+   correct the matter ledger; reference it `CORR/G89-F12`). Record it as a **NOTE prerequisite caused by G89-F12**,
+   with the before/after matter balance (−R 1,34 → R 0,00) and the audit row, in `steps/days-46-90.md`. Then run
+   S2-13…S2-14 and the P-60.x rows against the product as it is. Score honestly: S2-12 is the row that FAILS
+   (G89-F12); S2-13 is scored on its own steps (75.2–75.8) after the NOTE — never "PASS with gap"; split rows if a
+   step is mixed. No SQL, no API shortcut: the corrective entry goes through the UI like any firm action.
+4. **Time boundary:** do not start 636B.3 before 02:00 SAST. S2-14 / S2-16 use the D-6 fallback as the 636B.2 note
+   says, because Day 30 ran on 2026-11-05 SAST and 636B.3 runs on 2026-11-06.
+5. Everything else in the 636B.2 "After S2-13/14" plan stands. Browser-call budget and the Playwright input-freeze
+   gotcha from session 1 still apply.
+
+This ruling is the orchestrator's; the founder can override it before 02:05 by editing this section.

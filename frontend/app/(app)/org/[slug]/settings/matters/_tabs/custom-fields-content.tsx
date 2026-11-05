@@ -41,6 +41,41 @@ const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
   INVOICE: "Fee notes",
 };
 
+interface GroupMemberListProps {
+  groupName: string;
+  members: { id: string; name: string }[];
+}
+
+/** The group card's member field labels, in membership order (G88-F3). */
+function GroupMemberList({ groupName, members }: GroupMemberListProps) {
+  if (members.length === 0) {
+    return (
+      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+        No fields in this group yet.
+      </p>
+    );
+  }
+  return (
+    <ul
+      className="mt-2 flex flex-wrap gap-1.5"
+      aria-label={`Fields in ${groupName}`}
+      data-testid="field-group-members"
+    >
+      {/* Badge is nowrap by default; long labels must wrap within the narrow card column */}
+      {members.map((m) => (
+        <li key={m.id} className="max-w-full min-w-0">
+          <Badge
+            variant="neutral"
+            className="max-w-full text-left wrap-break-word whitespace-normal"
+          >
+            {m.name}
+          </Badge>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 interface CustomFieldsContentProps {
   slug: string;
   fieldsByType: Record<EntityType, FieldDefinitionResponse[]>;
@@ -68,6 +103,13 @@ export function CustomFieldsContent({
     ...fieldsByType.CUSTOMER,
     ...fieldsByType.INVOICE,
   ];
+  // Member labels for the group cards; ids with no active definition are skipped, never shown raw
+  const fieldNameById = new Map(allFields.map((f) => [f.id, f.name]));
+  const groupMembers = (group: FieldGroupResponse) =>
+    group.fieldDefinitionIds.flatMap((id) => {
+      const name = fieldNameById.get(id);
+      return name === undefined ? [] : [{ id, name }];
+    });
 
   return (
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as EntityType)}>
@@ -247,11 +289,11 @@ export function CustomFieldsContent({
                     data-testid={`field-group-${group.slug}`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
+                      <div className="flex min-w-0 items-start gap-3">
                         <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800">
                           <Layers className="size-4 text-slate-600 dark:text-slate-400" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-medium text-slate-950 dark:text-slate-50">
                             {group.name}
                           </p>
@@ -260,6 +302,7 @@ export function CustomFieldsContent({
                               {group.description}
                             </p>
                           )}
+                          <GroupMemberList groupName={group.name} members={groupMembers(group)} />
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             {group.packId && <Badge variant="neutral">Pack</Badge>}
                             {group.active ? (
@@ -283,6 +326,7 @@ export function CustomFieldsContent({
                               entityType={tab.value}
                               group={group}
                               availableFields={allFields}
+                              initialFieldIds={group.fieldDefinitionIds}
                               allGroups={groupsByType[tab.value]}
                             >
                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>

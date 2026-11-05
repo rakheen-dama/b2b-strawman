@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CustomFieldsContent } from "@/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-content";
 import type { EntityType, FieldDefinitionResponse, FieldGroupResponse } from "@/lib/types";
@@ -89,6 +89,7 @@ function makeFieldGroups(entityType: EntityType): FieldGroupResponse[] {
         updatedAt: "2025-01-15T10:00:00Z",
         autoApply: false,
         dependsOn: null,
+        fieldDefinitionIds: [],
       },
     ];
   }
@@ -109,6 +110,16 @@ function makeProps(canManage = true) {
     INVOICE: makeFieldGroups("INVOICE"),
   };
   return { slug: "acme", fieldsByType, groupsByType, canManage };
+}
+
+/** Default props, with the Financial Info group's membership set to {@code memberIds}. */
+function makePropsWithMembers(memberIds: string[]) {
+  const props = makeProps();
+  props.groupsByType.PROJECT = props.groupsByType.PROJECT.map((g) => ({
+    ...g,
+    fieldDefinitionIds: memberIds,
+  }));
+  return props;
 }
 
 describe("CustomFieldsContent", () => {
@@ -170,6 +181,51 @@ describe("CustomFieldsContent", () => {
 
     expect(screen.getByText("No custom fields yet")).toBeInTheDocument();
     expect(screen.getByText("No field groups for tasks yet.")).toBeInTheDocument();
+  });
+
+  it("lists member field labels on the group card in membership order", () => {
+    render(<CustomFieldsContent {...makePropsWithMembers(["fd-2", "fd-1"])} />);
+
+    const card = screen.getByTestId("field-group-financial_info");
+    const members = within(card).getByRole("list", { name: "Fields in Financial Info" });
+    const labels = within(members)
+      .getAllByRole("listitem")
+      .map((li) => li.textContent);
+    expect(labels).toEqual(["Priority Level", "Budget Code"]);
+  });
+
+  it("member chips wrap long labels inside the card instead of overflowing", () => {
+    render(<CustomFieldsContent {...makePropsWithMembers(["fd-2", "fd-1"])} />);
+
+    const card = screen.getByTestId("field-group-financial_info");
+    const members = within(card).getByRole("list", { name: "Fields in Financial Info" });
+    for (const li of within(members).getAllByRole("listitem")) {
+      expect(li).toHaveClass("max-w-full", "min-w-0");
+      const chip = li.querySelector('[data-slot="badge"]');
+      expect(chip).toHaveClass("max-w-full", "whitespace-normal", "wrap-break-word");
+      expect(chip).not.toHaveClass("whitespace-nowrap");
+    }
+  });
+
+  it("skips member ids with no active field and shows the empty copy", () => {
+    render(<CustomFieldsContent {...makePropsWithMembers(["fd-missing"])} />);
+
+    const card = screen.getByTestId("field-group-financial_info");
+    expect(within(card).queryByText("fd-missing")).toBeNull();
+    expect(within(card).queryByRole("list")).toBeNull();
+    expect(within(card).getByText("No fields in this group yet.")).toBeInTheDocument();
+  });
+
+  it("edit dialog opens with the group's fields pre-checked", async () => {
+    const user = userEvent.setup();
+    render(<CustomFieldsContent {...makePropsWithMembers(["fd-1"])} />);
+
+    const card = screen.getByTestId("field-group-financial_info");
+    await user.click(within(card).getByRole("button"));
+    await user.click(await screen.findByRole("menuitem", { name: "Edit" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("1 field selected")).toBeInTheDocument();
   });
 
   it("shows pack badge for pack-sourced fields", () => {

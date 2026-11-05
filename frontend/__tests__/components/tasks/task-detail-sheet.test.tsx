@@ -109,6 +109,7 @@ const testFieldGroup: FieldGroupResponse = {
   updatedAt: "2025-01-01T00:00:00Z",
   autoApply: false,
   dependsOn: null,
+  fieldDefinitionIds: [],
 };
 
 const testGroupMembers: FieldGroupMemberResponse[] = [

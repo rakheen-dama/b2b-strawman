@@ -23,6 +23,7 @@ const group1: FieldGroupResponse = {
   updatedAt: "2025-01-01T00:00:00Z",
   autoApply: false,
   dependsOn: null,
+  fieldDefinitionIds: [],
 };
 
 const group2: FieldGroupResponse = {
@@ -38,6 +39,7 @@ const group2: FieldGroupResponse = {
   updatedAt: "2025-01-01T00:00:00Z",
   autoApply: false,
   dependsOn: null,
+  fieldDefinitionIds: [],
 };
 
 const group3: FieldGroupResponse = {
@@ -53,6 +55,7 @@ const group3: FieldGroupResponse = {
   updatedAt: "2025-01-01T00:00:00Z",
   autoApply: false,
   dependsOn: null,
+  fieldDefinitionIds: [],
 };
 
 const allGroups = [group1, group2, group3];

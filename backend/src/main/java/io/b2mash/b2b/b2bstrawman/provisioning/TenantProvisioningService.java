@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.provisioning;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
+import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalBackfillMarkerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
@@ -85,6 +86,7 @@ public class TenantProvisioningService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final VerticalProfileRegistry verticalProfileRegistry;
   private final ShardRegistry shardRegistry;
+  private final PortalBackfillMarkerRepository portalBackfillMarkerRepository;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -106,7 +108,8 @@ public class TenantProvisioningService {
       TenantTransactionHelper tenantTransactionHelper,
       OrgSettingsRepository orgSettingsRepository,
       VerticalProfileRegistry verticalProfileRegistry,
-      ObjectProvider<ShardRegistry> shardRegistryProvider) {
+      ObjectProvider<ShardRegistry> shardRegistryProvider,
+      PortalBackfillMarkerRepository portalBackfillMarkerRepository) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
@@ -127,6 +130,7 @@ public class TenantProvisioningService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.verticalProfileRegistry = verticalProfileRegistry;
     this.shardRegistry = shardRegistryProvider.getIfAvailable();
+    this.portalBackfillMarkerRepository = portalBackfillMarkerRepository;
   }
 
   @Retryable(
@@ -217,6 +221,9 @@ public class TenantProvisioningService {
       // retries won't see the mapping and short-circuit via "alreadyProvisioned".
       // Mapping is created LAST so TenantFilter only resolves to this
       // schema once all tables and the subscription exist (prevents race).
+      // B3: schema names are deterministic — drop markers a previous incarnation left behind so
+      // the portal read-model backfills run for this tenant.
+      portalBackfillMarkerRepository.deleteForSchema(schemaName);
       createSchema(schemaName, targetDataSource);
       runTenantMigrations(schemaName, targetDataSource);
       String defaultCurrency = resolveCurrency(country, verticalProfile);

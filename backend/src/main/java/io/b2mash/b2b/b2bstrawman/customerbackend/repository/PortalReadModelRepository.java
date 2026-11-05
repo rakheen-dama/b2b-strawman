@@ -653,6 +653,29 @@ public class PortalReadModelRepository {
         .update();
   }
 
+  /**
+   * Backfill write (Phase 89 633A, R7.2): inserts the row only when absent — never overwrites a row
+   * the live listener wrote. Returns 1 when inserted, 0 when the task was already projected.
+   */
+  public int insertPortalTaskIfAbsent(
+      UUID id,
+      String orgId,
+      UUID portalProjectId,
+      String name,
+      String status,
+      String assigneeName,
+      int sortOrder) {
+    return jdbc.sql(
+            """
+            INSERT INTO portal.portal_tasks
+                (id, org_id, portal_project_id, name, status, assignee_name, sort_order, synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, now())
+            ON CONFLICT (id) DO NOTHING
+            """)
+        .params(id, orgId, portalProjectId, name, status, assigneeName, sortOrder)
+        .update();
+  }
+
   public void deletePortalTask(UUID id, String orgId) {
     jdbc.sql(
             """

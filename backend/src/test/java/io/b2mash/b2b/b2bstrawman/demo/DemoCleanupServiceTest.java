@@ -23,9 +23,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -43,6 +45,10 @@ class DemoCleanupServiceTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate txTemplate;
   @Autowired private JdbcTemplate jdbcTemplate;
+
+  @Autowired
+  @Qualifier("portalJdbcClient")
+  private JdbcClient portalJdbc;
 
   @MockitoBean private KeycloakAdminClient keycloakAdminClient;
 
@@ -89,6 +95,34 @@ class DemoCleanupServiceTest {
     // Verify org is actually gone from DB
     assertTrue(organizationRepository.findById(orgId).isEmpty());
     assertTrue(subscriptionRepository.findByOrganizationId(orgId).isEmpty());
+  }
+
+  @Test
+  void cleanup_deletesThePortalBackfillMarkersOfTheDroppedSchema() {
+    UUID orgId = provisionTestTenant("markers", BillingMethod.PILOT);
+    var org = organizationRepository.findById(orgId).orElseThrow();
+    String schema =
+        orgSchemaMappingRepository
+            .findByExternalOrgId(org.getExternalOrgId())
+            .orElseThrow()
+            .getSchemaName();
+    portalJdbc
+        .sql(
+            "INSERT INTO portal.portal_backfill_markers (backfill_name, tenant_schema, row_count)"
+                + " VALUES ('portal_task_backfill', ?, 3) ON CONFLICT DO NOTHING")
+        .params(schema)
+        .update();
+
+    var response = demoCleanupService.cleanup(orgId, org.getName(), "test-admin");
+
+    assertTrue(response.schemaCleaned());
+    assertEquals(
+        0,
+        portalJdbc
+            .sql("SELECT count(*) FROM portal.portal_backfill_markers WHERE tenant_schema = ?")
+            .params(schema)
+            .query(Integer.class)
+            .single());
   }
 
   @Test

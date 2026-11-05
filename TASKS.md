@@ -722,7 +722,7 @@
 | 633 | Portal — Template Tasks + Task Backfill (global V3) + Court-Date / Prescription Events, Listeners and Backfill + Copy Cluster and Raw-Enum Guard (E4) | Backend + Portal | 632 (build order; 633A/633B independent of 632 code) | L | 633A, 633B, 633C (2 verifies) | **Done** (PRs #1730, #1731, #1732) |
 | 634 | Firm-Side MEDIUMs — Field-Group Membership, Matter-Page Cluster (Tiles, Team Badge, Activity Chip), Notification Cluster (Comment Deep Link V10 §2 / V11, Mention Filter), Disbursement Container, Matter Comments Panel (E5) | Backend + Frontend (per gap, together) | 632B (V10 file exists) for 634C; 634D frontend-only may run any time; 634E frontend-only after 634C | L | 634A, 634B, 634C, 634D, 634E (3 verifies; 634E = matter comments panel, no verify) | **Done** — 634A (PR #1733), 634B (PR #1734), 634C (PR #1735), 634D (PR #1736), 634E (PR #1737) |
 | 635 | Scenario Amendments Docs PR (decision 7, §5b rows 19–20, P-E.2b/P-E.10) + Verify-Marker Check (E6) | Docs + scripts/skill | 632C, 633C (which steps are built) for 635A; 635B any time | S | 635A, 635B (0 verifies) || **Done** (PRs #1738, #1740) |
-| 636 | Exit Gate — Three Suites on a Fresh Stack + Targeted Keycloak Re-Walk + G89 Register + Deck Re-Shoot + Closure (E7; gate epic, no product code) | QA / Process / Docs | 630–635 merged | M | 636A, 636B, 636C (0 verifies) | |
+| 636 | Exit Gate — Three Suites on a Fresh Stack + Targeted Keycloak Re-Walk + G89 Register + Deck Re-Shoot + Closure (E7; gate epic, no product code) | QA / Process / Docs | 630–635 merged | M | 636A, 636B, 636C (0 verifies) | In progress — 636A **Done** (PR #1741); 636B, 636C pending |
 
 
 ---

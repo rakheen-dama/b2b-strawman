@@ -44,7 +44,7 @@ Dropped by the §8 re-cut (recorded here so the numbering history is clear): the
 | 633 | Portal — Template Tasks + Task Backfill (global V3) + Court-Date / Prescription Events, Listeners and Backfill + Copy Cluster and Raw-Enum Guard (E4) | Backend + Portal | 632 (build order; 633A/633B independent of 632 code) | L | 633A, 633B, 633C | 2 | **Done** — 633A (PR #1730), 633B (PR #1731), 633C (PR #1732) |
 | 634 | Firm-Side MEDIUMs — Field-Group Membership, Matter-Page Cluster (Tiles, Team Badge, Activity Chip), Notification Cluster (Comment Deep Link V10 §2 / V11, Mention Filter), Disbursement Container, Matter Comments Panel (E5) | Backend + Frontend (per gap, together) | 632B (V10 file exists) for 634C; 634D frontend-only may run any time; 634E frontend-only after 634C | L | 634A, 634B, 634C, 634D, 634E | 3 | **Done** — 634A **Done** (PR #1733), 634B **Done** (PR #1734), 634C **Done** (PR #1735), 634D **Done** (PR #1736), 634E **Done** (PR #1737) |
 | 635 | Scenario Amendments Docs PR (decision 7, §5b rows 19–20, P-E.2b/P-E.10) + Verify-Marker Check (E6) | Docs + scripts/skill | 632C, 633C (which steps are built) for 635A; 635B any time | S | 635A, 635B | 0 | **Done** (PRs #1738, #1740) |
-| 636 | Exit Gate — Three Suites on a Fresh Stack + Targeted Keycloak Re-Walk + G89 Register + Deck Re-Shoot + Closure (E7; gate epic, no product code) | QA / Process / Docs | 630–635 merged | M | 636A, 636B, 636C | 0 | |
+| 636 | Exit Gate — Three Suites on a Fresh Stack + Targeted Keycloak Re-Walk + G89 Register + Deck Re-Shoot + Closure (E7; gate epic, no product code) | QA / Process / Docs | 630–635 merged | M | 636A, 636B, 636C | 0 || In progress — 636A **Done** (PR #1741); 636B, 636C pending |
 
 **Slice count: 21; backend verifies: 11** (rulings §8; 634E — the matter comments panel — added frontend-only by rulings §9.5, 2026-11-04). Product slices sized to ≈12–20 files; 632A, 632B and 634B run slightly above 20 because they absorb three architecture slices each — each file is listed, every change is one gap's fix, and no slice exceeds ~1500 new lines.
 
@@ -80,7 +80,7 @@ Every §14.10 id maps to **exactly one** slice; "built across" notes where §8 m
 | 634H | Matter comments panel | **634E** | **new (rulings §9.5)** — no architecture id at breakdown time; §14.10 row 634H added with the ruling; FE-only, no verify; after 634C (deep link + anchor); closer of §14.12 #6 / B7 |
 | 635A | Scenario amendments docs PR | **635A** | — |
 | 635B | Verify-marker check | **635B** | — |
-| 636A | Three suites on a fresh stack | **636A** | — |
+| 636A | Three suites on a fresh stack | **636A** | **Done** (PR #1741) |
 | 636B | Targeted Keycloak re-walk + G89 register | **636B** | two sessions by day range (§8) |
 | 636C | Deck re-shoot + closure | **636C** | — |
 
@@ -654,13 +654,13 @@ PR rules restated (non-negotiable):
 
 **Estimated Effort**: M
 
-**Status**:
+**Status**: 636A **Done** (PR #1741, merged `903df3031`, 2026-11-05): three suites on fresh e2e stacks built from main `1034b6af8`, all runs 19:57–20:42 SAST (outside 00:00–02:00); screenshot baselines are not committed, so each screenshot-bearing suite ran capture-then-score on two fresh stacks (C1 capture legal → **G1 scored** lifecycle → depth-ii → default; C2 capture portal → **G2 scored** 90-day → responsive → isolation → login-bare, 5½-min magic-link spacing + backend restart between portal suites). Scored (JSON reporter `.stats`): **E2E-LEGAL** lifecycle **105/0/0**, depth-ii **39/0/4**; **E2E-DEFAULT** **165/0/14**; **E2E-PORTAL** vitest 47 files / **273**, 90-day 13/0, responsive 21/0, isolation 2/0 (`KGOSI_EMAIL` set), login-bare 1/0 — 0 failed / 0 flaky, every count ≥ floor and = current main. Named un-fixme'd specs all passed (`day-60-interest:97,168,189`, `day-90-review:118`, `customer-data-protection:47,77,108`, portal `day-45-75:124,181`, receipt `day-14-30:149`, deep-link `project-tasks:277,322`). No product defect; three LOW tooling notes for 636B's register: 636A-c1 root `.dockerignore` lacks `frontend/e2e/screenshots/**`, 636A-c2 `docker builder prune -f` keeps backend layers cached (source byte-identical to main; `-af` for a cold build), 636A-c3 depth-ii skip names in brief/634C notes wrong (count 4 unchanged). Evidence `qa_cycle/evidence/phase89-rewalk/suites/` (README + per-suite md + raw JSON/TSV/list output + volume-removal excerpts). Evidence-only — no verify, no area marker (`check-verify-markers.sh 1741` → exit 0). Reviews: 2× `feature-dev:code-reviewer` APPROVE @3dbdcc390 (fallback; `superpowers:code-reviewer` unavailable); CodeRabbit REVIEWED, 2 findings addressed; 2 fix cycles (evidence wording only). 636B, 636C pending.
 
 ### Slices
 
 | Slice | Scope | Closes | Files (est.) | Migration | Verify | Obs | Depends on |
 |-------|-------|--------|--------------|-----------|--------|-----|------------|
-| **636A** | e2e: three suites on a fresh stack; baseline comparison; un-fixme'd specs green | exit (suites) | `$EV/suites/{lifecycle,depth-ii,default,portal}.md` + raw reporter output — evidence only | — | **no** | — | all code slices merged |
+| **636A** | e2e: three suites on a fresh stack; baseline comparison; un-fixme'd specs green | exit (suites) | `$EV/suites/{lifecycle,depth-ii,default,portal}.md` + raw reporter output — evidence only | — | **no** | — | all code slices merged — **Done** (PR #1741) |
 | **636B** | QA: targeted Keycloak re-walk in two sessions — **636B.1** Days 0–45 + the amended firm steps, **636B.2** Days 46–90 + the portal steps + E-checkpoints (§8); G89 register; marker audit | exit (0 HIGH + 0 MEDIUM) | `$EV/README.md`, `$EV/steps/*.md`, `$EV/gaps.md`, `$EV/markers.md`, screenshots — evidence only | — | **no** | ✓ (the whole slice is browser observation at 1024 and 1440 where a slice declared Obs) | 636A |
 | **636C** | docs: production-build deck re-shoot 1440×900; `exec-deck.html`; ARCHITECTURE.md note line; TASKS.md; closure report | exit (closure) | `marketing/decks/screens/phase89/*.png`, `marketing/decks/exec-deck.html`, `architecture/ARCHITECTURE.md` (note line), `TASKS.md`, this file § Closure report — 5 + PNGs | — | **no** | ✓ (every `<img>` resolves) | 636B |
 

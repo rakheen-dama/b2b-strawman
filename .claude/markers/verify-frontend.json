@@ -1,7 +1,7 @@
 {
-  "commit": "3761be4fd",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
+  "commit": "a97a51d24",
+  "command": "cd frontend && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && rm -rf .next && pnpm build",
   "exit": 0,
-  "ts": "2026-11-05T00:17:20Z",
-  "summary": "632C PR #1729 — lint/typecheck/format/build 0; vitest 443 files / 3627 passed / 2 skipped (3629)"
+  "ts": "2026-11-05T07:31:35Z",
+  "summary": "PR #1733 (634A): lint 0 errors (79 pre-existing warnings), typecheck ok, format:check ok, vitest 443 files / 3633 passed / 2 skipped, build ok. Frontend CI pass on a97a51d24."
 }

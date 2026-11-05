@@ -1,7 +1,7 @@
 {
-  "commit": "91bd656f3d9d",
-  "command": "caffeinate -is ./mvnw clean verify -q (backend/, worktree-epic-633B; scripts/verify.sh preflight skipped only because the KC dev backend spring-boot:run JVM pid 27825 is running — no concurrent verify)",
+  "commit": "a175d28f1",
+  "command": "cd backend && caffeinate -is ./mvnw clean verify -q",
   "exit": 0,
-  "ts": "2026-11-05T03:57:38Z",
-  "summary": "633B PR #1731 head 91bd656f3: 6539 testcases / 0 failures / 0 errors / 26 skipped — 17.7 min"
+  "ts": "2026-11-05T07:31:35Z",
+  "summary": "PR #1733 (634A): 6547 testcases / 0 failures / 0 errors / 26 skipped. Verified head a175d28f1; merged head a97a51d24 changes no backend/ file (git diff a175d28f1 a97a51d24 -- backend = 0 lines). Backend CI pass on a97a51d24 (21m13s). verify.sh preflight bypassed: only live Maven JVM was the KC spring-boot:run app (false positive)."
 }

@@ -1,0 +1,8 @@
+               name               | members |                                                                                                                                         fields                                                                                                                                         
+----------------------------------+---------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Matter Info                      |       1 | Category
+ Obs 634A Before                  |       1 | Court
+ SA Conveyancing — Matter Details |      16 | Conveyancing Type, Property Address, Erf Number, Deeds Office, Lodgement Date, Registration Date, Deed Number, Purchase Price, Transfer Duty, Bond Institution, Seller Name, Seller ID / Passport Number, Purchaser Name, Purchaser ID / Passport Number, Occupation Date, Bond Number
+ SA Legal — Matter Details        |       7 | Case Number, Court, Opposing Party, Opposing Attorney, Advocate, Date of Instruction, Estimated Value
+(4 rows)
+

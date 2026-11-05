@@ -1,0 +1,21 @@
+         event_type         |               name               | added | removed |          occurred_at          
+----------------------------+----------------------------------+-------+---------+-------------------------------
+ field_group.created        | Obs 634A Before                  |       |         | 2026-11-05 06:36:39.651235+00
+ field_group.updated        | Obs 634A Before                  |       |         | 2026-11-05 06:37:14.01338+00
+ field_group_member.added   |                                  |       |         | 2026-11-05 06:45:39.180998+00
+ field_group_member.added   |                                  |       |         | 2026-11-05 06:45:39.187927+00
+ field_group.updated        | Obs 634A Before                  | 2     | 0       | 2026-11-05 06:45:39.191229+00
+ field_group_member.removed |                                  |       |         | 2026-11-05 06:46:08.247852+00
+ field_group.updated        | Obs 634A Before                  | 0     | 1       | 2026-11-05 06:46:08.250536+00
+ field_group.updated        | Matter Info                      | 0     | 0       | 2026-11-05 06:46:31.738731+00
+ field_group_member.added   |                                  |       |         | 2026-11-05 06:46:58.241002+00
+ field_group.updated        | SA Legal — Matter Details        | 1     | 0       | 2026-11-05 06:46:58.24311+00
+ field_group_member.removed |                                  |       |         | 2026-11-05 06:47:22.579524+00
+ field_group.updated        | SA Legal — Matter Details        | 0     | 1       | 2026-11-05 06:47:22.58302+00
+ field_group_member.added   |                                  |       |         | 2026-11-05 06:48:47.850679+00
+ field_group.updated        | Obs 634A Before                  | 1     | 0       | 2026-11-05 06:48:47.852948+00
+ field_group_member.removed |                                  |       |         | 2026-11-05 06:49:11.600337+00
+ field_group.updated        | Obs 634A Before                  | 0     | 1       | 2026-11-05 06:49:11.60292+00
+ field_group.updated        | SA Conveyancing — Matter Details | 0     | 0       | 2026-11-05 06:49:34.747929+00
+(17 rows)
+

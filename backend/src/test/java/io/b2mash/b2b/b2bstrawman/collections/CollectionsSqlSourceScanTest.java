@@ -48,8 +48,8 @@ class CollectionsSqlSourceScanTest {
   private static final Map<String, int[]> SITE_MIN_COUNTS =
       Map.of(
           // DEBTOR_BOOK_SQL, DEBTOR_BOOK_COUNT_SQL, OUTSTANDING_INVOICES_SQL (+ balance_due,
-          // 622D), OUTSTANDING_SUMMARY_SQL
-          "collections/CollectionsReadService.java", new int[] {4, 3},
+          // 622D), OUTSTANDING_SUMMARY_SQL (firm-wide + matter-filtered, 634B)
+          "collections/CollectionsReadService.java", new int[] {5, 4},
           "collections/CashDigestService.java", new int[] {1, 1},
           "collections/CollectionsScanService.java", new int[] {1, 0},
           // predicate once; amount in SUM(...) AS total and ORDER BY SUM(...) DESC

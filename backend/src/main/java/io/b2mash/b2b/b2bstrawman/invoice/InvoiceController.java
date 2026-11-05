@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -99,13 +100,16 @@ public class InvoiceController {
   }
 
   /**
-   * Fee notes page tiles on the debtor-book definition (Phase 88 U3, §13.4.3). Gated like the Home
-   * debtor book audience (§13.9.3).
+   * Fee notes page tiles on the debtor-book definition (Phase 88 U3, §13.4.3); with {@code
+   * matterId} the matter Overview tile (Phase 89 §14.3.18 — {@code matterId} on the wire, ADR-337).
+   * Gated like the Home debtor book audience (§13.9.3).
    */
   @GetMapping("/outstanding-summary")
   @RequiresCapability("FINANCIAL_VISIBILITY")
-  public ResponseEntity<OutstandingSummaryResponse> getOutstandingSummary() {
-    return ResponseEntity.ok(collectionsReadService.outstandingSummary());
+  public ResponseEntity<OutstandingSummaryResponse> getOutstandingSummary(
+      @RequestParam(required = false) UUID matterId) {
+    return ResponseEntity.ok(
+        collectionsReadService.outstandingSummary(Optional.ofNullable(matterId)));
   }
 
   @GetMapping

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -140,8 +141,9 @@ public class CollectionsReadService {
    * Outstanding = the debtor-book definition; overdue = outstanding with {@code due_date < :today}
    * (the same South African "today" as the debtor book's {@code current} bucket, so overdue equals
    * the d30 + d60 + d90plus bucket sum); approved-unsent = APPROVED (no payments can exist yet).
+   * {@code %3$s} is empty (firm-wide) or {@link #MATTER_LINE_FILTER} (the matter Overview tile).
    */
-  private static final String OUTSTANDING_SUMMARY_SQL =
+  private static final String OUTSTANDING_SUMMARY_TEMPLATE =
       """
       SELECT
           COALESCE(SUM(%1$s) FILTER (WHERE %2$s), 0) AS outstanding_total,
@@ -151,9 +153,28 @@ public class CollectionsReadService {
           COALESCE(SUM(i.total) FILTER (WHERE i.status = 'APPROVED'), 0) AS approved_unsent_total,
           COUNT(*) FILTER (WHERE i.status = 'APPROVED') AS approved_unsent_count
       FROM invoices i
-      WHERE i.currency = :currency
-      """
-          .formatted(CollectionsSql.OUTSTANDING_AMOUNT, CollectionsSql.OUTSTANDING_PREDICATE);
+      WHERE i.currency = :currency%3$s
+      """;
+
+  /**
+   * Optional matter Overview filter (Phase 89 §14.3.18, G88-M13): a fee note belongs to a matter
+   * when at least one of its lines is on the matter — {@code invoices} has no {@code project_id}
+   * (linkage is through lines, as {@code InvoiceRepository.findByProjectId}). A fee note with lines
+   * on two matters counts on both.
+   */
+  private static final String MATTER_LINE_FILTER =
+      " AND EXISTS (SELECT 1 FROM invoice_lines l WHERE l.invoice_id = i.id"
+          + " AND l.project_id = CAST(:matterId AS UUID))";
+
+  private static final String OUTSTANDING_SUMMARY_SQL =
+      OUTSTANDING_SUMMARY_TEMPLATE.formatted(
+          CollectionsSql.OUTSTANDING_AMOUNT, CollectionsSql.OUTSTANDING_PREDICATE, "");
+
+  private static final String OUTSTANDING_SUMMARY_FOR_MATTER_SQL =
+      OUTSTANDING_SUMMARY_TEMPLATE.formatted(
+          CollectionsSql.OUTSTANDING_AMOUNT,
+          CollectionsSql.OUTSTANDING_PREDICATE,
+          MATTER_LINE_FILTER);
 
   private final EntityManager entityManager;
   private final CustomerRepository customerRepository;
@@ -238,17 +259,26 @@ public class CollectionsReadService {
    * CollectionsController}, incl. {@code getDebtors}) require {@code INVOICING}, while {@code GET
    * /api/invoices/outstanding-summary} requires {@code FINANCIAL_VISIBILITY} (§13.9.3) — a custom
    * role with INVOICING alone sees the debtor book but gets 403 here.
+   *
+   * <p>With {@code matterId} (the matter Overview "Outstanding fee notes" tile, Phase 89 §14.3.18)
+   * all three tile pairs — outstanding, overdue, approved-unsent — narrow to fee notes with at
+   * least one line on the matter. {@code FINANCIAL_VISIBILITY} stays the whole authorization: no
+   * matter-visibility check, because the caller already sees the firm-wide figure.
    */
   @Transactional(readOnly = true)
-  public OutstandingSummaryResponse outstandingSummary() {
+  public OutstandingSummaryResponse outstandingSummary(Optional<UUID> matterId) {
     String currency =
         orgSettingsRepository
             .findForCurrentTenant()
             .map(OrgSettings::getDefaultCurrency)
             .orElse(OrgSettingsService.DEFAULT_CURRENCY);
-    var query = entityManager.createNativeQuery(OUTSTANDING_SUMMARY_SQL, Tuple.class);
+    var query =
+        entityManager.createNativeQuery(
+            matterId.isPresent() ? OUTSTANDING_SUMMARY_FOR_MATTER_SQL : OUTSTANDING_SUMMARY_SQL,
+            Tuple.class);
     query.setParameter("currency", currency);
     query.setParameter("today", LocalDate.now(clock));
+    matterId.ifPresent(id -> query.setParameter("matterId", id.toString()));
     Tuple t = (Tuple) query.getSingleResult();
     return new OutstandingSummaryResponse(
         currency,

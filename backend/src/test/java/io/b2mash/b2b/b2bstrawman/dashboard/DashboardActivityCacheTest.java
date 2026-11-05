@@ -109,7 +109,9 @@ class DashboardActivityCacheTest {
                       EVENT_ID,
                       null,
                       "trust_transaction.deposit_recorded",
-                      Instant.parse("2026-10-20T08:00:00Z")));
+                      Instant.parse("2026-10-20T08:00:00Z"),
+                      "USER",
+                      "API"));
             });
   }
 

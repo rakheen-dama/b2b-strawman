@@ -1886,4 +1886,34 @@ class ActivityMessageFormatterTest {
     assertThat(message("something.archived", "acceptance_request", d()))
         .isEqualTo("Alice archived an acceptance request");
   }
+
+  // ---------- G-B8 (Phase 89 §14.3.21): the source marker travels on the DTO ----------
+
+  @Test
+  void portalAcceptanceRowCarriesPortalActorTypeAndSource() {
+    UUID portalContactId = UUID.randomUUID();
+    var item =
+        formatAll(
+            portalContactEvent(
+                "acceptance.accepted",
+                "acceptance_request",
+                portalContactId,
+                Map.of("document_name", "Engagement letter.pdf")),
+            Map.of(),
+            Map.of(portalContactId, siphoContact(portalContactId)));
+    assertThat(item.actorType()).isEqualTo("PORTAL_CONTACT");
+    assertThat(item.source()).isEqualTo("PORTAL");
+    assertThat(item.actorName()).isEqualTo("Sipho Dlamini");
+  }
+
+  @Test
+  void firmRowCarriesUserActorTypeAndApiSource() {
+    var item =
+        formatAll(
+            createEvent("task.created", "task", Map.of("title", "Draft")),
+            actorMap(),
+            emptyPortalContactMap());
+    assertThat(item.actorType()).isEqualTo("USER");
+    assertThat(item.source()).isEqualTo("API");
+  }
 }

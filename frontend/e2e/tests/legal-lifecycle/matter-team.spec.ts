@@ -75,7 +75,7 @@ test.describe.serial("Matter team — Team tab (add, transfer, remove)", () => {
     await expect(panel.first()).toBeVisible({ timeout: 15_000 });
     const aliceRow = memberRow(panel, "Alice Owner");
     await expect(aliceRow.first()).toBeVisible();
-    // The lead row has no row menu (Owner badge shows the org role, so lead-ness is the menu's absence)
+    // The lead row has no row menu (Lead badge, with the org role "Owner" as secondary text — G88-M2)
     await expect(aliceRow.getByRole("button", { name: "Open menu" })).toHaveCount(0);
 
     await addMember(page, panel, "Carol Member");

@@ -13,7 +13,9 @@ import {
 import { getOrgSettings } from "@/lib/api/settings";
 import { UpcomingDeadlinesTile } from "@/components/projects/upcoming-deadlines-tile";
 import { daysUntil, resolveDateRange } from "@/lib/date-utils";
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import type { WidgetResult } from "@/lib/dashboard-home";
 import {
   DollarSign,
   Clock,
@@ -24,7 +26,12 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
-import type { MatterSetupStatus, FicaStatus } from "@/lib/types";
+import type {
+  MatterSetupStatus,
+  FicaStatus,
+  MatterTrustBalance,
+  OutstandingSummary,
+} from "@/lib/types";
 import type { ReactNode } from "react";
 
 // --- Health band color mapping ---
@@ -50,6 +57,11 @@ function getReasonBadgeColor(reason: string): string {
 
 function settled<T>(result: PromiseSettledResult<T>): T | null {
   return result.status === "fulfilled" ? result.value : null;
+}
+
+/** "--" only when the read failed; an absent read (no capability) hides the tile instead. */
+function widgetValue<T>(result: WidgetResult<T>, format: (data: T) => string): string {
+  return result.state === "ok" ? format(result.data) : "--";
 }
 
 // --- MetricCard sub-component (Task 534.1) ---
@@ -104,7 +116,10 @@ export interface KPIDashboardProps {
   retentionClockStartedAt: string | null;
   retentionEndsOn: string | null;
   trustEnabled: boolean;
-  disbursementsEnabled: boolean;
+  /** Matter-filtered debtor-book summary; "absent" without FINANCIAL_VISIBILITY (tile hidden). */
+  outstandingSummary: WidgetResult<OutstandingSummary>;
+  /** Matter trust balance; "absent" without VIEW_TRUST or with trust accounting off. */
+  trustBalance: WidgetResult<MatterTrustBalance>;
   projectDueDate?: string | null;
 }
 
@@ -123,7 +138,8 @@ export async function KPIDashboard({
   retentionClockStartedAt,
   retentionEndsOn,
   trustEnabled,
-  disbursementsEnabled,
+  outstandingSummary,
+  trustBalance,
   projectDueDate,
 }: KPIDashboardProps) {
   const { from, to } = resolveDateRange({});
@@ -203,21 +219,22 @@ export async function KPIDashboard({
       icon: <Calendar className="size-5" />,
       visible: daysToDeadline != null,
     },
+    // Money tiles (Phase 89 §14.3.18, G88-M13): real values; hidden without the capability.
     {
       id: "trust",
       label: "Trust balance",
-      value: "--",
+      value: widgetValue(trustBalance, (b) => formatCurrency(b.balance, b.currency)),
       linkTab: "trust",
       icon: <Shield className="size-5" />,
-      visible: trustEnabled,
+      visible: trustEnabled && trustBalance.state !== "absent",
     },
     {
       id: "invoices",
       label: "Outstanding fee notes",
-      value: "--",
+      value: widgetValue(outstandingSummary, (s) => formatCurrency(s.outstandingTotal, s.currency)),
       linkTab: "statements",
       icon: <Receipt className="size-5" />,
-      visible: disbursementsEnabled,
+      visible: outstandingSummary.state !== "absent",
     },
   ];
 

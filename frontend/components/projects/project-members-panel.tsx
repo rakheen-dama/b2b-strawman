@@ -25,17 +25,16 @@ import { removeProjectMember } from "@/app/(app)/org/[slug]/matters/[id]/member-
 import { formatDate } from "@/lib/format";
 import type { MatterMember, MatterRole } from "@/lib/types";
 
-const ROLE_BADGE: Record<
-  string,
-  { label: string; variant: "lead" | "member" | "admin" | "owner" }
-> = {
+/** The badge is the MATTER role (ADR-345 values `lead` / `member`; G88-M2, §14.3.17). */
+const ROLE_BADGE: Record<string, { label: string; variant: "lead" | "member" }> = {
   lead: { label: "Lead", variant: "lead" },
   member: { label: "Member", variant: "member" },
-  admin: { label: "Admin", variant: "admin" },
-  owner: { label: "Owner", variant: "owner" },
 };
 
 const DEFAULT_BADGE = { label: "Member", variant: "member" } as const;
+
+/** Firm role shown as muted secondary text beside the matter-role badge (admins/owners only). */
+const ORG_ROLE_LABEL: Record<string, string> = { owner: "Owner", admin: "Admin" };
 
 const AVATAR_COLORS = [
   "bg-slate-200 text-slate-700",
@@ -161,11 +160,8 @@ export function ProjectMembersPanel({
           </TableHeader>
           <TableBody>
             {members.map((member) => {
-              const displayRole =
-                member.orgRole === "admin" || member.orgRole === "owner"
-                  ? member.orgRole
-                  : member.matterRole;
-              const badge = ROLE_BADGE[displayRole] ?? DEFAULT_BADGE;
+              const badge = ROLE_BADGE[member.matterRole] ?? DEFAULT_BADGE;
+              const orgRoleLabel = ORG_ROLE_LABEL[member.orgRole] ?? null;
               const isLead = member.matterRole === "lead";
               const isRemoving = removingMemberId === member.memberId;
 
@@ -193,7 +189,14 @@ export function ProjectMembersPanel({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={badge.variant}>{badge.label}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={badge.variant}>{badge.label}</Badge>
+                      {orgRoleLabel && (
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {orgRoleLabel}
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     <span className="text-sm text-slate-600 dark:text-slate-400">

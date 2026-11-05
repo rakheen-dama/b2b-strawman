@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ActivityItem } from "@/components/activity/activity-item";
 import { ActivityFeedClient } from "@/components/activity/activity-feed-client";
@@ -22,6 +22,8 @@ function makeActivityItem(overrides: Partial<ActivityItemType> = {}): ActivityIt
     entityName: "Fix login bug",
     eventType: "task.created",
     occurredAt: "2026-02-12T14:30:00Z",
+    actorType: "USER",
+    source: "API",
     ...overrides,
   };
 }
@@ -90,6 +92,54 @@ describe("ActivityFeedClient", () => {
     expect(screen.getByText("Comments")).toBeInTheDocument();
     expect(screen.getByText("Members")).toBeInTheDocument();
     expect(screen.getByText("Time")).toBeInTheDocument();
+  });
+
+  // G-B8 (Phase 89 §14.3.21): client-portal actions carry a "Client portal" chip.
+  it("marks the client-portal row with a 'Client portal' chip and no firm row (G-B8)", () => {
+    render(
+      <ActivityFeedClient
+        projectId="p1"
+        initialTotalPages={1}
+        initialItems={[
+          makeActivityItem({
+            id: "pc1",
+            message: "Sipho Dlamini accepted Engagement letter",
+            actorName: "Sipho Dlamini",
+            entityType: "acceptance_request",
+            eventType: "acceptance.accepted",
+            actorType: "PORTAL_CONTACT",
+            source: "PORTAL",
+          }),
+          makeActivityItem({ id: "u1", message: "Alice created task Draft" }),
+        ]}
+      />
+    );
+
+    const rows = screen.getAllByTestId("activity-item");
+    expect(rows).toHaveLength(2);
+    expect(within(rows[0]).getByText("Client portal")).toHaveAttribute("data-variant", "neutral");
+    expect(within(rows[1]).queryByText("Client portal")).not.toBeInTheDocument();
+  });
+
+  it("marks a PORTAL-source row even when the actor is SYSTEM", () => {
+    render(
+      <ActivityFeedClient
+        projectId="p1"
+        initialTotalPages={1}
+        initialItems={[
+          makeActivityItem({
+            id: "ps1",
+            message: "Portal document downloaded",
+            actorType: "SYSTEM",
+            source: "PORTAL",
+          }),
+        ]}
+      />
+    );
+
+    expect(
+      within(screen.getByTestId("activity-item")).getByText("Client portal")
+    ).toBeInTheDocument();
   });
 
   it("filters activity by entity type when filter chip is clicked", async () => {

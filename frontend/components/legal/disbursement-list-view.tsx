@@ -74,37 +74,44 @@ export function categoryLabel(category: DisbursementCategory): string {
  * max width and the matter tab's extra padding are all accounted for). As the container narrows,
  * Supplier hides first, then Category, then Matter; a hidden column's value moves to a muted second
  * line under the Description, hidden again at the same breakpoint its column comes back, so nothing
- * is lost and nothing shows twice. Billing and Actions are never hidden: below 58rem the Billing
- * badge stacks under the Approval badge, the cells tighten to `px-2`, Description caps at 20ch and
- * the Amount header may wrap.
+ * is lost and nothing shows twice. While the Supplier column is hidden, its sort control sits in the
+ * Description header (next to the second line that carries the supplier), so Supplier sorting is
+ * reachable at every width. Billing and Actions are never hidden: see `COMPACT`.
  *
  * Measured containers (`[data-testid="disbursement-list"]` clientWidth on today's shell): firm list
  * 704 / 960 / 1120 px at 1024 / 1280 / 1440 viewports (≈1200 max); matter Fees › Disbursements tab
  * 656 / 912 / 1072 px (≈1152 max). Measured table min-content widths (Description at 28ch, `px-4`):
  * Date + Description + Amount + Approval + Billing + Actions 907 px (→ 58rem); + Matter 1033
  * (→ 66rem); + Category, at its widest label "Deeds Office Fees", 1193 (→ 75rem); + Supplier 1328
- * (→ 84rem). The compact layout measured 656 px before the Amount header could wrap. So at 1440 both
- * mounts show Matter, with Category and Supplier on the second line, and on today's shell Supplier
- * never gets its column. Re-measure these thresholds if a column, a cap or the shell width changes.
+ * (→ 84rem). The compact layout measured 586 px. So at 1440 both mounts show Matter, with Category
+ * and Supplier on the second line (and the Supplier sort in the Description header), and on today's
+ * shell Supplier never gets its column. Re-measure these thresholds if a column, a cap or the shell
+ * width changes.
+ *
+ * Each entry pairs the column's `<th>`/`<td>` class (`col`) with its second-line fragment's class
+ * (`sub`); the two must name the same breakpoint. Tailwind only sees literal class strings, so keep
+ * them literal.
  */
-const COLUMN_CLASS = {
-  matter: "hidden @min-[66rem]:table-cell",
-  category: "hidden @min-[75rem]:table-cell",
-  supplier: "hidden @min-[84rem]:table-cell",
-  billing: "hidden @min-[58rem]:table-cell",
+const PRIORITY = {
+  matter: { col: "hidden @min-[66rem]:table-cell", sub: "@min-[66rem]:hidden" },
+  category: { col: "hidden @min-[75rem]:table-cell", sub: "@min-[75rem]:hidden" },
+  supplier: { col: "hidden @min-[84rem]:table-cell", sub: "@min-[84rem]:hidden" },
 } as const;
 
-/** The second-line fragment for a hidden column: hidden again where its column reappears. */
-const SECONDARY_CLASS = {
-  matter: "@min-[66rem]:hidden",
-  category: "@min-[75rem]:hidden",
-  supplier: "@min-[84rem]:hidden",
-  /** Billing badge stacked under Approval while the Billing column is hidden. */
-  billing: "@min-[58rem]:hidden",
+/**
+ * The compact layout, below 58rem (every entry must name that one breakpoint): the Billing badge
+ * stacks under the Approval badge and only the separate Billing column hides, the cells tighten to
+ * `px-2`, the Description caps at 20ch and the Amount header may wrap.
+ */
+const COMPACT = {
+  billingCol: "hidden @min-[58rem]:table-cell",
+  billingStacked: "@min-[58rem]:hidden",
+  cell: "px-2 py-3 @min-[58rem]:px-4",
+  description: "max-w-[20ch] @min-[58rem]:max-w-[28ch]",
+  amountHeader: "whitespace-normal @min-[58rem]:whitespace-nowrap",
 } as const;
 
-/** Horizontal cell padding: tight in the compact layout, the usual `px-4` once Billing has its column. */
-const CELL = "px-2 py-3 @min-[58rem]:px-4";
+const CELL = COMPACT.cell;
 
 const HEADER_TEXT =
   "text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400";
@@ -183,10 +190,33 @@ export function DisbursementListView({
                 Date <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className={cn(CELL, "text-left", HEADER_TEXT, COLUMN_CLASS.matter)}>Matter</th>
-            <th className={cn(CELL, "text-left", HEADER_TEXT, COLUMN_CLASS.category)}>Category</th>
-            <th className={cn(CELL, "text-left", HEADER_TEXT)}>Description</th>
-            <th className={cn(CELL, "text-left", COLUMN_CLASS.supplier)}>
+            <th className={cn(CELL, "text-left", HEADER_TEXT, PRIORITY.matter.col)}>Matter</th>
+            <th className={cn(CELL, "text-left", HEADER_TEXT, PRIORITY.category.col)}>Category</th>
+            <th className={cn(CELL, "text-left")}>
+              <div className="flex flex-wrap items-center gap-x-1.5">
+                <span className={HEADER_TEXT}>Description</span>
+                {/* Supplier sort while the Supplier column is hidden: the supplier is then on the
+                    Description's second line, so its sort lives in this header. */}
+                <span
+                  className={cn("flex items-center gap-x-1.5", PRIORITY.supplier.sub)}
+                  data-testid="disbursement-description-supplier-sort"
+                >
+                  <span aria-hidden="true" className={HEADER_TEXT}>
+                    &middot;
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSort("supplierName")}
+                    className={SORT_BUTTON}
+                    aria-label="Sort by supplier"
+                  >
+                    Supplier <ArrowUpDown className="ml-1 size-3" />
+                  </Button>
+                </span>
+              </div>
+            </th>
+            <th className={cn(CELL, "text-left", PRIORITY.supplier.col)}>
               <Button
                 variant="ghost"
                 size="sm"
@@ -201,7 +231,7 @@ export function DisbursementListView({
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("amount")}
-                className={cn(SORT_BUTTON, "whitespace-normal @min-[58rem]:whitespace-nowrap")}
+                className={cn(SORT_BUTTON, COMPACT.amountHeader)}
               >
                 Amount (incl VAT) <ArrowUpDown className="ml-1 size-3" />
               </Button>
@@ -216,7 +246,7 @@ export function DisbursementListView({
                 Approval <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className={cn(CELL, "text-left", HEADER_TEXT, COLUMN_CLASS.billing)}>Billing</th>
+            <th className={cn(CELL, "text-left", HEADER_TEXT, COMPACT.billingCol)}>Billing</th>
             <th className={cn(CELL, "text-right", HEADER_TEXT)}>Actions</th>
           </tr>
         </thead>
@@ -253,36 +283,38 @@ export function DisbursementListView({
                   className={cn(
                     CELL,
                     "text-sm text-slate-700 dark:text-slate-300",
-                    COLUMN_CLASS.matter
+                    PRIORITY.matter.col
                   )}
                 >
                   {matterName ?? "\u2014"}
                 </td>
-                <td className={cn(CELL, COLUMN_CLASS.category)}>
+                <td className={cn(CELL, PRIORITY.category.col)}>
                   <Badge variant="outline">{categoryLabel(d.category)}</Badge>
                 </td>
                 <td
                   className={cn(
                     CELL,
-                    "max-w-[20ch] text-sm text-slate-700 @min-[58rem]:max-w-[28ch] dark:text-slate-300"
+                    COMPACT.description,
+                    "text-sm text-slate-700 dark:text-slate-300"
                   )}
                 >
                   <div className="truncate" title={d.description}>
                     {d.description}
                   </div>
-                  {/* The hidden columns' values: Matter, then Category, then Supplier. A separator
-                      travels with the fragment before it (so it never starts a wrapped line) and
-                      hides with it; Supplier is the last column to come back, so whenever a
-                      fragment shows, Supplier follows it. */}
+                  {/* The hidden columns' values: Matter, then Category, then Supplier. Each separator
+                      is inside the fragment before it, so it stays attached to that item (a wrap
+                      leaves it ending the line, e.g. "Sheriff Fees ·") and hides with it; Supplier
+                      is the last column to come back, so whenever a fragment shows, Supplier
+                      follows it. */}
                   <div
                     className={cn(
                       "mt-0.5 flex flex-wrap gap-x-1.5 text-xs text-slate-500 dark:text-slate-400",
-                      SECONDARY_CLASS.supplier
+                      PRIORITY.supplier.sub
                     )}
                   >
                     {matterName && (
                       <span
-                        className={cn("flex max-w-full min-w-0 gap-x-1.5", SECONDARY_CLASS.matter)}
+                        className={cn("flex max-w-full min-w-0 gap-x-1.5", PRIORITY.matter.sub)}
                       >
                         <span className="truncate" title={matterName}>
                           {matterName}
@@ -291,13 +323,13 @@ export function DisbursementListView({
                       </span>
                     )}
                     <span
-                      className={cn("flex max-w-full min-w-0 gap-x-1.5", SECONDARY_CLASS.category)}
+                      className={cn("flex max-w-full min-w-0 gap-x-1.5", PRIORITY.category.sub)}
                     >
                       <span className="truncate">{categoryLabel(d.category)}</span>
                       <span aria-hidden="true">&middot;</span>
                     </span>
                     <span
-                      className={cn("max-w-full truncate", SECONDARY_CLASS.supplier)}
+                      className={cn("max-w-full truncate", PRIORITY.supplier.sub)}
                       title={d.supplierName}
                     >
                       {d.supplierName}
@@ -308,7 +340,7 @@ export function DisbursementListView({
                   className={cn(
                     CELL,
                     "text-sm text-slate-700 dark:text-slate-300",
-                    COLUMN_CLASS.supplier
+                    PRIORITY.supplier.col
                   )}
                 >
                   {d.supplierName}
@@ -323,11 +355,11 @@ export function DisbursementListView({
                 </td>
                 <td className={CELL}>
                   {approvalStatusBadge(d.approvalStatus)}
-                  <div className={cn("mt-1", SECONDARY_CLASS.billing)}>
+                  <div className={cn("mt-1", COMPACT.billingStacked)}>
                     {billingStatusBadge(d.billingStatus)}
                   </div>
                 </td>
-                <td className={cn(CELL, COLUMN_CLASS.billing)}>
+                <td className={cn(CELL, COMPACT.billingCol)}>
                   {billingStatusBadge(d.billingStatus)}
                 </td>
                 <td className={cn(CELL, "text-right")}>

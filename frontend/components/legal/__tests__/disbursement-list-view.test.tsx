@@ -34,14 +34,21 @@ function makeDisbursement(overrides: Partial<DisbursementResponse> = {}): Disbur
   };
 }
 
+/** A header's label: its text, minus the Description header's own Supplier sort control. */
+function headerLabel(header: HTMLElement): string {
+  const copy = header.cloneNode(true) as HTMLElement;
+  copy.querySelector('[data-testid="disbursement-description-supplier-sort"]')?.remove();
+  return copy.textContent?.trim() ?? "";
+}
+
 function headerFor(label: string): HTMLElement {
-  const header = screen.getAllByRole("columnheader").find((h) => h.textContent?.trim() === label);
+  const header = screen.getAllByRole("columnheader").find((h) => headerLabel(h) === label);
   if (!header) throw new Error(`No "${label}" header`);
   return header;
 }
 
 function cellUnder(label: string, rowId = "d1"): HTMLElement {
-  const headers = screen.getAllByRole("columnheader").map((h) => h.textContent?.trim());
+  const headers = screen.getAllByRole("columnheader").map(headerLabel);
   const index = headers.indexOf(label);
   if (index === -1) throw new Error(`No "${label}" column; headers: ${headers.join(", ")}`);
   return within(screen.getByTestId(`disbursement-row-${rowId}`)).getAllByRole("cell")[index];
@@ -302,6 +309,87 @@ describe("DisbursementListView — fitting the container", () => {
     const supplier = within(line).getByText("Adv. N. Mokoena SC");
     expect(supplier).toHaveClass("truncate", "@min-[84rem]:hidden");
     expect(supplier).toHaveAttribute("title", "Adv. N. Mokoena SC");
+  });
+
+  /**
+   * The container-query breakpoint at which `el` applies `utility`, e.g. "66rem" for
+   * `@min-[66rem]:hidden` — parsed from the rendered className, exactly one allowed.
+   */
+  function breakpointOf(el: Element, utility: string): string {
+    const pattern = new RegExp(
+      `@min-\\[(\\d+rem)\\]:${utility.replace(/[[\]()]/g, "\\$&")}(?:\\s|$)`,
+      "g"
+    );
+    const tokens = [...el.className.matchAll(pattern)].map((m) => m[1]);
+    if (tokens.length !== 1) {
+      throw new Error(`Expected one @min-[…]:${utility}, got [${tokens}] in "${el.className}"`);
+    }
+    return tokens[0];
+  }
+
+  it("hides each column's second-line fragment at the same breakpoint its column returns", () => {
+    renderRow();
+    const line = secondaryLine();
+    const fragments: Record<string, Element | null> = {
+      Matter: within(line).getByText("Khumalo Property Holdings — Erf 1234 Sandton Transfer")
+        .parentElement,
+      Category: within(line).getByText("Counsel Fees").parentElement,
+      Supplier: within(line).getByText("Adv. N. Mokoena SC"),
+    };
+    for (const [label, fragment] of Object.entries(fragments)) {
+      if (!fragment) throw new Error(`No ${label} fragment`);
+      const column = breakpointOf(headerFor(label), "table-cell");
+      expect(breakpointOf(cellUnder(label), "table-cell"), label).toBe(column);
+      expect(breakpointOf(fragment, "hidden"), label).toBe(column);
+    }
+    // The whole line goes when the last column (Supplier) is back.
+    expect(breakpointOf(line, "hidden")).toBe(breakpointOf(headerFor("Supplier"), "table-cell"));
+  });
+
+  it("names one compact breakpoint for Billing, stacked Billing, padding, Description cap and Amount header", () => {
+    renderRow();
+    const billing = breakpointOf(headerFor("Billing"), "table-cell");
+    expect(breakpointOf(cellUnder("Billing"), "table-cell")).toBe(billing);
+    const stacked = within(cellUnder("Approval")).getByText("Unbilled").parentElement;
+    if (!stacked) throw new Error("No stacked Billing badge");
+    expect(breakpointOf(stacked, "hidden")).toBe(billing);
+    for (const label of ["Date", "Description", "Amount (incl VAT)", "Approval", "Actions"]) {
+      expect(breakpointOf(cellUnder(label), "px-4"), label).toBe(billing);
+      expect(breakpointOf(headerFor(label), "px-4"), label).toBe(billing);
+    }
+    expect(breakpointOf(cellUnder("Description"), "max-w-[28ch]")).toBe(billing);
+    const amountButton = within(headerFor("Amount (incl VAT)")).getByRole("button");
+    expect(breakpointOf(amountButton, "whitespace-nowrap")).toBe(billing);
+  });
+
+  it("keeps Supplier sorting reachable: a Description-header control while the column is hidden", async () => {
+    const user = userEvent.setup();
+    const rows = [
+      makeDisbursement({ id: "a", supplierName: "Mokoena SC", incurredDate: "2026-02-03" }),
+      makeDisbursement({ id: "b", supplierName: "Adams Sheriff", incurredDate: "2026-02-01" }),
+      makeDisbursement({ id: "c", supplierName: "Zulu Couriers", incurredDate: "2026-02-02" }),
+    ];
+    render(<DisbursementListView disbursements={rows} />);
+
+    const control = screen.getByTestId("disbursement-description-supplier-sort");
+    expect(headerFor("Description")).toContainElement(control);
+    // Shown exactly while the Supplier column is hidden — same breakpoint, opposite state.
+    const supplierColumn = breakpointOf(headerFor("Supplier"), "table-cell");
+    expect(breakpointOf(control, "hidden")).toBe(supplierColumn);
+    expect(control).toHaveClass(`@min-[${supplierColumn}]:hidden`);
+    expect(control).not.toHaveClass("hidden");
+    expect(headerFor("Supplier")).toHaveClass("hidden", `@min-[${supplierColumn}]:table-cell`);
+
+    const rowOrder = () =>
+      screen
+        .getAllByTestId(/^disbursement-row-/)
+        .map((r) => r.getAttribute("data-testid")?.replace("disbursement-row-", ""));
+    expect(rowOrder()).toEqual(["a", "c", "b"]); // default: date, newest first
+
+    await user.click(within(control).getByRole("button", { name: "Sort by supplier" }));
+    expect(rowOrder()).toEqual(["b", "a", "c"]);
+    await user.click(within(control).getByRole("button", { name: "Sort by supplier" }));
+    expect(rowOrder()).toEqual(["c", "a", "b"]);
   });
 
   it("leaves the matter out of the second line when the mount has no matter names", () => {

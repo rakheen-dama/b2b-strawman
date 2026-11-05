@@ -3,7 +3,11 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalDeadlineViewRepository;
+import io.b2mash.b2b.b2bstrawman.event.CourtDateCancelledEvent;
+import io.b2mash.b2b.b2bstrawman.event.CourtDateScheduledEvent;
 import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
+import io.b2mash.b2b.b2bstrawman.event.PrescriptionDeadlineClearedEvent;
+import io.b2mash.b2b.b2bstrawman.event.PrescriptionDeadlineSetEvent;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -12,6 +16,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -38,12 +43,13 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       FilingScheduleCreatedEvent} / {@code FilingStatusChangedEvent} do not yet exist in the
  *       codebase. When Phase 51 wires these events, add an {@code @TransactionalEventListener}
  *       method and call {@link #upsertFromDeadline(DeadlineSource)} with the filing-row fields.
- *   <li><b>COURT_DATE</b> — Phase 55 court-calendar events. <i>Dormant</i>: {@code
- *       CourtDateScheduledEvent} / {@code CourtDateCancelledEvent} do not yet exist. Same wiring
- *       pattern as above; the {@code CANCELLED} case can either upsert with {@code
- *       status=CANCELLED} or call {@link PortalDeadlineViewRepository#deleteBySourceEntityAndId}.
- *   <li><b>PRESCRIPTION_TRACKER</b> — Phase 55 prescription events. <i>Dormant</i>: {@code
- *       PrescriptionDeadlineSetEvent} does not yet exist.
+ *   <li><b>COURT_DATE</b> — {@link CourtDateScheduledEvent} / {@link CourtDateCancelledEvent}
+ *       (Phase 89 633B, ADR-363). <b>Wired.</b> Scheduled (create, portal-relevant update, the new
+ *       row of a postpone, outcome → {@code COMPLETED}) upserts; cancel and the original row of a
+ *       postpone DELETE the portal row (B4).
+ *   <li><b>PRESCRIPTION_TRACKER</b> — {@link PrescriptionDeadlineSetEvent} / {@link
+ *       PrescriptionDeadlineClearedEvent} (Phase 89 633B). <b>Wired.</b> Create / update upsert;
+ *       interrupt DELETES the portal row (B4).
  *   <li><b>CUSTOM_FIELD_DATE</b> — Phase 48 {@link FieldDateApproachingEvent}. <b>Wired.</b> Gated
  *       on {@code FieldDefinition.portalVisibleDeadline == true} (ADR-257) — custom-field dates
  *       only leak to the portal when an admin has explicitly opted-in per field.
@@ -53,6 +59,13 @@ import org.springframework.transaction.support.TransactionTemplate;
  * #deriveStatus(LocalDate, LocalDate)}: past due_date → {@code OVERDUE}, within 7 days → {@code
  * DUE_SOON}, otherwise {@code UPCOMING}. {@code COMPLETED} and {@code CANCELLED} are driven by
  * firm-side state (filing.filed, court-date.cancelled, etc.) and are set by future wiring code.
+ *
+ * <p>Court-date and prescription rows go to the matter's <b>owning client only</b> — co-clients
+ * linked through {@code customer_projects} see nothing (§14.12 #5, decided 2026-11-04). Their
+ * client-facing copy is built in {@link #courtDateSource} / {@link #prescriptionSource} only, whose
+ * parameters cannot carry a firm-only field (judge, outcome, description, notes, interruption
+ * reason, cause-of-action date — the sanitised-copy rule by construction, B10). {@code
+ * PortalDeadlineBackfillService} uses the same builders for pre-existing rows.
  */
 @Service
 public class DeadlinePortalSyncService {
@@ -64,6 +77,32 @@ public class DeadlinePortalSyncService {
 
   /** Threshold (inclusive) below which a row flips from UPCOMING to DUE_SOON. */
   private static final long DUE_SOON_DAYS = 7;
+
+  static final String COURT_DATE_SOURCE = "COURT_DATE";
+  static final String COURT_DATE_TYPE = "COURT_DATE";
+  static final String PRESCRIPTION_SOURCE = "PRESCRIPTION_TRACKER";
+  static final String PRESCRIPTION_TYPE = "PRESCRIPTION";
+  static final String PRESCRIPTION_LABEL = "Prescription deadline";
+
+  /** Portal label column is varchar(160) (global V1); court_name is varchar(200) — D2. */
+  private static final int LABEL_MAX = 160;
+
+  /** D4: the client-facing copy for each prescription type (PrescriptionTrackerService types). */
+  private static final Map<String, String> PRESCRIPTION_TYPE_LABELS =
+      Map.of(
+          "GENERAL_3Y", "General 3 years",
+          "DEBT_6Y", "Debt 6 years",
+          "MORTGAGE_30Y", "Mortgage 30 years",
+          "DELICT_3Y", "Delict 3 years",
+          "CONTRACT_3Y", "Contract 3 years",
+          "CUSTOM", "Custom");
+
+  /**
+   * D3: humanised sanitiser fallback for the court-date / prescription rows, so a blank description
+   * never renders a raw enum ("COURT_DATE — …") on the portal. Other types keep their literal.
+   */
+  private static final Map<String, String> DEADLINE_TYPE_FALLBACK_LABELS =
+      Map.of(COURT_DATE_TYPE, "Court date", PRESCRIPTION_TYPE, "Prescription");
 
   private final PortalDeadlineViewRepository deadlineRepo;
   private final FieldDefinitionRepository fieldDefinitionRepository;
@@ -119,9 +158,124 @@ public class DeadlinePortalSyncService {
   //   FilingScheduleCreatedEvent and FilingStatusChangedEvent exist. Call:
   //   upsertFromDeadline(new DeadlineSource("FILING_SCHEDULE", "FILING", id, customerId,
   //       matterId, label, dueDate, firmStatus, descriptionRaw, sourceRef));
-  //
-  // TODO (Phase 55): wire onCourtDateScheduled / onCourtDateCancelled and onPrescriptionDeadlineSet
-  //   once their respective domain events are added to the sealed DomainEvent interface.
+
+  /**
+   * Court date scheduled / rescheduled / heard (Phase 89 633B, ADR-363). Upserts a COURT_DATE row
+   * for the matter's OWNING client only — co-clients see nothing (§14.12 #5, decided 2026-11-04).
+   */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onCourtDateScheduled(CourtDateScheduledEvent event) {
+    RequestScopes.runForTenant(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            UUID customerId = resolveOwningCustomer(event.customerId(), event.projectId());
+            if (customerId == null) {
+              log.debug(
+                  "No owning client for court date {} — no portal deadline row", event.entityId());
+              return;
+            }
+            upsertFromDeadline(
+                courtDateSource(
+                    event.entityId(),
+                    customerId,
+                    event.projectId(),
+                    event.dateType(),
+                    event.scheduledDate(),
+                    event.courtName(),
+                    event.courtReference(),
+                    event.status()));
+          } catch (Exception e) {
+            log.error(
+                "Portal deadline sync failed for event=court_date.scheduled tenant={}"
+                    + " courtDateId={}",
+                event.tenantId(),
+                event.entityId(),
+                e);
+          }
+        });
+  }
+
+  /** Court date cancelled, or the original row of a postpone — the portal row is DELETED (B4). */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onCourtDateCancelled(CourtDateCancelledEvent event) {
+    RequestScopes.runForTenant(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            portalTxTemplate.executeWithoutResult(
+                status ->
+                    deadlineRepo.deleteBySourceEntityAndId(COURT_DATE_SOURCE, event.entityId()));
+          } catch (Exception e) {
+            log.error(
+                "Portal deadline sync failed for event=court_date.cancelled tenant={}"
+                    + " courtDateId={}",
+                event.tenantId(),
+                event.entityId(),
+                e);
+          }
+        });
+  }
+
+  /**
+   * Prescription tracker created / updated (Phase 89 633B). Upserts a PRESCRIPTION row for the
+   * matter's owning client only.
+   */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onPrescriptionDeadlineSet(PrescriptionDeadlineSetEvent event) {
+    RequestScopes.runForTenant(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            UUID customerId = resolveOwningCustomer(event.customerId(), event.projectId());
+            if (customerId == null) {
+              log.debug(
+                  "No owning client for prescription tracker {} — no portal deadline row",
+                  event.entityId());
+              return;
+            }
+            upsertFromDeadline(
+                prescriptionSource(
+                    event.entityId(),
+                    customerId,
+                    event.projectId(),
+                    event.prescriptionType(),
+                    event.prescriptionDate()));
+          } catch (Exception e) {
+            log.error(
+                "Portal deadline sync failed for event=prescription.deadline_set tenant={}"
+                    + " trackerId={}",
+                event.tenantId(),
+                event.entityId(),
+                e);
+          }
+        });
+  }
+
+  /** Prescription tracker interrupted — the portal row is DELETED (B4). */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onPrescriptionDeadlineCleared(PrescriptionDeadlineClearedEvent event) {
+    RequestScopes.runForTenant(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            portalTxTemplate.executeWithoutResult(
+                status ->
+                    deadlineRepo.deleteBySourceEntityAndId(PRESCRIPTION_SOURCE, event.entityId()));
+          } catch (Exception e) {
+            log.error(
+                "Portal deadline sync failed for event=prescription.deadline_cleared tenant={}"
+                    + " trackerId={}",
+                event.tenantId(),
+                event.entityId(),
+                e);
+          }
+        });
+  }
 
   // ── Sync helpers (must run inside a bound tenant scope) ─────────────────
 
@@ -220,14 +374,17 @@ public class DeadlinePortalSyncService {
   }
 
   /**
-   * Shared upsert path that all four deadline sources converge on. Future listeners for filing,
-   * court-date, and prescription events call this with their source-specific mapping already
-   * resolved. Kept package-private-visible via the sync-service class so integration tests can
-   * drive it directly; treat it as the canonical write seam.
+   * Shared upsert path the deadline sources converge on: the court-date and prescription listeners
+   * and {@code PortalDeadlineBackfillService} call it with a {@link #courtDateSource} / {@link
+   * #prescriptionSource} mapping (a future filing listener would too). Kept package-private so
+   * integration tests and the backfill can drive it directly; treat it as the canonical write seam.
    */
   void upsertFromDeadline(DeadlineSource src) {
     String sanitisedDescription =
-        sanitiser.sanitise(src.descriptionRaw(), src.deadlineType(), src.sourceReference());
+        sanitiser.sanitise(
+            src.descriptionRaw(),
+            DEADLINE_TYPE_FALLBACK_LABELS.getOrDefault(src.deadlineType(), src.deadlineType()),
+            src.sourceReference());
     PortalDeadlineView view =
         new PortalDeadlineView(
             src.id(),
@@ -246,8 +403,9 @@ public class DeadlinePortalSyncService {
   }
 
   /**
-   * Value object used by future filing / court-date / prescription listeners when calling {@link
-   * #upsertFromDeadline(DeadlineSource)}. Keeps the shared write path free of event-type specifics.
+   * Value object passed to {@link #upsertFromDeadline(DeadlineSource)} by the court-date /
+   * prescription listeners and the deadline backfill (and a future filing listener). Keeps the
+   * shared write path free of event-type specifics.
    *
    * @param overrideStatus set to {@code COMPLETED} or {@code CANCELLED} when firm-side state forces
    *     a terminal status; otherwise {@code null} to let {@link #deriveStatus} compute from the due
@@ -264,6 +422,92 @@ public class DeadlinePortalSyncService {
       String overrideStatus,
       String descriptionRaw,
       String sourceReference) {}
+
+  // ── Court-date / prescription copy rule (Phase 89 633B, ADR-363, §14.3.14) ──
+
+  /**
+   * The sanitised-copy rule for a court date: label = humanised type + " — " + court (type only
+   * when the court is blank), truncated to the 160-char column (D2); description = court reference
+   * only. Judge / magistrate, outcome and free-text description are not parameters (B10).
+   */
+  static DeadlineSource courtDateSource(
+      UUID courtDateId,
+      UUID customerId,
+      UUID matterId,
+      String dateType,
+      LocalDate scheduledDate,
+      String courtName,
+      String courtReference,
+      String status) {
+    String type = humanise(dateType);
+    String label =
+        truncate(
+            courtName == null || courtName.isBlank() ? type : type + " — " + courtName.strip(),
+            LABEL_MAX);
+    return new DeadlineSource(
+        COURT_DATE_SOURCE,
+        COURT_DATE_TYPE,
+        courtDateId,
+        customerId,
+        matterId,
+        label,
+        scheduledDate,
+        "HEARD".equals(status) ? "COMPLETED" : null,
+        courtReference,
+        label);
+  }
+
+  /**
+   * Prescription copy: fixed label, humanised type (D4). No cause of action, notes or interruption
+   * data are parameters (B10).
+   */
+  static DeadlineSource prescriptionSource(
+      UUID trackerId,
+      UUID customerId,
+      UUID matterId,
+      String prescriptionType,
+      LocalDate prescriptionDate) {
+    return new DeadlineSource(
+        PRESCRIPTION_SOURCE,
+        PRESCRIPTION_TYPE,
+        trackerId,
+        customerId,
+        matterId,
+        PRESCRIPTION_LABEL,
+        prescriptionDate,
+        null,
+        humanisePrescriptionType(prescriptionType),
+        PRESCRIPTION_LABEL);
+  }
+
+  /**
+   * The matter's owning client: the entity's denormalised {@code customer_id} (NOT NULL, R7.7); the
+   * {@code customer_projects} lookup is a defensive fallback only. Needs a bound tenant scope.
+   */
+  UUID resolveOwningCustomer(UUID customerId, UUID projectId) {
+    if (customerId != null) {
+      return customerId;
+    }
+    if (projectId == null) {
+      return null;
+    }
+    return customerProjectRepository.findFirstCustomerByProjectId(projectId).orElse(null);
+  }
+
+  /** {@code PRE_TRIAL} → "Pre trial": lower-case, '_' → ' ', first letter upper. */
+  static String humanise(String literal) {
+    if (literal == null || literal.isBlank()) {
+      return "";
+    }
+    String spaced = literal.strip().toLowerCase(Locale.ROOT).replace('_', ' ');
+    return Character.toUpperCase(spaced.charAt(0)) + spaced.substring(1);
+  }
+
+  static String humanisePrescriptionType(String prescriptionType) {
+    return prescriptionType == null
+        ? ""
+        : PRESCRIPTION_TYPE_LABELS.getOrDefault(prescriptionType, humanise(prescriptionType));
+  }
 
   // ── Pure helpers ────────────────────────────────────────────────────────
 

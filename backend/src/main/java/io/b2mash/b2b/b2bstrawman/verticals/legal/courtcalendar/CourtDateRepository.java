@@ -45,4 +45,7 @@ public interface CourtDateRepository extends JpaRepository<CourtDate, UUID> {
    */
   long countByProjectIdAndStatusInAndScheduledDateGreaterThanEqual(
       UUID projectId, java.util.Collection<String> statuses, LocalDate cutoff);
+
+  /** Portal deadline backfill (Phase 89 633B, R6.4): court dates in a status from a date on. */
+  List<CourtDate> findByStatusAndScheduledDateGreaterThanEqual(String status, LocalDate from);
 }

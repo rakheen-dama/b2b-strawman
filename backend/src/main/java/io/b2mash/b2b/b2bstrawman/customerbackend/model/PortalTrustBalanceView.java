@@ -8,11 +8,13 @@ import java.util.UUID;
  * Portal read-model projection for a per-matter trust balance snapshot. Populated by {@code
  * TrustLedgerPortalSyncService} from firm-side trust events. Per ADR-253, this is a plain record —
  * not a JPA entity — read via {@code JdbcClient} against the {@code portal.portal_trust_balance}
- * table.
+ * table. {@code matterName} is joined from the client's own {@code portal.portal_projects} row
+ * (nullable — Phase 89 633B, G88-F31).
  */
 public record PortalTrustBalanceView(
     UUID customerId,
     UUID matterId,
     BigDecimal currentBalance,
     Instant lastTransactionAt,
-    Instant lastSyncedAt) {}
+    Instant lastSyncedAt,
+    String matterName) {}

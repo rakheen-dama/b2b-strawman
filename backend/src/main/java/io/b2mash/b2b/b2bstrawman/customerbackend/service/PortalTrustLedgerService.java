@@ -76,7 +76,11 @@ public class PortalTrustLedgerService {
             .map(
                 b ->
                     new PortalTrustMatterSummary(
-                        b.matterId(), b.currentBalance(), b.lastTransactionAt(), b.lastSyncedAt()))
+                        b.matterId(),
+                        b.currentBalance(),
+                        b.lastTransactionAt(),
+                        b.lastSyncedAt(),
+                        b.matterName()))
             .toList();
     return new PortalTrustSummaryResponse(matters);
   }

@@ -1,0 +1,8 @@
+# C1-depth-ii (capture, unscored) — rc=0 end 2026-11-05T20:05:11+0200
+writing-actual lines: 23
+json stats: {"expected":39,"unexpected":0,"skipped":4,"flaky":0,"duration_s":113,"startTime":"2026-11-05T18:03:17.711Z"}
+--- list summary
+  -  43 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination
+
+  4 skipped
+  39 passed (1.9m)

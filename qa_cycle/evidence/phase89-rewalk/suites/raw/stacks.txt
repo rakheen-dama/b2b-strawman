@@ -1,0 +1,206 @@
+===== stack C1 checks 2026-11-05T19:59:53+0200 =====
+rc=0 end 2026-11-05T19:59:11+0200
+git HEAD 1034b6af888d36c55b8af84a5c0e4d1f4bad3c18
+{"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+CONTAINER           REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+e2e-backend         docteams-e2e-backend    latest              linux/arm64         8111f5608eda        377MB               2 minutes ago
+e2e-frontend        docteams-e2e-frontend   latest              linux/arm64         3e6a055783a9        220MB               About a minute ago
+e2e-localstack      localstack/localstack   3                   linux/arm64         5966ecddea63        1.29GB              292 years ago
+e2e-mailpit         axllent/mailpit         latest              linux/arm64         13f27147bfad        35.4MB              292 years ago
+e2e-mock-idp        docteams-e2e-mock-idp   latest              linux/arm64         2b5c9ecdb13a        169MB               2 minutes ago
+e2e-postgres        postgres                16-alpine           linux/arm64/v8      7e7dbab8d3b4        288MB               292 years ago
+e2e-seed            docteams-e2e-seed       latest              linux/arm64         933d6df80f0a        14.3MB              2 minutes ago
+/e2e-backend image=sha256:8111f5608eda43604c603f80eb722b1a2e990158fc37a64c0578af31fe6ec780 created=2026-11-05T17:58:37.388104291Z wd=/Users/rakheendama/Projects/2026/worktree-epic-636A/compose
+/e2e-frontend image=sha256:3e6a055783a974aaa30d83b4ede84b6e7b34ff7764d522a7a09ca1ce429bad0d created=2026-11-05T17:58:37.436657041Z wd=/Users/rakheendama/Projects/2026/worktree-epic-636A/compose
+cached-steps=32
+tenant=tenant_7d218705360b
+tenant flyway: 11|phase89 comment notification id
+global flyway: 3|portal backfill markers
+projects:
+Website Redesign|ACTIVE
+===== stack G1 checks 2026-11-05T20:07:35+0200 =====
+rc=0 end 2026-11-05T20:07:28+0200
+git HEAD 1034b6af888d36c55b8af84a5c0e4d1f4bad3c18
+{"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+CONTAINER           REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+e2e-backend         docteams-e2e-backend    latest              linux/arm64         8111f5608eda        377MB               About a minute ago
+e2e-frontend        docteams-e2e-frontend   latest              linux/arm64         d026d5fd096c        220MB               40 seconds ago
+e2e-localstack      localstack/localstack   3                   linux/arm64         5966ecddea63        1.29GB              292 years ago
+e2e-mailpit         axllent/mailpit         latest              linux/arm64         13f27147bfad        35.4MB              292 years ago
+e2e-mock-idp        docteams-e2e-mock-idp   latest              linux/arm64         2b5c9ecdb13a        169MB               About a minute ago
+e2e-postgres        postgres                16-alpine           linux/arm64/v8      7e7dbab8d3b4        288MB               292 years ago
+e2e-seed            docteams-e2e-seed       latest              linux/arm64         933d6df80f0a        14.3MB              About a minute ago
+/e2e-backend image=sha256:8111f5608eda43604c603f80eb722b1a2e990158fc37a64c0578af31fe6ec780 created=2026-11-05T18:06:54.679561549Z wd=/Users/rakheendama/Projects/2026/worktree-epic-636A/compose
+/e2e-frontend image=sha256:d026d5fd096c41baedb23316de6087f619b0900f57132fb094edfc28334529bd created=2026-11-05T18:06:54.718738008Z wd=/Users/rakheendama/Projects/2026/worktree-epic-636A/compose
+cached-steps=32
+tenant=tenant_7d218705360b
+tenant flyway: 11|phase89 comment notification id
+global flyway: 3|portal backfill markers
+projects:
+Website Redesign|ACTIVE
+===== stack C2 checks 2026-11-05T20:15:50+0200 =====
+rc=0 end 2026-11-05T20:15:40+0200
+git HEAD 1034b6af888d36c55b8af84a5c0e4d1f4bad3c18
+{"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+CONTAINER           REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+e2e-backend         docteams-e2e-backend    latest              linux/arm64         8111f5608eda        377MB               44 seconds ago
+e2e-frontend        docteams-e2e-frontend   latest              linux/arm64         d026d5fd096c        220MB               45 seconds ago
+e2e-localstack      localstack/localstack   3                   linux/arm64         5966ecddea63        1.29GB              292 years ago
+e2e-mailpit         axllent/mailpit         latest              linux/arm64         13f27147bfad        35.4MB              292 years ago
+e2e-mock-idp        docteams-e2e-mock-idp   latest              linux/arm64         2b5c9ecdb13a        169MB               46 seconds ago
+e2e-postgres        postgres                16-alpine           linux/arm64/v8      7e7dbab8d3b4        288MB               292 years ago
+e2e-seed            docteams-e2e-seed       latest              linux/arm64         933d6df80f0a        14.3MB              46 seconds ago
+/e2e-backend image=sha256:8111f5608eda43604c603f80eb722b1a2e990158fc37a64c0578af31fe6ec780 created=2026-11-05T18:15:06.422817347Z wd=/Users/rakheendama/Projects/2026/worktree-epic-636A/compose
+/e2e-frontend image=sha256:d026d5fd096c41baedb23316de6087f619b0900f57132fb094edfc28334529bd created=2026-11-05T18:15:06.517659763Z wd=/Users/rakheendama/Projects/2026/worktree-epic-636A/compose
+cached-steps=50
+tenant=tenant_7d218705360b
+tenant flyway: 11|phase89 comment notification id
+global flyway: 3|portal backfill markers
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+===== stack G2 checks 2026-11-05T20:23:31+0200 =====
+rc=0 end 2026-11-05T20:23:29+0200
+git HEAD 1034b6af888d36c55b8af84a5c0e4d1f4bad3c18
+{"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+CONTAINER           REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+e2e-backend         docteams-e2e-backend    latest              linux/arm64         8111f5608eda        377MB               36 seconds ago
+e2e-frontend        docteams-e2e-frontend   latest              linux/arm64         d026d5fd096c        220MB               37 seconds ago
+e2e-localstack      localstack/localstack   3                   linux/arm64         5966ecddea63        1.29GB              292 years ago
+e2e-mailpit         axllent/mailpit         latest              linux/arm64         13f27147bfad        35.4MB              292 years ago
+e2e-mock-idp        docteams-e2e-mock-idp   latest              linux/arm64         2b5c9ecdb13a        169MB               38 seconds ago
+e2e-postgres        postgres                16-alpine           linux/arm64/v8      7e7dbab8d3b4        288MB               292 years ago
+e2e-seed            docteams-e2e-seed       latest              linux/arm64         933d6df80f0a        14.3MB              38 seconds ago
+/e2e-backend image=sha256:8111f5608eda43604c603f80eb722b1a2e990158fc37a64c0578af31fe6ec780 created=2026-11-05T18:22:55.321453758Z wd=/Users/rakheendama/Projects/2026/worktree-epic-636A/compose
+/e2e-frontend image=sha256:d026d5fd096c41baedb23316de6087f619b0900f57132fb094edfc28334529bd created=2026-11-05T18:22:55.444220633Z wd=/Users/rakheendama/Projects/2026/worktree-epic-636A/compose
+cached-steps=50
+tenant=tenant_7d218705360b
+tenant flyway: 11|phase89 comment notification id
+global flyway: 3|portal backfill markers
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+
+===== portal spacing (magic-link caps)
+spacing for before-C2-responsive: tokens=3 age-at-start=32s 20:16:38
+token age now=335s 20:21:41
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 20:21:57
+:3002 free
+G2-90day pre: tokens|age=1|10
+:3002 free
+spacing for before-G2-responsive: tokens=3 age-at-start=37s 20:24:20
+token age now=330s 20:29:13
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 20:29:27
+:3002 free
+spacing for before-G2-isolation: tokens=4 age-at-start=18s 20:29:55
+token age now=332s 20:35:08
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 20:35:22
+:3002 free
+spacing for before-G2-login-bare: tokens=6 age-at-start=13s 20:35:41
+token age now=337s 20:41:05
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 20:41:21
+:3002 free
+
+===== non-vacuity (G2)
+== G2-90day post-checks 20:24:12
+portal_deadline_view=0
+Exchanged magic link (backend log since stack start)=1
+tenant_7d218705360b|acceptance_requests|table|postgres
+tenant_7d218705360b|data_subject_requests|table|postgres
+tenant_7d218705360b|information_requests|table|postgres
+tenant_7d218705360b|request_counters|table|postgres
+tenant_7d218705360b|request_items|table|postgres
+tenant_7d218705360b|request_template_items|table|postgres
+tenant_7d218705360b|request_templates|table|postgres
+REQ-0002|IN_PROGRESS|2026-11-05 18:23:43.782443+00
+REQ-0001|SENT|2026-11-05 18:23:26.56448+00
+G2-responsive Exchanged magic link=2
+G2-isolation Exchanged magic link=4
+G2-login-bare Exchanged magic link=5
+
+===== G1 projects after default
+Website Redesign|ACTIVE
+E2E closure override 5rld|CLOSED
+
+===== KC svc.sh status before
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      86354    yes      yes      8080
+  gateway      334      ext      yes      8443
+  frontend     83710    yes      yes      3000
+  portal       86758    yes      yes      3002
+
+
+Done.
+===== KC svc.sh status after
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      86354    yes      yes      8080
+  gateway      334      ext      yes      8443
+  frontend     83710    yes      yes      3000
+  portal       51238    yes      yes      3002
+
+
+Done.
+
+===== G2 firm-side Day 75 residue (read-only, after all G2 suites) 20:45:54
+court_dates: CANCELLED|1
+prescription_trackers: INTERRUPTED|1
+portal_deadline_view: 0
+
+===== build-cache status of key steps per stack
+C1: COPY frontend/ -> #75 DONE 0.1s | next build -> #77 0.451  | backend COPY src -> #55 CACHED | backend mvnw package -> #56 CACHED
+G1: COPY frontend/ -> #75 DONE 0.1s | next build -> #77 0.419  | backend COPY src -> #58 CACHED | backend mvnw package -> #50 CACHED
+C2: COPY frontend/ -> #54 CACHED | next build -> #55 CACHED | backend COPY src -> #77 CACHED | backend mvnw package -> #79 CACHED
+G2: COPY frontend/ -> #54 CACHED | next build -> #51 CACHED | backend COPY src -> #78 CACHED | backend mvnw package -> #71 CACHED
+git diff --stat 0827ce3f9 1034b6af8 -- backend frontend portal packages compose: '' (empty)
+
+== Volume-removal evidence (excerpts from /tmp/636A/stack-<STACK>.log, the nohup output of e2e-down.sh && docker builder prune -f && e2e-up.sh; full logs not committed) ==
+-- stack-C1.log
+24: Container e2e-postgres  Removed
+34: Volume docteams-e2e_e2e_localstack_data  Removed
+35: Volume docteams-e2e_e2e_postgres_data  Removed
+36: Network docteams-e2e_e2e-network  Removed
+516: Container e2e-postgres  Created
+-- stack-G1.log
+24: Container e2e-postgres  Removed
+34: Volume docteams-e2e_e2e_localstack_data  Removed
+35: Volume docteams-e2e_e2e_postgres_data  Removed
+36: Network docteams-e2e_e2e-network  Removed
+511: Container e2e-postgres  Created
+-- stack-C2.log
+24: Container e2e-postgres  Removed
+34: Volume docteams-e2e_e2e_postgres_data  Removed
+35: Volume docteams-e2e_e2e_localstack_data  Removed
+36: Network docteams-e2e_e2e-network  Removed
+375: Container e2e-postgres  Created
+-- stack-G2.log
+24: Container e2e-postgres  Removed
+34: Volume docteams-e2e_e2e_localstack_data  Removed
+35: Volume docteams-e2e_e2e_postgres_data  Removed
+36: Network docteams-e2e_e2e-network  Removed
+363: Container e2e-postgres  Created

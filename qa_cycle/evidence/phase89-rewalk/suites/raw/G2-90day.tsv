@@ -1,0 +1,13 @@
+e2e/tests/portal-client-90day/day-00-07.spec.ts	118	Day 0: Client lands on /home and sees the pending info requests and the sent fee note	expected	passed
+e2e/tests/portal-client-90day/day-00-07.spec.ts	140	Day 0: Client opens the new info request from Home and sees its upload slot	expected	passed
+e2e/tests/portal-client-90day/day-00-07.spec.ts	180	Day 3: Client uploads the document and submits the info request	expected	passed
+e2e/tests/portal-client-90day/day-00-07.spec.ts	220	Day 7: Diary dates page renders for the client (no portal-visible deadlines on the e2e tenant)	expected	passed
+e2e/tests/portal-client-90day/day-14-30.spec.ts	149	Day 30 [legal-za]: Client downloads the receipt for a part payment on a fee note	expected	passed
+e2e/tests/portal-client-90day/day-14-30.spec.ts	77	Day 21 [legal-za]: Client follows the trust-activity email to the balance and the new deposit	expected	passed
+e2e/tests/portal-client-90day/day-45-75.spec.ts	124	Day 60 [legal-za]: Client downloads the Statement of Account from the matter page	expected	passed
+e2e/tests/portal-client-90day/day-45-75.spec.ts	181	Day 75 [legal-za]: Client sees the court date and the prescription on Diary dates, sanitised, until the firm removes them	expected	passed
+e2e/tests/portal-client-90day/day-45-75.spec.ts	60	Day 45: Client opens the seeded SENT fee note	expected	passed
+e2e/tests/portal-client-90day/day-45-75.spec.ts	92	Day 45: SENT fee note offers no online payment without a PSP	expected	passed
+e2e/tests/portal-client-90day/day-85-90.spec.ts	110	Day 90: Activity trail shows this run's submit and download	expected	passed
+e2e/tests/portal-client-90day/day-85-90.spec.ts	57	Day 85: Profile shows the client's contact details (read-only)	expected	passed
+e2e/tests/portal-client-90day/day-85-90.spec.ts	86	Day 85: Notifications page shows the firm's bi-weekly digest cadence (read-only)	expected	passed

@@ -1,0 +1,6 @@
+# C2-responsive (capture, unscored) — rc=0 end 2026-11-05T20:22:26+0200
+writing-actual lines: 21
+json stats: {"expected":21,"unexpected":0,"skipped":0,"flaky":0,"duration_s":22,"startTime":"2026-11-05T18:22:04.337Z"}
+--- list summary
+
+  21 passed (22.3s)

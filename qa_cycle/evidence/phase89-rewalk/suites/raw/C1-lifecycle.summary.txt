@@ -1,0 +1,8 @@
+# C1-lifecycle (capture, unscored) — rc=0 end 2026-11-05T20:03:04+0200
+writing-actual lines: 26
+json stats: {"expected":105,"unexpected":0,"skipped":0,"flaky":0,"duration_s":176,"startTime":"2026-11-05T18:00:07.633Z"}
+--- list summary
+  ✓  104 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:98:7 › Matter team — Team tab (add, transfer, remove) › Bob (Admin, not on the matter): transfers the lead to Carol (2.9s)
+  ✓  105 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:126:7 › Matter team — Team tab (add, transfer, remove) › Carol (now lead): adds Bob, then removes him (2.8s)
+
+  105 passed (2.9m)

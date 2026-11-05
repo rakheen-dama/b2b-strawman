@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
@@ -34,6 +34,26 @@ function makeDisbursement(overrides: Partial<DisbursementResponse> = {}): Disbur
   };
 }
 
+/** A header's label: its text, minus the Description header's own Supplier sort control. */
+function headerLabel(header: HTMLElement): string {
+  const copy = header.cloneNode(true) as HTMLElement;
+  copy.querySelector('[data-testid="disbursement-description-supplier-sort"]')?.remove();
+  return copy.textContent?.trim() ?? "";
+}
+
+function headerFor(label: string): HTMLElement {
+  const header = screen.getAllByRole("columnheader").find((h) => headerLabel(h) === label);
+  if (!header) throw new Error(`No "${label}" header`);
+  return header;
+}
+
+function cellUnder(label: string, rowId = "d1"): HTMLElement {
+  const headers = screen.getAllByRole("columnheader").map(headerLabel);
+  const index = headers.indexOf(label);
+  if (index === -1) throw new Error(`No "${label}" column; headers: ${headers.join(", ")}`);
+  return within(screen.getByTestId(`disbursement-row-${rowId}`)).getAllByRole("cell")[index];
+}
+
 describe("DisbursementListView", () => {
   afterEach(() => {
     cleanup();
@@ -63,10 +83,12 @@ describe("DisbursementListView", () => {
     expect(screen.getByTestId("disbursement-list")).toBeInTheDocument();
     expect(screen.getByTestId("disbursement-row-d1")).toBeInTheDocument();
     expect(screen.getByTestId("disbursement-row-d2")).toBeInTheDocument();
-    expect(screen.getByText("Sheriff Sandton")).toBeInTheDocument();
-    expect(screen.getByText("Adv. Jane Doe")).toBeInTheDocument();
-    expect(screen.getByText("Sheriff Fees")).toBeInTheDocument();
-    expect(screen.getByText("Counsel Fees")).toBeInTheDocument();
+    // Supplier and Category render in their own columns (and again on the Description's
+    // second line for narrow containers), so read them from their column cells.
+    expect(cellUnder("Supplier", "d1")).toHaveTextContent("Sheriff Sandton");
+    expect(cellUnder("Supplier", "d2")).toHaveTextContent("Adv. Jane Doe");
+    expect(cellUnder("Category", "d1")).toHaveTextContent("Sheriff Fees");
+    expect(cellUnder("Category", "d2")).toHaveTextContent("Counsel Fees");
   });
 
   it("calls onSelect when a row is clicked", async () => {
@@ -86,7 +108,7 @@ describe("DisbursementListView", () => {
     const row = makeDisbursement({ id: "d1", matterId: "p1" });
     render(<DisbursementListView disbursements={[row]} projectNames={{ p1: "Matter 2026/001" }} />);
 
-    expect(screen.getByText("Matter 2026/001")).toBeInTheDocument();
+    expect(cellUnder("Matter", "d1")).toHaveTextContent("Matter 2026/001");
   });
 
   it("hides the actions menu for APPROVED rows", () => {
@@ -186,5 +208,203 @@ describe("DisbursementListView", () => {
     expect(prefixed.map((el) => el.getAttribute("data-testid"))).toEqual([
       "disbursement-row-d-pref",
     ]);
+  });
+});
+
+describe("DisbursementListView — fitting the container", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const LONG_DESCRIPTION =
+    "Counsel's opinion on shareholders' agreement — Khumalo Property Holdings transfer";
+
+  function renderRow(overrides: Partial<DisbursementResponse> = {}) {
+    const row = makeDisbursement({
+      id: "d1",
+      matterId: "p1",
+      category: "COUNSEL_FEES",
+      description: LONG_DESCRIPTION,
+      supplierName: "Adv. N. Mokoena SC",
+      approvalStatus: "APPROVED",
+      billingStatus: "UNBILLED",
+      ...overrides,
+    });
+    render(
+      <DisbursementListView
+        disbursements={[row]}
+        projectNames={{ p1: "Khumalo Property Holdings — Erf 1234 Sandton Transfer" }}
+        onWriteOff={vi.fn()}
+      />
+    );
+    return row;
+  }
+
+  /** The Description cell's muted second line (the hidden columns' values). */
+  function secondaryLine(): HTMLElement {
+    const line = cellUnder("Description").children[1];
+    if (!(line instanceof HTMLElement)) throw new Error("No second line under the Description");
+    return line;
+  }
+
+  it("is its own size container, keeping the relative scroll box as a fallback", () => {
+    renderRow();
+    expect(screen.getByTestId("disbursement-list")).toHaveClass(
+      "@container",
+      "relative",
+      "overflow-x-auto"
+    );
+  });
+
+  it("hides Supplier, then Category, then Matter (header and cells) as the container narrows", () => {
+    renderRow();
+    const expected: Record<string, string> = {
+      Matter: "@min-[66rem]:table-cell",
+      Category: "@min-[75rem]:table-cell",
+      Supplier: "@min-[84rem]:table-cell",
+    };
+    for (const [label, query] of Object.entries(expected)) {
+      expect(headerFor(label), label).toHaveClass("hidden", query);
+      expect(cellUnder(label), label).toHaveClass("hidden", query);
+    }
+  });
+
+  it("never hides Date, Description, Amount, Approval or Actions", () => {
+    renderRow();
+    for (const label of ["Date", "Description", "Amount (incl VAT)", "Approval", "Actions"]) {
+      expect(headerFor(label), label).not.toHaveClass("hidden");
+      expect(cellUnder(label), label).not.toHaveClass("hidden");
+    }
+    expect(within(cellUnder("Actions")).getByTestId("disbursement-actions-d1")).toBeInTheDocument();
+  });
+
+  it("keeps Billing visible: its own column when wide, stacked under Approval when compact", () => {
+    renderRow();
+    expect(headerFor("Billing")).toHaveClass("hidden", "@min-[58rem]:table-cell");
+    expect(cellUnder("Billing")).toHaveClass("hidden", "@min-[58rem]:table-cell");
+    expect(cellUnder("Billing")).toHaveTextContent("Unbilled");
+
+    const approval = cellUnder("Approval");
+    expect(within(approval).getByText("Approved")).toBeInTheDocument();
+    const stacked = within(approval).getByText("Unbilled");
+    expect(stacked.parentElement).toHaveClass("@min-[58rem]:hidden");
+    expect(stacked.parentElement).not.toHaveClass("hidden");
+  });
+
+  it("shows each hidden column's value on the Description's second line until its column returns", () => {
+    renderRow();
+    const line = secondaryLine();
+    expect(line).toHaveClass("text-xs", "text-slate-500", "@min-[84rem]:hidden");
+
+    const matter = within(line).getByText("Khumalo Property Holdings — Erf 1234 Sandton Transfer");
+    expect(matter).toHaveClass("truncate");
+    expect(matter).toHaveAttribute(
+      "title",
+      "Khumalo Property Holdings — Erf 1234 Sandton Transfer"
+    );
+    expect(matter.parentElement).toHaveClass("@min-[66rem]:hidden");
+    const category = within(line).getByText("Counsel Fees");
+    expect(category).toHaveClass("truncate");
+    expect(category.parentElement).toHaveClass("@min-[75rem]:hidden");
+    const supplier = within(line).getByText("Adv. N. Mokoena SC");
+    expect(supplier).toHaveClass("truncate", "@min-[84rem]:hidden");
+    expect(supplier).toHaveAttribute("title", "Adv. N. Mokoena SC");
+  });
+
+  /**
+   * The container-query breakpoint at which `el` applies `utility`, e.g. "66rem" for
+   * `@min-[66rem]:hidden` — parsed from the rendered className, exactly one allowed.
+   */
+  function breakpointOf(el: Element, utility: string): string {
+    const pattern = new RegExp(
+      `@min-\\[(\\d+rem)\\]:${utility.replace(/[[\]()]/g, "\\$&")}(?:\\s|$)`,
+      "g"
+    );
+    const tokens = [...el.className.matchAll(pattern)].map((m) => m[1]);
+    if (tokens.length !== 1) {
+      throw new Error(`Expected one @min-[…]:${utility}, got [${tokens}] in "${el.className}"`);
+    }
+    return tokens[0];
+  }
+
+  it("hides each column's second-line fragment at the same breakpoint its column returns", () => {
+    renderRow();
+    const line = secondaryLine();
+    const fragments: Record<string, Element | null> = {
+      Matter: within(line).getByText("Khumalo Property Holdings — Erf 1234 Sandton Transfer")
+        .parentElement,
+      Category: within(line).getByText("Counsel Fees").parentElement,
+      Supplier: within(line).getByText("Adv. N. Mokoena SC"),
+    };
+    for (const [label, fragment] of Object.entries(fragments)) {
+      if (!fragment) throw new Error(`No ${label} fragment`);
+      const column = breakpointOf(headerFor(label), "table-cell");
+      expect(breakpointOf(cellUnder(label), "table-cell"), label).toBe(column);
+      expect(breakpointOf(fragment, "hidden"), label).toBe(column);
+    }
+    // The whole line goes when the last column (Supplier) is back.
+    expect(breakpointOf(line, "hidden")).toBe(breakpointOf(headerFor("Supplier"), "table-cell"));
+  });
+
+  it("names one compact breakpoint for Billing, stacked Billing, padding, Description cap and Amount header", () => {
+    renderRow();
+    const billing = breakpointOf(headerFor("Billing"), "table-cell");
+    expect(breakpointOf(cellUnder("Billing"), "table-cell")).toBe(billing);
+    const stacked = within(cellUnder("Approval")).getByText("Unbilled").parentElement;
+    if (!stacked) throw new Error("No stacked Billing badge");
+    expect(breakpointOf(stacked, "hidden")).toBe(billing);
+    for (const label of ["Date", "Description", "Amount (incl VAT)", "Approval", "Actions"]) {
+      expect(breakpointOf(cellUnder(label), "px-4"), label).toBe(billing);
+      expect(breakpointOf(headerFor(label), "px-4"), label).toBe(billing);
+    }
+    expect(breakpointOf(cellUnder("Description"), "max-w-[28ch]")).toBe(billing);
+    const amountButton = within(headerFor("Amount (incl VAT)")).getByRole("button");
+    expect(breakpointOf(amountButton, "whitespace-nowrap")).toBe(billing);
+  });
+
+  it("keeps Supplier sorting reachable: a Description-header control while the column is hidden", async () => {
+    const user = userEvent.setup();
+    const rows = [
+      makeDisbursement({ id: "a", supplierName: "Mokoena SC", incurredDate: "2026-02-03" }),
+      makeDisbursement({ id: "b", supplierName: "Adams Sheriff", incurredDate: "2026-02-01" }),
+      makeDisbursement({ id: "c", supplierName: "Zulu Couriers", incurredDate: "2026-02-02" }),
+    ];
+    render(<DisbursementListView disbursements={rows} />);
+
+    const control = screen.getByTestId("disbursement-description-supplier-sort");
+    expect(headerFor("Description")).toContainElement(control);
+    // Shown exactly while the Supplier column is hidden — same breakpoint, opposite state.
+    const supplierColumn = breakpointOf(headerFor("Supplier"), "table-cell");
+    expect(breakpointOf(control, "hidden")).toBe(supplierColumn);
+    expect(control).toHaveClass(`@min-[${supplierColumn}]:hidden`);
+    expect(control).not.toHaveClass("hidden");
+    expect(headerFor("Supplier")).toHaveClass("hidden", `@min-[${supplierColumn}]:table-cell`);
+
+    const rowOrder = () =>
+      screen
+        .getAllByTestId(/^disbursement-row-/)
+        .map((r) => r.getAttribute("data-testid")?.replace("disbursement-row-", ""));
+    expect(rowOrder()).toEqual(["a", "c", "b"]); // default: date, newest first
+
+    await user.click(within(control).getByRole("button", { name: "Sort by supplier" }));
+    expect(rowOrder()).toEqual(["b", "a", "c"]);
+    await user.click(within(control).getByRole("button", { name: "Sort by supplier" }));
+    expect(rowOrder()).toEqual(["c", "a", "b"]);
+  });
+
+  it("leaves the matter out of the second line when the mount has no matter names", () => {
+    const row = makeDisbursement({ id: "d1", category: "SHERIFF_FEES" });
+    render(<DisbursementListView disbursements={[row]} />);
+    expect(cellUnder("Matter")).toHaveTextContent("\u2014");
+    expect(secondaryLine().textContent).toBe("Sheriff Fees·Sheriff Sandton");
+  });
+
+  it("caps the Description to one truncated line with the full text as a title", () => {
+    renderRow();
+    const cell = cellUnder("Description");
+    expect(cell).toHaveClass("max-w-[20ch]", "@min-[58rem]:max-w-[28ch]");
+    const description = within(cell).getByText(LONG_DESCRIPTION);
+    expect(description).toHaveClass("truncate");
+    expect(description).toHaveAttribute("title", LONG_DESCRIPTION);
   });
 });

@@ -69,6 +69,55 @@ export function categoryLabel(category: DisbursementCategory): string {
     .join(" ");
 }
 
+/**
+ * Column priority by the table's own container width (a container query, so the sidebar, the page's
+ * max width and the matter tab's extra padding are all accounted for). As the container narrows,
+ * Supplier hides first, then Category, then Matter; a hidden column's value moves to a muted second
+ * line under the Description, hidden again at the same breakpoint its column comes back, so nothing
+ * is lost and nothing shows twice. While the Supplier column is hidden, its sort control sits in the
+ * Description header (next to the second line that carries the supplier), so Supplier sorting is
+ * reachable at every width. Billing and Actions are never hidden: see `COMPACT`.
+ *
+ * Measured containers (`[data-testid="disbursement-list"]` clientWidth on today's shell): firm list
+ * 704 / 960 / 1120 px at 1024 / 1280 / 1440 viewports (≈1200 max); matter Fees › Disbursements tab
+ * 656 / 912 / 1072 px (≈1152 max). Measured table min-content widths (Description at 28ch, `px-4`):
+ * Date + Description + Amount + Approval + Billing + Actions 907 px (→ 58rem); + Matter 1033
+ * (→ 66rem); + Category, at its widest label "Deeds Office Fees", 1193 (→ 75rem); + Supplier 1328
+ * (→ 84rem). The compact layout measured 586 px. So at 1440 both mounts show Matter, with Category
+ * and Supplier on the second line (and the Supplier sort in the Description header), and on today's
+ * shell Supplier never gets its column. Re-measure these thresholds if a column, a cap or the shell
+ * width changes.
+ *
+ * Each entry pairs the column's `<th>`/`<td>` class (`col`) with its second-line fragment's class
+ * (`sub`); the two must name the same breakpoint. Tailwind only sees literal class strings, so keep
+ * them literal.
+ */
+const PRIORITY = {
+  matter: { col: "hidden @min-[66rem]:table-cell", sub: "@min-[66rem]:hidden" },
+  category: { col: "hidden @min-[75rem]:table-cell", sub: "@min-[75rem]:hidden" },
+  supplier: { col: "hidden @min-[84rem]:table-cell", sub: "@min-[84rem]:hidden" },
+} as const;
+
+/**
+ * The compact layout, below 58rem (every entry must name that one breakpoint): the Billing badge
+ * stacks under the Approval badge and only the separate Billing column hides, the cells tighten to
+ * `px-2`, the Description caps at 20ch and the Amount header may wrap.
+ */
+const COMPACT = {
+  billingCol: "hidden @min-[58rem]:table-cell",
+  billingStacked: "@min-[58rem]:hidden",
+  cell: "px-2 py-3 @min-[58rem]:px-4",
+  description: "max-w-[20ch] @min-[58rem]:max-w-[28ch]",
+  amountHeader: "whitespace-normal @min-[58rem]:whitespace-nowrap",
+} as const;
+
+const CELL = COMPACT.cell;
+
+const HEADER_TEXT =
+  "text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400";
+const SORT_BUTTON =
+  "h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400";
+
 function canEditStatus(status: DisbursementApprovalStatus): boolean {
   return status === "DRAFT" || status === "PENDING_APPROVAL";
 }
@@ -124,70 +173,87 @@ export function DisbursementListView({
   return (
     // relative: the row Actions trigger's sr-only label is position:absolute — without a positioned
     // ancestor inside this scroll box it escapes the clip and widens the document (G88-M4).
-    <div className="relative overflow-x-auto" data-testid="disbursement-list">
+    // `@container`: the column-priority queries measure this box, and inline-size containment keeps
+    // the table's width from feeding back into the page layout. overflow-x-auto stays as the safety
+    // net for content wider than the measured thresholds allow for.
+    <div className="@container relative overflow-x-auto" data-testid="disbursement-list">
       <table className="w-full">
         <thead>
           <tr className="border-b border-slate-200 dark:border-slate-800">
-            <th className="px-4 py-3 text-left">
+            <th className={cn(CELL, "text-left")}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("incurredDate")}
-                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
+                className={SORT_BUTTON}
               >
                 Date <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Matter
+            <th className={cn(CELL, "text-left", HEADER_TEXT, PRIORITY.matter.col)}>Matter</th>
+            <th className={cn(CELL, "text-left", HEADER_TEXT, PRIORITY.category.col)}>Category</th>
+            <th className={cn(CELL, "text-left")}>
+              <div className="flex flex-wrap items-center gap-x-1.5">
+                <span className={HEADER_TEXT}>Description</span>
+                {/* Supplier sort while the Supplier column is hidden: the supplier is then on the
+                    Description's second line, so its sort lives in this header. */}
+                <span
+                  className={cn("flex items-center gap-x-1.5", PRIORITY.supplier.sub)}
+                  data-testid="disbursement-description-supplier-sort"
+                >
+                  <span aria-hidden="true" className={HEADER_TEXT}>
+                    &middot;
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSort("supplierName")}
+                    className={SORT_BUTTON}
+                    aria-label="Sort by supplier"
+                  >
+                    Supplier <ArrowUpDown className="ml-1 size-3" />
+                  </Button>
+                </span>
+              </div>
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Category
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Description
-            </th>
-            <th className="px-4 py-3 text-left">
+            <th className={cn(CELL, "text-left", PRIORITY.supplier.col)}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("supplierName")}
-                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
+                className={SORT_BUTTON}
               >
                 Supplier <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-right">
+            <th className={cn(CELL, "text-right")}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("amount")}
-                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
+                className={cn(SORT_BUTTON, COMPACT.amountHeader)}
               >
                 Amount (incl VAT) <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left">
+            <th className={cn(CELL, "text-left")}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("approvalStatus")}
-                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
+                className={SORT_BUTTON}
               >
                 Approval <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Billing
-            </th>
-            <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Actions
-            </th>
+            <th className={cn(CELL, "text-left", HEADER_TEXT, COMPACT.billingCol)}>Billing</th>
+            <th className={cn(CELL, "text-right", HEADER_TEXT)}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {sorted.map((d) => {
             const inclVat = d.amount + d.vatAmount;
+            const matterName = projectNames?.[d.matterId];
             const editable = canEditStatus(d.approvalStatus);
             const edit = editable ? onEdit : undefined;
             const uploadReceipt = editable ? onUploadReceipt : undefined;
@@ -205,27 +271,98 @@ export function DisbursementListView({
                 onClick={() => onSelect?.(d)}
                 data-testid={`disbursement-row-${d.id}`}
               >
-                <td className="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400">
+                <td
+                  className={cn(
+                    CELL,
+                    "font-mono text-sm whitespace-nowrap text-slate-600 dark:text-slate-400"
+                  )}
+                >
                   {d.incurredDate}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                  {projectNames?.[d.matterId] ?? "\u2014"}
+                <td
+                  className={cn(
+                    CELL,
+                    "text-sm text-slate-700 dark:text-slate-300",
+                    PRIORITY.matter.col
+                  )}
+                >
+                  {matterName ?? "\u2014"}
                 </td>
-                <td className="px-4 py-3">
+                <td className={cn(CELL, PRIORITY.category.col)}>
                   <Badge variant="outline">{categoryLabel(d.category)}</Badge>
                 </td>
-                <td className="max-w-sm truncate px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                  {d.description}
+                <td
+                  className={cn(
+                    CELL,
+                    COMPACT.description,
+                    "text-sm text-slate-700 dark:text-slate-300"
+                  )}
+                >
+                  <div className="truncate" title={d.description}>
+                    {d.description}
+                  </div>
+                  {/* The hidden columns' values: Matter, then Category, then Supplier. Each separator
+                      is inside the fragment before it, so it stays attached to that item (a wrap
+                      leaves it ending the line, e.g. "Sheriff Fees ·") and hides with it; Supplier
+                      is the last column to come back, so whenever a fragment shows, Supplier
+                      follows it. */}
+                  <div
+                    className={cn(
+                      "mt-0.5 flex flex-wrap gap-x-1.5 text-xs text-slate-500 dark:text-slate-400",
+                      PRIORITY.supplier.sub
+                    )}
+                  >
+                    {matterName && (
+                      <span
+                        className={cn("flex max-w-full min-w-0 gap-x-1.5", PRIORITY.matter.sub)}
+                      >
+                        <span className="truncate" title={matterName}>
+                          {matterName}
+                        </span>
+                        <span aria-hidden="true">&middot;</span>
+                      </span>
+                    )}
+                    <span
+                      className={cn("flex max-w-full min-w-0 gap-x-1.5", PRIORITY.category.sub)}
+                    >
+                      <span className="truncate">{categoryLabel(d.category)}</span>
+                      <span aria-hidden="true">&middot;</span>
+                    </span>
+                    <span
+                      className={cn("max-w-full truncate", PRIORITY.supplier.sub)}
+                      title={d.supplierName}
+                    >
+                      {d.supplierName}
+                    </span>
+                  </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
+                <td
+                  className={cn(
+                    CELL,
+                    "text-sm text-slate-700 dark:text-slate-300",
+                    PRIORITY.supplier.col
+                  )}
+                >
                   {d.supplierName}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-sm text-slate-950 tabular-nums dark:text-slate-50">
+                <td
+                  className={cn(
+                    CELL,
+                    "text-right font-mono text-sm whitespace-nowrap text-slate-950 tabular-nums dark:text-slate-50"
+                  )}
+                >
                   {formatCurrency(inclVat, "ZAR")}
                 </td>
-                <td className="px-4 py-3">{approvalStatusBadge(d.approvalStatus)}</td>
-                <td className="px-4 py-3">{billingStatusBadge(d.billingStatus)}</td>
-                <td className="px-4 py-3 text-right">
+                <td className={CELL}>
+                  {approvalStatusBadge(d.approvalStatus)}
+                  <div className={cn("mt-1", COMPACT.billingStacked)}>
+                    {billingStatusBadge(d.billingStatus)}
+                  </div>
+                </td>
+                <td className={cn(CELL, COMPACT.billingCol)}>
+                  {billingStatusBadge(d.billingStatus)}
+                </td>
+                <td className={cn(CELL, "text-right")}>
                   {hasActions && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

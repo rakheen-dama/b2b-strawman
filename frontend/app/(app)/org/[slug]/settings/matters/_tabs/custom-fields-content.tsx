@@ -61,9 +61,15 @@ function GroupMemberList({ groupName, members }: GroupMemberListProps) {
       aria-label={`Fields in ${groupName}`}
       data-testid="field-group-members"
     >
+      {/* Badge is nowrap by default; long labels must wrap within the narrow card column */}
       {members.map((m) => (
-        <li key={m.id}>
-          <Badge variant="neutral">{m.name}</Badge>
+        <li key={m.id} className="max-w-full min-w-0">
+          <Badge
+            variant="neutral"
+            className="max-w-full text-left wrap-break-word whitespace-normal"
+          >
+            {m.name}
+          </Badge>
         </li>
       ))}
     </ul>

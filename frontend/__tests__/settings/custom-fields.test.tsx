@@ -194,6 +194,19 @@ describe("CustomFieldsContent", () => {
     expect(labels).toEqual(["Priority Level", "Budget Code"]);
   });
 
+  it("member chips wrap long labels inside the card instead of overflowing", () => {
+    render(<CustomFieldsContent {...makePropsWithMembers(["fd-2", "fd-1"])} />);
+
+    const card = screen.getByTestId("field-group-financial_info");
+    const members = within(card).getByRole("list", { name: "Fields in Financial Info" });
+    for (const li of within(members).getAllByRole("listitem")) {
+      expect(li).toHaveClass("max-w-full", "min-w-0");
+      const chip = li.querySelector('[data-slot="badge"]');
+      expect(chip).toHaveClass("max-w-full", "whitespace-normal", "wrap-break-word");
+      expect(chip).not.toHaveClass("whitespace-nowrap");
+    }
+  });
+
   it("skips member ids with no active field and shows the empty copy", () => {
     render(<CustomFieldsContent {...makePropsWithMembers(["fd-missing"])} />);
 

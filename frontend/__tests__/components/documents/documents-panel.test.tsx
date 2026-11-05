@@ -113,4 +113,30 @@ describe("DocumentsPanel", () => {
       screen.getByRole("button", { name: "Expand comments for masters-appointment.pdf" })
     ).toHaveAttribute("aria-expanded", "false");
   });
+
+  // 634C review: a bell click for another document while the panel is already mounted re-expands.
+  it("expands a newly targeted document when ?documentId= changes while mounted", () => {
+    mockSearchParams = new URLSearchParams("tab=documents&documentId=d2&commentId=c1");
+    const documents = [
+      makeDocument({ id: "d1", fileName: "masters-appointment.pdf" }),
+      makeDocument({ id: "d2", fileName: "engagement-letter.pdf" }),
+    ];
+    const { rerender } = render(
+      <DocumentsPanel documents={documents} projectId="p1" slug="acme" />
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Collapse comments for engagement-letter.pdf" })
+    ).toHaveAttribute("aria-expanded", "true");
+
+    mockSearchParams = new URLSearchParams("tab=documents&documentId=d1&commentId=c2");
+    rerender(<DocumentsPanel documents={documents} projectId="p1" slug="acme" />);
+
+    expect(
+      screen.getByRole("button", { name: "Collapse comments for masters-appointment.pdf" })
+    ).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("button", { name: "Expand comments for engagement-letter.pdf" })
+    ).toHaveAttribute("aria-expanded", "false");
+  });
 });

@@ -306,6 +306,26 @@ export function TaskListPanel({
     </Suspense>
   ) : null;
 
+  // The sheet loads its task by id, so it must stay mounted even when the filtered list is empty —
+  // a deep link (?taskId=) to a DONE/CANCELLED task must still open it.
+  const taskSheet = (
+    <TaskDetailSheet
+      taskId={selectedTaskId}
+      commentId={selectedCommentId}
+      onClose={closeTask}
+      projectId={projectId}
+      slug={slug}
+      canManage={canManage}
+      currentMemberId={currentMemberId ?? ""}
+      isAdmin={isAdmin}
+      members={members}
+      allTags={allTags}
+      fieldDefinitions={fieldDefinitions}
+      fieldGroups={fieldGroups}
+      groupMembers={groupMembers}
+    />
+  );
+
   if (tasks.length === 0 && isDefaultFilter) {
     return (
       <div className="space-y-4">
@@ -316,6 +336,7 @@ export function TaskListPanel({
           title="No tasks yet"
           description="Create a task to start tracking work on this matter"
         />
+        {taskSheet}
       </div>
     );
   }
@@ -384,21 +405,7 @@ export function TaskListPanel({
           </div>
         </TooltipProvider>
       )}
-      <TaskDetailSheet
-        taskId={selectedTaskId}
-        commentId={selectedCommentId}
-        onClose={closeTask}
-        projectId={projectId}
-        slug={slug}
-        canManage={canManage}
-        currentMemberId={currentMemberId ?? ""}
-        isAdmin={isAdmin}
-        members={members}
-        allTags={allTags}
-        fieldDefinitions={fieldDefinitions}
-        fieldGroups={fieldGroups}
-        groupMembers={groupMembers}
-      />
+      {taskSheet}
     </div>
   );
 }

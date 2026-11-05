@@ -652,6 +652,29 @@ describe("TaskListPanel", () => {
     });
   });
 
+  // 634C review: a deep link to a task outside the default-filtered list (here the only task is
+  // DONE, so the "No tasks yet" empty state renders) must still mount and open the sheet.
+  it("opens TaskDetailSheet for ?taskId= even when the default-filtered list is empty", async () => {
+    mockSearchParams = new URLSearchParams("tab=tasks&taskId=t3");
+    mockFetchTask.mockResolvedValue(doneTask);
+
+    render(
+      <TaskListPanel
+        tasks={[doneTask]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />
+    );
+
+    expect(screen.getByText("No tasks yet")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockFetchTask).toHaveBeenCalledWith("t3");
+    });
+    expect(await screen.findByRole("button", { name: /Close task detail/i })).toBeInTheDocument();
+  });
+
   // 130B: Closing the sheet clears ?taskId= from URL
   it("closing the sheet clears taskId from URL", async () => {
     // Set URL to have taskId

@@ -157,6 +157,16 @@ class CommentMentionNotificationIntegrationTest extends AbstractIntegrationTest 
   }
 
   @Test
+  void mentionMatchingNoMember_notifiesNobody() throws Exception {
+    String taskId = commentOnFreshTask("@Nobody Here please review");
+
+    assertThat(hasCommentNotification(BOB, taskId)).isFalse();
+    assertThat(hasCommentNotification(BOB_SECOND, taskId)).isFalse();
+    assertThat(hasCommentNotification(CAROL, taskId)).isFalse();
+    assertThat(hasCommentNotification(ZOE, taskId)).isFalse();
+  }
+
+  @Test
   void authorMentioningThemselves_isNotNotified() throws Exception {
     String taskId = commentOnFreshTask("Note to self @Alice Author");
 

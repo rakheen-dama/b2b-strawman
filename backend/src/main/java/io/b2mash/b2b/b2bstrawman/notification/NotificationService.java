@@ -865,18 +865,39 @@ public class NotificationService {
     // TODO: Replace findAll() with a targeted query once Member has separate firstName/lastName
     // columns. Currently, first-name matching requires splitting the full `name` field in Java,
     // which prevents a pure SQL solution.
-    var members =
-        memberRepository.findAll().stream()
-            .filter(member -> member.getName() != null && !member.getName().isBlank())
-            // C2 (634C): a member who cannot view the matter is never a mention candidate.
-            .filter(member -> projectId == null || canViewMatter(projectId, member))
-            .map(
-                member -> {
-                  var nameWords = member.getName().trim().split("\\s+");
-                  return new MentionableMember(
-                      member.getId(), lower(String.join(" ", nameWords)), lower(nameWords[0]));
-                })
-            .toList();
+    // Cheap name-only pre-filter: keep any member who COULD match a mention under either rule below
+    // (full name equals a one- or two-word token, or first name equals a mention's first word), so
+    // the matter-access check runs only on that superset rather than on every org member. Dropping
+    // a member who can match no token never changes the result of the matching rules.
+    var fullNameTokens = new HashSet<String>();
+    var firstWordTokens = new HashSet<String>();
+    for (var mention : mentions) {
+      fullNameTokens.add(mention.firstWord());
+      firstWordTokens.add(mention.firstWord());
+      if (mention.secondWord() != null) {
+        fullNameTokens.add(mention.firstWord() + " " + mention.secondWord());
+      }
+    }
+
+    var members = new ArrayList<MentionableMember>();
+    for (var member : memberRepository.findAll()) {
+      if (member.getName() == null || member.getName().isBlank()) {
+        continue;
+      }
+      var nameWords = member.getName().trim().split("\\s+");
+      var candidate =
+          new MentionableMember(
+              member.getId(), lower(String.join(" ", nameWords)), lower(nameWords[0]));
+      if (!fullNameTokens.contains(candidate.fullNameLower())
+          && !firstWordTokens.contains(candidate.firstNameLower())) {
+        continue;
+      }
+      // C2 (634C): a member who cannot view the matter is never a mention candidate.
+      if (projectId != null && !canViewMatter(projectId, member)) {
+        continue;
+      }
+      members.add(candidate);
+    }
 
     var matched = new HashSet<UUID>();
     for (var mention : mentions) {

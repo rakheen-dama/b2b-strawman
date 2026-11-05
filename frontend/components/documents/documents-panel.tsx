@@ -176,9 +176,15 @@ export function DocumentsPanel({
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
   const fileMapRef = useRef<Map<string, { file: File; mimeType: string }>>(new Map());
   // G88-M6: a document comment notification (?documentId=) opens with that document expanded.
-  const [expandedDocId, setExpandedDocId] = useState<string | null>(
-    () => searchParams?.get("documentId") ?? null
-  );
+  // Re-synced whenever the param changes, so a bell click for another document while already on
+  // the Documents tab expands that document (adjust-state-during-render, no effect).
+  const documentIdParam = searchParams?.get("documentId") ?? null;
+  const [expandedDocId, setExpandedDocId] = useState<string | null>(documentIdParam);
+  const [prevDocumentIdParam, setPrevDocumentIdParam] = useState<string | null>(documentIdParam);
+  if (documentIdParam !== prevDocumentIdParam) {
+    setPrevDocumentIdParam(documentIdParam);
+    if (documentIdParam) setExpandedDocId(documentIdParam);
+  }
   const [reviewDocId, setReviewDocId] = useState<string | null>(null);
   const [draftingOpen, setDraftingOpen] = useState(false);
 

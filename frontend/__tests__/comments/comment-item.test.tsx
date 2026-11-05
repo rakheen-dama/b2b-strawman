@@ -100,6 +100,37 @@ describe("CommentItem deep-link anchor + highlight (G88-M6)", () => {
     expect(anchor).not.toHaveClass("ring-2");
   });
 
+  it("re-arms the ring when a mounted item's highlighted flips false→true, then clears it", () => {
+    vi.useFakeTimers();
+    const scrollSpy = vi.spyOn(Element.prototype, "scrollIntoView");
+    const props = {
+      comment: makeComment(),
+      currentMemberId: "other-member",
+      canManageVisibility: false,
+      orgSlug: "acme",
+      projectId: "p1",
+    };
+
+    const { container, rerender } = render(<CommentItem {...props} highlighted={false} />);
+    const anchor = container.querySelector("#comment-c1");
+    expect(anchor).not.toHaveClass("ring-2");
+
+    rerender(<CommentItem {...props} highlighted={true} />);
+    expect(scrollSpy).toHaveBeenCalledTimes(1);
+    expect(anchor).toHaveClass("ring-2");
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(anchor).not.toHaveClass("ring-2");
+
+    // Re-targeting the same comment later rings it again.
+    rerender(<CommentItem {...props} highlighted={false} />);
+    rerender(<CommentItem {...props} highlighted={true} />);
+    expect(anchor).toHaveClass("ring-2");
+    expect(scrollSpy).toHaveBeenCalledTimes(2);
+  });
+
   it("not highlighted: no scroll and no ring", () => {
     const scrollSpy = vi.spyOn(Element.prototype, "scrollIntoView");
 

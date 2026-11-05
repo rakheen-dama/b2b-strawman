@@ -35,6 +35,14 @@ export function CommentItem({
 }: CommentItemProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [ringOn, setRingOn] = useState(highlighted);
+  // Re-arm the ring on every activation (false→true), not just on mount: an already-mounted item
+  // can be re-targeted by a later notification click. Adjusting state during render keeps this
+  // lint-clean (no synchronous setState in an effect).
+  const [prevHighlighted, setPrevHighlighted] = useState(highlighted);
+  if (highlighted !== prevHighlighted) {
+    setPrevHighlighted(highlighted);
+    setRingOn(highlighted);
+  }
 
   useEffect(() => {
     if (!highlighted) return;

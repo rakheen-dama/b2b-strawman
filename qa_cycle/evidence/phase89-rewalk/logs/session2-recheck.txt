@@ -1,0 +1,28 @@
+Thu Nov  5 23:00:49 SAST 2026
+Now drawing from 'Battery Power'
+ -InternalBattery-0 (id=24379491)	35%; discharging; 1:57 remaining present: true
+86e0fd5deca903225f959723b1a43e99c4b32e3b
+86e0fd5deca903225f959723b1a43e99c4b32e3b
+ M portal/next-env.d.ts
+ M tasks/insights/latest.stats.json
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      76597    yes      yes      8080
+  gateway      75499    yes      yes      8443
+  frontend     75638    yes      yes      3000
+  portal       75689    yes      yes      3002
+
+
+Done.
+:8080 76758 01:22:07
+:8443 75625 01:23:52
+:3000 75682 01:23:47
+:3002 75733 01:23:42
+{"groups":["liveness","readiness"],"status":"UP"}
+mailpit total 12 unread 7 (= HANDOFF 12)
+no zombies (pgrep surefire|ForkedBooter|embedded-pg empty)
+portal prod-build swap (§2.5) deferred to immediately before S2-06 (first portal sign-in)

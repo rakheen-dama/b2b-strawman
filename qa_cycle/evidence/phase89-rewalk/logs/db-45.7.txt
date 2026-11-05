@@ -1,0 +1,5 @@
+                  id                  | approval_status | billing_status |                               write_off_reason                               |          updated_at          
+--------------------------------------+-----------------+----------------+------------------------------------------------------------------------------+------------------------------
+ 69aa43bf-a010-4bb4-80d9-930b708449da | APPROVED        | WRITTEN_OFF    | Client dispute — unable to recover from third party, firm absorbing the cost | 2026-11-05 20:56:39.38392+00
+(1 row)
+

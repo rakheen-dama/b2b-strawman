@@ -1,0 +1,14 @@
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Network docteams-e2e_e2e-network  Removed
+
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+brave_joliot Up 19 seconds
+heuristic_swartz Up 28 seconds
+happy_cori Up About a minute
+quirky_wilbur Up 3 minutes
+testcontainers-ryuk-68ef150f-23df-4deb-8f82-c143e1347c70 Up 3 minutes
+b2b-keycloak Up 2 weeks (healthy)
+b2b-localstack Up 2 weeks (healthy)
+b2b-postgres Up 2 weeks (healthy)
+b2b-mailpit Up 2 weeks (healthy)

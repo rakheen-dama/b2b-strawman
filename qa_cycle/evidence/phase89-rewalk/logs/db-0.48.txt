@@ -1,0 +1,5 @@
++ SQL(read): field_group.updated audit rows (21:54:08)
+2026-11-05 19:53:43.54844+00|field_group_member.added|{"actor_name": "Thandi Mathebula", "sort_order": "7", "field_definition_id": "ae90248b-c889-4f4c-bfdf-9bcca23bde81"}
+2026-11-05 19:53:43.551041+00|field_group.updated|{"name": "SA Legal — Matter Details", "added": 1, "removed": 0, "actor_name": "Thandi Mathebula"}
+2026-11-05 19:53:53.428703+00|field_group_member.removed|{"actor_name": "Thandi Mathebula", "field_definition_id": "ae90248b-c889-4f4c-bfdf-9bcca23bde81"}
+2026-11-05 19:53:53.431692+00|field_group.updated|{"name": "SA Legal — Matter Details", "added": 0, "removed": 1, "actor_name": "Thandi Mathebula"}

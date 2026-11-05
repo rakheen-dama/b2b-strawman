@@ -1,0 +1,18 @@
+# Session 0 — KC-STACK + D-1 reset (636B.1 walker, 2026-11-05 21:34–21:39 SAST)
+
+Walker: 636B.1 QA walker (Opus 5.5). Build: `$MAIN` HEAD `86e0fd5de` = `origin/main` (`logs/kc-stack-identity.txt`). Rows here are NOTE only (no closed gap lives in Session 0).
+
+## Added rows (unscored)
+
+| Row | Step | Status | Evidence |
+|---|---|---|---|
+| S1-P0a | Power / identity | NOTE | Battery 64 % discharging (no AC available to the walker); `caffeinate -dimsu -t 14400` pid 74574; HEAD = origin/main `86e0fd5de`; `$MAIN` dirty only `portal/next-env.d.ts` (pre-existing, 636A); no surefire zombies. Unrelated `confluentinc/cp-kafka` + `postgres:16-alpine` testcontainers (another project, testcontainers session `68ef150f…`) were running on the machine — not touched, recorded as load. `logs/kc-stack-identity.txt` |
+| S1-P0b | D-8 e2e-down | NOTE | `compose/scripts/e2e-down.sh` → "Stack stopped. All containers and volumes removed." `logs/e2e-down.txt` |
+| S1-P0c | Flyway BEFORE | NOTE | `tenant_5039f2d497cf` V10, `tenant_56399d06a773` V10, public V3. `logs/flyway-before.txt` |
+| S1-P0d | KC-STACK restart | NOTE | Old holders: :8080 86551 (started 07:46:15), :8443 334 (Oct 29), :3000 83754 (02:19), :3002 51281 (20:41) → `svc.sh stop` → all 4 ports free → `docker builder prune -f` → `./mvnw -q clean compile -DskipTests` exit 0, `target/classes/db/migration/tenant/` ends `V11__phase89_comment_notification_id.sql` → `pnpm install --frozen-lockfile` → `svc.sh start all`. New holders: :8080 **75426** (21:36:41), :8443 **75625** (21:36:58), :3000 **75682** (21:37:03), :3002 **75733** (21:37:08), all cwd under `$MAIN`. Health: backend UP, gateway UP, :3000 200, :3002/login 200, KC 200. Boot log: `Migrating schema "tenant_56399d06a773"` / `"tenant_5039f2d497cf"` → "Successfully applied 1 migration" each; 0 ERROR lines. `logs/kc-stack-restart.txt`, `logs/kc-stack-backend-startup.txt` |
+| S1-P0e | Flyway AFTER KC-STACK | NOTE | Both tenants **V11** (installed 21:36:53), public **V3**. 630.5 read-only: `org_phase86_squash_smoke` `vertical_profile = legal-za`, trust pack `report_definitions` count **7** (reconcile branch on an existing tenant). `logs/flyway-after-kc-stack.txt` |
+| S1-P0f | D-1 backup (0.R safeguard) | NOTE | `pg_dump -n tenant_5039f2d497cf` → `/tmp/p88-tenant-backup-202611052137.sql` (818 575 B, 8 445 lines); portal/public rows → `/tmp/p88-tenant-backup-202611052137-portal-rows.sql` (17 685 B). Both non-empty. `logs/session0-reset.txt` |
+| S1-P0g | D-1 reset (629A recipe) | NOTE | Census, `svc.sh stop backend` (:8080 free), KC org `mathebula-partners` DELETE 204 (users thandi/bob/carol removed with the org; read-back = `padmin@docteams.local` only, 0 orgs) = **0.B**; guard `0|0|0|0`; portal deletes (2/2/5/2/1/3/1/48/1/5/0/0/5); `DROP SCHEMA tenant_5039f2d497cf CASCADE` = **0.A**; public deletes 1/1/1/1; Mailpit 24 → DELETE 200 → 0; verify: only `tenant_56399d06a773`, mapping only `org_phase86_squash_smoke`; `svc.sh start backend` → :8080 **76758** (21:38:43), health UP, tenant migration runner "1 schemas … 0 migrations applied". `portal.portal_backfill_markers` rows for `tenant_5039f2d497cf` left in place (2 rows) per the brief. `logs/session0-reset.txt` |
+| S1-P0h | Tooling incident | NOTE | Playwright MCP Chromium stopped delivering trusted input events (window/document capture listeners saw nothing) on `/platform-admin/access-requests` until `page.bringToFront()` was called; after it, clicks worked and the queued state was clean. Not a product defect (React handler wired, `__reactProps.onClick` present). Every later batch calls `bringToFront()` first. |
+
+PASS 0 · FAIL 0 · PARTIAL 0 · DEFERRED 0 · N/A 0 (+ NOTE 8)

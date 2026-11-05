@@ -1,0 +1,7 @@
+# flyway AFTER KC-STACK 2026-11-05T21:37:30+0200
+tenant_5039f2d497cf|11|2026-11-05 21:36:53.556837
+tenant_56399d06a773|11|2026-11-05 21:36:53.500443
+public|3
+--- 630.5 reconcile check (smoke tenant)
+legal-za
+7

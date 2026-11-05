@@ -1,0 +1,18 @@
+# KC stack identity — 636B.1 walker, 2026-11-05T21:34:55+0200
+Now drawing from 'Battery Power'
+ -InternalBattery-0 (id=24379491)	64%; discharging; 2:41 remaining present: true
+2026-11-05 19:42:54 +0200 Assertions          	PID 0(kernel_task) Released Idle Sleep Preventer "IOPMrootDomain"  id:0x0x0 [System: PrevIdle PrevSleep DeclUser kCPU kDisp]          
+2026-11-05 19:43:46 +0200 Assertions          	PID 0(kernel_task) Released Idle Sleep Preventer "IOPMrootDomain"  id:0x0x0 [System: PrevIdle PrevSleep DeclUser kCPU kDisp]          
+2026-11-05 19:43:46 +0200 Assertions          	PID 0(kernel_task) Released Idle Sleep Preventer "IOPMrootDomain"  id:0x0x0 [System: PrevIdle PrevSleep DeclUser kCPU kDisp]          
+2026-11-05 19:44:37 +0200 Assertions          	PID 0(kernel_task) Released Idle Sleep Preventer "IOPMrootDomain"  id:0x0x0 [System: PrevIdle PrevSleep DeclUser kCPU kDisp]          
+2026-11-05 19:44:38 +0200 Assertions          	PID 0(kernel_task) Released Idle Sleep Preventer "IOPMrootDomain"  id:0x0x0 [System: PrevIdle PrevSleep DeclUser kCPU kDisp]          
+caffeinate pid 74574
+86e0fd5deca903225f959723b1a43e99c4b32e3b
+86e0fd5deca903225f959723b1a43e99c4b32e3b
+--- status
+ M portal/next-env.d.ts
+--- zombies
+no zombies
+--- WT
+phase89/07B-kc-rewalk
+86e0fd5de docs: Phase 89 slice 636A Done (PR #1741) — three suites on fresh stacks: lifecycle 105/0/0, depth-ii 39/0/4, default 165/0/14, portal vitest 273 + 90-day 13 / responsive 21 / isolation 2 / login-bare 1, all named un-fixme'd specs green; evidence-only (no verify, no marker; check-verify-markers.sh 1741 → exit 0)

@@ -1,0 +1,72 @@
+# KC-STACK restart 2026-11-05T21:35:36+0200
+--- holders before
+:8080 86551 Thu Nov  5 07:46:15 2026    
+:8443 334 Thu Oct 29 15:42:34 2026    
+:3000 83754 Thu Nov  5 02:19:27 2026    
+:3002 51281 Thu Nov  5 20:41:58 2026    
+
+=== svc.sh stop backend gateway frontend portal ===
+
+  portal: stopping (PID 51238)...
+  portal: stopped
+  frontend: stopping (PID 83710)...
+  frontend: stopped
+  gateway: stopping (PID 207)...
+  gateway: stopped
+  backend: stopping (PID 86354)...
+  backend: stopped
+
+Done.
+--- after stop
+:8080 free
+:8443 free
+:3000 free
+:3002 free
+Total:	32.91MB
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/Users/rakheendama/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+compile exit=0
+V10__phase89_go_live.sql
+V11__phase89_comment_notification_id.sql
+V3__portal_backfill_markers.sql
+
+
+Done in 1.2s using pnpm v10.26.1
+
+=== svc.sh start backend gateway frontend portal ===
+
+  backend: starting...
+  Waiting for backend (port 8080)... ready (30s)
+  gateway: starting...
+  Waiting for gateway (port 8443)... ready (6s)
+  frontend: starting...
+  Waiting for frontend (port 3000)... ready (3s)
+  portal: starting...
+  Waiting for portal (port 3002)... ready (3s)
+
+Done.
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      75272    yes      yes      8080
+  gateway      75499    yes      yes      8443
+  frontend     75638    yes      yes      3000
+  portal       75689    yes      yes      3002
+
+
+Done.
+--- holders after start 2026-11-05T21:37:11+0200
+:8080 75426 etime=00:30 start=Thu Nov  5 21:36:41 2026     n/Users/rakheendama/Projects/2026/b2b-strawman/backend
+:8443 75625 etime=00:13 start=Thu Nov  5 21:36:58 2026     n/Users/rakheendama/Projects/2026/b2b-strawman/gateway
+:3000 75682 etime=00:08 start=Thu Nov  5 21:37:03 2026     n/Users/rakheendama/Projects/2026/b2b-strawman/frontend
+:3002 75733 etime=00:03 start=Thu Nov  5 21:37:08 2026     n/Users/rakheendama/Projects/2026/b2b-strawman/portal
+{"groups":["liveness","readiness"],"status":"UP"}
+{"groups":["liveness","readiness"],"status":"UP"}
+3000 200
+3002/login 200
+kc 200

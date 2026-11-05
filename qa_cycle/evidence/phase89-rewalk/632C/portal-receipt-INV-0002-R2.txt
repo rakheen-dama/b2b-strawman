@@ -1,0 +1,18 @@
+           E2E Test Organization
+           PAYMENT RECEIPT
+           Receipt INV-0002/R2
+           To: Acme Corp
+           Fee Note Number: INV-0002
+           Matter: Website Redesign
+           Payment received
+           Amount received: R500,00
+           Date received: 5 November 2026
+           Method: EFT
+           Reference: RCPT-632C
+           Balance after this payment: R1 800,00
+           Payments on this fee note
+            Date                   Method      Reference       Amount      Balance after
+            5 November 2026        EFT         RCPT-632C       R500,00     R1 800,00
+           Fee note total: R2 300,00
+           Amount paid to date: R500,00
+           Balance due: R1 800,00

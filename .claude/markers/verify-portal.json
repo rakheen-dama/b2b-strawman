@@ -1,7 +1,7 @@
 {
-  "commit": "a9542a99bdce1c83bdb094e8625c0ab07ced9cd7",
-  "command": "cd portal && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm run build && pnpm test",
+  "commit": "3761be4fd",
+  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-11-04T19:31:10Z",
-  "summary": "Slice 631B PORTAL-GATE on a9542a99b (PR #1726 final head; packages/shared touched), run by orchestrator: lint 0 errors / 4 warnings (baseline), typecheck ok, format:check clean, build ok (clean .next), vitest 45 files / 256 passed"
+  "ts": "2026-11-05T00:17:20Z",
+  "summary": "632C PR #1729 — lint/typecheck/format/build 0; vitest 45 files / 264 passed; E2E-PORTAL fresh stack: 90-day 12 passed/1 skipped (fixme), responsive 21 passed, data-isolation 2 passed"
 }

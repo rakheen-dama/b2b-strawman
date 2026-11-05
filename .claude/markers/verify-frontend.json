@@ -1,7 +1,7 @@
 {
-  "commit": "3cb727556",
-  "command": "pnpm install && cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test — worktree-epic-632A, PR #1727 final head",
+  "commit": "3761be4fd",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-11-04T20:50:58Z",
-  "summary": "lint 0 errors (79 pre-existing warnings), format clean, build OK, vitest 442 files / 3616 passed / 2 skipped"
+  "ts": "2026-11-05T00:17:20Z",
+  "summary": "632C PR #1729 — lint/typecheck/format/build 0; vitest 443 files / 3627 passed / 2 skipped (3629)"
 }

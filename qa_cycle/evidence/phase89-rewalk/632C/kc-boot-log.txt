@@ -1,0 +1,12 @@
+# KC dev stack backend boot, PID 83650 (svc 83495), started 2026-11-05 02:19:09 SAST, main 51f3e7719 after ./mvnw -q clean compile
+2026-11-05T00:19:11.715767Z DbMigrate - Current version of schema "public": 2
+2026-11-05T00:19:11.717920Z DbMigrate - Schema "public" is up to date. No migration necessary.
+2026-11-05T00:19:20.247766Z BackendApplication - Started BackendApplication in 10.987 seconds (process running for 11.17)
+2026-11-05T00:19:20.357500Z DbMigrate - Current version of schema "tenant_56399d06a773": 9
+2026-11-05T00:19:20.367363Z DbMigrate - Migrating schema "tenant_56399d06a773" to version "10 - phase89 go live"
+2026-11-05T00:19:20.391622Z DbMigrate - Successfully applied 1 migration to schema "tenant_56399d06a773", now at version v10 (execution time 00:00.019s)
+2026-11-05T00:19:20.423478Z DbMigrate - Current version of schema "tenant_5039f2d497cf": 9
+2026-11-05T00:19:20.426218Z DbMigrate - Migrating schema "tenant_5039f2d497cf" to version "10 - phase89 go live"
+2026-11-05T00:19:20.438941Z DbMigrate - Successfully applied 1 migration to schema "tenant_5039f2d497cf", now at version v10 (execution time 00:00.008s)
+2026-11-05T00:19:20.764559Z TemplatePackInstaller - Reconciled template pack legal-za to v12 for tenant tenant_56399d06a773 (1 new templates, 0 refreshed, 0 re-pinned after the reconcile block)
+2026-11-05T00:19:21.077234Z TemplatePackInstaller - Reconciled template pack legal-za to v12 for tenant tenant_5039f2d497cf (1 new templates, 0 refreshed, 0 re-pinned after the reconcile block)

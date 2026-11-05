@@ -1,0 +1,80 @@
+# KC dev stack (b2b-postgres / docteams), read-only SELECTs, 2026-11-05 02:19 SAST
+                  id                  |     external_org_id      |     schema_name     |          created_at           | shard_id 
+--------------------------------------+--------------------------+---------------------+-------------------------------+----------
+ 1a8f5817-da39-4dd8-bd34-dd22d7d8e1ec | org_phase86_squash_smoke | tenant_56399d06a773 | 2026-10-18 02:21:30.992218+00 | primary
+ 294b135c-6c31-4c52-8e24-232ac399058d | mathebula-partners       | tenant_5039f2d497cf | 2026-10-29 13:47:23.773182+00 | primary
+(2 rows)
+
+## tenant_56399d06a773
+ version |              description              |        installed_on        | success 
+---------+---------------------------------------+----------------------------+---------
+ 10      | phase89 go live                       | 2026-11-05 02:19:20.355261 | t
+ 9       | phase88 comment attachments           | 2026-10-29 15:42:28.683291 | t
+ 8       | phase88 retention comment attachments | 2026-10-28 12:23:09.308036 | t
+(3 rows)
+
+                  id                  |              pack_id              |      pack_type      | pack_version |             pack_name             |         installed_at          | installed_by_member_id | item_count 
+--------------------------------------+-----------------------------------+---------------------+--------------+-----------------------------------+-------------------------------+------------------------+------------
+ 8fb38af0-01e4-4d06-acf9-2928e825cddd | compliance-za                     | DOCUMENT_TEMPLATE   | 1            | South Africa Compliance Templates | 2026-10-18 02:21:30.620514+00 |                        |          1
+ 4f3981fa-a565-49ef-9ad2-9a4bef79d6bb | automation-legal-za               | AUTOMATION_TEMPLATE | 2            | automation-legal-za               | 2026-10-18 02:21:30.908687+00 |                        |          4
+ 910244d5-bd41-4a91-b8c8-080548da9157 | common-task                       | FIELD               | 2            | common-task                       | 2026-10-28 10:23:09.451411+00 |                        |          0
+ 136a5d2c-12ed-4f4b-b491-b9e767079e2c | legal-za-customer                 | FIELD               | 2            | legal-za-customer                 | 2026-10-28 10:23:09.451411+00 |                        |          0
+ a1b6588a-72e5-4823-b87a-10ab3448e7ad | conveyancing-intake-za            | REQUEST             | 1            | conveyancing-intake-za            | 2026-10-28 10:23:10.062115+00 |                        |          0
+ 36e67db9-bf14-4e85-8b72-32b763e3186f | fica-onboarding-pack              | REQUEST             | 1            | fica-onboarding-pack              | 2026-10-28 10:23:10.062115+00 |                        |          0
+ ca331557-24da-4a1e-9e3b-04d6be2a5224 | legal-za-liquidation-distribution | REQUEST             | 1            | legal-za-liquidation-distribution | 2026-10-28 10:23:10.062115+00 |                        |          0
+ a897c282-76a5-4088-9268-1add09017513 | common-project                    | FIELD               | 3            | common-project                    | 2026-10-28 10:23:09.451411+00 |                        |          0
+ cf148028-9e45-4e92-babb-8a6384283abe | legal-za-project                  | FIELD               | 3            | legal-za-project                  | 2026-10-28 10:23:09.451411+00 |                        |          0
+ 0798e7ab-0eae-433c-9e74-d0da0946a739 | common                            | DOCUMENT_TEMPLATE   | 4            | Common Templates                  | 2026-10-18 02:21:30.575418+00 |                        |          3
+ 45c485f4-dbc0-48f1-adea-3e6f1e9600af | legal-za-clauses                  | CLAUSE              | 2            | legal-za-clauses                  | 2026-10-28 10:23:09.737799+00 |                        |          0
+ 1f98a99d-a41e-4869-b946-d51bb5bf8d39 | standard-clauses                  | CLAUSE              | 2            | standard-clauses                  | 2026-10-28 10:23:09.737799+00 |                        |          0
+ 1f0ae37d-594f-4518-b8bf-10d91e28d772 | standard-reports                  | REPORT              | 2            | standard-reports                  | 2026-10-28 10:23:10.054474+00 |                        |          0
+ efc23dfd-f0c2-46a8-a46c-54bab2961171 | automation-common                 | AUTOMATION_TEMPLATE | 4            | automation-common                 | 2026-10-18 02:21:30.87426+00  |                        |          6
+ 4fb12706-64bb-47f7-9b04-cfe6fcd62769 | conveyancing-za-project           | FIELD               | 3            | conveyancing-za-project           | 2026-10-28 10:23:09.451411+00 |                        |          0
+ f95e92f8-ad6b-4d2e-983b-f1df2ac1d79b | conveyancing-za-clauses           | CLAUSE              | 3            | conveyancing-za-clauses           | 2026-10-28 10:23:09.737799+00 |                        |          0
+ 32916393-b5e5-4629-9bc1-7ca09e01fc65 | trust-reports                     | REPORT              | 1            | trust-reports                     | 2026-11-04 20:56:04.764902+00 |                        |          0
+ 7e75de99-3149-4ffd-a9d1-13f75f39c182 | legal-za                          | DOCUMENT_TEMPLATE   | 12           | SA Legal Templates                | 2026-10-18 02:21:30.63839+00  |                        |         18
+(18 rows)
+
+## tenant_5039f2d497cf
+ version |              description              |        installed_on        | success 
+---------+---------------------------------------+----------------------------+---------
+ 10      | phase89 go live                       | 2026-11-05 02:19:20.421317 | t
+ 9       | phase88 comment attachments           | 2026-10-29 15:47:23.233025 | t
+ 8       | phase88 retention comment attachments | 2026-10-29 15:47:23.223701 | t
+(3 rows)
+
+                  id                  |              pack_id              |      pack_type      | pack_version |             pack_name             |         installed_at          | installed_by_member_id | item_count 
+--------------------------------------+-----------------------------------+---------------------+--------------+-----------------------------------+-------------------------------+------------------------+------------
+ e505cd64-a590-4a43-bbdd-e3067142bc9d | common-project                    | FIELD               | 3            | common-project                    | 2026-10-29 13:47:23.262859+00 |                        |          0
+ 4ee7688f-1cdf-41ce-81a7-5c9d14bf5c52 | common-task                       | FIELD               | 2            | common-task                       | 2026-10-29 13:47:23.262859+00 |                        |          0
+ e93714e4-34d0-4ea5-bdca-a78c8c337128 | legal-za-customer                 | FIELD               | 2            | legal-za-customer                 | 2026-10-29 13:47:23.262859+00 |                        |          0
+ d6fd1131-97f9-4490-a025-fe3088e5aef3 | legal-za-project                  | FIELD               | 3            | legal-za-project                  | 2026-10-29 13:47:23.262859+00 |                        |          0
+ 56054c9a-bead-41fa-bb8e-a3645f7abb38 | common                            | DOCUMENT_TEMPLATE   | 4            | Common Templates                  | 2026-10-29 13:47:23.322204+00 |                        |          3
+ 4f6945e3-646e-421d-9505-c95004864c0c | compliance-za                     | DOCUMENT_TEMPLATE   | 1            | South Africa Compliance Templates | 2026-10-29 13:47:23.358221+00 |                        |          1
+ a5904513-27d6-4b82-911f-99bbe624a848 | legal-za-clauses                  | CLAUSE              | 2            | legal-za-clauses                  | 2026-10-29 13:47:23.435072+00 |                        |          0
+ deb2c6da-cceb-4e18-bdc2-79d09747f1cd | standard-clauses                  | CLAUSE              | 2            | standard-clauses                  | 2026-10-29 13:47:23.435072+00 |                        |          0
+ 770c3581-764c-4299-9271-5c3869b0988c | standard-reports                  | REPORT              | 2            | standard-reports                  | 2026-10-29 13:47:23.624796+00 |                        |          0
+ 7e6704e2-a9eb-4307-ab51-739ec87aa62a | conveyancing-intake-za            | REQUEST             | 1            | conveyancing-intake-za            | 2026-10-29 13:47:23.64377+00  |                        |          0
+ 196faffc-a228-4633-9b1a-06beededcad8 | fica-onboarding-pack              | REQUEST             | 1            | fica-onboarding-pack              | 2026-10-29 13:47:23.64377+00  |                        |          0
+ afc0b32d-b836-4f4a-9ed8-5e00569b2c88 | legal-za-liquidation-distribution | REQUEST             | 1            | legal-za-liquidation-distribution | 2026-10-29 13:47:23.64377+00  |                        |          0
+ 441db89a-2aa5-4712-be0d-da880e11b3e0 | automation-common                 | AUTOMATION_TEMPLATE | 4            | automation-common                 | 2026-10-29 13:47:23.668265+00 |                        |          6
+ 51b5237a-9fc3-4abf-bcb9-fff6245fc1fb | automation-legal-za               | AUTOMATION_TEMPLATE | 2            | automation-legal-za               | 2026-10-29 13:47:23.699777+00 |                        |          4
+ 9c7a008b-28fb-403c-b17c-5fbc80fcc477 | conveyancing-za-project           | FIELD               | 3            | conveyancing-za-project           | 2026-10-29 13:47:23.262859+00 |                        |          0
+ 84486358-5a32-4a76-b76e-68dd5dc2076d | conveyancing-za-clauses           | CLAUSE              | 3            | conveyancing-za-clauses           | 2026-10-29 13:47:23.435072+00 |                        |          0
+ 823104c0-c9bf-43fe-85c8-93b1329430ef | trust-reports                     | REPORT              | 1            | trust-reports                     | 2026-11-04 20:56:05.183905+00 |                        |          0
+ 93d550b2-237b-4a55-ba49-c0bf8137d6f6 | legal-za                          | DOCUMENT_TEMPLATE   | 12           | SA Legal Templates                | 2026-10-29 13:47:23.381006+00 |                        |         18
+(18 rows)
+
+## public
+ version |       description        |        installed_on        
+---------+--------------------------+----------------------------
+ 2       | portal contact directory | 2026-10-24 19:13:06.756576
+ 1       | baseline                 | 2026-10-18 04:20:53.007533
+(2 rows)
+
+                  id                  |  status   | payment_reference | receipt_number |    receipt_generated_document_id     |                file_name                |         generated_at         
+--------------------------------------+-----------+-------------------+----------------+--------------------------------------+-----------------------------------------+------------------------------
+ d98193c3-0223-4758-b50c-b212a9e6e530 | CANCELLED |                   |                |                                      |                                         | 
+ 625aed8d-82df-45ca-803c-d1e0b7e7dce1 | COMPLETED | EFT/SIPHO-001     | INV-0001/R1    | d511c17b-f789-45fe-adbb-2605ab02a3ff | payment-receipt-inv-0001-2026-11-05.pdf | 2026-11-05 00:20:33.77546+00
+(2 rows)
+

@@ -1,0 +1,22 @@
+            Mathebula & Partners
+            12 Rissik Street, 3rd Floor, Johannesburg 2001, South Africa
+            Tel: +27 11 555 0100
+            Email: accounts@mathebula-test.local
+            Web: https://mathebula-test.local
+            PAYMENT RECEIPT
+            Receipt INV-0001/R1
+            To: Sipho Dlamini
+            Fee Note Number: INV-0001
+            Matter: Sipho Dlamini v. Standard Bank (civil)
+            Payment received
+            Amount received: R4 585,00
+            Date received: 29 October 2026
+            Method: EFT
+            Reference: EFT/SIPHO-001
+            Balance after this payment: R0,00
+            Payments on this fee note
+             Date                  Method     Reference            Amount         Balance after
+             29 October 2026       EFT        EFT/SIPHO-001        R4 585,00      R0,00
+            Fee note total: R4 585,00
+      Amount paid to date: R4 585,00
+      Balance due: R0,00

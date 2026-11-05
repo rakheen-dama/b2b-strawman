@@ -1,0 +1,22 @@
+             E2E Test Organization
+             FEE NOTE
+             To: Acme Corp
+             1 Long Street
+             Cape Town 8001
+             ZA
+             Matter: Website Redesign
+             Fee Note Number: INV-0002
+             Issue Date: 5 November 2026
+             Due Date: 5 December 2026
+             Currency: ZAR
+             Fees and Disbursements
+              Description                      Qty Unit Price (excl.        VAT       Total (incl. 
+                                                     VAT)                             VAT)
+              Consultation — portal receipt    1     R2 000,00              R300,00   R2 300,00
+              case
+             Amount Summary
+             Subtotal (excl. VAT): R2 000,00
+             VAT: R300,00
+             Total Due: R2 300,00
+             Where the practice is registered for VAT, this fee note constitutes a tax invoice as defined in 
+             section 20 of the Value-Added Tax Act 89 of 1991.

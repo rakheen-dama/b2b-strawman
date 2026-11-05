@@ -1,0 +1,7 @@
+extracted chars: 1163
+Mathebula & Partners Statement of Account Reference:  SOA-cd0ef789-20261105 Period:  Generated:  5 November 2026 To Sipho Dlamini 42 Commissioner St Johannesburg 2001 ZA Matter Matter:  Sipho Dlamini v. Standard Bank \(civil\) Opened:  5 November 2026 Professional Fees Date Fee Earner Description Hours Rate Amount 5 November  2026 Bob Ndlovu Drafting particulars of claim 1,5 5 November  2026 Carol  Mokoena precedent review 2 R550,00 Total fees \(excl. VAT\):  VAT:  R435,00 Total fees \(incl. VAT\):  Disbursements Date Category Description Supplier Amount VAT 5  November  2026 Deeds  office fee
+VAT Reg -> False
+File reference -> False
+Mathebula -> True
+Statement of Account -> True
+image xobject: True

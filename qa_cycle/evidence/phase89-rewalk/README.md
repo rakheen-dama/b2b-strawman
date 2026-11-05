@@ -22,23 +22,23 @@ Other files in this directory:
 
 | Item | Value |
 |---|---|
-| Build sha (`$MAIN` HEAD = `origin/main` at KC-STACK) | `<sha>` (scout saw `86e0fd5de` on 2026-11-05) |
-| KC-STACK time | `<ISO>` — clean compile, `docker builder prune -f`, `svc.sh start all` |
-| Services (svc PID / port-holder PID / etime / cwd) | backend `<…>` · gateway `<…>` · frontend `<…>` · portal `<…>` |
-| Health | 8080 `<…>` · 8443 `<…>` · 3000 `<…>` · 3002/login `<…>` · KC :8180 realm `docteams` `<…>` · Mailpit `<…>` |
-| Backend ERROR lines at boot | `<n>` |
-| Fresh tenant | org **`<Mathebula & Partners>`**, slug `<mathebula-partners>`, schema `<tenant_…>`, provisioned `<ISO>` (D-1 option `<A/B>`); V1…V11 `installed_on` = `<…>` |
-| Fresh-branch trust pack (630A) | `<Trust report pack seeded for tenant …: 7 definitions — log line + time>` |
-| Reconcile-branch trust pack (630.5, existing tenant) | `<report_definitions count on tenant_56399d06a773 = …>`; `pack_install trust-reports` on both KC tenants 2026-11-04 20:56Z (`632A/db.txt`) |
-| Power | `<AC / battery %>`, caffeinate PID `<…>` |
+| Build sha (`$MAIN` HEAD = `origin/main` at KC-STACK) | `86e0fd5deca903225f959723b1a43e99c4b32e3b` (= `origin/main`, fetched 21:34:55 SAST; `logs/kc-stack-identity.txt`) |
+| KC-STACK time | 2026-11-05T21:35:36+02:00 stop → `docker builder prune -f` → `./mvnw -q clean compile -DskipTests` (exit 0, tenant migrations end `V11__phase89_comment_notification_id.sql`) → `pnpm install --frozen-lockfile` → `svc.sh start all` 21:36:41–21:37:08; backend restarted once more for the D-1 reset at 21:38:43 (`logs/kc-stack-restart.txt`, `logs/session0-reset.txt`) |
+| Services (svc PID / port-holder PID / etime / cwd) | backend :8080 holder **76758** (started 21:38:43) · gateway svc 75499 / :8443 **75625** (21:36:58) · frontend svc 75638 / :3000 **75682** (21:37:03, `next dev` 16.3.8) · portal svc 75689 / :3002 **75733** (21:37:08, `next dev`) — all cwd under `$MAIN`; old holders 86551 / 334 / 83754 / 51281 stopped first |
+| Health | 8080 `UP` · 8443 `UP` · 3000 `200` · 3002/login `200` · KC :8180 realm `docteams` `200` · Mailpit cleared → 200 (`DELETE /api/v1/messages`) |
+| Backend ERROR lines at boot | `0` (both boots) |
+| Fresh tenant | org **Mathebula & Partners**, slug `mathebula-partners`, schema `tenant_5039f2d497cf` (deterministic name, re-created), provisioned 2026-11-05T19:45:00Z (D-1 option **A**; KC org id `2cc9bcfd-fe7a-4f45-a343-0adddbd5ee28`); V1…V11 `installed_on` = 21:45:00.846 → 21:45:02.224 SAST (11 rows); `vertical_profile = legal-za`; "Successfully applied 11 migrations … now at version v11" 19:45:02.238Z |
+| Fresh-branch trust pack (630A) | `2026-11-05T19:45:02.912985Z [TrustReportPackSeeder] Trust report pack seeded for tenant tenant_5039f2d497cf: 7 definitions`; 7 `report_definitions` rows |
+| Reconcile-branch trust pack (630.5, existing tenant) | `report_definitions` count on `tenant_56399d06a773` (legal-za) = **7** (`logs/flyway-after-kc-stack.txt`); `pack_install trust-reports` on both KC tenants 2026-11-04 20:56Z (`632A/db.txt`) |
+| Power | **battery** (no AC available): 64 % at 21:34 → 39 % at 22:49 SAST; `caffeinate -dimsu -t 14400` PID 74574; lid open |
 
 ### Flyway `flyway_schema_history` max version (Keycloak dev DB `docteams`)
 
 | Schema | Before KC-STACK (scout 2026-11-05 21:1x) | After KC-STACK | After Day 0 provisioning | Expect |
 |---|---|---|---|---|
-| `tenant_5039f2d497cf` (Phase 88 Mathebula; dropped by D-1 A and re-created) | 10 (02:19:20 SAST) | `<…>` | `<…>` | V11 |
-| `tenant_56399d06a773` (`org_phase86_squash_smoke`) | 10 (02:19:20 SAST) | `<…>` | `<…>` | V11 |
-| `public` (global) | 3 (`portal backfill markers`, 04:32) | `<…>` | `<…>` | V3 |
+| `tenant_5039f2d497cf` (Phase 88 Mathebula; dropped by D-1 A and re-created) | 10 (02:19:20 SAST) | 11 (21:36:53) — then dropped (backup `/tmp/p88-tenant-backup-202611052137.sql`) | **11** (fresh, 21:45:02) | V11 |
+| `tenant_56399d06a773` (`org_phase86_squash_smoke`) | 10 (02:19:20 SAST) | **11** (21:36:53) | 11 | V11 |
+| `public` (global) | 3 (`portal backfill markers`, 04:32) | **3** | **3** | V3 |
 
 Boot lines: `logs/kc-stack-backend-startup.txt`. Provisioning lines: `logs/day00-provisioning.txt`.
 
@@ -64,7 +64,7 @@ Full expectations are in the walker brief (§4, uncommitted). Each step file rep
   NOTE: P-45.1–45.5, Sipho `/deadlines`, portal restore.
 - Exit: legal **E.1–E.11** and portal **P-E.1–P-E.11**, computed in `steps/exit-checkpoints.md`.
 
-**Not walked (SKIP — not targeted, not a prerequisite):** `<copy the SKIP list from the brief §4.3 and add anything the call budget dropped, with the reason>`.
+**Not walked (SKIP — not targeted, not a prerequisite):** session 636B.1: 0.49–0.58, 1.4, 2.9, 3.9–3.10, 6.4, 6.6, 10.2, 14.1, 14.6, 14.9–14.13, 15.4, 16.1–21.1, 23.4–23.6, 24.1, 26.1, 28.1, 30.1 (Carol), 30.7, 32.1, 36.x detail, 38.3–38.4, 45.11 — reason: not targeted. **Carried to 636B.2 by the session-1 stop (not SKIP):** S1-78 (45.6–45.8), S1-79 (45.9), S1-80 (45.10) — blocked by a brief-internal conflict (S1-72 billed every Sipho disbursement; see `HANDOFF.md`). Session 636B.2 list: `<636B.2 fills>`.
 
 **Suite-only gaps (no walk step in `full/gaps.md`; D-4):**
 - G88-F48 / G88-F49: observable only 00:00–02:00 SAST; covered by #1716's tests and 636A lifecycle 105/0/0.
@@ -75,28 +75,28 @@ Full expectations are in the walker brief (§4, uncommitted). Each step file rep
 
 | Session | File | Rows (scored) | PASS / FAIL / PARTIAL / DEFERRED / N/A | NOTE |
 |---|---|---|---|---|
-| — | `steps/session-0.md` | 0 | — | `<n>` |
-| 636B.1 | `steps/day-00.md` | `<n>` | `<…>` | `<n>` |
-| 636B.1 | `steps/days-01-07.md` | `<n>` | `<…>` | `<n>` |
-| 636B.1 | `steps/days-08-21.md` | `<n>` | `<…>` | `<n>` |
-| 636B.1 | `steps/days-22-45.md` | `<n>` | `<…>` | `<n>` |
+| — | `steps/session-0.md` | 0 | — | 8 |
+| 636B.1 | `steps/day-00.md` | 8 | 7 / 0 / 1 / 0 / 0 | 9 |
+| 636B.1 | `steps/days-01-07.md` | 15 | 14 / 1 / 0 / 0 / 0 | 6 |
+| 636B.1 | `steps/days-08-21.md` | 11 | 11 / 0 / 0 / 0 / 0 | 5 |
+| 636B.1 | `steps/days-22-45.md` | 18 (of 20; S1-79, S1-80 carried) | 17 / 0 / 1 / 0 / 0 | 4 (S1-78 carried) |
 | 636B.2 | `steps/days-46-90.md` | `<n>` | `<…>` | `<n>` |
 | 636B.2 | `steps/portal.md` | `<n>` | `<…>` | `<n>` |
 | 636B.2 | `steps/exit-checkpoints.md` | `<n>` | `<…>` | — |
 | | **Total** | `<n>` | `<…>` | `<n>` |
 
-Browser calls: 636B.1 `<n>` / 200 · 636B.2 `<n>`.
+Browser calls: 636B.1 **177** / 200 (Playwright MCP tool calls, incl. 1 `browser_close`, 3 snapshots/evaluates and 1 click; most UI actions batched in `browser_run_code_unsafe`) · 636B.2 `<n>`.
 
 ## Wow frames (E.2 / P-E.2 inputs; 636C re-shoots the deck on a production build)
 
 | Frame | Step | File | Reviewed (defects) |
 |---|---|---|---|
-| Legal wow 1 — Home | 0.25 | `screenshots/wow-1-home.png` | `<…>` |
-| Legal wow 2 — engagement letter accepted | 4.3c | `screenshots/wow-2-accepted.png` | `<…>` |
-| Legal wow 3 — conflict check No Conflict | 1.4 | `screenshots/wow-3-conflict.png` | `<…>` |
-| Legal wow 4 — matter detail | 5.4 | `screenshots/wow-4-matter.png` | `<…>` |
-| Legal wow 5 — profitability | 33.5 | `screenshots/wow-5-profitability.png` | `<…>` |
-| Legal wow 6 — fee note PDF | 47.3 | `screenshots/wow-6-fee-note-pdf.png` | `<…>` |
+| Legal wow 1 — Home | 0.25 | `screenshots/wow-1-home.png` | 636B.1: captured (fresh tenant, empty-state Home, 6 zones); no defect noted |
+| Legal wow 2 — engagement letter accepted | 4.3c | `screenshots/wow-2-accepted.png` | 636B.1: captured (Generated documents row "Accepted"); no defect noted |
+| Legal wow 3 — conflict check No Conflict | 1.4 | `screenshots/wow-3-conflict.png` | 636B.1: captured ("No Conflict"); no defect noted |
+| Legal wow 4 — matter detail | 5.4 | `screenshots/wow-4-matter.png` | 636B.1: captured after reload (first pass showed stale "0.0h", G89-F2 candidate) |
+| Legal wow 5 — profitability | 33.5 | `screenshots/wow-5-profitability.png` | 636B.1: captured; no defect noted |
+| Legal wow 6 — fee note PDF | 47.3 | `screenshots/wow-6-fee-note-pdf.png` | 636B.1: captured from the firm HTML **Preview** (`/api/invoices/<id>/preview`), not a rendered PDF — S1-76 PARTIAL; no banking block (never configured) |
 | Legal wow 7 — activity feed | 88.3 | `screenshots/wow-7-activity.png` | `<…>` |
 | Portal wow 1 — home | P-0.6 | `screenshots/p-wow-1-home.png` | `<…>` |
 | Portal wow 2 — trust balance | P-21.6 | `screenshots/p-wow-2-trust.png` | `<…>` |
@@ -111,7 +111,7 @@ Browser calls: 636B.1 `<n>` / 200 · 636B.2 `<n>`.
 
 ## Stack state left by 636B.1 / for 636B.2
 
-`<see HANDOFF.md; summarise services, tenant, last row, next row>`
+See `HANDOFF.md`. Services unchanged since KC-STACK (backend 76758, gateway 75625, frontend 75682, portal 75733 — portal still `next dev`, prod swap is S2-00). Tenant `tenant_5039f2d497cf` with 4 ACTIVE clients, 4 ACTIVE matters, INV-0001 / INV-0002 SENT, REQ-0001 Sent, SoA shared to portal. Last row done **S1-77**; next row **S1-78** (needs an orchestrator ruling — see HANDOFF "Blocking conflict"). Clock: Day 30 rows ran 2026-11-05 SAST.
 
 ## Stack state left by 636B.2 / for 636C
 

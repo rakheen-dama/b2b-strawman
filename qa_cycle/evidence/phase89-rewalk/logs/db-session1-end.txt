@@ -1,0 +1,19 @@
++ SQL(read) 22:49:28 session-1 end state
+customer|Sipho Dlamini|79546474-0f5b-4e2d-ade4-0263d70d3eeb|ACTIVE
+customer|Moroka Family Trust|bafd05f9-2a27-4d89-b004-60dea4ee1a55|ACTIVE
+customer|Khumalo Property Holdings|11c84e42-ab71-4b2a-a79e-baa61351cc87|ACTIVE
+customer|Lerato Mthembu|ec988df3-932f-4ef2-b68e-1d7c3c99f258|ACTIVE
+project|Sipho Dlamini v. Standard Bank (civil)|cd0ef789-214e-4001-978f-90c0b240ed95|ACTIVE
+project|Estate Late Peter Moroka|c441d229-47c5-41d2-a686-68551583937f|ACTIVE
+project|Khumalo Property Holdings — Erf 1234 Sandton Transfer|a9f6a004-9107-4850-acd3-111ba4c05809|ACTIVE
+project|Lerato Mthembu — RAF Claim (MVA 2025-11-03)|e0f25d3f-f195-42fe-ba95-842e79de983d|ACTIVE
+invoice|INV-0001|SENT|5335.00
+invoice|INV-0002|SENT|12224.50
+doc|Sipho Dlamini — certified FICA pack.pdf|1c8209ae-0e69-46b2-95b2-9dbc81b5f290|INTERNAL|617
+doc|engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-11-05.pdf|32dd3129-03d4-45e5-bb0c-d2335e36d4e1|INTERNAL|5399
+doc|Moroka Family Trust — FICA pack.pdf|093959df-78be-48a1-8513-6e4fff4fed10|INTERNAL|613
+doc|Particulars of Claim — draft v1.pdf|e470d245-c49a-43e4-a4a3-1e60eccdf27d|INTERNAL|613
+doc|Khumalo — FICA pack.pdf|59f67911-3a49-4996-8c61-7abb53f5e577|INTERNAL|619
+doc|offer-to-purchase-khumalo-property-holdings-erf-1234-sandton-transfer-2026-11-05.pdf|50d32e2e-dae0-40ff-9cee-d98699f36d4a|INTERNAL|4760
+doc|Lerato Mthembu — FICA pack.pdf|9174368b-caf5-4df4-a41b-cb8a917c52a7|INTERNAL|608
+doc|statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-11-05.pdf|0693a6f6-8d0f-4395-9fc5-213ccee73010|PORTAL|5758

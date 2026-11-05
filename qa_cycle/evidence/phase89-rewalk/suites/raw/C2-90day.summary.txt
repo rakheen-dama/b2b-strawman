@@ -1,0 +1,6 @@
+# C2-90day (capture, unscored) — rc=0 end 2026-11-05T20:16:22+0200
+writing-actual lines: 11
+json stats: {"expected":13,"unexpected":0,"skipped":0,"flaky":0,"duration_s":24,"startTime":"2026-11-05T18:15:57.885Z"}
+--- list summary
+
+  13 passed (24.1s)

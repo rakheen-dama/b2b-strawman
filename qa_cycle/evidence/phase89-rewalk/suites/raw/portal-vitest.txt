@@ -1,0 +1,8 @@
+# portal vitest — run Nov  5 19:57:40 2026 from $WT/portal (pnpm test), rc=0
+# stderr noise: 27 lines of happy-dom 'DOMException [AbortError]/[NetworkError] fetch http://localhost:8080/api/portal/acceptance/test-token/pdf' from app/accept/[token]/__tests__/page.test.tsx (iframe src fetch aborted at env teardown); no test failed
+
+ Test Files  47 passed (47)
+      Tests  273 passed (273)
+   Start at  19:57:34
+   Duration  6.67s (transform 4.09s, setup 4.16s, import 19.69s, tests 10.30s, environment 14.34s)
+

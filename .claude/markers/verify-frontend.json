@@ -1,7 +1,7 @@
 {
-  "commit": "422ddd3a8",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
+  "commit": "6e6c9a242",
+  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-11-05T14:41:32Z",
-  "summary": "PR #1736 (634D) head 422ddd3a8, orchestrator re-run: lint 0 errors, typecheck/format pass, vitest 444 files / 3669 passed / 2 skipped, build pass; Frontend CI pass; E2E legal-depth-ii 39/4 skipped (fresh stacks G, I), legal-lifecycle 105/105 (fresh stack H), default 164/14 skipped"
+  "ts": "2026-11-05T15:26:31Z",
+  "summary": "634E PR #1737 FE-GATE (orchestrator): lint 0, typecheck 0, format:check 0, vitest Test Files 444 passed / Tests 3672 passed | 2 skipped (3674), build 0"
 }

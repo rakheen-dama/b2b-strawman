@@ -178,3 +178,29 @@ G1: COPY frontend/ -> #75 DONE 0.1s | next build -> #77 0.419  | backend COPY sr
 C2: COPY frontend/ -> #54 CACHED | next build -> #55 CACHED | backend COPY src -> #77 CACHED | backend mvnw package -> #79 CACHED
 G2: COPY frontend/ -> #54 CACHED | next build -> #51 CACHED | backend COPY src -> #78 CACHED | backend mvnw package -> #71 CACHED
 git diff --stat 0827ce3f9 1034b6af8 -- backend frontend portal packages compose: '' (empty)
+
+== Volume-removal evidence (excerpts from /tmp/636A/stack-<STACK>.log, the nohup output of e2e-down.sh && docker builder prune -f && e2e-up.sh; full logs not committed) ==
+-- stack-C1.log
+24: Container e2e-postgres  Removed
+34: Volume docteams-e2e_e2e_localstack_data  Removed
+35: Volume docteams-e2e_e2e_postgres_data  Removed
+36: Network docteams-e2e_e2e-network  Removed
+516: Container e2e-postgres  Created
+-- stack-G1.log
+24: Container e2e-postgres  Removed
+34: Volume docteams-e2e_e2e_localstack_data  Removed
+35: Volume docteams-e2e_e2e_postgres_data  Removed
+36: Network docteams-e2e_e2e-network  Removed
+511: Container e2e-postgres  Created
+-- stack-C2.log
+24: Container e2e-postgres  Removed
+34: Volume docteams-e2e_e2e_postgres_data  Removed
+35: Volume docteams-e2e_e2e_localstack_data  Removed
+36: Network docteams-e2e_e2e-network  Removed
+375: Container e2e-postgres  Created
+-- stack-G2.log
+24: Container e2e-postgres  Removed
+34: Volume docteams-e2e_e2e_localstack_data  Removed
+35: Volume docteams-e2e_e2e_postgres_data  Removed
+36: Network docteams-e2e_e2e-network  Removed
+363: Container e2e-postgres  Created

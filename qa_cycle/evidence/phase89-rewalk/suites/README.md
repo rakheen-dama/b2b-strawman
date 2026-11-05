@@ -49,7 +49,7 @@ Frontend image note: `d026d5fd096c` (G1, C2, G2) was built from `1034b6af8` plus
 
 Every stack passed its health checks: backend `UP`, frontend 200, mock-idp 200, mailpit 200.
 
-How freshness was proven: each `e2e-down.sh` ran `docker compose down -v` ("Volume docteams-e2e_e2e_postgres_data Removed" in each `stack-*.log`). Each new stack's `tenant_7d218705360b.projects` table held only the seed row (`Website Redesign|ACTIVE`). After all three G1 suites the same table held 2 rows, the seed plus `E2E closure override 5rld|CLOSED` (`raw/stacks.txt` → "G1 projects after default"); the legal suites' matters are evidently not written to this table (only these 2 rows remain after lifecycle and depth-ii ran), so it does not by itself show the absence of C1 residue. The volume removal is the freshness proof. The postgres container was re-created on each stack (G1 `Created` 18:06:54Z).
+How freshness was proven: each `e2e-down.sh` ran `docker compose down -v` ("Volume docteams-e2e_e2e_postgres_data Removed" in each `stack-*.log`; excerpts committed in `raw/stacks.txt` → "Volume-removal evidence"). Each new stack's `tenant_7d218705360b.projects` table held only the seed row (`Website Redesign|ACTIVE`). After all three G1 suites the same table held 2 rows, the seed plus `E2E closure override 5rld|CLOSED` (`raw/stacks.txt` → "G1 projects after default"); the legal suites' matters are evidently not written to this table (only these 2 rows remain after lifecycle and depth-ii ran), so it does not by itself show the absence of C1 residue. The volume removal is the freshness proof. The Postgres container was re-created on each stack (G1 `Created` 18:06:54Z).
 
 ## Run timeline (SAST, 2026-11-05) — `raw/timeline.txt`
 

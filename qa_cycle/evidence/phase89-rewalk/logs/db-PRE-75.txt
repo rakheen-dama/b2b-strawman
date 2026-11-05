@@ -1,0 +1,8 @@
+ transaction_type | amount  |  status  | transaction_date | has_matter |                                      reference                                       
+------------------+---------+----------+------------------+------------+--------------------------------------------------------------------------------------
+ DEPOSIT          | 5000.00 | RECORDED | 2026-11-05       | t          | DEP/SIPHO-001
+ PAYMENT          | 1250.00 | APPROVED | 2026-11-05       | t          | DEEDS/SIPHO-001
+ INTEREST_CREDIT  |    1.34 | RECORDED | 2026-11-06       | f          | INT-CREDIT-9eb81568-a056-4d62-bf26-380615f66582-79546474-0f5b-4e2d-ade4-0263d70d3eeb
+ REFUND           | 3751.34 | APPROVED | 2026-11-05       | t          | REFUND/SIPHO-001
+(4 rows)
+

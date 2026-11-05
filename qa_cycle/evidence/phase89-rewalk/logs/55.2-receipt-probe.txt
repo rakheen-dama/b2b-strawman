@@ -1,0 +1,7 @@
+INV-0001-R1.pdf (firm Payment History 'Receipt INV-0001/R1' download, 2026-11-05 23:01 SAST)
+bytes 2706
+803720640b3856ec60eadaf64ed98c4fa902a5c2  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/55.2-INV-0001-R1.pdf
+--- stream-text probe (python zlib, -I; hex strings decoded by hand where noted)
+bytes 2706 images 1
+Mathebula & Partners PAYMENT RECEIPT Receipt INV-0001/R1 To:  Sipho Dlamini Fee Note Number:  INV-0001 Matter:  Sipho Dlamini v. Standard Bank \(civil\) Payment received Amount received: Date received:  5 November 2026 Method:  EFT Reference:  EFT/SIPHO-001 Balance after this payment:  R0,00 Payments on this fee note Date Method Reference Amount Balance after 5 November 2026 EFT EFT/SIPHO-001 R0,00 Fee note total: Amount paid to date: Balance due:  R0,00
+--- 'Amount received:' value is a hex string <205235A03333352C3030> = ' R 5 335,00' (NBSP); brand fill colour '0.10588 0.22745 0.29412 rg' = #1B3A4B present

@@ -1,0 +1,31 @@
+# Day 0 provisioning evidence 2026-11-05T21:45:23+0200 schema=tenant_5039f2d497cf
+2026-11-05T19:38:55.697597Z [TenantMigrationRunner] Running tenant migrations for 1 schemas
+2026-11-05T19:38:55.740665Z [TenantMigrationRunner] Migrated schema tenant_56399d06a773 — 0 migrations applied
+2026-11-05T19:38:55.740807Z [TenantMigrationRunner] Tenant migration runner completed
+2026-11-05T19:38:55.788095Z [PackReconciliationRunner] Running pack reconciliation for 1 tenants
+2026-11-05T19:38:56.033651Z [PackReconciliationRunner] Pack reconciliation: checked 1 tenants, 1 succeeded, 0 failed
+2026-11-05T19:45:00.729879Z [AccessRequestApprovalService] Created Keycloak organization 'Mathebula & Partners' with ID 2cc9bcfd-fe7a-4f45-a343-0adddbd5ee28
+2026-11-05T19:45:00.773498Z [TenantProvisioningService] Provisioning tenant schema tenant_5039f2d497cf for org mathebula-partners on shard primary
+2026-11-05T19:45:00.784005Z [TenantProvisioningService] Created schema tenant_5039f2d497cf
+2026-11-05T19:45:02.238056Z [DbMigrate] Successfully applied 11 migrations to schema "tenant_5039f2d497cf", now at version v11 (execution time 00:01.167s)
+2026-11-05T19:45:02.241023Z [TenantProvisioningService] Ran tenant migrations for schema tenant_5039f2d497cf
+2026-11-05T19:45:02.912985Z [TrustReportPackSeeder] Trust report pack seeded for tenant tenant_5039f2d497cf: 7 definitions
+2026-11-05T19:45:03.042233Z [TenantProvisioningService] Created mapping mathebula-partners -> tenant_5039f2d497cf on shard primary
+2026-11-05T19:45:03.045507Z [TenantProvisioningService] Successfully provisioned tenant tenant_5039f2d497cf for org mathebula-partners
+2026-11-05T19:45:03.045826Z [AccessRequestApprovalService] Provisioned tenant schema for org 2cc9bcfd-fe7a-4f45-a343-0adddbd5ee28 (slug=mathebula-partners)
+2026-11-05T19:45:03.319277Z [KeycloakProvisioningClient] Could not find Keycloak user for email thandi@mathebula-test.local to set as org creator
+2026-11-05T19:45:03.331498Z [KeycloakProvisioningClient] Cannot set password — no Keycloak user found for email thandi@mathebula-test.local
+--- ERROR lines: 0
++ SQL(read): flyway max/min installed_on
+11|2026-11-05 21:45:00.846215|2026-11-05 21:45:02.224586|11
++ SQL(read): vertical_profile
+legal-za
++ SQL(read): report_definitions trust pack
+7
++ SQL(read): portal_backfill_markers for tenant_5039f2d497cf
+(rows: 0)
++ SQL(read): public flyway
+3
+--- Mailpit
+UdyK9kQ4nsXsYSS8htSpuf 2026-11-05T19:45:03.277Z to=thandi@mathebula-test.local Invitation to join the Mathebula & Partners organization
+gewJMnZMogtURxC3z3gGr4 2026-11-05T19:39:28.808Z to=thandi@mathebula-test.local Your Kazi verification code

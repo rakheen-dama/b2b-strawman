@@ -1,0 +1,17 @@
+== P-0.A Thu Nov  5 23:15:45 SAST 2026
+GET / -> 307 redirect=http://localhost:3002/home
+GET -L / -> 200 final=http://localhost:3002/home
+== P-0.C portal_contacts (read-only)
+id org_id customer_id email display_name role status created_at updated_at 
+            email             |       display_name        |  role   | status |         customer          |          created_at           
+------------------------------+---------------------------+---------+--------+---------------------------+-------------------------------
+ sipho.dlamini@email.co.za    | Sipho Dlamini             | GENERAL | ACTIVE | Sipho Dlamini             | 2026-11-05 19:58:25.043514+00
+ moroka.trust@email.co.za     | Moroka Family Trust       | GENERAL | ACTIVE | Moroka Family Trust       | 2026-11-05 20:19:21.509887+00
+ khumalo.holdings@email.co.za | Khumalo Property Holdings | GENERAL | ACTIVE | Khumalo Property Holdings | 2026-11-05 20:30:37.18115+00
+ lerato.mthembu@email.co.za   | Lerato Mthembu            | GENERAL | ACTIVE | Lerato Mthembu            | 2026-11-05 20:35:13.016871+00
+ nomvula.khoza@email.co.za    | Nomvula Khoza             | GENERAL | ACTIVE | Nomvula Khoza             | 2026-11-05 21:08:34.68994+00
+(5 rows)
+
+== P-0.D Mailpit
+GET /api/v1/messages -> 200
+{"total":13,"unread":7}

@@ -1,0 +1,87 @@
+== S2-16/S2-18 read-only, 2026-11-06 00:54:00 SAST
+-[ RECORD 1 ]----+-------------------------------------
+id               | 443c2adc-7c34-410f-8c35-886eff3a3535
+project_id       | e0f25d3f-f195-42fe-ba95-842e79de983d
+customer_id      | ec988df3-932f-4ef2-b68e-1d7c3c99f258
+date_type        | CASE_MANAGEMENT
+scheduled_date   | 2026-12-20
+scheduled_time   | 
+court_name       | Gauteng High Court
+court_reference  | 
+judge_magistrate | 
+description      | 
+status           | SCHEDULED
+outcome          | 
+reminder_days    | 7
+created_by       | 4034b9e2-b14a-48f9-a408-c32851da898f
+created_at       | 2026-11-05 20:39:04.180209+00
+updated_at       | 2026-11-05 20:39:04.18021+00
+-[ RECORD 2 ]----+-------------------------------------
+id               | 3346fe45-9a3b-42fc-823b-e942b4b2368a
+project_id       | e0f25d3f-f195-42fe-ba95-842e79de983d
+customer_id      | ec988df3-932f-4ef2-b68e-1d7c3c99f258
+date_type        | HEARING
+scheduled_date   | 2026-11-13
+scheduled_time   | 
+court_name       | Gauteng High Court
+court_reference  | RAF/2026/0042
+judge_magistrate | Judge P89 Marker
+description      | FIRM-ONLY-NOTE-p89rw
+status           | SCHEDULED
+outcome          | 
+reminder_days    | 7
+created_by       | 4034b9e2-b14a-48f9-a408-c32851da898f
+created_at       | 2026-11-05 22:52:36.526611+00
+updated_at       | 2026-11-05 22:52:36.526611+00
+
+-[ RECORD 1 ]--------+-------------------------------------
+id                   | 45ae1185-7876-4665-af9b-e66f72e294d3
+project_id           | e0f25d3f-f195-42fe-ba95-842e79de983d
+customer_id          | ec988df3-932f-4ef2-b68e-1d7c3c99f258
+cause_of_action_date | 2023-11-26
+prescription_type    | DELICT_3Y
+custom_years         | 
+prescription_date    | 2026-11-26
+interruption_date    | 
+interruption_reason  | 
+status               | RUNNING
+notes                | 
+created_by           | 4034b9e2-b14a-48f9-a408-c32851da898f
+created_at           | 2026-11-05 22:53:49.032317+00
+updated_at           | 2026-11-05 22:53:49.032317+00
+
+== portal deadline view
+-[ RECORD 1 ]---------+--------------------------------------------------
+id                    | 3346fe45-9a3b-42fc-823b-e942b4b2368a
+source_entity         | COURT_DATE
+customer_id           | ec988df3-932f-4ef2-b68e-1d7c3c99f258
+matter_id             | e0f25d3f-f195-42fe-ba95-842e79de983d
+deadline_type         | COURT_DATE
+label                 | Hearing — Gauteng High Court
+due_date              | 2026-11-13
+status                | DUE_SOON
+description_sanitised | RAF/2026/0042
+last_synced_at        | 2026-11-05 22:52:36.549029+00
+-[ RECORD 2 ]---------+--------------------------------------------------
+id                    | 45ae1185-7876-4665-af9b-e66f72e294d3
+source_entity         | PRESCRIPTION_TRACKER
+customer_id           | ec988df3-932f-4ef2-b68e-1d7c3c99f258
+matter_id             | e0f25d3f-f195-42fe-ba95-842e79de983d
+deadline_type         | PRESCRIPTION
+label                 | Prescription deadline
+due_date              | 2026-11-26
+status                | UPCOMING
+description_sanitised | Delict 3 years
+last_synced_at        | 2026-11-05 22:53:49.045011+00
+-[ RECORD 3 ]---------+--------------------------------------------------
+id                    | 443c2adc-7c34-410f-8c35-886eff3a3535
+source_entity         | COURT_DATE
+customer_id           | ec988df3-932f-4ef2-b68e-1d7c3c99f258
+matter_id             | e0f25d3f-f195-42fe-ba95-842e79de983d
+deadline_type         | COURT_DATE
+label                 | Case management — Gauteng High Court
+due_date              | 2026-12-20
+status                | UPCOMING
+description_sanitised | Court date — Case management — Gauteng High Court
+last_synced_at        | 2026-11-05 20:39:04.214555+00
+

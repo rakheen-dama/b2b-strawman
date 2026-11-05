@@ -1,0 +1,10 @@
+-[ RECORD 1 ]--+-------------------------------------
+id             | 10e61cab-0fc1-473f-a95c-cc439cfd5296
+status         | COMPLETED
+request_type   | ACCESS
+requested_at   | 2026-11-05 22:59:07.479287+00
+completed_at   | 2026-11-05 22:59:53.633455+00
+deadline       | 2026-12-06
+requested_sast | 2026-11-06 00:59:07.479287
+completed_sast | 2026-11-06 00:59:53.633455
+

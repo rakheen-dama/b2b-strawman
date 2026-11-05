@@ -1,0 +1,22 @@
+== POPIA-1 export archive (636B.3, downloaded via Download Archive at ~00:58 SAST)
+-rw-r--r--@ 1 rakheendama  wheel  4964 Nov  6 00:58 /tmp/636B3-popia-zip/export.zip
+6d24ca2bd7118e1819063e94f44b24532cd59d7b  /tmp/636B3-popia-zip/export.zip
+/tmp/636B3-popia-zip/export.zip: Zip archive data, at least v2.0 to extract, compression method=deflate
+Archive:  /tmp/636B3-popia-zip/export.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/
+        0  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/projects/
+      174  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/customer.json
+      160  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/portal-contacts.json
+        2  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/time-entries.json
+        2  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/invoices.json
+        2  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/comments.json
+        2  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/custom-fields.json
+      194  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/audit-events.json
+      154  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/export-metadata.json
+      436  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/audit-trail/events.json
+      440  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/audit-trail/events.csv
+     1561  11-06-2026 00:58   customer-export-1078b1c6-bb9c-4639-b491-a8e7cc8218c1/audit-trail/README.txt
+---------                     -------
+     3127                     13 files

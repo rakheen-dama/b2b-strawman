@@ -1,0 +1,15 @@
+-- S2-03 INT-60 read-only SELECTs Thu Nov  5 23:07:05 SAST 2026
+                  id                  | period_start | period_end | status | total_interest |              created_by              |             approved_by              |           posted_at           
+--------------------------------------+--------------+------------+--------+----------------+--------------------------------------+--------------------------------------+-------------------------------
+ 9eb81568-a056-4d62-bf26-380615f66582 | 2026-11-05   | 2026-11-06 | POSTED |          19.15 | 734b36a6-f598-49cf-aa4b-bee743f69c4a | 4034b9e2-b14a-48f9-a408-c32851da898f | 2026-11-05 21:05:08.341502+00
+(1 row)
+
+ transaction_type |  amount  |  status  | transaction_date |        name         
+------------------+----------+----------+------------------+---------------------
+ DEPOSIT          |  5000.00 | RECORDED | 2026-11-05       | Sipho Dlamini
+ PAYMENT          |  1250.00 | APPROVED | 2026-11-05       | Sipho Dlamini
+ DEPOSIT          | 50000.00 | RECORDED | 2026-11-05       | Moroka Family Trust
+ INTEREST_CREDIT  |     1.34 | RECORDED | 2026-11-06       | Sipho Dlamini
+ INTEREST_CREDIT  |    17.81 | RECORDED | 2026-11-06       | Moroka Family Trust
+(5 rows)
+

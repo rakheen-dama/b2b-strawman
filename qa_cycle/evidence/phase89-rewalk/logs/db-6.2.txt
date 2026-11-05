@@ -1,0 +1,4 @@
++ SQL(read) 22:15:58: SELECT n.type,n.title,n.is_read,n.created_at,n.reference_comment_id IS NOT NULL FROM tenant_5039f2d497cf.notifications n JOIN tenant_5039f2d497cf.members m ON m.id=n.recipient_member_id WHERE m.email='carol@mathebula-test.local' ORDER BY n.created_at DESC LIMIT 5
+COMMENT_ADDED|Bob Ndlovu commented on task "Initial consultation & case assessment"|f|2026-11-05 20:15:41.673803+00|t
+TASK_ASSIGNED|Bob Ndlovu assigned you to task "Letter of demand"|f|2026-11-05 20:05:27.888289+00|f
+MEMBER_INVITED|You were added to matter "Sipho Dlamini v. Standard Bank (civil)"|f|2026-11-05 20:03:39.650865+00|f

@@ -1,0 +1,9 @@
+== S2-51 P-60.5 byte comparison 2026-11-06 01:05:50 SAST
+-rw-r--r--@ 1 rakheendama  staff  5758 Nov  5 22:40 /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/30.6-soa.pdf
+-rw-r--r--@ 1 rakheendama  staff  7006 Nov  6 00:48 /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/75.9-closure-soa.pdf
+-rw-r--r--@ 1 rakheendama  staff  5758 Nov  6 01:05 /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/p60.5-soa.pdf
+401aeb367813f9513f6efa131161837e4345a999  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/p60.5-soa.pdf
+401aeb367813f9513f6efa131161837e4345a999  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/30.6-soa.pdf
+d677f70b6565102625aadb0b0e1306104950ac3c  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/75.9-closure-soa.pdf
+cmp: p60.5 == 30.6 (identical bytes)
+cmp: p60.5 != 75.9 closure SoA

@@ -1,0 +1,10 @@
+== S2-53 SIPHO-RCPT 2026-11-06 01:06:24 SAST
+-rw-r--r--@ 1 rakheendama  staff  2706 Nov  5 23:07 /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/55.2-INV-0001-R1.pdf
+-rw-r--r--@ 1 rakheendama  staff  4002 Nov  6 01:06 /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/SIPHO-RCPT-portal-fee-note.pdf
+-rw-r--r--@ 1 rakheendama  staff  2706 Nov  6 01:06 /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/SIPHO-RCPT-portal-receipt.pdf
+579d7b4e96b8574a97ef3db043ec6ae0f940e46b  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/SIPHO-RCPT-portal-fee-note.pdf
+803720640b3856ec60eadaf64ed98c4fa902a5c2  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/SIPHO-RCPT-portal-receipt.pdf
+803720640b3856ec60eadaf64ed98c4fa902a5c2  /Users/rakheendama/Projects/2026/worktree-epic-636B/qa_cycle/evidence/phase89-rewalk/logs/55.2-INV-0001-R1.pdf
+== SIPHO-RCPT-portal-receipt.pdf chars 458 image True
+Mathebula & Partners PAYMENT RECEIPT Receipt INV-0001/R1 To:  Sipho Dlamini Fee Note Number:  INV-0001 Matter:  Sipho Dlamini v. Standard Bank \(civil\) Payment received Amount received: Date received:  5 November 2026 Method:  EFT Reference:  EFT/SIPHO-001 Balance after this payment:  R0,00 Payments on this fee note Date Method Reference Amount Balance after 5 November 2026 EFT EFT/SIPHO-001 R0,00 Fee note total: Amount paid to date: Balance due:  R0,00
+  VAT Reg -> False

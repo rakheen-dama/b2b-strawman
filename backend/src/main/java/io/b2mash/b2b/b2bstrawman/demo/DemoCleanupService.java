@@ -203,17 +203,32 @@ public class DemoCleanupService {
       }
 
       String schemaName = mapping.get().getSchemaName();
-      // B3: the schema name is deterministic — a re-provisioned org must not inherit its markers.
-      // Deleted before the drop: a failed portal delete then leaves the schema intact, while a
-      // deleted marker with a failed drop only causes an idempotent re-backfill.
-      portalBackfillMarkerRepository.deleteForSchema(schemaName);
       dropSchema(schemaName);
       log.info("Dropped schema {} for org {}", schemaName, externalOrgId);
+      deleteBackfillMarkers(schemaName);
       return true;
     } catch (Exception e) {
       log.error("Schema cleanup failed for org {}: {}", externalOrgId, e.getMessage());
       errors.add("Schema cleanup failed: " + e.getMessage());
       return false;
+    }
+  }
+
+  /**
+   * B3: the schema name is deterministic, so the dropped schema's portal backfill markers are
+   * removed after the schema drop, best-effort. A failure only logs a WARN and never affects the
+   * schema-cleanup result: a stale marker for a dropped schema is harmless because {@code
+   * TenantProvisioningService.provisionTenant} deletes the schema's markers before creating it.
+   */
+  private void deleteBackfillMarkers(String schemaName) {
+    try {
+      portalBackfillMarkerRepository.deleteForSchema(schemaName);
+    } catch (Exception e) {
+      log.warn(
+          "Portal backfill marker delete failed for dropped schema {} (re-provisioning clears it):"
+              + " {}",
+          schemaName,
+          e.getMessage());
     }
   }
 

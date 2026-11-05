@@ -64,7 +64,7 @@ public class PortalTaskBackfillService {
                     readModelRepo.insertPortalTaskIfAbsent(
                         r.taskId(),
                         orgId,
-                        r.projectId(),
+                        r.matterId(),
                         r.title(),
                         r.status(),
                         r.assigneeName(),
@@ -101,5 +101,5 @@ public class PortalTaskBackfillService {
   }
 
   private record TaskRow(
-      UUID taskId, UUID projectId, String title, String status, String assigneeName) {}
+      UUID taskId, UUID matterId, String title, String status, String assigneeName) {}
 }

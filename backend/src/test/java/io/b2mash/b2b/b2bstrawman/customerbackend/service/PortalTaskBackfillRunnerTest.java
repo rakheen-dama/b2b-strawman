@@ -189,6 +189,32 @@ class PortalTaskBackfillRunnerTest {
   }
 
   @Test
+  void aBackfillPlaceholderIsUpgradedByTheLiveCreateWriteThatLandsAfterIt() {
+    // Backfill ran first (sort_order 0 placeholder), then the live onTaskCreated write lands with
+    // the template order — the placeholder must take it.
+    UUID taskId = taskIds.getFirst();
+    readModelRepo.insertPortalTaskIfAbsent(taskId, ORG_ID, projectId, "Task", "OPEN", null, 0);
+
+    readModelRepo.upsertPortalTask(taskId, ORG_ID, projectId, "Task", "OPEN", null, 5);
+
+    assertThat(row(taskId).sortOrder()).isEqualTo(5);
+  }
+
+  @Test
+  void aPositiveSortOrderIsNeverChangedByALaterUpsert() {
+    UUID taskId = taskIds.getFirst();
+    readModelRepo.upsertPortalTask(taskId, ORG_ID, projectId, "Task", "OPEN", null, 5);
+
+    // Update events carry 0; a different positive value must not win either (R7.2).
+    readModelRepo.upsertPortalTask(taskId, ORG_ID, projectId, "Renamed", "IN_PROGRESS", null, 0);
+    assertThat(row(taskId).sortOrder()).isEqualTo(5);
+    assertThat(row(taskId).name()).isEqualTo("Renamed");
+
+    readModelRepo.upsertPortalTask(taskId, ORG_ID, projectId, "Renamed", "IN_PROGRESS", null, 3);
+    assertThat(row(taskId).sortOrder()).isEqualTo(5);
+  }
+
+  @Test
   void reProvisioningAnOrgClearsItsStaleMarkersSoTheBackfillRunsAgain() {
     String schema = SchemaNameGenerator.generateSchemaName(REPROVISION_ORG_ID);
     // A stale marker left behind by a previous incarnation of this (deterministic) schema name.
@@ -220,6 +246,10 @@ class PortalTaskBackfillRunnerTest {
 
   private List<PortalTaskView> rows() {
     return readModelRepo.findTasksByProject(projectId, ORG_ID);
+  }
+
+  private PortalTaskView row(UUID taskId) {
+    return rows().stream().filter(r -> r.id().equals(taskId)).findFirst().orElseThrow();
   }
 
   private Map<String, Object> marker(String schema) {

@@ -243,7 +243,8 @@ class PortalReadModelOrgScopingGuardTest {
         markers + "deleteForSchema",
         "portal_backfill_markers has no org_id/customer_id column; keyed by (backfill_name,"
             + " tenant_schema); deleted only by TenantProvisioningService before createSchema and"
-            + " DemoCleanupService before the schema drop (B3); never reachable from a portal"
+            + " DemoCleanupService after the schema drop, best-effort (B3); never reachable from"
+            + " a portal"
             + " request.");
 
     return m;

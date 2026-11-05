@@ -1,0 +1,17 @@
+== S2-14 (75.9) read-only SELECTs, 2026-11-06 00:48:21 SAST
+                                    file_name                                    |                                                                         s3_key                                                                         | visibility | size |  status  |          created_at           
+---------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------+------------+------+----------+-------------------------------
+ engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-11-05.pdf | org/tenant_5039f2d497cf/generated/206ee826-a7a5-49d7-9ca1-b4742b3152af/engagement-letter-litigation-sipho-dlamini-v-standard-bank-civil-2026-11-05.pdf | INTERNAL   | 5399 | UPLOADED | 2026-11-05 20:06:12.149385+00
+ Particulars of Claim — draft v1.pdf                                             | org/mathebula-partners/project/cd0ef789-214e-4001-978f-90c0b240ed95/e470d245-c49a-43e4-a4a3-1e60eccdf27d                                               | INTERNAL   |  613 | UPLOADED | 2026-11-05 20:27:22.586299+00
+ statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-11-05.pdf         | org/tenant_5039f2d497cf/generated/da7715f5-751f-4404-a6a0-211a143908d5/statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-11-05.pdf         | PORTAL     | 5758 | UPLOADED | 2026-11-05 20:40:25.514153+00
+ matter-closure-letter-sipho-dlamini-v-standard-bank-civil-2026-11-06.pdf        | org/tenant_5039f2d497cf/generated/79d13037-9ebc-4d81-b06b-de2a211240ff/matter-closure-letter-sipho-dlamini-v-standard-bank-civil-2026-11-06.pdf        | INTERNAL   | 2455 | UPLOADED | 2026-11-05 22:45:21.46434+00
+ statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-11-06.pdf         | org/tenant_5039f2d497cf/generated/b5d059f8-b6e2-47d4-8246-668c3c024a24/statement-of-account-sipho-dlamini-v-standard-bank-civil-2026-11-06.pdf         | INTERNAL   | 7006 | UPLOADED | 2026-11-05 22:45:21.644549+00
+(5 rows)
+
+                  id                  |                   description                    | amount  | approval_status | billing_status | billed 
+--------------------------------------+--------------------------------------------------+---------+-----------------+----------------+--------
+ 1bf0cfb3-a942-4702-a820-b5005c8dbb65 | Sheriff fee — service of process                 |  750.00 | APPROVED        | BILLED         | t
+ d3d8939c-96b6-493f-994e-f4c9925e6147 | Deeds office search fee                          | 1250.00 | APPROVED        | BILLED         | t
+ 69aa43bf-a010-4bb4-80d9-930b708449da | Court filing fee — D-3(h) write-off prerequisite |  500.00 | APPROVED        | WRITTEN_OFF    | f
+(3 rows)
+

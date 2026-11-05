@@ -1,0 +1,5 @@
+-[ RECORD 1 ]---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+event_type  | matter_closure.closed
+occurred_at | 2026-11-05 22:54:43.764414+00
+details     | {"reason": "CONCLUDED", "actor_name": "Thandi Mathebula", "project_id": "c441d229-47c5-41d2-a686-68551583937f", "justification": "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override", "override_used": true, "closure_log_id": "47a9cfaf-c792-4d90-8969-da5afe3210a0"}
+

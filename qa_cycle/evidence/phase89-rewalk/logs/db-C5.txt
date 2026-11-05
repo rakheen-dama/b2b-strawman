@@ -1,0 +1,11 @@
+ bank_statements_before 
+------------------------
+                      0
+(1 row)
+
+ bank_statements_after 
+-----------------------
+                     0
+(1 row)
+
+{"@timestamp":"2026-11-05T22:49:45.713664Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":76758,"thread":{"name":"tomcat-handler-12371"}},"service":{"name":"backend","node":{}},"message":"Bank statement could not be parsed: All 1 data lines were malformed; no valid transactions parsed","tenantId":"tenant_5039f2d497cf","userId":"02ae15

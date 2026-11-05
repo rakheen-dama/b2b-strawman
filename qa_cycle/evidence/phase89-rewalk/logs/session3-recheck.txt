@@ -1,0 +1,14 @@
+636B.3 re-check (brief §2.6) at 2026-11-06T00:43:01+0200 SAST — INSIDE the 00:00–02:00 SAST window, founder-authorised (HANDOFF "Amendment (founder, 2026-11-06 00:4x SAST)")
+power:  -InternalBattery-0 (id=24379491)	100%; finishing charge; 0:10 remaining present: true
+caffeinate: 10620 caffeinate -is ./scripts/run-phase.sh 89 636B;12083 caffeinate -dims -t 21600;74574 caffeinate -dimsu -t 14400;
+$MAIN HEAD 86e0fd5deca903225f959723b1a43e99c4b32e3b origin/main 86e0fd5deca903225f959723b1a43e99c4b32e3b (fetched)
+$MAIN status:  M tasks/insights/latest.stats.json;
+zombies: none
+:8080 holder 76758 etime 03:04:19
+:8443 holder 75625 etime 03:06:04
+:3000 holder 75682 etime 03:05:59
+:3002 holder 99129 etime 01:29:25
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+gateway health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend /: 200 portal /login: 200 KC: 200
+mailpit: {"total":15,"unread":9} (HANDOFF: 15/9)

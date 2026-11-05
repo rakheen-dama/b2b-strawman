@@ -11,10 +11,12 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
 import io.b2mash.b2b.b2bstrawman.worktype.WorkTypes;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -47,8 +49,22 @@ public class FieldGroupService {
 
   @Transactional(readOnly = true)
   public List<FieldGroupResponse> listByEntityType(EntityType entityType) {
-    return fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(entityType).stream()
-        .map(FieldGroupResponse::from)
+    var groups = fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(entityType);
+    if (groups.isEmpty()) {
+      return List.of();
+    }
+    // One batched query for every group's members (groupingBy keeps the query's sort order)
+    Map<UUID, List<UUID>> idsByGroup =
+        fieldGroupMemberRepository
+            .findByFieldGroupIdInOrderBySortOrder(groups.stream().map(FieldGroup::getId).toList())
+            .stream()
+            .collect(
+                Collectors.groupingBy(
+                    FieldGroupMember::getFieldGroupId,
+                    Collectors.mapping(
+                        FieldGroupMember::getFieldDefinitionId, Collectors.toList())));
+    return groups.stream()
+        .map(g -> FieldGroupResponse.from(g, idsByGroup.getOrDefault(g.getId(), List.of())))
         .toList();
   }
 
@@ -58,7 +74,7 @@ public class FieldGroupService {
         fieldGroupRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", id));
-    return FieldGroupResponse.from(fg);
+    return toResponse(fg);
   }
 
   @Transactional
@@ -104,7 +120,10 @@ public class FieldGroupService {
                     "slug", fg.getSlug()))
             .build());
 
-    return FieldGroupResponse.from(fg);
+    // G88-F3: create = the same membership sync against an empty group (per-member audit rows)
+    syncMembership(fg.getId(), request.fieldDefinitionIdsOrEmpty());
+
+    return toResponse(fg);
   }
 
   @Transactional
@@ -126,17 +145,30 @@ public class FieldGroupService {
 
     fg = fieldGroupRepository.save(fg);
 
-    log.info("Updated field group: id={}, name={}", fg.getId(), fg.getName());
+    // G88-F3: null = leave membership unchanged; a list = the complete membership, in order
+    var diff =
+        request.fieldDefinitionIds() == null
+            ? MembershipDiff.UNCHANGED
+            : syncMembership(fg.getId(), request.fieldDefinitionIds());
+
+    log.info(
+        "Updated field group: id={}, name={}, membersAdded={}, membersRemoved={}",
+        fg.getId(),
+        fg.getName(),
+        diff.added(),
+        diff.removed());
 
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("field_group.updated")
             .entityType("field_group")
             .entityId(fg.getId())
-            .details(Map.of("name", fg.getName()))
+            .details(
+                Map.<String, Object>of(
+                    "name", fg.getName(), "added", diff.added(), "removed", diff.removed()))
             .build());
 
-    return FieldGroupResponse.from(fg);
+    return toResponse(fg);
   }
 
   @Transactional
@@ -262,6 +294,54 @@ public class FieldGroupService {
     return fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
   }
 
+  /** Added/removed member counts of one membership sync (audited on field_group.updated). */
+  private record MembershipDiff(int added, int removed) {
+    static final MembershipDiff UNCHANGED = new MembershipDiff(0, 0);
+  }
+
+  /**
+   * G88-F3 (§14.3.16): makes the group's membership equal {@code requested}, in that order, through
+   * the granular paths ({@link #removeFieldFromGroup}, {@link #addFieldToGroup}, {@link
+   * #reorderFields} — entity-type validation, per-member audit) — never a delete-all + insert-all.
+   * Self-invocation keeps every step in the caller's transaction, so any rejected field rolls back
+   * the whole create/update. Duplicates are rejected before any write.
+   */
+  private MembershipDiff syncMembership(UUID groupId, List<UUID> requested) {
+    var requestedSet = new HashSet<>(requested);
+    if (requestedSet.size() != requested.size()) {
+      throw new InvalidStateException(
+          "Duplicate field", "A field can appear only once in a field group");
+    }
+    var current = memberIds(groupId);
+    var currentSet = new HashSet<>(current);
+    var removed = current.stream().filter(id -> !requestedSet.contains(id)).toList();
+    for (UUID fieldId : removed) {
+      removeFieldFromGroup(groupId, fieldId);
+    }
+    int added = 0;
+    for (int i = 0; i < requested.size(); i++) {
+      if (!currentSet.contains(requested.get(i))) {
+        addFieldToGroup(groupId, requested.get(i), i);
+        added++;
+      }
+    }
+    if (!requested.isEmpty()) {
+      reorderFields(groupId, requested); // order = list order (0..n-1)
+    }
+    return new MembershipDiff(added, removed.size());
+  }
+
+  /** The response with the group's member ids in sort order (every single-group producer). */
+  private FieldGroupResponse toResponse(FieldGroup fg) {
+    return FieldGroupResponse.from(fg, memberIds(fg.getId()));
+  }
+
+  private List<UUID> memberIds(UUID groupId) {
+    return fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId).stream()
+        .map(FieldGroupMember::getFieldDefinitionId)
+        .toList();
+  }
+
   // --- Auto-apply methods ---
 
   /** Toggles the autoApply flag on a field group. When toggling to true, retroactively applies. */
@@ -291,7 +371,7 @@ public class FieldGroupService {
             .details(Map.of("auto_apply", String.valueOf(autoApply)))
             .build());
 
-    return FieldGroupResponse.from(group);
+    return toResponse(group);
   }
 
   private void retroactiveApply(FieldGroup group) {

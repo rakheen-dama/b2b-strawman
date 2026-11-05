@@ -128,6 +128,7 @@ describe("FieldGroupDialog", () => {
         active: true,
         autoApply: false,
         dependsOn: null,
+        fieldDefinitionIds: [],
         createdAt: "2025-01-15T10:00:00Z",
         updatedAt: "2025-01-15T10:00:00Z",
       },
@@ -142,6 +143,7 @@ describe("FieldGroupDialog", () => {
         active: true,
         autoApply: false,
         dependsOn: null,
+        fieldDefinitionIds: [],
         createdAt: "2025-01-15T10:00:00Z",
         updatedAt: "2025-01-15T10:00:00Z",
       },
@@ -181,6 +183,7 @@ describe("FieldGroupDialog", () => {
       active: true,
       autoApply: false,
       dependsOn: null,
+      fieldDefinitionIds: [],
       createdAt: "2025-01-15T10:00:00Z",
       updatedAt: "2025-01-15T10:00:00Z",
     };
@@ -198,6 +201,7 @@ describe("FieldGroupDialog", () => {
         active: true,
         autoApply: false,
         dependsOn: null,
+        fieldDefinitionIds: [],
         createdAt: "2025-01-15T10:00:00Z",
         updatedAt: "2025-01-15T10:00:00Z",
       },
@@ -235,5 +239,72 @@ describe("FieldGroupDialog", () => {
     const listItems = screen.getAllByRole("option");
     const selfItem = listItems.find((item) => item.textContent?.includes("Self Group"));
     expect(selfItem).toBeUndefined();
+  });
+
+  describe("editing membership (G88-F3)", () => {
+    const memberGroup: FieldGroupResponse = {
+      id: "g-members",
+      entityType: "PROJECT",
+      name: "Member Group",
+      slug: "member_group",
+      description: null,
+      packId: null,
+      sortOrder: 0,
+      active: true,
+      autoApply: false,
+      dependsOn: null,
+      fieldDefinitionIds: ["fd-2"],
+      createdAt: "2025-01-15T10:00:00Z",
+      updatedAt: "2025-01-15T10:00:00Z",
+    };
+
+    it("pre-checks initialFieldIds when editing", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <FieldGroupDialog
+          slug="acme"
+          entityType="PROJECT"
+          group={memberGroup}
+          availableFields={makeAvailableFields()}
+          initialFieldIds={memberGroup.fieldDefinitionIds}
+        >
+          <button>Open Prechecked Dialog</button>
+        </FieldGroupDialog>
+      );
+
+      await user.click(screen.getByText("Open Prechecked Dialog"));
+
+      expect(screen.getByText("1 field selected")).toBeInTheDocument();
+      expect(screen.getByText("Priority Level")).toBeInTheDocument();
+    });
+
+    it("sends the edited membership on save", async () => {
+      mockUpdateFieldGroup.mockResolvedValue({ success: true });
+      const user = userEvent.setup();
+
+      render(
+        <FieldGroupDialog
+          slug="acme"
+          entityType="PROJECT"
+          group={memberGroup}
+          availableFields={makeAvailableFields()}
+          initialFieldIds={memberGroup.fieldDefinitionIds}
+        >
+          <button>Open Save Membership Dialog</button>
+        </FieldGroupDialog>
+      );
+
+      await user.click(screen.getByText("Open Save Membership Dialog"));
+      await user.click(screen.getByRole("button", { name: "Save Changes" }));
+
+      await waitFor(() => {
+        expect(mockUpdateFieldGroup).toHaveBeenCalledWith(
+          "acme",
+          "g-members",
+          expect.objectContaining({ fieldDefinitionIds: ["fd-2"] })
+        );
+      });
+    });
   });
 });

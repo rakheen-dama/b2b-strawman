@@ -86,6 +86,8 @@ export interface FieldGroupResponse {
   active: boolean;
   autoApply: boolean;
   dependsOn: string[] | null;
+  /** Member field definition ids in display order (`field_group_members.sort_order`) — G88-F3. */
+  fieldDefinitionIds: string[];
   createdAt: string;
   updatedAt: string;
 }

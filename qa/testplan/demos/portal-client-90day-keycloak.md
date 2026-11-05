@@ -57,7 +57,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.A** Confirm **portal** is running on `:3002`: `curl -sS http://localhost:3002/ -o /dev/null -w "%{http_code}\n"` returns `307` (the portal redirects `/` to `/home`); with `curl -sSL` the final code is `200`. Start via `bash compose/scripts/svc.sh start portal` if not. (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: `portal/middleware.ts:4-19` redirects `/` → `/home`)
 - [ ] **0.B** Confirm each of the three firm-side tenants has at least the minimum firm-side lifecycle slice run (see Prerequisites table above). Without this, portal pages render empty states and wow moments cannot be captured.
 - [ ] **0.C** Confirm each client has a portal contact: portal contacts are auto-provisioned from the client's email when the firm creates the client — there is no firm-side create control and no "Client contact" label — so record them with a read-only SELECT on `portal_contacts` (Sipho's is the client email from the 90-day file's 1.7) (Phase 89 decision 7 / G88-F37 — amended, not built, founder-authorised 2026-11-03: `PortalContactAutoProvisioner.java:42-46` provisions on `CustomerCreatedEvent`; no "Client contact" label in `frontend/`)
-- [ ] **0.D** Mailpit (`http://localhost:8025`) is reachable — Day 0, Day 7, Day 21, Day 75, Day 85 all involve inspecting an email the portal user receives. (Phase 89 decision 7 / G88-F34 — dropped, founder-authorised 2026-11-03: Day 90's final digest does not exist)
+- [ ] **0.D** Mailpit (`http://localhost:8025`) is reachable — Day 0, Day 7, Day 21, Day 75 all involve inspecting an email the portal user receives. (Phase 89 decision 7 / G88-F34 — dropped, founder-authorised 2026-11-03: Day 90's final digest does not exist; Day 85 inspects no email either — §5b row 20, the profile is read-only — matching E.8)
 
 ---
 
@@ -197,7 +197,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **75.4** Removed — the portal has no control that marks a deadline nudge read (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: ADR-363 "No mark-read control"; `deadline-detail-panel.tsx:83-172` has none)
 - [ ] **75.5** Removed — with no mark-read there is no unread state to clear (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: see 75.4)
 - [ ] **75.6** Download the related document from the deadline detail view → PDF opens successfully
-- [ ] **75.7** 📸 **Screenshot**: `day-75-deadline-nudge-read.png`
+- [ ] **75.7** 📸 **Screenshot**: `day-75-deadline-detail.png` (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: the frame shows the deadline detail, not a read state; `portal/e2e/tests/portal-client-90day/day-45-75.spec.ts:243`)
 
 **Day 75 checkpoints**
 - [ ] Download audit event recorded (firm-side audit log shows the portal contact accessed the doc)

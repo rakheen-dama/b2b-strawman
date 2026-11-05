@@ -331,6 +331,39 @@ describe("TaskDetailSheet", () => {
     });
   });
 
+  // G88-M6 (634C): a comment notification deep link (?commentId=) opens the sheet on Comments
+  it("opens on the Comments tab when a commentId is targeted", async () => {
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" commentId="c1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("tab", { name: "Comments" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Time Entries" })).toHaveAttribute(
+      "aria-selected",
+      "false"
+    );
+    // CommentSectionClient is mounted without clicking the tab
+    await waitFor(() => {
+      expect(screen.getByLabelText("Add a comment")).toBeInTheDocument();
+    });
+  });
+
+  it("opens on the Time Entries tab when no commentId is targeted", async () => {
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" commentId={null} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("tab", { name: "Time Entries" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByRole("tab", { name: "Comments" })).toHaveAttribute("aria-selected", "false");
+  });
+
   // Test 6: TagInput renders in sheet with current task tags
   it("renders TagInput with current task tags when task has tags", async () => {
     mockFetchTask.mockResolvedValue(makeTask({ tags: [tag1], appliedFieldGroups: [] }));

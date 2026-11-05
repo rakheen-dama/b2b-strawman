@@ -101,6 +101,7 @@ export function NotificationDropdown({
               notification={notification}
               orgSlug={orgSlug}
               onRead={handleItemRead}
+              onNavigate={onClose}
             />
           ))}
       </div>

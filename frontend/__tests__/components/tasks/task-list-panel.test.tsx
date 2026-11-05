@@ -652,6 +652,29 @@ describe("TaskListPanel", () => {
     });
   });
 
+  // 634C review: a deep link to a task outside the default-filtered list (here the only task is
+  // DONE, so the "No tasks yet" empty state renders) must still mount and open the sheet.
+  it("opens TaskDetailSheet for ?taskId= even when the default-filtered list is empty", async () => {
+    mockSearchParams = new URLSearchParams("tab=tasks&taskId=t3");
+    mockFetchTask.mockResolvedValue(doneTask);
+
+    render(
+      <TaskListPanel
+        tasks={[doneTask]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />
+    );
+
+    expect(screen.getByText("No tasks yet")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockFetchTask).toHaveBeenCalledWith("t3");
+    });
+    expect(await screen.findByRole("button", { name: /Close task detail/i })).toBeInTheDocument();
+  });
+
   // 130B: Closing the sheet clears ?taskId= from URL
   it("closing the sheet clears taskId from URL", async () => {
     // Set URL to have taskId
@@ -682,6 +705,34 @@ describe("TaskListPanel", () => {
     // taskId should NOT be in the push URL
     const pushCall = mockPush.mock.calls[0][0] as string;
     expect(pushCall).not.toContain("taskId");
+  });
+
+  // G88-M6 (634C): a comment deep link opens the sheet on Comments; closing clears the target
+  it("opens the sheet on Comments for ?commentId= and clears commentId on close", async () => {
+    mockSearchParams = new URLSearchParams("tab=tasks&taskId=t1&commentId=c1");
+
+    const user = userEvent.setup();
+
+    render(
+      <TaskListPanel
+        tasks={[openUnassigned]}
+        slug="acme"
+        projectId="p1"
+        canManage={true}
+        currentMemberId="current-member"
+      />
+    );
+
+    const commentsTab = await screen.findByRole("tab", { name: "Comments" });
+    expect(commentsTab).toHaveAttribute("aria-selected", "true");
+
+    const closeButton = await screen.findByRole("button", { name: /Close task detail/i });
+    await user.click(closeButton);
+
+    const pushCall = mockPush.mock.calls[0][0] as string;
+    expect(pushCall).toContain("tab=tasks");
+    expect(pushCall).not.toContain("taskId");
+    expect(pushCall).not.toContain("commentId");
   });
 
   // 130B: Inline expansion row is fully removed

@@ -10,6 +10,8 @@ export interface Notification {
   referenceEntityType: string | null;
   referenceEntityId: string | null;
   referenceMatterId: string | null;
+  /** The comment a COMMENT_ADDED notification is about (G88-M6); null otherwise and for older rows. */
+  referenceCommentId: string | null;
   isRead: boolean;
   createdAt: string;
 }

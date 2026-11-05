@@ -25,6 +25,9 @@ import org.springframework.http.MediaType;
  * <p>Every test comments on a fresh, un-assigned task that nobody else has commented on, so the
  * mention is the only route by which the member can be notified (task assignee and prior-commenter
  * fan-out would otherwise mask the parser). The comment author is always Alice.
+ *
+ * <p>The mentioned members are on the matter — C2/634C filters mention candidates by matter access
+ * (that filter is covered by {@code notification/CommentMentionAccessIntegrationTest}).
  */
 class CommentMentionNotificationIntegrationTest extends AbstractIntegrationTest {
 
@@ -43,12 +46,18 @@ class CommentMentionNotificationIntegrationTest extends AbstractIntegrationTest 
     provisioningService.provisionTenant(ORG_ID, "Comment Mention Test Org", null);
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, ALICE, "cm_alice@test.com", "Alice Author", "owner");
-    TestMemberHelper.syncMember(mockMvc, ORG_ID, BOB, "cm_bob@test.com", "Bob Mention", "member");
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, BOB_SECOND, "cm_bob_second@test.com", "Bob Second", "member");
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, CAROL, "cm_carol@test.com", "Carol Mention", "member");
-    TestMemberHelper.syncMember(mockMvc, ORG_ID, ZOE, "cm_zoe@test.com", "Zoë Khumalo", "member");
+    String bobId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, BOB, "cm_bob@test.com", "Bob Mention", "member");
+    String bobSecondId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, BOB_SECOND, "cm_bob_second@test.com", "Bob Second", "member");
+    String carolId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, CAROL, "cm_carol@test.com", "Carol Mention", "member");
+    String zoeId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, ZOE, "cm_zoe@test.com", "Zoë Khumalo", "member");
 
     projectId =
         TestEntityHelper.createProject(
@@ -56,6 +65,19 @@ class CommentMentionNotificationIntegrationTest extends AbstractIntegrationTest 
             TestJwtFactory.ownerJwt(ORG_ID, ALICE),
             "Mention Test Matter",
             "G88-F36 mention parsing");
+    for (String memberId : List.of(bobId, bobSecondId, carolId, zoeId)) {
+      mockMvc
+          .perform(
+              post("/api/matters/" + projectId + "/members")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, ALICE))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      """
+                      {"memberId": "%s"}
+                      """
+                          .formatted(memberId)))
+          .andExpect(status().isCreated());
+    }
   }
 
   /** The QA reproduction: a first-name mention followed by more words. */
@@ -132,6 +154,16 @@ class CommentMentionNotificationIntegrationTest extends AbstractIntegrationTest 
     String taskId = commentOnFreshTask("@Zoë please look at clause 4");
 
     assertThat(hasCommentNotification(ZOE, taskId)).isTrue();
+  }
+
+  @Test
+  void mentionMatchingNoMember_notifiesNobody() throws Exception {
+    String taskId = commentOnFreshTask("@Nobody Here please review");
+
+    assertThat(hasCommentNotification(BOB, taskId)).isFalse();
+    assertThat(hasCommentNotification(BOB_SECOND, taskId)).isFalse();
+    assertThat(hasCommentNotification(CAROL, taskId)).isFalse();
+    assertThat(hasCommentNotification(ZOE, taskId)).isFalse();
   }
 
   @Test

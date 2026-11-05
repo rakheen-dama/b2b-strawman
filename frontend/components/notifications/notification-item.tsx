@@ -18,6 +18,8 @@ interface NotificationItemProps {
   notification: Notification;
   orgSlug: string;
   onRead?: () => void;
+  /** Called after the item navigates (the bell popover closes itself with it). */
+  onNavigate?: () => void;
 }
 
 const NOTIFICATION_ICON_MAP: Record<string, LucideIcon> = {
@@ -28,10 +30,30 @@ const NOTIFICATION_ICON_MAP: Record<string, LucideIcon> = {
 };
 
 function getDeepLinkUrl(orgSlug: string, notification: Notification): string | null {
-  const { referenceMatterId, referenceEntityType } = notification;
+  const { referenceMatterId, referenceEntityType, referenceEntityId, referenceCommentId } =
+    notification;
   if (!referenceMatterId) return null;
 
   const base = `/org/${orgSlug}/matters/${referenceMatterId}`;
+  if (referenceCommentId) {
+    // G88-M6: a comment notification opens the comment itself. PROJECT-target comments land on
+    // the matter Comments tab (634E); until that tab exists the unknown tab id falls back to
+    // Overview.
+    switch (referenceEntityType) {
+      case "TASK":
+        if (referenceEntityId) {
+          return `${base}?${new URLSearchParams({ tab: "tasks", taskId: referenceEntityId, commentId: referenceCommentId })}`;
+        }
+        break;
+      case "DOCUMENT":
+        if (referenceEntityId) {
+          return `${base}?${new URLSearchParams({ tab: "documents", documentId: referenceEntityId, commentId: referenceCommentId })}`;
+        }
+        break;
+      case "PROJECT":
+        return `${base}?${new URLSearchParams({ tab: "comments", commentId: referenceCommentId })}`;
+    }
+  }
   switch (referenceEntityType) {
     case "TASK":
       return `${base}?tab=tasks`;
@@ -42,7 +64,12 @@ function getDeepLinkUrl(orgSlug: string, notification: Notification): string | n
   }
 }
 
-export function NotificationItem({ notification, orgSlug, onRead }: NotificationItemProps) {
+export function NotificationItem({
+  notification,
+  orgSlug,
+  onRead,
+  onNavigate,
+}: NotificationItemProps) {
   const router = useRouter();
   const prefix = notification.type.split("_")[0];
   const Icon = NOTIFICATION_ICON_MAP[prefix] ?? BellRing;
@@ -58,6 +85,7 @@ export function NotificationItem({ notification, orgSlug, onRead }: Notification
     const url = getDeepLinkUrl(orgSlug, notification);
     if (url) {
       router.push(url);
+      onNavigate?.();
     }
   }
 

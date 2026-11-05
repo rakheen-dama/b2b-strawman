@@ -12,7 +12,17 @@ vi.mock("@/app/(app)/org/[slug]/matters/[id]/actions", () => ({
   getDownloadUrl: vi.fn().mockResolvedValue({ success: true, presignedUrl: "https://example.com" }),
 }));
 
+vi.mock("@/lib/actions/comments", () => ({
+  fetchComments: vi.fn().mockResolvedValue([]),
+  createComment: vi.fn(),
+  updateComment: vi.fn(),
+  deleteComment: vi.fn(),
+}));
+
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
+  useSearchParams: () => mockSearchParams,
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -46,6 +56,7 @@ function makeDocument(overrides: Partial<Document> = {}): Document {
 describe("DocumentsPanel", () => {
   afterEach(() => {
     cleanup();
+    mockSearchParams = new URLSearchParams();
   });
 
   it("shows empty state with correct description when no documents", () => {
@@ -78,5 +89,54 @@ describe("DocumentsPanel", () => {
     expect(manualRow).toBeDefined();
     expect(within(commentRow!).getByText("Comment")).toBeInTheDocument();
     expect(within(manualRow!).queryByText("Comment")).not.toBeInTheDocument();
+  });
+
+  // G88-M6 (634C): a document comment notification (?documentId=&commentId=) opens the panel with
+  // that document's comments expanded.
+  it("expands the document named by ?documentId= on mount", () => {
+    mockSearchParams = new URLSearchParams("tab=documents&documentId=d2&commentId=c1");
+    render(
+      <DocumentsPanel
+        documents={[
+          makeDocument({ id: "d1", fileName: "masters-appointment.pdf" }),
+          makeDocument({ id: "d2", fileName: "engagement-letter.pdf" }),
+        ]}
+        projectId="p1"
+        slug="acme"
+      />
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Collapse comments for engagement-letter.pdf" })
+    ).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("button", { name: "Expand comments for masters-appointment.pdf" })
+    ).toHaveAttribute("aria-expanded", "false");
+  });
+
+  // 634C review: a bell click for another document while the panel is already mounted re-expands.
+  it("expands a newly targeted document when ?documentId= changes while mounted", () => {
+    mockSearchParams = new URLSearchParams("tab=documents&documentId=d2&commentId=c1");
+    const documents = [
+      makeDocument({ id: "d1", fileName: "masters-appointment.pdf" }),
+      makeDocument({ id: "d2", fileName: "engagement-letter.pdf" }),
+    ];
+    const { rerender } = render(
+      <DocumentsPanel documents={documents} projectId="p1" slug="acme" />
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Collapse comments for engagement-letter.pdf" })
+    ).toHaveAttribute("aria-expanded", "true");
+
+    mockSearchParams = new URLSearchParams("tab=documents&documentId=d1&commentId=c2");
+    rerender(<DocumentsPanel documents={documents} projectId="p1" slug="acme" />);
+
+    expect(
+      screen.getByRole("button", { name: "Collapse comments for masters-appointment.pdf" })
+    ).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("button", { name: "Expand comments for engagement-letter.pdf" })
+    ).toHaveAttribute("aria-expanded", "false");
   });
 });

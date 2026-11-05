@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { useSearchParams } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import { fetchComments } from "@/lib/actions/comments";
 import type { Comment } from "@/lib/types";
@@ -27,6 +28,9 @@ export function CommentSectionClient({
   canManageVisibility,
 }: CommentSectionClientProps) {
   const { t } = createMessages("empty-states");
+  // G88-M6: a notification deep link (?commentId=) highlights that comment. `?.` — the hook returns
+  // null outside an App Router context (unit tests that render the section without a router).
+  const targetCommentId = useSearchParams()?.get("commentId") ?? null;
 
   const {
     data: comments,
@@ -74,6 +78,7 @@ export function CommentSectionClient({
               orgSlug={orgSlug}
               projectId={projectId}
               onCommentChange={refresh}
+              highlighted={comment.id === targetCommentId}
             />
           ))}
         </div>

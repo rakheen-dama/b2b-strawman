@@ -79,6 +79,8 @@ export function TaskListPanel({
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedTaskId = searchParams.get("taskId");
+  // G88-M6: a comment notification deep link targets one comment on the task.
+  const selectedCommentId = searchParams.get("commentId");
   const [activeStatuses, setActiveStatuses] = useState<Set<TaskStatus>>(new Set(DEFAULT_STATUSES));
   const [myTasksActive, setMyTasksActive] = useState(false);
   const [recurringActive, setRecurringActive] = useState(false);
@@ -103,12 +105,15 @@ export function TaskListPanel({
   function openTask(id: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("taskId", id);
+    // A stale comment target must not force the next task open on its Comments tab.
+    params.delete("commentId");
     router.push(`?${params.toString()}`, { scroll: false });
   }
 
   function closeTask() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("taskId");
+    params.delete("commentId");
     router.push(`?${params.toString()}`, { scroll: false });
   }
 
@@ -301,6 +306,26 @@ export function TaskListPanel({
     </Suspense>
   ) : null;
 
+  // The sheet loads its task by id, so it must stay mounted even when the filtered list is empty —
+  // a deep link (?taskId=) to a DONE/CANCELLED task must still open it.
+  const taskSheet = (
+    <TaskDetailSheet
+      taskId={selectedTaskId}
+      commentId={selectedCommentId}
+      onClose={closeTask}
+      projectId={projectId}
+      slug={slug}
+      canManage={canManage}
+      currentMemberId={currentMemberId ?? ""}
+      isAdmin={isAdmin}
+      members={members}
+      allTags={allTags}
+      fieldDefinitions={fieldDefinitions}
+      fieldGroups={fieldGroups}
+      groupMembers={groupMembers}
+    />
+  );
+
   if (tasks.length === 0 && isDefaultFilter) {
     return (
       <div className="space-y-4">
@@ -311,6 +336,7 @@ export function TaskListPanel({
           title="No tasks yet"
           description="Create a task to start tracking work on this matter"
         />
+        {taskSheet}
       </div>
     );
   }
@@ -379,20 +405,7 @@ export function TaskListPanel({
           </div>
         </TooltipProvider>
       )}
-      <TaskDetailSheet
-        taskId={selectedTaskId}
-        onClose={closeTask}
-        projectId={projectId}
-        slug={slug}
-        canManage={canManage}
-        currentMemberId={currentMemberId ?? ""}
-        isAdmin={isAdmin}
-        members={members}
-        allTags={allTags}
-        fieldDefinitions={fieldDefinitions}
-        fieldGroups={fieldGroups}
-        groupMembers={groupMembers}
-      />
+      {taskSheet}
     </div>
   );
 }

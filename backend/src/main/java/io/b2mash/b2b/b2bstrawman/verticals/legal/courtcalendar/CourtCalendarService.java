@@ -3,9 +3,13 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.event.CourtDateCancelledEvent;
+import io.b2mash.b2b.b2bstrawman.event.CourtDateScheduledEvent;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import jakarta.validation.constraints.NotBlank;
@@ -22,6 +26,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,6 +49,8 @@ public class CourtCalendarService {
           "TAXATION",
           "OTHER");
 
+  private static final String SCHEDULED = "SCHEDULED";
+
   private static final Map<String, Set<String>> ALLOWED_TRANSITIONS =
       Map.of(
           "SCHEDULED", Set.of("POSTPONED", "HEARD", "CANCELLED"),
@@ -56,6 +63,8 @@ public class CourtCalendarService {
   private final CustomerRepository customerRepository;
   private final AuditService auditService;
   private final Clock clock;
+  private final ApplicationEventPublisher eventPublisher;
+  private final MemberNameResolver memberNameResolver;
 
   public CourtCalendarService(
       CourtDateRepository courtDateRepository,
@@ -64,7 +73,9 @@ public class CourtCalendarService {
       ProjectRepository projectRepository,
       CustomerRepository customerRepository,
       AuditService auditService,
-      Clock clock) {
+      Clock clock,
+      ApplicationEventPublisher eventPublisher,
+      MemberNameResolver memberNameResolver) {
     this.courtDateRepository = courtDateRepository;
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.moduleGuard = moduleGuard;
@@ -72,6 +83,8 @@ public class CourtCalendarService {
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.clock = clock;
+    this.eventPublisher = eventPublisher;
+    this.memberNameResolver = memberNameResolver;
   }
 
   // --- DTO Records ---
@@ -199,6 +212,8 @@ public class CourtCalendarService {
                     "court_name", saved.getCourtName()))
             .build());
 
+    publishScheduled(saved, memberId);
+
     return toResponse(saved);
   }
 
@@ -213,6 +228,8 @@ public class CourtCalendarService {
 
     requireMutableState(courtDate);
     validateDateType(request.dateType());
+
+    var portalFieldsBefore = PortalFields.of(courtDate);
 
     courtDate.setDateType(request.dateType());
     courtDate.setScheduledDate(request.scheduledDate());
@@ -239,6 +256,12 @@ public class CourtCalendarService {
                     "scheduled_date", saved.getScheduledDate().toString(),
                     "court_name", saved.getCourtName()))
             .build());
+
+    // Only a SCHEDULED row is a live portal deadline (a POSTPONED original was removed from the
+    // portal by the postpone — D5), and only the portal-visible fields matter.
+    if (SCHEDULED.equals(saved.getStatus()) && !portalFieldsBefore.equals(PortalFields.of(saved))) {
+      publishScheduled(saved, RequestScopes.requireMemberId());
+    }
 
     return toResponse(saved);
   }
@@ -294,6 +317,10 @@ public class CourtCalendarService {
                     saved.getId().toString()))
             .build());
 
+    UUID actorId = RequestScopes.requireMemberId();
+    publishCancelled(original, "POSTPONED", actorId);
+    publishScheduled(saved, actorId);
+
     return toResponse(saved);
   }
 
@@ -324,6 +351,8 @@ public class CourtCalendarService {
             .details(Map.of("reason", request.reason() != null ? request.reason() : ""))
             .build());
 
+    publishCancelled(saved, "CANCELLED", RequestScopes.requireMemberId());
+
     return toResponse(saved);
   }
 
@@ -337,6 +366,8 @@ public class CourtCalendarService {
             .orElseThrow(() -> new ResourceNotFoundException("CourtDate", id));
 
     validateTransition(courtDate.getStatus(), "HEARD");
+    // A POSTPONED original is no longer a portal deadline — its outcome publishes nothing (R6.4).
+    boolean wasScheduled = SCHEDULED.equals(courtDate.getStatus());
 
     courtDate.setStatus("HEARD");
     courtDate.setOutcome(request.outcome());
@@ -351,6 +382,10 @@ public class CourtCalendarService {
             .entityId(saved.getId())
             .details(Map.of("outcome", request.outcome()))
             .build());
+
+    if (wasScheduled) {
+      publishScheduled(saved, RequestScopes.requireMemberId());
+    }
 
     return toResponse(saved);
   }
@@ -557,5 +592,76 @@ public class CourtCalendarService {
         entity.getCreatedBy(),
         entity.getCreatedAt(),
         entity.getUpdatedAt());
+  }
+
+  // --- Portal deadline events (Phase 89 633B, ADR-363) ---
+
+  /**
+   * The court-date fields that reach the portal deadline row (label, due date, description). Firm-
+   * only fields (time, judge, description, reminder days) are deliberately not part of it.
+   */
+  private record PortalFields(
+      String dateType, LocalDate scheduledDate, String courtName, String courtReference) {
+    static PortalFields of(CourtDate cd) {
+      return new PortalFields(
+          cd.getDateType(), cd.getScheduledDate(), cd.getCourtName(), cd.getCourtReference());
+    }
+  }
+
+  /** Publishes {@link CourtDateScheduledEvent} — carries no judge, outcome or description (B10). */
+  private void publishScheduled(CourtDate cd, UUID actorId) {
+    eventPublisher.publishEvent(
+        new CourtDateScheduledEvent(
+            "court_date.scheduled",
+            "court_date",
+            cd.getId(),
+            cd.getProjectId(),
+            actorId,
+            resolveActorName(actorId),
+            RequestScopes.requireTenantId(),
+            RequestScopes.requireOrgId(),
+            Instant.now(),
+            Map.of(
+                "date_type", cd.getDateType(),
+                "scheduled_date", cd.getScheduledDate().toString(),
+                "court_name", nullToEmpty(cd.getCourtName()),
+                "court_reference", nullToEmpty(cd.getCourtReference()),
+                "status", cd.getStatus(),
+                "project_id", cd.getProjectId().toString()),
+            cd.getCustomerId(),
+            cd.getDateType(),
+            cd.getScheduledDate(),
+            cd.getCourtName(),
+            cd.getCourtReference(),
+            cd.getStatus()));
+  }
+
+  /**
+   * Publishes {@link CourtDateCancelledEvent}; {@code reasonLiteral} is a status literal, never the
+   * user's reason text (stored in the firm-only outcome field — D1).
+   */
+  private void publishCancelled(CourtDate cd, String reasonLiteral, UUID actorId) {
+    eventPublisher.publishEvent(
+        new CourtDateCancelledEvent(
+            "court_date.cancelled",
+            "court_date",
+            cd.getId(),
+            cd.getProjectId(),
+            actorId,
+            resolveActorName(actorId),
+            RequestScopes.requireTenantId(),
+            RequestScopes.requireOrgId(),
+            Instant.now(),
+            Map.of("reason", reasonLiteral, "project_id", cd.getProjectId().toString()),
+            cd.getCustomerId(),
+            reasonLiteral));
+  }
+
+  private String resolveActorName(UUID actorId) {
+    return actorId != null ? memberNameResolver.resolveNameOrNull(actorId) : null;
+  }
+
+  private static String nullToEmpty(String s) {
+    return s == null ? "" : s;
   }
 }

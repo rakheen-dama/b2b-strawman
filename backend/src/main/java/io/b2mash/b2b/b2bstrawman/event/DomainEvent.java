@@ -57,7 +57,11 @@ public sealed interface DomainEvent
         RequestItemRejectedEvent,
         InformationRequestDraftCreatedEvent,
         CustomerStatusChangedEvent,
-        FieldDateApproachingEvent {
+        FieldDateApproachingEvent,
+        CourtDateScheduledEvent,
+        CourtDateCancelledEvent,
+        PrescriptionDeadlineSetEvent,
+        PrescriptionDeadlineClearedEvent {
 
   String eventType();
 

@@ -3,9 +3,13 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.event.PrescriptionDeadlineClearedEvent;
+import io.b2mash.b2b.b2bstrawman.event.PrescriptionDeadlineSetEvent;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,6 +43,8 @@ public class PrescriptionTrackerService {
   private final CustomerRepository customerRepository;
   private final AuditService auditService;
   private final Clock clock;
+  private final ApplicationEventPublisher eventPublisher;
+  private final MemberNameResolver memberNameResolver;
 
   public PrescriptionTrackerService(
       PrescriptionTrackerRepository prescriptionTrackerRepository,
@@ -45,13 +52,17 @@ public class PrescriptionTrackerService {
       ProjectRepository projectRepository,
       CustomerRepository customerRepository,
       AuditService auditService,
-      Clock clock) {
+      Clock clock,
+      ApplicationEventPublisher eventPublisher,
+      MemberNameResolver memberNameResolver) {
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.clock = clock;
+    this.eventPublisher = eventPublisher;
+    this.memberNameResolver = memberNameResolver;
   }
 
   // --- DTO Records ---
@@ -137,6 +148,8 @@ public class PrescriptionTrackerService {
                     "prescription_date", saved.getPrescriptionDate().toString()))
             .build());
 
+    publishSet(saved, memberId);
+
     return toResponse(saved);
   }
 
@@ -177,6 +190,8 @@ public class PrescriptionTrackerService {
                     "prescription_date", saved.getPrescriptionDate().toString()))
             .build());
 
+    publishSet(saved, RequestScopes.requireMemberId());
+
     return toResponse(saved);
   }
 
@@ -208,6 +223,8 @@ public class PrescriptionTrackerService {
                     "interruption_date", saved.getInterruptionDate().toString(),
                     "interruption_reason", saved.getInterruptionReason()))
             .build());
+
+    publishCleared(saved, RequestScopes.requireMemberId());
 
     return toResponse(saved);
   }
@@ -355,5 +372,57 @@ public class PrescriptionTrackerService {
         entity.getCreatedBy(),
         entity.getCreatedAt(),
         entity.getUpdatedAt());
+  }
+
+  // --- Portal deadline events (Phase 89 633B, ADR-363) ---
+
+  /**
+   * Publishes {@link PrescriptionDeadlineSetEvent} — carries no cause-of-action date, notes or
+   * interruption data (B10).
+   */
+  private void publishSet(PrescriptionTracker t, UUID actorId) {
+    eventPublisher.publishEvent(
+        new PrescriptionDeadlineSetEvent(
+            "prescription.deadline_set",
+            "prescription_tracker",
+            t.getId(),
+            t.getProjectId(),
+            actorId,
+            resolveActorName(actorId),
+            RequestScopes.requireTenantId(),
+            RequestScopes.requireOrgId(),
+            Instant.now(),
+            Map.of(
+                "prescription_type", t.getPrescriptionType(),
+                "prescription_date", t.getPrescriptionDate().toString(),
+                "project_id", t.getProjectId().toString()),
+            t.getCustomerId(),
+            t.getPrescriptionType(),
+            t.getPrescriptionDate()));
+  }
+
+  /**
+   * Publishes {@link PrescriptionDeadlineClearedEvent}; the reason is the {@code INTERRUPTED}
+   * literal, never the firm's interruption reason (D1).
+   */
+  private void publishCleared(PrescriptionTracker t, UUID actorId) {
+    eventPublisher.publishEvent(
+        new PrescriptionDeadlineClearedEvent(
+            "prescription.deadline_cleared",
+            "prescription_tracker",
+            t.getId(),
+            t.getProjectId(),
+            actorId,
+            resolveActorName(actorId),
+            RequestScopes.requireTenantId(),
+            RequestScopes.requireOrgId(),
+            Instant.now(),
+            Map.of("reason", "INTERRUPTED", "project_id", t.getProjectId().toString()),
+            t.getCustomerId(),
+            "INTERRUPTED"));
+  }
+
+  private String resolveActorName(UUID actorId) {
+    return actorId != null ? memberNameResolver.resolveNameOrNull(actorId) : null;
   }
 }

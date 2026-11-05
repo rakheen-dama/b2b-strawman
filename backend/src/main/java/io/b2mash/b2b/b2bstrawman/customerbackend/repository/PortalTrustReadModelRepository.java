@@ -93,13 +93,23 @@ public class PortalTrustReadModelRepository {
 
   // ── Balance queries ───────────────────────────────────────────────────
 
+  /**
+   * Balances for one client, each with the client's portal matter name (null when the client has no
+   * {@code portal_projects} row for the matter). {@code portal_projects} is keyed on {@code (id,
+   * customer_id)}, so the join matches the customer too — otherwise a multi-client matter would
+   * duplicate the balance row (Phase 89 633B, G88-F31, D6). {@link #findBalance} joins the same
+   * way.
+   */
   public List<PortalTrustBalanceView> findBalancesByCustomer(UUID customerId) {
     return jdbc.sql(
             """
-            SELECT customer_id, matter_id, current_balance, last_transaction_at, last_synced_at
-            FROM portal.portal_trust_balance
-            WHERE customer_id = ?
-            ORDER BY last_transaction_at DESC NULLS LAST
+            SELECT b.customer_id, b.matter_id, b.current_balance, b.last_transaction_at,
+                   b.last_synced_at, p.name AS matter_name
+            FROM portal.portal_trust_balance b
+            LEFT JOIN portal.portal_projects p
+                   ON p.id = b.matter_id AND p.customer_id = b.customer_id
+            WHERE b.customer_id = ?
+            ORDER BY b.last_transaction_at DESC NULLS LAST
             """)
         .params(customerId)
         .query(PortalTrustBalanceView.class)
@@ -109,9 +119,12 @@ public class PortalTrustReadModelRepository {
   public Optional<PortalTrustBalanceView> findBalance(UUID customerId, UUID matterId) {
     return jdbc.sql(
             """
-            SELECT customer_id, matter_id, current_balance, last_transaction_at, last_synced_at
-            FROM portal.portal_trust_balance
-            WHERE customer_id = ? AND matter_id = ?
+            SELECT b.customer_id, b.matter_id, b.current_balance, b.last_transaction_at,
+                   b.last_synced_at, p.name AS matter_name
+            FROM portal.portal_trust_balance b
+            LEFT JOIN portal.portal_projects p
+                   ON p.id = b.matter_id AND p.customer_id = b.customer_id
+            WHERE b.customer_id = ? AND b.matter_id = ?
             """)
         .params(customerId, matterId)
         .query(PortalTrustBalanceView.class)

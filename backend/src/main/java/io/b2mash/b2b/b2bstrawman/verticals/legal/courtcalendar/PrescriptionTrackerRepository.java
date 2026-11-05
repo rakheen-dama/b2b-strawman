@@ -25,6 +25,13 @@ public interface PrescriptionTrackerRepository extends JpaRepository<Prescriptio
    */
   long countByProjectIdAndStatusIn(UUID projectId, java.util.Collection<String> statuses);
 
+  /**
+   * Portal deadline backfill (Phase 89 633B): trackers not in the given (dead) statuses whose
+   * prescription date is on or after {@code from}.
+   */
+  List<PrescriptionTracker> findByStatusNotInAndPrescriptionDateGreaterThanEqual(
+      java.util.Collection<String> statuses, LocalDate from);
+
   @Query(
       """
       SELECT p FROM PrescriptionTracker p

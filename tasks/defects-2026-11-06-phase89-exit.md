@@ -84,6 +84,7 @@ Carried Phase 88 LOWs in the same family, still open and cited by the walk: G-D1
 | G89-F3 | LOW | Depth-ii known-skip names in the brief / 634C `e2e-gate.md` misattribute 2 of 4 skips | correct the doc |
 | 631A note | — | Legal regression-screenshot baselines under `frontend/e2e/screenshots/legal-*/` are not committed; every fresh worktree's first legal run fails 48 snapshot checks | commit the baselines or make regression screenshots opt-in |
 | runner | — | `scripts/run-phase.sh` uses `timeout` without `-k`; a builder that ignores SIGTERM lives past its cap (634A: 229 min) | `timeout -k 120` (lesson recorded 2026-11-05) |
+| portal | — | `portal/next-env.d.ts` was tracked although Next regenerates it (dev vs build flavour flipped in 9 commits) | **Done** — PR #1744 untracks it (2026-11-06); frontend copy was never tracked |
 
 ---
 

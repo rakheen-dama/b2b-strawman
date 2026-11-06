@@ -1,4 +1,5 @@
 import { humaniseStatus } from "@/lib/utils";
+import type { PortalDeadlineStatus } from "@/lib/api/deadlines";
 
 /**
  * Phase 89 633C (arch §14.3.15; G88-F29, G88-F31): client-facing labels for the backend enums the
@@ -36,6 +37,15 @@ export const TRUST_TRANSACTION_TYPE_LABELS: Record<string, string> = {
   TRANSFER_IN: "Transfer in",
   TRANSFER_OUT: "Transfer out",
   REVERSAL: "Reversal",
+};
+
+/** Portal deadline status (PortalDeadlineStatus; 633C D2). Typed so a new status must get a label. */
+export const DEADLINE_STATUS_LABELS: Record<PortalDeadlineStatus, string> = {
+  UPCOMING: "Upcoming",
+  DUE_SOON: "Due soon",
+  OVERDUE: "Overdue",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 };
 
 /** The label for `value` in `map`, else the humanised enum ("SOME_VALUE" → "Some value"). */

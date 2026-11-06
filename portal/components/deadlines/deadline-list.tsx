@@ -4,6 +4,7 @@ import { CalendarClock } from "lucide-react";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { formatDate } from "@b2mash/shared/format";
 import { cn } from "@/lib/utils";
+import { DEADLINE_STATUS_LABELS, labelFor } from "@/lib/labels";
 import type {
   PortalDeadline,
   PortalDeadlineStatus,
@@ -88,10 +89,6 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
   CANCELLED:
     "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
 };
-
-function formatStatus(status: string): string {
-  return status.replace(/_/g, " ");
-}
 
 /**
  * Returns the ISO date ("YYYY-MM-DD") of the Monday of the week containing
@@ -296,7 +293,7 @@ export function DeadlineList({
                                   STATUS_BADGE_CLASS.UPCOMING,
                               )}
                             >
-                              {formatStatus(d.status)}
+                              {labelFor(DEADLINE_STATUS_LABELS, d.status)}
                             </span>
                           </p>
                         </div>

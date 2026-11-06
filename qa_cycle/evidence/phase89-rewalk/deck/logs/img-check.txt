@@ -1,0 +1,35 @@
+# 636C img check — 2026-11-06 02:15:38 SAST — worktree phase89/07C-deck-closure, marketing/decks/exec-deck.html
+## resolution
+OK screens/phase89/home-owner.png
+OK screens/phase89/home-firm.png
+OK screens/phase89/home-fee-earner.png
+OK screens/phase87/diary-week.png
+OK screens/phase89/matters-table.png
+OK screens/phase89/clients-table.png
+OK screens/phase87/matter-fees-group.png
+OK screens/phase87/portal-matters.png
+OK screens/phase87/settings-firm.png
+OK screens/phase87/settings-matters.png
+OK screens/phase87/settings-documents.png
+OK screens/phase87/settings-fees.png
+OK screens/phase87/settings-connections.png
+## dimensions (width height)
+screens/phase89/home-owner.png 1440 900 
+screens/phase89/home-firm.png 1440 900 
+screens/phase89/home-fee-earner.png 1440 900 
+screens/phase87/diary-week.png 1440 900 
+screens/phase89/matters-table.png 1440 900 
+screens/phase89/clients-table.png 1440 900 
+screens/phase87/matter-fees-group.png 1440 900 
+screens/phase87/portal-matters.png 1440 900 
+screens/phase87/settings-firm.png 1440 900 
+screens/phase87/settings-matters.png 1440 900 
+screens/phase87/settings-documents.png 1440 900 
+screens/phase87/settings-fees.png 1440 900 
+screens/phase87/settings-connections.png 1440 900 
+## counts
+img tags: 13
+phase89 refs:
+84 85 86 95 96 
+screens/phase88 files: 0
+screens/phase89 files: 12

@@ -1,0 +1,36 @@
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/clients-table.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/home-fee-earner.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/home-firm.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/home-owner.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/matters-table.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/wow-1.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/wow-2.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/wow-3.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/wow-4.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/wow-5.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/wow-6.png
+  pixelWidth: 1440
+  pixelHeight: 900
+/Users/rakheendama/Projects/2026/worktree-epic-636C/marketing/decks/screens/phase89/wow-7.png
+  pixelWidth: 1440
+  pixelHeight: 900

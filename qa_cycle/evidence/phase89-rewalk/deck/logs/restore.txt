@@ -1,0 +1,54 @@
+restore start 2026-11-06 02:14:55 SAST
+before kill:
+54219 05:20 node /opt/homebrew/bin/pnpm run start
+54271 05:20 next-server (v16.3.8)  
+54362
+
+=== svc.sh start frontend ===
+
+  frontend: starting...
+  Waiting for frontend (port 3000)... ready (3s)
+
+Done.
+note: the PID 54362 printed by 'lsof -ti tcp:3000' after the kill is the Playwright MCP Chrome network-service helper holding CLOSE_WAIT client sockets to :3000, not a listener; the LISTEN socket was free (svc start succeeded)
+http 200 at 02:15:14
+--- :3000 LISTEN holder
+56012 56006 00:15 next-server (v16.3.8) 
+56006 node /Users/rakheendama/Projects/2026/b2b-strawman/frontend/node_modules/.bin/../next/dist/bin/next dev
+next-env.d.ts diff: unchanged (both empty)
+--- MAIN git status (after)
+ M tasks/insights/latest.stats.json
+9cbc3a215f36a0b6323faaacf3e5e80869ed97a2
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      76597    yes      yes      8080
+  gateway      75499    yes      yes      8443
+  frontend     55969    yes      yes      3000
+  portal       19714    yes      yes      3002
+
+
+Done.
+restore end 2026-11-06 02:15:14 SAST
+
+## Read-only data check (docker exec b2b-postgres psql -d docteams, BEGIN TRANSACTION READ ONLY … ROLLBACK; tenant_5039f2d497cf)
+after the Thandi shots + the W6 fee-note preview (02:13 SAST):
+BEGIN
+267|2026-11-05 23:08:00.404771+00
+ROLLBACK
+after all 12 shots (02:14 SAST):
+BEGIN
+generated_documents|11
+audit_events|267|2026-11-05 23:08:00.404771+00
+conflict_checks|5
+ROLLBACK
+→ generated_documents 11, conflict_checks 5, audit_events 267 with the newest at 2026-11-05 23:08:00Z (before the shoot started at 00:10Z): the shoot (3 KC logins, navigation, one Fee Note preview) wrote no audited row and no document.
+
+## Browser
+Playwright MCP context: cookies cleared + localStorage/sessionStorage cleared after the last actor (0 cookies), page left at about:blank.
+
+## Deck render check
+page.route + require('fs') is unavailable in browser_run_code_unsafe (ReferenceError: require is not defined), so the deck was served read-only with python3 -m http.server 8765 --bind 127.0.0.1 --directory marketing/decks (PID 56586, killed after; :8765 free). 13/13 <img> complete at 1440 × 900 (naturalWidth/naturalHeight). Slides 4 and 5 screenshotted to /tmp/636C-deck-check/ (not committed). Only 404: /favicon.ico.

@@ -18,13 +18,13 @@ Phase 89 is a **go-live correctness phase**: no new entity, table (beyond one gl
 
 | # | Item | Recommended resolution | Owner | State |
 |---|---|---|---|---|
-| 1 | **Trust-report capability (§14.12 #1).** Should TRUST-category definitions accept `VIEW_TRUST` alone on `/api/report-definitions`? | Not in this phase: controller stays `FINANCIAL_VISIBILITY`; 630A renders the specific empty state. Record as a Phase 84 candidate in 636C's closure report. | 630A / 636C | Decided 2026-11-04 (rulings §9.1) — keep `FINANCIAL_VISIBILITY` on the API, 630A's empty state, revisit at Phase 84 |
+| 1 | **Trust-report capability (§14.12 #1).** Should TRUST-category definitions accept `VIEW_TRUST` alone on `/api/report-definitions`? | Not in this phase: controller stays `FINANCIAL_VISIBILITY`; 630A renders the specific empty state. Record as a Phase 84 candidate in 636C's closure report. | 630A / 636C | Decided 2026-11-04 (rulings §9.1) — keep `FINANCIAL_VISIBILITY` on the API, 630A's empty state (#1722), revisit at Phase 84. **Closed by 636C:** recorded as a Phase 84 candidate (a per-category gate letting TRUST definitions accept `VIEW_TRUST` alone) in § Closure report C.5.1 |
 | 2 | **Interest-run draft (§14.12 #2).** A mistaken DRAFT has no exit; a never-calculated DRAFT shows "Continue" forever. | Delete it outright: `DELETE /api/interest-runs/{id}` (`MANAGE_TRUST`, DRAFT only else `InvalidStateException`, allocations cascade, audit `interest_run.deleted` with period + totals), no new status value; "Delete draft" row action + confirmation dialog; `InterestRunDeleteIntegrationTest` (§14.3.2, §14.4.2, [ADR-362](../adr/ADR-362-interest-run-draft-approval-surface.md)). | 630B | Decided 2026-11-04 (rulings §9.2) — delete endpoint, built in 630B |
 | 3 | **Running-balance scale (§14.12 #3).** Window CTE scans a client's posted rows per page. | Accept for every known tenant; 630C's PR body records the `EXPLAIN` on the e2e tenant and the "materialise if >~10k rows" rule. | 630C | **Resolved** (630C, PR #1724): e2e-tenant `EXPLAIN (ANALYZE)` in the PR body — `CTE posted → WindowAgg loops=1`, 0.297 ms on 25 rows; CTE made `MATERIALIZED` (cold-statistics guard); rule kept: materialise `running_balance` if a client ledger exceeds ~10k rows |
 | 4 | **Receipt actor for provider-posted payments (§14.12 #4, B2).** `event.actorMemberId()` else `invoice.createdBy`. | Decided for the code; 632B's audit detail says `actor_source = invoice_creator` when the fallback applies so the trail is honest. Per-tenant system member stays a Phase 84 candidate. | 632B | Decided 2026-11-04 (rulings §9.3) — `invoice.createdBy` + the `actor_source` audit detail; system member = Phase 84 candidate |
-| 5 | **Multi-client matter deadline visibility (§14.12 #5).** Co-clients see nothing. | Build the owning-client rule as designed; 633B's integration test pins "co-client sees nothing"; 636C records the fan-out candidate. | 633B / 636C | Decided 2026-11-04 (rulings §9.4) — owning client only, as designed; 633B pins "co-client sees nothing" |
+| 5 | **Multi-client matter deadline visibility (§14.12 #5).** Co-clients see nothing. | Build the owning-client rule as designed; 633B's integration test pins "co-client sees nothing"; 636C records the fan-out candidate. | 633B / 636C | Decided 2026-11-04 (rulings §9.4) — owning client only, as designed; 633B pins "co-client sees nothing" (#1731). **Closed by 636C:** fan-out candidate (deadlines to co-clients, via N rows with a PK change or a per-matter visibility rule) recorded in § Closure report C.5.1 as a founder product / confidentiality call |
 | 6 | **PROJECT-target comment link surface (§14.12 #6, B7).** The matter page's `customer-comments` tab mounts the weaker `ProjectCommentsSection` (plain textarea — no anchor, attachments or @mention), not `CommentSectionClient`. | Build the panel: **634E** renames the tab to `comments` (legacy alias kept), mounts `CommentSectionClient` with `entityType="PROJECT"` (visibility locked to SHARED — `CommentService.java:187-193`), deletes `ProjectCommentsSection`; 634C links PROJECT-target notifications to `?tab=comments&commentId=`. The PROJECT-target comment API exists at HEAD (`CommentController.java:35-91`, `CommentService.java:181-213,517-531`) — no backend gap, 634C's scope unchanged. | 634E (634C for the link) | Decided 2026-11-04 (rulings §9.5) — build the panel (634E) — **resolved in 634E** (PR #1737, merged `afab07b95`) |
-| 7 | **`fieldDefinitionIds` on create for pack installers (§14.12 #7).** | 634A confirms by grep that `FieldPackSeeder` (`:207`) still writes membership directly and does **not** route seeders through `CreateFieldGroupRequest`; the request field is API-only. | 634A | Open → resolved in 634A |
+| 7 | **`fieldDefinitionIds` on create for pack installers (§14.12 #7).** | 634A confirms by grep that `FieldPackSeeder` (`:207`) still writes membership directly and does **not** route seeders through `CreateFieldGroupRequest`; the request field is API-only. | 634A | **Resolved** (634A, PR #1733): "The seeder writes membership directly and is not routed through `CreateFieldGroupRequest`, so the field is API-only" (PR body grep); state recorded by 636C (§ Closure report C.5.1) |
 | 8 | **(breakdown-found) Reconcile test naming.** §14.8.9 names `LegalZaTemplateReconcileIntegrationTest` for the v10→v11→v12 cases; the tree has `$T/packs/LegalZaTemplateReconcileIntegrationTest.java` **and** `$T/template/TemplatePackSeederReconcileTest.java` (v7/v9 fixtures under `src/test/resources/fixtures/template-packs/legal-za-v9/`). | Each pack-bump slice (632A, 632B) adds its case to `$T/packs/LegalZaTemplateReconcileIntegrationTest` and pins the "from" state with a fixture folder `legal-za-v10/` (632A) only for the templates it edits (the 626E pattern); `TemplatePackSeederReconcileTest` is left green, not extended. Record which file in the PR body. | 632A | Resolved in 632A (PR #1727) — v10→v11 cases in `$T/packs/LegalZaTemplateReconcileIntegrationTest` + fixture folder `legal-za-v10/` (4 bodies); `TemplatePackSeederReconcileTest` got keep-green edits only (version pin, shipped-pack guard key list, applied-log counts), not extended |
 | 9 | **(breakdown-found) Migration numbering between 632B and 634C.** 632B creates tenant V10 (§1) one epic before 634C (§2). 636A's fresh e2e stack does not count (wiped), but the Keycloak dev stack applies V10 on its first restart after 632B merges (632A/632B/633 observations need that restart). | 634C **expects** to open `V11__phase89_comment_notification_id.sql`; it appends §2 to V10 only if a fresh `flyway_schema_history` read on both Keycloak tenant schemas shows no V10 row. A **Decision** row per migration slice records the number taken and the evidence (`$EV/<slice>/before/migrations.md`). | 632B, 633A, 634C | Open → resolved per slice — **632B** (PR #1728): created `V10__phase89_go_live.sql` (§1 only); before-build `flyway_schema_history` on `tenant_5039f2d497cf` and `tenant_56399d06a773` = V9, no V10 row (`$EV/632B/before/migrations.md`). The KC dev stack applies V10 on its next restart → 634C expects V11. **633A** (PR #1730): created global `V3__portal_backfill_markers.sql`; before-build repo global tail = V2 and KC `public.flyway_schema_history` max = V2, no `portal.portal_backfill_markers` (`$EV/633A/before/migrations.md`); KC applied global V3 on the 2026-11-05 restart (`$EV/633A/OBSERVATION.md`). **634C** (PR #1735): created `V11__phase89_comment_notification_id.sql` (§2 `notifications.reference_comment_id`, no FK); before-build `flyway_schema_history` on `tenant_5039f2d497cf` and `tenant_56399d06a773` = V10 (applied 2026-11-05 02:19), so V10 stays closed (`$EV/634C/before/migrations.md`). Next free tenant **V12**. |
 | 10 | **(breakdown-found) Portal receipt Playwright.** §14.8.9 names a new receipt case in `portal/e2e/tests/portal-client-90day/day-14-30.spec.ts`; the e2e seed's INV-0001 is SENT with no payment. | 632C records a part payment through the firm API in the spec's setup (the seed is not extended), then asserts the "Download receipt" row and a 200 on the presigned URL. | 632C | **Resolved in 632C** (PR #1729): a dedicated, find-or-create Acme fee note (notes `Portal receipt case (632C)`, payment ref `RCPT-632C`, helper `ensurePartPaidAcmeFeeNote()` in `portal/e2e/helpers/firm-api.ts`) instead of INV-0001 — a part payment on INV-0001 would break `day-45-75.spec.ts` (asserts INV-0001 SENT) and the boot-seed read-only rule (628F R-5); one extra fee note per stack, ever |
@@ -695,4 +695,242 @@ PR rules restated (non-negotiable):
 
 ## Closure report
 
-_(written by 636C)_
+**Date:** 2026-11-06. **Measured on:** worktree branch `phase89/07C-deck-closure`, based on `9cbc3a215` (= origin/main; `9cbc3a215` adds only `tasks/defects-2026-11-06-phase89-exit.md` on top of the 636B bookkeeping commit `eea353302`). Its product code is identical to the last code PR, #1739 `0827ce3f9`: `git log --oneline 0827ce3f9..HEAD -- backend frontend portal packages gateway compose` is empty. Backend is byte-identical to #1735's verified head `a8d5b86ae`, frontend + packages to #1739's `ef20a6ea9`, and portal to #1732's `9b67f713b` (`git diff --stat <sha> HEAD -- <dirs>` all empty, re-run by 636C; same check as `$EV/markers.md` § Tree identity). The 636C diff touches only this file, `architecture/ARCHITECTURE.md` (one line), `TASKS.md`, `tasks/lessons.md`, `marketing/decks/` and `qa_cycle/evidence/phase89-rewalk/deck/`. **Baseline:** `4a481a35d` (§14.1, 2026-11-04, after the pre-phase PRs #1716–#1721); the Phase 89 slices start at `bb0726037` (#1722, 630A).
+
+Status vocabulary follows root `CLAUDE.md` §3. VERIFIED / PASS = observed behaviour. PARTIAL = some of the part was observed working and some observed failing or short of its text. Anything not observed is DEFERRED. There is no PASS-with-note. FAIL appears only where this report quotes a scored row, checkpoint or exit test. This report **reports** what 636A and 636B scored; it does not re-score any suite, walk or exit row. Evidence paths are relative to `qa_cycle/evidence/phase89-rewalk/` (`$EV`) unless they start with a repo directory.
+
+### C.1 Overall status (exit verdict)
+
+| Part | Status | Evidence |
+|---|---|---|
+| Build (code at HEAD) | **VERIFIED.** No product code since #1739. Backend = #1735 head `a8d5b86ae`: full verify 6579 testcases / 0 F / 0 E / 26 skipped. Frontend + packages = #1739 head `ef20a6ea9`: FE-GATE lint 0 errors / 79 warnings, typecheck, format, vitest 444 files / 3672 passed / 2 skipped, build OK. Portal = #1732 head `9b67f713b`: PORTAL-GATE vitest 47 files / 273, build OK | `.claude/markers/verify-{backend,frontend,portal}.json`; `markers.md` § Tree identity |
+| Per-PR verify-marker trail (636.5) | **VERIFIED.** 26 / 26 PRs #1716–#1741 exit 0 under `scripts/check-verify-markers.sh --committed-only`; 11 backend-verified Phase 89 PRs + 5 pre-phase backend markers. #1742 (636B) re-run by 636C: exit 0, "touches no backend/, frontend/, packages/ or portal/ path — docs/tooling-only" | `markers.md`; C.4 |
+| Three suites on a fresh stack (636A) | **PASS.** lifecycle 105/0/0, depth-ii 39/0/4, default 165/0/14, portal vitest 47 / 273, portal 90-day 13/0, responsive 21/0, isolation 2/0, login-bare 1/0; 0 failed / 0 did-not-run / 0 flaky; every named un-fixme'd spec ✓ | `suites/README.md` "Verdict table"; C.2 |
+| Targeted Keycloak re-walk (636B) | **PARTIAL.** **106 scored rows = 95 PASS · 8 FAIL · 3 PARTIAL · 0 DEFERRED** (+2 N/A rows, 48 NOTE); FAIL rows S1-29, S2-12, S2-25, S2-41, S2-45, S2-55, S2-56, S2-59; PARTIAL S1-02, S1-65, S1-76 | `README.md` § Sections (`:85`, `:110`); `gaps.md` §6 |
+| Closed-gap re-verification (38 rows) | **PARTIAL.** 29 VERIFIED · 5 PARTIAL (G88-M10, G88-F16, G88-F29, §5b row 19, §14.12 #6/B7) · 2 FAIL (G88-F40 → G89-F18; G88-F23 → G89-F12 / G89-F22) · 2 suite-covered, not walked (G88-F48, G88-F49) | `gaps.md` §2 (`:70`) |
+| Exit checkpoints | **PARTIAL.** Legal E: PASS 6 (E.4, E.6, E.7, E.9, E.10, E.11) · FAIL 2 (E.1, E.3) · PARTIAL 1 (E.2) · N/A 2 (E.5, E.8). Portal P-E: PASS 3 (P-E.5, P-E.9, P-E.11) · FAIL 2 (P-E.1, P-E.3) · PARTIAL 3 (P-E.2, P-E.8, P-E.10) · N/A 2 (P-E.4, P-E.6); one DEFERRED sub-item (P-E.8 Day-7 digest — cron Monday 08:00 SAST never elapsed) | `steps/exit-checkpoints.md`; `README.md:86` |
+| G89 register (636.5) | **Exit test FAIL.** 27 ids: **3 HIGH** (G89-F11, F12, F22) · **6 MEDIUM** (G89-F13, F14, F16, F17, F18, F23) · 18 LOW; all HIGH/MEDIUM orchestrator-confirmed (rulings 0.R3, 0.R4, 0.R5); 4 scenario mismatches (F4, F24, F25, F27) await founder §6. F11 stays HIGH: **no founder downgrade ruling received** (ruling 0.R4 item 2 allows one in 636C; none exists in any committed file). Two new LOW *candidates* from the deck shoot (G89-F28, G89-F29) are recorded in C.1.1 / C.5.2 (c) and are not in the 27 | `gaps.md` §1, §3, §6; `HANDOFF.md` Rulings index; `deck/README.md` |
+| Deck re-shoot (636.6) | **VERIFIED.** 12 / 12 frames shot on a **production build** (`next build` exit 0 + `next start`, next-server PID 54271), 1440 × 900, light; `nextjs-portal` null on every shot and each PNG read back (no dev badge, no injected CSS). `exec-deck.html` lines 84–86, 95, 96 point at `screens/phase89/`; img check 13 OK / 0 MISSING, all 1440 900; render check 13 / 13 loaded. The wow frames show what the existing data allows: W4 and W6 match the wow text; W1, W2, W3, W5 and W7 are PARTIAL against it (C.1.1). They are not referenced by the deck (D-3) | C.1.1; `deck/README.md`; `deck/logs/{prod-build,img-check,dims,restore}.txt` |
+| AI-core walk | **DEFERRED** (decision 11, Epic 636 non-scope) | Epic 636 Non-scope |
+| **Phase 89 overall** | **Phase 89: PARTIAL — not DONE. Exit test FAIL, not go-live ready: 3 HIGH (G89-F11, G89-F12, G89-F22) + 6 MEDIUM (G89-F13, F14, F16, F17, F18, F23) open. Follow-up: a post-Phase-89 bug batch re-opening the owning epics (C.5.2 (a); `tasks/defects-2026-11-06-phase89-exit.md`); nothing was fixed inside 636.** | `gaps.md` §1, §6 |
+
+The exit bar is 636.8: "0 HIGH, 0 MEDIUM open; every mismatch ruled; suites ≥ baseline with the un-fixme'd specs passing; a verify marker for every code PR; deck `<img>`s resolve". The suites, markers and deck legs are met. The register leg is not (3 HIGH + 6 MEDIUM), and 4 mismatches are unruled. So Phase 89 is **not DONE**.
+
+Clusters (`gaps.md` §1):
+- **trust client-vs-matter ledger:** F12 HIGH, F22 HIGH, F14 MEDIUM; F13 is the same ledger card. Interest credits post per client with no matter, while the matter gate, matter tab, Overview tile and portal read-model each read a different ledger. The deck frames show it too: the matters/clients tables read Sipho's trust as R 1,34 (client ledger), while his matter Overview reads R 0,00 (`matters-table.png`, `wow-4.png`).
+- **interest-run period validation:** F11 HIGH.
+- **statement / report content:** F16, F18, F21.
+
+#### C.1.1 Deck re-shoot (636.6)
+
+Production build provenance: `$MAIN/frontend` at `9cbc3a215` (product code = `eea353302`). `svc.sh stop frontend` → `rm -rf .next` → `pnpm run build` exit 0 ("✓ Compiled successfully in 10.0s"; 02:08:41 → done by 02:09:30 SAST) → `pnpm run start` (pnpm 54219, next-server 54271, HTTP 200 at 02:09:40). Shots 02:10:26–02:14:39 SAST. Restore 02:14:55–02:15:14: `kill 54271 54219` → `svc.sh start frontend` → `next dev` next-server 56012, HTTP 200; `svc.sh status` all four `yes yes`; `$MAIN` `git status --short` and the `next-env.d.ts` diffs identical before and after (`deck/logs/prod-build.txt`, `deck/logs/restore.txt`). Read-only SELECTs before and after the shoot: `generated_documents` 11, `conflict_checks` 5, newest `audit_events` row 2026-11-05 23:08Z (pre-shoot). The shoot wrote nothing.
+
+| File (`marketing/decks/screens/phase89/`) | Deck line | URL (`/org/mathebula-partners` + …) | Actor | sha1 (12) | Dims | Dev indicator | Visible gaps / deviations |
+|---|---|---|---|---|---|---|---|
+| `home-owner.png` | 84 | `/dashboard` | Thandi (Owner) | `6897e9509332` | 1440 × 900 | none (`nextjs-portal` null) | Debtors empty and FICA complete (both true now; the Phase 88 C.10 stale copy is gone). Brand colour only as the thin org-label bar |
+| `home-firm.png` | 85 | same | Bob (Admin) | `f1f2bbbae5c4` | 1440 × 900 | none | Sensitive events prints raw `matter_closure · <uuid>` |
+| `home-fee-earner.png` | 86 | same | Carol (Member) | `1dcf0d54559c` | 1440 × 900 | none | My tasks / My unbilled time empty, as displayed |
+| `matters-table.png` | 95 | `/matters?view=all&status=ALL` | Thandi | `39b7445eac33` | 1440 × 900 | none | "Open matters" tab underlined while "All" lists Closed rows (**G89-F29 candidate**); trust column = client ledger (F12/F14 cluster) |
+| `clients-table.png` | 96 | `/clients` ("All clients") | Thandi | `4c0224ecb352` | 1440 × 900 | none | 6 clients incl. "Anonymized Client 1078b1" (the S2-27 POPIA scratch client), shown, not filtered |
+| `wow-1.png` | — (D-3) | `/dashboard` (= `home-owner.png`, same sha1) | Thandi | `6897e9509332` | 1440 × 900 | none | PARTIAL vs wow 1: six-zone nav yes, brand colour not prominent |
+| `wow-2.png` | — | `/matters/cd0ef789-…?tab=generated` | Bob | `ef7433b4dc31` | 1440 × 900 | none | PARTIAL vs wow 2: firm-side "Accepted" badge, not the portal acceptance page (a new link mints a token, D-5). Matter Closed |
+| `wow-3.png` | — | `/conflict-check` → History (5) | Bob | `c398caeb382c` | 1440 × 900 | none | PARTIAL vs wow 3: history rows "No Conflict" ×4 + RAF "Conflict"; the green result card needs a new check (a write, D-5). Label "No Conflict" vs scenario "CLEAR" (G88-F1) |
+| `wow-4.png` | — | `/matters/cd0ef789-…` Overview (after reload) | Bob | `af15a73ed557` | 1440 × 900 | none | Matter Closed; 4th KPI tile wraps alone (G89-F7) |
+| `wow-5.png` | — | `/reports/profitability` | Thandi | `d68c83fefd00` | 1440 × 900 | none | PARTIAL vs wow 5: two matters with revenue (not three), no margin-ribbon element; Margin % not clipped (G88-F4 holds). The page landed scrolled 98.5 px and was scrolled to top before the shot |
+| `wow-6.png` | — | `/invoices/c7340009-…` → Generate Document › Fee Note (preview only) | Thandi | `918d681250ba` | 1440 × 900 | none | Letterhead + LSSA "3(a)" line printed last (G88-M10 holds). No banking block (never configured, S1-76). Not saved or downloaded |
+| `wow-7.png` | — | `/matters/c441d229-…?tab=activity` | Thandi | `ccbad0201a89` | 1440 × 900 | none | PARTIAL vs wow 7: one matter's feed, not "all three". Tab label "Activity · Activity" (**G89-F28 candidate**). G88-F24 raw status rows are below the fold, not hidden |
+
+- `exec-deck.html`: lines 84, 85, 86, 95 and 96 now point at `screens/phase89/` (alt text rewritten to the new frames; figcaptions unchanged); the other 8 `<img>` stay on `phase87/`. The img check prints 13 / 13 `OK`, 0 `MISSING`, every image `1440 900` (`deck/logs/img-check.txt`). Render check: `page.route` + `require('fs')` is unavailable in `browser_run_code_unsafe` (`ReferenceError`), so the deck was served read-only by `python3 -m http.server` on 127.0.0.1:8765 → **13 / 13 images loaded at 1440 × 900**; slides 4 and 5 checked by eye.
+- `screens/phase88/`: **all 15 PNGs deleted** (Decision D-2; list, bytes and sha1 in `deck/README.md`). None was referenced. Each was captured under `next dev` (dev "N" over the avatar) or on the e2e tenant, or showed a defect since fixed (Phase 88 C.10). The 7 wow originals and `part-payment.png` remain byte-identical under `qa_cycle/evidence/phase88-rewalk/{full,mid}/screens/` (sha1 re-checked by 636C), and all 15 are in git history at `eea353302`. Phase 88 C.12 (a) and OQ #19 ("deck update DEFERRED") are closed by this re-shoot.
+- Decisions (PR body): **D-1** frame set = the 12 above (deck lines 87, 97, 98, 106–110 keep their phase87 shots); **D-2** phase88 PNGs deleted; **D-3** no new wow slide (a deck-content call, and the open HIGHs are on the trust path); **D-4** portal frames not re-shot (a magic link is a write; P-E.10's 1698 px `p-wow-3` stays carried, C.5.2 (d)); **D-5** read-only shoot.
+
+#### C.1.2 Before / after (§14.1 baseline `4a481a35d` → HEAD)
+
+| Surface | Before | After (observed) | Note |
+|---|---|---|---|
+| `@Entity` files (`git grep -E '^[[:space:]]*@Entity([[:space:]]\|$)' <rev> -- backend/src/main/java \| wc -l`) | 104 | **104** | matches "no new entity" |
+| `page.tsx` under `frontend/app/(app)/org/[slug]` (`git ls-tree -r --name-only <rev> -- … \| grep -c '/page.tsx$'`) | 57 measured (§14.1 states 58) | **57** | **MISMATCH with the §14.1 statement**: measured at the baseline commit it is 57; no page was added or removed this phase (C.5.2 (d)) |
+| Portal `page.tsx` (`… -- portal/app \| grep -c '/page.tsx$'`) | 18 | **18** | matches (a plain `page.tsx$` grep gives 19 because it also matches `accept/[token]/acceptance-page.tsx`) |
+| `DomainEvent` permits | 43 | **47** | +`CourtDateScheduledEvent`, `CourtDateCancelledEvent`, `PrescriptionDeadlineSetEvent`, `PrescriptionDeadlineClearedEvent` (633B #1731) |
+| Audit event-type catalogue (`AuditEventTypeRegistryTest` `hasSize`) | 49 (`:210`) | **50** (`:213`) | +`invoice.receipt_generated` (632B #1728 `971e3af1d`; `git log -S'hasSize(50)'` → that commit only). The 636C brief guessed `interest_run.deleted` (630B); the catalogue diff shows the receipt key |
+| legal-za template pack | v10 | **v12** | v11 632A #1727, v12 632B #1728 (C.3) |
+| Tenant / global migrations | V9 / V2 | **V11 / V3** | C.3 |
+| Backend testcases | 6389 (`931ca6a3`, §14.1) | **6579** / 0 F / 26 skipped (#1735 marker) | informational |
+| Portal vitest | 256 | **273** (47 files) | informational |
+
+### C.2 Suites (636A, `suites/README.md`)
+
+Four fresh stacks built with `bash compose/scripts/e2e-down.sh && docker builder prune -f && SHELL=/bin/bash bash compose/scripts/e2e-up.sh` from main `1034b6af8`. Scored runs: G1 (legal + default) and G2 (portal), 2026-11-05 20:07–20:42 SAST (outside 00:00–02:00). Screenshot baselines are not committed, so each screenshot-bearing suite ran capture-then-score: C1 capture → G1 scored, C2 capture → G2 scored. Portal suites were spaced ≥ 330 s apart with a backend restart in between (magic-link limiter). Counts come from the Playwright JSON reporter `.stats` (`raw/<label>.json`), cross-checked with the list reporter.
+
+| Suite | Stack | Passed / failed / skipped / did not run | Plan floor | Current main | Status |
+|---|---|---|---|---|---|
+| legal-lifecycle | G1 | 105 / 0 / 0 / 0 | ≥ 102 / 0 / 2 | 105 / 0 / 0 | PASS |
+| legal-depth-ii | G1 | 39 / 0 / 4 / 0 | ≥ 39 / 0 / 4 | 39 / 0 / 4 | PASS |
+| default (`test:e2e`) | G1 | 165 / 0 / 14 / 0 | ≥ 160 / 0 / 17 | 165 / 0 / 14 | PASS |
+| portal vitest | — | 47 files / 273 | 256 | 47 / 273 | PASS |
+| portal 90-day | G2 | 13 / 0 / 0 / 0 | day specs | 13 / 0 / 0 | PASS |
+| portal responsive | G2 | 21 / 0 / 0 / 0 | — | 21 / 0 / 0 | PASS |
+| portal-data-isolation (`KGOSI_EMAIL`) | G2 | 2 / 0 / 0 / 0 | — | 2 / 0 / 0 | PASS |
+| login-bare (opt-in) | G2 | 1 / 0 / 0 / 0 | opt-in | 1 / 0 / 0 | PASS |
+
+The "current main" comparison is totals only (no per-test list exists for the current-main runs).
+
+Named un-fixme'd specs, all ✓ (`suites/README.md` "Named un-fixme'd specs"; 14 TSV rows):
+- `day-60-interest.spec.ts:97,168,189` (G88-F39);
+- `day-90-review.spec.ts:118` (G88-F40);
+- `customer-data-protection.spec.ts:47,77,108` (+ `:150`, `:165`) (G88-F43/F44);
+- portal `day-45-75.spec.ts:124,181` (§5b row 19);
+- receipt `day-14-30.spec.ts:149` (G88-F32);
+- deep links `project-tasks.spec.ts:277,322` (G88-M6, B7).
+
+The plan's line numbers (`:160`, `:123`, `:48,76,107`, `:166`) predate the un-fixmes (deviation 1).
+
+Tooling notes filed as LOW: G89-F1 `.dockerignore` lets untracked baselines into the frontend image; G89-F2 `docker builder prune -f` keeps backend layers cached (`-af` for a cold build); G89-F3 the depth-ii skip names were misattributed in the 634C notes (the count of 4 is unchanged). Deviation 2: `git checkout -- frontend/test-results` errors because the path is gitignored. The gate vocabulary needs `git clean -f -- documentation/screenshots frontend/e2e/screenshots portal/e2e/screenshots` (C.5.2 (d)).
+
+### C.3 Migrations and pack trail (OQ #9)
+
+- `ls backend/src/main/resources/db/migration/tenant | sort -V | tail -1` → **`V11__phase89_comment_notification_id.sql`**; `… /global …` → **`V3__portal_backfill_markers.sql`** (re-run by 636C). Next free: tenant **V12**, global **V4**.
+- Stale docs: `backend/db/BASELINE.md:70` says "next free version — tenant **V11**, global **V4** as of Phase 89 633A". That has been stale since 634C took V11. BASELINE.md is outside 636C's file list, so it is recorded here and in C.5.2 (d), not edited. `TASKS.md:5` is corrected by this PR.
+
+| Version | File | Slice · PR · squash | Decision evidence |
+|---|---|---|---|
+| tenant V10 §1 | `V10__phase89_go_live.sql` (`payment_events.receipt_generated_document_id` + `receipt_number`, `invoices.receipt_sequence`) | 632B · #1728 · `971e3af1d` | before-build `flyway_schema_history` on `tenant_5039f2d497cf` and `tenant_56399d06a773` = V9, no V10 row (`632B/before/migrations.md`) |
+| global V3 | `V3__portal_backfill_markers.sql` (`portal.portal_backfill_markers`) | 633A · #1730 · `841695f40` | repo global tail V2, KC `public` max V2 (`633A/before/migrations.md`); KC applied V3 on the 2026-11-05 restart (`633A/OBSERVATION.md:12`) |
+| tenant V11 §2 | `V11__phase89_comment_notification_id.sql` (`notifications.reference_comment_id`, no FK) | 634C · #1735 · `6c9177535` | both KC tenants already at V10 (applied 2026-11-05 02:19), so V10 stayed closed (`634C/before/migrations.md`) |
+| KC end state | — | 636B KC-STACK | `tenant_56399d06a773` V11 (21:36:53), `public` V3; walked tenant `tenant_5039f2d497cf` re-created fresh at V1…V11 (21:45:00–21:45:02 SAST) (`README.md` Flyway table; `logs/flyway-after-kc-stack.txt`) |
+| pack legal-za v10 → v11 | `template-packs/legal-za/pack.json` (four letterhead bodies + `requiredContextFields`) | 632A · #1727 · `e099f966b` | boot log "Reconciled template pack legal-za to v11 for tenant …" 2026-11-04T20:56:04Z (`632A/boot-log.txt:121`) |
+| pack legal-za v11 → v12 | `payment-receipt-za` | 632B · #1728 · `971e3af1d` | "Reconciled template pack legal-za to v12 for tenant …" on both KC tenants, 2026-11-05T00:19:20–21Z (`632C/kc-boot-log.txt`; the 632B e2e-tenant reconcile is in `632B/boot-log.txt`) |
+
+- **No edit to an applied file:** `git log --oneline --diff-filter=M 4a481a35d..HEAD -- backend/src/main/resources/db/migration` is **empty** (re-run by 636C). The only migration commits in range are the three `--diff-filter=A` adds above. DDL guards: V10 has 2 `current_schema()` references. V11 is a single `ALTER TABLE notifications ADD COLUMN IF NOT EXISTS reference_comment_id uuid;`, which has no catalog lookup to scope. Global V3 is schema-qualified, and a global migration is not tenant-scoped (Phase 88 C.6 wording).
+
+### C.4 Verify markers (636.5, `markers.md`)
+
+`bash scripts/check-verify-markers.sh --committed-only <pr>` over #1716–#1741 → **26 / 26 exit 0** (run by walker 636B.3, 2026-11-06 01:16 SAST; `markers.md:34`). 636C re-ran it for #1742 → exit 0.
+
+| Group | PRs |
+|---|---|
+| Backend-verified Phase 89 PRs (11, = the plan's 11) | #1722, #1723, #1724, #1725, #1727, #1728, #1730, #1731, #1733, #1734, #1735 |
+| Pre-phase backend markers (5) | #1716, #1717, #1718, #1719, #1720 |
+| No-backend-verify code PRs, frontend/portal markers OK | #1721 (frontend portal, pre-phase), #1726 (frontend portal), #1729 (frontend portal), #1732 (portal), #1736 (frontend), #1737 (frontend), #1739 (frontend) |
+| Docs/tooling/evidence-only, no marker required (exit 0) | #1738 (635A), #1740 (635B), #1741 (636A); #1742 (636B), re-run by 636C → exit 0 ("touches no backend/, frontend/, packages/ or portal/ path"); 636C itself (docs-only; the orchestrator's step-5 run) |
+
+Phase 89 PRs with squash SHAs (`git log --grep='(#N)'`, re-run by 636C):
+
+| Epic | Slice · PR · squash |
+|---|---|
+| pre-phase | #1716 `a216f4430` · #1717 `3501fa899` · #1718 `ec1ff1d24` · #1719 `5ca3dadfe` · #1720 `bb98e78b5` · #1721 `36f30f6c8` |
+| 630 | 630A #1722 `bb0726037` · 630B #1723 `7a3c46843` · 630C #1724 `8705ab571` |
+| 631 | 631A #1725 `22cfe19ba` · 631B #1726 `62392425b` |
+| 632 | 632A #1727 `e099f966b` · 632B #1728 `971e3af1d` · 632C #1729 `51f3e7719` |
+| 633 | 633A #1730 `841695f40` · 633B #1731 `be5dbf5af` · 633C #1732 `2c6e6fd39` |
+| 634 | 634A #1733 `c31f1d2c6` · 634B #1734 `8b8d0fe2a` · 634C #1735 `6c9177535` · 634D #1736 `b016e55d1` · 634E #1737 `afab07b95` |
+| 635 | 635A #1738 `ea979160a` · 635B #1740 `4e5250e98` |
+| (orchestrator, founder-authorised) | #1739 `0827ce3f9` (closure-spec R-5 fix, frontend e2e) |
+| 636 | 636A #1741 `903df3031` · 636B #1742 `396cecfc2` · 636C #PR636C |
+
+### C.5 Open questions and follow-ups carried
+
+**C.5.1 Open Questions disposition.** The final states are also written into the Open Questions table at the top of this file (#1, #5, #7; #9 was already final), following the Phase 88 precedent.
+
+| # | Item | Final state |
+|---|---|---|
+| 1 | Trust-report capability (§14.12 #1) | **Decided, carried:** keep `FINANCIAL_VISIBILITY` on `/api/report-definitions`; 630A's empty state (#1722). **Phase 84 candidate:** a per-category gate letting TRUST definitions accept `VIEW_TRUST` alone (a capability-model change) |
+| 2 | Interest-run draft (§14.12 #2) | **Resolved** (630B #1723): `DELETE /api/interest-runs/{id}`; observed VERIFIED at S2-03 (`gaps.md` §2) |
+| 3 | Running-balance scale (§14.12 #3) | **Resolved** (630C #1724): `EXPLAIN (ANALYZE)` 0.297 ms / 25 rows, CTE `MATERIALIZED`; rule kept: materialise `running_balance` if a client ledger exceeds ~10k rows |
+| 4 | Receipt actor (§14.12 #4, B2) | **Decided** (632B #1728): `invoice.createdBy` + audit `actor_source = invoice_creator`. **Phase 84 candidate:** a per-tenant system member |
+| 5 | Multi-client deadline visibility (§14.12 #5) | **Decided** (633B #1731): owning client only; the integration test pins "co-client sees nothing". **Candidate recorded:** fan-out to co-clients (N rows with a PK change, or a per-matter visibility rule), a product / confidentiality call for the founder |
+| 6 | PROJECT-target comment surface (§14.12 #6, B7) | **Resolved** (634E #1737). Walk: product path PASS (S1-38); S1-29 FAIL as written → G89-F4 (scenario says "Client comments", product "Comments") |
+| 7 | `fieldDefinitionIds` for pack installers (§14.12 #7) | **Resolved** (634A #1733): `FieldPackSeeder` writes membership directly; the request field is API-only (PR body grep) |
+| 8 | Reconcile test naming | Resolved (632A #1727) |
+| 9 | Migration numbering | **Closed:** tenant V10 (632B), global V3 (633A), tenant V11 (634C); next free tenant **V12**, global **V4** (C.3) |
+| 10 | Portal receipt Playwright | Resolved (632C #1729); `day-14-30.spec.ts:149` ✓ in 636A |
+| 11 | `labels.ts` / `lib/api/invoices.ts` | Resolved (632C, 633C) |
+
+§14.12 backlog carried: **C4 audit-label polish** (`REPORT_EXPORTED`, "Paia", "Lpff", "Matter closure closed"; architecture §14.12 pre-phase triage row 4, "backlog").
+
+**C.5.2 Follow-ups.** Each one needs its own fix PR or an explicit founder decision. 636 fixed nothing. The fix-batch re-cut is `tasks/defects-2026-11-06-phase89-exit.md` (Batches A–F).
+
+(a) **HIGH / MEDIUM: the post-Phase-89 bug batch** (owners from `gaps.md` §3):
+- **G89-F11 HIGH:** an interest run with a future period end is accepted and posted, producing future-dated INTEREST_CREDIT rows (`InterestService.java:122-145`, no elapsed-period guard). Owner: 630B follow-up. The founder may rule it MEDIUM (0.R4 item 2); **no ruling has been received**, so it stays HIGH. Even if downgraded, the exit test would still FAIL (F12 and F22 are HIGH).
+- **G89-F12 HIGH:** a matter-linked REFUND may exceed the matter's trust balance: the client-level interest credit takes the matter sub-ledger to −R 1,34 and blocks closure on the main Day-75 path (`TrustTransactionService.java:671`, `:870-875`; `InterestService.java:512-520`). Owner: 630C follow-up.
+- **G89-F22 HIGH:** the portal trust balance differs from the firm client ledger. The per-matter portal projection drops client-level INTEREST_CREDITs (`TrustLedgerPortalSyncService.java:254-255`, `:518`). Owner: 633C / 630C, with F12.
+- **MEDIUM:**
+  - G89-F13: ledger card "Total Payments" excludes REFUNDs (630C);
+  - G89-F14: the matter Trust tab shows the client ledger (`TrustBalanceCard.tsx:68-79`; 630C, with F12);
+  - G89-F16: the closure SoA counts a WRITTEN_OFF disbursement and prints "owing R500,00" (`DisbursementRepository.java:96-103`; new, 632A area);
+  - G89-F17: the reconciliation list always shows "Failed to load": the backend returns a `List`, the frontend reads `.page` (`TrustReconciliationController.java:100-104`, `reconciliation/actions.ts:51-60`; 630C);
+  - G89-F18: the Section 35 Data Pack is hollow ("[object Object]") (`report-results.tsx:73-86`, `Section35DataPackQuery.java:129-136`; 630A, re-opens G88-F40);
+  - G89-F23: portal "Firm actions" announces internal-draft documents (`PortalActivityEventTypes.java:44-48`; new).
+
+(b) **Founder decisions:**
+- **Scenario mismatches** (root `CLAUDE.md` §6; `gaps.md` §4):
+  - G89-F4: 5.3 "Client comments" vs "Comments";
+  - G89-F24: P-75.1/75.2 deadline nudge email; only custom-field dates produce one;
+  - G89-F25: P-75.6 has no document on the deadline panel;
+  - G89-F27: P-3.4 request state "In progress".
+- The G89-F11 severity.
+- Committing legal/portal visual baselines (Phase 88 C.12 (b), still open). Every screenshot suite still runs capture-then-score.
+- A deck slide for the wow frames (D-3): the 7 `screens/phase89/wow-*.png` are shot and unreferenced; adding a slide is a deck-content call, best taken after the trust-path HIGHs land.
+- The AI-core walk (DEFERRED; it needs a funded key).
+- G88-F12 attorney wording sign-off: MERGED-AWAITING-VERIFY (`gaps.md` §2).
+
+(c) **G89 LOWs (18), filed and not blocking** (`gaps.md` §3), plus two 636C candidates:
+
+| ID | Class | One line | Owner |
+|---|---|---|---|
+| G89-F1 | tooling | root `.dockerignore` lacks `frontend/e2e/screenshots/**` | Epic 636 / tooling |
+| G89-F2 | tooling | `docker builder prune -f` keeps backend layers cached | Epic 636 / phase doc |
+| G89-F3 | doc | depth-ii skip names misattributed | Epic 636 / doc |
+| G89-F4 | scenario | "Client comments" vs "Comments" | founder §6 |
+| G89-F5 | product (staleness) | Overview "HOURS LOGGED 0.0h" until reload | new |
+| G89-F6 | product copy (regulatory) | "Section 78(1) Trust Account" (repealed Act) on trust receipt/statement | new (632A family) |
+| G89-F7 | layout | Overview 4th KPI tile wraps alone (visible in `wow-4.png`) | 634B |
+| G89-F8 | layout | Settings › Documents OTHER table 1621 px in 856 px | 632C |
+| G89-F9 | layout | 1024 Payment History wraps, 9 px scroll | 632C |
+| G89-F10 | data display | interest wizard shows client UUIDs, "LPFF Rate: Arrangement" | 630B |
+| G89-F15 | layout | 1024 matter Documents table 938 px in 654 px | new |
+| G89-F19 | copy | "Select a trustaccount..." | 630A |
+| G89-F20 | copy (raw enum) | DSAR status badge raw | 631B area |
+| G89-F21 | copy (date) | closure letter "Date: 2026-11-06" | 632A area |
+| G89-F24 | scenario | no deadline nudge for court dates / prescriptions | founder §6 |
+| G89-F25 | scenario | deadline panel has no document | founder §6 |
+| G89-F26 | copy (client-facing raw enum) | portal matter "Matter type: LITIGATION" | new |
+| G89-F27 | scenario | request reads "In progress" after submit | founder §6 |
+| *G89-F28 (candidate, 636C)* | copy | matter tab bar reads "Activity · Activity" when the Activity group's Activity item is selected (`wow-7.png`) | not triaged; register owner to confirm |
+| *G89-F29 (candidate, 636C)* | UX | `/matters?view=all&status=ALL`: "Open matters" view tab stays underlined while the "All" chip lists Closed matters (`matters-table.png`; same URL as the Phase 87 shot, so probably not new) | not triaged; register owner to confirm |
+
+The two candidates are **not** added to `gaps.md` (636B's register); the register count stays 27 until the orchestrator triages them. Next free id after them: `G89-F30`.
+
+Cited still-open Phase 88 LOWs (not re-filed): G-D10a, G-D10c / G88-F27, G88-M9, G88-F24 (in `wow-7.png`'s feed, below the fold), G88-F2, 633C D2 / D6. Pre-known candidates that were carried but not on the walked path: `gaps.md` §5 (632A (a)/(c), 632C receipt file names / renumber, 634A, 634E).
+
+(d) **Ops / process:**
+- `backend/db/BASELINE.md:70` is stale ("next free tenant V11"; actual **V12**, global V4). Not edited here (outside 636C's file list; one fix per PR).
+- §14.1's "58 `page.tsx`" statement vs 57 measured at the baseline and at HEAD (C.1.2). Not edited here.
+- The E2E gate vocabulary: `docker builder prune -af` for a cold build (G89-F2); `git checkout -- frontend/test-results` errors because it is gitignored (636A deviation 2).
+- P-E.8 Day-7 digest DEFERRED sub-item. Owner: the next portal walk that spans a Monday 08:00 SAST.
+- P-E.10 `p-wow-3` was captured at 1698 px, not 1440. Owner: the next portal walk; not re-shot by 636C (D-4).
+- `scripts/run-phase.sh` `timeout -k` (lessons, Phase 89 orchestration).
+- Phase-file Epic Overview row 636 (line 47) has a stray `||` (10 pipes vs the header's 9): flagged for the orchestrator's bookkeeping commit, not edited by 636C.
+- Stack state at the end of 636C: the four svc services `yes yes`, frontend restored to `next dev` (svc PID 55969, next-server 56012); `$MAIN` `git status` unchanged; e2e G2 stack untouched. Never commit `.playwright-mcp/*`.
+- Phase 88 C.12 (c) carry-overs not taken by Phase 89 stay carried by reference (`tasks/phase88-demo-ready-root-cause-closure.md` § C.12 (c)).
+
+### C.6 Lessons
+
+New entries are in `tasks/lessons.md` under "Phase 89 closure lessons (636C, 2026-11-06)":
+- exit-gate lessons (636A, 636B):
+  - screenshot suites run capture-then-score while baselines stay uncommitted;
+  - space portal suites ≥ 330 s and restart the backend between them;
+  - gate vocabulary can be wrong: `prune -f` is not a cold build, and `checkout` aborts on gitignored paths;
+  - the image build context includes untracked files;
+  - a new money-path posting needs a census of every ledger reader;
+  - a wired component is not a rendered report;
+  - blocker rulings quote option letters and are committed as made;
+  - scout briefs cross-check scenario preconditions across days;
+  - Playwright MCP: `bringToFront()` per batch and an explicit viewport per context;
+- deck lessons (636C):
+  - deck frames come from a production build, checked by DOM, never by hiding the badge;
+  - a read-only shoot shows what the data allows; record the gap against the wow text;
+  - `lsof -ti tcp:PORT` lists clients too; use `-sTCP:LISTEN` before deciding a port is held;
+  - Playwright MCP has no `require`; serve local files over a loopback HTTP server;
+  - verify a brief's pre-filled attribution before pasting it (audit-catalogue key, portal page count).
+

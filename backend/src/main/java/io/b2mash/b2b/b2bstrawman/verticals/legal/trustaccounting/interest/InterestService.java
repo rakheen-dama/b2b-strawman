@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -56,6 +57,7 @@ public class InterestService {
   private final TrustInvestmentRepository investmentRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
+  private final Clock clock;
 
   public InterestService(
       InterestRunRepository interestRunRepository,
@@ -66,7 +68,8 @@ public class InterestService {
       ClientLedgerCardRepository clientLedgerCardRepository,
       TrustInvestmentRepository investmentRepository,
       VerticalModuleGuard moduleGuard,
-      AuditService auditService) {
+      AuditService auditService,
+      Clock clock) {
     this.interestRunRepository = interestRunRepository;
     this.interestAllocationRepository = interestAllocationRepository;
     this.trustAccountRepository = trustAccountRepository;
@@ -76,6 +79,7 @@ public class InterestService {
     this.investmentRepository = investmentRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -137,6 +141,8 @@ public class InterestService {
       throw new InvalidStateException(
           "Invalid period", "period_end must be on or after period_start");
     }
+
+    requirePeriodEnded(periodEnd);
 
     if (interestRunRepository.existsOverlappingRun(accountId, periodStart, periodEnd)) {
       throw new ResourceConflictException(
@@ -444,6 +450,9 @@ public class InterestService {
           "Invalid interest run state", "Interest run must be in DRAFT status to be approved");
     }
 
+    // A DRAFT created before the create-time guard existed (G89-F11) must not be approved either
+    requirePeriodEnded(run.getPeriodEnd());
+
     // Prevent approval of uncalculated runs (no allocations = nothing to post)
     var allocations = interestAllocationRepository.findByInterestRunId(runId);
     if (allocations.isEmpty()) {
@@ -492,6 +501,9 @@ public class InterestService {
       throw new InvalidStateException(
           "Invalid interest run state", "Interest run must be in APPROVED status to be posted");
     }
+
+    // Posting dates the INTEREST_CREDIT / INTEREST_LPFF rows on period_end: never in the future
+    requirePeriodEnded(run.getPeriodEnd());
 
     // Re-validate trust account is still ACTIVE (may have been frozen/closed since approval)
     var trustAccountIdForCheck = run.getTrustAccountId();
@@ -567,7 +579,7 @@ public class InterestService {
     }
 
     run.setStatus("POSTED");
-    run.setPostedAt(Instant.now());
+    run.setPostedAt(clock.instant());
     run = interestRunRepository.save(run);
 
     auditService.log(
@@ -636,6 +648,25 @@ public class InterestService {
   }
 
   // --- Private Helpers ---
+
+  /**
+   * Interest is earned over a period that has ended: posting dates the ledger rows on period_end,
+   * so a period ending after today (South African time, via the injected {@link Clock}) would book
+   * future-dated interest (G89-F11). A period ending today is allowed — firms run interest on the
+   * last day of the month.
+   */
+  private void requirePeriodEnded(LocalDate periodEnd) {
+    var today = LocalDate.now(clock);
+    if (periodEnd.isAfter(today)) {
+      throw new InvalidStateException(
+          "Interest period has not ended",
+          "The interest period ends on "
+              + periodEnd
+              + ", which is after today ("
+              + today
+              + ", South African time). Run interest only for a period that has ended.");
+    }
+  }
 
   private record RateSegment(
       LocalDate startDate,

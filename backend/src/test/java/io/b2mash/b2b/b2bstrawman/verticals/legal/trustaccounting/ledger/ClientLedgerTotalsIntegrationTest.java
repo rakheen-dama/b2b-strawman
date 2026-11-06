@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientTrustBalancesQuery;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
@@ -27,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,6 +77,8 @@ class ClientLedgerTotalsIntegrationTest {
   @Autowired private ClientLedgerCardRepository ledgerCardRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private Clock clock;
+
+  @Autowired private ClientTrustBalancesQuery clientTrustBalancesQuery;
 
   private String tenantSchema;
   private UUID ownerId;
@@ -206,7 +210,40 @@ class ClientLedgerTotalsIntegrationTest {
     assertReconciles(targetLedger);
   }
 
+  @Test
+  void clientTrustBalancesReport_asOfDate_totalsCutAtTheSameDateAsTheBalance() {
+    UUID client = newClient("Report As-Of Client");
+    deposit(client, null, "1000.00", 20);
+    approve(payment(client, null, "400.00", 5));
+
+    // As of ten days ago the payment has not happened: balance and totals both exclude it
+    var asOf = reportRow(client, today.minusDays(10));
+    assertThat(money(asOf.get("balance"))).isEqualByComparingTo("1000.00");
+    assertThat(money(asOf.get("totalDeposits"))).isEqualByComparingTo("1000.00");
+    assertThat(money(asOf.get("totalPayments"))).isEqualByComparingTo("0.00");
+
+    // Without a date the row is the current card with all posted totals
+    var current = reportRow(client, null);
+    assertThat(money(current.get("balance"))).isEqualByComparingTo("600.00");
+    assertThat(money(current.get("totalPayments"))).isEqualByComparingTo("400.00");
+  }
+
   // --- Helpers ---
+
+  private Map<String, Object> reportRow(UUID client, LocalDate asOfDate) {
+    var params = new HashMap<String, Object>();
+    params.put("trust_account_id", trustAccountId.toString());
+    if (asOfDate != null) {
+      params.put("asOfDate", asOfDate.toString());
+    }
+    var result =
+        as(
+            ownerId,
+            () -> transactionTemplate.execute(tx -> clientTrustBalancesQuery.executeAll(params)));
+    var rows = result.rows().stream().filter(r -> client.equals(r.get("customerId"))).toList();
+    assertThat(rows).hasSize(1);
+    return rows.getFirst();
+  }
 
   /** Deposits + Interest + Transfers in − Payments − Fee transfers − Refunds − Transfers out. */
   private static void assertReconciles(Map<String, Object> ledger) {

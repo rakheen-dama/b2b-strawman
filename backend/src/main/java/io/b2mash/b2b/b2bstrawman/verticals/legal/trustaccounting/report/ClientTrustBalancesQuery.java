@@ -77,12 +77,17 @@ public class ClientTrustBalancesQuery implements ReportQuery {
         customerRepository.findByIdIn(customerIds).stream()
             .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
 
-    // G89-F13: the totals come from the posted ledger (one batch query), not the card counters
+    // G89-F13: the totals come from the posted ledger (one batch query), not the card counters,
+    // and are cut at the same date as the balance so the row reconciles
     Map<UUID, LedgerTotals> totals =
         customerIds.isEmpty()
             ? Map.of()
             : LedgerTotals.byCustomer(
-                transactionRepository.sumPostedByCustomerAndType(trustAccountId, customerIds));
+                asOfDate != null
+                    ? transactionRepository.sumPostedByCustomerAndTypeAsOf(
+                        trustAccountId, customerIds, asOfDate)
+                    : transactionRepository.sumPostedByCustomerAndType(
+                        trustAccountId, customerIds));
 
     return ledgerCards.stream()
         .map(

@@ -244,6 +244,28 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("customerIds") Collection<UUID> customerIds);
 
   /**
+   * {@link #sumPostedByCustomerAndType} up to and including {@code asOfDate} — the totals that
+   * reconcile to {@link #calculateClientBalanceAsOfDate} for the same date (the Client Trust
+   * Balances report with an as-of date).
+   */
+  @Query(
+      """
+      SELECT t.customerId AS customerId, t.transactionType AS transactionType,
+             COALESCE(SUM(t.amount), 0) AS total
+      FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.customerId IN :customerIds
+        AND t.transactionDate <= :asOfDate
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.transactionType <> 'REVERSAL'
+      GROUP BY t.customerId, t.transactionType
+      """)
+  List<CustomerTypeTotalRow> sumPostedByCustomerAndTypeAsOf(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerIds") Collection<UUID> customerIds,
+      @Param("asOfDate") LocalDate asOfDate);
+
+  /**
    * {@link #calculateClientBalanceAsOfDate} split by matter: one row per matter (and one with a
    * null {@code projectId} for the client's unmattered rows), same sign rules and status filter, so
    * the rows sum exactly to the client balance. The opening balances of the per-matter interest

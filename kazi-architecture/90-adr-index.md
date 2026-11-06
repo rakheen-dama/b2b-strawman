@@ -380,7 +380,7 @@ Canonical trust: **ADR-230..235**. Canonical legal entities: **ADR-247..250**. H
 | ADR-231 | negative-balance-prevention | |
 | ADR-232 | configurable-dual-authorization | |
 | ADR-233 | bank-reconciliation-matching | |
-| ADR-234 | interest-daily-balance-method | |
+| ADR-234 | interest-daily-balance-method | Amended by ADR-366 (client share split across matters; one INTEREST_CREDIT per matter) |
 | ADR-235 | statutory-vs-configurable-lpff-share | |
 | ADR-247 | legal-disbursement-sibling-entity | |
 | ADR-248 | matter-closure-distinct-state-with-gates | Extends ADR-111 for legal |

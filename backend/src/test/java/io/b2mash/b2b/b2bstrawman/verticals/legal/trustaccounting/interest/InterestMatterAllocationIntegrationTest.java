@@ -172,8 +172,8 @@ class InterestMatterAllocationIntegrationTest {
 
     assertThat(allocation.lines()).hasSize(1);
     var line = allocation.lines().getFirst();
-    assertThat(line.projectId()).isEqualTo(matter);
-    assertThat(line.projectName()).isEqualTo("Single Matter");
+    assertThat(line.matterId()).isEqualTo(matter);
+    assertThat(line.matterName()).isEqualTo("Single Matter");
     assertThat(line.clientShare()).isEqualByComparingTo(allocation.clientShare());
     assertThat(line.trustTransactionId()).isNotNull();
     // Exactly one line: the allocation points at the same credit
@@ -185,7 +185,8 @@ class InterestMatterAllocationIntegrationTest {
     assertThat(credit.getCustomerId()).isEqualTo(client);
     assertThat(credit.getAmount()).isEqualByComparingTo(allocation.clientShare());
     assertThat(credit.getTransactionDate()).isEqualTo(MAR_31);
-    assertThat(credit.getReference()).isEqualTo("INT-CREDIT-" + runId + "-" + matter);
+    assertThat(credit.getReference())
+        .isEqualTo("INT-CREDIT-" + runId + "-" + matter + "-" + client.toString().substring(0, 8));
   }
 
   @Test
@@ -220,7 +221,7 @@ class InterestMatterAllocationIntegrationTest {
     for (var line : allocation.lines()) {
       var exact = clientShare.multiply(line.balanceDays()).divide(totalDays, 6, RoundingMode.DOWN);
       assertThat(line.clientShare().subtract(exact).abs())
-          .as("line %s within a cent of its pro-rata share", line.projectId())
+          .as("line %s within a cent of its pro-rata share", line.matterId())
           .isLessThan(new BigDecimal("0.01"));
     }
 
@@ -230,7 +231,7 @@ class InterestMatterAllocationIntegrationTest {
     assertThat(posted.trustTransactionId()).as("several lines: no single credit").isNull();
     for (var line : posted.lines()) {
       var credit = transaction(line.trustTransactionId());
-      assertThat(credit.getProjectId()).isEqualTo(line.projectId());
+      assertThat(credit.getProjectId()).isEqualTo(line.matterId());
       assertThat(credit.getAmount()).isEqualByComparingTo(line.clientShare());
     }
     assertThat(cardBalance(account, client))
@@ -263,9 +264,9 @@ class InterestMatterAllocationIntegrationTest {
     var floor = clientShare.divide(new BigDecimal("3"), 2, RoundingMode.DOWN);
     var byMatter =
         allocation.lines().stream()
-            .sorted(Comparator.comparing(InterestAllocationLineResponse::projectId))
+            .sorted(Comparator.comparing(InterestAllocationLineResponse::matterId))
             .toList();
-    assertThat(byMatter).extracting(InterestAllocationLineResponse::projectId).isEqualTo(matters);
+    assertThat(byMatter).extracting(InterestAllocationLineResponse::matterId).isEqualTo(matters);
     // Equal remainders and weights: the leftover cent goes to the lowest matter id
     assertThat(byMatter.get(0).clientShare())
         .isEqualByComparingTo(floor.add(new BigDecimal("0.01")));
@@ -278,7 +279,7 @@ class InterestMatterAllocationIntegrationTest {
     var again = singleAllocation(runId);
     for (var line : again.lines()) {
       assertThat(line.clientShare())
-          .isEqualByComparingTo(lineFor(allocation, line.projectId()).clientShare());
+          .isEqualByComparingTo(lineFor(allocation, line.matterId()).clientShare());
     }
   }
 
@@ -300,7 +301,7 @@ class InterestMatterAllocationIntegrationTest {
     var allocation = singleAllocation(runId);
 
     assertThat(allocation.lines())
-        .extracting(InterestAllocationLineResponse::projectId)
+        .extracting(InterestAllocationLineResponse::matterId)
         .containsExactlyInAnyOrder(funded, null);
     assertThat(allocation.lines()).allSatisfy(line -> assertThat(line.clientShare()).isPositive());
     assertThat(sumOf(allocation.lines())).isEqualByComparingTo(allocation.clientShare());
@@ -322,12 +323,30 @@ class InterestMatterAllocationIntegrationTest {
     for (var allocation : allocations) {
       assertThat(allocation.lines()).hasSize(1);
       var line = allocation.lines().getFirst();
-      assertThat(line.projectId()).isEqualTo(matter);
+      assertThat(line.matterId()).isEqualTo(matter);
       assertThat(line.clientShare()).isEqualByComparingTo(allocation.clientShare());
       var credit = transaction(line.trustTransactionId());
       assertThat(credit.getCustomerId()).isEqualTo(allocation.clientId());
       assertThat(credit.getProjectId()).isEqualTo(matter);
     }
+
+    // Two credits on the shared matter with distinct references (reference-based bank matching),
+    // each within the portal read-model's reference varchar(100)
+    var references =
+        allocations.stream()
+            .map(a -> transaction(a.lines().getFirst().trustTransactionId()).getReference())
+            .toList();
+    assertThat(references).hasSize(2).doesNotHaveDuplicates();
+    assertThat(references)
+        .allSatisfy(
+            ref -> {
+              assertThat(ref).startsWith("INT-CREDIT-" + runId + "-" + matter + "-");
+              assertThat(ref.length()).isLessThanOrEqualTo(100);
+            });
+    assertThat(references)
+        .containsExactlyInAnyOrder(
+            "INT-CREDIT-" + runId + "-" + matter + "-" + clientA.toString().substring(0, 8),
+            "INT-CREDIT-" + runId + "-" + matter + "-" + clientB.toString().substring(0, 8));
 
     var shareA = allocationOf(allocations, clientA).clientShare();
     var shareB = allocationOf(allocations, clientB).clientShare();
@@ -374,11 +393,11 @@ class InterestMatterAllocationIntegrationTest {
     assertThat(x.clientShare()).isEqualByComparingTo(y.clientShare());
 
     assertThat(x.lines())
-        .extracting(InterestAllocationLineResponse::projectId)
+        .extracting(InterestAllocationLineResponse::matterId)
         .containsExactlyInAnyOrder(m1, m2);
     assertThat(sumOf(x.lines())).isEqualByComparingTo(x.clientShare());
     assertThat(y.lines()).hasSize(1);
-    assertThat(y.lines().getFirst().projectId()).isNull();
+    assertThat(y.lines().getFirst().matterId()).isNull();
     assertThat(y.lines().getFirst().clientShare()).isEqualByComparingTo(y.clientShare());
   }
 
@@ -607,7 +626,7 @@ class InterestMatterAllocationIntegrationTest {
   private static InterestAllocationLineResponse lineFor(
       InterestAllocationResponse allocation, UUID projectId) {
     return allocation.lines().stream()
-        .filter(l -> java.util.Objects.equals(l.projectId(), projectId))
+        .filter(l -> java.util.Objects.equals(l.matterId(), projectId))
         .findFirst()
         .orElseThrow(() -> new AssertionError("no line for matter " + projectId));
   }

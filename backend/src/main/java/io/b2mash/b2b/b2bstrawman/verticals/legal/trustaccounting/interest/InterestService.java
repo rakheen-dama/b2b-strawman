@@ -148,11 +148,11 @@ public class InterestService {
       // The client share split across matters (ADR-366); empty for a run calculated before V12
       List<InterestAllocationLineResponse> lines) {}
 
-  /** One matter's share of a client's allocation; {@code projectId} null = unmattered bucket. */
+  /** One matter's share of a client's allocation; {@code matterId} null = unmattered bucket. */
   public record InterestAllocationLineResponse(
       UUID id,
-      UUID projectId,
-      String projectName,
+      UUID matterId,
+      String matterName,
       BigDecimal balanceDays,
       BigDecimal clientShare,
       UUID trustTransactionId) {}
@@ -568,22 +568,14 @@ public class InterestService {
                       allocation.getClientShare(),
                       customerId,
                       null,
-                      "INT-CREDIT-" + runId + "-" + customerId,
+                      interestCreditReference(runId, customerId, null),
                       description,
                       transactionDate,
                       memberId));
           allocation.setTrustTransactionId(savedTxn.getId());
         } else {
           for (var line : lines) {
-            // Run + matter for a matter line, run + client for the unmattered one (the row carries
-            // both client and matter). Run + client + matter would be 121 characters: past the
-            // portal read-model's reference column (varchar(100)), which would abort the portal
-            // fan-out for the whole account.
-            var reference =
-                "INT-CREDIT-"
-                    + runId
-                    + "-"
-                    + (line.getProjectId() != null ? line.getProjectId() : customerId);
+            var reference = interestCreditReference(runId, customerId, line.getProjectId());
             var savedTxn =
                 trustTransactionRepository.save(
                     interestCredit(
@@ -1089,6 +1081,20 @@ public class InterestService {
                     .computeIfAbsent(line.getInterestAllocationId(), id -> new ArrayList<>())
                     .add(line));
     return byAllocation;
+  }
+
+  /**
+   * The INTEREST_CREDIT reference (ADR-366). A matter line is run + matter + the client's first 8
+   * hex characters, so co-clients on one matter in one run get distinct references (reference-based
+   * bank matching); 93 characters. The unmattered line keeps run + client (84). Run + client +
+   * matter in full would be 121 characters, past the portal read-model's {@code reference
+   * varchar(100)}, which would abort the portal fan-out for the whole account.
+   */
+  static String interestCreditReference(UUID runId, UUID customerId, UUID projectId) {
+    if (projectId == null) {
+      return "INT-CREDIT-" + runId + "-" + customerId;
+    }
+    return "INT-CREDIT-" + runId + "-" + projectId + "-" + customerId.toString().substring(0, 8);
   }
 
   private static TrustTransaction interestCredit(

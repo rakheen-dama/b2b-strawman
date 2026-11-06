@@ -364,11 +364,11 @@ export interface InterestAllocation {
   lines?: InterestAllocationLine[];
 }
 
-/** One matter's share of a client's interest allocation; `projectId` null = no matter. */
+/** One matter's share of a client's interest allocation; `matterId` null = no matter. */
 export interface InterestAllocationLine {
   id: string;
-  projectId: string | null;
-  projectName: string | null;
+  matterId: string | null;
+  matterName: string | null;
   balanceDays: number;
   clientShare: number;
   trustTransactionId: string | null;

@@ -16,6 +16,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentPosting;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
@@ -29,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,10 +51,15 @@ public class TrustTransactionService {
 
   private static final String MODULE_ID = "trust_accounting";
 
+  /** ProblemDetail {@code code} of a debit refused by the matter sub-ledger guard (G89-F12). */
+  public static final String INSUFFICIENT_MATTER_TRUST_BALANCE =
+      "INSUFFICIENT_MATTER_TRUST_BALANCE";
+
   private final TrustTransactionRepository transactionRepository;
   private final ClientLedgerCardRepository ledgerCardRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
+  private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
   private final InvoiceService invoiceService;
@@ -67,6 +75,7 @@ public class TrustTransactionService {
       ClientLedgerCardRepository ledgerCardRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
+      ProjectRepository projectRepository,
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
       InvoiceService invoiceService,
@@ -80,6 +89,7 @@ public class TrustTransactionService {
     this.ledgerCardRepository = ledgerCardRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
+    this.projectRepository = projectRepository;
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
     this.invoiceService = invoiceService;
@@ -396,6 +406,14 @@ public class TrustTransactionService {
               + ", Requested: R"
               + request.amount());
     }
+
+    // A transfer on a matter moves the source client's money on that matter (G89-F12)
+    requireMatterCellCovers(
+        trustAccountId,
+        request.sourceClientId(),
+        sourceCustomer.getName(),
+        request.matterId(),
+        request.amount());
 
     // Create paired transactions
     var transferOut =
@@ -879,6 +897,17 @@ public class TrustTransactionService {
                 + transaction.getAmount());
       }
 
+      // G89-F12: a debit on a matter (the fee transfer's matter is inferred from its fee note at
+      // record time) must also be covered by this client's money on that matter. The card lock
+      // above serialises the client's postings; this transaction is still AWAITING_APPROVAL, so
+      // the cell sum excludes it.
+      requireMatterCellCovers(
+          transaction.getTrustAccountId(),
+          transaction.getCustomerId(),
+          customer.getName(),
+          transaction.getProjectId(),
+          transaction.getAmount());
+
       // Update ledger based on transaction type
       switch (transaction.getTransactionType()) {
         case "PAYMENT" ->
@@ -1255,6 +1284,61 @@ public class TrustTransactionService {
           "Cannot reverse transaction", "Paired TRANSFER_IN has already been reversed");
     }
 
+    // Lock both ledger cards first, in deterministic UUID order to prevent deadlocks, so the
+    // target's balances are checked under the lock and before anything is written.
+    UUID sourceCustomerId = original.getCustomerId();
+    UUID targetCustomerId = pairedTransferIn.getCustomerId();
+
+    UUID firstId =
+        sourceCustomerId.compareTo(targetCustomerId) < 0 ? sourceCustomerId : targetCustomerId;
+    UUID secondId =
+        sourceCustomerId.compareTo(targetCustomerId) < 0 ? targetCustomerId : sourceCustomerId;
+
+    var firstLedger =
+        ledgerCardRepository
+            .findByAccountAndCustomerForUpdate(original.getTrustAccountId(), firstId)
+            .orElse(null);
+    var secondLedger =
+        ledgerCardRepository
+            .findByAccountAndCustomerForUpdate(original.getTrustAccountId(), secondId)
+            .orElse(null);
+
+    // Resolve source and target ledger cards
+    ClientLedgerCard sourceLedger;
+    ClientLedgerCard targetLedger;
+    if (firstId.equals(sourceCustomerId)) {
+      sourceLedger = firstLedger;
+      targetLedger = secondLedger;
+    } else {
+      sourceLedger = secondLedger;
+      targetLedger = firstLedger;
+    }
+
+    // G89-F12: undoing the TRANSFER_IN debits the target, so the target must still hold the money —
+    // on its card and on the transfer's matter (the TRANSFER_IN is still posted, so both sums
+    // include it). Without this the target could already have spent it.
+    var targetCustomer =
+        customerRepository
+            .findById(targetCustomerId)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, targetCustomerId));
+    var targetAvailable = targetLedger != null ? targetLedger.getBalance() : BigDecimal.ZERO;
+    if (targetAvailable.compareTo(pairedTransferIn.getAmount()) < 0) {
+      throw new InvalidStateException(
+          "Insufficient trust balance",
+          "Insufficient trust balance for "
+              + targetCustomer.getName()
+              + ". Available: R"
+              + targetAvailable
+              + ", Requested: R"
+              + pairedTransferIn.getAmount());
+    }
+    requireMatterCellCovers(
+        pairedTransferIn.getTrustAccountId(),
+        targetCustomerId,
+        targetCustomer.getName(),
+        pairedTransferIn.getProjectId(),
+        pairedTransferIn.getAmount());
+
     String reversalRef = buildReversalReference(original.getReference());
 
     // Create reversal for the TRANSFER_OUT (credits source back)
@@ -1300,36 +1384,7 @@ public class TrustTransactionService {
     pairedTransferIn.setStatus("REVERSED");
     transactionRepository.save(pairedTransferIn);
 
-    // Update both ledger cards: credit source (add money back), debit target (remove money)
-    // Acquire locks in deterministic UUID order to prevent deadlocks
-    UUID sourceCustomerId = original.getCustomerId();
-    UUID targetCustomerId = pairedTransferIn.getCustomerId();
-
-    UUID firstId =
-        sourceCustomerId.compareTo(targetCustomerId) < 0 ? sourceCustomerId : targetCustomerId;
-    UUID secondId =
-        sourceCustomerId.compareTo(targetCustomerId) < 0 ? targetCustomerId : sourceCustomerId;
-
-    var firstLedger =
-        ledgerCardRepository
-            .findByAccountAndCustomerForUpdate(original.getTrustAccountId(), firstId)
-            .orElse(null);
-    var secondLedger =
-        ledgerCardRepository
-            .findByAccountAndCustomerForUpdate(original.getTrustAccountId(), secondId)
-            .orElse(null);
-
-    // Resolve source and target ledger cards
-    ClientLedgerCard sourceLedger;
-    ClientLedgerCard targetLedger;
-    if (firstId.equals(sourceCustomerId)) {
-      sourceLedger = firstLedger;
-      targetLedger = secondLedger;
-    } else {
-      sourceLedger = secondLedger;
-      targetLedger = firstLedger;
-    }
-
+    // Update both ledger cards (locked above): credit source (add money back), debit target
     // Credit source (add back transferred amount)
     if (sourceLedger != null) {
       sourceLedger.creditBalance(original.getAmount(), LocalDate.now(clock));
@@ -1379,6 +1434,47 @@ public class TrustTransactionService {
   }
 
   // --- Private Helpers ---
+
+  /**
+   * G89-F12: a debit on a matter must be covered by this client's money on that matter in this
+   * trust account (the matter sub-ledger cell), not only by the client card — otherwise a refund of
+   * "matter + client-level credit" leaves the matter negative while the closure gate (which reads
+   * the matter) and the client card disagree, and a co-client can spend another client's money on a
+   * shared matter. No-op for an unmattered debit (the client card check covers it). Callers hold
+   * the client card's row lock, so the cell sum cannot race with another posting for the client.
+   */
+  private void requireMatterCellCovers(
+      UUID trustAccountId, UUID customerId, String clientName, UUID projectId, BigDecimal amount) {
+    if (projectId == null) {
+      return;
+    }
+    var available =
+        transactionRepository.calculateMatterClientBalance(trustAccountId, customerId, projectId);
+    if (available == null) {
+      available = BigDecimal.ZERO;
+    }
+    if (available.compareTo(amount) >= 0) {
+      return;
+    }
+    var matterName =
+        projectRepository.findById(projectId).map(Project::getName).orElse(projectId.toString());
+    var properties = new LinkedHashMap<String, Object>();
+    properties.put("code", INSUFFICIENT_MATTER_TRUST_BALANCE);
+    properties.put("matterId", projectId);
+    properties.put("available", available);
+    properties.put("requested", amount);
+    throw InvalidStateException.withProperties(
+        "Insufficient trust balance",
+        "Insufficient trust balance on matter "
+            + matterName
+            + " for "
+            + clientName
+            + ". Available on matter: R"
+            + available
+            + ", Requested: R"
+            + amount,
+        properties);
+  }
 
   /**
    * Atomically ensures a ClientLedgerCard exists for the given account and customer. Uses a native

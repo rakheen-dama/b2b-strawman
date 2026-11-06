@@ -243,6 +243,34 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   BigDecimal calculateBalanceByProjectId(@Param("projectId") UUID projectId);
 
   /**
+   * One client's money on one matter in one trust account — the matter sub-ledger cell (G89-F12).
+   * Same sign rules and RECORDED/APPROVED filter as {@link #calculateClientBalanceAsOfDate}. A
+   * debit on a matter must be covered by this cell, not merely by the client card: the closure gate
+   * reads the matter, and a co-client must never spend another client's money on a shared matter.
+   * The caller holds the client card's row lock ({@code findByAccountAndCustomerForUpdate}), which
+   * serialises every posting for the client, so the sum cannot race.
+   */
+  @Query(
+      """
+      SELECT COALESCE(SUM(
+        CASE
+          WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
+          WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
+          ELSE 0
+        END
+      ), 0)
+      FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.customerId = :customerId
+        AND t.projectId = :projectId
+        AND t.status IN ('RECORDED', 'APPROVED')
+      """)
+  BigDecimal calculateMatterClientBalance(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("projectId") UUID projectId);
+
+  /**
    * Finds unmatched candidate transactions for bank reconciliation auto-matching. Candidates are
    * RECORDED or APPROVED transactions that have not yet been matched to a bank statement line,
    * within the specified date range.

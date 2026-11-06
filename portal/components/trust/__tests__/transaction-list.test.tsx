@@ -21,6 +21,7 @@ function buildPage(
     transactionType: string;
     amount: number;
     runningBalance: number;
+    transactionDate: string;
     occurredAt: string;
     description: string;
     reference: string;
@@ -55,6 +56,7 @@ describe("TransactionList", () => {
         transactionType: "DEPOSIT",
         amount: 100 + i,
         runningBalance: 1000 + i,
+        transactionDate: "2026-04-15",
         occurredAt: "2026-04-15T08:30:00Z",
         description: `Deposit ${i}`,
         reference: `DEP-${i}`,
@@ -69,6 +71,7 @@ describe("TransactionList", () => {
           transactionType: "WITHDRAWAL",
           amount: -50,
           runningBalance: 950,
+          transactionDate: "2026-04-16",
           occurredAt: "2026-04-16T08:30:00Z",
           description: "Withdrawal page 2",
           reference: "WDR-1",
@@ -121,6 +124,7 @@ describe("TransactionList", () => {
           transactionType: "FEE_TRANSFER",
           amount: -250,
           runningBalance: 750,
+          transactionDate: "2026-04-15",
           occurredAt: "2026-04-15T08:30:00Z",
           description: "Transfer to business account",
           reference: "FT-1",
@@ -130,6 +134,7 @@ describe("TransactionList", () => {
           transactionType: "REFUND",
           amount: -100,
           runningBalance: 650,
+          transactionDate: "2026-04-16",
           occurredAt: "2026-04-16T08:30:00Z",
           description: "Refund to client",
           reference: "RF-1",
@@ -147,6 +152,35 @@ describe("TransactionList", () => {
     expect(screen.queryByText(/REFUND/)).toBeNull();
   });
 
+  it("dates each row by its transaction date, not the day it was recorded (G89-F39)", async () => {
+    mockGetMatterTransactions.mockResolvedValueOnce(
+      buildPage([
+        {
+          id: "txn-backdated",
+          transactionType: "DEPOSIT",
+          amount: 100,
+          runningBalance: 100,
+          // Back-dated deposit: dated 1 Oct, recorded on 7 Nov.
+          transactionDate: "2026-10-01",
+          occurredAt: "2026-11-07T08:00:00Z",
+          description: "Back-dated deposit",
+          reference: "DEP-OCT01",
+        },
+      ]),
+    );
+
+    render(<TransactionList matterId="matter-1" />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Back-dated deposit").length).toBeGreaterThan(
+        0,
+      ),
+    );
+    const table = screen.getByRole("table", { name: "Trust transactions" });
+    expect(table.textContent).toContain("01 Oct 2026");
+    expect(table.textContent).not.toContain("Nov 2026");
+  });
+
   it("synthesises a fallback description when the backend sends an empty one", async () => {
     mockGetMatterTransactions.mockResolvedValueOnce(
       buildPage([
@@ -155,6 +189,7 @@ describe("TransactionList", () => {
           transactionType: "INTEREST_CREDIT",
           amount: 12.5,
           runningBalance: 1262.5,
+          transactionDate: "2026-04-15",
           occurredAt: "2026-04-15T08:30:00Z",
           description: "",
           reference: "INT-001",

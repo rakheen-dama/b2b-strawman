@@ -1,7 +1,7 @@
 {
-  "commit": "ef20a6ea9",
-  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "6fc390e20",
+  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-b-interest-period)",
   "exit": 0,
-  "ts": "2026-11-05T16:40:46Z",
-  "summary": "PR #1739 (closure-spec R-5 fix) FE-GATE on ef20a6ea9 (orchestrator, worktree-fix-closure-spec): lint 0 errors / 79 pre-existing warnings, typecheck ok, format:check ok, vitest Test Files 444 passed / Tests 3672 passed | 2 skipped (3674), build ok"
+  "ts": "2026-11-06T21:40:00Z",
+  "summary": "PR #1745 (G89 Batch B) head 6fc390e20: lint 0 errors (79 pre-existing warnings), build ok, 444 files / 3673 passed / 2 skipped, prettier clean; Frontend CI pass"
 }

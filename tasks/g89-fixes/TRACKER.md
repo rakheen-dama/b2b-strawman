@@ -27,8 +27,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 
 | # | Batch | Gaps | Gates | Branch / PR | Status |
 |---|---|---|---|---|---|
-| 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | `fix/g89-b-interest-period` / PR #1745 | PR open — full verify running |
-| 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | | OPEN |
+| 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | MERGED-AWAITING-VERIFY (KC S2-03 check running) |
+| 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | `fix/g89-a-trust-matter-ledger` | IN PROGRESS (builder) |
 | 3 | D — portal correctness | F23, 633C D2, 633C D6 | BE + PT | | OPEN |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | | OPEN |
@@ -70,3 +70,11 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 
 ## Log
 - 2026-11-06 — plan approved; decisions D1–D8; Batch B started.
+- 2026-11-06 — decisions D9–D12 (C1/C2 scout findings).
+- 2026-11-06 23:4x — PR #1745 (Batch B) merged as `e0a44ba72`. Gates:
+  - full verify 6583 / 0 / 0 / 26 skipped (17:53)
+  - frontend gate green (3673 tests)
+  - 2× APPROVE @6fc390e20
+  - CodeRabbit: 0 findings
+  - CI green
+  KC backend restarted on `e0a44ba72` (javap confirms `requirePeriodEnded`). Note: `verify.sh` preflight killed the KC backend/gateway Maven launchers (app JVMs survived). Batch A builder launched.

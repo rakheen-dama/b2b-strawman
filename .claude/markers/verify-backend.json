@@ -1,7 +1,7 @@
 {
-  "commit": "a8d5b86ae",
-  "command": "./mvnw clean verify -q (caffeinate; verify.sh preflight skipped — it would SIGKILL the 6h KC dev spring-boot:run JVM)",
+  "commit": "6fc390e20",
+  "command": "bash backend/scripts/verify.sh (preflight + caffeinate -is ./mvnw verify), worktree fix/g89-b-interest-period",
   "exit": 0,
-  "ts": "2026-11-05T12:30:37Z",
-  "summary": "PR #1735 (634C) head a8d5b86ae: 6579 testcases / 0 failures / 0 errors / 26 skipped — ~19.5 min; Backend CI pass on a8d5b86ae"
+  "ts": "2026-11-06T21:21:00Z",
+  "summary": "PR #1745 (G89 Batch B) head 6fc390e20: 6583 tests / 0 failures / 0 errors / 26 skipped — 17:53 min; Backend CI pass"
 }

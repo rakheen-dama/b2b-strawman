@@ -28,8 +28,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | # | Batch | Gaps | Gates | Branch / PR | Status |
 |---|---|---|---|---|---|
 | 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | F11 **VERIFIED** (KC, `qa_cycle/evidence/g89-fixes/batch-B/`); F10 DEFERRED → Checkpoint 1 (e2e day-60 spec) |
-| 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | `fix/g89-a-trust-matter-ledger` | IN PROGRESS (builder) |
-| 3 | D — portal correctness | F23, 633C D2, 633C D6 | BE + PT | | OPEN |
+| 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | MERGED-AWAITING-VERIFY (KC check running) |
+| 3 | D — portal correctness | F23, 633C D2, 633C D6 | BE + PT | `fix/g89-d-portal-correctness` | IN PROGRESS (builder) |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | | OPEN |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C | BE + FE | | OPEN |
@@ -78,3 +78,18 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - CodeRabbit: 0 findings
   - CI green
   KC backend restarted on `e0a44ba72` (javap confirms `requirePeriodEnded`). Note: `verify.sh` preflight killed the KC backend/gateway Maven launchers (app JVMs survived). Batch A builder launched.
+- 2026-11-07 ~01:30 — PR #1746 (Batch A) merged as `9cb368e50`.
+  - The first full verify @2ca83fd83 caught an ADR-337 wire-vocabulary regression (`InterestAllocationLineResponse.projectId`).
+  - Fix commit 6c253d089 also took 2 CodeRabbit Minors (ADR-234 append-only; distinct co-client reference).
+  - Final gates @6c253d089: verify 6610 / 0 / 0 / 26 (21:42); FE 3681 green; portal 273 green; 2× re-review APPROVE.
+  - KC backend restarted; tenant V12 applied on both tenants.
+  - Batch D builder launched.
+- New ids to file in Batch F:
+  - G89-F36: firm reference > 100 chars aborts portal sync.
+  - G89-F37: transfers cannot be reversed via API (RECORDED, reversal needs APPROVED).
+  - G89-F38: `admin-audit-30day/fixtures.ts` posts to a non-existent `/api/trust-transactions`.
+- Batch E follow-ups from the A reviews:
+  - matter Trust tab hides the matter balance when the client-ledger fetch fails;
+  - interest notification test lacks a plain member;
+  - sr-only "less" cue in the ledger breakdown;
+  - ADR-366 should note that the portal omits unmattered credits.

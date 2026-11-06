@@ -1,7 +1,7 @@
 {
-  "commit": "6f3d654bc",
-  "command": "cd portal && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "6c253d089",
+  "command": "cd portal && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-a-trust-matter-ledger; no portal code changed — regression proof)",
   "exit": 0,
-  "ts": "2026-11-06T00:50:27Z",
-  "summary": "PR #1744 (untrack portal/next-env.d.ts) PORTAL-GATE on 6f3d654bc (orchestrator, worktree-untrack-next-env): lint 0 errors / 4 warnings, typecheck ok (next typegen regenerated next-env.d.ts), format:check ok, vitest Test Files 47 passed / Tests 273 passed, build ok"
+  "ts": "2026-11-06T23:25:00Z",
+  "summary": "PR #1746 (G89 Batch A) head 6c253d089: lint 0 errors (4 warnings), build ok, 47 files / 273 passed, prettier clean"
 }

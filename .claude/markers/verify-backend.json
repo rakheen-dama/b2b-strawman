@@ -1,7 +1,7 @@
 {
-  "commit": "6fc390e20",
-  "command": "bash backend/scripts/verify.sh (preflight + caffeinate -is ./mvnw verify), worktree fix/g89-b-interest-period",
+  "commit": "6c253d089",
+  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-a-trust-matter-ledger; verify.sh preflight skipped — it kills the KC dev spring-boot:run launchers; stale-JVM and :13025 checks done by hand)",
   "exit": 0,
-  "ts": "2026-11-06T21:21:00Z",
-  "summary": "PR #1745 (G89 Batch B) head 6fc390e20: 6583 tests / 0 failures / 0 errors / 26 skipped — 17:53 min; Backend CI pass"
+  "ts": "2026-11-06T23:05:00Z",
+  "summary": "PR #1746 (G89 Batch A) head 6c253d089: 6610 tests / 0 failures / 0 errors / 26 skipped — 21:42 min"
 }

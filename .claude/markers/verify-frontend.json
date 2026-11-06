@@ -1,7 +1,7 @@
 {
-  "commit": "6fc390e20",
-  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-b-interest-period)",
+  "commit": "6c253d089",
+  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-a-trust-matter-ledger)",
   "exit": 0,
-  "ts": "2026-11-06T21:40:00Z",
-  "summary": "PR #1745 (G89 Batch B) head 6fc390e20: lint 0 errors (79 pre-existing warnings), build ok, 444 files / 3673 passed / 2 skipped, prettier clean; Frontend CI pass"
+  "ts": "2026-11-06T23:20:00Z",
+  "summary": "PR #1746 (G89 Batch A) head 6c253d089: lint 0 errors (79 pre-existing warnings), build ok, 445 files / 3681 passed / 2 skipped, prettier clean; Frontend CI pass"
 }

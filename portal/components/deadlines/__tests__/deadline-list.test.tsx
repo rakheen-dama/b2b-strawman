@@ -133,6 +133,22 @@ describe("DeadlineList", () => {
     ).toHaveAttribute("data-tone", "green");
   });
 
+  it("prints the client-facing status label on each row badge, not the raw enum (633C D2)", () => {
+    render(
+      <Harness
+        deadlines={[
+          deadline({ id: "soon", status: "DUE_SOON", label: "Soon item" }),
+        ]}
+        now={new Date("2026-04-20T00:00:00")}
+      />,
+    );
+
+    const row = screen.getByTestId("deadline-row-FILING_SCHEDULE-soon");
+    expect(row.textContent).toContain("Due soon");
+    expect(row.textContent).not.toContain("DUE SOON");
+    expect(row.textContent).not.toContain("DUE_SOON");
+  });
+
   it("invokes onSelect with the clicked deadline", async () => {
     const onSelect = vi.fn();
     const items = [

@@ -33,8 +33,9 @@ describe("DeadlineDetailPanel", () => {
     expect(panel.textContent).toContain("VAT 201 submission");
     // Formatted by formatDate (en-GB).
     expect(panel.textContent).toMatch(/1 May 2026/);
-    // Status "UPCOMING" formatted → "UPCOMING" (no underscore in this status).
-    expect(panel.textContent).toContain("UPCOMING");
+    // 633C D2: status badge prints the client-facing label, never the raw enum.
+    expect(panel.textContent).toContain("Upcoming");
+    expect(panel.textContent).not.toContain("UPCOMING");
     // Description rendered as-is (pre-sanitised server-side per ADR-254).
     expect(panel.textContent).toContain("Submit before 5pm");
     // Source-entity reference rendered with humanised label.

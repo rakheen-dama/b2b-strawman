@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -27,8 +29,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -57,6 +62,7 @@ public class InterestService {
   private final TrustInvestmentRepository investmentRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
+  private final CustomerRepository customerRepository;
   private final Clock clock;
 
   public InterestService(
@@ -69,6 +75,7 @@ public class InterestService {
       TrustInvestmentRepository investmentRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
+      CustomerRepository customerRepository,
       Clock clock) {
     this.interestRunRepository = interestRunRepository;
     this.interestAllocationRepository = interestAllocationRepository;
@@ -79,6 +86,7 @@ public class InterestService {
     this.investmentRepository = investmentRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
+    this.customerRepository = customerRepository;
     this.clock = clock;
   }
 
@@ -110,6 +118,8 @@ public class InterestService {
       UUID id,
       UUID interestRunId,
       UUID clientId,
+      // Null only when the client row is gone; the wizard then falls back to a short id (G89-F10)
+      String clientName,
       BigDecimal averageDailyBalance,
       int daysInPeriod,
       BigDecimal grossInterest,
@@ -118,6 +128,8 @@ public class InterestService {
       UUID trustTransactionId,
       UUID lpffRateId,
       boolean statutoryRateApplied,
+      // LPFF share fraction applied (0.05 statutory, else the run's LPFF rate share; G89-F10)
+      BigDecimal lpffSharePercent,
       Instant createdAt) {}
 
   // --- Service Methods ---
@@ -399,9 +411,7 @@ public class InterestService {
         .findById(runId)
         .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
 
-    return interestAllocationRepository.findByInterestRunId(runId).stream()
-        .map(this::toAllocationResponse)
-        .toList();
+    return toAllocationResponses(interestAllocationRepository.findByInterestRunId(runId));
   }
 
   @Transactional(readOnly = true)
@@ -427,9 +437,7 @@ public class InterestService {
             .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
 
     var allocations =
-        interestAllocationRepository.findByInterestRunId(runId).stream()
-            .map(this::toAllocationResponse)
-            .toList();
+        toAllocationResponses(interestAllocationRepository.findByInterestRunId(runId));
 
     return new InterestRunDetailResponse(toRunResponse(run), allocations);
   }
@@ -733,11 +741,51 @@ public class InterestService {
         Math.toIntExact(interestAllocationRepository.countByInterestRunId(run.getId())));
   }
 
-  private InterestAllocationResponse toAllocationResponse(InterestAllocation alloc) {
+  /**
+   * Maps allocations with the client name and applied LPFF share: one query for the names and one
+   * for the rates, whatever the allocation count (no N+1).
+   */
+  private List<InterestAllocationResponse> toAllocationResponses(
+      List<InterestAllocation> allocations) {
+    var customerIds =
+        allocations.stream().map(InterestAllocation::getCustomerId).distinct().toList();
+    Map<UUID, String> clientNames =
+        customerRepository.findAllById(customerIds).stream()
+            .collect(Collectors.toMap(Customer::getId, Customer::getName, (a, b) -> a));
+
+    var rateIds =
+        allocations.stream()
+            .map(InterestAllocation::getLpffRateId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    Map<UUID, LpffRate> rates =
+        lpffRateRepository.findAllById(rateIds).stream()
+            .collect(Collectors.toMap(LpffRate::getId, Function.identity()));
+
+    return allocations.stream()
+        .map(
+            alloc -> {
+              BigDecimal lpffSharePercent;
+              if (alloc.isStatutoryRateApplied()) {
+                lpffSharePercent = TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT;
+              } else {
+                var rate = rates.get(alloc.getLpffRateId());
+                lpffSharePercent = rate != null ? rate.getLpffSharePercent() : null;
+              }
+              return toAllocationResponse(
+                  alloc, clientNames.get(alloc.getCustomerId()), lpffSharePercent);
+            })
+        .toList();
+  }
+
+  private InterestAllocationResponse toAllocationResponse(
+      InterestAllocation alloc, String clientName, BigDecimal lpffSharePercent) {
     return new InterestAllocationResponse(
         alloc.getId(),
         alloc.getInterestRunId(),
         alloc.getCustomerId(),
+        clientName,
         alloc.getAverageDailyBalance(),
         alloc.getDaysInPeriod(),
         alloc.getGrossInterest(),
@@ -746,6 +794,7 @@ public class InterestService {
         alloc.getTrustTransactionId(),
         alloc.getLpffRateId(),
         alloc.isStatutoryRateApplied(),
+        lpffSharePercent,
         alloc.getCreatedAt());
   }
 }

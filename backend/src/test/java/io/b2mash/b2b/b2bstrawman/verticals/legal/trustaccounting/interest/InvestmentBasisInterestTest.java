@@ -298,6 +298,10 @@ class InvestmentBasisInterestTest {
             .setScale(2, RoundingMode.HALF_UP);
     assertThat(ciAllocation.lpffShare()).isEqualByComparingTo(expectedLpffShare);
     assertThat(ciAllocation.statutoryRateApplied()).isTrue();
+    // G89-F10: the wizard shows the client's name and the applied share, not a UUID
+    assertThat(ciAllocation.clientName()).isEqualTo("CI Client");
+    assertThat(ciAllocation.lpffSharePercent())
+        .isEqualByComparingTo(TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT);
   }
 
   @Test
@@ -322,6 +326,9 @@ class InvestmentBasisInterestTest {
             .setScale(2, RoundingMode.HALF_UP);
     assertThat(fdAllocation.lpffShare()).isEqualByComparingTo(expectedLpffShare);
     assertThat(fdAllocation.statutoryRateApplied()).isFalse();
+    // G89-F10: the arrangement row carries the LPFF rate's share (75%) and the client's name
+    assertThat(fdAllocation.clientName()).isEqualTo("FD Client");
+    assertThat(fdAllocation.lpffSharePercent()).isEqualByComparingTo(CONFIGURED_LPFF_SHARE);
   }
 
   @Test

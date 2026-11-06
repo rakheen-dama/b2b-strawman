@@ -223,7 +223,10 @@ class InterestControllerTest {
         .andExpect(jsonPath("$.run.id").value(runId))
         .andExpect(jsonPath("$.run.status").value("DRAFT"))
         .andExpect(jsonPath("$.allocations").isArray())
-        .andExpect(jsonPath("$.allocations.length()").value(org.hamcrest.Matchers.greaterThan(0)));
+        .andExpect(jsonPath("$.allocations.length()").value(org.hamcrest.Matchers.greaterThan(0)))
+        // G89-F10: the allocation carries the client's name and the applied LPFF share
+        .andExpect(jsonPath("$.allocations[0].clientName").value("Interest Ctrl Client"))
+        .andExpect(jsonPath("$.allocations[0].lpffSharePercent").value(0.75));
   }
 
   @Test

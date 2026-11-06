@@ -339,6 +339,8 @@ export interface InterestAllocation {
   id: string;
   interestRunId: string;
   clientId: string;
+  /** Null only when the client record is gone — the wizard then shows a short id (G89-F10). */
+  clientName: string | null;
   averageDailyBalance: number;
   daysInPeriod: number;
   grossInterest: number;
@@ -347,5 +349,7 @@ export interface InterestAllocation {
   trustTransactionId: string | null;
   lpffRateId: string | null;
   statutoryRateApplied: boolean;
+  /** LPFF share fraction applied to this allocation (0.05 statutory, else the run's LPFF rate). */
+  lpffSharePercent: number | null;
   createdAt: string;
 }

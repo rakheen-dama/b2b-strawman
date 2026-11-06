@@ -41,7 +41,7 @@ Verify cost: **BE** = full `./mvnw verify` + two reviews + CodeRabbit; **FE** / 
 
 | ID | Sev | Observed | Where | Fix |
 |---|---|---|---|---|
-| G89-F11 | **HIGH** (founder D4: stays HIGH) — **fixed PR #1745 (`e0a44ba72`), MERGED-AWAITING-VERIFY** | Interest run for 05→06 Nov created on 5 Nov; calculated, approved and **posted**; INTEREST_CREDIT rows dated tomorrow | `InterestService.java:122-145` (no elapsed-period guard), `:481` | Reject a period whose end is after the firm's today (`KaziTime`), at create and at approve; 400 ProblemDetail "period has not ended". Reproduce-first test with a clock pinned to the period start. |
+| G89-F11 | **HIGH** (founder D4: stays HIGH) — **fixed PR #1745 (`e0a44ba72`), VERIFIED on KC 2026-11-06** (`qa_cycle/evidence/g89-fixes/batch-B/`) | Interest run for 05→06 Nov created on 5 Nov; calculated, approved and **posted**; INTEREST_CREDIT rows dated tomorrow | `InterestService.java:122-145` (no elapsed-period guard), `:481` | Reject a period whose end is after the firm's today (`KaziTime`), at create and at approve; 400 ProblemDetail "period has not ended". Reproduce-first test with a clock pinned to the period start. |
 | G89-F10 | LOW — **fixed PR #1745, MERGED-AWAITING-VERIFY** | Interest wizard Calculate table shows client UUIDs and "LPFF Rate: Arrangement" | `frontend/components/trust/InterestRunWizard.tsx` | Show client names; label the rate "LPFF arrangement rate n %". Same PR as F11 (FE gate only, no extra verify). |
 
 ### Batch C — statements, reports and client documents (MEDIUM + copy) — BE + FE, one PR (authorisation requested: same document-content family)

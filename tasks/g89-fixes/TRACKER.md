@@ -27,7 +27,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 
 | # | Batch | Gaps | Gates | Branch / PR | Status |
 |---|---|---|---|---|---|
-| 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | MERGED-AWAITING-VERIFY (KC S2-03 check running) |
+| 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | F11 **VERIFIED** (KC, `qa_cycle/evidence/g89-fixes/batch-B/`); F10 DEFERRED → Checkpoint 1 (e2e day-60 spec) |
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | `fix/g89-a-trust-matter-ledger` | IN PROGRESS (builder) |
 | 3 | D — portal correctness | F23, 633C D2, 633C D6 | BE + PT | | OPEN |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
@@ -41,7 +41,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 ## Gap checklist
 
 ### HIGH
-- [ ] G89-F11 — interest run accepted for a period that has not ended (B)
+- [x] G89-F11 — interest run accepted for a period that has not ended (B) — VERIFIED 2026-11-06, PR #1745
 - [ ] G89-F12 — matter-linked refund exceeds matter balance (A)
 - [ ] G89-F22 — portal trust balance ≠ firm client ledger (A)
 
@@ -57,7 +57,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] F1 [ ] F2 [ ] F3 (F)
 - [ ] F5 [ ] F7 [ ] F8 [ ] F9 [ ] F15 [ ] F20 (E)
 - [ ] F6 [ ] F26 (C2)
-- [ ] F10 (B)
+- [ ] F10 (B) — merged #1745; observe at Checkpoint 1 (not reachable on the 636B tenant)
 - [ ] F19 [ ] F21 (C1)
 - [ ] F4 [ ] F24 [ ] F25 [ ] F27 — scenario amendments (F)
 - [ ] G-D10a [ ] G88-F27 (Access denied) [ ] G88-F27 (disbursement "Invoiced · Yes") [ ] G88-M9 [ ] G88-F24 [ ] G88-F2 [ ] 634A (E)

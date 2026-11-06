@@ -1,0 +1,17 @@
+# G89 Batch B — QA verification (PR #1745, main e0a44ba72)
+
+- Verified: 2026-11-06 23:26–23:29 SAST (`TZ=Africa/Johannesburg date` → Fri Nov 6 23:26:34 SAST 2026)
+- Stack: Keycloak dev. Frontend http://localhost:3000; backend :8080 (pid 49443, started 21:25:42Z, main checkout HEAD contains e0a44ba72)
+- Actor: thandi@mathebula-test.local (Owner), org `mathebula-partners`, tenant `tenant_5039f2d497cf`
+- Driver: Playwright MCP, viewport 1440×900 (plus 1024×768 for one screenshot)
+- DB evidence: read-only SELECT via `docker exec b2b-postgres psql -U postgres -d docteams`. The DB is `docteams`, not `app`, and there is no host `psql`.
+
+| Row | Status | Observation | Evidence |
+|-----|--------|-------------|----------|
+| S2-03 / G89-F11 (HIGH) | **VERIFIED** | Path: Trust › Interest › **New Interest Run**. Entered Period Start `2026-11-07` and Period End `2026-11-08`, then clicked **Create Run**. A server-action POST fired (200 to the page route), and the dialog stayed on "Step 1 of 4 — Create" with this inline red error: *"The interest period ends on 2026-11-08, which is after today (2026-11-06, South African time). Run interest only for a period that has ended."* This text matches the ProblemDetail detail in `InterestService.requirePeriodEnded` word for word (title "Interest period has not ended"), so the refusal came from the backend and not from client validation. After Cancel and a page reload, the list still showed "1 run found" with only the POSTED row 05 Nov 2026 — 06 Nov 2026. `interest_runs` count was 1 before and 1 after, with the same single row (id 9eb81568…, POSTED). | `f11-period-not-ended-error-1440.png`, `f11-period-not-ended-error-1024.png`, `f11-f10-interest-page-after-1440.png`, `db-interest-runs-before.txt`, `db-interest-runs-after.txt` |
+| S2-03 / G89-F10 (LOW) | **DEFERRED** | Not reachable on this tenant. Covered at Checkpoint 1 by e2e `legal-lifecycle/day-60-interest.spec.ts` and the exit re-walk. The POSTED 05→06 run row has Actions "—", no link, and clicking it does nothing (URL unchanged, no dialog). There is no run-detail route under `trust-accounting/interest/`. The allocation table, with the "LPFF arrangement rate n%" label, is rendered only in the wizard's Calculate step (`components/trust/InterestRunWizard.tsx:413`). No valid new run can be created and calculated here. The only LPFF rate is effective from 05 Nov 2026, and the rate is looked up by periodStart. Any ended period (end ≤ 06 Nov) that starts on or after 05 Nov overlaps the posted run (overlap guard, `InterestService.java:159`). Any period starting before 05 Nov has no effective rate (`InterestService.java:172`). Per the brief, no LPFF rates or other data were created to force it. | `f11-f10-interest-page-after-1440.png` |
+| Console (Interest page) | Note | No application errors. The only error was `404 http://localhost:8180/favicon.ico`, which comes from the Keycloak login page, not the app. The only warning was the Next.js dev warning about `scroll-behavior: smooth` on `<html>`. The rest were HMR/Fast Refresh logs. | `console-interest-page.txt` |
+
+## Notes
+- The POSTED 05→06 Nov run (created 2026-11-05 21:03Z, period_end 2026-11-06) predates the fix. It is the kind of run F11 now blocks. The fix does not touch it, and it remains POSTED.
+- To navigate to :3000, the Playwright port hook needed its sanctioned Keycloak-mode marker `/tmp/.e2e-keycloak-mode`, which I created.

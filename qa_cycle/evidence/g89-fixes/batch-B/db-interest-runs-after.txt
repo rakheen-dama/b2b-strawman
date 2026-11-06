@@ -1,0 +1,12 @@
+# Fri Nov  6 23:28:44 SAST 2026 — docker exec b2b-postgres psql -U postgres -d docteams (read-only)
+# select id, period_start, period_end, status, total_interest, total_lpff_share, total_client_share, created_at from tenant_5039f2d497cf.interest_runs order by created_at; select count(*) as run_count from tenant_5039f2d497cf.interest_runs;
+                  id                  | period_start | period_end | status | total_interest | total_lpff_share | total_client_share |          created_at           
+--------------------------------------+--------------+------------+--------+----------------+------------------+--------------------+-------------------------------
+ 9eb81568-a056-4d62-bf26-380615f66582 | 2026-11-05   | 2026-11-06 | POSTED |          19.15 |             0.00 |              19.15 | 2026-11-05 21:03:37.927712+00
+(1 row)
+
+ run_count 
+-----------
+         1
+(1 row)
+

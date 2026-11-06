@@ -264,10 +264,49 @@ class PortalEmailNotificationChannelIntegrationTest {
         .as("body must not contain a raw ISO timestamp like 2026-04-30T...Z")
         .doesNotContainPattern("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
 
+    // 633C D6: the Type cell prints a client-facing label, never the raw enum.
+    assertThat(body).as("Type must be the client-facing label").contains(">Deposit<");
+    assertThat(body).as("Type must not be the raw enum").doesNotContain("DEPOSIT");
+
     var logs = findLogsByReferenceType("PORTAL_TRUST_ACTIVITY");
     assertThat(logs)
         .as("delivery log should record referenceType=PORTAL_TRUST_ACTIVITY for DEPOSIT")
         .isNotEmpty();
+  }
+
+  /** 633C D6: approval-path emails print the client-facing type label too. */
+  @Test
+  void trustApprovalEvent_feeTransfer_printsClientFacingTypeLabel() throws Exception {
+    publishInsideTenantTxn(
+        () ->
+            eventPublisher.publishEvent(
+                TrustTransactionApprovalEvent.approved(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "FEE_TRANSFER",
+                    new BigDecimal("1200.00"),
+                    customerId,
+                    memberId,
+                    memberId,
+                    tenantSchema,
+                    ORG_ID)));
+
+    assertThat(greenMail.waitForIncomingEmail(5000, 1)).isTrue();
+    MimeMessage matchedMessage = null;
+    for (MimeMessage msg : greenMail.getReceivedMessages()) {
+      if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
+          && msg.getSubject() != null
+          && msg.getSubject().toLowerCase().contains("trust account activity")) {
+        matchedMessage = msg;
+        break;
+      }
+    }
+    assertThat(matchedMessage).as("trust-activity email should be received").isNotNull();
+
+    String body = extractBody(matchedMessage);
+    assertThat(body).as("Type must be the client-facing label").contains(">Fee transfer<");
+    assertThat(body).as("Type must not be the raw enum").doesNotContain("FEE_TRANSFER");
   }
 
   @Test

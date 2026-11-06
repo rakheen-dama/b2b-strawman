@@ -18,9 +18,18 @@ import {
 import { RecordDepositDialog } from "@/components/trust/RecordDepositDialog";
 import { RecordPaymentDialog } from "@/components/trust/RecordPaymentDialog";
 import { RecordFeeTransferDialog } from "@/components/trust/RecordFeeTransferDialog";
-import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdown";
+import {
+  fetchMatterTrustBalance,
+  fetchTrustAccounts,
+} from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchClientLedger } from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions";
-import type { TrustAccount, ClientLedgerCard as ClientLedgerCardType } from "@/lib/types";
+import type { WidgetResult } from "@/lib/dashboard-home";
+import type {
+  MatterTrustBalance,
+  TrustAccount,
+  ClientLedgerCard as ClientLedgerCardType,
+} from "@/lib/types";
 
 interface TrustBalanceCardProps {
   customerId: string;
@@ -79,13 +88,37 @@ export function TrustBalanceCard({
     fetchClientLedger(resolvedAccountId!, customerId)
   );
 
-  const isLoading = accountsLoading || ledgerLoading;
+  // Matter mode (G89-F14): on a matter's Trust tab the primary figure is the matter's own
+  // sub-ledger — the same source as the closure gate and the Overview tile — not the client card.
+  const isMatterMode = Boolean(projectId);
+  const matterCacheKey =
+    moduleEnabled && projectId ? `matter-trust-balance-${slug}-${projectId}` : null;
+  const {
+    data: matterResult,
+    isLoading: matterLoading,
+    error: matterFetchError,
+  } = useSWR<WidgetResult<MatterTrustBalance>>(matterCacheKey, () =>
+    fetchMatterTrustBalance(projectId!)
+  );
+  const matterError =
+    isMatterMode && (Boolean(matterFetchError) || (matterResult && matterResult.state !== "ok"));
+
+  // The figure the card is about: the matter balance on a matter, the client card otherwise
+  const primaryBalance = isMatterMode
+    ? matterResult?.state === "ok"
+      ? matterResult.data.balance
+      : undefined
+    : ledger?.balance;
+
+  const isLoading = accountsLoading || ledgerLoading || matterLoading;
+  const loadError = Boolean(ledgerError) || matterError;
 
   // Revalidate SWR caches after a successful transaction mutation
   const handleMutationSuccess = useCallback(() => {
     if (ledgerCacheKey) globalMutate(ledgerCacheKey);
     if (accountsCacheKey) globalMutate(accountsCacheKey);
-  }, [globalMutate, ledgerCacheKey, accountsCacheKey]);
+    if (matterCacheKey) globalMutate(matterCacheKey);
+  }, [globalMutate, ledgerCacheKey, accountsCacheKey, matterCacheKey]);
 
   return (
     <ModuleGate module="trust_accounting">
@@ -94,9 +127,13 @@ export function TrustBalanceCard({
           <div className="flex items-center gap-3">
             <Scale className="size-5 text-slate-400" />
             <CardTitle>Trust Balance</CardTitle>
-            {ledger && ledger.balance > 0 && <Badge variant="success">Funds Held</Badge>}
-            {ledger && ledger.balance === 0 && <Badge variant="neutral">No Funds</Badge>}
-            {ledger && ledger.balance < 0 && <Badge variant="destructive">Overdrawn</Badge>}
+            {primaryBalance !== undefined && primaryBalance > 0 && (
+              <Badge variant="success">Funds Held</Badge>
+            )}
+            {primaryBalance === 0 && <Badge variant="neutral">No Funds</Badge>}
+            {primaryBalance !== undefined && primaryBalance < 0 && (
+              <Badge variant="destructive">Overdrawn</Badge>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -107,60 +144,60 @@ export function TrustBalanceCard({
             </div>
           )}
 
-          {ledgerError && (
+          {!isLoading && loadError && (
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <AlertTriangle className="size-4 text-slate-400" />
               Unable to load trust balance
             </div>
           )}
 
-          {!isLoading && !ledgerError && !resolvedAccountId && (
+          {!isLoading && !loadError && !resolvedAccountId && (
             <p className="text-muted-foreground text-sm">
               No trust account configured. Set up a trust account in settings to track client funds.
             </p>
           )}
 
-          {!isLoading && !ledgerError && resolvedAccountId && !ledger && (
+          {!isLoading && !loadError && resolvedAccountId && primaryBalance === undefined && (
             <p className="text-muted-foreground text-sm">
               No trust transactions recorded for this client yet.
             </p>
           )}
 
-          {!isLoading && !ledgerError && ledger && (
+          {!isLoading && !loadError && resolvedAccountId && primaryBalance !== undefined && (
             <div className="space-y-4">
-              <div className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
-                {formatCurrency(ledger.balance)}
+              <div
+                className="text-3xl font-semibold text-slate-950 dark:text-slate-50"
+                data-testid="trust-balance-primary"
+              >
+                {formatCurrency(primaryBalance)}
               </div>
 
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="text-slate-500 dark:text-slate-400">Deposits</p>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrency(ledger.totalDeposits)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-500 dark:text-slate-400">Payments</p>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrency(ledger.totalPayments)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-500 dark:text-slate-400">Fee Transfers</p>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrency(ledger.totalFeeTransfers)}
-                  </p>
-                </div>
-              </div>
-
-              {ledger.lastTransactionDate && (
-                <p className="text-xs text-slate-400 dark:text-slate-500">
-                  Last transaction:{" "}
-                  {new Date(ledger.lastTransactionDate).toLocaleDateString("en-ZA")}
+              {isMatterMode && ledger && (
+                <p
+                  className="text-sm text-slate-500 dark:text-slate-400"
+                  data-testid="trust-balance-client-line"
+                >
+                  {ledger.clientName} — trust balance across all matters:{" "}
+                  <span className="font-medium text-slate-700 tabular-nums dark:text-slate-300">
+                    {formatCurrency(ledger.balance)}
+                  </span>
                 </p>
               )}
 
-              {showQuickActions && resolvedAccountId && (
+              {/* The posted totals that make up the client balance (G89-F13); client mode only */}
+              {!isMatterMode && ledger && (
+                <>
+                  <LedgerTotalsBreakdown ledger={ledger} />
+                  {ledger.lastTransactionDate && (
+                    <p className="text-xs text-slate-400 dark:text-slate-500">
+                      Last transaction:{" "}
+                      {new Date(ledger.lastTransactionDate).toLocaleDateString("en-ZA")}
+                    </p>
+                  )}
+                </>
+              )}
+
+              {showQuickActions && resolvedAccountId && ledger && (
                 <div className="flex flex-wrap gap-2 border-t border-slate-200 pt-2 dark:border-slate-800">
                   <Button variant="outline" size="sm" onClick={() => setDepositOpen(true)}>
                     <ArrowDownLeft className="mr-1.5 size-3.5" />

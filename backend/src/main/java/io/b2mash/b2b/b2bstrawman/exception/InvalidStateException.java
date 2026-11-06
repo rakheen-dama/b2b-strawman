@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.exception;
 
 import java.net.URI;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponseException;
@@ -27,5 +28,15 @@ public class InvalidStateException extends ErrorResponseException {
     var problem = ProblemDetailFactory.create(HttpStatus.BAD_REQUEST, title, detail);
     problem.setType(URI.create(type));
     return new InvalidStateException(problem);
+  }
+
+  /**
+   * 400 carrying extra RFC 9457 extension members (e.g. a machine-readable {@code code} plus the
+   * amounts involved) alongside the usual title and detail.
+   */
+  public static InvalidStateException withProperties(
+      String title, String detail, Map<String, Object> properties) {
+    return new InvalidStateException(
+        ProblemDetailFactory.create(HttpStatus.BAD_REQUEST, title, detail, properties));
   }
 }

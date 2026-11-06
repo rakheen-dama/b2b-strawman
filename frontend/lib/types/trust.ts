@@ -127,10 +127,15 @@ export interface ClientLedgerCard {
   clientId: string;
   clientName: string;
   balance: number;
+  // G89-F13: every total is derived from the posted ledger, so
+  // deposits + interest + transfers in − payments − fee transfers − refunds − transfers out = balance
   totalDeposits: number;
   totalPayments: number;
   totalFeeTransfers: number;
   totalInterestCredited: number;
+  totalRefunds: number;
+  totalTransfersIn: number;
+  totalTransfersOut: number;
   lastTransactionDate: string | null;
   createdAt: string;
   updatedAt: string;
@@ -352,4 +357,19 @@ export interface InterestAllocation {
   /** LPFF share fraction applied to this allocation (0.05 statutory, else the run's LPFF rate). */
   lpffSharePercent: number | null;
   createdAt: string;
+  /**
+   * The client share split across matters (ADR-366); empty for a run calculated before the split.
+   * Not rendered by the interest-run wizard, which shows one row per client.
+   */
+  lines?: InterestAllocationLine[];
+}
+
+/** One matter's share of a client's interest allocation; `matterId` null = no matter. */
+export interface InterestAllocationLine {
+  id: string;
+  matterId: string | null;
+  matterName: string | null;
+  balanceDays: number;
+  clientShare: number;
+  trustTransactionId: string | null;
 }

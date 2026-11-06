@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +65,12 @@ public class ClientLedgerService {
       BigDecimal totalPayments,
       BigDecimal totalFeeTransfers,
       BigDecimal totalInterestCredited,
+      // G89-F13: every total is derived from the posted ledger (LedgerTotals), so
+      // deposits + interest + transfers in - payments - fee transfers - refunds - transfers out
+      // == balance
+      BigDecimal totalRefunds,
+      BigDecimal totalTransfersIn,
+      BigDecimal totalTransfersOut,
       LocalDate lastTransactionDate,
       Instant createdAt,
       Instant updatedAt) {}
@@ -99,7 +106,13 @@ public class ClientLedgerService {
 
     return ledgerCardRepository
         .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
-        .map(this::toResponse)
+        .map(
+            card ->
+                toResponse(
+                    card,
+                    customerNameOf(card),
+                    totalsFor(trustAccountId, List.of(customerId))
+                        .getOrDefault(customerId, LedgerTotals.ZERO)))
         .orElseGet(
             () -> {
               // No ledger card yet is a valid state — card is lazily created on the first
@@ -134,6 +147,9 @@ public class ClientLedgerService {
         BigDecimal.ZERO,
         BigDecimal.ZERO,
         BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
         null, // lastTransactionDate
         null, // createdAt
         null); // updatedAt
@@ -152,8 +168,15 @@ public class ClientLedgerService {
     Map<UUID, String> customerNames =
         customerRepository.findByIdIn(customerIds).stream()
             .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+    // One batch query for the page's derived totals (G89-F13)
+    Map<UUID, LedgerTotals> totals = totalsFor(trustAccountId, customerIds);
 
-    return page.map(entity -> toResponse(entity, customerNames));
+    return page.map(
+        entity ->
+            toResponse(
+                entity,
+                customerNames.getOrDefault(entity.getCustomerId(), "(deleted customer)"),
+                totals.getOrDefault(entity.getCustomerId(), LedgerTotals.ZERO)));
   }
 
   /**
@@ -269,34 +292,37 @@ public class ClientLedgerService {
 
   // --- Private Helpers ---
 
-  private ClientLedgerCardResponse toResponse(ClientLedgerCard entity) {
-    String customerName =
-        customerRepository
-            .findById(entity.getCustomerId())
-            .map(c -> c.getName())
-            .orElse("(deleted customer)");
-
-    return toResponse(entity, customerName);
+  /** Posted totals per client on the account — one query whatever the number of clients. */
+  private Map<UUID, LedgerTotals> totalsFor(UUID trustAccountId, Collection<UUID> customerIds) {
+    if (customerIds.isEmpty()) {
+      return Map.of();
+    }
+    return LedgerTotals.byCustomer(
+        transactionRepository.sumPostedByCustomerAndType(trustAccountId, customerIds));
   }
 
-  /** Batch-aware overload that uses a pre-loaded customer name map. */
+  private String customerNameOf(ClientLedgerCard entity) {
+    return customerRepository
+        .findById(entity.getCustomerId())
+        .map(c -> c.getName())
+        .orElse("(deleted customer)");
+  }
+
   private ClientLedgerCardResponse toResponse(
-      ClientLedgerCard entity, Map<UUID, String> customerNames) {
-    String customerName = customerNames.getOrDefault(entity.getCustomerId(), "(deleted customer)");
-    return toResponse(entity, customerName);
-  }
-
-  private ClientLedgerCardResponse toResponse(ClientLedgerCard entity, String customerName) {
+      ClientLedgerCard entity, String customerName, LedgerTotals totals) {
     return new ClientLedgerCardResponse(
         entity.getId(),
         entity.getTrustAccountId(),
         entity.getCustomerId(),
         customerName,
         entity.getBalance(),
-        entity.getTotalDeposits(),
-        entity.getTotalPayments(),
-        entity.getTotalFeeTransfers(),
-        entity.getTotalInterestCredited(),
+        totals.deposits(),
+        totals.payments(),
+        totals.feeTransfers(),
+        totals.interestCredited(),
+        totals.refunds(),
+        totals.transfersIn(),
+        totals.transfersOut(),
         entity.getLastTransactionDate(),
         entity.getCreatedAt(),
         entity.getUpdatedAt());

@@ -14,6 +14,7 @@ import {
 } from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions";
 import { PrintStatementButton } from "@/components/trust/print-statement-button";
 import { ClientHistoryFilters } from "@/components/trust/client-history-filters";
+import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdown";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
   isInflowType,
@@ -190,8 +191,8 @@ export default async function ClientDetailPage({
         </p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="client-summary">
+      {/* Summary: the balance and the posted totals that make it up (G89-F13) */}
+      <div className="grid gap-4 md:grid-cols-3" data-testid="client-summary">
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Trust Balance</p>
@@ -200,30 +201,12 @@ export default async function ClientDetailPage({
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="md:col-span-2">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Deposits</p>
-            <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
-              {formatCurrency(ledgerCard.totalDeposits, currency)}
+            <p className="mb-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+              Ledger totals
             </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Payments</p>
-            <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
-              {formatCurrency(ledgerCard.totalPayments, currency)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Total Fee Transfers
-            </p>
-            <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
-              {formatCurrency(ledgerCard.totalFeeTransfers, currency)}
-            </p>
+            <LedgerTotalsBreakdown ledger={ledgerCard} currency={currency} />
           </CardContent>
         </Card>
       </div>

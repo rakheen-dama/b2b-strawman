@@ -5,11 +5,13 @@ import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.LedgerTotals;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -75,6 +77,18 @@ public class ClientTrustBalancesQuery implements ReportQuery {
         customerRepository.findByIdIn(customerIds).stream()
             .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
 
+    // G89-F13: the totals come from the posted ledger (one batch query), not the card counters,
+    // and are cut at the same date as the balance so the row reconciles
+    Map<UUID, LedgerTotals> totals =
+        customerIds.isEmpty()
+            ? Map.of()
+            : LedgerTotals.byCustomer(
+                asOfDate != null
+                    ? transactionRepository.sumPostedByCustomerAndTypeAsOf(
+                        trustAccountId, customerIds, asOfDate)
+                    : transactionRepository.sumPostedByCustomerAndType(
+                        trustAccountId, customerIds));
+
     return ledgerCards.stream()
         .map(
             card -> {
@@ -91,10 +105,11 @@ public class ClientTrustBalancesQuery implements ReportQuery {
                       : card.getBalance();
               row.put("balance", balance);
 
-              row.put("totalDeposits", card.getTotalDeposits());
-              row.put("totalPayments", card.getTotalPayments());
-              row.put("totalFeeTransfers", card.getTotalFeeTransfers());
-              row.put("totalInterestCredited", card.getTotalInterestCredited());
+              var cardTotals = totals.getOrDefault(card.getCustomerId(), LedgerTotals.ZERO);
+              row.put("totalDeposits", cardTotals.deposits());
+              row.put("totalPayments", cardTotals.payments());
+              row.put("totalFeeTransfers", cardTotals.feeTransfers());
+              row.put("totalInterestCredited", cardTotals.interestCredited());
               row.put(
                   "lastTransactionDate",
                   card.getLastTransactionDate() != null

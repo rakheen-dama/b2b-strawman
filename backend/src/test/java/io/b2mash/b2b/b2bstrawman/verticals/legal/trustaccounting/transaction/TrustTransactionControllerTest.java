@@ -541,6 +541,8 @@ class TrustTransactionControllerTest {
     var approvedA = recordPayment(clientId, matterA, "1000.00", "PAY-FILTER-A1");
     approve(approvedA);
     var pendingA = recordPayment(clientId, matterA, "500.00", "PAY-FILTER-A2"); // AWAITING_APPROVAL
+    // G89-F12: a payment on matter B needs the client's money on matter B
+    recordDeposit(clientId, matterB, "1000.00", "DEP-FILTER-B");
     var approvedB = recordPayment(clientId, matterB, "250.00", "PAY-FILTER-B1");
     approve(approvedB);
 

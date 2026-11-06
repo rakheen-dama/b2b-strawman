@@ -110,8 +110,12 @@ function setupDefaultMocks() {
     clientName: "Moroka Holdings",
     balance: 7850,
     totalDeposits: 10000,
-    totalPayments: 1000,
+    // The seeded history: R1 000 refund, fee transfer R1 150, the R700 payment reversed (G89-F13)
+    totalPayments: 0,
     totalFeeTransfers: 1150,
+    totalRefunds: 1000,
+    totalTransfersIn: 0,
+    totalTransfersOut: 0,
     totalInterestCredited: 0,
     lastTransactionDate: "2026-11-02",
     createdAt: "2026-01-01T00:00:00Z",
@@ -266,5 +270,75 @@ describe("Client ledger card — server running balance (630C)", () => {
     const deposit = amountSpan("tx-dep");
     expect(deposit.className).toContain("text-green-600");
     expect(deposit.querySelector(".lucide-arrow-down-left")).not.toBeNull();
+  });
+});
+
+describe("Client ledger card — totals reconcile to the balance (G89-F13)", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  function total(key: string): string | null {
+    return screen.getByTestId(`ledger-total-${key}`).querySelector("dd")?.textContent ?? null;
+  }
+
+  it("shows Deposits + Interest − Payments − Fee transfers − Refunds = Balance", async () => {
+    setupDefaultMocks();
+    mockFetchClientHistory.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderDetailPage();
+
+    const summary = screen.getByTestId("client-summary");
+    expect(within(summary).getByTestId("ledger-totals-breakdown")).toBeInTheDocument();
+    expect(total("deposits")).toBe(formatCurrency(10000, "ZAR"));
+    expect(total("interest")).toBe(formatCurrency(0, "ZAR"));
+    expect(total("payments")).toBe(formatCurrency(0, "ZAR"));
+    expect(total("fee-transfers")).toBe(formatCurrency(1150, "ZAR"));
+    expect(total("refunds")).toBe(formatCurrency(1000, "ZAR"));
+    expect(total("balance")).toBe(formatCurrency(7850, "ZAR"));
+    // Transfer rows are hidden while zero
+    expect(screen.queryByTestId("ledger-total-transfers-in")).toBeNull();
+    expect(screen.queryByTestId("ledger-total-transfers-out")).toBeNull();
+  });
+
+  it("shows transfer rows when the client has transfers", async () => {
+    setupDefaultMocks();
+    mockFetchClientLedger.mockResolvedValue({
+      id: "ledger-2",
+      trustAccountId: "acc-1",
+      clientId: "cust-1",
+      clientName: "Moroka Holdings",
+      balance: 600,
+      totalDeposits: 1000,
+      totalInterestCredited: 0,
+      totalTransfersIn: 200,
+      totalPayments: 0,
+      totalFeeTransfers: 0,
+      totalRefunds: 0,
+      totalTransfersOut: 600,
+      lastTransactionDate: "2026-11-02",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-11-02T00:00:00Z",
+    });
+    mockFetchClientHistory.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderDetailPage();
+
+    expect(total("transfers-in")).toBe(formatCurrency(200, "ZAR"));
+    expect(total("transfers-out")).toBe(formatCurrency(600, "ZAR"));
+    expect(total("balance")).toBe(formatCurrency(600, "ZAR"));
   });
 });

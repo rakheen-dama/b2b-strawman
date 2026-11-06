@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -222,6 +223,77 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("asOfDate") LocalDate asOfDate);
 
   /**
+   * Posted totals per client and transaction type on one trust account (G89-F13): RECORDED/APPROVED
+   * rows only, REVERSAL excluded — a reversed debit is itself marked REVERSED, so it drops out of
+   * its type's total, matching the balance. Feeds {@code LedgerTotals}, the client-ledger totals
+   * that reconcile to the balance. One query for any number of clients.
+   */
+  @Query(
+      """
+      SELECT t.customerId AS customerId, t.transactionType AS transactionType,
+             COALESCE(SUM(t.amount), 0) AS total
+      FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.customerId IN :customerIds
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.transactionType <> 'REVERSAL'
+      GROUP BY t.customerId, t.transactionType
+      """)
+  List<CustomerTypeTotalRow> sumPostedByCustomerAndType(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerIds") Collection<UUID> customerIds);
+
+  /**
+   * {@link #sumPostedByCustomerAndType} up to and including {@code asOfDate} — the totals that
+   * reconcile to {@link #calculateClientBalanceAsOfDate} for the same date (the Client Trust
+   * Balances report with an as-of date).
+   */
+  @Query(
+      """
+      SELECT t.customerId AS customerId, t.transactionType AS transactionType,
+             COALESCE(SUM(t.amount), 0) AS total
+      FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.customerId IN :customerIds
+        AND t.transactionDate <= :asOfDate
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.transactionType <> 'REVERSAL'
+      GROUP BY t.customerId, t.transactionType
+      """)
+  List<CustomerTypeTotalRow> sumPostedByCustomerAndTypeAsOf(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerIds") Collection<UUID> customerIds,
+      @Param("asOfDate") LocalDate asOfDate);
+
+  /**
+   * {@link #calculateClientBalanceAsOfDate} split by matter: one row per matter (and one with a
+   * null {@code projectId} for the client's unmattered rows), same sign rules and status filter, so
+   * the rows sum exactly to the client balance. The opening balances of the per-matter interest
+   * buckets (ADR-366).
+   */
+  @Query(
+      """
+      SELECT t.projectId AS projectId,
+        COALESCE(SUM(
+          CASE
+            WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
+            WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
+            ELSE 0
+          END
+        ), 0) AS balance
+      FROM TrustTransaction t
+      WHERE t.customerId = :customerId
+        AND t.trustAccountId = :trustAccountId
+        AND t.transactionDate <= :asOfDate
+        AND t.status IN ('RECORDED', 'APPROVED')
+      GROUP BY t.projectId
+      """)
+  List<MatterBalanceRow> calculateClientMatterBalancesAsOfDate(
+      @Param("customerId") UUID customerId,
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("asOfDate") LocalDate asOfDate);
+
+  /**
    * Sums the per-matter trust balance by projectId, applying the same credit/debit sign rules as
    * {@link #calculateClientBalanceAsOfDate}. Used by the matter closure gate {@code
    * TRUST_BALANCE_ZERO} (Phase 67 §67.3.4 gate 1) — a matter cannot close while it holds client
@@ -241,6 +313,34 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
         AND t.status IN ('RECORDED', 'APPROVED')
       """)
   BigDecimal calculateBalanceByProjectId(@Param("projectId") UUID projectId);
+
+  /**
+   * One client's money on one matter in one trust account — the matter sub-ledger cell (G89-F12).
+   * Same sign rules and RECORDED/APPROVED filter as {@link #calculateClientBalanceAsOfDate}. A
+   * debit on a matter must be covered by this cell, not merely by the client card: the closure gate
+   * reads the matter, and a co-client must never spend another client's money on a shared matter.
+   * The caller holds the client card's row lock ({@code findByAccountAndCustomerForUpdate}), which
+   * serialises every posting for the client, so the sum cannot race.
+   */
+  @Query(
+      """
+      SELECT COALESCE(SUM(
+        CASE
+          WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
+          WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
+          ELSE 0
+        END
+      ), 0)
+      FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.customerId = :customerId
+        AND t.projectId = :projectId
+        AND t.status IN ('RECORDED', 'APPROVED')
+      """)
+  BigDecimal calculateMatterClientBalance(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("projectId") UUID projectId);
 
   /**
    * Finds unmatched candidate transactions for bank reconciliation auto-matching. Candidates are

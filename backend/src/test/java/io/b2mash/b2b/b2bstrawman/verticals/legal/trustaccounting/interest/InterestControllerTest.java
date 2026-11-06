@@ -90,6 +90,7 @@ class InterestControllerTest {
 
     var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner");
 
+    // Every run period in this class lies in the past: a run's period must have ended (G89-F11)
     // Create a trust account
     var accountResult =
         mockMvc
@@ -107,7 +108,7 @@ class InterestControllerTest {
                           "accountType": "GENERAL",
                           "isPrimary": false,
                           "requireDualApproval": false,
-                          "openedDate": "2026-01-01"
+                          "openedDate": "2025-01-01"
                         }
                         """))
             .andExpect(status().isCreated())
@@ -131,7 +132,7 @@ class InterestControllerTest {
                       "amount": 50000.00,
                       "reference": "DEP-CTRL-001",
                       "description": "Test deposit for controller tests",
-                      "transactionDate": "2026-01-15"
+                      "transactionDate": "2025-01-15"
                     }
                     """
                         .formatted(customerId)))
@@ -146,7 +147,7 @@ class InterestControllerTest {
                 .content(
                     """
                     {
-                      "effectiveFrom": "2026-01-01",
+                      "effectiveFrom": "2025-01-01",
                       "ratePercent": 0.0750,
                       "lpffSharePercent": 0.7500,
                       "notes": "Controller test rate"
@@ -172,8 +173,8 @@ class InterestControllerTest {
                     .content(
                         """
                         {
-                          "periodStart": "2027-06-01",
-                          "periodEnd": "2027-06-30"
+                          "periodStart": "2025-06-01",
+                          "periodEnd": "2025-06-30"
                         }
                         """))
             .andExpect(status().isCreated())
@@ -199,8 +200,8 @@ class InterestControllerTest {
                     .content(
                         """
                         {
-                          "periodStart": "2027-07-01",
-                          "periodEnd": "2027-07-31"
+                          "periodStart": "2025-07-01",
+                          "periodEnd": "2025-07-31"
                         }
                         """))
             .andExpect(status().isCreated())
@@ -238,8 +239,8 @@ class InterestControllerTest {
                 .content(
                     """
                     {
-                      "periodStart": "2027-09-01",
-                      "periodEnd": "2027-09-30"
+                      "periodStart": "2025-09-01",
+                      "periodEnd": "2025-09-30"
                     }
                     """))
         .andExpect(status().isCreated());
@@ -266,8 +267,8 @@ class InterestControllerTest {
                     .content(
                         """
                         {
-                          "periodStart": "2027-10-01",
-                          "periodEnd": "2027-10-31"
+                          "periodStart": "2025-10-01",
+                          "periodEnd": "2025-10-31"
                         }
                         """))
             .andExpect(status().isCreated())
@@ -302,8 +303,8 @@ class InterestControllerTest {
                     .content(
                         """
                         {
-                          "periodStart": "2027-11-01",
-                          "periodEnd": "2027-11-30"
+                          "periodStart": "2025-11-01",
+                          "periodEnd": "2025-11-30"
                         }
                         """))
             .andExpect(status().isCreated())
@@ -340,8 +341,8 @@ class InterestControllerTest {
                     .content(
                         """
                         {
-                          "periodStart": "2027-12-01",
-                          "periodEnd": "2027-12-31"
+                          "periodStart": "2025-12-01",
+                          "periodEnd": "2025-12-31"
                         }
                         """))
             .andExpect(status().isCreated())

@@ -97,6 +97,7 @@ class InterestServiceIntegrationTest {
 
     var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_owner");
 
+    // Every run period in this class lies in the past: a run's period must have ended (G89-F11)
     // Create a trust account
     var accountResult =
         mockMvc
@@ -114,7 +115,7 @@ class InterestServiceIntegrationTest {
                           "accountType": "GENERAL",
                           "isPrimary": false,
                           "requireDualApproval": false,
-                          "openedDate": "2026-01-01"
+                          "openedDate": "2025-01-01"
                         }
                         """))
             .andExpect(status().isCreated())
@@ -128,7 +129,7 @@ class InterestServiceIntegrationTest {
     customerId2 =
         TestEntityHelper.createCustomer(mockMvc, ownerJwt, "Interest Client Beta", "beta@test.com");
 
-    // Create LPFF rate effective from 2026-01-01 (7.5% annual, 75% LPFF share)
+    // Create LPFF rate effective from 2025-01-01 (7.5% annual, 75% LPFF share)
     mockMvc
         .perform(
             post("/api/trust-accounts/" + trustAccountId + "/lpff-rates")
@@ -137,7 +138,7 @@ class InterestServiceIntegrationTest {
                 .content(
                     """
                     {
-                      "effectiveFrom": "2026-01-01",
+                      "effectiveFrom": "2025-01-01",
                       "ratePercent": 0.0750,
                       "lpffSharePercent": 0.7500,
                       "notes": "Test rate 7.5%"
@@ -148,9 +149,9 @@ class InterestServiceIntegrationTest {
     // Deposit funds for both customers in January so all tests have a baseline
     // (deposits are RECORDED immediately and included in balance calculations)
     createDeposit(
-        trustAccountId, customerId1, new BigDecimal("100000.00"), "DEP-SETUP-001", "2026-01-15");
+        trustAccountId, customerId1, new BigDecimal("100000.00"), "DEP-SETUP-001", "2025-01-15");
     createDeposit(
-        trustAccountId, customerId2, new BigDecimal("50000.00"), "DEP-SETUP-002", "2026-01-15");
+        trustAccountId, customerId2, new BigDecimal("50000.00"), "DEP-SETUP-002", "2025-01-15");
   }
 
   // --- Helper Methods ---
@@ -209,7 +210,7 @@ class InterestServiceIntegrationTest {
   @Test
   void singleClientSingleRate_correctAverageDailyBalance() throws Exception {
     // Customer1 has 100,000 deposited in January (via @BeforeAll).
-    // Create interest run for March 2026 (31 days) -- no new transactions in period,
+    // Create interest run for March 2025 (31 days) -- no new transactions in period,
     // opening balance carries forward.
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -217,7 +218,7 @@ class InterestServiceIntegrationTest {
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31)));
+                        trustAccountId, LocalDate.of(2025, 3, 1), LocalDate.of(2025, 3, 31)));
 
     assertThat(runResponse.status()).isEqualTo("DRAFT");
     assertThat(runResponse.totalInterest()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -261,15 +262,15 @@ class InterestServiceIntegrationTest {
   @Test
   void multipleClients_proportionalAllocation() throws Exception {
     // Both customers have baseline deposits from @BeforeAll:
-    // Customer1: 100,000, Customer2: 50,000 (both on 2026-01-15)
-    // Create interest run for April 2026 (30 days) -- both should have opening balances
+    // Customer1: 100,000, Customer2: 50,000 (both on 2025-01-15)
+    // Create interest run for April 2025 (30 days) -- both should have opening balances
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30)));
+                        trustAccountId, LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30)));
 
     var calculated =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -310,16 +311,16 @@ class InterestServiceIntegrationTest {
   @Test
   void midPeriodRateChange_proRataSplit() throws Exception {
     // Create a new LPFF rate effective from May 16 (8% annual, 80% LPFF share)
-    createLpffRate("2026-05-16", new BigDecimal("0.0800"), new BigDecimal("0.8000"));
+    createLpffRate("2025-05-16", new BigDecimal("0.0800"), new BigDecimal("0.8000"));
 
-    // Create interest run for May 2026 (31 days)
+    // Create interest run for May 2025 (31 days)
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 31)));
+                        trustAccountId, LocalDate.of(2025, 5, 1), LocalDate.of(2025, 5, 31)));
 
     var calculated =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -355,16 +356,16 @@ class InterestServiceIntegrationTest {
 
     // Deposit on June 16 (midway through June -- 30-day month)
     createDeposit(
-        trustAccountId, customerId3, new BigDecimal("10000.00"), "DEP-INT-003", "2026-06-16");
+        trustAccountId, customerId3, new BigDecimal("10000.00"), "DEP-INT-003", "2025-06-16");
 
-    // Create interest run for June 2026 (30 days)
+    // Create interest run for June 2025 (30 days)
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30)));
+                        trustAccountId, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30)));
 
     var calculated =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -397,16 +398,16 @@ class InterestServiceIntegrationTest {
             "delta@test.com");
 
     createDeposit(
-        trustAccountId, customerId4, new BigDecimal("33333.33"), "DEP-INT-004", "2026-07-01");
+        trustAccountId, customerId4, new BigDecimal("33333.33"), "DEP-INT-004", "2025-07-01");
 
-    // Create interest run for July 2026 (31 days)
+    // Create interest run for July 2025 (31 days)
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 31)));
+                        trustAccountId, LocalDate.of(2025, 7, 1), LocalDate.of(2025, 7, 31)));
 
     var calculated =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -434,14 +435,14 @@ class InterestServiceIntegrationTest {
   @Test
   void clientWithNoTransactionsInPeriod_butOpeningBalance() throws Exception {
     // Customer1 already has deposits from earlier months
-    // Create interest run for August 2026 -- no new transactions, but opening balance exists
+    // Create interest run for August 2025 -- no new transactions, but opening balance exists
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 31)));
+                        trustAccountId, LocalDate.of(2025, 8, 1), LocalDate.of(2025, 8, 31)));
 
     var calculated =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -483,7 +484,7 @@ class InterestServiceIntegrationTest {
                           "accountType": "GENERAL",
                           "isPrimary": false,
                           "requireDualApproval": false,
-                          "openedDate": "2026-01-01"
+                          "openedDate": "2025-01-01"
                         }
                         """))
             .andExpect(status().isCreated())
@@ -499,7 +500,7 @@ class InterestServiceIntegrationTest {
                 .content(
                     """
                     {
-                      "effectiveFrom": "2026-01-01",
+                      "effectiveFrom": "2025-01-01",
                       "ratePercent": 0.0750,
                       "lpffSharePercent": 0.7500,
                       "notes": "Test rate for empty account"
@@ -513,7 +514,7 @@ class InterestServiceIntegrationTest {
             .call(
                 () ->
                     interestService.createInterestRun(
-                        emptyAccountId, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)));
+                        emptyAccountId, LocalDate.of(2025, 9, 1), LocalDate.of(2025, 9, 30)));
 
     var calculated =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -536,13 +537,13 @@ class InterestServiceIntegrationTest {
 
   @Test
   void overlappingRunPrevention() throws Exception {
-    // Create first run for October 2026
+    // Create first run for October 2025
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.MEMBER_ID, ownerMemberId)
         .call(
             () ->
                 interestService.createInterestRun(
-                    trustAccountId, LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 31)));
+                    trustAccountId, LocalDate.of(2025, 10, 1), LocalDate.of(2025, 10, 31)));
 
     // Try to create overlapping run -- should fail
     assertThatThrownBy(
@@ -553,8 +554,8 @@ class InterestServiceIntegrationTest {
                         () ->
                             interestService.createInterestRun(
                                 trustAccountId,
-                                LocalDate.of(2026, 10, 15),
-                                LocalDate.of(2026, 11, 15))))
+                                LocalDate.of(2025, 10, 15),
+                                LocalDate.of(2025, 11, 15))))
         .isInstanceOf(ResourceConflictException.class)
         .hasMessageContaining("overlaps");
   }
@@ -579,7 +580,7 @@ class InterestServiceIntegrationTest {
                           "accountType": "GENERAL",
                           "isPrimary": false,
                           "requireDualApproval": false,
-                          "openedDate": "2026-01-01"
+                          "openedDate": "2025-01-01"
                         }
                         """))
             .andExpect(status().isCreated())
@@ -595,22 +596,22 @@ class InterestServiceIntegrationTest {
                         () ->
                             interestService.createInterestRun(
                                 noRateAccountId,
-                                LocalDate.of(2026, 11, 1),
-                                LocalDate.of(2026, 11, 30))))
+                                LocalDate.of(2025, 11, 1),
+                                LocalDate.of(2025, 11, 30))))
         .isInstanceOf(InvalidStateException.class)
         .hasMessageContaining("LPFF rate");
   }
 
   @Test
   void singleDayPeriod_calculatesCorrectly() throws Exception {
-    // Create interest run for a single day (December 1, 2026)
+    // Create interest run for a single day (December 1, 2025)
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 12, 1), LocalDate.of(2026, 12, 1)));
+                        trustAccountId, LocalDate.of(2025, 12, 1), LocalDate.of(2025, 12, 1)));
 
     assertThat(runResponse.status()).isEqualTo("DRAFT");
 
@@ -646,7 +647,7 @@ class InterestServiceIntegrationTest {
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2027, 1, 1), LocalDate.of(2027, 1, 31)));
+                        trustAccountId, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31)));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .call(() -> interestService.calculateInterest(runResponse.id()));
@@ -691,7 +692,7 @@ class InterestServiceIntegrationTest {
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2027, 2, 1), LocalDate.of(2027, 2, 28)));
+                        trustAccountId, LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 28)));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .call(() -> interestService.calculateInterest(runResponse.id()));
@@ -757,7 +758,7 @@ class InterestServiceIntegrationTest {
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2027, 3, 1), LocalDate.of(2027, 3, 31)));
+                        trustAccountId, LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31)));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .call(() -> interestService.calculateInterest(runResponse.id()));
@@ -822,7 +823,7 @@ class InterestServiceIntegrationTest {
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2027, 4, 1), LocalDate.of(2027, 4, 30)));
+                        trustAccountId, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30)));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .call(() -> interestService.calculateInterest(runResponse.id()));
@@ -856,7 +857,7 @@ class InterestServiceIntegrationTest {
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2027, 5, 1), LocalDate.of(2027, 5, 31)));
+                        trustAccountId, LocalDate.of(2026, 5, 1), LocalDate.of(2026, 5, 31)));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .call(() -> interestService.calculateInterest(runResponse.id()));
@@ -883,7 +884,7 @@ class InterestServiceIntegrationTest {
             .call(
                 () ->
                     interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2027, 8, 1), LocalDate.of(2027, 8, 31)));
+                        trustAccountId, LocalDate.of(2026, 8, 1), LocalDate.of(2026, 8, 31)));
     assertThat(created.allocationCount()).isZero();
 
     var calculated =

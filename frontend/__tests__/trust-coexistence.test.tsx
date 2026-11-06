@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
@@ -213,6 +213,9 @@ describe("Trust smoke tests", () => {
             totalDeposits: 80000,
             totalPayments: 25000,
             totalFeeTransfers: 5000,
+            totalRefunds: 0,
+            totalTransfersIn: 0,
+            totalTransfersOut: 0,
             totalInterestCredited: 0,
             lastTransactionDate: "2024-06-15T10:30:00Z",
             createdAt: "2024-01-15T00:00:00Z",
@@ -243,7 +246,12 @@ describe("Trust smoke tests", () => {
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
     // ZAR formatting: locale-agnostic — accepts en-ZA "R 50 000,00" or en-US "R 50,000.00"
-    expect(screen.getByText(/R[\s\u00a0]50[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
+    // The primary figure is the balance (the totals breakdown repeats it as "= Balance")
+    expect(
+      within(screen.getByTestId("trust-balance-primary")).getByText(
+        /R[\s\u00a0]50[\s\u00a0,]000[,.]00/
+      )
+    ).toBeInTheDocument();
     // Verify deposit and payment breakdowns
     expect(screen.getByText(/R[\s\u00a0]80[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
     expect(screen.getByText(/R[\s\u00a0]25[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
@@ -294,6 +302,9 @@ describe("Trust smoke tests", () => {
             totalDeposits: 200000,
             totalPayments: 70000,
             totalFeeTransfers: 4249.5,
+            totalRefunds: 0,
+            totalTransfersIn: 0,
+            totalTransfersOut: 0,
             totalInterestCredited: 0,
             lastTransactionDate: "2024-03-20T14:00:00Z",
             createdAt: "2023-01-15T00:00:00Z",
@@ -324,7 +335,12 @@ describe("Trust smoke tests", () => {
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
     // Total balance: locale-agnostic — accepts en-ZA "R 125 750,50" or en-US "R 125,750.50"
-    expect(screen.getByText(/R[\s\u00a0]125[\s\u00a0,]750[,.]50/)).toBeInTheDocument();
+    // The primary figure is the balance (the totals breakdown repeats it as "= Balance")
+    expect(
+      within(screen.getByTestId("trust-balance-primary")).getByText(
+        /R[\s\u00a0]125[\s\u00a0,]750[,.]50/
+      )
+    ).toBeInTheDocument();
     // Deposits: locale-agnostic "R 200 000,00" or "R 200,000.00"
     expect(screen.getByText(/R[\s\u00a0]200[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
     // Payments: locale-agnostic "R 70 000,00" or "R 70,000.00"

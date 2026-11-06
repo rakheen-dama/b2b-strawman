@@ -127,10 +127,15 @@ export interface ClientLedgerCard {
   clientId: string;
   clientName: string;
   balance: number;
+  // G89-F13: every total is derived from the posted ledger, so
+  // deposits + interest + transfers in − payments − fee transfers − refunds − transfers out = balance
   totalDeposits: number;
   totalPayments: number;
   totalFeeTransfers: number;
   totalInterestCredited: number;
+  totalRefunds: number;
+  totalTransfersIn: number;
+  totalTransfersOut: number;
   lastTransactionDate: string | null;
   createdAt: string;
   updatedAt: string;

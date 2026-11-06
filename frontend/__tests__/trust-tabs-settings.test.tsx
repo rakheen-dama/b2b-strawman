@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
@@ -331,6 +331,10 @@ describe("TrustBalanceCard", () => {
             totalDeposits: 80000,
             totalPayments: 25000,
             totalFeeTransfers: 5000,
+            totalRefunds: 0,
+            totalTransfersIn: 0,
+            totalTransfersOut: 0,
+            totalInterestCredited: 0,
             lastTransactionDate: "2026-03-15",
           },
           error: undefined,
@@ -354,7 +358,11 @@ describe("TrustBalanceCard", () => {
 
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
     // locale-agnostic: accepts en-ZA "R 50 000,00" or en-US "R 50,000.00"
-    expect(screen.getByText(/R[\s\u00a0]50[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("trust-balance-primary")).getByText(
+        /R[\s\u00a0]50[\s\u00a0,]000[,.]00/
+      )
+    ).toBeInTheDocument();
   });
 
   it("renders Overdrawn badge for negative balance", () => {
@@ -366,6 +374,10 @@ describe("TrustBalanceCard", () => {
             totalDeposits: 5000,
             totalPayments: 6000,
             totalFeeTransfers: 0,
+            totalRefunds: 0,
+            totalTransfersIn: 0,
+            totalTransfersOut: 0,
+            totalInterestCredited: 0,
             lastTransactionDate: "2026-03-15",
           },
           error: undefined,
@@ -399,6 +411,10 @@ describe("TrustBalanceCard", () => {
             totalDeposits: 10000,
             totalPayments: 0,
             totalFeeTransfers: 0,
+            totalRefunds: 0,
+            totalTransfersIn: 0,
+            totalTransfersOut: 0,
+            totalInterestCredited: 0,
             lastTransactionDate: null,
           },
           error: undefined,

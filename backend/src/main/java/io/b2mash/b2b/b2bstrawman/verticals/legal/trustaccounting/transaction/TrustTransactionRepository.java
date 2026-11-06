@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -220,6 +221,27 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("customerId") UUID customerId,
       @Param("trustAccountId") UUID trustAccountId,
       @Param("asOfDate") LocalDate asOfDate);
+
+  /**
+   * Posted totals per client and transaction type on one trust account (G89-F13): RECORDED/APPROVED
+   * rows only, REVERSAL excluded — a reversed debit is itself marked REVERSED, so it drops out of
+   * its type's total, matching the balance. Feeds {@code LedgerTotals}, the client-ledger totals
+   * that reconcile to the balance. One query for any number of clients.
+   */
+  @Query(
+      """
+      SELECT t.customerId AS customerId, t.transactionType AS transactionType,
+             COALESCE(SUM(t.amount), 0) AS total
+      FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.customerId IN :customerIds
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.transactionType <> 'REVERSAL'
+      GROUP BY t.customerId, t.transactionType
+      """)
+  List<CustomerTypeTotalRow> sumPostedByCustomerAndType(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerIds") Collection<UUID> customerIds);
 
   /**
    * {@link #calculateClientBalanceAsOfDate} split by matter: one row per matter (and one with a

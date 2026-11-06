@@ -18,6 +18,7 @@ import {
 import { RecordDepositDialog } from "@/components/trust/RecordDepositDialog";
 import { RecordPaymentDialog } from "@/components/trust/RecordPaymentDialog";
 import { RecordFeeTransferDialog } from "@/components/trust/RecordFeeTransferDialog";
+import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdown";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchClientLedger } from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions";
 import type { TrustAccount, ClientLedgerCard as ClientLedgerCardType } from "@/lib/types";
@@ -128,30 +129,16 @@ export function TrustBalanceCard({
 
           {!isLoading && !ledgerError && ledger && (
             <div className="space-y-4">
-              <div className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
+              <div
+                className="text-3xl font-semibold text-slate-950 dark:text-slate-50"
+                data-testid="trust-balance-primary"
+              >
                 {formatCurrency(ledger.balance)}
               </div>
 
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="text-slate-500 dark:text-slate-400">Deposits</p>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrency(ledger.totalDeposits)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-500 dark:text-slate-400">Payments</p>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrency(ledger.totalPayments)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-500 dark:text-slate-400">Fee Transfers</p>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrency(ledger.totalFeeTransfers)}
-                  </p>
-                </div>
-              </div>
+              {/* The posted totals that make up the balance (G89-F13) */}
+              <LedgerTotalsBreakdown ledger={ledger} />
+
 
               {ledger.lastTransactionDate && (
                 <p className="text-xs text-slate-400 dark:text-slate-500">

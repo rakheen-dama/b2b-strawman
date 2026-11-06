@@ -1,0 +1,18 @@
+# Portal read-model for Lerato after Oct interest run post (Sat Nov  7 01:21:39 SAST 2026)
+             customer_id              |              matter_id               | current_balance |      last_transaction_at      |        last_synced_at         
+--------------------------------------+--------------------------------------+-----------------+-------------------------------+-------------------------------
+ ec988df3-932f-4ef2-b68e-1d7c3c99f258 | e0f25d3f-f195-42fe-ba95-842e79de983d |        10055.21 | 2026-11-06 23:18:22.868816+00 | 2026-11-06 23:18:22.901875+00
+(1 row)
+
+                  id                  |              matter_id               | transaction_type |  amount  | running_balance |          occurred_at          |                     description                     |                                           reference                                           
+--------------------------------------+--------------------------------------+------------------+----------+-----------------+-------------------------------+-----------------------------------------------------+-----------------------------------------------------------------------------------------------
+ 079830ba-defd-4121-9251-1cc04ed67faf | e0f25d3f-f195-42fe-ba95-842e79de983d | DEPOSIT          | 10000.00 |        10000.00 | 2026-11-06 23:13:41.817269+00 | G89 Batch A verify deposit on RAF matter            | DEP/LERATO-g89a
+ bae1cbe0-d6cc-4c61-8fb3-2db730b6ec69 | e0f25d3f-f195-42fe-ba95-842e79de983d | INTEREST_CREDIT  |    55.21 |        10055.21 | 2026-11-06 23:18:22.868816+00 | Interest credit for period 2026-10-01 to 2026-10-31 | INT-CREDIT-5724401a-30b4-47ca-b314-965c5c67abf1-e0f25d3f-f195-42fe-ba95-842e79de983d-ec988df3
+(2 rows)
+
+# Firm-side ledger sum for comparison
+ client_ledger_sum | count 
+-------------------+-------
+          10055.21 |     2
+(1 row)
+

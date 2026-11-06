@@ -1,0 +1,9 @@
+# backend.log excerpts — no lines matched (the 400 refusal and InterestPosted are not logged at INFO); refusal evidenced by UI text + unchanged AWAITING_APPROVAL status in db-03
+
+# notifications (TRUST_INTEREST_POSTED) created by the post
+         type          |        title        |            email            |          created_at           
+-----------------------+---------------------+-----------------------------+-------------------------------
+ TRUST_INTEREST_POSTED | Interest run posted | thandi@mathebula-test.local | 2026-11-06 23:18:22.91166+00
+ TRUST_INTEREST_POSTED | Interest run posted | bob@mathebula-test.local    | 2026-11-06 23:18:22.912475+00
+(2 rows)
+

@@ -27,8 +27,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 
 | # | Batch | Gaps | Gates | Branch / PR | Status |
 |---|---|---|---|---|---|
-| 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | F11 **VERIFIED** (KC, `qa_cycle/evidence/g89-fixes/batch-B/`); F10 DEFERRED → Checkpoint 1 (e2e day-60 spec) |
-| 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | MERGED-AWAITING-VERIFY (KC check running) |
+| 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | **VERIFIED**: F11 (batch-B evidence), F10 (observed in the batch-A walk) |
+| 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | **VERIFIED** on KC (F10, F12, F13, F14, F22): `qa_cycle/evidence/g89-fixes/batch-A/` |
 | 3 | D — portal correctness | F23, 633C D2, 633C D6 | BE + PT | `fix/g89-d-portal-correctness` | IN PROGRESS (builder) |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | | OPEN |
@@ -42,12 +42,12 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 
 ### HIGH
 - [x] G89-F11 — interest run accepted for a period that has not ended (B) — VERIFIED 2026-11-06, PR #1745
-- [ ] G89-F12 — matter-linked refund exceeds matter balance (A)
-- [ ] G89-F22 — portal trust balance ≠ firm client ledger (A)
+- [x] G89-F12 — matter-linked refund exceeds matter balance (A) — VERIFIED 2026-11-07, PR #1746
+- [x] G89-F22 — portal trust balance ≠ firm client ledger (A) — VERIFIED 2026-11-07, PR #1746
 
 ### MEDIUM
-- [ ] G89-F13 — ledger card totals exclude refunds/transfers (A)
-- [ ] G89-F14 — matter Trust tab shows the client card (A)
+- [x] G89-F13 — ledger card totals exclude refunds/transfers (A) — VERIFIED 2026-11-07, PR #1746
+- [x] G89-F14 — matter Trust tab shows the client card (A) — VERIFIED 2026-11-07, PR #1746
 - [ ] G89-F16 — closure SoA counts the written-off disbursement (C1)
 - [ ] G89-F17 — reconciliation list fails to load (E)
 - [ ] G89-F18 — Section 35 data pack is hollow (C1)
@@ -57,7 +57,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] F1 [ ] F2 [ ] F3 (F)
 - [ ] F5 [ ] F7 [ ] F8 [ ] F9 [ ] F15 [ ] F20 (E)
 - [ ] F6 [ ] F26 (C2)
-- [ ] F10 (B) — merged #1745; observe at Checkpoint 1 (not reachable on the 636B tenant)
+- [x] F10 (B) — VERIFIED 2026-11-07 in the Batch A walk (wizard shows "Client" and "Lerato Mthembu" and "LPFF arrangement rate 0.00%")
 - [ ] F19 [ ] F21 (C1)
 - [ ] F4 [ ] F24 [ ] F25 [ ] F27 — scenario amendments (F)
 - [ ] G-D10a [ ] G88-F27 (Access denied) [ ] G88-F27 (disbursement "Invoiced · Yes") [ ] G88-M9 [ ] G88-F24 [ ] G88-F2 [ ] 634A (E)
@@ -93,3 +93,15 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - interest notification test lacks a plain member;
   - sr-only "less" cue in the ledger breakdown;
   - ADR-366 should note that the portal omits unmattered credits.
+- 2026-11-07 ~02:00 — Batch A **VERIFIED** on the Keycloak stack. The UI accepted a backdated LPFF rate (01 Oct), so the October interest-run scenario ran in full:
+  - **Allocation:** interest R 55,21 was allocated to the RAF matter.
+  - **F22 (portal):** the portal showed R 10 055,21, equal to the firm ledger.
+  - **F12 (refund guard):** the over-matter refund was refused with the matter-named message; the exact refund was approved.
+  - **F14 (matter Trust tab):** the matter figure and the client-wide line were both correct.
+  - **F13 (ledger totals):** the totals reconciled before and after the refunds.
+  - **F10 (wizard):** client names shown, verified in the same walk.
+  - **Data now in the tenant:** the extra rows are listed in `batch-A/RESULT.md`.
+- New candidates from the A walk:
+  - **G89-F39:** the portal trust statement shows the *recorded* date, not the transaction date. A deposit dated 01 Oct reads "7 Nov 2026"; the portal home tile and the deposit email do the same. Proposed MEDIUM, since it is a client-facing trust record; awaiting the founder's call.
+  - **G89-F40:** the guard refusal prints raw amounts ("R10055.21"). LOW, goes to Batch E.
+  - **G89-F41:** the interest run "Posted Date" is shown in UTC (06 Nov for a 01:18 SAST post), the G88-F48 class. LOW, goes to Batch E.

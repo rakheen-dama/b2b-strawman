@@ -1,0 +1,45 @@
+# Lerato trust_transactions after steps D+E (Sat Nov  7 01:32:32 SAST 2026)
+                  id                  | transaction_type |              project_id              |  amount  |                                           reference                                           |      status       | transaction_date |             approved_by              |          created_at           
+--------------------------------------+------------------+--------------------------------------+----------+-----------------------------------------------------------------------------------------------+-------------------+------------------+--------------------------------------+-------------------------------
+ 079830ba-defd-4121-9251-1cc04ed67faf | DEPOSIT          | e0f25d3f-f195-42fe-ba95-842e79de983d | 10000.00 | DEP/LERATO-g89a                                                                               | RECORDED          | 2026-10-01       |                                      | 2026-11-06 23:13:41.817269+00
+ bae1cbe0-d6cc-4c61-8fb3-2db730b6ec69 | INTEREST_CREDIT  | e0f25d3f-f195-42fe-ba95-842e79de983d |    55.21 | INT-CREDIT-5724401a-30b4-47ca-b314-965c5c67abf1-e0f25d3f-f195-42fe-ba95-842e79de983d-ec988df3 | RECORDED          | 2026-10-31       |                                      | 2026-11-06 23:18:22.868816+00
+ 432c0c97-080a-4c52-a39a-0004e3c961ab | DEPOSIT          |                                      |  2000.00 | DEP2/LERATO-g89a                                                                              | RECORDED          | 2026-11-07       |                                      | 2026-11-06 23:22:26.092636+00
+ cf65e9ef-8cef-4242-863c-5ee9cd676704 | REFUND           | e0f25d3f-f195-42fe-ba95-842e79de983d | 10056.21 | REF/LERATO-g89a-over                                                                          | AWAITING_APPROVAL | 2026-11-07       |                                      | 2026-11-06 23:26:20.435115+00
+ 857b5426-a6d4-4f3d-a903-4fc1ed561d1f | REFUND           | e0f25d3f-f195-42fe-ba95-842e79de983d | 10055.21 | REF/LERATO-g89a-exact                                                                         | APPROVED          | 2026-11-07       | 4034b9e2-b14a-48f9-a408-c32851da898f | 2026-11-06 23:28:24.594008+00
+(5 rows)
+
+# Matter cell vs client card (status RECORDED/APPROVED)
+                matter                |  cell   
+--------------------------------------+---------
+ e0f25d3f-f195-42fe-ba95-842e79de983d |    0.00
+ (no matter)                          | 2000.00
+(2 rows)
+
+# Portal read-model
+             customer_id              |              matter_id               | current_balance |      last_transaction_at      |        last_synced_at         
+--------------------------------------+--------------------------------------+-----------------+-------------------------------+-------------------------------
+ ec988df3-932f-4ef2-b68e-1d7c3c99f258 | e0f25d3f-f195-42fe-ba95-842e79de983d |            0.00 | 2026-11-06 23:29:35.165356+00 | 2026-11-06 23:29:35.179003+00
+(1 row)
+
+                  id                  |              matter_id               | transaction_type |  amount  | running_balance |          occurred_at          |                                           reference                                           
+--------------------------------------+--------------------------------------+------------------+----------+-----------------+-------------------------------+-----------------------------------------------------------------------------------------------
+ 079830ba-defd-4121-9251-1cc04ed67faf | e0f25d3f-f195-42fe-ba95-842e79de983d | DEPOSIT          | 10000.00 |        10000.00 | 2026-11-06 23:13:41.817269+00 | DEP/LERATO-g89a
+ bae1cbe0-d6cc-4c61-8fb3-2db730b6ec69 | e0f25d3f-f195-42fe-ba95-842e79de983d | INTEREST_CREDIT  |    55.21 |        10055.21 | 2026-11-06 23:18:22.868816+00 | INT-CREDIT-5724401a-30b4-47ca-b314-965c5c67abf1-e0f25d3f-f195-42fe-ba95-842e79de983d-ec988df3
+ 857b5426-a6d4-4f3d-a903-4fc1ed561d1f | e0f25d3f-f195-42fe-ba95-842e79de983d | REFUND           | 10055.21 |            0.00 | 2026-11-06 23:29:35.165356+00 | REF/LERATO-g89a-exact
+(3 rows)
+
+# LPFF rate added in step A
+                  id                  |           trust_account_id           | effective_from | rate_percent | lpff_share_percent |                         notes                         |          created_at           
+--------------------------------------+--------------------------------------+----------------+--------------+--------------------+-------------------------------------------------------+-------------------------------
+ 5d75711a-1b0f-48ed-bfa3-3013f9f6ae1b | 435b4188-457a-41af-9da3-0c3aa66b18b0 | 2026-10-01     |       0.0650 |             0.0000 | G89 Batch A verify - backdated arrangement rate -g89a | 2026-11-06 23:12:37.020932+00
+ 66917663-1676-4981-a564-e19dd2ef5c10 | 435b4188-457a-41af-9da3-0c3aa66b18b0 | 2026-11-05     |       0.0650 |             0.0000 |                                                       | 2026-11-05 19:55:39.197889+00
+(2 rows)
+
+# audit events for the over-refund approval attempt
+      event_type       |    entity_type    |              entity_id               |          occurred_at          
+-----------------------+-------------------+--------------------------------------+-------------------------------
+ trust_refund.recorded | trust_transaction | cf65e9ef-8cef-4242-863c-5ee9cd676704 | 2026-11-06 23:26:20.436155+00
+ trust_refund.recorded | trust_transaction | 857b5426-a6d4-4f3d-a903-4fc1ed561d1f | 2026-11-06 23:28:24.597133+00
+ trust_refund.approved | trust_transaction | 857b5426-a6d4-4f3d-a903-4fc1ed561d1f | 2026-11-06 23:29:35.166709+00
+(3 rows)
+

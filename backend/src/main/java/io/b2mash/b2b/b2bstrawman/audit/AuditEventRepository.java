@@ -255,6 +255,12 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
   // the row's own client when it carries one, so client A never sees client B's trust/fee-note
   // rows on a shared matter. Legacy rows without the key (or with "") keep matter-only scoping.
   // Applies to the FIRM branch only; the contact's own (MINE) rows are unaffected.
+  //
+  // Generated-document gate (G89-F23): rows of the generatedDocumentEventTypes (entity_id =
+  // generated_documents.id) surface only while the linked documents row has a portal-visible
+  // visibility. The inner JOIN drops generated documents never saved to the matter (document_id
+  // null). Read-time, so a later share makes the row appear without re-projection. FIRM branch
+  // only, like the client discriminator.
 
   /**
    * Combined portal-contact + firm activity for a portal contact. Returns events the contact
@@ -282,6 +288,14 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
                  NULLIF(ae.details->>'customer_id', '') IS NULL
                  OR ae.details->>'customer_id' = CAST(:customerId AS TEXT)
                )
+               AND (
+                 ae.event_type NOT IN (:generatedDocumentEventTypes)
+                 OR EXISTS (
+                   SELECT 1 FROM generated_documents gd
+                   JOIN documents d ON d.id = gd.document_id
+                   WHERE gd.id = ae.entity_id AND d.visibility IN (:portalVisibilities)
+                 )
+               )
              )
           ORDER BY ae.occurred_at DESC
           """,
@@ -300,12 +314,22 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
                  NULLIF(ae.details->>'customer_id', '') IS NULL
                  OR ae.details->>'customer_id' = CAST(:customerId AS TEXT)
                )
+               AND (
+                 ae.event_type NOT IN (:generatedDocumentEventTypes)
+                 OR EXISTS (
+                   SELECT 1 FROM generated_documents gd
+                   JOIN documents d ON d.id = gd.document_id
+                   WHERE gd.id = ae.entity_id AND d.visibility IN (:portalVisibilities)
+                 )
+               )
              )
           """)
   Page<AuditEvent> findActivityForPortalContact(
       @Param("portalContactId") UUID portalContactId,
       @Param("customerId") UUID customerId,
       @Param("eventTypes") Set<String> eventTypes,
+      @Param("generatedDocumentEventTypes") Set<String> generatedDocumentEventTypes,
+      @Param("portalVisibilities") Set<String> portalVisibilities,
       Pageable pageable);
 
   /** Portal-contact-authored events only ("Your actions" tab). */
@@ -350,6 +374,14 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
               NULLIF(ae.details->>'customer_id', '') IS NULL
               OR ae.details->>'customer_id' = CAST(:customerId AS TEXT)
             )
+            AND (
+              ae.event_type NOT IN (:generatedDocumentEventTypes)
+              OR EXISTS (
+                SELECT 1 FROM generated_documents gd
+                JOIN documents d ON d.id = gd.document_id
+                WHERE gd.id = ae.entity_id AND d.visibility IN (:portalVisibilities)
+              )
+            )
           ORDER BY ae.occurred_at DESC
           """,
       countQuery =
@@ -366,10 +398,20 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
               NULLIF(ae.details->>'customer_id', '') IS NULL
               OR ae.details->>'customer_id' = CAST(:customerId AS TEXT)
             )
+            AND (
+              ae.event_type NOT IN (:generatedDocumentEventTypes)
+              OR EXISTS (
+                SELECT 1 FROM generated_documents gd
+                JOIN documents d ON d.id = gd.document_id
+                WHERE gd.id = ae.entity_id AND d.visibility IN (:portalVisibilities)
+              )
+            )
           """)
   Page<AuditEvent> findActivityFirmForCustomer(
       @Param("customerId") UUID customerId,
       @Param("eventTypes") Set<String> eventTypes,
+      @Param("generatedDocumentEventTypes") Set<String> generatedDocumentEventTypes,
+      @Param("portalVisibilities") Set<String> portalVisibilities,
       Pageable pageable);
 
   // --- Epic 502A — severity-filtered list + facet projections ---

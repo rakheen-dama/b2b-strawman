@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.portal;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -56,21 +57,27 @@ public class PortalActivityService {
                   ? Page.empty(unsorted)
                   : auditEventRepository.findActivityMineForPortalContact(
                       portalContactId, unsorted);
-          case FIRM ->
-              auditEventRepository.findActivityFirmForCustomer(
-                  customerId, PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES, unsorted);
+          case FIRM -> firmActivity(customerId, unsorted);
           case ALL ->
               portalContactId == null
-                  ? auditEventRepository.findActivityFirmForCustomer(
-                      customerId,
-                      PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES,
-                      unsorted)
+                  ? firmActivity(customerId, unsorted)
                   : auditEventRepository.findActivityForPortalContact(
                       portalContactId,
                       customerId,
                       PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES,
+                      PortalActivityEventTypes.GENERATED_DOCUMENT_EVENT_TYPES,
+                      Document.Visibility.PORTAL_VISIBLE,
                       unsorted);
         };
     return page.map(PortalActivityEventResponse::from);
+  }
+
+  private Page<AuditEvent> firmActivity(UUID customerId, Pageable pageable) {
+    return auditEventRepository.findActivityFirmForCustomer(
+        customerId,
+        PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES,
+        PortalActivityEventTypes.GENERATED_DOCUMENT_EVENT_TYPES,
+        Document.Visibility.PORTAL_VISIBLE,
+        pageable);
   }
 }

@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -19,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -26,8 +29,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -56,6 +62,8 @@ public class InterestService {
   private final TrustInvestmentRepository investmentRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
+  private final CustomerRepository customerRepository;
+  private final Clock clock;
 
   public InterestService(
       InterestRunRepository interestRunRepository,
@@ -66,7 +74,9 @@ public class InterestService {
       ClientLedgerCardRepository clientLedgerCardRepository,
       TrustInvestmentRepository investmentRepository,
       VerticalModuleGuard moduleGuard,
-      AuditService auditService) {
+      AuditService auditService,
+      CustomerRepository customerRepository,
+      Clock clock) {
     this.interestRunRepository = interestRunRepository;
     this.interestAllocationRepository = interestAllocationRepository;
     this.trustAccountRepository = trustAccountRepository;
@@ -76,6 +86,8 @@ public class InterestService {
     this.investmentRepository = investmentRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
+    this.customerRepository = customerRepository;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -106,6 +118,8 @@ public class InterestService {
       UUID id,
       UUID interestRunId,
       UUID clientId,
+      // Null only when the client row is gone; the wizard then falls back to a short id (G89-F10)
+      String clientName,
       BigDecimal averageDailyBalance,
       int daysInPeriod,
       BigDecimal grossInterest,
@@ -114,6 +128,8 @@ public class InterestService {
       UUID trustTransactionId,
       UUID lpffRateId,
       boolean statutoryRateApplied,
+      // LPFF share fraction applied (0.05 statutory, else the run's LPFF rate share; G89-F10)
+      BigDecimal lpffSharePercent,
       Instant createdAt) {}
 
   // --- Service Methods ---
@@ -137,6 +153,8 @@ public class InterestService {
       throw new InvalidStateException(
           "Invalid period", "period_end must be on or after period_start");
     }
+
+    requirePeriodEnded(periodEnd);
 
     if (interestRunRepository.existsOverlappingRun(accountId, periodStart, periodEnd)) {
       throw new ResourceConflictException(
@@ -393,9 +411,7 @@ public class InterestService {
         .findById(runId)
         .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
 
-    return interestAllocationRepository.findByInterestRunId(runId).stream()
-        .map(this::toAllocationResponse)
-        .toList();
+    return toAllocationResponses(interestAllocationRepository.findByInterestRunId(runId));
   }
 
   @Transactional(readOnly = true)
@@ -421,9 +437,7 @@ public class InterestService {
             .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
 
     var allocations =
-        interestAllocationRepository.findByInterestRunId(runId).stream()
-            .map(this::toAllocationResponse)
-            .toList();
+        toAllocationResponses(interestAllocationRepository.findByInterestRunId(runId));
 
     return new InterestRunDetailResponse(toRunResponse(run), allocations);
   }
@@ -443,6 +457,9 @@ public class InterestService {
       throw new InvalidStateException(
           "Invalid interest run state", "Interest run must be in DRAFT status to be approved");
     }
+
+    // A DRAFT created before the create-time guard existed (G89-F11) must not be approved either
+    requirePeriodEnded(run.getPeriodEnd());
 
     // Prevent approval of uncalculated runs (no allocations = nothing to post)
     var allocations = interestAllocationRepository.findByInterestRunId(runId);
@@ -492,6 +509,9 @@ public class InterestService {
       throw new InvalidStateException(
           "Invalid interest run state", "Interest run must be in APPROVED status to be posted");
     }
+
+    // Posting dates the INTEREST_CREDIT / INTEREST_LPFF rows on period_end: never in the future
+    requirePeriodEnded(run.getPeriodEnd());
 
     // Re-validate trust account is still ACTIVE (may have been frozen/closed since approval)
     var trustAccountIdForCheck = run.getTrustAccountId();
@@ -567,7 +587,7 @@ public class InterestService {
     }
 
     run.setStatus("POSTED");
-    run.setPostedAt(Instant.now());
+    run.setPostedAt(clock.instant());
     run = interestRunRepository.save(run);
 
     auditService.log(
@@ -637,6 +657,25 @@ public class InterestService {
 
   // --- Private Helpers ---
 
+  /**
+   * Interest is earned over a period that has ended: posting dates the ledger rows on period_end,
+   * so a period ending after today (South African time, via the injected {@link Clock}) would book
+   * future-dated interest (G89-F11). A period ending today is allowed — firms run interest on the
+   * last day of the month.
+   */
+  private void requirePeriodEnded(LocalDate periodEnd) {
+    var today = LocalDate.now(clock);
+    if (periodEnd.isAfter(today)) {
+      throw new InvalidStateException(
+          "Interest period has not ended",
+          "The interest period ends on "
+              + periodEnd
+              + ", which is after today ("
+              + today
+              + ", South African time). Run interest only for a period that has ended.");
+    }
+  }
+
   private record RateSegment(
       LocalDate startDate,
       LocalDate endDate,
@@ -702,11 +741,51 @@ public class InterestService {
         Math.toIntExact(interestAllocationRepository.countByInterestRunId(run.getId())));
   }
 
-  private InterestAllocationResponse toAllocationResponse(InterestAllocation alloc) {
+  /**
+   * Maps allocations with the client name and applied LPFF share: one query for the names and one
+   * for the rates, whatever the allocation count (no N+1).
+   */
+  private List<InterestAllocationResponse> toAllocationResponses(
+      List<InterestAllocation> allocations) {
+    var customerIds =
+        allocations.stream().map(InterestAllocation::getCustomerId).distinct().toList();
+    Map<UUID, String> clientNames =
+        customerRepository.findAllById(customerIds).stream()
+            .collect(Collectors.toMap(Customer::getId, Customer::getName, (a, b) -> a));
+
+    var rateIds =
+        allocations.stream()
+            .map(InterestAllocation::getLpffRateId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    Map<UUID, LpffRate> rates =
+        lpffRateRepository.findAllById(rateIds).stream()
+            .collect(Collectors.toMap(LpffRate::getId, Function.identity()));
+
+    return allocations.stream()
+        .map(
+            alloc -> {
+              BigDecimal lpffSharePercent;
+              if (alloc.isStatutoryRateApplied()) {
+                lpffSharePercent = TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT;
+              } else {
+                var rate = rates.get(alloc.getLpffRateId());
+                lpffSharePercent = rate != null ? rate.getLpffSharePercent() : null;
+              }
+              return toAllocationResponse(
+                  alloc, clientNames.get(alloc.getCustomerId()), lpffSharePercent);
+            })
+        .toList();
+  }
+
+  private InterestAllocationResponse toAllocationResponse(
+      InterestAllocation alloc, String clientName, BigDecimal lpffSharePercent) {
     return new InterestAllocationResponse(
         alloc.getId(),
         alloc.getInterestRunId(),
         alloc.getCustomerId(),
+        clientName,
         alloc.getAverageDailyBalance(),
         alloc.getDaysInPeriod(),
         alloc.getGrossInterest(),
@@ -715,6 +794,7 @@ public class InterestService {
         alloc.getTrustTransactionId(),
         alloc.getLpffRateId(),
         alloc.isStatutoryRateApplied(),
+        lpffSharePercent,
         alloc.getCreatedAt());
   }
 }

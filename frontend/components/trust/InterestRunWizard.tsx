@@ -61,6 +61,11 @@ const STATUS_BADGE_VARIANT: Record<InterestRunStatus, "neutral" | "warning" | "s
   POSTED: "success",
 };
 
+/** "50.00%" from a 0.5 fraction — the LPFF rates table's format on the interest page. */
+function formatSharePercent(fraction: number): string {
+  return `${(Number(fraction) * 100).toFixed(2)}%`;
+}
+
 /** Step a persisted run resumes at (§14.3.2): never-calculated DRAFT → 2, calculated DRAFT → 3, APPROVED → 4. */
 function resumeStep(run: InterestRun, allocationCount: number): number {
   if (run.status === "APPROVED") return 4;
@@ -359,7 +364,7 @@ export function InterestRunWizard({
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-700">
                       <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Client ID
+                        Client
                       </th>
                       <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                         Avg Daily Balance
@@ -384,7 +389,13 @@ export function InterestRunWizard({
                         key={a.id}
                         className="border-b border-slate-100 last:border-0 dark:border-slate-800"
                       >
-                        <td className="py-3 pr-4 font-mono text-xs">{a.clientId}</td>
+                        <td className="py-3 pr-4">
+                          {a.clientName ?? (
+                            <span className="font-mono text-xs" title={a.clientId}>
+                              {a.clientId.slice(0, 8)}
+                            </span>
+                          )}
+                        </td>
                         <td className="py-3 pr-4 text-right font-mono tabular-nums">
                           {formatCurrency(a.averageDailyBalance, currency)}
                         </td>
@@ -397,7 +408,11 @@ export function InterestRunWizard({
                               5% (statutory)
                             </span>
                           ) : (
-                            <span className="text-slate-600 dark:text-slate-400">Arrangement</span>
+                            <span className="text-slate-600 dark:text-slate-400">
+                              {a.lpffSharePercent != null
+                                ? `LPFF arrangement rate ${formatSharePercent(a.lpffSharePercent)}`
+                                : "LPFF arrangement rate"}
+                            </span>
                           )}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono tabular-nums">

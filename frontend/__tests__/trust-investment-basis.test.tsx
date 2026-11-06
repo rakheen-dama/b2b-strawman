@@ -358,8 +358,8 @@ describe("Epic 455 — Investment Basis", () => {
     });
   });
 
-  // Test 8: Interest allocation shows "Arrangement" for 86(3) allocations
-  it('interest allocation shows "Arrangement" for non-statutory rate allocations', () => {
+  // Test 8: Interest allocation shows the LPFF arrangement rate for 86(3) allocations (G89-F10)
+  it("interest allocation shows the LPFF arrangement rate for non-statutory rate allocations", () => {
     const run = {
       id: "run-2",
       trustAccountId: "acc-1",
@@ -392,6 +392,7 @@ describe("Epic 455 — Investment Basis", () => {
           id: "alloc-2",
           interestRunId: "run-2",
           clientId: "cust-2222-3333-4444-555555555555",
+          clientName: "Arrangement Client",
           averageDailyBalance: 200000,
           daysInPeriod: 90,
           grossInterest: 5000,
@@ -400,6 +401,7 @@ describe("Epic 455 — Investment Basis", () => {
           trustTransactionId: null,
           lpffRateId: "rate-1",
           statutoryRateApplied: false,
+          lpffSharePercent: 0.5,
           createdAt: "2026-04-01T09:00:00Z",
         },
       ],
@@ -428,8 +430,9 @@ describe("Epic 455 — Investment Basis", () => {
     return screen.findByText("Calculate Interest").then(async (calcBtn) => {
       fireEvent.click(calcBtn);
 
-      const arrangementCell = await screen.findByText("Arrangement");
+      const arrangementCell = await screen.findByText("LPFF arrangement rate 50.00%");
       expect(arrangementCell).toBeInTheDocument();
+      expect(screen.getByText("Arrangement Client")).toBeInTheDocument();
     });
   });
 });

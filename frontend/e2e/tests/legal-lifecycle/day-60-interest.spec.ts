@@ -120,15 +120,20 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     for (const header of ["Avg Daily Balance", "Gross Interest", "LPFF Share", "Client Share"]) {
       await expect(allocations.getByRole("columnheader", { name: header })).toBeVisible();
     }
-    for (const [key, avgDaily, gross] of [
-      ["moroka", "7 790,32", "43,01"],
-      ["qc", "1 451,61", "8,01"],
+    await expect(
+      allocations.getByRole("columnheader", { name: "Client", exact: true })
+    ).toBeVisible();
+    for (const [key, name, avgDaily, gross] of [
+      ["moroka", morokaClient(), "7 790,32", "43,01"],
+      ["qc", qcClient(), "1 451,61", "8,01"],
     ] as const) {
-      const row = allocations.getByRole("row").filter({ hasText: clientId(key) });
+      // G89-F10: the row names the client (never its UUID) and the LPFF arrangement share (50%)
+      const row = allocations.getByRole("row").filter({ hasText: name });
       await expect(row, `${key} allocation`).toHaveCount(1);
+      await expect(row).not.toContainText(clientId(key));
       await expect(row).toContainText(randPattern(avgDaily));
       await expect(row.getByRole("cell").nth(2)).toContainText(randPattern(gross));
-      await expect(row).toContainText("Arrangement");
+      await expect(row).toContainText("LPFF arrangement rate 50.00%");
     }
 
     // The run's creator reviews (never approves) her own run — 630B hides self-approval via

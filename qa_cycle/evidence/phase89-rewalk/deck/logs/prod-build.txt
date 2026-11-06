@@ -1,0 +1,158 @@
+# 636C prod-build log — frontend swapped from next dev to a production build for the deck re-shoot
+
+## 0. Pre-flight
+2026-11-06 02:08:22 SAST
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=24379491)	100%; charged; 0:00 remaining present: true
+ M tasks/insights/latest.stats.json
+9cbc3a215f36a0b6323faaacf3e5e80869ed97a2
+9cbc3a215f36a0b6323faaacf3e5e80869ed97a2
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      76597    yes      yes      8080
+  gateway      75499    yes      yes      8443
+  frontend     75638    yes      yes      3000
+  portal       19714    yes      yes      3002
+
+
+Done.
+--- :3000 holder
+75682 04:31:20 next-server (v16.3.8) 
+caffeinate pid 53779
+frontend/next-env.d.ts + portal/next-env.d.ts saved to /tmp; git diff of both before = empty (0 bytes)
+
+Note: $MAIN HEAD 9cbc3a215 = origin/main (the scout saw eea353302; 9cbc3a215 adds only tasks/defects-2026-11-06-phase89-exit.md, no product code). $MAIN status before = ' M tasks/insights/latest.stats.json' only (the scout's ' M portal/next-env.d.ts' was already gone).
+
+## 1. Swap
+svc.sh stop frontend → stopped (PID 75638); lsof :3000 → free
+cd $MAIN/frontend && rm -rf .next && SHELL=/bin/bash NODE_OPTIONS="" NEXT_PUBLIC_AUTH_MODE=keycloak pnpm run build (detached, done-marker polled)
+build start 2026-11-06 02:08:41 SAST
+build end 2026-11-06 02:09:30 SAST
+(build end = time the 30 s poll saw the done-marker; the build itself finished at or before it)
+build exit 0
+grep -rl localhost:8443 .next/static | wc -l → 2 (gateway URL inlined)
+
+### build log (full, 104 lines)
+
+> frontend@0.1.0 build /Users/rakheendama/Projects/2026/b2b-strawman/frontend
+> next build
+
+▲ Next.js 16.3.8 (Turbopack)
+- Environments: .env.local, .env
+✓ Running next.config.ts took 19ms
+- Experiments (use with caution):
+  ⨯ useTypeScriptCli
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 10.0s
+  Running TypeScript ...
+  Finished TypeScript in 16.9s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/14) ...
+  Generating static pages using 9 workers (3/14) 
+  Generating static pages using 9 workers (6/14) 
+  Generating static pages using 9 workers (10/14) 
+✓ Generating static pages using 9 workers (14/14) in 236ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /accept-invite
+├ ○ /accept-invite/complete
+├ ƒ /accept-invite/continue
+├ ƒ /accept/[token]
+├ ƒ /api/clients
+├ ƒ /api/invoices/[id]/preview
+├ ƒ /create-org
+├ ƒ /dashboard
+├ ○ /mock-login
+├ ƒ /org/[slug]/ai/reviews
+├ ƒ /org/[slug]/clients
+├ ƒ /org/[slug]/clients/[id]
+├ ƒ /org/[slug]/compliance
+├ ƒ /org/[slug]/compliance/requests
+├ ƒ /org/[slug]/compliance/requests/[id]
+├ ƒ /org/[slug]/conflict-check
+├ ƒ /org/[slug]/dashboard
+├ ƒ /org/[slug]/diary
+├ ƒ /org/[slug]/information-requests/[id]
+├ ƒ /org/[slug]/invoices
+├ ƒ /org/[slug]/invoices/[id]
+├ ƒ /org/[slug]/invoices/billing-runs
+├ ƒ /org/[slug]/invoices/billing-runs/[id]
+├ ƒ /org/[slug]/invoices/billing-runs/new
+├ ƒ /org/[slug]/invoices/collections
+├ ƒ /org/[slug]/invoices/unbilled
+├ ƒ /org/[slug]/legal/adverse-parties
+├ ƒ /org/[slug]/legal/disbursements
+├ ƒ /org/[slug]/legal/disbursements/[id]
+├ ƒ /org/[slug]/legal/tariffs
+├ ƒ /org/[slug]/matters
+├ ƒ /org/[slug]/matters/[id]
+├ ƒ /org/[slug]/matters/new
+├ ƒ /org/[slug]/my-work
+├ ƒ /org/[slug]/my-work/timesheet
+├ ƒ /org/[slug]/notifications
+├ ƒ /org/[slug]/reports
+├ ƒ /org/[slug]/reports/[reportSlug]
+├ ƒ /org/[slug]/reports/profitability
+├ ƒ /org/[slug]/settings
+├ ƒ /org/[slug]/settings/connections
+├ ƒ /org/[slug]/settings/connections/ai/history
+├ ƒ /org/[slug]/settings/connections/automations/executions
+├ ƒ /org/[slug]/settings/connections/xero/sync-log
+├ ƒ /org/[slug]/settings/documents
+├ ƒ /org/[slug]/settings/documents/templates/[id]/edit
+├ ƒ /org/[slug]/settings/documents/templates/new
+├ ƒ /org/[slug]/settings/fees
+├ ƒ /org/[slug]/settings/firm
+├ ƒ /org/[slug]/settings/matters
+├ ƒ /org/[slug]/settings/matters/checklists/[id]
+├ ƒ /org/[slug]/settings/matters/checklists/[id]/edit
+├ ƒ /org/[slug]/settings/matters/checklists/new
+├ ƒ /org/[slug]/settings/matters/request-templates/[id]
+├ ƒ /org/[slug]/settings/matters/request-templates/new
+├ ƒ /org/[slug]/settings/matters/templates/[id]
+├ ƒ /org/[slug]/team
+├ ƒ /org/[slug]/trust-accounting
+├ ƒ /org/[slug]/trust-accounting/client-ledgers
+├ ƒ /org/[slug]/trust-accounting/client-ledgers/[clientId]
+├ ƒ /org/[slug]/trust-accounting/interest
+├ ƒ /org/[slug]/trust-accounting/investments
+├ ƒ /org/[slug]/trust-accounting/reconciliation
+├ ƒ /org/[slug]/trust-accounting/reconciliation/new
+├ ƒ /org/[slug]/trust-accounting/reports
+├ ƒ /org/[slug]/trust-accounting/transactions
+├ ƒ /platform-admin/access-requests
+├ ƒ /platform-admin/billing
+├ ƒ /platform-admin/demo
+├ ○ /request-access
+├ ƒ /sign-in
+└ ○ /signed-out
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+### next start
+pnpm start pid 54219
+next-server PID 54271 (ppid 54219, 'next-server (v16.3.8)'); curl / → 200 at 02:09:40 SAST
+
+> frontend@0.1.0 start /Users/rakheendama/Projects/2026/b2b-strawman/frontend
+> next start
+
+▲ Next.js 16.3.8
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.112:3000
+✓ Ready in 100ms
+✓ Running next.config.ts took 30ms
+⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+ ELIFECYCLE  Command failed with exit code 143.

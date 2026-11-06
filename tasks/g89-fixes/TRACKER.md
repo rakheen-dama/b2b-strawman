@@ -18,12 +18,16 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D6 | No backfill of legacy client-level INTEREST_CREDIT rows. There are no live tenants; dev/e2e stacks are wiped and the VPS demo is reseeded. |
 | D7 | Trust rows with no matter → G89-F28, decided later. |
 | D8 | A matter closed before an interest run, but which earned interest during the period, is still credited. |
+| D9 | F16: SoA closing balance on a **fee-note basis**, using a shared helper with the closure letter and the Outstanding tile. Unbilled WIP shows as a separate line, not counted in the balance. |
+| D10 | 632C: keep the current receipt numbering (R1 is never reissued). Only the identical file names are fixed. |
+| D11 | 632A(a)/(c): hide dedicated-flow templates (SoA, closure letter, payment receipt) from the generic menus and refuse them on the generic endpoint. Bind trust data to the Client Trust Statement. Hide the Trust Receipt until a deposit-bound flow exists. Hide the common-pack PROJECT templates for legal-za. |
+| D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
 
 | # | Batch | Gaps | Gates | Branch / PR | Status |
 |---|---|---|---|---|---|
-| 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | `fix/g89-b-interest-period` | IN PROGRESS |
+| 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | `fix/g89-b-interest-period` / PR #1745 | PR open — full verify running |
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | | OPEN |
 | 3 | D — portal correctness | F23, 633C D2, 633C D6 | BE + PT | | OPEN |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |

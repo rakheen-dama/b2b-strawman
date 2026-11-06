@@ -826,7 +826,7 @@ Phase 89 PRs with squash SHAs (`git log --grep='(#N)'`, re-run by 636C):
 | 634 | 634A #1733 `c31f1d2c6` · 634B #1734 `8b8d0fe2a` · 634C #1735 `6c9177535` · 634D #1736 `b016e55d1` · 634E #1737 `afab07b95` |
 | 635 | 635A #1738 `ea979160a` · 635B #1740 `4e5250e98` |
 | (orchestrator, founder-authorised) | #1739 `0827ce3f9` (closure-spec R-5 fix, frontend e2e) |
-| 636 | 636A #1741 `903df3031` · 636B #1742 `396cecfc2` · 636C #PR636C |
+| 636 | 636A #1741 `903df3031` · 636B #1742 `396cecfc2` · 636C #1743 |
 
 ### C.5 Open questions and follow-ups carried
 

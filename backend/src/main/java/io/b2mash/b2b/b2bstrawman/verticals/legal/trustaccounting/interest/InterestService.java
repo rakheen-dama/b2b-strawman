@@ -8,11 +8,14 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustDomainEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
@@ -26,6 +29,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +40,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +60,7 @@ public class InterestService {
 
   private final InterestRunRepository interestRunRepository;
   private final InterestAllocationRepository interestAllocationRepository;
+  private final InterestAllocationLineRepository interestAllocationLineRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final LpffRateRepository lpffRateRepository;
   private final TrustTransactionRepository trustTransactionRepository;
@@ -63,11 +69,14 @@ public class InterestService {
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final CustomerRepository customerRepository;
+  private final ProjectRepository projectRepository;
+  private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
   public InterestService(
       InterestRunRepository interestRunRepository,
       InterestAllocationRepository interestAllocationRepository,
+      InterestAllocationLineRepository interestAllocationLineRepository,
       TrustAccountRepository trustAccountRepository,
       LpffRateRepository lpffRateRepository,
       TrustTransactionRepository trustTransactionRepository,
@@ -76,9 +85,12 @@ public class InterestService {
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       CustomerRepository customerRepository,
+      ProjectRepository projectRepository,
+      ApplicationEventPublisher eventPublisher,
       Clock clock) {
     this.interestRunRepository = interestRunRepository;
     this.interestAllocationRepository = interestAllocationRepository;
+    this.interestAllocationLineRepository = interestAllocationLineRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.trustTransactionRepository = trustTransactionRepository;
@@ -87,6 +99,8 @@ public class InterestService {
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.customerRepository = customerRepository;
+    this.projectRepository = projectRepository;
+    this.eventPublisher = eventPublisher;
     this.clock = clock;
   }
 
@@ -130,7 +144,18 @@ public class InterestService {
       boolean statutoryRateApplied,
       // LPFF share fraction applied (0.05 statutory, else the run's LPFF rate share; G89-F10)
       BigDecimal lpffSharePercent,
-      Instant createdAt) {}
+      Instant createdAt,
+      // The client share split across matters (ADR-366); empty for a run calculated before V12
+      List<InterestAllocationLineResponse> lines) {}
+
+  /** One matter's share of a client's allocation; {@code projectId} null = unmattered bucket. */
+  public record InterestAllocationLineResponse(
+      UUID id,
+      UUID projectId,
+      String projectName,
+      BigDecimal balanceDays,
+      BigDecimal clientShare,
+      UUID trustTransactionId) {}
 
   // --- Service Methods ---
 
@@ -233,68 +258,35 @@ public class InterestService {
             .findByTrustAccountId(accountId, PageRequest.of(0, 10_000))
             .getContent();
 
-    // Remove any existing allocations from a previous calculation of this draft run
+    // Remove any existing allocations (matter lines first: no ON DELETE CASCADE) from a previous
+    // calculation of this draft run, and flush so the deletes precede the new inserts.
     var existingAllocations = interestAllocationRepository.findByInterestRunId(runId);
     if (!existingAllocations.isEmpty()) {
+      interestAllocationLineRepository.deleteByInterestAllocationIdIn(
+          existingAllocations.stream().map(InterestAllocation::getId).toList());
       interestAllocationRepository.deleteAll(existingAllocations);
+      interestAllocationRepository.flush();
     }
 
     var totalInterest = BigDecimal.ZERO;
     var totalLpffShare = BigDecimal.ZERO;
     var totalClientShare = BigDecimal.ZERO;
     var allocations = new ArrayList<InterestAllocation>();
+    var pendingLines = new LinkedHashMap<InterestAllocation, List<PendingLine>>();
 
     for (var ledgerCard : ledgerCards) {
       var customerId = ledgerCard.getCustomerId();
       var clientGrossInterest = BigDecimal.ZERO;
       var clientLpffShareSum = BigDecimal.ZERO;
       var clientTotalBalanceDays = BigDecimal.ZERO;
+      // Per-matter buckets of this client (ADR-366): balance-days and allocation weights
+      var buckets = new LinkedHashMap<Bucket, BucketTotals>();
 
       for (var segment : segments) {
-        var segStart = segment.startDate();
-        var segEnd = segment.endDate();
-        long segDays = ChronoUnit.DAYS.between(segStart, segEnd) + 1;
+        long segDays = ChronoUnit.DAYS.between(segment.startDate(), segment.endDate()) + 1;
 
-        // Get opening balance at day before segment start
-        var openingBalance =
-            trustTransactionRepository.calculateClientBalanceAsOfDate(
-                customerId, accountId, segStart.minusDays(1));
-        if (openingBalance == null) {
-          openingBalance = BigDecimal.ZERO;
-        }
-
-        // Get transactions in segment
-        var transactions =
-            trustTransactionRepository.findForStatement(customerId, accountId, segStart, segEnd);
-
-        // Transaction-weighted balance-days calculation
-        var balanceDays = BigDecimal.ZERO;
-        var currentBalance = openingBalance;
-        var currentDate = segStart;
-
-        for (var txn : transactions) {
-          var txnDate = txn.getTransactionDate();
-          long daysBetween = ChronoUnit.DAYS.between(currentDate, txnDate);
-          balanceDays = balanceDays.add(currentBalance.multiply(BigDecimal.valueOf(daysBetween)));
-
-          // Apply transaction effect
-          if (CREDIT_TYPES.contains(txn.getTransactionType())) {
-            currentBalance = currentBalance.add(txn.getAmount());
-          } else if (DEBIT_TYPES.contains(txn.getTransactionType())) {
-            currentBalance = currentBalance.subtract(txn.getAmount());
-          } else {
-            log.warn(
-                "Unrecognized transaction type '{}' for transaction {} — ignored in interest balance calculation",
-                txn.getTransactionType(),
-                txn.getId());
-          }
-
-          currentDate = txnDate;
-        }
-
-        // Remaining days after last transaction
-        long remainingDays = ChronoUnit.DAYS.between(currentDate, segEnd) + 1;
-        balanceDays = balanceDays.add(currentBalance.multiply(BigDecimal.valueOf(remainingDays)));
+        // The client's segment balance-days is the exact sum of its matter buckets' balance-days
+        var balanceDays = accumulateSegment(customerId, accountId, segment, buckets);
 
         clientTotalBalanceDays = clientTotalBalanceDays.add(balanceDays);
 
@@ -371,6 +363,10 @@ public class InterestService {
                 allocationLpffRateId,
                 allocationStatutoryRateApplied);
         allocations.add(allocation);
+        pendingLines.put(
+            allocation,
+            splitAcrossMatters(
+                customerId, clientShareAmount, buckets, allocationStatutoryRateApplied));
 
         totalInterest = totalInterest.add(grossInterest);
         totalLpffShare = totalLpffShare.add(lpffShare);
@@ -378,8 +374,21 @@ public class InterestService {
       }
     }
 
-    // Save allocations
+    // Save allocations, then their matter lines (which reference the allocation ids)
     interestAllocationRepository.saveAll(allocations);
+    var lines = new ArrayList<InterestAllocationLine>();
+    pendingLines.forEach(
+        (allocation, pending) ->
+            pending.forEach(
+                line ->
+                    lines.add(
+                        new InterestAllocationLine(
+                            allocation.getId(),
+                            line.projectId(),
+                            line.balanceDays(),
+                            line.weight().setScale(10, RoundingMode.HALF_UP),
+                            line.clientShare()))));
+    interestAllocationLineRepository.saveAll(lines);
 
     // Update run totals
     run.setTotalInterest(totalInterest);
@@ -529,35 +538,72 @@ public class InterestService {
     var accountId = run.getTrustAccountId();
     var transactionDate = run.getPeriodEnd();
 
-    // Create INTEREST_CREDIT transactions for each client allocation with client_share > 0
+    var linesByAllocation = linesByAllocation(allocations);
+    var description =
+        "Interest credit for period " + run.getPeriodStart() + " to " + run.getPeriodEnd();
+
+    // ADR-366: one INTEREST_CREDIT per matter line, carrying the line's matter, so the matter
+    // sub-ledger (closure gate, matter Trust tab, portal) holds the interest it earned. A run with
+    // no lines (calculated before V12, D6) posts one client-level credit as before.
     for (var allocation : allocations) {
       if (allocation.getClientShare().compareTo(BigDecimal.ZERO) > 0) {
-        var creditTxn =
-            new TrustTransaction(
-                accountId,
-                "INTEREST_CREDIT",
-                allocation.getClientShare(),
-                allocation.getCustomerId(),
-                null,
-                null,
-                "INT-CREDIT-" + runId + "-" + allocation.getCustomerId(),
-                "Interest credit for period " + run.getPeriodStart() + " to " + run.getPeriodEnd(),
-                transactionDate,
-                "RECORDED",
-                memberId);
-        var savedTxn = trustTransactionRepository.save(creditTxn);
-        allocation.setTrustTransactionId(savedTxn.getId());
+        var customerId = allocation.getCustomerId();
 
-        // Update client ledger card
+        // Lock the client card once, before writing any of the client's credits
         var ledgerCard =
             clientLedgerCardRepository
-                .findByAccountAndCustomerForUpdate(accountId, allocation.getCustomerId())
+                .findByAccountAndCustomerForUpdate(accountId, customerId)
                 .orElseThrow(
                     () ->
                         new InvalidStateException(
                             "Ledger card not found",
-                            "No client ledger card found for client "
-                                + allocation.getCustomerId()));
+                            "No client ledger card found for client " + customerId));
+
+        var lines = linesByAllocation.getOrDefault(allocation.getId(), List.of());
+        if (lines.isEmpty()) {
+          var savedTxn =
+              trustTransactionRepository.save(
+                  interestCredit(
+                      accountId,
+                      allocation.getClientShare(),
+                      customerId,
+                      null,
+                      "INT-CREDIT-" + runId + "-" + customerId,
+                      description,
+                      transactionDate,
+                      memberId));
+          allocation.setTrustTransactionId(savedTxn.getId());
+        } else {
+          for (var line : lines) {
+            // Run + matter for a matter line, run + client for the unmattered one (the row carries
+            // both client and matter). Run + client + matter would be 121 characters: past the
+            // portal read-model's reference column (varchar(100)), which would abort the portal
+            // fan-out for the whole account.
+            var reference =
+                "INT-CREDIT-"
+                    + runId
+                    + "-"
+                    + (line.getProjectId() != null ? line.getProjectId() : customerId);
+            var savedTxn =
+                trustTransactionRepository.save(
+                    interestCredit(
+                        accountId,
+                        line.getClientShare(),
+                        customerId,
+                        line.getProjectId(),
+                        reference,
+                        description,
+                        transactionDate,
+                        memberId));
+            line.setTrustTransactionId(savedTxn.getId());
+          }
+          interestAllocationLineRepository.saveAll(lines);
+          // The allocation points at its credit only when there is exactly one
+          allocation.setTrustTransactionId(
+              lines.size() == 1 ? lines.getFirst().getTrustTransactionId() : null);
+        }
+
+        // The card takes the client share once (the lines sum to it)
         ledgerCard.addInterestCredit(allocation.getClientShare(), transactionDate);
         clientLedgerCardRepository.save(ledgerCard);
       }
@@ -603,6 +649,20 @@ public class InterestService {
                     "total_client_share", run.getTotalClientShare().toString()))
             .build());
 
+    // G89-F22: both listeners run AFTER_COMMIT — the portal trust read-model re-projects every
+    // matter on the account (the matter interest credits), and firm admins/owners are notified.
+    eventPublisher.publishEvent(
+        TrustDomainEvent.InterestPosted.of(
+            run.getId(),
+            accountId,
+            run.getPeriodStart(),
+            run.getPeriodEnd(),
+            run.getTotalInterest(),
+            run.getTotalClientShare(),
+            run.getApprovedBy(),
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
+
     return toRunResponse(run);
   }
 
@@ -629,7 +689,12 @@ public class InterestService {
 
     // interest_allocations.interest_run_id has no ON DELETE CASCADE (V1 baseline) and no JPA
     // relationship: children first, in this transaction — the recalculation path's pattern.
+    // The allocations' matter lines go first (ADR-366), likewise without a cascade.
     var allocations = interestAllocationRepository.findByInterestRunId(runId);
+    if (!allocations.isEmpty()) {
+      interestAllocationLineRepository.deleteByInterestAllocationIdIn(
+          allocations.stream().map(InterestAllocation::getId).toList());
+    }
     interestAllocationRepository.deleteAll(allocations);
     interestRunRepository.delete(run);
 
@@ -681,6 +746,206 @@ public class InterestService {
       LocalDate endDate,
       BigDecimal ratePercent,
       BigDecimal lpffSharePercent) {}
+
+  // --- Matter allocation (ADR-366) ---
+
+  /**
+   * A client's matter bucket; {@code projectId == null} is the unmattered (client-level) bucket.
+   */
+  private record Bucket(UUID projectId) {}
+
+  /** Running totals of one bucket across the run's rate segments. */
+  private static final class BucketTotals {
+    private BigDecimal balanceDays = BigDecimal.ZERO;
+    // Σ balanceDays × rate × (1 − LPFF share): the bucket's weight under the LPFF rate table
+    private BigDecimal generalWeight = BigDecimal.ZERO;
+    // Σ balanceDays × rate: its weight when the statutory 5 % applies (a flat LPFF fraction)
+    private BigDecimal statutoryWeight = BigDecimal.ZERO;
+  }
+
+  /** A matter line before its allocation is saved. */
+  private record PendingLine(
+      UUID projectId, BigDecimal balanceDays, BigDecimal weight, BigDecimal clientShare) {}
+
+  /** Lines first by matter id, the unmattered bucket last. */
+  private static final Comparator<UUID> PROJECT_ID_NULLS_LAST =
+      Comparator.nullsLast(Comparator.naturalOrder());
+
+  /**
+   * Walks one rate segment for one client, bucket by bucket: each bucket opens at its balance on
+   * the day before the segment and each transaction moves its own bucket, while the intervals
+   * between transactions are the client's (ADR-234's transaction-weighted method). Adds the
+   * segment's balance-days and weights to {@code buckets} and returns the client's segment
+   * balance-days — the exact sum of the buckets' (BigDecimal addition and multiplication are
+   * exact), hence identical to the client-level walk.
+   */
+  private BigDecimal accumulateSegment(
+      UUID customerId, UUID accountId, RateSegment segment, Map<Bucket, BucketTotals> buckets) {
+    var segStart = segment.startDate();
+    var segEnd = segment.endDate();
+
+    var balances = new LinkedHashMap<Bucket, BigDecimal>();
+    for (var row :
+        trustTransactionRepository.calculateClientMatterBalancesAsOfDate(
+            customerId, accountId, segStart.minusDays(1))) {
+      balances.put(
+          new Bucket(row.getProjectId()),
+          row.getBalance() != null ? row.getBalance() : BigDecimal.ZERO);
+    }
+
+    var segBalanceDays = new LinkedHashMap<Bucket, BigDecimal>();
+    var currentDate = segStart;
+    for (var txn :
+        trustTransactionRepository.findForStatement(customerId, accountId, segStart, segEnd)) {
+      var txnDate = txn.getTransactionDate();
+      accrue(balances, segBalanceDays, ChronoUnit.DAYS.between(currentDate, txnDate));
+
+      // Apply transaction effect to its own bucket
+      var bucket = new Bucket(txn.getProjectId());
+      if (CREDIT_TYPES.contains(txn.getTransactionType())) {
+        balances.merge(bucket, txn.getAmount(), BigDecimal::add);
+      } else if (DEBIT_TYPES.contains(txn.getTransactionType())) {
+        balances.merge(bucket, txn.getAmount().negate(), BigDecimal::add);
+      } else {
+        log.warn(
+            "Unrecognized transaction type '{}' for transaction {} — ignored in interest balance calculation",
+            txn.getTransactionType(),
+            txn.getId());
+      }
+
+      currentDate = txnDate;
+    }
+
+    // Remaining days after last transaction
+    accrue(balances, segBalanceDays, ChronoUnit.DAYS.between(currentDate, segEnd) + 1);
+
+    var clientFraction = BigDecimal.ONE.subtract(segment.lpffSharePercent());
+    var clientBalanceDays = BigDecimal.ZERO;
+    for (var entry : segBalanceDays.entrySet()) {
+      var balanceDays = entry.getValue();
+      clientBalanceDays = clientBalanceDays.add(balanceDays);
+      var totals = buckets.computeIfAbsent(entry.getKey(), b -> new BucketTotals());
+      var rated = balanceDays.multiply(segment.ratePercent());
+      totals.balanceDays = totals.balanceDays.add(balanceDays);
+      totals.statutoryWeight = totals.statutoryWeight.add(rated);
+      totals.generalWeight = totals.generalWeight.add(rated.multiply(clientFraction));
+    }
+    return clientBalanceDays;
+  }
+
+  /** Adds {@code balance × days} to every bucket's segment balance-days. */
+  private static void accrue(
+      Map<Bucket, BigDecimal> balances, Map<Bucket, BigDecimal> segBalanceDays, long days) {
+    var dayCount = BigDecimal.valueOf(days);
+    balances.forEach(
+        (bucket, balance) ->
+            segBalanceDays.merge(bucket, balance.multiply(dayCount), BigDecimal::add));
+  }
+
+  /**
+   * Splits a client's share across its matter buckets in proportion to their weights, to the cent
+   * by largest remainder (ADR-366). Only buckets with a positive weight take part. Each exact share
+   * is rounded down to the cent; the leftover cents go one each by larger fractional remainder,
+   * then larger weight, then matter id ascending with the unmattered bucket last — deterministic
+   * for a given ledger. The lines always sum to {@code clientShare}; lines of R0,00 are dropped.
+   */
+  private List<PendingLine> splitAcrossMatters(
+      UUID customerId,
+      BigDecimal clientShare,
+      Map<Bucket, BucketTotals> buckets,
+      boolean statutoryRateApplied) {
+    if (clientShare.signum() <= 0) {
+      return List.of();
+    }
+
+    record Candidate(
+        Bucket bucket,
+        BigDecimal balanceDays,
+        BigDecimal weight,
+        BigDecimal floor,
+        BigDecimal remainder) {}
+
+    var weighted = new ArrayList<Map.Entry<Bucket, BucketTotals>>();
+    var totalWeight = BigDecimal.ZERO;
+    for (var entry : buckets.entrySet()) {
+      var weight = weightOf(entry.getValue(), statutoryRateApplied);
+      if (weight.signum() > 0) {
+        weighted.add(entry);
+        totalWeight = totalWeight.add(weight);
+      }
+    }
+    if (weighted.isEmpty()) {
+      // Unreachable for a positive share (it needs positive balance-days at a positive rate); if
+      // it ever happens the post falls back to one client-level credit, as for a pre-V12 run.
+      log.warn(
+          "Interest client share {} for client {} has no positively weighted matter bucket — no"
+              + " matter lines; posting falls back to a single client-level credit",
+          clientShare,
+          customerId);
+      return List.of();
+    }
+
+    var candidates = new ArrayList<Candidate>();
+    var allocated = BigDecimal.ZERO;
+    for (var entry : weighted) {
+      var weight = weightOf(entry.getValue(), statutoryRateApplied);
+      var exact = clientShare.multiply(weight).divide(totalWeight, 12, RoundingMode.DOWN);
+      var floor = exact.setScale(2, RoundingMode.DOWN);
+      allocated = allocated.add(floor);
+      candidates.add(
+          new Candidate(
+              entry.getKey(), entry.getValue().balanceDays, weight, floor, exact.subtract(floor)));
+    }
+
+    candidates.sort(
+        Comparator.comparing(Candidate::remainder, Comparator.reverseOrder())
+            .thenComparing(Candidate::weight, Comparator.reverseOrder())
+            .thenComparing(c -> c.bucket().projectId(), PROJECT_ID_NULLS_LAST));
+
+    int leftoverCents = clientShare.subtract(allocated).movePointRight(2).intValueExact();
+    if (leftoverCents < 0 || leftoverCents > candidates.size()) {
+      throw new IllegalStateException(
+          "Interest matter allocation for client "
+              + customerId
+              + " left "
+              + leftoverCents
+              + " cents over "
+              + candidates.size()
+              + " matter buckets");
+    }
+
+    var cent = new BigDecimal("0.01");
+    var lines = new ArrayList<PendingLine>();
+    var total = BigDecimal.ZERO;
+    for (int i = 0; i < candidates.size(); i++) {
+      var candidate = candidates.get(i);
+      var share = i < leftoverCents ? candidate.floor().add(cent) : candidate.floor();
+      total = total.add(share);
+      if (share.signum() > 0) {
+        lines.add(
+            new PendingLine(
+                candidate.bucket().projectId(),
+                candidate.balanceDays(),
+                candidate.weight(),
+                share));
+      }
+    }
+    if (total.compareTo(clientShare) != 0) {
+      throw new IllegalStateException(
+          "Interest matter lines for client "
+              + customerId
+              + " sum to "
+              + total
+              + ", not the client share "
+              + clientShare);
+    }
+    lines.sort(Comparator.comparing(PendingLine::projectId, PROJECT_ID_NULLS_LAST));
+    return lines;
+  }
+
+  private static BigDecimal weightOf(BucketTotals totals, boolean statutoryRateApplied) {
+    return statutoryRateApplied ? totals.statutoryWeight : totals.generalWeight;
+  }
 
   private List<RateSegment> buildRateSegments(
       LocalDate periodStart,
@@ -763,6 +1028,21 @@ public class InterestService {
         lpffRateRepository.findAllById(rateIds).stream()
             .collect(Collectors.toMap(LpffRate::getId, Function.identity()));
 
+    // Matter lines (ADR-366) and their matter names: one query each
+    var linesByAllocation = linesByAllocation(allocations);
+    var projectIds =
+        linesByAllocation.values().stream()
+            .flatMap(List::stream)
+            .map(InterestAllocationLine::getProjectId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    Map<UUID, String> projectNames =
+        projectIds.isEmpty()
+            ? Map.of()
+            : projectRepository.findAllById(projectIds).stream()
+                .collect(Collectors.toMap(Project::getId, Project::getName, (a, b) -> a));
+
     return allocations.stream()
         .map(
             alloc -> {
@@ -773,14 +1053,72 @@ public class InterestService {
                 var rate = rates.get(alloc.getLpffRateId());
                 lpffSharePercent = rate != null ? rate.getLpffSharePercent() : null;
               }
+              var lines =
+                  linesByAllocation.getOrDefault(alloc.getId(), List.of()).stream()
+                      .map(
+                          line ->
+                              new InterestAllocationLineResponse(
+                                  line.getId(),
+                                  line.getProjectId(),
+                                  line.getProjectId() != null
+                                      ? projectNames.get(line.getProjectId())
+                                      : null,
+                                  line.getBalanceDays(),
+                                  line.getClientShare(),
+                                  line.getTrustTransactionId()))
+                      .toList();
               return toAllocationResponse(
-                  alloc, clientNames.get(alloc.getCustomerId()), lpffSharePercent);
+                  alloc, clientNames.get(alloc.getCustomerId()), lpffSharePercent, lines);
             })
         .toList();
   }
 
+  /** The allocations' matter lines (one query), each list by matter id, unmattered last. */
+  private Map<UUID, List<InterestAllocationLine>> linesByAllocation(
+      List<InterestAllocation> allocations) {
+    if (allocations.isEmpty()) {
+      return Map.of();
+    }
+    var allocationIds = allocations.stream().map(InterestAllocation::getId).toList();
+    var byAllocation = new LinkedHashMap<UUID, List<InterestAllocationLine>>();
+    interestAllocationLineRepository.findByInterestAllocationIdIn(allocationIds).stream()
+        .sorted(Comparator.comparing(InterestAllocationLine::getProjectId, PROJECT_ID_NULLS_LAST))
+        .forEach(
+            line ->
+                byAllocation
+                    .computeIfAbsent(line.getInterestAllocationId(), id -> new ArrayList<>())
+                    .add(line));
+    return byAllocation;
+  }
+
+  private static TrustTransaction interestCredit(
+      UUID accountId,
+      BigDecimal amount,
+      UUID customerId,
+      UUID projectId,
+      String reference,
+      String description,
+      LocalDate transactionDate,
+      UUID memberId) {
+    return new TrustTransaction(
+        accountId,
+        "INTEREST_CREDIT",
+        amount,
+        customerId,
+        projectId,
+        null,
+        reference,
+        description,
+        transactionDate,
+        "RECORDED",
+        memberId);
+  }
+
   private InterestAllocationResponse toAllocationResponse(
-      InterestAllocation alloc, String clientName, BigDecimal lpffSharePercent) {
+      InterestAllocation alloc,
+      String clientName,
+      BigDecimal lpffSharePercent,
+      List<InterestAllocationLineResponse> lines) {
     return new InterestAllocationResponse(
         alloc.getId(),
         alloc.getInterestRunId(),
@@ -795,6 +1133,7 @@ public class InterestService {
         alloc.getLpffRateId(),
         alloc.isStatutoryRateApplied(),
         lpffSharePercent,
-        alloc.getCreatedAt());
+        alloc.getCreatedAt(),
+        lines);
   }
 }

@@ -1,6 +1,6 @@
 # ADR-234: Interest Calculation — Daily Balance Method
 
-**Status**: Accepted
+**Status**: Accepted — amended by [ADR-366](ADR-366-interest-credits-allocated-to-matters.md): each client's share is split across its matters pro-rata by balance-days and posted as one INTEREST_CREDIT per matter (the client-level calculation below is unchanged).
 
 **Context**:
 

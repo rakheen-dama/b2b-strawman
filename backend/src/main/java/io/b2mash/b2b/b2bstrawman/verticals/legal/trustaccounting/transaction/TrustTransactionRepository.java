@@ -222,6 +222,34 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("asOfDate") LocalDate asOfDate);
 
   /**
+   * {@link #calculateClientBalanceAsOfDate} split by matter: one row per matter (and one with a
+   * null {@code projectId} for the client's unmattered rows), same sign rules and status filter, so
+   * the rows sum exactly to the client balance. The opening balances of the per-matter interest
+   * buckets (ADR-366).
+   */
+  @Query(
+      """
+      SELECT t.projectId AS projectId,
+        COALESCE(SUM(
+          CASE
+            WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
+            WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
+            ELSE 0
+          END
+        ), 0) AS balance
+      FROM TrustTransaction t
+      WHERE t.customerId = :customerId
+        AND t.trustAccountId = :trustAccountId
+        AND t.transactionDate <= :asOfDate
+        AND t.status IN ('RECORDED', 'APPROVED')
+      GROUP BY t.projectId
+      """)
+  List<MatterBalanceRow> calculateClientMatterBalancesAsOfDate(
+      @Param("customerId") UUID customerId,
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("asOfDate") LocalDate asOfDate);
+
+  /**
    * Sums the per-matter trust balance by projectId, applying the same credit/debit sign rules as
    * {@link #calculateClientBalanceAsOfDate}. Used by the matter closure gate {@code
    * TRUST_BALANCE_ZERO} (Phase 67 §67.3.4 gate 1) — a matter cannot close while it holds client

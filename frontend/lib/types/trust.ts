@@ -352,4 +352,19 @@ export interface InterestAllocation {
   /** LPFF share fraction applied to this allocation (0.05 statutory, else the run's LPFF rate). */
   lpffSharePercent: number | null;
   createdAt: string;
+  /**
+   * The client share split across matters (ADR-366); empty for a run calculated before the split.
+   * Not rendered by the interest-run wizard, which shows one row per client.
+   */
+  lines?: InterestAllocationLine[];
+}
+
+/** One matter's share of a client's interest allocation; `projectId` null = no matter. */
+export interface InterestAllocationLine {
+  id: string;
+  projectId: string | null;
+  projectName: string | null;
+  balanceDays: number;
+  clientShare: number;
+  trustTransactionId: string | null;
 }

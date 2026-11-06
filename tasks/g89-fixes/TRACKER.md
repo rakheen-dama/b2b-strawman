@@ -21,6 +21,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D9 | F16: SoA closing balance on a **fee-note basis**, using a shared helper with the closure letter and the Outstanding tile. Unbilled WIP shows as a separate line, not counted in the balance. |
 | D10 | 632C: keep the current receipt numbering (R1 is never reissued). Only the identical file names are fixed. |
 | D11 | 632A(a)/(c): hide dedicated-flow templates (SoA, closure letter, payment receipt) from the generic menus and refuse them on the generic endpoint. Bind trust data to the Client Trust Statement. Hide the Trust Receipt until a deposit-bound flow exists. Hide the common-pack PROJECT templates for legal-za. |
+| D13 | G89-F39 (the portal trust statement shows the recorded date instead of the transaction date) is **MEDIUM** and is folded into Batch D / PR #1747. Founder decision, 2026-11-07. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -29,7 +30,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 |---|---|---|---|---|---|
 | 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | **VERIFIED**: F11 (batch-B evidence), F10 (observed in the batch-A walk) |
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | **VERIFIED** on KC (F10, F12, F13, F14, F22): `qa_cycle/evidence/g89-fixes/batch-A/` |
-| 3 | D — portal correctness | F23, 633C D2, 633C D6 | BE + PT | `fix/g89-d-portal-correctness` | IN PROGRESS (builder) |
+| 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 | fix round for F39 (2× APPROVE @1816aee86 before it) |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | | OPEN |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C | BE + FE | | OPEN |
@@ -105,3 +106,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - **G89-F39:** the portal trust statement shows the *recorded* date, not the transaction date. A deposit dated 01 Oct reads "7 Nov 2026"; the portal home tile and the deposit email do the same. Proposed MEDIUM, since it is a client-facing trust record; awaiting the founder's call.
   - **G89-F40:** the guard refusal prints raw amounts ("R10055.21"). LOW, goes to Batch E.
   - **G89-F41:** the interest run "Posted Date" is shown in UTC (06 Nov for a 01:18 SAST post), the G88-F48 class. LOW, goes to Batch E.
+- 2026-11-07 ~01:50 — PR #1747 (Batch D) opened.
+  - Both reviewers APPROVE @1816aee86.
+  - The partial verify reached 4600 tests with 0 failures before it was stopped.
+  - Founder D13: fold G89-F39 (MEDIUM) into Batch D. The builder is resumed for the F39 fix round; full verify and re-review follow on the new head.

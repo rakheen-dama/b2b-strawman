@@ -84,7 +84,10 @@ class ComplianceAuditSkillTest {
           assertThat(systemPrompt).contains("compliance audit assistant");
           assertThat(systemPrompt).contains("FICA");
           assertThat(systemPrompt).contains("POPIA");
-          assertThat(systemPrompt).containsIgnoringCase("Attorneys Act");
+          // G89-F6 / D12: trust accounting is cited under the Legal Practice Act, not the
+          // repealed Attorneys Act.
+          assertThat(systemPrompt).containsIgnoringCase("Legal Practice Act 28 of 2014");
+          assertThat(systemPrompt).doesNotContainIgnoringCase("Attorneys Act");
           assertThat(systemPrompt).containsIgnoringCase("Prescription Act");
           assertThat(systemPrompt).contains("firm-profile");
           assertThat(systemPrompt).contains("auditDate");

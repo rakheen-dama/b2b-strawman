@@ -1,12 +1,12 @@
 {
   "packId": "legal-za-project-templates",
   "verticalProfile": "legal-za",
-  "version": 3,
+  "version": 4,
   "templates": [
     {
       "name": "Litigation (Road Accident Fund -- RAF)",
       "namePattern": "{customer} - RAF Claim",
-      "description": "Personal-injury workflow for Road Accident Fund (RAF) claims under the Road Accident Fund Act 56 of 1996. Covers RAF1 claim filing, statutory medical assessments, RAF tariff negotiation, Section 24 court action, and 3/5-year prescription monitoring. Matter type: LITIGATION",
+      "description": "Personal-injury workflow for Road Accident Fund (RAF) claims under the Road Accident Fund Act 56 of 1996. Covers RAF1 claim filing, statutory medical assessments, RAF tariff negotiation, Section 24 court action, and 3/5-year prescription monitoring.",
       "billableDefault": true,
       "matterType": "LITIGATION",
       "tasks": [
@@ -87,7 +87,7 @@
     {
       "name": "Litigation (Personal Injury / General)",
       "namePattern": "{customer} - Litigation",
-      "description": "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION",
+      "description": "Standard litigation workflow for personal injury and general civil matters.",
       "billableDefault": true,
       "matterType": "LITIGATION",
       "tasks": [
@@ -168,7 +168,7 @@
     {
       "name": "Deceased Estate Administration",
       "namePattern": "{customer} - Estate",
-      "description": "Administration of deceased estate from reporting to final distribution. Matter type: ESTATES",
+      "description": "Administration of deceased estate from reporting to final distribution.",
       "billableDefault": true,
       "matterType": "ESTATES",
       "tasks": [
@@ -249,7 +249,7 @@
     {
       "name": "Collections (Debt Recovery)",
       "namePattern": "{customer} - Collections",
-      "description": "Debt recovery workflow from demand to execution. Matter type: COLLECTIONS",
+      "description": "Debt recovery workflow from demand to execution.",
       "billableDefault": true,
       "matterType": "COLLECTIONS",
       "tasks": [
@@ -330,7 +330,7 @@
     {
       "name": "Commercial (Corporate & Contract)",
       "namePattern": "{customer} - Commercial",
-      "description": "Corporate and commercial transaction workflow. Matter type: COMMERCIAL",
+      "description": "Corporate and commercial transaction workflow.",
       "billableDefault": true,
       "matterType": "COMMERCIAL",
       "tasks": [
@@ -411,7 +411,7 @@
     {
       "name": "Property Transfer (Conveyancing)",
       "namePattern": "{customer} - Property Transfer",
-      "description": "Standard conveyancing workflow for property transfer from instruction through registration and file closure. Matter type: CONVEYANCING",
+      "description": "Standard conveyancing workflow for property transfer from instruction through registration and file closure.",
       "billableDefault": true,
       "matterType": "CONVEYANCING",
       "tasks": [

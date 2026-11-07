@@ -207,14 +207,26 @@ public class PdfRenderingService {
     var builder = findBuilder(template.getPrimaryEntityType());
     var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
 
-    // Validate required fields
+    // Validate required fields (readable labels: G89 632A(b))
     var validationResult =
         templateValidationService.validateRequiredFields(
-            template.getRequiredContextFields(), contextMap);
+            template.getRequiredContextFields(), contextMap, requiredFieldLabels(template));
 
     String html = renderTemplateToHtml(template, contextMap, resolvedClauses, Map.of());
 
     return new PreviewResponse(html, validationResult);
+  }
+
+  /**
+   * Display names for {@code template}'s required context fields (variable key → label), from the
+   * variable registry of its entity type; empty when it declares none (no registry lookup).
+   */
+  public Map<String, String> requiredFieldLabels(DocumentTemplate template) {
+    var required = template.getRequiredContextFields();
+    if (required == null || required.isEmpty()) {
+      return Map.of();
+    }
+    return variableMetadataRegistry.labelsFor(template.getPrimaryEntityType());
   }
 
   /** DTO returned by {@link #previewWithValidation}. Lives in the service layer to avoid a */
@@ -351,12 +363,30 @@ public class PdfRenderingService {
       }
       case INVOICE -> {
         var invoice = (Map<String, Object>) context.get("invoice");
-        yield invoice != null && invoice.get("invoiceNumber") != null
-            ? (String) invoice.get("invoiceNumber")
-            : "document";
+        String invoiceNumber =
+            invoice != null && invoice.get("invoiceNumber") != null
+                ? (String) invoice.get("invoiceNumber")
+                : "document";
+        yield withReceiptNumber(invoiceNumber, context.get("payment"));
       }
       case ORGANIZATION -> (String) context.getOrDefault("orgName", "paia-manual");
     };
+  }
+
+  /**
+   * G89 632C: a payment receipt's file name carries its receipt number, so two receipts on one fee
+   * note on one day differ ({@code ...-inv-0002-r1-<date>.pdf} / {@code -r2-}). The stored number
+   * is {@code <invoiceNumber>/R<n>} (ADR-364); its {@code /} becomes a {@code -} before slugify.
+   * Without a {@code payment.number} (every other fee-note document) the name is unchanged.
+   */
+  private static String withReceiptNumber(String invoiceNumber, Object payment) {
+    if (!(payment instanceof Map<?, ?> paymentMap)
+        || !(paymentMap.get("number") instanceof String number)
+        || number.isBlank()) {
+      return invoiceNumber;
+    }
+    String receipt = number.replace('/', '-');
+    return receipt.startsWith(invoiceNumber) ? receipt : invoiceNumber + "-" + receipt;
   }
 
   private String slugify(String text) {

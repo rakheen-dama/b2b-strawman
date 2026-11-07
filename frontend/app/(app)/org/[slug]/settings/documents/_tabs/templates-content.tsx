@@ -155,6 +155,23 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
                             {template.description}
                           </p>
                         )}
+                        {template.dedicatedFlow ? (
+                          <p
+                            className="text-xs text-slate-500 italic dark:text-slate-400"
+                            data-testid="template-dedicated-flow-hint"
+                          >
+                            Generated from its own flow
+                          </p>
+                        ) : (
+                          template.hiddenFromGenericMenus && (
+                            <p
+                              className="text-xs text-slate-500 italic dark:text-slate-400"
+                              data-testid="template-hidden-from-menus-hint"
+                            >
+                              Not offered in Generate menus
+                            </p>
+                          )
+                        )}
                         {template.format === "DOCX" && template.docxFileName && (
                           <p className="text-xs text-slate-500 dark:text-slate-400">
                             {template.docxFileName}

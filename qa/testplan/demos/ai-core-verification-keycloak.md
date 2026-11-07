@@ -95,7 +95,7 @@ Run the standard Keycloak onboarding (mirror Day 0 of `legal-za-90day-keycloak.m
 - [ ] **2.2** Practice Areas: add **Litigation**, **Conveyancing**
 - [ ] **2.3** Jurisdiction: **ZA-WC** (Western Cape)
 - [ ] **2.4** Risk Calibration: **CONSERVATIVE**
-- [ ] **2.5** House Style Notes: "Formal SA legal register; cite the Attorneys Act where relevant; no contractions."
+- [ ] **2.5** House Style Notes: "Formal SA legal register; cite the Legal Practice Act where relevant; no contractions."
 - [ ] **2.6** FICA Requirements: tick **Enhanced Due Diligence** + **PEP Screening**
 - [ ] **2.7** Fee Estimation Notes: "LSSA tariff baseline + 10%."
 - [ ] **2.8** Model preference: **Claude Sonnet 4.6**

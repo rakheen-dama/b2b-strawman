@@ -119,7 +119,7 @@
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Trust Account:" },
         { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "org.name" } },
-        { "type": "text", "text": " — Section 78(1) Trust Account" }
+        { "type": "text", "text": " — Section 86(2) trust account" }
       ]
     },
     { "type": "horizontalRule" },
@@ -165,7 +165,7 @@
     {
       "type": "paragraph",
       "content": [
-        { "type": "text", "text": "These funds are held in trust in terms of Section 78(1) of the Legal Practice Act 28 of 2014 and will be applied in accordance with your instructions and the relevant mandate." }
+        { "type": "text", "text": "These funds are held in trust in terms of section 86 of the Legal Practice Act 28 of 2014 and will be applied in accordance with your instructions and the relevant mandate." }
       ]
     },
     {

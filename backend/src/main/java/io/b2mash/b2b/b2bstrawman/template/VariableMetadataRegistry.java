@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +51,20 @@ public class VariableMetadataRegistry {
     appendCustomFieldGroups(groups, entityType);
     return new VariableMetadataResponse(
         List.copyOf(groups), loopSourcesByType.getOrDefault(entityType, List.of()));
+  }
+
+  /**
+   * Variable key → display name for {@code entityType} (static groups and the tenant's custom field
+   * definitions) — the readable names required-field warnings print (G89 632A(b)).
+   */
+  public Map<String, String> labelsFor(TemplateEntityType entityType) {
+    var labels = new HashMap<String, String>();
+    for (var group : getVariables(entityType).groups()) {
+      for (var variable : group.variables()) {
+        labels.putIfAbsent(variable.key(), variable.label());
+      }
+    }
+    return labels;
   }
 
   // TODO: Batch DB queries — replace per-EntityType findByEntityTypeAndActiveTrueOrderBySortOrder()
@@ -221,6 +236,18 @@ public class VariableMetadataRegistry {
     groups.add(buildOrgGroup());
     groups.add(buildGeneratedGroup());
 
+    // G89 D11: the client's trust ledger (ClientTrustStatementContext; absent without trust
+    // accounting or trust activity). Appended last so the existing group order is unchanged.
+    groups.add(
+        new VariableGroup(
+            "Trust account",
+            "trust",
+            List.of(
+                new VariableInfo("trust.account_name", "Trust Account Name", "string"),
+                new VariableInfo("trust.statement_date", "Trust Statement Date", "date"),
+                new VariableInfo("trust.opening_balance", "Trust Opening Balance", "currency"),
+                new VariableInfo("trust.closing_balance", "Trust Balance Held", "currency"))));
+
     staticGroupsByType.put(TemplateEntityType.CUSTOMER, List.copyOf(groups));
 
     loopSourcesByType.put(
@@ -238,6 +265,17 @@ public class VariableMetadataRegistry {
                     "total",
                     "currency",
                     "status",
+                    "runningBalance")),
+            new LoopSource(
+                "trust.lines",
+                "Trust ledger lines",
+                List.of("CUSTOMER"),
+                List.of(
+                    "transactionDate",
+                    "type",
+                    "reference",
+                    "description",
+                    "amount",
                     "runningBalance")),
             new LoopSource(
                 "tags", "Tags", List.of("PROJECT", "CUSTOMER"), List.of("name", "color"))));

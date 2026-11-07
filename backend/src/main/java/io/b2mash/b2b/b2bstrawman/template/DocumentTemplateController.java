@@ -175,7 +175,7 @@ public class DocumentTemplateController {
     UUID memberId = RequestScopes.requireMemberId();
 
     var result =
-        generatedDocumentService.generateDocument(
+        generatedDocumentService.generateFromGenericEndpoint(
             id,
             request.entityId(),
             request.saveToDocuments(),
@@ -258,9 +258,16 @@ public class DocumentTemplateController {
       String docxFileName,
       Long docxFileSize,
       Instant createdAt,
-      Instant updatedAt) {
+      Instant updatedAt,
+      boolean dedicatedFlow,
+      boolean hiddenFromGenericMenus) {
 
-    public static TemplateListResponse from(DocumentTemplate dt) {
+    /**
+     * {@code dedicatedFlow}: the template renders only in its own flow ({@link
+     * DedicatedFlowTemplate}); {@code hiddenFromGenericMenus}: the generic Generate menus must not
+     * offer it ({@link GenericMenuPolicy}; true for every dedicated-flow template).
+     */
+    public static TemplateListResponse from(DocumentTemplate dt, boolean hiddenFromGenericMenus) {
       return new TemplateListResponse(
           dt.getId(),
           dt.getName(),
@@ -276,7 +283,9 @@ public class DocumentTemplateController {
           dt.getDocxFileName(),
           dt.getDocxFileSize(),
           dt.getCreatedAt(),
-          dt.getUpdatedAt());
+          dt.getUpdatedAt(),
+          DedicatedFlowTemplate.of(dt).isPresent(),
+          hiddenFromGenericMenus);
     }
   }
 

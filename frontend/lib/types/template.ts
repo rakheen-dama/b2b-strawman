@@ -37,6 +37,10 @@ export interface TemplateListResponse {
   docxFileSize: number | null;
   createdAt: string;
   updatedAt: string;
+  /** Renders only inside its own flow (Statement of Account, closure letter, receipts). */
+  dedicatedFlow?: boolean;
+  /** Never offered by the generic Generate menus (dedicated-flow, or excluded for this practice). */
+  hiddenFromGenericMenus?: boolean;
 }
 
 export interface TemplateDetailResponse {
@@ -89,6 +93,8 @@ export interface FieldValidationResult {
   field: string;
   present: boolean;
   reason: string | null;
+  /** Readable field name, e.g. "Matter › Seller Name" (null for a malformed entry). */
+  label?: string | null;
 }
 
 export interface TemplateValidationResult {

@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 12,
+  "version": 13,
   "reconcile": [
     {
       "entity": "document_template",
@@ -35,7 +35,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:2666b54742b49d86e136d6883b0a19e2bd9ac2df1eacc2de34e66551770a2427",
-      "to": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3"
+      "to": "sha256:8b2088ae55c4b3e1b26ecd9235c395010816d99f4166451079f5e715c6a80e28"
     },
     {
       "entity": "document_template",
@@ -70,7 +70,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:a1da22c9737608b44109abcc5e7ef5aaa8a80d9b0184d0079416573b76dcc3d1",
-      "to": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3"
+      "to": "sha256:8b2088ae55c4b3e1b26ecd9235c395010816d99f4166451079f5e715c6a80e28"
     },
     {
       "entity": "document_template",
@@ -119,7 +119,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:4781c668eb863f979e1fad22ea328a29e7783683b5172ec551a75eccb3d9baea",
-      "to": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3"
+      "to": "sha256:8b2088ae55c4b3e1b26ecd9235c395010816d99f4166451079f5e715c6a80e28"
     },
     {
       "entity": "document_template",
@@ -133,14 +133,14 @@
       "key": "client-trust-statement",
       "field": "content",
       "from": "sha256:eeb6e06bf77c7875a8e7a4c262ad7e1268aa49958633d75547cb5f78b8a2ee2b",
-      "to": "sha256:c0d3bd0294d3df8b605e03e7f0daa138578d0bec1a20facfe9f0382092f4b335"
+      "to": "sha256:142377414c7c3251612ee99b27b6df9d3bb91aae250554c7624b3d2ea22f2352"
     },
     {
       "entity": "document_template",
       "key": "trust-receipt",
       "field": "content",
       "from": "sha256:01b2e2e8ebb16b56a43520024dc956f7602456f6bcf26757177597b68561e29e",
-      "to": "sha256:8f74c8a6142b4aa372a9c17c9e11159b94018a58a6041770e7cb233cbd011f4a"
+      "to": "sha256:e4d9fdabc0fd761c04e879770969a25b0266e625393f010b67454a2b1094f5aa"
     },
     {
       "entity": "document_template",
@@ -169,6 +169,27 @@
       "field": "requiredContextFields",
       "from": null,
       "to": "sha256:3fb682b4babc4031a337187516240058e9c0abc9643c4ab3d5df81ab041aa5d0"
+    },
+    {
+      "entity": "document_template",
+      "key": "statement-of-account",
+      "field": "content",
+      "from": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3",
+      "to": "sha256:8b2088ae55c4b3e1b26ecd9235c395010816d99f4166451079f5e715c6a80e28"
+    },
+    {
+      "entity": "document_template",
+      "key": "client-trust-statement",
+      "field": "content",
+      "from": "sha256:c0d3bd0294d3df8b605e03e7f0daa138578d0bec1a20facfe9f0382092f4b335",
+      "to": "sha256:142377414c7c3251612ee99b27b6df9d3bb91aae250554c7624b3d2ea22f2352"
+    },
+    {
+      "entity": "document_template",
+      "key": "trust-receipt",
+      "field": "content",
+      "from": "sha256:8f74c8a6142b4aa372a9c17c9e11159b94018a58a6041770e7cb233cbd011f4a",
+      "to": "sha256:e4d9fdabc0fd761c04e879770969a25b0266e625393f010b67454a2b1094f5aa"
     }
   ],
   "verticalProfile": "legal-za",

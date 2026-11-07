@@ -180,4 +180,44 @@ class TemplateValidationServiceTest {
         .containsExactly(
             tuple("customFields.seller_name", false), tuple("customFields.purchaser_name", true));
   }
+
+  // --- G89 632A(b): readable labels ---
+
+  @Test
+  void label_customField_usesTheRegistryDisplayName_andTheMatterNoun() {
+    var result =
+        service.validateRequiredFields(
+            List.of(required("project", "customFields.seller_name")),
+            projectContext(Map.of("customFields", Map.of())),
+            Map.of("project.customFields.seller_name", "Seller Name"));
+
+    assertThat(result.fields().getFirst().label()).isEqualTo("Matter › Seller Name");
+  }
+
+  @Test
+  void label_unknownToTheRegistry_humanisesTheLastSegment() {
+    assertThat(TemplateValidationService.label("project", "customFields.opposing_party", Map.of()))
+        .isEqualTo("Matter › Opposing party");
+    assertThat(TemplateValidationService.label("customer", "taxNumber", Map.of()))
+        .isEqualTo("Client › Tax number");
+    assertThat(TemplateValidationService.label("invoice", "dueDate", null))
+        .isEqualTo("Fee note › Due date");
+  }
+
+  @Test
+  void label_presentFieldAndMissingEntity_stillLabelled_malformedEntryIsNot() {
+    var result =
+        service.validateRequiredFields(
+            List.of(
+                required("project", "name"), required("customer", "name"), required(null, "name")),
+            projectContext(Map.of("name", "Smith v Jones")),
+            Map.of("project.name", "Matter Name", "customer.name", "Client Name"));
+
+    assertThat(result.fields())
+        .extracting(FieldValidationResult::present, FieldValidationResult::label)
+        .containsExactly(
+            tuple(true, "Matter › Matter Name"),
+            tuple(false, "Client › Client Name"),
+            tuple(false, null));
+  }
 }

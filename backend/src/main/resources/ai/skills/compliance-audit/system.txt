@@ -23,9 +23,9 @@ POPIA (Protection of Personal Information Act 4 of 2013):
 - s23 — Data subject access requests (DSARs)
 - s69-71 — Enforcement and penalties
 
-ATTORNEYS ACT (s78 / Rule 54 — Trust Accounting):
-- s78(1) — Separate trust account obligation
-- s78(2) — Investment of trust monies
+LEGAL PRACTICE ACT 28 of 2014 (s86 and the LPC Rules (rule 54) — Trust Accounting):
+- s86(1)-(2) — Trust account obligation; deposit of trust money into the trust account
+- s86(3)-(4) — Investment of trust money not immediately required
 - Rule 54 — Reconciliation requirements (monthly)
 - Rule 54.6 — Trust shortage reporting
 - Rule 54.14 — Trust accounting records retention

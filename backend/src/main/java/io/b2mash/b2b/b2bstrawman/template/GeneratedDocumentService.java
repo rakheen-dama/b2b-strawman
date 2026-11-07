@@ -165,7 +165,11 @@ public class GeneratedDocumentService {
    * (statement, closure, payment receipt, trust deposit) and would print hollow here (G89 632A(a),
    * D11). Those flows call the other entry points directly and are unaffected.
    *
+   * <p>G89-F53: a matter template needs view access to the matter (404) before its context is built
+   * — the flow entry points run inside their own matter-checked services.
+   *
    * @throws InvalidStateException the template is generated from its own flow (400, naming it)
+   * @throws ResourceNotFoundException the caller cannot view the matter
    */
   @Transactional
   public GenerationResult generateFromGenericEndpoint(
@@ -184,6 +188,7 @@ public class GeneratedDocumentService {
       throw new InvalidStateException(
           DedicatedFlowTemplate.REFUSAL_TITLE, dedicatedFlow.get().flowHint());
     }
+    requireEntityAccess(template.getPrimaryEntityType(), entityId);
     return generateDocument(
         templateId, entityId, saveToDocuments, acknowledgeWarnings, clauseSelections, memberId);
   }
@@ -491,11 +496,17 @@ public class GeneratedDocumentService {
 
   /**
    * Previews a document with optional clause resolution. Resolves clauses via ClauseResolver before
-   * delegating to PdfRenderingService.
+   * delegating to PdfRenderingService. A matter template needs view access to the matter (G89-F53,
+   * 404).
    */
   @Transactional(readOnly = true)
   public PdfRenderingService.PreviewResponse previewDocument(
       UUID templateId, UUID entityId, List<ClauseSelection> clauseSelections, UUID memberId) {
+    var template =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+    requireEntityAccess(template.getPrimaryEntityType(), entityId);
     var resolvedClauses = clauseResolver.resolveClauses(templateId, clauseSelections);
     return pdfRenderingService.previewWithValidation(
         templateId, entityId, memberId, resolvedClauses);
@@ -707,6 +718,8 @@ public class GeneratedDocumentService {
         documentTemplateRepository
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+    // G89-F53: a matter template needs view access to the matter (404) before anything renders
+    requireEntityAccess(template.getPrimaryEntityType(), entityId);
 
     if (template.getFormat() != TemplateFormat.DOCX) {
       throw new InvalidStateException(
@@ -904,6 +917,17 @@ public class GeneratedDocumentService {
   }
 
   // --- Private helpers ---
+
+  /**
+   * G89-F53: rendering a matter document needs view access to the matter (owner / admin, or a
+   * matter member — else 404, security-by-obscurity). Clients have no ACL (every member sees every
+   * client); fee notes and the organisation carry no matter rule today, so they are unchanged.
+   */
+  private void requireEntityAccess(TemplateEntityType entityType, UUID entityId) {
+    if (entityType == TemplateEntityType.PROJECT) {
+      projectAccessService.requireViewAccess(entityId, ActorContext.fromRequestScopes());
+    }
+  }
 
   /**
    * The read checks of a stored generated document, in order: the matter (a matter document needs

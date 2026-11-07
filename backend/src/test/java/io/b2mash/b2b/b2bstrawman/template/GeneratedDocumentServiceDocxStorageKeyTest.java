@@ -185,7 +185,10 @@ class GeneratedDocumentServiceDocxStorageKeyTest {
   // --- Helpers ---
 
   private GeneratedDocumentService.GenerateDocxResult generate(String outputFormat) {
+    // G89-F53: a matter template's DOCX generation checks matter access for the calling member.
     return ScopedValue.where(RequestScopes.TENANT_ID, TENANT)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
         .call(() -> service.generateDocx(templateId, entityId, outputFormat, memberId));
   }
 

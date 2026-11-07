@@ -1,0 +1,1 @@
+e2e/tests/login-bare.spec.ts	70	fresh browser: bare /login → one branded link in Mailpit → /matters	expected	passed

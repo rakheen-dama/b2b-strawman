@@ -1,0 +1,39 @@
+  1) [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:209:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('statement-of-account-dialog').getByTestId('statement-preview-container').locator('iframe[title="Document Preview"]').contentFrame().locator('body')
+    Timeout: 5000ms
+    Expected pattern: /Closing balance owing:\s*R\s?[1-9]/
+    Received string:  "
+    E2E Test OrganizationStatement of AccountReference: SOA-d2c02349-20261107Period: 9 August 2026 — 7 November 2026Generated: 7 November 2026ToSipho Ndlovu mw6ck8k236f612 Rivonia Road
+    Sandton
+    2196
+    ZAMatterMatter: Ndlovu v RAF — Depth II mw6ck8k236f6Opened: 7 November 2026Professional FeesDateFee EarnerDescriptionHoursRateAmount7 November 2026Alice OwnerDrafted and served letter of demand on the Road Accident Fund (mw6ck8k236f6)2R2 500,00R5 000,00Total fees (excl. VAT): R5 000,00VAT: R750,00Total fees (incl. VAT): R5 750,00DisbursementsDateCategoryDescriptionSupplierAmountVAT7 November 2026Deeds office feesDeeds office search feeDeeds Office PretoriaR1 250,00R0,007 November 2026Sheriff feesSheriff fee — service of processSheriff Johannesburg NorthR750,00R0,00Total disbursements: R2 000,00Trust ActivityOpening balance: R0,00DepositsDateReferenceDescriptionAmount7 November 2026DEP/mw6ck8k236f6Client deposit — RAF claim disbursementsR5 000,00PaymentsDateTypeReferenceDescriptionAmount7 November 2026PAYMENTPAY/DEEDS/mw6ck8k236f6Deeds office search fee — Deeds Office PretoriaR1 250,00Closing balance: R3 750,00SummaryTotal fees: R0,00Total disbursements: R0,00Previous balance owing: R0,00Payments received: R0,00Closing balance owing: R0,00Trust balance held: R3 750,00Unbilled work in progress (not yet billed): R7 000,00
+    "
+
+    Call log:
+      - Expect "toContainText" with timeout 5000ms
+      - waiting for getByTestId('statement-of-account-dialog').getByTestId('statement-preview-container').locator('iframe[title="Document Preview"]').contentFrame().locator('body')
+        9 × locator resolved to <body>…</body>
+          - unexpected value "
+    E2E Test OrganizationStatement of AccountReference: SOA-d2c02349-20261107Period: 9 August 2026 — 7 November 2026Generated: 7 November 2026ToSipho Ndlovu mw6ck8k236f612 Rivonia Road
+    Sandton
+    2196
+    ZAMatterMatter: Ndlovu v RAF — Depth II mw6ck8k236f6Opened: 7 November 2026Professional FeesDateFee EarnerDescriptionHoursRateAmount7 November 2026Alice OwnerDrafted and served letter of demand on the Road Accident Fund (mw6ck8k236f6)2R2 500,00R5 000,00Total fees (excl. VAT): R5 000,00VAT: R750,00Total fees (incl. VAT): R5 750,00DisbursementsDateCategoryDescriptionSupplierAmountVAT7 November 2026Deeds office feesDeeds office search feeDeeds Office PretoriaR1 250,00R0,007 November 2026Sheriff feesSheriff fee — service of processSheriff Johannesburg NorthR750,00R0,00Total disbursements: R2 000,00Trust ActivityOpening balance: R0,00DepositsDateReferenceDescriptionAmount7 November 2026DEP/mw6ck8k236f6Client deposit — RAF claim disbursementsR5 000,00PaymentsDateTypeReferenceDescriptionAmount7 November 2026PAYMENTPAY/DEEDS/mw6ck8k236f6Deeds office search fee — Deeds Office PretoriaR1 250,00Closing balance: R3 750,00SummaryTotal fees: R0,00Total disbursements: R0,00Previous balance owing: R0,00Payments received: R0,00Closing balance owing: R0,00Trust balance held: R3 750,00Unbilled work in progress (not yet billed): R7 000,00
+    "
+
+
+      105 |   // Summary
+      106 |   await expect(preview).toContainText("Summary");
+    > 107 |   await expect(preview).toContainText(/Closing balance owing:\s*R\s?[1-9]/);
+          |                         ^
+      108 |   // Return the closing balance owing as a whitespace-tolerant amount pattern
+      109 |   const summary = (await preview.textContent()) ?? "";
+      110 |   const owing = summary.match(/Closing balance owing:\s*R\s?([\d\s\u00a0\u202f]+,\d{2})/);
+        at verifyStatementPreview (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/frontend/e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:107:25)
+    [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:209:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview 
+  4 skipped
+  4 did not run
+  34 passed (1.9m)
+ ELIFECYCLE  Command failed with exit code 1.

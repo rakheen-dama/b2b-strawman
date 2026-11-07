@@ -1,0 +1,39 @@
+
+> portal@0.1.0 test:e2e:responsive /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/portal
+> PORTAL_CONTACT_EMAIL=${PORTAL_CONTACT_EMAIL:-contact@acme.example.com} playwright test --config=playwright.portal.config.ts --project=chromium --reporter=list,json
+
+[2m[WebServer] [22m[33m[1m⚠[22m[39m The "middleware" file convention is deprecated. Please use "proxy" instead.
+[2m[WebServer] [22m
+[2m[WebServer] [22m  To migrate automatically, run:
+[2m[WebServer] [22m  npx @next/codemod@canary middleware-to-proxy .
+[2m[WebServer] [22m
+[2m[WebServer] [22m  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+Running 21 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ sm (375x667) › home-populated (1.0s)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+  ✓   2 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ sm (375x667) › trust-matter-list (1.4s)
+  ✓   3 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ sm (375x667) › deadlines-list (594ms)
+  ✓   4 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ sm (375x667) › invoices-list (531ms)
+  ✓   5 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ sm (375x667) › matters-list (515ms)
+  ✓   6 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ sm (375x667) › settings-notifications (511ms)
+  ✓   7 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ sm (375x667) › profile (553ms)
+  ✓   8 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ md (768x1024) › home-populated (547ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+  ✓   9 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ md (768x1024) › trust-matter-list (632ms)
+  ✓  10 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ md (768x1024) › deadlines-list (544ms)
+  ✓  11 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ md (768x1024) › invoices-list (432ms)
+  ✓  12 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ md (768x1024) › matters-list (431ms)
+  ✓  13 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ md (768x1024) › settings-notifications (513ms)
+  ✓  14 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ md (768x1024) › profile (514ms)
+  ✓  15 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ lg (1280x800) › home-populated (564ms)
+[2m[WebServer] [22m[36m[browser][39m [33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior[39m
+  ✓  16 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ lg (1280x800) › trust-matter-list (553ms)
+  ✓  17 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ lg (1280x800) › deadlines-list (543ms)
+  ✓  18 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ lg (1280x800) › invoices-list (521ms)
+  ✓  19 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ lg (1280x800) › matters-list (451ms)
+  ✓  20 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ lg (1280x800) › settings-notifications (552ms)
+  ✓  21 [chromium] › e2e/tests/responsive/portal-pages.spec.ts:236:11 › portal @ lg (1280x800) › profile (445ms)
+
+  21 passed (17.4s)

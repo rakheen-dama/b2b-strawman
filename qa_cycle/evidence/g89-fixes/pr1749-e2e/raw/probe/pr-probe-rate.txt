@@ -1,0 +1,8 @@
+PR(G1c image 72115ee5) probe 1: NETWORKIDLE TIMEOUT
+PR(G1c image 72115ee5) probe 2: NETWORKIDLE TIMEOUT
+PR(G1c image 72115ee5) probe 3: NETWORKIDLE reached
+PR(G1c image 72115ee5) probe 4: NETWORKIDLE TIMEOUT
+PR(G1c image 72115ee5) probe 5: NETWORKIDLE TIMEOUT
+PR(G1c image 72115ee5) probe 6: NETWORKIDLE reached
+PR(G1c image 72115ee5) probe 7: NETWORKIDLE TIMEOUT
+PR(G1c image 72115ee5) probe 8: NETWORKIDLE reached

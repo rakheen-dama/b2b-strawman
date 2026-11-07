@@ -1,0 +1,8 @@
+main(MP) probe 1: NETWORKIDLE reached
+main(MP) probe 2: NETWORKIDLE reached
+main(MP) probe 3: NETWORKIDLE reached
+main(MP) probe 4: NETWORKIDLE TIMEOUT
+main(MP) probe 5: NETWORKIDLE reached
+main(MP) probe 6: NETWORKIDLE reached
+main(MP) probe 7: NETWORKIDLE TIMEOUT
+main(MP) probe 8: NETWORKIDLE TIMEOUT

@@ -1,0 +1,6 @@
+main probe 1: NETWORKIDLE reached
+main probe 2: NETWORKIDLE TIMEOUT
+main probe 3: NETWORKIDLE reached
+main probe 4: NETWORKIDLE reached
+main probe 5: NETWORKIDLE reached
+main probe 6: NETWORKIDLE reached

@@ -184,3 +184,12 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - The partial verify reached 4200 tests with 0 failures before it was stopped for the fix round.
   - Builder resumed: repoint the spec, restrict the prefix arm to clones and platform rows (red first), and optionally hide the "Trust Activity" heading when withheld.
   - Batch E add: F51.
+- 2026-11-07 ~15:40 — PR #1749 (C2) pre-merge gates:
+  - Full verify @150bc743e: 6683 / 0 / 0 / 26 (24:06).
+  - Re-reviews: 2× APPROVE @150bc743e.
+  - **Pre-merge e2e** (`qa_cycle/evidence/g89-fixes/pr1749-e2e/`) matched Checkpoint 1 per-test on lifecycle 105/0, default 165/0/14 (document-generation 5/5) and all portal suites. Tenant Flyway 13 / global 5. Expected differences observed (menus, no suffix, WIP R7 000,00, receipt `-r1-`).
+  - **depth-ii 31/3/4/5.** No PR regression:
+    - (b) `day-30-45-soa-writeoff:107`: broken by **#1748**'s D9 change and red on main too. Spec fix goes into #1749.
+    - (c) `day-14-conveyancing:354`: networkidle-after-preview harness hang, also on main (5 of 16). Spec fix goes into #1749.
+    - (c) `day-75-85-closure:391`: capture artefact; passes on re-run and on main.
+  - Builder resumed for the two spec fixes. depth-ii is to be re-run from the new head before merge.

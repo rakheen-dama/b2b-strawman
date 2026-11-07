@@ -1,0 +1,88 @@
+# attempt 1 (ABORTED — driver put /opt/homebrew/bin first on PATH, so node v26.0.0 ran instead of the shell's nvm v20.11.1 that CP1 used):
+# portal-vitest start 2026-11-07T13:48:48+0200
+# portal-vitest rc=1 end 2026-11-07T13:48:57+0200
+# stack-C1 launch 2026-11-07T13:48:57+0200
+# stack-C1 rc=0 end 2026-11-07T13:50:41+0200
+# C1-lifecycle start 2026-11-07T13:50:41+0200
+# C1-lifecycle attempt 1 killed 2026-11-07T13:51:40+0200 after ~2 min; partial baselines git-cleaned; restarting from portal vitest + fresh C1 under node v20.11.1
+portal-vitest start 2026-11-07T13:51:40+0200
+portal-vitest rc=0 end 2026-11-07T13:51:47+0200
+stack-C1 launch 2026-11-07T13:51:47+0200
+stack-C1 rc=0 end 2026-11-07T13:52:28+0200
+C1-lifecycle start 2026-11-07T13:52:29+0200
+C1-lifecycle rc=0 end 2026-11-07T13:55:39+0200
+C1-depth-ii start 2026-11-07T13:55:39+0200
+C1-depth-ii rc=1 end 2026-11-07T13:57:36+0200
+C1-ALLDONE
+stack-G1 launch 2026-11-07T13:58:21+0200
+stack-G1 rc=0 end 2026-11-07T13:59:59+0200
+G1-lifecycle start 2026-11-07T14:00:00+0200
+G1-lifecycle rc=0 end 2026-11-07T14:03:09+0200
+G1-depth-ii start 2026-11-07T14:03:09+0200
+G1-depth-ii rc=1 end 2026-11-07T14:05:33+0200
+G1-default start 2026-11-07T14:05:33+0200
+G1-default rc=0 end 2026-11-07T14:06:41+0200
+G1-ALLDONE
+stack-G1b launch 2026-11-07T14:07:36+0200
+stack-G1b rc=0 end 2026-11-07T14:08:26+0200
+G1b-lifecycle start 2026-11-07T14:08:26+0200
+G1b-lifecycle rc=0 end 2026-11-07T14:11:25+0200
+G1b-depth-ii start 2026-11-07T14:11:25+0200
+G1b-depth-ii rc=1 end 2026-11-07T14:13:36+0200
+G1b-ALLDONE
+stack-C2 launch 2026-11-07T14:26:03+0200
+stack-C2 rc=0 end 2026-11-07T14:26:42+0200
+C2-90day start 2026-11-07T14:26:42+0200
+C2-90day rc=0 end 2026-11-07T14:27:06+0200
+C2-responsive start 2026-11-07T14:32:37+0200
+C2-responsive rc=0 end 2026-11-07T14:32:57+0200
+C2-ALLDONE
+stack-G2 launch 2026-11-07T14:33:06+0200
+stack-G2 rc=0 end 2026-11-07T14:33:45+0200
+G2-90day start 2026-11-07T14:33:45+0200
+G2-90day rc=0 end 2026-11-07T14:34:05+0200
+G2-responsive start 2026-11-07T14:39:35+0200
+G2-responsive rc=0 end 2026-11-07T14:39:53+0200
+G2-isolation start 2026-11-07T14:45:23+0200
+G2-isolation rc=0 end 2026-11-07T14:45:25+0200
+G2-login-bare start 2026-11-07T14:51:11+0200
+G2-login-bare rc=0 end 2026-11-07T14:51:27+0200
+G2-ALLDONE
+main checkout 08c64dd88c7db98d06e1ad2e32c2c40db5bee190 2026-11-07T14:51:51+0200
+stack-MC launch 2026-11-07T14:51:51+0200
+stack-MC rc=0 end 2026-11-07T14:53:22+0200
+MC-lifecycle start 2026-11-07T14:53:22+0200
+MC-lifecycle rc=0 end 2026-11-07T14:56:14+0200
+MC-depth-ii start 2026-11-07T14:56:14+0200
+MC-depth-ii rc=1 end 2026-11-07T14:58:03+0200
+stack-MG launch 2026-11-07T14:58:03+0200
+stack-MG rc=0 end 2026-11-07T14:59:23+0200
+MG-lifecycle start 2026-11-07T14:59:24+0200
+MG-lifecycle rc=1 end 2026-11-07T15:01:51+0200
+MG-depth-ii start 2026-11-07T15:01:51+0200
+MG-depth-ii rc=1 end 2026-11-07T15:03:36+0200
+MAIN-ALLDONE
+PR checkout restored 150bc743ec1921f3ee76b5d2f0993bd2f1483458 2026-11-07T15:05:26+0200
+stack-C1b launch 2026-11-07T15:05:26+0200
+stack-C1b rc=0 end 2026-11-07T15:06:05+0200
+C1b-lifecycle start 2026-11-07T15:06:06+0200
+C1b-lifecycle rc=0 end 2026-11-07T15:09:03+0200
+C1b-depth-ii start 2026-11-07T15:09:03+0200
+C1b-depth-ii rc=1 end 2026-11-07T15:10:51+0200
+stack-G1c launch 2026-11-07T15:10:51+0200
+stack-G1c rc=0 end 2026-11-07T15:12:13+0200
+G1c-lifecycle start 2026-11-07T15:12:14+0200
+G1c-lifecycle rc=1 end 2026-11-07T15:15:01+0200
+G1c-depth-ii start 2026-11-07T15:15:01+0200
+G1c-depth-ii rc=1 end 2026-11-07T15:16:47+0200
+PR2-ALLDONE
+main checkout (A/B probe) 08c64dd88c7db98d06e1ad2e32c2c40db5bee190 2026-11-07T15:19:13+0200
+stack-MP launch 2026-11-07T15:19:13+0200
+stack-MP rc=0 end 2026-11-07T15:19:52+0200
+MP-lifecycle start 2026-11-07T15:19:52+0200
+MP-lifecycle rc=0 end 2026-11-07T15:22:50+0200
+MP-depth-ii start 2026-11-07T15:22:50+0200
+MP-depth-ii rc=1 end 2026-11-07T15:24:38+0200
+PR checkout restored 150bc743ec1921f3ee76b5d2f0993bd2f1483458 2026-11-07T15:25:45+0200
+MP-ALLDONE
+e2e-down 2026-11-07T15:26:01+0200

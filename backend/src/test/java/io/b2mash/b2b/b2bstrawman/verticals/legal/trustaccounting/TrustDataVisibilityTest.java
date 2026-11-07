@@ -41,6 +41,24 @@ class TrustDataVisibilityTest {
     assertThat(visibility.visibleToCurrentMember()).isFalse();
   }
 
+  @Test
+  void withheld_onlyWhenTheModuleIsOnAndViewTrustIsMissing() {
+    when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(true);
+    assertThat(withheldWith(Set.of("VIEW_LEGAL"))).isTrue();
+    assertThat(withheldWith(Set.of("VIEW_TRUST"))).isFalse();
+  }
+
+  @Test
+  void moduleOff_nothingIsWithheld() {
+    when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
+    assertThat(withheldWith(Set.of("VIEW_LEGAL"))).isFalse();
+  }
+
+  private boolean withheldWith(Set<String> capabilities) {
+    return ScopedValue.where(RequestScopes.CAPABILITIES, capabilities)
+        .call(visibility::withheldFromCurrentMember);
+  }
+
   private boolean visibleWith(Set<String> capabilities) {
     return ScopedValue.where(RequestScopes.CAPABILITIES, capabilities)
         .call(visibility::visibleToCurrentMember);

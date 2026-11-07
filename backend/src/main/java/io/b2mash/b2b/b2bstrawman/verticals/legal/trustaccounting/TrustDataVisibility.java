@@ -30,7 +30,19 @@ public class TrustDataVisibility {
 
   /** True when trust balances, ledger lines and references may be printed for this member. */
   public boolean visibleToCurrentMember() {
-    return moduleGuard.isModuleEnabled(TRUST_ACCOUNTING_MODULE)
-        && RequestScopes.hasCapability(VIEW_TRUST);
+    return trustAccountingEnabled() && RequestScopes.hasCapability(VIEW_TRUST);
+  }
+
+  /**
+   * True when the firm keeps trust money but this member may not see it (module on, no VIEW_TRUST):
+   * a trust figure exists and is withheld from them. With the module off there is no trust money to
+   * withhold — a statement's trust balance is a genuine zero (CodeRabbit #5 / G89-F51).
+   */
+  public boolean withheldFromCurrentMember() {
+    return trustAccountingEnabled() && !RequestScopes.hasCapability(VIEW_TRUST);
+  }
+
+  private boolean trustAccountingEnabled() {
+    return moduleGuard.isModuleEnabled(TRUST_ACCOUNTING_MODULE);
   }
 }

@@ -334,6 +334,12 @@ public class StatementOfAccountContextBuilder {
             paymentsReceived,
             closingBalance,
             trust.closingBalance);
+    if (trust.withheld && trustDataVisibility.withheldFromCurrentMember()) {
+      // CodeRabbit #5: the firm keeps trust money but this member may not see it, so nothing was
+      // read — record the figure as withheld, not as a zero the Statements table would show
+      // everyone as "no trust money held". (Trust accounting off: a genuine zero, as before.)
+      summary = summary.withTrustWithheld();
+    }
 
     return new Aggregates(
         feeLines,
@@ -608,6 +614,7 @@ public class StatementOfAccountContextBuilder {
     map.put("payments_received", s.paymentsReceived());
     map.put("closing_balance_owing", s.closingBalanceOwing());
     map.put("trust_balance_held", s.trustBalanceHeld());
+    map.put("trust_withheld", s.trustWithheld());
     return map;
   }
 

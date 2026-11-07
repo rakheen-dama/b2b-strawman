@@ -22,7 +22,13 @@ export interface StatementSummary {
   previousBalanceOwing: number;
   paymentsReceived: number;
   closingBalanceOwing: number;
-  trustBalanceHeld: number;
+  /** Null when `trustWithheld`: the trust figure is not available to this reader. */
+  trustBalanceHeld: number | null;
+  /**
+   * The statement was generated without, or is read without, VIEW_TRUST (G89-F51): show
+   * "Withheld", never a zero. Absent on older responses (treated as not withheld).
+   */
+  trustWithheld?: boolean;
 }
 
 export interface MatterRef {

@@ -2,8 +2,8 @@
 
 import { useId, useRef, useState, type ComponentProps, type KeyboardEvent } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import {
   filterMentionCandidates,
   findMentionQuery,
@@ -28,6 +28,11 @@ function sameQuery(a: MentionQuery | null, b: MentionQuery | null): boolean {
  * the matching members; ArrowUp/ArrowDown move, Enter or Tab inserts "@First Last ", Escape closes.
  * Focus stays in the textarea throughout. The backend resolves "@First Last" (or "@First") to the
  * member when the comment is posted, so the inserted text is the whole contract — no rich-text node.
+ *
+ * Accessibility: the textarea is an ARIA 1.2 combobox (keeping its label as the accessible name)
+ * that controls a listbox; the active option is exposed through aria-activedescendant and the
+ * suggestion count through a polite live region. The listbox is rendered here rather than with
+ * cmdk, whose items assign their own generated ids, so option ids are deterministic.
  */
 export function MentionTextarea({
   value,
@@ -43,7 +48,15 @@ export function MentionTextarea({
 
   const matches = mention ? filterMentionCandidates(candidates, mention.query) : [];
   const open = matches.length > 0;
-  const active = matches[Math.min(activeIndex, matches.length - 1)];
+  const active = open ? matches[Math.min(activeIndex, matches.length - 1)] : undefined;
+  const optionId = (candidate: MentionCandidate) => `${listId}-${candidate.id}`;
+  // Announced only while an @-token is being typed and there is anyone to mention.
+  const announcement =
+    mention && candidates.length > 0
+      ? matches.length > 0
+        ? `${matches.length} ${matches.length === 1 ? "suggestion" : "suggestions"}`
+        : "No matches"
+      : "";
 
   function track(text: string, cursor: number | null) {
     const next = cursor === null ? null : findMentionQuery(text, cursor);
@@ -67,14 +80,16 @@ export function MentionTextarea({
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    if (open) {
+    // An IME is composing (e.g. Enter confirms a candidate in the IME): leave the keys to it.
+    if (open && !e.nativeEvent.isComposing) {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
         const step = e.key === "ArrowDown" ? 1 : -1;
         setActiveIndex((i) => (i + step + matches.length) % matches.length);
         return;
       }
-      if ((e.key === "Enter" || e.key === "Tab") && active) {
+      // Plain Tab only: Shift+Tab keeps moving focus backwards.
+      if ((e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) && active) {
         e.preventDefault();
         choose(active);
         return;
@@ -102,8 +117,12 @@ export function MentionTextarea({
           {...textareaProps}
           ref={ref}
           value={value}
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
           aria-autocomplete="list"
           aria-controls={open ? listId : undefined}
+          aria-activedescendant={active ? optionId(active) : undefined}
           onChange={(e) => {
             onValueChange(e.target.value);
             track(e.target.value, e.target.selectionStart);
@@ -112,15 +131,22 @@ export function MentionTextarea({
           onKeyDown={handleKeyDown}
         />
       </PopoverAnchor>
+      <span
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-slot="mention-announcement"
+      >
+        {announcement}
+      </span>
       <PopoverContent
         align="start"
-        className="w-64 p-0"
+        className="w-64 p-1"
         // Keep the caret in the textarea: the list is driven from its key handler.
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => {
-          // Escape closes the suggestions; the textarea handler already did, so stop it here
-          // reaching a parent dialog.
+          // Escape closes the suggestions; stop it here reaching a parent dialog.
           e.preventDefault();
           setMention(null);
         }}
@@ -129,24 +155,34 @@ export function MentionTextarea({
           if (e.target instanceof Node && ref.current?.contains(e.target)) e.preventDefault();
         }}
       >
-        <Command shouldFilter={false} value={active?.id ?? ""} label="Mention a member">
-          <CommandList id={listId}>
-            <CommandGroup heading="Mention">
-              {matches.map((candidate, index) => (
-                <CommandItem
-                  key={candidate.id}
-                  value={candidate.id}
-                  // Keep focus (and the caret) in the textarea when the item is clicked.
-                  onMouseDown={(e) => e.preventDefault()}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  onSelect={() => choose(candidate)}
-                >
-                  {candidate.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+        <ul
+          id={listId}
+          role="listbox"
+          aria-label="Mention a member"
+          className="max-h-64 overflow-y-auto"
+        >
+          {matches.map((candidate, index) => {
+            const selected = candidate.id === active?.id;
+            return (
+              <li
+                key={candidate.id}
+                id={optionId(candidate)}
+                role="option"
+                aria-selected={selected}
+                // Keep focus (and the caret) in the textarea when the option is clicked.
+                onMouseDown={(e) => e.preventDefault()}
+                onMouseEnter={() => setActiveIndex(index)}
+                onClick={() => choose(candidate)}
+                className={cn(
+                  "cursor-default rounded-sm px-2 py-1.5 text-sm select-none",
+                  selected && "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+                )}
+              >
+                {candidate.name}
+              </li>
+            );
+          })}
+        </ul>
       </PopoverContent>
     </Popover>
   );

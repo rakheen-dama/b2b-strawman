@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SWRConfig } from "swr";
 import { AddCommentForm } from "@/components/comments/add-comment-form";
@@ -153,6 +153,92 @@ describe("@-mention autocomplete (634C)", () => {
     expect(await screen.findByRole("option", { name: "Bongani Dlamini" })).toBeInTheDocument();
     expect(screen.queryByRole("option", { name: "Bob Ndlovu" })).not.toBeInTheDocument();
     expect(mockFetchMentionCandidates).toHaveBeenCalledWith("m1");
+  });
+});
+
+describe("@-mention combobox semantics and keyboard edge cases (634C review)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("is a combobox named by its label whose aria-expanded follows the list", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    const input = screen.getByRole("combobox", { name: "Add a comment" });
+    expect(input).toBe(textarea());
+    expect(input).toHaveAttribute("aria-expanded", "false");
+    expect(input).toHaveAttribute("aria-haspopup", "listbox");
+    expect(input).toHaveAttribute("aria-autocomplete", "list");
+
+    await user.type(input, "@Bo");
+    const listbox = await screen.findByRole("listbox");
+    expect(input).toHaveAttribute("aria-expanded", "true");
+    expect(input).toHaveAttribute("aria-controls", listbox.id);
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(input).toHaveAttribute("aria-expanded", "false"));
+  });
+
+  it("aria-activedescendant follows the arrow keys", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.type(textarea(), "@Bo");
+    const bob = await screen.findByRole("option", { name: "Bob Ndlovu" });
+    const bongani = screen.getByRole("option", { name: "Bongani Dlamini" });
+    expect(bob.id).toBeTruthy();
+    expect(bongani.id).toBeTruthy();
+    expect(textarea()).toHaveAttribute("aria-activedescendant", bob.id);
+    expect(bob).toHaveAttribute("aria-selected", "true");
+
+    await user.keyboard("{ArrowDown}");
+    expect(textarea()).toHaveAttribute("aria-activedescendant", bongani.id);
+    expect(bongani).toHaveAttribute("aria-selected", "true");
+    expect(bob).toHaveAttribute("aria-selected", "false");
+
+    await user.keyboard("{ArrowUp}");
+    expect(textarea()).toHaveAttribute("aria-activedescendant", bob.id);
+  });
+
+  it("announces the suggestion count politely", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.type(textarea(), "@Bo");
+    await screen.findByRole("option", { name: "Bob Ndlovu" });
+    expect(screen.getByText("2 suggestions")).toHaveAttribute("aria-live", "polite");
+
+    await user.type(textarea(), "zz");
+    expect(await screen.findByText("No matches")).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("an Enter during IME composition does not select", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.type(textarea(), "@Bo");
+    await screen.findByRole("option", { name: "Bob Ndlovu" });
+    fireEvent.keyDown(textarea(), { key: "Enter", isComposing: true });
+
+    expect(textarea().value).toBe("@Bo");
+    expect(screen.getByRole("option", { name: "Bob Ndlovu" })).toBeInTheDocument();
+  });
+
+  it("Shift+Tab is not intercepted while the list is open", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.type(textarea(), "@Bo");
+    await screen.findByRole("option", { name: "Bob Ndlovu" });
+    const notPrevented = fireEvent.keyDown(textarea(), { key: "Tab", shiftKey: true });
+
+    expect(notPrevented).toBe(true);
+    expect(textarea().value).toBe("@Bo");
   });
 });
 

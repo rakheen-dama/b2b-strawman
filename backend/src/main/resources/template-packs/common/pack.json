@@ -63,7 +63,8 @@
       "contentFile": "engagement-letter.json",
       "cssFile": null,
       "description": "Client engagement letter template",
-      "sortOrder": 1
+      "sortOrder": 1,
+      "genericMenuExcludedProfiles": ["legal-za"]
     },
     {
       "templateKey": "project-summary",
@@ -73,7 +74,8 @@
       "contentFile": "project-summary.json",
       "cssFile": null,
       "description": "Matter summary report template",
-      "sortOrder": 2
+      "sortOrder": 2,
+      "genericMenuExcludedProfiles": ["legal-za"]
     },
     {
       "templateKey": "invoice-cover-letter",

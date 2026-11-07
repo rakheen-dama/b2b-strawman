@@ -145,6 +145,36 @@ public class GeneratedDocumentService {
   }
 
   /**
+   * The generic generate endpoint ({@code POST /api/templates/{id}/generate}, the matter / client /
+   * fee-note Generate menus): {@link #generateDocument(UUID, UUID, boolean, boolean, List, UUID)}
+   * for any template except a {@link DedicatedFlowTemplate}, which renders only inside its own flow
+   * (statement, closure, payment receipt, trust deposit) and would print hollow here (G89 632A(a),
+   * D11). Those flows call the other entry points directly and are unaffected.
+   *
+   * @throws InvalidStateException the template is generated from its own flow (400, naming it)
+   */
+  @Transactional
+  public GenerationResult generateFromGenericEndpoint(
+      UUID templateId,
+      UUID entityId,
+      boolean saveToDocuments,
+      boolean acknowledgeWarnings,
+      List<ClauseSelection> clauseSelections,
+      UUID memberId) {
+    var template =
+        documentTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+    var dedicatedFlow = DedicatedFlowTemplate.of(template);
+    if (dedicatedFlow.isPresent()) {
+      throw new InvalidStateException(
+          DedicatedFlowTemplate.REFUSAL_TITLE, dedicatedFlow.get().flowHint());
+    }
+    return generateDocument(
+        templateId, entityId, saveToDocuments, acknowledgeWarnings, clauseSelections, memberId);
+  }
+
+  /**
    * Variant of {@link #generateDocument(UUID, UUID, boolean, boolean, List, UUID)} that lets the
    * caller declare the intended {@link Document.Visibility} of the linked Document up-front. When
    * non-null, the linked Document is created at that visibility from the start (no post-generation

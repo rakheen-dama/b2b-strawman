@@ -60,6 +60,7 @@ public class DocumentTemplateService {
   private final StorageService storageService;
   private final DocxMergeService docxMergeService;
   private final DocxFieldValidator docxFieldValidator;
+  private final GenericMenuPolicy genericMenuPolicy;
 
   public DocumentTemplateService(
       DocumentTemplateRepository documentTemplateRepository,
@@ -70,7 +71,8 @@ public class DocumentTemplateService {
       TemplateVariableAnalyzer templateVariableAnalyzer,
       StorageService storageService,
       DocxMergeService docxMergeService,
-      DocxFieldValidator docxFieldValidator) {
+      DocxFieldValidator docxFieldValidator,
+      GenericMenuPolicy genericMenuPolicy) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.clauseRepository = clauseRepository;
     this.auditService = auditService;
@@ -80,6 +82,7 @@ public class DocumentTemplateService {
     this.storageService = storageService;
     this.docxMergeService = docxMergeService;
     this.docxFieldValidator = docxFieldValidator;
+    this.genericMenuPolicy = genericMenuPolicy;
   }
 
   /**
@@ -89,6 +92,7 @@ public class DocumentTemplateService {
   @Transactional(readOnly = true)
   public List<TemplateListResponse> listTemplates(
       TemplateCategory category, TemplateEntityType primaryEntityType, TemplateFormat format) {
+    var menuPolicy = genericMenuPolicy.forCurrentTenant();
     List<DocumentTemplate> templates;
     if (category != null) {
       templates = documentTemplateRepository.findByCategoryAndActiveTrueOrderBySortOrder(category);
@@ -101,7 +105,9 @@ public class DocumentTemplateService {
     } else {
       templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
     }
-    return templates.stream().map(TemplateListResponse::from).toList();
+    return templates.stream()
+        .map(dt -> TemplateListResponse.from(dt, menuPolicy.hiddenFromGenericMenus(dt)))
+        .toList();
   }
 
   @Transactional(readOnly = true)

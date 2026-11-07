@@ -37,6 +37,10 @@ export interface TemplateListResponse {
   docxFileSize: number | null;
   createdAt: string;
   updatedAt: string;
+  /** Renders only inside its own flow (Statement of Account, closure letter, receipts). */
+  dedicatedFlow?: boolean;
+  /** Never offered by the generic Generate menus (dedicated-flow, or excluded for this practice). */
+  hiddenFromGenericMenus?: boolean;
 }
 
 export interface TemplateDetailResponse {

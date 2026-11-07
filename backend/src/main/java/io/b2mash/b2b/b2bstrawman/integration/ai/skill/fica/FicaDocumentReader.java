@@ -32,6 +32,11 @@ public class FicaDocumentReader {
     this.pricingProperties = pricingProperties;
   }
 
+  /**
+   * Reads the given documents straight from storage — no access check of its own. The caller passes
+   * only documents the invoking member may read (FicaVerificationSkill leaves trust-bearing ones
+   * out for a member without VIEW_TRUST).
+   */
   public DocumentReadResult readDocuments(List<Document> documents) {
     var textContent = new StringBuilder();
     long totalBytesFetched = 0;

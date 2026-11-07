@@ -57,11 +57,20 @@ public class TrustDataVisibility {
    * @throws ForbiddenException the document holds trust data and the member lacks VIEW_TRUST
    */
   public void requireMayRead(boolean containsTrustData) {
-    if (containsTrustData && !RequestScopes.hasCapability(VIEW_TRUST)) {
+    if (!mayRead(containsTrustData)) {
       throw new ForbiddenException(
           NOT_AVAILABLE_TITLE,
           "This document contains trust account details, which your role cannot view.");
     }
+  }
+
+  /**
+   * The same rule as {@link #requireMayRead}, as a filter: false when the document prints trust
+   * money and the member lacks VIEW_TRUST. For readers that skip such documents rather than refuse
+   * the whole request (FICA verification reads every client document).
+   */
+  public boolean mayRead(boolean containsTrustData) {
+    return !containsTrustData || RequestScopes.hasCapability(VIEW_TRUST);
   }
 
   private boolean trustAccountingEnabled() {

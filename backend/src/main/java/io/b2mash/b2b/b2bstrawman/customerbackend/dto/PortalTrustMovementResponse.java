@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -17,12 +18,16 @@ import java.util.UUID;
  * read-model does not store currency per row (ADR-253) — the service-layer mapping defaults to the
  * legal-za vertical default ({@code "ZAR"}) since trust accounting is currently only enabled on
  * that vertical.
+ *
+ * <p>{@code transactionDate} is the transaction's SA business date — the date the tile shows
+ * (G89-F39); {@code occurredAt} is the approval / recorded instant.
  */
 public record PortalTrustMovementResponse(
     UUID id,
     String type,
     BigDecimal amount,
     String currency,
+    LocalDate transactionDate,
     Instant occurredAt,
     String matterName,
     String description) {}

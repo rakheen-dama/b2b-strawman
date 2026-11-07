@@ -11,12 +11,21 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventRecord;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocument;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.template.TestDocumentBuilder;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +70,11 @@ class PortalActivityServiceFirmFilterTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private DocumentRepository documentRepository;
+  @Autowired private DocumentTemplateRepository documentTemplateRepository;
+  @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
 
+  private UUID templateId;
   private UUID customerId;
   private UUID portalContactId;
   private UUID projectId;
@@ -144,6 +157,17 @@ class PortalActivityServiceFirmFilterTest {
                       .getId();
               customerProjectService.linkCustomerToProject(
                   otherCustomerId, projectId, memberId, new ActorContext(memberId, "owner"));
+
+              templateId =
+                  documentTemplateRepository
+                      .save(
+                          new DocumentTemplate(
+                              TemplateEntityType.PROJECT,
+                              "Filter Template",
+                              "pa-ff-template",
+                              TemplateCategory.OTHER,
+                              TestDocumentBuilder.doc().paragraph("Filter").build()))
+                      .getId();
             });
   }
 
@@ -172,6 +196,44 @@ class PortalActivityServiceFirmFilterTest {
                                 null,
                                 details)))
                     .getId());
+  }
+
+  /**
+   * G89-F23: generated-document rows surface only when backed by a portal-visible saved document.
+   * Seeds a SHARED matter document + its generated_documents row, then the audit event keyed on the
+   * generated document (the production shape: entity_id = generated_documents.id).
+   */
+  private void seedSharedGeneratedDocumentEvent(String eventType) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var document =
+                  new Document(projectId, "shared.pdf", "application/pdf", 10L, memberId);
+              document.setVisibility(Document.Visibility.SHARED);
+              var generated =
+                  new GeneratedDocument(
+                      templateId,
+                      TemplateEntityType.PROJECT,
+                      projectId,
+                      "shared.pdf",
+                      "test/shared.pdf",
+                      10L,
+                      memberId);
+              generated.linkToDocument(documentRepository.save(document).getId());
+              auditEventRepository.save(
+                  new AuditEvent(
+                      new AuditEventRecord(
+                          eventType,
+                          "generated_document",
+                          generatedDocumentRepository.save(generated).getId(),
+                          memberId,
+                          "USER",
+                          "API",
+                          null,
+                          null,
+                          Map.of("project_id", projectId.toString()))));
+            });
   }
 
   /** Seeds a portal-contact-authored audit event for the bound contact. */
@@ -322,7 +384,7 @@ class PortalActivityServiceFirmFilterTest {
   @Test
   void firmTab_includes_invoice_statement_closure() {
     seedFirmEvent("invoice.sent");
-    seedFirmEvent("statement.generated");
+    seedSharedGeneratedDocumentEvent("statement.generated");
     seedFirmEvent("matter_closure.closed");
 
     var page = listActivity(PortalActivityService.Tab.FIRM);
@@ -334,11 +396,11 @@ class PortalActivityServiceFirmFilterTest {
 
   @Test
   void firmTab_humanises_event_labels() {
-    seedFirmEvent("statement.generated");
+    seedSharedGeneratedDocumentEvent("statement.generated");
     seedFirmEvent("information_request.sent");
     seedFirmEvent("matter_closure.closed");
     seedFirmEvent("trust_transaction.approved");
-    seedFirmEvent("document.generated");
+    seedSharedGeneratedDocumentEvent("document.generated");
 
     var page = listActivity(PortalActivityService.Tab.FIRM);
 
@@ -451,7 +513,7 @@ class PortalActivityServiceFirmFilterTest {
   void allTab_filters_firm_side_only() {
     seedPortalEvent("portal.request_item.submitted");
     seedFirmEvent("invoice.sent"); // allow-listed
-    seedFirmEvent("statement.generated"); // allow-listed
+    seedSharedGeneratedDocumentEvent("statement.generated"); // allow-listed, shared
     seedFirmEvent("time_entry.created"); // blocked
     seedFirmEvent("disbursement.billed"); // blocked
 

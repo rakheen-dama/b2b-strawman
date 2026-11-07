@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Receipt } from "lucide-react";
-import { formatCurrency, formatDate } from "@b2mash/shared/format";
+import { formatCurrency, formatLocalDate } from "@b2mash/shared/format";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import {
   getMatterTransactions,
@@ -132,7 +132,7 @@ export function TransactionList({
                   {describeTransaction(txn)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
-                  {formatDate(txn.occurredAt)} · {typeLabel(txn)}
+                  {formatLocalDate(txn.transactionDate)} · {typeLabel(txn)}
                 </p>
               </div>
               <div className="text-right">
@@ -177,7 +177,7 @@ export function TransactionList({
                 className="border-b border-slate-100 last:border-b-0"
               >
                 <td className="px-4 py-3 text-slate-700">
-                  {formatDate(txn.occurredAt)}
+                  {formatLocalDate(txn.transactionDate)}
                 </td>
                 <td className="px-4 py-3 text-slate-700">{typeLabel(txn)}</td>
                 <td className="px-4 py-3 text-slate-900">

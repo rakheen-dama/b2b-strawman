@@ -281,6 +281,8 @@ public class TrustLedgerPortalSyncService {
           txn.getTransactionType(),
           txn.getAmount(),
           running,
+          txn.getTransactionDate(),
+          recordedAt(txn),
           occurredAt,
           sanitiser.sanitise(txn.getDescription(), txn.getTransactionType(), txn.getReference()),
           txn.getReference());
@@ -410,6 +412,8 @@ public class TrustLedgerPortalSyncService {
                       txn.getTransactionType(),
                       txn.getAmount(),
                       running,
+                      txn.getTransactionDate(),
+                      recordedAt(txn),
                       occurredAt,
                       sanitiser.sanitise(
                           txn.getDescription(), txn.getTransactionType(), txn.getReference()),
@@ -502,7 +506,10 @@ public class TrustLedgerPortalSyncService {
             }
             Instant aCreated = a.getCreatedAt() == null ? Instant.EPOCH : a.getCreatedAt();
             Instant bCreated = b.getCreatedAt() == null ? Instant.EPOCH : b.getCreatedAt();
-            return aCreated.compareTo(bCreated);
+            int byCreated = aCreated.compareTo(bCreated);
+            // Same final tiebreak as findByProjectIdOrderByTransactionDateAsc and the portal
+            // read order (G89-F39), so running balances read in display order.
+            return byCreated != 0 ? byCreated : a.getId().compareTo(b.getId());
           });
       return List.copyOf(transactions);
     }
@@ -547,6 +554,15 @@ public class TrustLedgerPortalSyncService {
           txn.getAmount().negate();
       default -> BigDecimal.ZERO;
     };
+  }
+
+  /**
+   * The firm row's recorded time ({@code created_at}): the portal ledger's tiebreak after the
+   * transaction date, matching {@code findByProjectIdOrderByTransactionDateAsc} (G89-F39). Falls
+   * back to {@link #deriveOccurredAt} for a row without one.
+   */
+  private static Instant recordedAt(TrustTransaction txn) {
+    return txn.getCreatedAt() != null ? txn.getCreatedAt() : deriveOccurredAt(txn);
   }
 
   private static Instant deriveOccurredAt(TrustTransaction txn) {

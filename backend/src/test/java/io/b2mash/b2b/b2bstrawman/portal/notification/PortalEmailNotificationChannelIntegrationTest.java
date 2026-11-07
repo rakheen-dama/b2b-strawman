@@ -65,6 +65,9 @@ class PortalEmailNotificationChannelIntegrationTest {
   private static final String ORG_ID = "org_portal_channel_test";
   private static final String CONTACT_EMAIL = "channel-contact@test.com";
 
+  /** G89-F39: trust events carry the transaction's business date. */
+  private static final java.time.LocalDate TXN_DATE = java.time.LocalDate.of(2026, 10, 1);
+
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private PortalContactRepository portalContactRepository;
@@ -154,6 +157,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     projectId,
                     "DEPOSIT",
                     new BigDecimal("500.00"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     memberId,
@@ -214,6 +218,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     projectId,
                     "DEPOSIT",
                     new BigDecimal("50000"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     tenantSchema,
@@ -264,10 +269,50 @@ class PortalEmailNotificationChannelIntegrationTest {
         .as("body must not contain a raw ISO timestamp like 2026-04-30T...Z")
         .doesNotContainPattern("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
 
+    // 633C D6: the Type cell prints a client-facing label, never the raw enum.
+    assertThat(body).as("Type must be the client-facing label").contains(">Deposit<");
+    assertThat(body).as("Type must not be the raw enum").doesNotContain("DEPOSIT");
+
     var logs = findLogsByReferenceType("PORTAL_TRUST_ACTIVITY");
     assertThat(logs)
         .as("delivery log should record referenceType=PORTAL_TRUST_ACTIVITY for DEPOSIT")
         .isNotEmpty();
+  }
+
+  /** 633C D6: approval-path emails print the client-facing type label too. */
+  @Test
+  void trustApprovalEvent_feeTransfer_printsClientFacingTypeLabel() throws Exception {
+    publishInsideTenantTxn(
+        () ->
+            eventPublisher.publishEvent(
+                TrustTransactionApprovalEvent.approved(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "FEE_TRANSFER",
+                    new BigDecimal("1200.00"),
+                    TXN_DATE,
+                    customerId,
+                    memberId,
+                    memberId,
+                    tenantSchema,
+                    ORG_ID)));
+
+    assertThat(greenMail.waitForIncomingEmail(5000, 1)).isTrue();
+    MimeMessage matchedMessage = null;
+    for (MimeMessage msg : greenMail.getReceivedMessages()) {
+      if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
+          && msg.getSubject() != null
+          && msg.getSubject().toLowerCase().contains("trust account activity")) {
+        matchedMessage = msg;
+        break;
+      }
+    }
+    assertThat(matchedMessage).as("trust-activity email should be received").isNotNull();
+
+    String body = extractBody(matchedMessage);
+    assertThat(body).as("Type must be the client-facing label").contains(">Fee transfer<");
+    assertThat(body).as("Type must not be the raw enum").doesNotContain("FEE_TRANSFER");
   }
 
   @Test
@@ -285,6 +330,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     // matter
                     "DEPOSIT",
                     new BigDecimal("125.00"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     tenantSchema,
@@ -330,6 +376,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     UUID.randomUUID(),
                     "TRANSFER_OUT",
                     new BigDecimal("250.00"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     tenantSchema,

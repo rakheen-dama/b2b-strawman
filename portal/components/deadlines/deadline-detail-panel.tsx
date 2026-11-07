@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { X } from "lucide-react";
 import { formatDate } from "@b2mash/shared/format";
 import { cn } from "@/lib/utils";
+import { DEADLINE_STATUS_LABELS, labelFor } from "@/lib/labels";
 import type { PortalDeadline } from "@/lib/api/deadlines";
 
 const SOURCE_ENTITY_LABEL: Record<string, string> = {
@@ -22,10 +23,6 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
   CANCELLED:
     "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
 };
-
-function formatStatus(status: string): string {
-  return status.replace(/_/g, " ");
-}
 
 interface DeadlineDetailPanelProps {
   open: boolean;
@@ -149,7 +146,7 @@ export function DeadlineDetailPanel({
                       statusClass,
                     )}
                   >
-                    {formatStatus(deadline.status)}
+                    {labelFor(DEADLINE_STATUS_LABELS, deadline.status)}
                   </span>
                 </dd>
               </div>

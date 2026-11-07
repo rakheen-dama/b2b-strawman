@@ -108,6 +108,7 @@ public class PortalTrustLedgerService {
                         v.transactionType(),
                         v.amount(),
                         v.runningBalance(),
+                        v.transactionDate(),
                         v.occurredAt(),
                         v.description(),
                         v.reference()))
@@ -144,6 +145,7 @@ public class PortalTrustLedgerService {
                     t.transactionType(),
                     t.amount(),
                     DEFAULT_TRUST_CURRENCY,
+                    t.transactionDate(),
                     t.occurredAt(),
                     matterNames.get(t.matterId()),
                     t.description()))

@@ -12,7 +12,7 @@ import {
 import { portalGet } from "@/lib/api-client";
 import { useModules } from "@/hooks/use-portal-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import { formatCurrency, formatDate } from "@b2mash/shared/format";
+import { formatCurrency, formatLocalDate } from "@b2mash/shared/format";
 import type { PortalInvoice, PortalPendingAcceptance } from "@/lib/types";
 
 interface InfoRequestSummary {
@@ -31,6 +31,8 @@ interface TrustMovement {
   id: string;
   amount: number;
   currency: string;
+  /** "YYYY-MM-DD" SA business date of the movement — the date to show (G89-F39). */
+  transactionDate: string;
   occurredAt: string;
   description: string | null;
 }
@@ -274,7 +276,7 @@ function TrustCard() {
                 {formatCurrency(movement.amount, movement.currency)}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                {formatDate(movement.occurredAt)}
+                {formatLocalDate(movement.transactionDate)}
               </p>
             </div>
           )}

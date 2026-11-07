@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -252,14 +253,18 @@ public class Document {
     public static final String SHARED = "SHARED";
     public static final String PORTAL = "PORTAL";
 
+    /**
+     * The portal-visible visibilities: manual shares ({@link #SHARED}) and system-auto-shares
+     * ({@link #PORTAL}). Also bound into native SQL that filters on {@code documents.visibility}
+     * (the portal activity trail, G89-F23), so the rule lives in one place.
+     */
+    public static final Set<String> PORTAL_VISIBLE = Set.of(SHARED, PORTAL);
+
     private Visibility() {}
 
-    /**
-     * Returns true if the visibility makes the document visible to portal contacts. Both manual
-     * shares ({@link #SHARED}) and system-auto-shares ({@link #PORTAL}) are portal-visible.
-     */
+    /** Returns true if the visibility makes the document visible to portal contacts. */
     public static boolean isPortalVisible(String visibility) {
-      return SHARED.equals(visibility) || PORTAL.equals(visibility);
+      return visibility != null && PORTAL_VISIBLE.contains(visibility);
     }
   }
 

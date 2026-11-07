@@ -49,4 +49,16 @@ public final class PortalActivityEventTypes {
           // Matter closure (client-facing milestone)
           "matter_closure.closed",
           "matter_closure.reopened");
+
+  /**
+   * G89-F23: allow-listed types whose audit {@code entity_id} is a {@code generated_documents.id}.
+   * The event type alone does not make them client-facing -- a closure letter or Statement of
+   * Account the firm keeps as an internal draft must not be announced. They surface only while the
+   * generated document's linked {@code documents} row is portal-visible ({@link
+   * io.b2mash.b2b.b2bstrawman.document.Document.Visibility#PORTAL_VISIBLE}); a generated document
+   * never saved to the matter ({@code document_id} null) never surfaces. Checked at read time, so
+   * sharing the document later makes its event appear on the next read.
+   */
+  public static final Set<String> GENERATED_DOCUMENT_EVENT_TYPES =
+      Set.of("document.generated", "docx_document.generated", "statement.generated");
 }

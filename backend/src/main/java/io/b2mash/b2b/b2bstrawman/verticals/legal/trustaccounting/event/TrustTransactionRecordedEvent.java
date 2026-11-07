@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -28,19 +29,25 @@ public record TrustTransactionRecordedEvent(
     UUID projectId,
     String transactionType,
     BigDecimal amount,
+    LocalDate transactionDate,
     UUID customerId,
     UUID recordedBy,
     String tenantId,
     String orgId,
     Instant occurredAt) {
 
-  /** Factory for the {@code trust_transaction.recorded} event emitted on direct-RECORDED paths. */
+  /**
+   * Factory for the {@code trust_transaction.recorded} event emitted on direct-RECORDED paths.
+   * {@code transactionDate} is the transaction's SA business date; {@code occurredAt} is the
+   * publish time (G89-F39).
+   */
   public static TrustTransactionRecordedEvent recorded(
       UUID transactionId,
       UUID trustAccountId,
       UUID projectId,
       String transactionType,
       BigDecimal amount,
+      LocalDate transactionDate,
       UUID customerId,
       UUID recordedBy,
       String tenantId,
@@ -52,6 +59,7 @@ public record TrustTransactionRecordedEvent(
         projectId,
         transactionType,
         amount,
+        transactionDate,
         customerId,
         recordedBy,
         tenantId,

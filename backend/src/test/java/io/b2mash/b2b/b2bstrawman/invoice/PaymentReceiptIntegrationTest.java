@@ -222,6 +222,30 @@ class PaymentReceiptIntegrationTest {
   }
 
   /**
+   * G89 632C: two receipts on one fee note on one day used to share the file name {@code
+   * payment-receipt-za-<note>-<date>.pdf}; the file name now carries the receipt number (R1, R2).
+   */
+  @Test
+  void twoReceiptsSameNoteSameDay_distinctFilenames() throws Exception {
+    String invoiceId = createSentInvoice();
+    String noteSlug = invoiceNumber(invoiceId).toLowerCase();
+
+    UUID first = postAndGetNewestEventId(invoiceId, OWNER, "1000.00", "EFT", "FNB-F1");
+    UUID second = postAndGetNewestEventId(invoiceId, OWNER, "500.00", "EFT", "FNB-F2");
+
+    String firstName =
+        inTenant(() -> generatedDocumentRepository.findById(receiptDoc(first)).orElseThrow())
+            .getFileName();
+    String secondName =
+        inTenant(() -> generatedDocumentRepository.findById(receiptDoc(second)).orElseThrow())
+            .getFileName();
+    assertThat(firstName).isNotEqualTo(secondName);
+    // <template slug>-<fee note>-r<n>-<date>.pdf
+    assertThat(firstName).contains("-" + noteSlug + "-r1-").endsWith(".pdf");
+    assertThat(secondName).contains("-" + noteSlug + "-r2-").endsWith(".pdf");
+  }
+
+  /**
    * Reversal (R6.2): the reversed payment's receipt row and stored object go, the reversal audit
    * row records the number, and the next receipt is R3 — R2 is never reissued.
    */

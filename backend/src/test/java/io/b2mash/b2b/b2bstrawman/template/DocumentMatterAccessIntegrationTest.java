@@ -227,6 +227,26 @@ class DocumentMatterAccessIntegrationTest {
         .andExpect(status().isOk());
   }
 
+  // ---- security review: template readiness for a matter ---------------------------------------
+
+  @Test
+  void readiness_memberNotOnMatter_notFound_memberOnMatter_ok() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/templates/readiness")
+                .param("entityType", "PROJECT")
+                .param("entityId", matterId.toString())
+                .with(member(N)))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(
+            get("/api/templates/readiness")
+                .param("entityType", "PROJECT")
+                .param("entityId", matterId.toString())
+                .with(member(M)))
+        .andExpect(status().isOk());
+  }
+
   // ---- G89-F60: deleting a matter's generated document --------------------------------------
 
   @Test

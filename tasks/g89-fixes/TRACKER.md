@@ -32,7 +32,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | **VERIFIED** on KC (F10, F12, F13, F14, F22): `qa_cycle/evidence/g89-fixes/batch-A/` |
 | 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | **VERIFIED** on KC (F23, F39, D2, D6): `qa_cycle/evidence/g89-fixes/batch-D/` |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
-| 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | `fix/g89-c1-statements-reports` | IN PROGRESS (builder) |
+| 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 | 2× APPROVE @d3b9bea18; full verify re-running |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C | BE + FE | | OPEN |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
@@ -137,3 +137,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - "Share with client" lives under Work › Generated documents, not on the Documents tab.
   - Portal Firm actions shows no trust deposit or interest events (product question, candidate **G89-F44**).
   - The home "Last trust movement" tile shows the latest row by transaction date, not the most recently recorded one.
+- 2026-11-07 ~03:40 — PR #1748 (C1) opened with 2× APPROVE @d3b9bea18.
+  - The first full verify was aborted by the macOS `dirhelper` deleting the embedded-PG `timezonesets` mid-run. That is proven, and recorded in `tasks/lessons.md`. The stale extraction was deleted and the verify re-launched.
+  - Batch F adds a tooling fix: pin the zonky working dir outside `$TMPDIR`.
+  - Candidates:
+    - **G89-F45:** a fee note with lines on two matters is counted in full on both matters' SoA/closure/tile. Pre-existing, consistent across surfaces.
+    - Missing tests for the Section 35 investment, interest and `_total` projections (follow-up).

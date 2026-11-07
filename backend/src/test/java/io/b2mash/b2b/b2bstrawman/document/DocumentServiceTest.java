@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -42,6 +43,8 @@ class DocumentServiceTest {
   @Mock private ApplicationEventPublisher eventPublisher;
   @Mock private MemberNameResolver memberNameResolver;
   @Mock private ProjectLifecycleGuard projectLifecycleGuard;
+  // G89-F52: the read-path trust rule (a no-op mock — no document here holds trust data)
+  @Mock private TrustDataVisibility trustDataVisibility;
   @InjectMocks private DocumentService service;
 
   private static final UUID PROJECT_ID = UUID.randomUUID();

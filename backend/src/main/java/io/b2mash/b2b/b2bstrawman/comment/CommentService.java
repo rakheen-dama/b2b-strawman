@@ -185,12 +185,7 @@ public class CommentService {
 
     // Validate entity type
     if ("PROJECT".equals(entityType)) {
-      String resolvedVis = visibility != null ? visibility : "INTERNAL";
-      if (!"SHARED".equals(resolvedVis)) {
-        throw new InvalidStateException(
-            "Invalid visibility for matter comment",
-            "PROJECT-level comments must have SHARED visibility");
-      }
+      requireSharedForMatterComment(entityType, visibility != null ? visibility : "INTERNAL");
       if (!entityId.equals(projectId)) {
         throw new InvalidStateException(
             "Invalid entity for matter comment",
@@ -318,6 +313,10 @@ public class CommentService {
       throw new InvalidStateException(
           "Invalid visibility", "visibility must be INTERNAL or SHARED");
     }
+    // 634E(2): a matter-level comment is the client thread, so it stays SHARED on edit too.
+    if (visibility != null) {
+      requireSharedForMatterComment(comment.getEntityType(), visibility);
+    }
 
     // Visibility changes require canEdit (lead/admin/owner) for own comments,
     // or admin/owner for others' comments (already checked above)
@@ -434,6 +433,18 @@ public class CommentService {
     }
 
     return comment;
+  }
+
+  /**
+   * A PROJECT (matter-level) comment is the client-facing thread and must be SHARED — on create and
+   * on edit (634E(2)).
+   */
+  private static void requireSharedForMatterComment(String entityType, String visibility) {
+    if ("PROJECT".equals(entityType) && !"SHARED".equals(visibility)) {
+      throw new InvalidStateException(
+          "Invalid visibility for matter comment",
+          "PROJECT-level comments must have SHARED visibility");
+    }
   }
 
   @Transactional

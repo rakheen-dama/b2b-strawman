@@ -32,8 +32,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | **VERIFIED** on KC (F10, F12, F13, F14, F22): `qa_cycle/evidence/g89-fixes/batch-A/` |
 | 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | **VERIFIED** on KC (F23, F39, D2, D6): `qa_cycle/evidence/g89-fixes/batch-D/` |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
-| 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 | 2× APPROVE @d3b9bea18; full verify re-running |
-| 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C | BE + FE | | OPEN |
+| 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | MERGED-AWAITING-VERIFY (KC check running) |
+| 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | `fix/g89-c2-templates-generation` | IN PROGRESS (builder) |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
@@ -149,3 +149,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - Every result is per-test identical to 636A; tenant V12 and global V4 applied.
   - One class (c) event: the first G1 frontend build failed on a `next/font/google` download; the retry passed.
   - New tooling candidate **G89-F46**: frontend/portal production builds depend on Google Fonts being reachable. It has now hit both CI (#1747 Portal job) and the e2e build. Self-host the fonts via `next/font/local` (Batch F).
+- 2026-11-07 ~04:35 — PR #1748 (C1) merged as `08c64dd88`.
+  - CodeRabbit Major (mixed-currency fee-note aggregation) fixed in `fc13d86c0` (red test first); fee-note totals are now restricted to the org default currency, like the Outstanding tile.
+  - Final gates @fc13d86c0: verify 6644 / 0 / 0 / 26 (17:15), FE gate @d3b9bea18 (fix is backend-only), 2× re-review APPROVE, CI green.
+  - KC backend restarted (trust-reports pack v1→v2 reconcile on boot).
+  - C1 KC check and the C2 builder launched. C2 takes legal-za v13 and adds the SoA "Unbilled WIP" row.

@@ -1,7 +1,7 @@
 {
-  "commit": "2748903dc",
-  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-d-portal-correctness; verify.sh preflight skipped — kills KC launchers; stale-JVM and :13025 checks by hand)",
+  "commit": "fc13d86c0",
+  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-c1-statements-reports)",
   "exit": 0,
-  "ts": "2026-11-07T00:23:00Z",
-  "summary": "PR #1747 (G89 Batch D + F39) head 2748903dc: 6630 tests / 0 failures / 0 errors / 26 skipped — 17:18 min"
+  "ts": "2026-11-07T02:22:00Z",
+  "summary": "PR #1748 (G89 Batch C1) head fc13d86c0: 6644 tests / 0 failures / 0 errors / 26 skipped — 17:15 min"
 }

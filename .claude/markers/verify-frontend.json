@@ -1,7 +1,7 @@
 {
-  "commit": "6c253d089",
-  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-a-trust-matter-ledger)",
+  "commit": "d3b9bea18",
+  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-c1-statements-reports)",
   "exit": 0,
-  "ts": "2026-11-06T23:20:00Z",
-  "summary": "PR #1746 (G89 Batch A) head 6c253d089: lint 0 errors (79 pre-existing warnings), build ok, 445 files / 3681 passed / 2 skipped, prettier clean; Frontend CI pass"
+  "ts": "2026-11-07T02:10:00Z",
+  "summary": "PR #1748 (G89 Batch C1) head d3b9bea18: lint 0 errors (79 pre-existing warnings), build ok, 446 files / 3685 passed / 2 skipped, prettier clean; Frontend CI pass. CodeRabbit fix commit is backend-only."
 }

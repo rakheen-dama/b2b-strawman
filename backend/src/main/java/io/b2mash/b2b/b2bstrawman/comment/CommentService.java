@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.comment.CommentController.CommentAttachmentResponse;
 import io.b2mash.b2b.b2bstrawman.comment.CommentController.CommentResponse;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
@@ -19,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
@@ -50,6 +52,9 @@ public class CommentService {
   /** At most this many documents may be attached to one comment (Phase 88 U24, A13). */
   static final int MAX_ATTACHMENTS = 5;
 
+  /** {@code comments.source} of a comment a client posted through the portal. */
+  private static final String PORTAL_SOURCE = "PORTAL";
+
   private final CommentRepository commentRepository;
   private final ProjectAccessService projectAccessService;
   private final TaskRepository taskRepository;
@@ -62,6 +67,8 @@ public class CommentService {
   private final ProjectLifecycleGuard projectLifecycleGuard;
   private final CommentAttachmentRepository commentAttachmentRepository;
   private final DocumentService documentService;
+  private final PortalContactRepository portalContactRepository;
+  private final CustomerRepository customerRepository;
 
   public CommentService(
       CommentRepository commentRepository,
@@ -75,7 +82,9 @@ public class CommentService {
       io.b2mash.b2b.b2bstrawman.member.MemberRepository memberRepository,
       ProjectLifecycleGuard projectLifecycleGuard,
       CommentAttachmentRepository commentAttachmentRepository,
-      DocumentService documentService) {
+      DocumentService documentService,
+      PortalContactRepository portalContactRepository,
+      CustomerRepository customerRepository) {
     this.commentRepository = commentRepository;
     this.projectAccessService = projectAccessService;
     this.taskRepository = taskRepository;
@@ -88,6 +97,8 @@ public class CommentService {
     this.projectLifecycleGuard = projectLifecycleGuard;
     this.commentAttachmentRepository = commentAttachmentRepository;
     this.documentService = documentService;
+    this.portalContactRepository = portalContactRepository;
+    this.customerRepository = customerRepository;
   }
 
   /**
@@ -723,24 +734,64 @@ public class CommentService {
   /** Info about a comment author for response enrichment. */
   public record AuthorInfo(String name, String avatarUrl) {}
 
-  /** Batch-resolves author information for the given comments. */
-  public Map<UUID, AuthorInfo> resolveAuthors(java.util.List<Comment> comments) {
-    var ids =
-        comments.stream()
-            .map(Comment::getAuthorMemberId)
-            .filter(java.util.Objects::nonNull)
-            .distinct()
-            .toList();
+  /** Shown for a portal-authored comment whose contact and client can no longer be found. */
+  static final String PORTAL_AUTHOR_FALLBACK = "Client";
 
-    if (ids.isEmpty()) {
-      return Map.of();
+  /**
+   * Batch-resolves author information for the given comments. Staff comments resolve through
+   * members. A portal-authored comment ({@code source = PORTAL}) stores the portal contact id in
+   * {@code author_member_id} — or, when no contact was bound, the client id (634E(5)): it resolves
+   * to the contact's display name, else the client's name, else {@link #PORTAL_AUTHOR_FALLBACK}.
+   */
+  public Map<UUID, AuthorInfo> resolveAuthors(java.util.List<Comment> comments) {
+    var memberIds = new LinkedHashSet<UUID>();
+    var portalIds = new LinkedHashSet<UUID>();
+    for (var comment : comments) {
+      if (comment.getAuthorMemberId() == null) {
+        continue;
+      }
+      if (PORTAL_SOURCE.equals(comment.getSource())) {
+        portalIds.add(comment.getAuthorMemberId());
+      } else {
+        memberIds.add(comment.getAuthorMemberId());
+      }
     }
 
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            java.util.stream.Collectors.toMap(
-                io.b2mash.b2b.b2bstrawman.member.Member::getId,
-                m -> new AuthorInfo(m.getName(), m.getAvatarUrl()),
-                (a, b) -> a));
+    var authors = new HashMap<UUID, AuthorInfo>();
+    if (!memberIds.isEmpty()) {
+      for (var member : memberRepository.findAllById(memberIds)) {
+        authors.put(member.getId(), new AuthorInfo(member.getName(), member.getAvatarUrl()));
+      }
+    }
+    if (!portalIds.isEmpty()) {
+      // Portal author id -> the client whose name labels it (a nameless contact, or the client-id
+      // fallback where the author id is the client id itself).
+      var clientIdByAuthor = new HashMap<UUID, UUID>();
+      for (var contact : portalContactRepository.findAllById(portalIds)) {
+        if (contact.getDisplayName() != null && !contact.getDisplayName().isBlank()) {
+          authors.put(contact.getId(), new AuthorInfo(contact.getDisplayName(), null));
+        } else {
+          clientIdByAuthor.put(contact.getId(), contact.getCustomerId());
+        }
+      }
+      for (var authorId : portalIds) {
+        if (!authors.containsKey(authorId)) {
+          clientIdByAuthor.putIfAbsent(authorId, authorId);
+        }
+      }
+      if (!clientIdByAuthor.isEmpty()) {
+        var clientNames = new HashMap<UUID, String>();
+        for (var client : customerRepository.findAllById(Set.copyOf(clientIdByAuthor.values()))) {
+          clientNames.put(client.getId(), client.getName());
+        }
+        clientIdByAuthor.forEach(
+            (authorId, clientId) ->
+                authors.put(
+                    authorId,
+                    new AuthorInfo(
+                        clientNames.getOrDefault(clientId, PORTAL_AUTHOR_FALLBACK), null)));
+      }
+    }
+    return authors;
   }
 }

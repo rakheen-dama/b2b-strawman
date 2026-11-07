@@ -1,0 +1,38 @@
+# Batch C1 verification: statements and reports (PR #1748, main 08c64dd88)
+
+- **Verified:** 2026-11-07 SAST
+- **Stack:** Keycloak dev stack, http://localhost:3000, org `mathebula-partners`, tenant schema `tenant_5039f2d497cf`
+- **User:** Thandi (Owner)
+- **Browser:** Playwright MCP, 1440×900
+- **Method:** every step done in the UI. SQL was read-only, used only to confirm document and snapshot facts.
+- **PDF text:** extracted with Ghostscript `txtwrite` (`pdftotext` is not installed).
+
+## Result
+
+| Gap | Status | Observation (exact text / amounts) | Evidence |
+|---|---|---|---|
+| G89-F16 | **PASS** | **Statement generated:** new SoA on the CLOSED matter "Sipho Dlamini v. Standard Bank (civil)", period 2026-11-01 → 2026-11-07, internal draft.<br>**Disbursements listed:** only "Deeds office search fee R1 250,00" and "Sheriff fee — service of process R750,00". Total disbursements: R2 000,00. The written-off "Court Fees R 500" is **not listed**.<br>**PDF summary:** Total fees: R3 335,00 · Total disbursements: R2 000,00 · Previous balance owing: R0,00 · Payments received: R5 335,00 · **Closing balance owing: R0,00** · Trust balance held: R1,34<br>**Preview iframe:** identical text.<br>**Before the fix:** the 6 Nov closure SoA printed R500,00. | `03-soa-preview.png`, `f16-soa-sipho-2026-11-07.pdf`, `f16-soa-sipho-2026-11-07.txt` |
+| 634B | **PASS** | **Statements tab after generating:** 3 rows, newest first:<br>- `7 Nov 2026 · R 0,00 · R 1,34`<br>- `6 Nov 2026 · R 500,00 · R 1,34`<br>- `5 Nov 2026 · R 5 335,00 · R 3 750,00`<br>The latest row matches the Overview tile "R 0,00 OUTSTANDING FEE NOTES".<br>**Negative test:** I generated a SoA through the generic **Generate Document › Statement of Account › Save to Documents** path. The UI reported "Document saved successfully". DB row `da78805b…` has `context_snapshot ? 'summary'` = false. After a reload the tab **still lists the same 3 rows**, so the generic-menu SoA is not listed. | `01-…before.png`, `04-…after.png`, `05-generic-menu-soa-dialog.png`, `06-634b-statements-tab-after-generic-soa.png` |
+| G89-F21 | **PASS** | **Closing "Nomvula Khoza — Debt Recovery":**<br>- Complete Matter was blocked: "Matter has 9 open task(s). Complete or cancel all tasks before completing the matter."<br>- I used Close Matter instead. Failing gates were "No final bill issued" and "9 tasks remain open".<br>- I used the owner override with the justification "G89 C1 verify — closure letter date check", reason Concluded. Closure letter and SoA were both ticked; documents were saved as internal drafts.<br>- Closure history shows "Concluded · Override used".<br>**Closure letter PDF:** prints **"Date: 7 November 2026"** (long form, not ISO).<br>**Balance consistency:**<br>- The letter prints "Total fees billed: R0,00 · VAT: R0,00 · Total disbursements: R0,00". It has no balance-owing line; the letter template is unchanged per the PR.<br>- The closure SoA prints "Total fees: R0,00 · Total disbursements: R0,00 · Closing balance owing: R0,00", so the two agree.<br>- This is a trivially-zero matter, because Nomvula has no billing. The agreement is real, but it is a weak test of the shared fee-note helper. | `08…11-*.png`, `12-nomvula-generated-docs.png`, `f21-closure-letter-nomvula.pdf/.txt`, `f21-closure-soa-nomvula.pdf/.txt` |
+| G89-F18 | **PASS** | **Run:** trust account "Mathebula & Partners Trust Account ••••6789", FYE 2027-02-28.<br>**Summary cards:** Section Count 5 · Financial Year Start 2026-03-01 · Financial Year End 2027-02-28 · Total Trust Balance At Year End **R 45 019,15**. There is no "[object Object]".<br>**Table:** columns SECTION / ITEM / AMOUNT. 21 rows, each with a real label and a formatted amount, e.g.:<br>- "2026-11-05 · DEP/SIPHO-001 · Sipho Dlamini (DEPOSIT) · R 5 000,00"<br>- "-R 12 000,00"<br>**Total rows:**<br>- Receipts & Payments Total R 45 019,15<br>- Client Trust Balances Total R 45 019,15 (Moroka R 38 017,81 / Sipho R 1,34 / Lerato R 7 000,00)<br>- Interest Allocation Total R 19,15<br>There are no "— —" cells. Sections appear as a SECTION column, not as separate heading rows.<br>**PDF:**<br>- Has a heading per section with ITEM/AMOUNT row lines (client names, references, amounts) and a Total line, e.g. "Total 45019.15".<br>- Trust Reconciliation prints "No reconciliation found on or before financial year end".<br>- Client Ledger Statements prints an explanatory note.<br>- It is not just "Rows: n".<br>**CSV:** header `Section,Item,Amount`, 21 data rows, **0 blank amounts**. | `14-s35-results.png`, `15-s35-table-scrolled-amounts.png`, `f18-section35-pack.pdf/.txt/.csv` |
+| G89-F19 | **PASS** | The trust account picker placeholder reads **"Select a trust account…"**, with a Unicode ellipsis. | `13-s35-form.png` |
+
+## Unexpected or worth noting (not blocking C1)
+
+1. **S35 table at 1440 px.** Long `INT-CREDIT-<uuid>-<uuid>` references do not wrap. The table is 1390 px wide inside a 1070 px `overflow-x-auto` container, so the **AMOUNT column starts off-screen**. You must scroll horizontally to see amounts (screenshot 14 vs 15). This is a LOW layout issue and a candidate new finding.
+2. **S35 PDF money format.** PDF amounts print as raw decimals ("10000.00", "-1250.00"), not "R 10 000,00". This matches the other trust-report PDF templates (`#numbers.formatDecimal(…,1,2)`), which is what the brief asked for. Flagging it in case the founder wants the ZAR format in PDFs.
+3. **S35 CSV negatives.** Negative amounts are prefixed with an apostrophe, e.g. `'-1250.00`. 4 rows are affected. The cause is the generic CSV formula-injection guard, `ReportRenderingService.escapeCsv:165-166`, pre-existing since 2026-02-21 (015717effd). It makes negatives text in a spreadsheet. This is a LOW, pre-existing candidate finding, not caused by C1.
+4. **S35 Interest Allocation scope.** The section shows only one interest run (Nov run `9eb81568…`, R 19,15), not the October run `5724401a…` (R 55,21, Lerato). This is by design, per the comment "latest run within year" at `Section35DataPackQuery.java:128`. Section Count reads 5, but only 3 sections have rows: there are no reconciliations or investments (DB counts are 0).
+5. **Sipho SoA trust activity.** The `CORR/G89-F12` corrective entry is listed under **Deposits** as R1,34, so the trust closing balance is R1,34 (opening 0 + 5000 + 1,34 + 1,34 − 1250 − 3751,34). This is pre-existing data from the F12 correction, outside C1 scope. It is noted because the matter shows "Trust balance held: R1,34" on a closed matter.
+6. **Console.** There is 1 error: `404 http://localhost:8180/favicon.ico` (Keycloak login page, harmless). There are 4 warnings:
+   - `scroll-behavior: smooth` (Next.js) ×2
+   - `Missing Description or aria-describedby for DialogContent` ×2, logged around opening the generic Generate Document dialog
+   There were no app errors. See `console-all-warnings.txt`.
+
+## Data created
+
+- `ccba19a1-8505-48a3-af64-822632fea1df`: SoA on Sipho's matter, period 2026-11-01 → 2026-11-07, internal draft, from the Statements tab.
+- `da78805b-bd3a-4619-a5ae-08fce1e81b55`: generic-menu "Statement of Account" saved to documents on Sipho's matter, with no summary. This was the 634B negative test.
+- Matter `e691e213-4f64-4d55-88f3-8d69f47dccdd` "Nomvula Khoza — Debt Recovery": ACTIVE → **CLOSED**, reason Concluded, override used, justification "G89 C1 verify — closure letter date check". The 9 tasks are still open, and the retention clock started 07 Nov 2026.
+- Closure documents on Nomvula's matter, both internal drafts: a Matter Closure Letter PDF and a Statement of Account PDF (period 5–7 Nov 2026).
+- Section 35 Data Pack run + CSV/PDF exports. These are read-only report runs.

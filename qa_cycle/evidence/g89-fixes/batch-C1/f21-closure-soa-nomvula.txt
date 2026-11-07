@@ -1,0 +1,33 @@
+            Mathebula & Partners
+            Statement of Account
+            Reference: SOA-e691e213-20261107
+            Period: 5 November 2026 — 7 November 2026
+            Generated: 7 November 2026
+            To
+            Nomvula Khoza
+            18 Jan Smuts Avenue Johannesburg ZA
+            Matter
+            Matter: Nomvula Khoza — Debt Recovery
+            Opened: 5 November 2026
+            Professional Fees
+             Date      Fee Earner         Description         Hours       Rate      Amount
+            Total fees (excl. VAT): R0,00
+            VAT: R0,00
+            Total fees (incl. VAT): R0,00
+            Disbursements
+             Date      Category        Description         Supplier        Amount         VAT
+            Total disbursements: R0,00
+            Trust Activity
+            Opening balance: R0,00
+            Deposits
+             Date          Reference               Description                 Amount
+            Payments
+             Date        Type        Reference            Description             Amount
+            Closing balance: R0,00
+            Summary
+            Total fees: R0,00
+            Total disbursements: R0,00
+            Previous balance owing: R0,00
+            Payments received: R0,00
+            Closing balance owing: R0,00
+            Trust balance held: R0,00

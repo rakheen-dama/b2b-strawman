@@ -1,0 +1,60 @@
+              Mathebula & Partners
+              Statement of Account
+              Reference: SOA-cd0ef789-20261107
+              Period: 1 November 2026 — 7 November 2026
+              Generated: 7 November 2026
+              To
+              Sipho Dlamini
+              42 Commissioner St Johannesburg 2001 ZA
+              Matter
+              Matter: Sipho Dlamini v. Standard Bank (civil)
+              Opened: 5 November 2026
+              Professional Fees
+                Date              Fee Earner     Description                     Hours Rate             Amount
+                5 November        Bob Ndlovu     Drafting particulars of claim   1,5       R1 200,00    R1 800,00
+                2026
+                5 November        Carol          Legal research —                2         R550,00      R1 100,00
+                2026              Mokoena        precedent review
+              Total fees (excl. VAT): R2 900,00
+              VAT: R435,00
+              Total fees (incl. VAT): R3 335,00
+             Disbursements
+              Date           Category      Description            Supplier             Amount       VAT
+              5              Deeds         Deeds office search    Deeds Office 
+              November       office fees   fee                    Pretoria             R1 250,00    R0,00
+              2026
+              5                            Sheriff fee —          Sheriff 
+              November       Sheriff fees  service of process     Johannesburg         R750,00      R0,00
+              2026                                                Central
+             Total disbursements: R2 000,00
+             Trust Activity
+             Opening balance: R0,00
+             Deposits
+              Date         Reference                            Description                     Amount
+              5                                                 Client deposit — litigation 
+              November     DEP/SIPHO-001                        costs on account                R5 000,00
+              2026
+              6            INT-CREDIT-9eb81568-a056-
+              November     4d62-bf26-380615f66582-              Interest credit for period      R1,34
+              2026         79546474-0f5b-4e2d-ade4-             2026-11-05 to 2026-11-06
+                           0263d70d3eeb
+              6                                                 Corrective entry: matter sub-
+              November     CORR/G89-F12                         ledger -R1,34 after client-     R1,34
+              2026                                              level interest credit (G89-
+                                                                F12)
+             Payments
+              Date           Type         Reference        Description                          Amount
+              5                           DEEDS            Deeds office search fee — Deeds 
+              November       PAYMENT /SIPHO-001            Office Pretoria                      R1 250,00
+              2026
+               5                REFUND        REFUND            Refund of trust balance to client       R3 751,34
+               November                       /SIPHO-001        on matter completion
+               2026
+              Closing balance: R1,34
+              Summary
+              Total fees: R3 335,00
+              Total disbursements: R2 000,00
+              Previous balance owing: R0,00
+              Payments received: R5 335,00
+              Closing balance owing: R0,00
+              Trust balance held: R1,34

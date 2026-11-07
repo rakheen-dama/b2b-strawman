@@ -22,6 +22,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D10 | 632C: keep the current receipt numbering (R1 is never reissued). Only the identical file names are fixed. |
 | D11 | 632A(a)/(c): hide dedicated-flow templates (SoA, closure letter, payment receipt) from the generic menus and refuse them on the generic endpoint. Bind trust data to the Client Trust Statement. Hide the Trust Receipt until a deposit-bound flow exists. Hide the common-pack PROJECT templates for legal-za. |
 | D13 | G89-F39 (the portal trust statement shows the recorded date instead of the transaction date) is **MEDIUM** and is folded into Batch D / PR #1747. Founder decision, 2026-11-07. |
+| D14 | (2026-11-07) **G89-F50** (Section 35 pack lists only the latest interest run in the FY) is **MEDIUM**; fix in Batch E (all runs). **G89-F45** (multi-matter fee note counted in full on each matter) is **LOW**, backlog. **G89-F44** (portal Firm actions lacks deposit/interest events): fix in Batch E. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -32,8 +33,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | **VERIFIED** on KC (F10, F12, F13, F14, F22): `qa_cycle/evidence/g89-fixes/batch-A/` |
 | 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | **VERIFIED** on KC (F23, F39, D2, D6): `qa_cycle/evidence/g89-fixes/batch-D/` |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
-| 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | MERGED-AWAITING-VERIFY (KC check running) |
-| 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | `fix/g89-c2-templates-generation` | IN PROGRESS (builder) |
+| 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
+| 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 | security fix round (VIEW_TRUST gate); then verify, reviews, founder wording sign-off |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
@@ -49,9 +50,10 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 ### MEDIUM
 - [x] G89-F13 — ledger card totals exclude refunds/transfers (A) — VERIFIED 2026-11-07, PR #1746
 - [x] G89-F14 — matter Trust tab shows the client card (A) — VERIFIED 2026-11-07, PR #1746
-- [ ] G89-F16 — closure SoA counts the written-off disbursement (C1)
+- [x] G89-F16 — closure SoA counts the written-off disbursement (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] G89-F17 — reconciliation list fails to load (E)
-- [ ] G89-F18 — Section 35 data pack is hollow (C1)
+- [x] G89-F18 — Section 35 data pack is hollow (C1) — VERIFIED 2026-11-07, PR #1748
+- [ ] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM
 - [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
 
@@ -60,12 +62,12 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] F5 [ ] F7 [ ] F8 [ ] F9 [ ] F15 [ ] F20 (E)
 - [ ] F6 [ ] F26 (C2)
 - [x] F10 (B) — VERIFIED 2026-11-07 in the Batch A walk (wizard shows "Client" and "Lerato Mthembu" and "LPFF arrangement rate 0.00%")
-- [ ] F19 [ ] F21 (C1)
+- [x] F19 [x] F21 (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] F4 [ ] F24 [ ] F25 [ ] F27 — scenario amendments (F)
 - [ ] G-D10a [ ] G88-F27 (Access denied) [ ] G88-F27 (disbursement "Invoiced · Yes") [ ] G88-M9 [ ] G88-F24 [ ] G88-F2 [ ] 634A (E)
 - [x] 633C D2 [x] 633C D6 (D) — VERIFIED 2026-11-07, PR #1747
 - [ ] 632A(a) [ ] 632A(b) [ ] 632A(c) [ ] 632C (C2)
-- [ ] 634B Outstanding tile (C1, verify first)
+- [x] 634B Outstanding tile / Statements tab (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] 634E(1) [ ] 634E(2) [ ] 634E(3) [ ] 634E(5) [ ] 634C @-autocomplete / access filter (G)
 - [ ] P-E.8 weekly digest observed (exit re-score)
 - [ ] New ids filed: G89-F28 (no-matter trust rows), F29 (reversal publishes no portal event), F30 (credit reversals no-op) (F)
@@ -154,3 +156,22 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - Final gates @fc13d86c0: verify 6644 / 0 / 0 / 26 (17:15), FE gate @d3b9bea18 (fix is backend-only), 2× re-review APPROVE, CI green.
   - KC backend restarted (trust-reports pack v1→v2 reconcile on boot).
   - C1 KC check and the C2 builder launched. C2 takes legal-za v13 and adds the SoA "Unbilled WIP" row.
+- 2026-11-07 ~05:00 — **C1 VERIFIED on KC.**
+  - **F16:** a new SoA on Sipho's paid matter reads "Closing balance owing: R0,00", and the written-off R 500 is not listed.
+  - **634B:** the tab's newest row is R 0,00, matching the tile. The generic-menu SoA is excluded.
+  - **F21:** the closure letter reads "Date: 7 November 2026".
+  - **F18:** cells and Total rows populated; PDF row lines present; CSV has 0 blank amounts.
+  - **F19:** "Select a trust account…".
+  - The orchestrator read the screenshots and the PDF text.
+- **Founder D14:**
+  - F50 MEDIUM → Batch E;
+  - F45 LOW → backlog;
+  - F44 → Batch E.
+- **New LOWs from the C1 walk, all to Batch E:**
+  - **G89-F47:** the Section 35 on-screen ITEM cell doesn't wrap the long INT-CREDIT refs, so AMOUNT is off-screen at 1440.
+  - **G89-F48:** the Section 35 PDF prints raw money ("10000.00").
+  - **G89-F49:** CSV negative amounts are apostrophe-prefixed by the formula-injection guard, so they read as text.
+- **PR #1749 (C2) opened.** A security review flagged a capability bypass:
+  - the Client Trust Statement trust block is gated by module only, not by VIEW_TRUST;
+  - the pre-existing SoA `buildTrustBlock` has the same gap, so it is fixed in the same round (same rule, one helper).
+  - The builder has been resumed for the fix, red tests first.

@@ -63,6 +63,7 @@ class ClientTrustStatementContextIntegrationTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private CustomerContextBuilder customerContextBuilder;
+  @Autowired private PdfRenderingService pdfRenderingService;
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustTransactionService trustTransactionService;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -183,6 +184,50 @@ class ClientTrustStatementContextIntegrationTest {
     }
   }
 
+  /**
+   * Security review (PR #1749): trust balances and lines need the trust_accounting module AND
+   * VIEW_TRUST (the matter list's rule, ProjectService). The generic generate / preview path does
+   * not require VIEW_TRUST, so without it the block is withheld and the statement says so.
+   */
+  @Test
+  void memberWithoutViewTrust_noTrustBlock() {
+    Set<String> noTrust = Set.of("TEAM_OVERSIGHT", "VIEW_LEGAL");
+    Map<String, Object> context =
+        inTenantTx(noTrust, () -> customerContextBuilder.buildContext(clientId, memberId));
+    assertThat(context).doesNotContainKey("trust");
+
+    String html =
+        inTenantTx(
+            noTrust, () -> pdfRenderingService.previewHtml(ctsTemplateId(), clientId, memberId));
+    assertThat(html)
+        .contains("Trust details are not available")
+        .doesNotContain("DEP-CTS-001")
+        .doesNotContain("Ndlovu Attorneys Trust Account");
+  }
+
+  /** Positive control: VIEW_TRUST alone (no other trust capability) sees the block. */
+  @Test
+  @SuppressWarnings("unchecked")
+  void memberWithViewTrust_seesTrustBlock() {
+    Map<String, Object> context =
+        inTenantTx(
+            Set.of("VIEW_TRUST"), () -> customerContextBuilder.buildContext(clientId, memberId));
+    var trust = (Map<String, Object>) context.get("trust");
+    assertThat(trust).isNotNull();
+    assertThat((List<Map<String, Object>>) trust.get("lines"))
+        .extracting(l -> l.get("reference"))
+        .containsExactly("DEP-CTS-001", "DEP-CTS-002");
+  }
+
+  private UUID ctsTemplateId() {
+    return inTenantTx(
+        () ->
+            documentTemplateRepository
+                .findPackSeeded("legal-za", "client-trust-statement")
+                .getFirst()
+                .getId());
+  }
+
   private OrgSettings orgSettings() {
     return orgSettingsService.getOrCreateForCurrentTenant();
   }
@@ -197,13 +242,20 @@ class ClientTrustStatementContextIntegrationTest {
   }
 
   private <T> T inTenantTx(Supplier<T> body) {
+    return inTenantTx("owner", Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"), body);
+  }
+
+  /** A member scope holding exactly {@code capabilities}. */
+  private <T> T inTenantTx(Set<String> capabilities, Supplier<T> body) {
+    return inTenantTx("member", capabilities, body);
+  }
+
+  private <T> T inTenantTx(String orgRole, Set<String> capabilities, Supplier<T> body) {
     return ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberId)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .where(
-            RequestScopes.CAPABILITIES,
-            Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
+        .where(RequestScopes.ORG_ROLE, orgRole)
+        .where(RequestScopes.CAPABILITIES, capabilities)
         .call(() -> transactionTemplate.execute(tx -> body.get()));
   }
 }

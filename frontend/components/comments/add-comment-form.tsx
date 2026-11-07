@@ -3,10 +3,11 @@
 import { startTransition, useRef, useState, type FormEvent } from "react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
 import { createComment } from "@/lib/actions/comments";
+import { isVisibilityLocked, type MentionCandidate } from "@/lib/comments";
 import { CommentAttachmentsField } from "@/components/comments/comment-attachments-field";
+import { MentionTextarea } from "@/components/comments/mention-textarea";
 import { useCommentAttachments } from "@/components/comments/use-comment-attachments";
 
 interface AddCommentFormProps {
@@ -16,6 +17,8 @@ interface AddCommentFormProps {
   orgSlug: string;
   canManageVisibility: boolean;
   onCommentChange?: () => void;
+  /** Members the @-mention autocomplete offers (634C). */
+  mentionCandidates?: MentionCandidate[];
 }
 
 const DEFAULT_VISIBILITY = "INTERNAL";
@@ -27,6 +30,7 @@ export function AddCommentForm({
   orgSlug,
   canManageVisibility,
   onCommentChange,
+  mentionCandidates = [],
 }: AddCommentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Synchronous in-flight flag: the submit handler runs inside a transition, so `isSubmitting` is
@@ -37,9 +41,8 @@ export function AddCommentForm({
   const [body, setBody] = useState("");
   const [visibility, setVisibility] = useState(DEFAULT_VISIBILITY);
   const attachments = useCommentAttachments({ slug: orgSlug, projectId });
-  // Matter (PROJECT) comments are always client-visible: the backend rejects anything but SHARED for
-  // a PROJECT target ("PROJECT-level comments must have SHARED visibility"), so there is no choice.
-  const visibilityLocked = entityType === "PROJECT";
+  // Matter (PROJECT) comments are always client-visible, so there is no visibility choice.
+  const visibilityLocked = isVisibilityLocked(entityType);
 
   // onSubmit + startTransition rather than `<form action>`: the same transition, minus React's
   // automatic form reset, which a controlled <select> does not survive (its DOM would fall back to
@@ -103,12 +106,13 @@ export function AddCommentForm({
     <form onSubmit={handleFormSubmit} className="space-y-3">
       <div className="space-y-2">
         <Label htmlFor="comment-body">Add a comment</Label>
-        <Textarea
+        <MentionTextarea
           id="comment-body"
           name="body"
           placeholder="Write a comment..."
           value={body}
-          onChange={(e) => setBody(e.target.value)}
+          onValueChange={setBody}
+          candidates={mentionCandidates}
           required
           disabled={isSubmitting}
         />

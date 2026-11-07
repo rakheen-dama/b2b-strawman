@@ -8,6 +8,7 @@ import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
 import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog";
 import { CommentAttachmentChip } from "@/components/comments/comment-attachment-chip";
 import { RelativeDate } from "@/components/ui/relative-date";
+import type { MentionCandidate } from "@/lib/comments";
 import type { Comment } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,8 @@ interface CommentItemProps {
   onCommentChange?: () => void;
   /** Targeted by a notification deep link (G88-M6): scrolled into view and ringed for ~2 s. */
   highlighted?: boolean;
+  /** Members the edit dialog's @-mention autocomplete offers (634C). */
+  mentionCandidates?: MentionCandidate[];
 }
 
 const HIGHLIGHT_MS = 2000;
@@ -32,6 +35,7 @@ export function CommentItem({
   projectId,
   onCommentChange,
   highlighted = false,
+  mentionCandidates,
 }: CommentItemProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [ringOn, setRingOn] = useState(highlighted);
@@ -110,6 +114,7 @@ export function CommentItem({
               triggerLabel="Edit"
               triggerIcon={<Pencil className="size-3" />}
               triggerAriaLabel={`Edit comment by ${authorName}`}
+              mentionCandidates={mentionCandidates}
             />
 
             <DeleteCommentDialog

@@ -1,14 +1,16 @@
 "use server";
 
-import { ApiError } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import {
   createMatterComment,
   deleteMatterComment,
   listMatterComments,
+  listMatterMembers,
   updateMatterComment,
 } from "@/lib/api/matters";
 import { revalidatePath } from "next/cache";
-import type { Comment } from "@/lib/types";
+import type { MentionCandidate } from "@/lib/comments";
+import type { Comment, OrgMember } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -64,6 +66,32 @@ export async function fetchComments(
     if (batch.length < COMMENT_PAGE_SIZE) break;
   }
   return comments;
+}
+
+/**
+ * 634C: who can be @-mentioned on this matter — its members plus the org's owners and admins (who
+ * can view every matter), de-duplicated, in that order. The backend notifies only members who can
+ * view the matter, so this is the same set. Org members are best-effort: if that list fails, the
+ * matter's members are still offered.
+ */
+export async function fetchMentionCandidates(projectId: string): Promise<MentionCandidate[]> {
+  const [matterMembers, orgMembers] = await Promise.all([
+    listMatterMembers(projectId),
+    api.get<OrgMember[]>("/api/members").catch((): OrgMember[] => []),
+  ]);
+  const candidates = new Map<string, MentionCandidate>();
+  for (const member of matterMembers) {
+    if (member.name?.trim()) {
+      candidates.set(member.memberId, { id: member.memberId, name: member.name.trim() });
+    }
+  }
+  for (const member of orgMembers) {
+    const canViewEveryMatter = member.orgRole === "owner" || member.orgRole === "admin";
+    if (canViewEveryMatter && member.name?.trim() && !candidates.has(member.id)) {
+      candidates.set(member.id, { id: member.id, name: member.name.trim() });
+    }
+  }
+  return [...candidates.values()];
 }
 
 export async function createComment(

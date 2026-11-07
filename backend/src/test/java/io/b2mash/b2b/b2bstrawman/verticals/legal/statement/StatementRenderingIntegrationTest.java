@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
@@ -252,11 +253,16 @@ class StatementRenderingIntegrationTest {
                         .formatted(ids[0])))
         .andExpect(status().isCreated());
 
+    // Security review (PR #1749): trust activity is printed only for a member holding VIEW_TRUST
+    // (TrustDataVisibility), so the direct builder call runs as one.
     Map<String, Object> context =
-        runInTenantAndGet(
-            () ->
-                statementContextBuilder.build(
-                    ids[1], LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30)));
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.ORG_ID, ORG_ID)
+            .where(RequestScopes.CAPABILITIES, Set.of("VIEW_TRUST"))
+            .call(
+                () ->
+                    statementContextBuilder.build(
+                        ids[1], LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30)));
 
     @SuppressWarnings("unchecked")
     Map<String, Object> trust = (Map<String, Object>) context.get("trust");

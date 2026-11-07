@@ -213,4 +213,37 @@ describe("ProjectStatementsTab", () => {
     // Empty-state must NOT be shown when the fetch errored.
     expect(screen.queryByTestId("statements-empty")).not.toBeInTheDocument();
   });
+
+  // CodeRabbit #5 / G89-F51: a withheld trust figure reads "Withheld", never a false R 0,00; a
+  // genuine zero (trust visible, no trust money) still prints as an amount.
+  it("shows Withheld for a withheld trust balance and a genuine zero as an amount", async () => {
+    const base = makeStatement().summary;
+    mockList.mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          makeStatement({
+            id: "s-withheld",
+            summary: { ...base, trustBalanceHeld: null, trustWithheld: true },
+          }),
+          makeStatement({
+            id: "s-zero",
+            summary: { ...base, trustBalanceHeld: 0, trustWithheld: false },
+          }),
+        ],
+        page: { totalElements: 2, totalPages: 1, size: 20, number: 0 },
+      },
+    });
+
+    render(withProviders(<ProjectStatementsTab projectId="p1" slug="acme" />));
+
+    const withheld = await screen.findByTestId("statement-row-s-withheld");
+    const trustCell = withheld.querySelectorAll("td")[2];
+    expect(trustCell).toHaveTextContent("Withheld");
+    expect(trustCell).not.toHaveTextContent(/R\s?0,00/);
+
+    const zero = screen.getByTestId("statement-row-s-zero");
+    expect(zero.querySelectorAll("td")[2]).toHaveTextContent(/R\s?0,00/);
+    expect(zero.querySelectorAll("td")[2]).not.toHaveTextContent("Withheld");
+  });
 });

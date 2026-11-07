@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementStatementDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.FeeLineDto;
@@ -23,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.TrustTxDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
@@ -62,7 +62,6 @@ public class StatementOfAccountContextBuilder {
 
   private static final BigDecimal MINUTES_PER_HOUR = new BigDecimal("60");
   private static final DateTimeFormatter REFERENCE_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
-  private static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
 
   /**
    * Format hints for the standalone (non-loop-table) variables this builder produces. The SoA path
@@ -124,7 +123,7 @@ public class StatementOfAccountContextBuilder {
   private final MatterFeeNoteTotals feeNoteTotals;
   private final MemberNameResolver memberNameResolver;
   private final TemplateContextHelper templateContextHelper;
-  private final VerticalModuleGuard moduleGuard;
+  private final TrustDataVisibility trustDataVisibility;
   private final ObjectMapper objectMapper;
   private final TaxRateRepository taxRateRepository;
   private final TrustTransactionRepository trustTransactionRepository;
@@ -140,7 +139,7 @@ public class StatementOfAccountContextBuilder {
       MatterFeeNoteTotals feeNoteTotals,
       MemberNameResolver memberNameResolver,
       TemplateContextHelper templateContextHelper,
-      VerticalModuleGuard moduleGuard,
+      TrustDataVisibility trustDataVisibility,
       ObjectMapper objectMapper,
       TaxRateRepository taxRateRepository,
       TrustTransactionRepository trustTransactionRepository,
@@ -154,7 +153,7 @@ public class StatementOfAccountContextBuilder {
     this.feeNoteTotals = feeNoteTotals;
     this.memberNameResolver = memberNameResolver;
     this.templateContextHelper = templateContextHelper;
-    this.moduleGuard = moduleGuard;
+    this.trustDataVisibility = trustDataVisibility;
     this.objectMapper = objectMapper;
     this.taxRateRepository = taxRateRepository;
     this.trustTransactionRepository = trustTransactionRepository;
@@ -218,7 +217,9 @@ public class StatementOfAccountContextBuilder {
             "payments",
             toMapList(agg.trust().payments),
             "closing_balance",
-            agg.trust().closingBalance));
+            agg.trust().closingBalance,
+            "status",
+            agg.trust().withheld ? "withheld" : "available"));
 
     var summary = toSummaryMap(agg.summary());
     // G89-F16 / D9: shown, never counted in closing_balance_owing. Context key only — the template
@@ -333,6 +334,12 @@ public class StatementOfAccountContextBuilder {
             paymentsReceived,
             closingBalance,
             trust.closingBalance);
+    if (trust.withheld && trustDataVisibility.withheldFromCurrentMember()) {
+      // CodeRabbit #5: the firm keeps trust money but this member may not see it, so nothing was
+      // read — record the figure as withheld, not as a zero the Statements table would show
+      // everyone as "no trust money held". (Trust accounting off: a genuine zero, as before.)
+      summary = summary.withTrustWithheld();
+    }
 
     return new Aggregates(
         feeLines,
@@ -523,12 +530,13 @@ public class StatementOfAccountContextBuilder {
     if (customer == null) {
       return TrustBlock.empty();
     }
-    // Statement endpoint is gated on the `disbursements` module only. If the tenant has not also
-    // enabled `trust_accounting`, ClientLedgerService throws ModuleNotEnabledException (403).
-    // Short-
-    // circuit to an empty trust block so the statement still renders without the trust section.
-    if (!moduleGuard.isModuleEnabled(TRUST_ACCOUNTING_MODULE)) {
-      return TrustBlock.empty();
+    // Statement endpoint is gated on the `disbursements` module and GENERATE_STATEMENT_OF_ACCOUNT
+    // only. Trust money needs the `trust_accounting` module (else ClientLedgerService throws
+    // ModuleNotEnabledException, 403) AND VIEW_TRUST (security review, PR #1749) — the shared
+    // TrustDataVisibility rule. Otherwise the block is withheld: no ledger read, no amounts, and
+    // the template prints "Trust details are not available." instead of the trust section.
+    if (!trustDataVisibility.visibleToCurrentMember()) {
+      return TrustBlock.withheldBlock();
     }
     // GAP-L-94: prefer the trust account(s) where THIS customer actually has activity. The
     // previous resolver (`findByAccountTypeAndPrimaryTrue(GENERAL)`) returned a tenant-wide
@@ -606,6 +614,7 @@ public class StatementOfAccountContextBuilder {
     map.put("payments_received", s.paymentsReceived());
     map.put("closing_balance_owing", s.closingBalanceOwing());
     map.put("trust_balance_held", s.trustBalanceHeld());
+    map.put("trust_withheld", s.trustWithheld());
     return map;
   }
 
@@ -613,10 +622,25 @@ public class StatementOfAccountContextBuilder {
       BigDecimal openingBalance,
       List<TrustTxDto> deposits,
       List<TrustTxDto> payments,
-      BigDecimal closingBalance) {
+      BigDecimal closingBalance,
+      boolean withheld) {
 
+    TrustBlock(
+        BigDecimal openingBalance,
+        List<TrustTxDto> deposits,
+        List<TrustTxDto> payments,
+        BigDecimal closingBalance) {
+      this(openingBalance, deposits, payments, closingBalance, false);
+    }
+
+    /** No trust activity to show (no client, no account): zero, and the section still prints. */
     static TrustBlock empty() {
       return new TrustBlock(BigDecimal.ZERO, List.of(), List.of(), BigDecimal.ZERO);
+    }
+
+    /** The member may not see trust money: no lines, no amounts, the section is not printed. */
+    static TrustBlock withheldBlock() {
+      return new TrustBlock(BigDecimal.ZERO, List.of(), List.of(), BigDecimal.ZERO, true);
     }
   }
 }

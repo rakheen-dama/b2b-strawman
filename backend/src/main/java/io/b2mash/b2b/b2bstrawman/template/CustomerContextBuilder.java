@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientTrustStatementContext;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -33,18 +34,21 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
   private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;
   private final TemplateContextHelper contextHelper;
+  private final ClientTrustStatementContext clientTrustStatementContext;
 
   public CustomerContextBuilder(
       CustomerRepository customerRepository,
       CustomerProjectRepository customerProjectRepository,
       ProjectRepository projectRepository,
       InvoiceRepository invoiceRepository,
-      TemplateContextHelper contextHelper) {
+      TemplateContextHelper contextHelper,
+      ClientTrustStatementContext clientTrustStatementContext) {
     this.customerRepository = customerRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
     this.invoiceRepository = invoiceRepository;
     this.contextHelper = contextHelper;
+    this.clientTrustStatementContext = clientTrustStatementContext;
   }
 
   @Override
@@ -149,6 +153,9 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
         invoices.size(),
         invoicesList.size(),
         totalOutstanding);
+
+    // trust.* (G89 D11: the Client Trust Statement) — only with trust accounting on and activity
+    clientTrustStatementContext.buildFor(entityId).ifPresent(trust -> context.put("trust", trust));
 
     // org.*
     context.put("org", contextHelper.buildOrgContext());

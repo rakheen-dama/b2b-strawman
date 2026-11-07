@@ -78,6 +78,20 @@ class ClauseBodyReconcileTest {
       Map.of(
           LEGAL_PACK, List.of(FEE_CLAUSE), STANDARD_PACK, List.of("payment-terms", "fee-schedule"));
 
+  /**
+   * The shipped version of each reworded pack: {@code legal-za-clauses} v3 (G89-F6) re-describes
+   * the trust-deposits clause; its bodies are unchanged since v2.
+   */
+  static final Map<String, String> CURRENT_VERSIONS = Map.of(LEGAL_PACK, "3", STANDARD_PACK, "2");
+
+  /** G89-F6 / D12: the trust-deposits clause description, v2 (Attorneys Act) and v3 (LPA). */
+  static final String TRUST_DEPOSITS = "legal-za-trust-deposits";
+
+  static final String V2_TRUST_DEPOSITS_DESCRIPTION =
+      "Trust account deposit requirements per Section 86 of the Attorneys Act";
+  static final String V3_TRUST_DEPOSITS_DESCRIPTION =
+      "Trust account deposit requirements per section 86 of the Legal Practice Act 28 of 2014";
+
   private static final ObjectMapper JSON = new ObjectMapper();
 
   @Autowired private TenantProvisioningService provisioningService;
@@ -110,7 +124,9 @@ class ClauseBodyReconcileTest {
                       .as("%s carries the shipped body", slug)
                       .isEqualTo(ContentHashUtil.hashOf(shippedBody(packId, slug)));
                 }
-                assertThat(ledgerVersion(packId)).as(packId).isEqualTo("2");
+                assertThat(ledgerVersion(packId))
+                    .as(packId)
+                    .isEqualTo(CURRENT_VERSIONS.get(packId));
               });
           assertThat(systemClause(FEE_CLAUSE).getBody().toString())
               .contains("Fee notes shall be rendered monthly")
@@ -223,11 +239,100 @@ class ClauseBodyReconcileTest {
   }
 
   /**
-   * Every previously shipped version of the clause packs, oldest first, as the fixture suffix
-   * ({@code fixtures/clause-packs/<pack>-<suffix>/pack.json}). Today only v1; a v3 body edit copies
-   * the v2 pack to a {@code -v2} fixture and appends it here — a one-line change.
+   * Every previously shipped clause BODY version of the clause packs, oldest first, as the fixture
+   * suffix ({@code fixtures/clause-packs/<pack>-<suffix>/pack.json}). Today only v1 (the {@code
+   * legal-za-clauses} v3 bump re-describes a clause, its bodies are the v2 bodies); a later body
+   * edit copies the current pack to a fixture and appends it here — a one-line change.
    */
   static final List<String> PRIOR_VERSIONS = List.of("v1");
+
+  /**
+   * G89-F6 / D12: a pristine v2 tenant's trust-deposits SYSTEM clause gets the Legal Practice Act
+   * description on the v3 bump; its body is untouched.
+   */
+  @Test
+  void pristineV2TrustDepositsDescription_isReconciledToTheLegalPracticeActWording() {
+    var bodyHashBefore = setTrustDepositsDescriptionAndRewind(V2_TRUST_DEPOSITS_DESCRIPTION);
+
+    clausePackSeeder.seedPacksForTenant(schema, ORG_ID);
+
+    inTenantTx(
+        () -> {
+          var clause = systemClause(TRUST_DEPOSITS);
+          assertThat(clause.getDescription()).isEqualTo(V3_TRUST_DEPOSITS_DESCRIPTION);
+          assertThat(ContentHashUtil.hashOf(clause.getBody())).isEqualTo(bodyHashBefore);
+          assertThat(ledgerVersion(LEGAL_PACK)).isEqualTo("3");
+          return null;
+        });
+  }
+
+  /** A description that is neither the v2 nor the v3 wording is left alone (the one rule). */
+  @Test
+  void otherTrustDepositsDescription_isLeftAlone() {
+    setTrustDepositsDescriptionAndRewind("Our own deposit wording");
+    try {
+      clausePackSeeder.seedPacksForTenant(schema, ORG_ID);
+
+      inTenantTx(
+          () -> {
+            assertThat(systemClause(TRUST_DEPOSITS).getDescription())
+                .isEqualTo("Our own deposit wording");
+            assertThat(ledgerVersion(LEGAL_PACK)).isEqualTo("3");
+            return null;
+          });
+    } finally {
+      inTenantTx(
+          () -> {
+            var clause = systemClause(TRUST_DEPOSITS);
+            clause.update(
+                clause.getTitle(),
+                clause.getSlug(),
+                V3_TRUST_DEPOSITS_DESCRIPTION,
+                clause.getBody(),
+                clause.getCategory());
+            return clauseRepository.save(clause);
+          });
+    }
+  }
+
+  /** The shipped description entry: v2 wording → the description shipped on the classpath. */
+  @Test
+  void shippedTrustDepositsDescriptionEntry_fromIsV2_toIsTheShippedDescription() {
+    var pack = readPack("clause-packs/" + LEGAL_PACK + "/pack.json");
+    var entries =
+        PackReconcileEntry.parse(LEGAL_PACK, pack.reconcile()).stream()
+            .filter(e -> "clause".equals(e.entity()) && "description".equals(e.field()))
+            .toList();
+    assertThat(entries).extracting(PackReconcileEntry::key).containsExactly(TRUST_DEPOSITS);
+    assertThat(entries.getFirst().from()).isEqualTo(V2_TRUST_DEPOSITS_DESCRIPTION);
+    assertThat(entries.getFirst().to())
+        .isEqualTo(V3_TRUST_DEPOSITS_DESCRIPTION)
+        .isEqualTo(
+            pack.clauses().stream()
+                .filter(c -> TRUST_DEPOSITS.equals(c.slug()))
+                .findFirst()
+                .orElseThrow()
+                .description());
+  }
+
+  /** Writes {@code description} onto the trust-deposits SYSTEM clause and rewinds 3 → 2. */
+  private String setTrustDepositsDescriptionAndRewind(String description) {
+    return inTenantTx(
+        () -> {
+          var clause = systemClause(TRUST_DEPOSITS);
+          clause.update(
+              clause.getTitle(),
+              clause.getSlug(),
+              description,
+              clause.getBody(),
+              clause.getCategory());
+          clauseRepository.save(clause);
+          assertThat(packInstallRepository.compareAndSetVersion(LEGAL_PACK, "3", "2"))
+              .as("rewind %s 3 -> 2", LEGAL_PACK)
+              .isEqualTo(1);
+          return ContentHashUtil.hashOf(clause.getBody());
+        });
+  }
 
   /**
    * Guard (no tenant needed) for the cumulative-chain convention ({@code backend/CLAUDE.md} › Pack
@@ -243,10 +348,12 @@ class ClauseBodyReconcileTest {
     for (var reworded : REWORDED.entrySet()) {
       String packId = reworded.getKey();
       var pack = readPack("clause-packs/" + packId + "/pack.json");
-      assertThat(pack.version()).as(packId).isEqualTo(PRIOR_VERSIONS.size() + 1);
+      assertThat(pack.version())
+          .as(packId)
+          .isEqualTo(Integer.parseInt(CURRENT_VERSIONS.get(packId)));
       var entries =
           PackReconcileEntry.parse(packId, pack.reconcile()).stream()
-              .filter(e -> "clause".equals(e.entity()))
+              .filter(e -> "clause".equals(e.entity()) && "body".equals(e.field()))
               .toList();
       assertThat(entries)
           .extracting(PackReconcileEntry::key)
@@ -425,8 +532,10 @@ class ClauseBodyReconcileTest {
                   clauseRepository.save(clause);
                 }
                 if (rewind) {
-                  assertThat(packInstallRepository.compareAndSetVersion(packId, "2", "1"))
-                      .as("rewind %s 2 -> 1", packId)
+                  assertThat(
+                          packInstallRepository.compareAndSetVersion(
+                              packId, CURRENT_VERSIONS.get(packId), "1"))
+                      .as("rewind %s %s -> 1", packId, CURRENT_VERSIONS.get(packId))
                       .isEqualTo(1);
                 }
               });

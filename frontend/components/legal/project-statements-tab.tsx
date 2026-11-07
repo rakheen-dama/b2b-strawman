@@ -147,8 +147,13 @@ function ProjectStatementsTabInner({ projectId, slug, projectName }: ProjectStat
                   {formatCurrency(s.summary.closingBalanceOwing, "ZAR")}
                 </TableCell>
                 <TableCell className="text-right">
-                  {/* TODO(multi-currency): read from OrgSettings when non-ZA verticals land */}
-                  {formatCurrency(s.summary.trustBalanceHeld, "ZAR")}
+                  {s.summary.trustWithheld || s.summary.trustBalanceHeld == null ? (
+                    // G89-F51: no trust figure for this reader — never a misleading R 0,00
+                    <span className="text-slate-500 italic dark:text-slate-400">Withheld</span>
+                  ) : (
+                    // TODO(multi-currency): read from OrgSettings when non-ZA verticals land
+                    formatCurrency(s.summary.trustBalanceHeld, "ZAR")
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button

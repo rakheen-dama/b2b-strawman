@@ -48,7 +48,9 @@ import tools.jackson.databind.ObjectMapper;
  * run. Phase 89 v11: a v10 tenant's four client-facing bodies reach the letterhead bodies and the
  * four contract templates receive their {@code requiredContextFields} — only while their body is
  * the shipped body. Phase 89 v12: a v11 tenant receives the new {@code payment-receipt-za} template
- * on the bump (the installer's "create missing" — no reconcile entry).
+ * on the bump (the installer's "create missing" — no reconcile entry). Phase 89 v13 (G89-F6, D11):
+ * a v12 tenant's statement of account, client trust statement and trust receipt reach the v13
+ * bodies — only while pristine or still at the v12 body.
  *
  * <p>A v7 (v8) tenant is simulated by writing each rewritten row's exact v7 (v8) body (test fixture
  * copied from git before the edit) with its install-time hash pinned (pristine), then rewinding
@@ -63,7 +65,7 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static final String ORG_ID = "org_legal_za_template_reconcile_test";
   private static final String PACK_ID = "legal-za";
-  private static final String CURRENT_VERSION = "12";
+  private static final String CURRENT_VERSION = "13";
   private static final List<String> RECONCILED_KEYS =
       List.of(
           "engagement-letter-litigation",
@@ -106,6 +108,14 @@ class LegalZaTemplateReconcileIntegrationTest {
           List.of(field("customFields.seller_name")),
           "letter-of-demand",
           List.of(field("customFields.opposing_party")));
+
+  /**
+   * Bodies re-edited in v13 (G89-F6 Legal Practice Act wording on the trust receipt and client
+   * trust statement, D11 trust ledger on the client trust statement, the SoA unbilled-WIP row),
+   * from their v12 body.
+   */
+  private static final List<String> V13_EDITED_KEYS =
+      List.of("statement-of-account", "client-trust-statement", "trust-receipt");
 
   /**
    * A legal-za template outside the reconcile block with no clause links: deleted to force a
@@ -756,6 +766,129 @@ class LegalZaTemplateReconcileIntegrationTest {
         });
   }
 
+  /**
+   * (m) Phase 89 v13: a pristine v12 tenant's three re-edited rows reach the v13 bodies (Legal
+   * Practice Act wording, the client trust statement's ledger, the SoA unbilled-WIP row) and stay
+   * pristine.
+   */
+  @Test
+  void pristineV12Tenant_reachesTheV13Bodies_andStaysPristine() {
+    simulateV12Tenant(rows -> {}, true);
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          for (String key : V13_EDITED_KEYS) {
+            var row = packRow(key);
+            assertThat(ContentHashUtil.hashOf(row.getContent()))
+                .as("%s carries the shipped v13 body", key)
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody(key)));
+            assertThat(row.getContentHash())
+                .as("%s stays pristine", key)
+                .isEqualTo(
+                    templatePackInstaller.computeContentHash(row.getContent(), row.getCss()));
+          }
+          assertThat(packRow("trust-receipt").getContent().toString())
+              .contains("section 86 of the Legal Practice Act 28 of 2014")
+              .doesNotContain("78(1)");
+          assertThat(packRow("client-trust-statement").getContent().toString())
+              .contains("trust.lines")
+              .doesNotContain("to be inserted");
+          assertThat(packRow("statement-of-account").getContent().toString())
+              .contains("summary.unbilled_wip");
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+  }
+
+  /** (n) A firm-edited v12 client trust statement keeps its body; the trust receipt still moves. */
+  @Test
+  void firmEditedV12ClientTrustStatement_survives_andIsLoggedAtInfo() {
+    Map<String, Object> edited =
+        withExtraParagraph(v12Body("client-trust-statement"), "Our own trust wording");
+    simulateV12Tenant(
+        rows -> {
+          var cts = rows.get("client-trust-statement");
+          cts.updateContent(cts.getName(), cts.getDescription(), edited, null);
+        },
+        true);
+    try {
+      var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+      inTenantTx(
+          () -> {
+            assertThat(ContentHashUtil.hashOf(packRow("client-trust-statement").getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(edited));
+            assertThat(ContentHashUtil.hashOf(packRow("trust-receipt").getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody("trust-receipt")));
+            return null;
+          });
+      assertThat(logs)
+          .anyMatch(
+              m ->
+                  m.startsWith("Reconcile skipped (edited)")
+                      && m.contains("'client-trust-statement' field content"));
+    } finally {
+      restorePristineShippedBody("client-trust-statement");
+    }
+  }
+
+  /**
+   * (o) A css-edited v12 trust receipt is skipped by the refresh pass; the new v12 → v13 {@code
+   * content} entry applies the body and keeps the css.
+   */
+  @Test
+  void cssEditedV12TrustReceipt_getsTheV13BodyFromTheReconcileBlock_cssKept() {
+    String css = "p { line-height: 1.4; }";
+    simulateV12Tenant(
+        rows -> {
+          var row = rows.get("trust-receipt");
+          row.updateContent(row.getName(), row.getDescription(), row.getContent(), css);
+        },
+        true);
+    try {
+      var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+      inTenantTx(
+          () -> {
+            var row = packRow("trust-receipt");
+            assertThat(ContentHashUtil.hashOf(row.getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody("trust-receipt")));
+            assertThat(row.getCss()).isEqualTo(css);
+            return null;
+          });
+      assertThat(logs)
+          .anyMatch(
+              m ->
+                  m.startsWith("Reconcile applied") && m.contains("'trust-receipt' field content"));
+    } finally {
+      restorePristineShippedBody("trust-receipt");
+    }
+  }
+
+  /** (p) Equal version at v13: the gate stays closed — the v12 bodies stay. */
+  @Test
+  void equalVersionV13_isANoOp_forTheV12Bodies() {
+    simulateV12Tenant(rows -> {}, false);
+    try {
+      packInstallService.internalInstall(PACK_ID, schema);
+
+      inTenantTx(
+          () -> {
+            for (String key : V13_EDITED_KEYS) {
+              assertThat(ContentHashUtil.hashOf(packRow(key).getContent()))
+                  .as("%s untouched at equal version", key)
+                  .isEqualTo(ContentHashUtil.hashOf(v12Body(key)));
+            }
+            assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+            return null;
+          });
+    } finally {
+      V13_EDITED_KEYS.forEach(this::restorePristineShippedBody);
+    }
+  }
+
   /** (e) Equal version: the gate stays closed and nothing is written. */
   @Test
   void equalVersion_isANoOp() {
@@ -869,6 +1002,33 @@ class LegalZaTemplateReconcileIntegrationTest {
         });
   }
 
+  /**
+   * A v12 tenant: the three v13-re-edited rows carry their v12 body (pristine, fixture copied
+   * before the v13 edit), every other rewritten row its shipped body (pristine — undoes sibling
+   * tests' edits); {@code firmEdits} applied, then (optionally) rewound 13 → 12.
+   */
+  private void simulateV12Tenant(
+      Consumer<Map<String, DocumentTemplate>> firmEdits, boolean rewind) {
+    inTenantTx(
+        () -> {
+          var rows = new LinkedHashMap<String, DocumentTemplate>();
+          for (String key : V13_EDITED_KEYS) {
+            rows.put(key, packRowWithPinnedBody(key, v12Body(key)));
+          }
+          for (String key : RECONCILED_KEYS) {
+            rows.computeIfAbsent(key, k -> packRowWithPinnedBody(k, shippedBody(k)));
+          }
+          firmEdits.accept(rows);
+          documentTemplateRepository.saveAll(rows.values());
+          if (rewind) {
+            assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, CURRENT_VERSION, "12"))
+                .as("rewind %s %s -> 12", PACK_ID, CURRENT_VERSION)
+                .isEqualTo(1);
+          }
+          return null;
+        });
+  }
+
   private DocumentTemplate packRowWithPinnedBody(String key, Map<String, Object> body) {
     var row = packRow(key);
     row.updateContent(row.getName(), row.getDescription(), body, null);
@@ -955,6 +1115,10 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static Map<String, Object> v10Body(String key) {
     return readBody("fixtures/template-packs/legal-za-v10/" + key + ".json");
+  }
+
+  private static Map<String, Object> v12Body(String key) {
+    return readBody("fixtures/template-packs/legal-za-v12/" + key + ".json");
   }
 
   private static Map<String, Object> shippedBody(String key) {

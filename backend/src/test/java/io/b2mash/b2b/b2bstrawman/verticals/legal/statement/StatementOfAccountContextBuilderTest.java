@@ -34,13 +34,13 @@ import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementCategory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementStatementDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementResponse;
@@ -81,7 +81,7 @@ class StatementOfAccountContextBuilderTest {
   @Mock private PaymentEventRepository paymentEventRepository;
   @Mock private MemberNameResolver memberNameResolver;
   @Mock private TemplateContextHelper templateContextHelper;
-  @Mock private VerticalModuleGuard moduleGuard;
+  @Mock private TrustDataVisibility trustDataVisibility;
   @Mock private TaxRateRepository taxRateRepository;
   @Mock private TrustTransactionRepository trustTransactionRepository;
 
@@ -131,16 +131,16 @@ class StatementOfAccountContextBuilderTest {
                 orgSettingsRepository),
             memberNameResolver,
             templateContextHelper,
-            moduleGuard,
+            trustDataVisibility,
             objectMapper,
             taxRateRepository,
             trustTransactionRepository,
             clock);
     lenient().when(templateContextHelper.buildOrgContext()).thenReturn(Map.of("name", "Acme Law"));
     lenient().when(memberNameResolver.resolveName(any())).thenReturn("Jane Attorney");
-    // Default: trust_accounting module is enabled (matches a fully legal tenant). Individual
-    // tests override this when they need to assert the disabled-module behaviour.
-    lenient().when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(true);
+    // Default: trust money is visible (module on + VIEW_TRUST, TrustDataVisibility). Individual
+    // tests override this when they need to assert the withheld behaviour.
+    lenient().when(trustDataVisibility.visibleToCurrentMember()).thenReturn(true);
     // Default: no default tax rate configured → VAT computes to ZERO. Individual VAT-aware
     // tests override this to assert the populated-rate path.
     lenient().when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.empty());
@@ -636,8 +636,9 @@ class StatementOfAccountContextBuilderTest {
 
   @Test
   void trustAccountingDisabled_trustBlockEmpty_ledgerNeverQueried() {
-    // Override default: simulate a tenant with disbursements enabled but trust_accounting DISABLED.
-    when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
+    // Override default: trust money not visible (trust_accounting off, or no VIEW_TRUST — the
+    // shared TrustDataVisibility rule): the block is withheld.
+    when(trustDataVisibility.visibleToCurrentMember()).thenReturn(false);
 
     var project = projectWithCustomer("No Trust Matter", customerId);
     when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
@@ -657,6 +658,7 @@ class StatementOfAccountContextBuilderTest {
     assertThat(((List<?>) trust.get("payments"))).isEmpty();
     assertThat((BigDecimal) trust.get("opening_balance")).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat((BigDecimal) trust.get("closing_balance")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(trust.get("status")).isEqualTo("withheld");
 
     // Crucially, the ClientLedgerService is never hit — avoids ModuleNotEnabledException (403).
     verifyNoInteractions(clientLedgerService);

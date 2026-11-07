@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FileText, FileType, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
@@ -46,6 +46,9 @@ export function GenerateDocumentDropdown({
   slug,
 }: GenerateDocumentDropdownProps) {
   const searchParams = useSearchParams();
+  // G89 632A / D11: dedicated-flow templates (Statement of Account, closure letter, receipts) and
+  // templates excluded for this practice are never offered here — the server marks them.
+  const offered = useMemo(() => templates.filter(isOfferedInGenericMenus), [templates]);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateListResponse | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -58,16 +61,15 @@ export function GenerateDocumentDropdown({
   const generateTemplateId = searchParams.get("generateTemplate");
   useEffect(() => {
     if (!generateTemplateId) return;
-    const match = templates.find((t) => t.id === generateTemplateId);
+    const match = offered.find((t) => t.id === generateTemplateId);
     if (match) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- One-shot response to a URL query param; opens the dialog with the matched template. No render loop because state change does not modify deps.
       setSelectedTemplate(match);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- See above
       setDialogOpen(true);
     }
-  }, [generateTemplateId, templates]);
+  }, [generateTemplateId, offered]);
 
-  if (templates.length === 0) {
+  if (offered.length === 0) {
     return (
       <Button variant="outline" size="sm" disabled>
         <FileText className="mr-1.5 size-4" />
@@ -91,7 +93,7 @@ export function GenerateDocumentDropdown({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {templates.map((tpl) => (
+          {offered.map((tpl) => (
             <DropdownMenuItem
               key={tpl.id}
               onSelect={async () => {
@@ -173,4 +175,9 @@ export function GenerateDocumentDropdown({
       )}
     </>
   );
+}
+
+/** True when a generic Generate menu may offer the template (server-marked, G89 632A / D11). */
+export function isOfferedInGenericMenus(template: TemplateListResponse): boolean {
+  return !template.hiddenFromGenericMenus;
 }

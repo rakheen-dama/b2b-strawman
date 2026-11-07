@@ -34,8 +34,11 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
   /** ADR-356 entity of a pack clause's body (628C): one-rule field update, key = clause slug. */
   static final String CLAUSE_ENTITY = "clause";
 
-  /** The only supported {@value #CLAUSE_ENTITY} field: the Tiptap body ({@code sha256:} values). */
+  /** A {@value #CLAUSE_ENTITY} field: the Tiptap body ({@code sha256:} values). */
   static final String BODY_FIELD = "body";
+
+  /** A {@value #CLAUSE_ENTITY} field: the description (plain-string values, G89-F6). */
+  static final String DESCRIPTION_FIELD = "description";
 
   private final ClauseRepository clauseRepository;
   private final TemplateClauseRepository templateClauseRepository;
@@ -318,33 +321,58 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
   }
 
   /**
-   * ADR-356 reconcile target of a {@value #CLAUSE_ENTITY} {@value #BODY_FIELD} entry (628C): {@code
-   * key} is a clause slug declared in this pack and {@code to} is {@code sha256:} + {@link
-   * ContentHashUtil#hashOf} of the body shipped for it (else WARN + skip). The target is this
-   * pack's active SYSTEM clause ({@code pack_id} = this pack AND {@code source = SYSTEM}; {@code
-   * Clause.cloneFrom} copies the pack id, so the source filter keeps clones out). SYSTEM clauses
-   * are read-only to firms; the one rule (current body hash = {@code from}) still applies. Writes
-   * the shipped body through the managed entity (title, slug, description, category untouched).
+   * ADR-356 reconcile target of a {@value #CLAUSE_ENTITY} entry: {@code key} is a clause slug
+   * declared in this pack and {@code field} is either {@value #BODY_FIELD} (628C) — {@code to} is
+   * {@code sha256:} + {@link ContentHashUtil#hashOf} of the body shipped for it — or {@value
+   * #DESCRIPTION_FIELD} (G89-F6) — {@code to} is the plain-string description shipped for it; any
+   * other {@code to} is WARN + skip. The target is this pack's active SYSTEM clause ({@code
+   * pack_id} = this pack AND {@code source = SYSTEM}; {@code Clause.cloneFrom} copies the pack id,
+   * so the source filter keeps clones out). SYSTEM clauses are read-only to firms; the one rule
+   * (current value = {@code from}) still applies. Writes the shipped value through the managed
+   * entity, every other column untouched.
    */
   @Override
   protected Optional<PackReconcileEntry.Target> resolveReconcileTarget(
       ClausePackDefinition pack, PackReconcileEntry entry, Resource packResource) {
-    if (!BODY_FIELD.equals(entry.field())
-        || !(entry.to() instanceof String to)
-        || !to.startsWith(PackReconcileEntry.HASH_PREFIX)) {
+    boolean body =
+        BODY_FIELD.equals(entry.field())
+            && entry.to() instanceof String to
+            && to.startsWith(PackReconcileEntry.HASH_PREFIX);
+    boolean description =
+        DESCRIPTION_FIELD.equals(entry.field())
+            && entry.to() instanceof String to
+            && !to.startsWith(PackReconcileEntry.HASH_PREFIX);
+    if (!body && !description) {
       log.warn(
           "Reconcile entry ignored: clause pack {} unsupported field/value '{}'.{} (key {}) — only"
-              + " {} {} with a sha256: target is supported",
+              + " {} {} with a sha256: target or {} with a string target is supported",
           pack.packId(),
           entry.entity(),
           entry.field(),
           entry.key(),
           CLAUSE_ENTITY,
-          BODY_FIELD);
+          BODY_FIELD,
+          DESCRIPTION_FIELD);
       return Optional.empty();
     }
+    String to = (String) entry.to();
     var clauseDef = pack.clauses().stream().filter(c -> entry.key().equals(c.slug())).findFirst();
-    if (clauseDef.isEmpty() || !(clauseDef.get().body() instanceof Map<?, ?> rawBody)) {
+    if (clauseDef.isEmpty()) {
+      log.warn(
+          "Reconcile entry ignored: clause pack {} has no clause '{}'", pack.packId(), entry.key());
+      return Optional.empty();
+    }
+    return body
+        ? bodyTarget(pack, entry, clauseDef.get(), to)
+        : descriptionTarget(pack, entry, clauseDef.get(), to);
+  }
+
+  private Optional<PackReconcileEntry.Target> bodyTarget(
+      ClausePackDefinition pack,
+      PackReconcileEntry entry,
+      ClausePackDefinition.ClauseDefinition clauseDef,
+      String toHash) {
+    if (!(clauseDef.body() instanceof Map<?, ?> rawBody)) {
       log.warn(
           "Reconcile entry ignored: clause pack {} has no clause body '{}'",
           pack.packId(),
@@ -353,17 +381,14 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
     }
     @SuppressWarnings("unchecked")
     Map<String, Object> shipped = (Map<String, Object>) rawBody;
-    if (!to.equals(PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(shipped))) {
+    if (!toHash.equals(PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(shipped))) {
       log.warn(
           "Reconcile entry ignored: clause pack {} '{}' to-hash does not match the shipped body",
           pack.packId(),
           entry.key());
       return Optional.empty();
     }
-    return clauseRepository
-        .findBySlug(entry.key())
-        .filter(c -> pack.packId().equals(c.getPackId()))
-        .filter(c -> c.getSource() == ClauseSource.SYSTEM && c.isActive())
+    return packSystemClause(pack, entry.key())
         .map(
             clause ->
                 new PackReconcileEntry.Target() {
@@ -373,7 +398,7 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
                   }
 
                   @Override
-                  public void apply(Object toHash) {
+                  public void apply(Object ignoredHash) {
                     // sha256: contract — the argument is the hash string; write the shipped body.
                     clause.update(
                         clause.getTitle(),
@@ -383,6 +408,48 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
                         clause.getCategory());
                   }
                 });
+  }
+
+  private Optional<PackReconcileEntry.Target> descriptionTarget(
+      ClausePackDefinition pack,
+      PackReconcileEntry entry,
+      ClausePackDefinition.ClauseDefinition clauseDef,
+      String to) {
+    if (!to.equals(clauseDef.description())) {
+      log.warn(
+          "Reconcile entry ignored: clause pack {} '{}' description target does not match the"
+              + " shipped description",
+          pack.packId(),
+          entry.key());
+      return Optional.empty();
+    }
+    return packSystemClause(pack, entry.key())
+        .map(
+            clause ->
+                new PackReconcileEntry.Target() {
+                  @Override
+                  public Object currentValue() {
+                    return clause.getDescription();
+                  }
+
+                  @Override
+                  public void apply(Object value) {
+                    clause.update(
+                        clause.getTitle(),
+                        clause.getSlug(),
+                        (String) value,
+                        clause.getBody(),
+                        clause.getCategory());
+                  }
+                });
+  }
+
+  /** This pack's active SYSTEM clause for {@code slug} — never a clone or a firm clause. */
+  private Optional<Clause> packSystemClause(ClausePackDefinition pack, String slug) {
+    return clauseRepository
+        .findBySlug(slug)
+        .filter(c -> pack.packId().equals(c.getPackId()))
+        .filter(c -> c.getSource() == ClauseSource.SYSTEM && c.isActive());
   }
 
   /** The single {@code templateAssociations} declaration covering ({@code slug}, template). */

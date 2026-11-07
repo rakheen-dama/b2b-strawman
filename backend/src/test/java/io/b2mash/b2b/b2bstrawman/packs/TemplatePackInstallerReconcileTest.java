@@ -149,6 +149,7 @@ class TemplatePackInstallerReconcileTest {
             null,
             0,
             null,
+            List.of(),
             List.of());
     givenClasspathPack(2, List.of(def));
 
@@ -193,6 +194,7 @@ class TemplatePackInstallerReconcileTest {
             null,
             0,
             null,
+            List.of(),
             List.of());
     givenClasspathPack(2, List.of(def));
     var a = template("letter", body("v1 body"));

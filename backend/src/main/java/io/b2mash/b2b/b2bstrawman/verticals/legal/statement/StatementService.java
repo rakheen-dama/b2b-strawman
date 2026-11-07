@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.GenerateStatement
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.StatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.StatementSummary;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.event.StatementOfAccountGeneratedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -82,6 +83,7 @@ public class StatementService {
   private final AuditService auditService;
   private final MemberNameResolver memberNameResolver;
   private final ApplicationEventPublisher eventPublisher;
+  private final TrustDataVisibility trustDataVisibility;
 
   public StatementService(
       VerticalModuleGuard moduleGuard,
@@ -95,7 +97,8 @@ public class StatementService {
       StorageService storageService,
       AuditService auditService,
       MemberNameResolver memberNameResolver,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      TrustDataVisibility trustDataVisibility) {
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
     this.documentTemplateRepository = documentTemplateRepository;
@@ -108,6 +111,7 @@ public class StatementService {
     this.auditService = auditService;
     this.memberNameResolver = memberNameResolver;
     this.eventPublisher = eventPublisher;
+    this.trustDataVisibility = trustDataVisibility;
   }
 
   @Transactional
@@ -344,7 +348,7 @@ public class StatementService {
     // Return snapshot-backed summary only. We deliberately do NOT re-render htmlPreview from
     // current DB state: doing so would diverge from the saved PDF if fees/disbursements/trust data
     // changed after generation. The client fetches the PDF via pdfUrl for the authoritative view.
-    StatementSummary summary = extractSnapshotSummary(generatedDoc.getContextSnapshot());
+    StatementSummary summary = forReader(extractSnapshotSummary(generatedDoc.getContextSnapshot()));
 
     String pdfUrl = "/api/documents/" + generatedDoc.getId() + "/pdf";
     return new StatementResponse(
@@ -445,13 +449,37 @@ public class StatementService {
       return zeroSummary();
     }
     Map<String, Object> summary = (Map<String, Object>) map;
-    return new StatementSummary(
-        toBigDecimal(summary.get("total_fees")),
-        toBigDecimal(summary.get("total_disbursements")),
-        toBigDecimal(summary.get("previous_balance_owing")),
-        toBigDecimal(summary.get("payments_received")),
-        toBigDecimal(summary.get("closing_balance_owing")),
-        toBigDecimal(summary.get("trust_balance_held")));
+    return toStatementSummary(summary);
+  }
+
+  /**
+   * A summary map (the builder's context block or a stored snapshot) as a {@link StatementSummary}.
+   * A {@code trust_withheld} marker (CodeRabbit #5) yields the withheld state — no trust figure; a
+   * map without it (every snapshot saved before the marker) keeps its stored {@code
+   * trust_balance_held} as today.
+   */
+  private static StatementSummary toStatementSummary(Map<String, Object> summary) {
+    var result =
+        new StatementSummary(
+            toBigDecimal(summary.get("total_fees")),
+            toBigDecimal(summary.get("total_disbursements")),
+            toBigDecimal(summary.get("previous_balance_owing")),
+            toBigDecimal(summary.get("payments_received")),
+            toBigDecimal(summary.get("closing_balance_owing")),
+            toBigDecimal(summary.get("trust_balance_held")));
+    Object withheld = summary.get("trust_withheld");
+    boolean isWithheld =
+        Boolean.TRUE.equals(withheld) || (withheld instanceof String s && Boolean.parseBoolean(s));
+    return isWithheld ? result.withTrustWithheld() : result;
+  }
+
+  /**
+   * G89-F51 (CodeRabbit #4): the summary as THIS caller may see it — with trust accounting on, a
+   * reader without VIEW_TRUST gets the trust figure withheld, whatever was saved; the stored
+   * snapshot is never changed. Same rule as the document builders ({@link TrustDataVisibility}).
+   */
+  private StatementSummary forReader(StatementSummary summary) {
+    return trustDataVisibility.withheldFromCurrentMember() ? summary.withTrustWithheld() : summary;
   }
 
   private static java.math.BigDecimal toBigDecimal(Object o) {
@@ -475,7 +503,7 @@ public class StatementService {
   private StatementResponse toResponseSummary(GeneratedDocument gd, Project project) {
     // Snapshot-backed: list + getById must surface the at-generation-time numbers, not live DB
     // state.
-    StatementSummary summary = extractSnapshotSummary(gd.getContextSnapshot());
+    StatementSummary summary = forReader(extractSnapshotSummary(gd.getContextSnapshot()));
     String pdfUrl = "/api/documents/" + gd.getId() + "/pdf";
     return new StatementResponse(
         gd.getId(),
@@ -504,9 +532,14 @@ public class StatementService {
     m.put(
         "closing_balance_owing",
         s.closingBalanceOwing() != null ? s.closingBalanceOwing().toPlainString() : "0");
-    m.put(
-        "trust_balance_held",
-        s.trustBalanceHeld() != null ? s.trustBalanceHeld().toPlainString() : "0");
+    if (s.trustWithheld()) {
+      // CodeRabbit #5: no trust figure was read — record the withheld state, never a zero.
+      m.put("trust_withheld", true);
+    } else {
+      m.put(
+          "trust_balance_held",
+          s.trustBalanceHeld() != null ? s.trustBalanceHeld().toPlainString() : "0");
+    }
     return m;
   }
 
@@ -520,12 +553,6 @@ public class StatementService {
       return zeroSummary();
     }
     Map<String, Object> summary = (Map<String, Object>) map;
-    return new StatementSummary(
-        toBigDecimal(summary.get("total_fees")),
-        toBigDecimal(summary.get("total_disbursements")),
-        toBigDecimal(summary.get("previous_balance_owing")),
-        toBigDecimal(summary.get("payments_received")),
-        toBigDecimal(summary.get("closing_balance_owing")),
-        toBigDecimal(summary.get("trust_balance_held")));
+    return toStatementSummary(summary);
   }
 }

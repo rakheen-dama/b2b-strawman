@@ -121,4 +121,53 @@ describe("GenerateDocumentDropdown", () => {
       expect(mockPreviewTemplate).toHaveBeenCalledWith("tpl-1", "proj-1", undefined);
     });
   });
+
+  // G89 632A / D11: the server marks dedicated-flow templates (SoA, closure letter, receipts) and
+  // templates excluded for this practice; the generic menu never offers them.
+  it("omits templates the server marks hidden from generic menus", async () => {
+    const user = userEvent.setup();
+    const withHidden: TemplateListResponse[] = [
+      ...TEMPLATES,
+      {
+        ...TEMPLATES[0],
+        id: "tpl-soa",
+        name: "Statement of Account",
+        slug: "statement-of-account",
+        dedicatedFlow: true,
+        hiddenFromGenericMenus: true,
+      },
+      {
+        ...TEMPLATES[0],
+        id: "tpl-common",
+        name: "Standard Engagement Letter",
+        slug: "standard-engagement-letter",
+        dedicatedFlow: false,
+        hiddenFromGenericMenus: true,
+      },
+    ];
+
+    render(
+      <GenerateDocumentDropdown templates={withHidden} entityId="proj-1" entityType="PROJECT" />
+    );
+    await user.click(screen.getByRole("button", { name: /Generate Document/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
+    });
+    expect(screen.getByText("NDA")).toBeInTheDocument();
+    expect(screen.queryByText("Statement of Account")).not.toBeInTheDocument();
+    expect(screen.queryByText("Standard Engagement Letter")).not.toBeInTheDocument();
+  });
+
+  it("renders a disabled button when every template is hidden from generic menus", () => {
+    render(
+      <GenerateDocumentDropdown
+        templates={[{ ...TEMPLATES[0], dedicatedFlow: true, hiddenFromGenericMenus: true }]}
+        entityId="proj-1"
+        entityType="PROJECT"
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /Generate Document/i })).toBeDisabled();
+  });
 });

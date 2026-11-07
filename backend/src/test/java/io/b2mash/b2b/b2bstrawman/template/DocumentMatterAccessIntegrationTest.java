@@ -271,7 +271,10 @@ class DocumentMatterAccessIntegrationTest {
                 .getContentAsString(),
             "$.pdfUrl");
     assertThat(pdfUrl).isEqualTo("/api/generated-documents/" + statementId + "/download");
-    mockMvc.perform(get(pdfUrl).with(member(M))).andExpect(status().isFound());
+    // Followed by the owner: the owner's statement prints the trust section, so it downloads only
+    // for a member holding VIEW_TRUST (G89-F52) — M, without it, is refused (403).
+    mockMvc.perform(get(pdfUrl).with(owner())).andExpect(status().isFound());
+    mockMvc.perform(get(pdfUrl).with(member(M))).andExpect(status().isForbidden());
 
     String listedPdfUrl =
         JsonPath.<List<String>>read(

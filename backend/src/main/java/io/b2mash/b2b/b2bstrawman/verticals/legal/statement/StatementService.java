@@ -11,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -60,6 +62,9 @@ import org.springframework.transaction.annotation.Transactional;
  * context ourselves via {@link StatementOfAccountContextBuilder}, render via {@link
  * TiptapRenderer}, convert to PDF via {@link PdfRenderingService#htmlToPdf(String)}, upload, and
  * persist a {@link GeneratedDocument}. Audit + domain event publish in the same transaction.
+ *
+ * <p>Every public method also requires view access to the matter (G89-F54): owner / admin, or a
+ * matter member — else 404, as the matter's other tabs.
  */
 @Service
 public class StatementService {
@@ -84,6 +89,7 @@ public class StatementService {
   private final MemberNameResolver memberNameResolver;
   private final ApplicationEventPublisher eventPublisher;
   private final TrustDataVisibility trustDataVisibility;
+  private final ProjectAccessService projectAccessService;
 
   public StatementService(
       VerticalModuleGuard moduleGuard,
@@ -98,7 +104,8 @@ public class StatementService {
       AuditService auditService,
       MemberNameResolver memberNameResolver,
       ApplicationEventPublisher eventPublisher,
-      TrustDataVisibility trustDataVisibility) {
+      TrustDataVisibility trustDataVisibility,
+      ProjectAccessService projectAccessService) {
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
     this.documentTemplateRepository = documentTemplateRepository;
@@ -112,12 +119,14 @@ public class StatementService {
     this.memberNameResolver = memberNameResolver;
     this.eventPublisher = eventPublisher;
     this.trustDataVisibility = trustDataVisibility;
+    this.projectAccessService = projectAccessService;
   }
 
   @Transactional
   public StatementResponse generate(
       UUID projectId, GenerateStatementRequest request, UUID memberId) {
     moduleGuard.requireModule(MODULE_ID);
+    requireMatterAccess(projectId);
 
     // Phase 88 U13 / ADR-350: explicit client-notification intent (notifyClient implies share).
     boolean notifyClient = request.isNotifyClient();
@@ -274,7 +283,7 @@ public class StatementService {
         request.periodEnd(),
         generatedDoc.getId());
 
-    String pdfUrl = "/api/documents/" + generatedDoc.getId() + "/pdf";
+    String pdfUrl = pdfUrl(generatedDoc.getId());
     return new StatementResponse(
         generatedDoc.getId(),
         template.getId(),
@@ -291,6 +300,7 @@ public class StatementService {
   @Transactional(readOnly = true)
   public Page<StatementResponse> list(UUID projectId, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
+    requireMatterAccess(projectId);
 
     var project =
         projectRepository
@@ -336,6 +346,7 @@ public class StatementService {
   @Transactional(readOnly = true)
   public StatementResponse getById(UUID projectId, UUID id) {
     moduleGuard.requireModule(MODULE_ID);
+    requireMatterAccess(projectId);
 
     var project =
         projectRepository
@@ -356,7 +367,7 @@ public class StatementService {
     // changed after generation. The client fetches the PDF via pdfUrl for the authoritative view.
     StatementSummary summary = forReader(extractSnapshotSummary(generatedDoc.getContextSnapshot()));
 
-    String pdfUrl = "/api/documents/" + generatedDoc.getId() + "/pdf";
+    String pdfUrl = pdfUrl(generatedDoc.getId());
     return new StatementResponse(
         generatedDoc.getId(),
         generatedDoc.getTemplateId(),
@@ -371,6 +382,20 @@ public class StatementService {
   }
 
   // ---------- helpers ----------
+
+  /** G89-F54: the statements of a matter are visible only to whoever may view the matter (404). */
+  private void requireMatterAccess(UUID projectId) {
+    projectAccessService.requireViewAccess(projectId, ActorContext.fromRequestScopes());
+  }
+
+  /**
+   * G89-F55: the statement PDF's download route — the generated-document download (302 to a
+   * presigned URL, with its matter and trust checks); {@code /api/documents/{id}/pdf} never
+   * existed.
+   */
+  static String pdfUrl(UUID generatedDocumentId) {
+    return "/api/generated-documents/" + generatedDocumentId + "/download";
+  }
 
   /**
    * A yyyy-MM-dd value from the generation snapshot (written by {@link #generate} as top-level
@@ -511,7 +536,7 @@ public class StatementService {
     // Snapshot-backed: list + getById must surface the at-generation-time numbers, not live DB
     // state.
     StatementSummary summary = forReader(extractSnapshotSummary(gd.getContextSnapshot()));
-    String pdfUrl = "/api/documents/" + gd.getId() + "/pdf";
+    String pdfUrl = pdfUrl(gd.getId());
     return new StatementResponse(
         gd.getId(),
         gd.getTemplateId(),

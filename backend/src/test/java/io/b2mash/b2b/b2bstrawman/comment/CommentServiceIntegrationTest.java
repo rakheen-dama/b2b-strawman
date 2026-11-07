@@ -527,7 +527,76 @@ class CommentServiceIntegrationTest extends AbstractIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  // --- 634E(2): a matter-level comment stays SHARED on edit, as on create ---
+
+  @Test
+  void updateMatterComment_toInternal_rejected400() throws Exception {
+    String commentId = createMatterComment("Shared with the client");
+
+    mockMvc
+        .perform(
+            put("/api/matters/" + projectId + "/comments/" + commentId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"body": "Now internal?", "visibility": "INTERNAL"}
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Invalid visibility for matter comment"))
+        .andExpect(
+            jsonPath("$.detail").value("PROJECT-level comments must have SHARED visibility"));
+
+    // Unchanged: still SHARED with the original body.
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/comments")
+                .param("entityType", "PROJECT")
+                .param("size", "200")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '%s')].visibility".formatted(commentId)).value("SHARED"))
+        .andExpect(
+            jsonPath("$[?(@.id == '%s')].body".formatted(commentId))
+                .value("Shared with the client"));
+  }
+
+  @Test
+  void updateMatterComment_bodyOnly_succeeds() throws Exception {
+    String commentId = createMatterComment("Original shared body");
+
+    mockMvc
+        .perform(
+            put("/api/matters/" + projectId + "/comments/" + commentId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"body": "Edited shared body"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.visibility").value("SHARED"))
+        .andExpect(jsonPath("$.body").value("Edited shared body"));
+  }
+
   // --- Helpers ---
+
+  private String createMatterComment(String body) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/matters/" + projectId + "/comments")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"entityType": "PROJECT", "entityId": "%s", "body": "%s", "visibility": "SHARED"}
+                        """
+                            .formatted(projectId, body)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return extractJsonField(result, "id");
+  }
 
   private String extractJsonField(MvcResult result, String field) throws Exception {
     return JsonPath.read(result.getResponse().getContentAsString(), "$." + field).toString();

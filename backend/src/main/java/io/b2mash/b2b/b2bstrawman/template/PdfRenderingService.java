@@ -363,12 +363,30 @@ public class PdfRenderingService {
       }
       case INVOICE -> {
         var invoice = (Map<String, Object>) context.get("invoice");
-        yield invoice != null && invoice.get("invoiceNumber") != null
-            ? (String) invoice.get("invoiceNumber")
-            : "document";
+        String invoiceNumber =
+            invoice != null && invoice.get("invoiceNumber") != null
+                ? (String) invoice.get("invoiceNumber")
+                : "document";
+        yield withReceiptNumber(invoiceNumber, context.get("payment"));
       }
       case ORGANIZATION -> (String) context.getOrDefault("orgName", "paia-manual");
     };
+  }
+
+  /**
+   * G89 632C: a payment receipt's file name carries its receipt number, so two receipts on one fee
+   * note on one day differ ({@code ...-inv-0002-r1-<date>.pdf} / {@code -r2-}). The stored number
+   * is {@code <invoiceNumber>/R<n>} (ADR-364); its {@code /} becomes a {@code -} before slugify.
+   * Without a {@code payment.number} (every other fee-note document) the name is unchanged.
+   */
+  private static String withReceiptNumber(String invoiceNumber, Object payment) {
+    if (!(payment instanceof Map<?, ?> paymentMap)
+        || !(paymentMap.get("number") instanceof String number)
+        || number.isBlank()) {
+      return invoiceNumber;
+    }
+    String receipt = number.replace('/', '-');
+    return receipt.startsWith(invoiceNumber) ? receipt : invoiceNumber + "-" + receipt;
   }
 
   private String slugify(String text) {

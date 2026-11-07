@@ -316,7 +316,7 @@ public class NotificationService {
     recipients.remove(event.actorMemberId());
 
     var created = new ArrayList<Notification>();
-    for (var recipientId : recipients) {
+    for (var recipientId : eligibleCommentRecipients(recipients, event.projectId())) {
       var notification =
           createIfEnabled(
               recipientId,
@@ -917,6 +917,30 @@ public class NotificationService {
           .forEach(m -> matched.add(m.id()));
     }
     return matched;
+  }
+
+  /**
+   * G89-F31 + 634C: the recipients of a comment notification, whatever their source (task assignee,
+   * document uploader, prior commenter, mention), are only ids that are existing members and — when
+   * the comment is on a matter — can view that matter.
+   *
+   * <ul>
+   *   <li>A portal-authored comment stores the portal contact id (or, without a contact, the client
+   *       id) in {@code author_member_id}, so the prior-commenter query can return a non-member id.
+   *       {@code notifications.recipient_member_id} references {@code members}, and one such insert
+   *       failed the whole fan-out transaction — no member was notified of any later comment.
+   *   <li>The notification title carries the task title or document name, so a member removed from
+   *       the matter (a former assignee, uploader or commenter) must not receive it.
+   * </ul>
+   */
+  private List<UUID> eligibleCommentRecipients(Set<UUID> candidateIds, UUID projectId) {
+    if (candidateIds.isEmpty()) {
+      return List.of();
+    }
+    return memberRepository.findAllById(candidateIds).stream()
+        .filter(member -> projectId == null || canViewMatter(projectId, member))
+        .map(Member::getId)
+        .toList();
   }
 
   private boolean canViewMatter(UUID projectId, Member member) {

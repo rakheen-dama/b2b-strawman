@@ -1,0 +1,880 @@
+
+> portal@0.1.0 test:e2e:login-bare /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal
+> LOGIN_BARE=1 playwright test --config=playwright.portal.config.ts --project=login-bare --reporter=list,json
+
+[2m[WebServer] [22m[33m[1m⚠[22m[39m The "middleware" file convention is deprecated. Please use "proxy" instead.
+[2m[WebServer] [22m
+[2m[WebServer] [22m  To migrate automatically, run:
+[2m[WebServer] [22m  npx @next/codemod@canary middleware-to-proxy .
+[2m[WebServer] [22m
+[2m[WebServer] [22m  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[2m[WebServer] [22m
+[2m[WebServer] [22m> Build error occurred
+[2m[WebServer] [22mError: Turbopack build failed with 24 errors:
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:8:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m 6 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m 7 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m 8 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m 9 |[0m   unicode-range: [33mU[0m+[35m0460[0m-[35m052[0m[33mF[0m, [33mU[0m+[35m1[0m[33mC80[0m-[35m1[0m[33mC8A[0m, [33mU[0m+[35m20[0m[33mB4[0m, [33mU[0m+[35m2[0m[33mDE0[0m-[35m2[0m[33mDFF[0m, [33mU[0m+[33mA640[0m-[33mA69F[0m, [33mU[0m+[33mFE2E[0m-[33mFE2F[0m;
+[2m[WebServer] [22m  [90m10 |[0m }
+[2m[WebServer] [22m  [90m11 |[0m [90m/* cyrillic */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:18:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m16 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m17 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m18 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m19 |[0m   unicode-range: [33mU[0m+[35m0301[0m, [33mU[0m+[35m0400[0m-[35m045[0m[33mF[0m, [33mU[0m+[35m0490[0m-[35m0491[0m, [33mU[0m+[35m04[0m[33mB0[0m-[35m04[0m[33mB1[0m, [33mU[0m+[35m2116[0m;
+[2m[WebServer] [22m  [90m20 |[0m }
+[2m[WebServer] [22m  [90m21 |[0m [90m/* greek */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:28:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m26 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m27 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m28 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m29 |[0m   unicode-range: [33mU[0m+[35m0370[0m-[35m0377[0m, [33mU[0m+[35m037[0m[33mA[0m-[35m037[0m[33mF[0m, [33mU[0m+[35m0384[0m-[35m038[0m[33mA[0m, [33mU[0m+[35m038[0m[33mC[0m, [33mU[0m+[35m038E-03[0m[33mA1[0m, [33mU[0m+[35m03[0m[33mA3[0m-[35m03[0m[33mFF[0m;
+[2m[WebServer] [22m  [90m30 |[0m }
+[2m[WebServer] [22m  [90m31 |[0m [90m/* vietnamese */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:38:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m36 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m37 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m38 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m39 |[0m   unicode-range: [33mU[0m+[35m0102[0m-[35m0103[0m, [33mU[0m+[35m0110[0m-[35m0111[0m, [33mU[0m+[35m0128[0m-[35m0129[0m, [33mU[0m+[35m0168[0m-[35m0169[0m, [33mU[0m+[35m01[0m[33mA0[0m-[35m01[0m[33mA1[0m, [33mU[0m+[35m01[0m[33mAF[0m-[35m0.[0m[33m..[0m
+[2m[WebServer] [22m  [90m40 |[0m }
+[2m[WebServer] [22m  [90m41 |[0m [90m/* latin-ext */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:48:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m46 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m47 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m48 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m49 |[0m   unicode-range: [33mU[0m+[35m0100[0m-[35m02[0m[33mBA[0m, [33mU[0m+[35m02[0m[33mBD[0m-[35m02[0m[33mC5[0m, [33mU[0m+[35m02[0m[33mC7[0m-[35m02[0m[33mCC[0m, [33mU[0m+[35m02[0m[33mCE[0m-[35m02[0m[33mD7[0m, [33mU[0m+[35m02[0m[33mDD[0m-[35m02[0m[33mFF[0m, [33mU[0m+[35m0304[0m, [33m.[0m.[35m.[0m
+[2m[WebServer] [22m  [90m50 |[0m }
+[2m[WebServer] [22m  [90m51 |[0m [90m/* latin */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result faile[2m[WebServer] [22md
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:58:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m56 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m57 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m58 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m59 |[0m   unicode-range: [33mU[0m+[35m0000[0m-[35m00[0m[33mFF[0m, [33mU[0m+[35m0131[0m, [33mU[0m+[35m0152[0m-[35m0153[0m, [33mU[0m+[35m02[0m[33mBB[0m-[35m02[0m[33mBC[0m, [33mU[0m+[35m02[0m[33mC6[0m, [33mU[0m+[35m02[0m[33mDA[0m, [33mU[0m+[35m02[0m[33mDC[0m, [33mU[0m+[35m...[0m
+[2m[WebServer] [22m  [90m60 |[0m }
+[2m[WebServer] [22m  [90m61 |[0m [90m/* cyrillic-ext */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:68:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m66 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m67 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m68 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m69 |[0m   unicode-range: [33mU[0m+[35m0460[0m-[35m052[0m[33mF[0m, [33mU[0m+[35m1[0m[33mC80[0m-[35m1[0m[33mC8A[0m, [33mU[0m+[35m20[0m[33mB4[0m, [33mU[0m+[35m2[0m[33mDE0[0m-[35m2[0m[33mDFF[0m, [33mU[0m+[33mA640[0m-[33mA69F[0m, [33mU[0m+[33mFE2E[0m-[33mFE2F[0m;
+[2m[WebServer] [22m  [90m70 |[0m }
+[2m[WebServer] [22m  [90m71 |[0m [90m/* cyrillic */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:78:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m76 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m77 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m78 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m79 |[0m   unicode-range: [33mU[0m+[35m0301[0m, [33mU[0m+[35m0400[0m-[35m045[0m[33mF[0m, [33mU[0m+[35m0490[0m-[35m0491[0m, [33mU[0m+[35m04[0m[33mB0[0m-[35m04[0m[33mB1[0m, [33mU[0m+[35m2116[0m;
+[2m[WebServer] [22m  [90m80 |[0m }
+[2m[WebServer] [22m  [90m81 |[0m [90m/* greek */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:88:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m86 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m87 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m88 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+[2m[WebServer] [22m  [90m   |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m89 |[0m   unicode-range: [33mU[0m+[35m0370[0m-[35m0377[0m, [33mU[0m+[35m037[0m[33mA[0m-[35m037[0m[33mF[0m, [33mU[0m+[35m0384[0m-[35m038[0m[33mA[0m, [33mU[0m+[35m038[0m[33mC[0m, [33mU[0m+[35m038E-03[0m[33mA1[0m, [33mU[0m+[35m03[0m[33mA3[0m-[35m03[0m[33mFF[0m;
+[2m[WebServer] [22m  [90m90 |[0m }
+[2m[WebServer] [22m  [90m91 |[0m [90m/* vietnamese */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:98:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m 96 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m 97 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m 98 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m 99 |[0m   unicode-range: [33mU[0m+[35m0102[0m-[35m0103[0m, [33mU[0m+[35m0110[0m-[35m0111[0m, [33mU[0m+[35m0128[0m-[35m0129[0m, [33mU[0m+[35m0168[0m-[35m0169[0m, [33mU[0m+[35m01[0m[33mA0[0m-[35m01[0m[33mA1[0m, [33mU[0m+[35m01[0m[33mAF[0m-[35m..[0m[33m.[0m
+[2m[WebServer] [22m  [90m100 |[0m }
+[2m[WebServer] [22m  [90m101 |[0m [90m/* latin-ext */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- [2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:108:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m106 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m107 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m108 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m109 |[0m   unicode-range: [33mU[0m+[35m0100[0m-[35m02[0m[33mBA[0m, [33mU[0m+[35m02[0m[33mBD[0m-[35m02[0m[33mC5[0m, [33mU[0m+[35m02[0m[33mC7[0m-[35m02[0m[33mCC[0m, [33mU[0m+[35m02[0m[33mCE[0m-[35m02[0m[33mD7[0m, [33mU[0m+[35m02[0m[33mDD[0m-[35m02[0m[33mFF[0m, [33mU[0m+[35m0304[0m,.[33m.[0m.
+[2m[WebServer] [22m  [90m110 |[0m }
+[2m[WebServer] [22m  [90m111 |[0m [90m/* latin */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:118:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m116 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m117 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m118 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m119 |[0m   unicode-range: [33mU[0m+[35m0000[0m-[35m00[0m[33mFF[0m, [33mU[0m+[35m0131[0m, [33mU[0m+[35m0152[0m-[35m0153[0m, [33mU[0m+[35m02[0m[33mBB[0m-[35m02[0m[33mBC[0m, [33mU[0m+[35m02[0m[33mC6[0m, [33mU[0m+[35m02[0m[33mDA[0m, [33mU[0m+[35m02[0m[33mDC[0m, [33mU[0m.[35m..[0m
+[2m[WebServer] [22m  [90m120 |[0m }
+[2m[WebServer] [22m  [90m121 |[0m [90m/* cyrillic-ext */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:128:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m126 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m127 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m128 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m129 |[0m   unicode-range: [33mU[0m+[35m0460[0m-[35m052[0m[33mF[0m, [33mU[0m+[35m1[0m[33mC80[0m-[35m1[0m[33mC8A[0m, [33mU[0m+[35m20[0m[33mB4[0m, [33mU[0m+[35m2[0m[33mDE0[0m-[35m2[0m[33mDFF[0m, [33mU[0m+[33mA640[0m-[33mA69F[0m, [33mU[0m+[33mFE2E[0m-[33mFE2F[0m;
+[2m[WebServer] [22m  [90m130 |[0m }
+[2m[WebServer] [22m  [90m131 |[0m [90m/* cyrillic */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:138:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m136 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m137 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m138 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m139 |[0m   unicode-range: [33mU[0m+[35m0301[0m, [33mU[0m+[35m0400[0m-[35m045[0m[33mF[0m, [33mU[0m+[35m0490[0m-[35m0491[0m, [33mU[0m+[35m04[0m[33mB0[0m-[35m04[0m[33mB1[0m, [33mU[0m+[35m2116[0m;
+[2m[WebServer] [22m  [90m140 |[0m }
+[2m[WebServer] [22m  [90m141 |[0m [90m/* greek */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:148:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m146 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m147 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m148 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m149 |[0m   unicode-range: [33mU[0m+[35m0370[0m-[35m0377[0m, [33mU[0m+[35m037[0m[33mA[0m-[35m037[0m[33mF[0m, [33mU[0m+[35m0384[0m-[35m038[0m[33mA[0m, [33mU[0m+[35m038[0m[33mC[0m, [33mU[0m+[35m038E-03[0m[33mA1[0m, [33mU[0m+[35m03[0m[33mA3[0m-[35m03[0m[33mFF[0m;
+[2m[WebServer] [22m  [90m150 |[0m }
+[2m[WebServer] [22m  [90m151 |[0m [90m/* vietnamese */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/[2m[WebServer] [22mfont/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:158:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m156 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m157 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m158 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m159 |[0m   unicode-range: [33mU[0m+[35m0102[0m-[35m0103[0m, [33mU[0m+[35m0110[0m-[35m0111[0m, [33mU[0m+[35m0128[0m-[35m0129[0m, [33mU[0m+[35m0168[0m-[35m0169[0m, [33mU[0m+[35m01[0m[33mA0[0m-[35m01[0m[33mA1[0m, [33mU[0m+[35m01[0m[33mAF[0m-[35m..[0m[33m.[0m
+[2m[WebServer] [22m  [90m160 |[0m }
+[2m[WebServer] [22m  [90m161 |[0m [90m/* latin-ext */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:168:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m166 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m167 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m168 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m169 |[0m   unicode-range: [33mU[0m+[35m0100[0m-[35m02[0m[33mBA[0m, [33mU[0m+[35m02[0m[33mBD[0m-[35m02[0m[33mC5[0m, [33mU[0m+[35m02[0m[33mC7[0m-[35m02[0m[33mCC[0m, [33mU[0m+[35m02[0m[33mCE[0m-[35m02[0m[33mD7[0m, [33mU[0m+[35m02[0m[33mDD[0m-[35m02[0m[33mFF[0m, [33mU[0m+[35m0304[0m,.[33m.[0m.
+[2m[WebServer] [22m  [90m170 |[0m }
+[2m[WebServer] [22m  [90m171 |[0m [90m/* latin */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:178:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m176 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m177 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m178 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m179 |[0m   unicode-range: [33mU[0m+[35m0000[0m-[35m00[0m[33mFF[0m, [33mU[0m+[35m0131[0m, [33mU[0m+[35m0152[0m-[35m0153[0m, [33mU[0m+[35m02[0m[33mBB[0m-[35m02[0m[33mBC[0m, [33mU[0m+[35m02[0m[33mC6[0m, [33mU[0m+[35m02[0m[33mDA[0m, [33mU[0m+[35m02[0m[33mDC[0m, [33mU[0m.[35m..[0m
+[2m[WebServer] [22m  [90m180 |[0m }
+[2m[WebServer] [22m  [90m181 |[0m [90m/* cyrillic-ext */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:188:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m186 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m187 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m188 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m189 |[0m   unicode-range: [33mU[0m+[35m0460[0m-[35m052[0m[33mF[0m, [33mU[0m+[35m1[0m[33mC80[0m-[35m1[0m[33mC8A[0m, [33mU[0m+[35m20[0m[33mB4[0m, [33mU[0m+[35m2[0m[33mDE0[0m-[35m2[0m[33mDFF[0m, [33mU[0m+[33mA640[0m-[33mA69F[0m, [33mU[0m+[33mFE2E[0m-[33mFE2F[0m;
+[2m[WebServer] [22m  [90m190 |[0m }
+[2m[WebServer] [22m  [90m191 |[0m [90m/* cyrillic */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:198:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m196 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m197 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m198 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m [2m[WebServer] [22m [90m199 |[0m   unicode-range: [33mU[0m+[35m0301[0m, [33mU[0m+[35m0400[0m-[35m045[0m[33mF[0m, [33mU[0m+[35m0490[0m-[35m0491[0m, [33mU[0m+[35m04[0m[33mB0[0m-[35m04[0m[33mB1[0m, [33mU[0m+[35m2116[0m;
+[2m[WebServer] [22m  [90m200 |[0m }
+[2m[WebServer] [22m  [90m201 |[0m [90m/* greek */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:208:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m206 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m207 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m208 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m209 |[0m   unicode-range: [33mU[0m+[35m0370[0m-[35m0377[0m, [33mU[0m+[35m037[0m[33mA[0m-[35m037[0m[33mF[0m, [33mU[0m+[35m0384[0m-[35m038[0m[33mA[0m, [33mU[0m+[35m038[0m[33mC[0m, [33mU[0m+[35m038E-03[0m[33mA1[0m, [33mU[0m+[35m03[0m[33mA3[0m-[35m03[0m[33mFF[0m;
+[2m[WebServer] [22m  [90m210 |[0m }
+[2m[WebServer] [22m  [90m211 |[0m [90m/* vietnamese */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:218:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m216 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m217 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m218 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m219 |[0m   unicode-range: [33mU[0m+[35m0102[0m-[35m0103[0m, [33mU[0m+[35m0110[0m-[35m0111[0m, [33mU[0m+[35m0128[0m-[35m0129[0m, [33mU[0m+[35m0168[0m-[35m0169[0m, [33mU[0m+[35m01[0m[33mA0[0m-[35m01[0m[33mA1[0m, [33mU[0m+[35m01[0m[33mAF[0m-[35m..[0m[33m.[0m
+[2m[WebServer] [22m  [90m220 |[0m }
+[2m[WebServer] [22m  [90m221 |[0m [90m/* latin-ext */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:228:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m226 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m227 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m228 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m229 |[0m   unicode-range: [33mU[0m+[35m0100[0m-[35m02[0m[33mBA[0m, [33mU[0m+[35m02[0m[33mBD[0m-[35m02[0m[33mC5[0m, [33mU[0m+[35m02[0m[33mC7[0m-[35m02[0m[33mCC[0m, [33mU[0m+[35m02[0m[33mCE[0m-[35m02[0m[33mD7[0m, [33mU[0m+[35m02[0m[33mDD[0m-[35m02[0m[33mFF[0m, [33mU[0m+[35m0304[0m,.[33m.[0m.
+[2m[WebServer] [22m  [90m230 |[0m }
+[2m[WebServer] [22m  [90m231 |[0m [90m/* latin */[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m[next]/internal/font/google/ibm_plex_sans_63208076.module.css:238:8
+[2m[WebServer] [22m[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'@vercel/turbopack-next/internal/font/google/font'[39m[22m
+[2m[WebServer] [22m  [90m236 |[0m   font-stretch: [35m100[0m%;
+[2m[WebServer] [22m  [90m237 |[0m   font-display: swap;
+[2m[WebServer] [22m[31m[1m>[0m [90m238 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.g...[0m
+[2m[WebServer] [22m  [90m    |[0m        [31m[1m^[0m
+[2m[WebServer] [22m  [90m239 |[0m   unicode-range: [33mU[0m+[35m0000[0m-[35m00[0m[33mFF[0m, [33mU[0m+[35m0131[0m, [33mU[0m+[35m0152[0m-[35m0153[0m, [33mU[0m+[35m02[0m[33mBB[0m-[35m02[0m[33mBC[0m, [33mU[0m+[35m02[0m[33mC6[0m, [33mU[0m+[35m02[0m[33mDA[0m, [33mU[0m+[35m02[0m[33mDC[0m, [33mU[0m.[35m..[0m
+[2m[WebServer] [22m  [90m240 |[0m }
+[2m[WebServer] [22m  [90m241 |[0m @font-face {
+[2m[WebServer] [22m
+[2m[WebServer] [22mnext/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of *<ModuleAssetContext as AssetContext>::process_resolve_result failed
+[2m[WebServer] [22m- Execution of resolve failed
+[2m[WebServer] [22m- Execution of resolve_internal failed
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22mError while looking up import map: next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22mDebug info:
+[2m[WebServer] [22m- Execution of <NextFontGoogleFontFileReplacer as ImportMappingReplacement>::result failed
+[2m[WebServer] [22m- next/font/google queries have exactly one entry
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22mImport trace:
+[2m[WebServer] [22m  Server Component:
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.module.css
+[2m[WebServer] [22m    [next]/internal/font/google/ibm_plex_sans_63208076.js
+[2m[WebServer] [22m    ./portal/app/layout.tsx
+[2m[WebServer] [22m
+[2m[WebServer] [22mhttps://nextjs.org/docs/messages/module-not-found
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:8:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_[2m[WebServer] [22m63208076.module.css:18:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:28:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:38:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:48:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:58:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:68:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:78:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:88:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:98:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:108:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:118:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:128:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:138:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:148:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:158:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:168:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:178:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:188:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:198:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:208:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:218:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:228:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[2m[WebServer] [22m    at <unknown> ([next]/internal/font/google/ibm_plex_sans_63208076.module.css:238:8)
+[2m[WebServer] [22m    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+Error: Process from config.webServer was not able to start. Exit code: 1
+
+ ELIFECYCLE  Command failed with exit code 1.

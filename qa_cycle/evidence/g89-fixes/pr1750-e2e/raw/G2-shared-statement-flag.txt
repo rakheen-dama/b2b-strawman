@@ -1,0 +1,5 @@
+                      file_name                       |  scope  | visibility | contains_trust_data | gd_flag 
+------------------------------------------------------+---------+------------+---------------------+---------
+ statement-of-account-website-redesign-2026-11-07.pdf | PROJECT | PORTAL     | t                   | t
+(1 row)
+

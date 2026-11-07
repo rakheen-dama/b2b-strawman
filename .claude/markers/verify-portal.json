@@ -1,7 +1,7 @@
 {
-  "commit": "150bc743e",
-  "command": "portal vitest + portal e2e (90-day 13/0, responsive 21/0, isolation 2/0) on fresh stacks from the PR head; no portal source changed in this PR (global V5 migration only)",
+  "commit": "53cabef57",
+  "command": "portal vitest + portal e2e (90-day 13/0, responsive 21/0, isolation 2/0) on fresh stacks from the PR head (pre-merge e2e gate); no portal source changed in this PR",
   "exit": 0,
-  "ts": "2026-11-07T13:30:00Z",
-  "summary": "PR #1749 (G89 Batch C2): portal vitest 49 files / 278 passed; portal e2e per-test identical to Checkpoint 1"
+  "ts": "2026-11-07T20:30:00Z",
+  "summary": "PR #1750 (G89 Batch H): portal vitest 278 passed; portal e2e per-test identical to baseline; shared SoA client download OK"
 }

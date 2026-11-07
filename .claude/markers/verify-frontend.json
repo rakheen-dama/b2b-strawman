@@ -1,7 +1,7 @@
 {
-  "commit": "1b8da6a18",
-  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-c2-templates-generation)",
+  "commit": "289892ea3",
+  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-h-document-access)",
   "exit": 0,
-  "ts": "2026-11-07T15:20:00Z",
-  "summary": "PR #1749 head 1b8da6a18: lint 0 errors (78 warnings), build ok, 446 files / 3689 passed / 2 skipped, prettier clean"
+  "ts": "2026-11-07T20:20:00Z",
+  "summary": "PR #1750 head 289892ea3: lint 0 errors (78 warnings), build ok, 447 files / 3696 passed / 2 skipped, prettier clean"
 }

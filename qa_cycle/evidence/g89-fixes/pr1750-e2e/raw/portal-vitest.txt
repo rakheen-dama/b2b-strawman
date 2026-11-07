@@ -1,0 +1,540 @@
+
+> portal@0.1.0 test /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal
+> vitest run
+
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal
+
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at runNextTicks (node:internal/process/task_queues:64:3)
+    at processTimers (node:internal/timers:511:9)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:797:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": The operation was aborted.
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "http://localhost:8080/api/portal/acceptance/test-token/pdf": 
+    at Fetch.onError (file:///Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:518:28)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+
+ Test Files  49 passed (49)
+      Tests  278 passed (278)
+   Start at  21:31:58
+   Duration  7.67s (transform 3.44s, setup 4.90s, import 21.00s, tests 12.21s, environment 16.53s)
+

@@ -45,7 +45,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | **VERIFIED** on KC (632A(a)(b)(c)/S1-67, F6, F26/S2-50, WIP). DEFERRED: 632C (needs a new payment, moved to the exit re-walk); VIEW_TRUST withheld (needs a custom role, moved to the Batch H walk) |
-| 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 @53cabef57 | gates running: full verify, 2 reviews, pre-merge e2e (all suites) |
+| 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 → `4f3323525` | MERGED-AWAITING-VERIFY (KC check with a custom role running) |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
@@ -251,3 +251,14 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - New candidates (not folded):
     - **G89-F61:** the matter-intake skill sends up to 500 matter names to the LLM, including matters the caller is not on.
     - **G89-F62:** drafting without a templateId returns 500.
+- 2026-11-07 ~22:45 — **PR #1750 (Batch H) merged as `4f3323525`.**
+  - **Security review:** REQUEST_CHANGES @53cabef57. The FICA skill read trust-flagged client documents directly. Fixed @289892ea3, together with F56 stub assertions and a readiness matter check. Security re-review and a whole-PR review both APPROVE @289892ea3.
+  - **Full verify:** 6727 / 0 / 0 / 26 (20:00). **FE gate:** 3696 green.
+  - **Pre-merge e2e** (all 7 suites, per-test identical to baseline; `pr1750-e2e/`). The portal client download of a shared, flagged SoA still works.
+  - **CodeRabbit:** REVIEWED @19f595a52 (0 actionable). DEFERRED @289892ea3 (on-demand review was rate-limited), covered by the bound re-reviews.
+  - **G89-F46** (Google Fonts) recurred a 3rd time, in the login-bare portal build.
+  - KC restarted; tenant **V14** applied (next free: **V15**). KC check launched.
+- Batch F additions:
+  - delete the uncalled `DocumentTextExtractorService.extractText(Document)`;
+  - F46 font self-hosting is now urgent (3 occurrences).
+- Open candidates awaiting founder triage: **G89-F61** (matter-intake sends up to 500 matter names to the LLM), **G89-F62** (drafting without templateId returns 500).

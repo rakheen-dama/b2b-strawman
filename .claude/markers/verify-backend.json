@@ -1,7 +1,7 @@
 {
-  "commit": "1b8da6a18",
-  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-c2-templates-generation)",
+  "commit": "289892ea3",
+  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-h-document-access)",
   "exit": 0,
-  "ts": "2026-11-07T15:10:00Z",
-  "summary": "PR #1749 (G89 Batch C2) head 1b8da6a18: 6692 tests / 0 failures / 0 errors / 26 skipped — 22:04 min"
+  "ts": "2026-11-07T20:06:00Z",
+  "summary": "PR #1750 (G89 Batch H) head 289892ea3: 6727 tests / 0 failures / 0 errors / 26 skipped — 20:00 min"
 }

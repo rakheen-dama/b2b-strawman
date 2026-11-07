@@ -1,0 +1,104 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal/playwright.portal.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal/e2e/helpers/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal/e2e/tests/responsive",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "portal-client-90day",
+        "name": "portal-client-90day",
+        "testDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal/e2e/tests/portal-client-90day",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "login-bare",
+        "name": "login-bare",
+        "testDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp3/portal/e2e/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/login-bare\\.spec\\.ts$/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": {
+      "command": "pnpm run build && pnpm run start",
+      "url": "http://localhost:3002",
+      "reuseExistingServer": true,
+      "timeout": 300000,
+      "env": {
+        "NODE_OPTIONS": "",
+        "NEXT_PUBLIC_PORTAL_API_URL": "http://localhost:8081"
+      }
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Process from config.webServer was not able to start. Exit code: 1",
+      "stack": "Error: Process from config.webServer was not able to start. Exit code: 1"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-11-07T20:12:22.372Z",
+    "duration": 5732.405000000001,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -54,11 +54,22 @@ public class GenericMenuPolicy {
     return new ForTenant(Set.copyOf(excluded));
   }
 
+  /**
+   * The classpath packs' exclusions, cached after the first SUCCESSFUL scan. {@code
+   * TemplatePackSeeder.getAvailablePacks()} returns an empty list when the classpath scan fails
+   * (IOException, logged there) — the shipped classpath always holds template packs — so an empty
+   * scan is not cached and the next listing retries (CodeRabbit), instead of disabling the
+   * exclusions until restart. A pack that fails to parse throws and is not cached either.
+   */
   private List<Exclusion> exclusions() {
     List<Exclusion> loaded = exclusions;
     if (loaded == null) {
+      var packs = templatePackSeeder.getAvailablePacks();
+      if (packs.isEmpty()) {
+        return List.of();
+      }
       loaded =
-          templatePackSeeder.getAvailablePacks().stream()
+          packs.stream()
               .flatMap(
                   lp ->
                       lp.definition().templates().stream()

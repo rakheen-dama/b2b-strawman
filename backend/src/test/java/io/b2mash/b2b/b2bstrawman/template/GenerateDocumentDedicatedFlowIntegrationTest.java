@@ -90,10 +90,55 @@ class GenerateDocumentDedicatedFlowIntegrationTest {
                     {"entityId":"%s","saveToDocuments":false,"acknowledgeWarnings":true}"""
                         .formatted(matterId)))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Generated from its own flow"))
         .andExpect(
             jsonPath("$.detail")
                 .value("The Statement of Account is generated from the matter's Statements tab."));
+  }
+
+  @Test
+  void genericGenerate_closureLetter_rejected400() throws Exception {
+    assertRefused(
+        "matter-closure-letter",
+        createMatter(),
+        "The closure letter is generated when the matter is closed.");
+  }
+
+  /**
+   * The refusal comes before any entity lookup, so the payment receipt (a fee-note template) is
+   * refused for any entity id — the generic endpoint never renders it.
+   */
+  @Test
+  void genericGenerate_paymentReceipt_rejected400() throws Exception {
+    assertRefused(
+        "payment-receipt-za",
+        UUID.randomUUID().toString(),
+        "A payment receipt is generated when a payment is recorded on the fee note.");
+  }
+
+  @Test
+  void genericGenerate_trustReceipt_rejected400() throws Exception {
+    assertRefused(
+        "trust-receipt",
+        clientId.toString(),
+        "A trust receipt can only be issued from a recorded trust deposit.");
+  }
+
+  private void assertRefused(String legalZaKey, String entityId, String detail) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/templates/" + packTemplateId("legal-za", legalZaKey) + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"entityId":"%s","saveToDocuments":false,"acknowledgeWarnings":true}"""
+                        .formatted(entityId)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Generated from its own flow"))
+        .andExpect(jsonPath("$.detail").value(detail));
   }
 
   @Test

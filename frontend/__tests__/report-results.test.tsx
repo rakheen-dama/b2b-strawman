@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportResults } from "@/components/reports/report-results";
 import type { ReportExecutionResponse } from "@/lib/api/reports";
+import { formatCurrency } from "@/lib/format";
 
 vi.mock("server-only", () => ({}));
 
@@ -90,6 +91,55 @@ describe("ReportResults", () => {
     // Bob's billableAmount is null
     const emDashes = screen.getAllByText("\u2014");
     expect(emDashes.length).toBeGreaterThan(0);
+  });
+
+  // G89-F18: the Section 35 data pack summary holds `sections` (a list of maps) and a raw
+  // BigDecimal year-end total; its rows carry money in a currency `amount` column.
+  it("skips object and array summary values instead of printing [object Object]", () => {
+    const { container } = render(
+      <ReportResults
+        response={makeResponse({
+          summary: {
+            sectionCount: 6,
+            sections: [{ sectionName: "Client Trust Balances", rowCount: 1 }],
+            reconciliation: { status: "BALANCED" },
+          },
+        })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    expect(container.textContent).not.toContain("[object Object]");
+    expect(screen.queryByText("Sections")).not.toBeInTheDocument();
+    expect(screen.queryByText("Reconciliation")).not.toBeInTheDocument();
+    expect(screen.getByText("Section Count")).toBeInTheDocument();
+    expect(screen.getByText("6")).toBeInTheDocument();
+  });
+
+  it("formats money summary values and currency cells as currency", () => {
+    render(
+      <ReportResults
+        response={makeResponse({
+          columns: [
+            { key: "_section", label: "Section", type: "string" },
+            { key: "label", label: "Item", type: "string" },
+            { key: "amount", label: "Amount", type: "currency" },
+          ],
+          rows: [{ _section: "Client Trust Balances", label: "Dlamini", amount: 38019.15 }],
+          summary: { totalTrustBalanceAtYearEnd: 38019.15, totalHours: 12.5 },
+        })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    const money = formatCurrency(38019.15);
+    // once on the summary card, once in the amount cell
+    expect(screen.getAllByText(money)).toHaveLength(2);
+    expect(screen.queryByText("38019.15")).not.toBeInTheDocument();
+    // hours are not money
+    expect(screen.getByText("12.5")).toBeInTheDocument();
   });
 
   it("shows pagination as 'Page 1 of 2' for totalPages=2", () => {

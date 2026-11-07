@@ -93,6 +93,8 @@ export interface FieldValidationResult {
   field: string;
   present: boolean;
   reason: string | null;
+  /** Readable field name, e.g. "Matter › Seller Name" (null for a malformed entry). */
+  label?: string | null;
 }
 
 export interface TemplateValidationResult {

@@ -260,7 +260,9 @@ public class GeneratedDocumentService {
     }
     var validationResult =
         templateValidationService.validateRequiredFields(
-            template.getRequiredContextFields(), contextMap);
+            template.getRequiredContextFields(),
+            contextMap,
+            pdfRenderingService.requiredFieldLabels(template));
 
     if (!validationResult.allPresent() && !acknowledgeWarnings) {
       throw new ValidationWarningException(validationResult);

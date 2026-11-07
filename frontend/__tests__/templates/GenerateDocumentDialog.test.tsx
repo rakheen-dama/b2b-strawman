@@ -164,6 +164,33 @@ describe("GenerateDocumentDialog", () => {
     });
   });
 
+  // G89 632A(b): the server labels each field; the raw context path is only a fallback.
+  it("shows the readable field label instead of the raw path when the server sends one", async () => {
+    mockPreviewTemplate.mockResolvedValue({
+      success: true,
+      html: "<h1>Preview</h1>",
+      validationResult: {
+        allPresent: false,
+        fields: [
+          {
+            entity: "project",
+            field: "customFields.seller_name",
+            present: false,
+            reason: "Field not populated: project.customFields.seller_name",
+            label: "Matter › Seller Name",
+          },
+        ],
+      },
+    });
+
+    render(<GenerateDocumentDialog {...baseProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Matter › Seller Name")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("project.customFields.seller_name")).not.toBeInTheDocument();
+  });
+
   it("shows Send for Acceptance button after save when customerId is provided and isAdmin", async () => {
     mockGenerateDocument.mockResolvedValue({
       success: true,

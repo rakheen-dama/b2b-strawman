@@ -207,14 +207,26 @@ public class PdfRenderingService {
     var builder = findBuilder(template.getPrimaryEntityType());
     var contextMap = new HashMap<>(builder.buildContext(entityId, memberId));
 
-    // Validate required fields
+    // Validate required fields (readable labels: G89 632A(b))
     var validationResult =
         templateValidationService.validateRequiredFields(
-            template.getRequiredContextFields(), contextMap);
+            template.getRequiredContextFields(), contextMap, requiredFieldLabels(template));
 
     String html = renderTemplateToHtml(template, contextMap, resolvedClauses, Map.of());
 
     return new PreviewResponse(html, validationResult);
+  }
+
+  /**
+   * Display names for {@code template}'s required context fields (variable key → label), from the
+   * variable registry of its entity type; empty when it declares none (no registry lookup).
+   */
+  public Map<String, String> requiredFieldLabels(DocumentTemplate template) {
+    var required = template.getRequiredContextFields();
+    if (required == null || required.isEmpty()) {
+      return Map.of();
+    }
+    return variableMetadataRegistry.labelsFor(template.getPrimaryEntityType());
   }
 
   /** DTO returned by {@link #previewWithValidation}. Lives in the service layer to avoid a */

@@ -306,7 +306,7 @@ export function GenerateDocumentDialog({
                               : "text-yellow-800 dark:text-yellow-200"
                           }
                         >
-                          {f.entity}.{f.field}
+                          {f.label ?? `${f.entity}.${f.field}`}
                         </span>
                       </li>
                     ))}

@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatementOfAccountDialog } from "@/components/legal/statement-of-account-dialog";
+import { TrustLockedDownload } from "@/components/documents/trust-locked-download";
 import { listStatementsAction } from "@/app/(app)/org/[slug]/matters/[id]/statement-actions";
 import { downloadGeneratedDocumentAction } from "@/app/(app)/org/[slug]/settings/documents/_tabs/template-generation-actions";
 import { useCapabilities } from "@/lib/capabilities";
@@ -156,18 +157,22 @@ function ProjectStatementsTabInner({ projectId, slug, projectName }: ProjectStat
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDownload(s)}
-                    disabled={downloadingId === s.id}
-                    aria-busy={downloadingId === s.id}
-                    data-testid={`statement-download-${s.id}`}
-                  >
-                    <Download className="mr-1.5 size-4" />
-                    {downloadingId === s.id ? "Downloading…" : "Download"}
-                  </Button>
+                  <TrustLockedDownload containsTrustData={s.containsTrustData}>
+                    {(locked) => (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownload(s)}
+                        disabled={locked || downloadingId === s.id}
+                        aria-busy={downloadingId === s.id}
+                        data-testid={`statement-download-${s.id}`}
+                      >
+                        <Download className="mr-1.5 size-4" />
+                        {downloadingId === s.id ? "Downloading…" : "Download"}
+                      </Button>
+                    )}
+                  </TrustLockedDownload>
                 </TableCell>
               </TableRow>
             ))}

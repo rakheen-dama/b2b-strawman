@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,9 @@ public class TrustDataVisibility {
   public static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
   public static final String VIEW_TRUST = "VIEW_TRUST";
 
+  /** ProblemDetail title of a refused trust-document read (and the UI's disabled tooltip). */
+  public static final String NOT_AVAILABLE_TITLE = "Trust details are not available";
+
   private final VerticalModuleGuard moduleGuard;
 
   public TrustDataVisibility(VerticalModuleGuard moduleGuard) {
@@ -40,6 +44,33 @@ public class TrustDataVisibility {
    */
   public boolean withheldFromCurrentMember() {
     return trustAccountingEnabled() && !RequestScopes.hasCapability(VIEW_TRUST);
+  }
+
+  /**
+   * G89-F52 (D18): the read rule for a stored document. A document that prints trust money ({@code
+   * containsTrustData}) may be downloaded only by a member holding {@code VIEW_TRUST}. Capability
+   * only — not the module flag: the stored file still holds trust data after the module is switched
+   * off. Owner and admin hold every capability, so they always pass. Callers run their matter check
+   * (404) first; this one comes after it (403), like the {@code @RequiresCapability("VIEW_TRUST")}
+   * trust endpoints.
+   *
+   * @throws ForbiddenException the document holds trust data and the member lacks VIEW_TRUST
+   */
+  public void requireMayRead(boolean containsTrustData) {
+    if (!mayRead(containsTrustData)) {
+      throw new ForbiddenException(
+          NOT_AVAILABLE_TITLE,
+          "This document contains trust account details, which your role cannot view.");
+    }
+  }
+
+  /**
+   * The same rule as {@link #requireMayRead}, as a filter: false when the document prints trust
+   * money and the member lacks VIEW_TRUST. For readers that skip such documents rather than refuse
+   * the whole request (FICA verification reads every client document).
+   */
+  public boolean mayRead(boolean containsTrustData) {
+    return !containsTrustData || RequestScopes.hasCapability(VIEW_TRUST);
   }
 
   private boolean trustAccountingEnabled() {

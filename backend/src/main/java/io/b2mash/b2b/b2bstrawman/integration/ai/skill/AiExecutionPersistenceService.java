@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -100,7 +101,9 @@ public class AiExecutionPersistenceService {
       noRollbackFor = {
         InvalidStateException.class,
         ResourceNotFoundException.class,
-        ResourceConflictException.class
+        ResourceConflictException.class,
+        // G89-F56: a document the member may not read (trust data without VIEW_TRUST)
+        ForbiddenException.class
       })
   public AssembledPrompts assemblePrompts(SkillExecutionRequest request, AiFirmProfile profile) {
     String systemPrompt = request.skill().assembleSystemPrompt(profile);

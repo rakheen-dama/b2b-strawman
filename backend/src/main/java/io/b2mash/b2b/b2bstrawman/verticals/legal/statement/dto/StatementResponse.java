@@ -9,7 +9,8 @@ import java.util.UUID;
  * persisted-document handle, an optional inline HTML preview (populated on POST + GET-by-id), the
  * presigned PDF URL, the matter reference block, the numeric summary block, and the statement
  * period (Phase 89 C6) — read from the generation snapshot on list / getById, null for a document
- * without a snapshot period.
+ * without a snapshot period. {@code containsTrustData} marks a statement whose PDF prints trust
+ * money (G89-F52): only a member holding VIEW_TRUST may download it.
  */
 public record StatementResponse(
     UUID id,
@@ -20,7 +21,8 @@ public record StatementResponse(
     MatterRef matter,
     StatementSummary summary,
     LocalDate periodStart,
-    LocalDate periodEnd) {
+    LocalDate periodEnd,
+    boolean containsTrustData) {
 
   public record MatterRef(UUID matterId, String name) {}
 }

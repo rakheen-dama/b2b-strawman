@@ -63,6 +63,13 @@ public class Document {
   @Column(name = "correspondence_id")
   private UUID correspondenceId;
 
+  /**
+   * True when the file prints trust money (G89-F52, D18) — copied from the generated document it
+   * was saved from. Only a member holding {@code VIEW_TRUST} may download it.
+   */
+  @Column(name = "contains_trust_data", nullable = false)
+  private boolean containsTrustData;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -208,6 +215,14 @@ public class Document {
 
   public void setCorrespondenceId(UUID correspondenceId) {
     this.correspondenceId = correspondenceId;
+  }
+
+  public boolean isContainsTrustData() {
+    return containsTrustData;
+  }
+
+  public void setContainsTrustData(boolean containsTrustData) {
+    this.containsTrustData = containsTrustData;
   }
 
   public Instant getCreatedAt() {

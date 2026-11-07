@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,28 @@ public class StubAiProvider implements AiProvider {
   private static final int DEFAULT_OUTPUT_TOKENS = 800;
   private static final int DEFAULT_CACHE_READ_TOKENS = 1500;
   private static final int DEFAULT_CACHE_CREATION_TOKENS = 0;
+
+  /** Bound on the recorded prompts (the context is shared across the suite). */
+  private static final int MAX_RECORDED_PROMPTS = 500;
+
+  /**
+   * The user prompts this stub received, newest last (bounded). Lets an access test prove that a
+   * refused skill never sent its subject to the provider: seed a unique marker and assert no
+   * recorded prompt contains it (G89-F56/F58).
+   */
+  private final Queue<String> receivedUserPrompts = new ConcurrentLinkedQueue<>();
+
+  /** True when any user prompt this stub received contains {@code marker}. */
+  public boolean receivedPromptContaining(String marker) {
+    return receivedUserPrompts.stream().anyMatch(p -> p != null && p.contains(marker));
+  }
+
+  private void record(String userPrompt) {
+    receivedUserPrompts.add(userPrompt);
+    while (receivedUserPrompts.size() > MAX_RECORDED_PROMPTS) {
+      receivedUserPrompts.poll();
+    }
+  }
 
   @Override
   public String providerId() {
@@ -63,6 +87,7 @@ public class StubAiProvider implements AiProvider {
 
   @Override
   public AiCompletionResponse complete(AiCompletionRequest request) {
+    record(request.userPrompt());
     String skillId = request.metadata().getOrDefault("skill-id", "default");
     String content = loadCannedResponse(skillId);
     return buildResponse(content);
@@ -70,6 +95,7 @@ public class StubAiProvider implements AiProvider {
 
   @Override
   public AiCompletionResponse completeWithVision(AiVisionRequest request) {
+    record(request.userPrompt());
     String skillId = request.metadata().getOrDefault("skill-id", "default");
     String content = loadCannedResponse(skillId);
     return buildResponse(content);

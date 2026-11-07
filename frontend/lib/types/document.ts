@@ -31,6 +31,8 @@ export interface Document {
   uploadedByName: string | null;
   uploadedAt: string | null;
   createdAt: string;
+  /** Prints trust money (G89-F52): downloadable only with VIEW_TRUST. */
+  containsTrustData?: boolean;
 }
 
 export interface UploadInitRequest {
@@ -75,6 +77,8 @@ export interface GeneratedDocumentListResponse {
   hasDocxDownload?: boolean;
   /** Linked Document visibility (ADR-350); null when not saved to the documents list. */
   visibility?: DocumentVisibility | null;
+  /** Prints trust money (G89-F52): downloadable only with VIEW_TRUST. */
+  containsTrustData?: boolean;
 }
 
 export interface GenerateDocxResult {

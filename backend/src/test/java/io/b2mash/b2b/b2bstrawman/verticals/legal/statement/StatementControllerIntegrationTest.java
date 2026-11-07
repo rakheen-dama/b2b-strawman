@@ -90,13 +90,14 @@ class StatementControllerIntegrationTest {
                 "statement_ctrl_owner@test.com",
                 "Statement Ctrl Owner",
                 "owner"));
-    TestMemberHelper.syncMember(
-        mockMvc,
-        LEGAL_ORG_ID,
-        "user_statement_ctrl_member",
-        "statement_ctrl_member@test.com",
-        "Statement Ctrl Member",
-        "member");
+    String legalMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc,
+            LEGAL_ORG_ID,
+            "user_statement_ctrl_member",
+            "statement_ctrl_member@test.com",
+            "Statement Ctrl Member",
+            "member");
 
     legalTenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(LEGAL_ORG_ID).orElseThrow().getSchemaName();
@@ -124,6 +125,16 @@ class StatementControllerIntegrationTest {
                   project = projectRepository.saveAndFlush(project);
                   projectId = project.getId();
                 }));
+
+    // G89-F54: statements need view access to the matter — put the member on it, so the member test
+    // still proves the GENERATE_STATEMENT_OF_ACCOUNT grant (a member not on the matter gets 404).
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_statement_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"memberId\":\"%s\"}".formatted(legalMemberId)))
+        .andExpect(status().isCreated());
 
     // --- Non-legal tenant (disbursements module NOT enabled) ---
     provisioningService.provisionTenant(NON_LEGAL_ORG_ID, "Stmt NonLegal Firm", null);

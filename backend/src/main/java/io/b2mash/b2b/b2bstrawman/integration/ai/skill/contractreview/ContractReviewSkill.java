@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview;
 
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -14,6 +15,8 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.skill.DocumentTextExtractorServi
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.ExtractedText;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.LlmJsonParser;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.SkillContext;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.io.IOException;
@@ -45,22 +48,28 @@ public class ContractReviewSkill implements AiSkill {
       "ai/skills/contract-review/output-schema.json";
 
   private final DocumentTextExtractorService documentTextExtractorService;
+  private final DocumentService documentService;
   private final DocumentRepository documentRepository;
   private final ProjectRepository projectRepository;
+  private final ProjectAccessService projectAccessService;
   private final AiFirmProfileService firmProfileService;
   private final ObjectMapper objectMapper;
   private final LlmJsonParser llmJsonParser;
 
   public ContractReviewSkill(
       DocumentTextExtractorService documentTextExtractorService,
+      DocumentService documentService,
       DocumentRepository documentRepository,
       ProjectRepository projectRepository,
+      ProjectAccessService projectAccessService,
       AiFirmProfileService firmProfileService,
       ObjectMapper objectMapper,
       LlmJsonParser llmJsonParser) {
     this.documentTextExtractorService = documentTextExtractorService;
+    this.documentService = documentService;
     this.documentRepository = documentRepository;
     this.projectRepository = projectRepository;
+    this.projectAccessService = projectAccessService;
     this.firmProfileService = firmProfileService;
     this.objectMapper = objectMapper;
     this.llmJsonParser = llmJsonParser;
@@ -89,14 +98,24 @@ public class ContractReviewSkill implements AiSkill {
   public String assembleUserPrompt(SkillContext context) {
     UUID documentId = context.entityId();
 
-    // Pre-flight: document must exist
-    Document document =
-        documentRepository
-            .findById(documentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    // Pre-flight (G89-F56): the invoking member must be allowed to read the document — it must
+    // exist, its matter must be visible to them (404) and, if it prints trust money, they need
+    // VIEW_TRUST (403). A refusal fails the execution before any text reaches the LLM.
+    var readable = documentService.getDocumentBytes(documentId, ActorContext.fromRequestScopes());
+    Document document = readable.document();
+
+    // G89-F59: the review report is saved to a matter — the request's matterId, else the
+    // document's own matter (createGates). With neither, refuse here, before the LLM is billed.
+    if (context.additionalContext().get("projectId") == null && document.getProjectId() == null) {
+      throw new InvalidStateException(
+          "Matter required",
+          "A contract review is saved to a matter: pass matterId, or review a document that is"
+              + " saved to a matter.");
+    }
 
     // Extract text from the document (throws InvalidStateException for unsupported types)
-    ExtractedText extractedText = documentTextExtractorService.extractText(document);
+    ExtractedText extractedText =
+        documentTextExtractorService.extractText(document, readable.bytes());
 
     // Load matter context if projectId is provided
     String matterContext = "";
@@ -109,6 +128,9 @@ public class ContractReviewSkill implements AiSkill {
       } catch (IllegalArgumentException e) {
         throw new InvalidStateException("INVALID_PROJECT_ID", "projectId must be a valid UUID");
       }
+      // G89-F58: the caller-supplied matter must be one the member may view (404) — checked
+      // before any matter data is loaded, so its name and details never reach the LLM.
+      projectAccessService.requireViewAccess(projectId, ActorContext.fromRequestScopes());
       Project project =
           projectRepository
               .findById(projectId)

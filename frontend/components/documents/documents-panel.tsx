@@ -45,6 +45,7 @@ import { createMessages } from "@/lib/messages";
 import { ContractReviewButton, isReviewableDocument } from "@/components/ai/contract-review-button";
 import { DraftingDialog } from "@/components/ai/drafting-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TrustLockedDownload } from "@/components/documents/trust-locked-download";
 import type {
   Document,
   DocumentSource,
@@ -519,7 +520,11 @@ export function DocumentsPanel({
                       <TableCell>
                         <div className="flex items-center gap-1">
                           {doc.status === "UPLOADED" && (
-                            <DownloadButton documentId={doc.id} fileName={doc.fileName} />
+                            <DownloadButton
+                              documentId={doc.id}
+                              fileName={doc.fileName}
+                              containsTrustData={doc.containsTrustData}
+                            />
                           )}
                           {canExecuteAi && isReviewableDocument(doc.contentType, doc.status) && (
                             <Button
@@ -599,7 +604,14 @@ export function DocumentsPanel({
 
 // --- Download button (inline client component) ---
 
-function DownloadButton({ documentId, fileName }: { documentId: string; fileName: string }) {
+interface DownloadButtonProps {
+  documentId: string;
+  fileName: string;
+  /** G89-F52: prints trust money — disabled with a tooltip for a member without VIEW_TRUST. */
+  containsTrustData?: boolean;
+}
+
+function DownloadButton({ documentId, fileName, containsTrustData }: DownloadButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -627,16 +639,24 @@ function DownloadButton({ documentId, fileName }: { documentId: string; fileName
 
   return (
     <div className="flex items-center gap-1">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-8"
-        onClick={handleDownload}
-        disabled={isLoading}
-      >
-        {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-        <span className="sr-only">Download {fileName}</span>
-      </Button>
+      <TrustLockedDownload containsTrustData={containsTrustData}>
+        {(locked) => (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={handleDownload}
+            disabled={locked || isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Download className="size-4" />
+            )}
+            <span className="sr-only">Download {fileName}</span>
+          </Button>
+        )}
+      </TrustLockedDownload>
       {error && <span className="text-destructive text-xs">{error}</span>}
     </div>
   );

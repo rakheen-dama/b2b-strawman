@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -73,6 +74,8 @@ class GeneratedDocumentServiceDocxStorageKeyTest {
   @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private DocumentService documentService;
   @Mock private TemplateContextBuilder projectContextBuilder;
+  @Mock private TrustDataVisibility trustDataVisibility;
+  @Mock private TemplateVariableAnalyzer templateVariableAnalyzer;
 
   private final UUID templateId = UUID.randomUUID();
   private final UUID entityId = UUID.randomUUID();
@@ -104,6 +107,8 @@ class GeneratedDocumentServiceDocxStorageKeyTest {
             List.of(projectContextBuilder),
             orgSettingsRepository,
             documentService,
+            trustDataVisibility,
+            templateVariableAnalyzer,
             Clock.fixed(Instant.parse("2026-10-29T08:00:00Z"), ZoneOffset.UTC));
 
     var template =
@@ -180,7 +185,10 @@ class GeneratedDocumentServiceDocxStorageKeyTest {
   // --- Helpers ---
 
   private GeneratedDocumentService.GenerateDocxResult generate(String outputFormat) {
+    // G89-F53: a matter template's DOCX generation checks matter access for the calling member.
     return ScopedValue.where(RequestScopes.TENANT_ID, TENANT)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
         .call(() -> service.generateDocx(templateId, entityId, outputFormat, memberId));
   }
 

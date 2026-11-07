@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.AiSkill;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.LlmJsonParser;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.SkillContext;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -51,6 +52,7 @@ public class FicaVerificationSkill implements AiSkill {
   private final ChecklistInstanceItemRepository checklistInstanceItemRepository;
   private final AiFirmProfileService firmProfileService;
   private final FicaDocumentReader ficaDocumentReader;
+  private final TrustDataVisibility trustDataVisibility;
   private final ObjectMapper objectMapper;
   private final LlmJsonParser llmJsonParser;
 
@@ -61,8 +63,10 @@ public class FicaVerificationSkill implements AiSkill {
       ChecklistInstanceItemRepository checklistInstanceItemRepository,
       AiFirmProfileService firmProfileService,
       FicaDocumentReader ficaDocumentReader,
+      TrustDataVisibility trustDataVisibility,
       ObjectMapper objectMapper,
       LlmJsonParser llmJsonParser) {
+    this.trustDataVisibility = trustDataVisibility;
     this.customerRepository = customerRepository;
     this.documentRepository = documentRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
@@ -105,8 +109,15 @@ public class FicaVerificationSkill implements AiSkill {
     // Pre-flight: customer must have uploaded documents
     List<Document> allDocs =
         documentRepository.findByScopeAndCustomerId(Document.Scope.CUSTOMER, customerId);
+    // Security review (PR #1750): a document that prints trust money (a saved Client Trust
+    // Statement) is left out for a member without VIEW_TRUST — the rule every other read of a
+    // stored document applies (TrustDataVisibility). FICA does not need it, so the check runs on
+    // the client's other documents instead of being refused.
     List<Document> uploadedDocs =
-        allDocs.stream().filter(d -> d.getStatus() == Document.Status.UPLOADED).toList();
+        allDocs.stream()
+            .filter(d -> d.getStatus() == Document.Status.UPLOADED)
+            .filter(d -> trustDataVisibility.mayRead(d.isContainsTrustData()))
+            .toList();
     if (uploadedDocs.isEmpty()) {
       throw new InvalidStateException(
           "No documents", "Client has no uploaded documents for FICA verification");

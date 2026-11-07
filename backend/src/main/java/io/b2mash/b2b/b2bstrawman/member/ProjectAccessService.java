@@ -54,8 +54,13 @@ public class ProjectAccessService {
   /**
    * Checks access and throws ResourceNotFoundException if the caller cannot view the project. This
    * provides security-by-obscurity: unauthorized users see "not found" rather than "forbidden".
+   *
+   * <p>A refusal does not mark the caller's transaction rollback-only: it is a read-only check, and
+   * a caller that handles the refusal (an AI skill recording a FAILED execution, G89-F56/F58) must
+   * see it, not an {@code UnexpectedRollbackException} on commit. A caller that lets it propagate
+   * still rolls back as usual.
    */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, noRollbackFor = ResourceNotFoundException.class)
   public ProjectAccess requireViewAccess(UUID projectId, ActorContext actor) {
     var access = checkAccess(projectId, actor);
     if (!access.canView()) {

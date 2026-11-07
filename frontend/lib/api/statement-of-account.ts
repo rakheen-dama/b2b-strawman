@@ -46,6 +46,8 @@ export interface StatementResponse {
   summary: StatementSummary;
   periodStart: string | null; // ISO yyyy-MM-dd; null for a statement without a generation snapshot
   periodEnd: string | null; // ISO yyyy-MM-dd
+  /** Prints trust money (G89-F52): downloadable only with VIEW_TRUST. */
+  containsTrustData?: boolean;
 }
 
 export interface PaginatedStatementsResponse {

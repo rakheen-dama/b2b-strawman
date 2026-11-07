@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChanged
 import io.b2mash.b2b.b2bstrawman.document.DocumentController.DocumentResponse;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -21,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ public class DocumentService {
   private final MemberNameResolver memberNameResolver;
   private final CustomerLifecycleGuard customerLifecycleGuard;
   private final ProjectLifecycleGuard projectLifecycleGuard;
+  private final TrustDataVisibility trustDataVisibility;
 
   public DocumentService(
       DocumentRepository documentRepository,
@@ -56,7 +59,8 @@ public class DocumentService {
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
       CustomerLifecycleGuard customerLifecycleGuard,
-      ProjectLifecycleGuard projectLifecycleGuard) {
+      ProjectLifecycleGuard projectLifecycleGuard,
+      TrustDataVisibility trustDataVisibility) {
     this.documentRepository = documentRepository;
     this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
@@ -66,6 +70,7 @@ public class DocumentService {
     this.memberNameResolver = memberNameResolver;
     this.customerLifecycleGuard = customerLifecycleGuard;
     this.projectLifecycleGuard = projectLifecycleGuard;
+    this.trustDataVisibility = trustDataVisibility;
   }
 
   /**
@@ -552,7 +557,7 @@ public class DocumentService {
         documentRepository
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    requireDocumentAccess(document, actor);
+    requireReadAccess(document, actor);
     if (document.getStatus() != Document.Status.UPLOADED) {
       throw new InvalidStateException(
           "Document not uploaded", "Document has not been uploaded yet");
@@ -604,6 +609,17 @@ public class DocumentService {
     // ORG and CUSTOMER scoped: tenant isolation is sufficient — any org member can access
   }
 
+  /**
+   * The read-path check (download / bytes — never the upload confirm / cancel flows): {@link
+   * #requireDocumentAccess} (matter, 404), then trust (G89-F52, D18): a document that prints trust
+   * money needs VIEW_TRUST (403). The portal reads through {@code PortalQueryService}, not here — a
+   * client always gets its own shared statement.
+   */
+  private void requireReadAccess(Document document, ActorContext actor) {
+    requireDocumentAccess(document, actor);
+    trustDataVisibility.requireMayRead(document.isContainsTrustData());
+  }
+
   /** Resolve uploader names for a list of documents. */
   public Map<UUID, String> resolveUploaderNames(List<Document> documents) {
     var ids =
@@ -622,15 +638,20 @@ public class DocumentService {
   /**
    * Retrieve a document entity and its raw bytes from storage. Used by tools that need to process
    * document content (e.g., text extraction). Tenant isolation is provided by the schema
-   * search_path; project-scoped documents additionally require project membership.
+   * search_path; project-scoped documents additionally require project membership, and a document
+   * that prints trust money requires VIEW_TRUST (G89-F52).
    */
-  @Transactional(readOnly = true)
+  @Transactional(
+      readOnly = true,
+      // A refused read must not mark a caller's transaction rollback-only (the AI skills read
+      // inside their prompt-assembly transaction and record the refusal as a FAILED execution).
+      noRollbackFor = {ResourceNotFoundException.class, ForbiddenException.class})
   public DocumentWithBytes getDocumentBytes(UUID documentId, ActorContext actor) {
     var document =
         documentRepository
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    requireDocumentAccess(document, actor);
+    requireReadAccess(document, actor);
     byte[] bytes = storageService.download(document.getS3Key());
     return new DocumentWithBytes(document, bytes);
   }

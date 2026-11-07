@@ -45,7 +45,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | **VERIFIED** on KC (632A(a)(b)(c)/S1-67, F6, F26/S2-50, WIP). DEFERRED: 632C (needs a new payment, moved to the exit re-walk); VIEW_TRUST withheld (needs a custom role, moved to the Batch H walk) |
-| 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 | fold-in round (F58/F59/F60) before gates |
+| 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 @53cabef57 | gates running: full verify, 2 reviews, pre-merge e2e (all suites) |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
@@ -243,3 +243,11 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - Red tests: 21 testcases, 13 failures + 2 errors on main.
   - Targeted: 2791 green. FE: 3696 green. Tenant **V14** (`contains_trust_data`); next free is V15.
   - The builder found F58, F59 and F60 (D20) and is folding them in before the gates.
+- 2026-11-07 ~21:30 — PR #1750 fold-in done @53cabef57.
+  - F58: matter checks in the contract-review and drafting skills; the provider stub records prompts, and the tests assert the secret never reaches the LLM.
+  - F59: null-safe, refused before the LLM when no matter can be resolved.
+  - F60: delete returns 404 to a non-member.
+  - Shared change: `ProjectAccessService.requireViewAccess` gets `noRollbackFor`, so a refusal is recorded instead of `UnexpectedRollbackException`. Reviewers have been asked to check callers that write before the check.
+  - New candidates (not folded):
+    - **G89-F61:** the matter-intake skill sends up to 500 matter names to the LLM, including matters the caller is not on.
+    - **G89-F62:** drafting without a templateId returns 500.

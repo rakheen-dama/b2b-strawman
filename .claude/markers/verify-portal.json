@@ -1,7 +1,7 @@
 {
-  "commit": "2748903dc",
-  "command": "cd portal && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-d-portal-correctness)",
+  "commit": "150bc743e",
+  "command": "portal vitest + portal e2e (90-day 13/0, responsive 21/0, isolation 2/0) on fresh stacks from the PR head; no portal source changed in this PR (global V5 migration only)",
   "exit": 0,
-  "ts": "2026-11-07T00:30:00Z",
-  "summary": "PR #1747 (G89 Batch D + F39) head 2748903dc: lint 0 errors (4 warnings), build ok, 49 files / 278 passed, prettier clean. CI Portal job 1st attempt failed on next/font/google download (network) — re-run requested"
+  "ts": "2026-11-07T13:30:00Z",
+  "summary": "PR #1749 (G89 Batch C2): portal vitest 49 files / 278 passed; portal e2e per-test identical to Checkpoint 1"
 }

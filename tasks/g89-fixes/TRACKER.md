@@ -42,7 +42,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | **VERIFIED** on KC (F23, F39, D2, D6): `qa_cycle/evidence/g89-fixes/batch-D/` |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
-| 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 | security fix round (VIEW_TRUST gate); then verify, reviews, founder wording sign-off |
+| 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | MERGED-AWAITING-VERIFY (KC check running) |
 | 5b | **H — generated-document access control** | **F52 (HIGH)** | BE (+FE if lists change) | | OPEN (scout) |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
@@ -64,7 +64,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] G89-F17 — reconciliation list fails to load (E)
 - [x] G89-F18 — Section 35 data pack is hollow (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM
-- [ ] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (moved to C2 / PR #1749, D17) — MEDIUM
+- [ ] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (moved to C2 / PR #1749, D17) — MEDIUM — merged #1749, awaiting KC
 - [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
 
@@ -214,3 +214,13 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - The builder has been resumed for the CodeRabbit round, with F51 moved in (D17).
   - Needs: full verify, 2 re-reviews, FE gate and a depth-ii re-run (it asserts the statements-table trust cell).
   - Process gap noted: the audit-trail line written before CodeRabbit had been read. Rule: read the CodeRabbit inline comments *before* writing the `## CodeRabbit:` line.
+- 2026-11-07 ~17:35 — **PR #1749 (C2) merged as `c38616dd5`.**
+  - Final gates @1b8da6a18:
+    - full verify 6692 / 0 / 0 / 26 (22:04);
+    - FE 3689 green;
+    - lifecycle 105/0 and depth-ii 40/0/4 on fresh stacks;
+    - 2× APPROVE;
+    - CodeRabbit: all 5 triaged (4 fixed, 1 no-change), no new actionable comments on the final head.
+  - KC stack restarted. Tenant V13 and global V5 applied.
+  - C2 KC check launched; Batch H scout running.
+  - Next free migrations: tenant **V14**, global **V6**.

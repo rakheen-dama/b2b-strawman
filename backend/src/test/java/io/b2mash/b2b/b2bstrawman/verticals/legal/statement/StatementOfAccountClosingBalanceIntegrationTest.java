@@ -316,6 +316,51 @@ class StatementOfAccountClosingBalanceIntegrationTest {
         .isEqualByComparingTo(summary(soa, "closing_balance_owing"));
   }
 
+  // ---------------------------------------------------------------------------------------------
+  // CodeRabbit (PR #1748): amounts in different currencies are never summed. Like the Overview
+  // Outstanding tile, the fee-note basis counts only notes in the firm's default currency (ZAR
+  // here); a note in another currency is excluded, not converted.
+  // ---------------------------------------------------------------------------------------------
+
+  @Test
+  void mixedCurrencyNotes_onlyDefaultCurrencyCounted() {
+    UUID matterId = newMatter("Mixed Currency Matter");
+    issuedNote(
+        matterId,
+        "ZAR",
+        List.of(
+            new Line(InvoiceLineType.FIXED_FEE, "Consultation", "1000.00", BigDecimal.ZERO, null)));
+    issuedNote(
+        matterId,
+        "USD",
+        List.of(
+            new Line(
+                InvoiceLineType.FIXED_FEE, "Offshore advice", "500.00", BigDecimal.ZERO, null)));
+
+    var soa = build(matterId, today.minusDays(30), today);
+    Map<String, Object> letter =
+        runInTenantReturning(
+            () ->
+                closureContextBuilder.buildClosureContext(
+                    matterId,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED, null, true, false, false, null, null, null)));
+    @SuppressWarnings("unchecked")
+    Map<String, Object> letterMatter = (Map<String, Object>) letter.get("matter");
+
+    assertThat(summary(soa, "total_fees"))
+        .as("only the ZAR note is billed in the firm's currency")
+        .isEqualByComparingTo("1000.00");
+    assertThat(summary(soa, "closing_balance_owing"))
+        .as("the USD note is excluded, not added to a ZAR balance")
+        .isEqualByComparingTo("1000.00");
+    assertThat(letterMatter.get("balance_owing")).isNotNull();
+    assertThat((BigDecimal) letterMatter.get("balance_owing"))
+        .as("the closure letter counts the same ZAR note only")
+        .isEqualByComparingTo("1000.00");
+    assertThat((BigDecimal) letterMatter.get("total_fees_billed")).isEqualByComparingTo("1000.00");
+  }
+
   // =============================================================================================
   // Fixtures
   // =============================================================================================
@@ -390,8 +435,13 @@ class StatementOfAccountClosingBalanceIntegrationTest {
                 }));
   }
 
-  /** A SENT fee note on the matter carrying {@code lines} (tax-exclusive); returns its id. */
+  /** A SENT ZAR fee note on the matter carrying {@code lines} (tax-exclusive); returns its id. */
   private UUID issuedNote(UUID matterId, List<Line> lines) {
+    return issuedNote(matterId, "ZAR", lines);
+  }
+
+  /** A SENT fee note in {@code currency} carrying {@code lines} (tax-exclusive); returns its id. */
+  private UUID issuedNote(UUID matterId, String currency, List<Line> lines) {
     TaxRate rate = runInTenantReturning(this::defaultRate);
     return runInTenantReturning(
         () ->
@@ -399,7 +449,7 @@ class StatementOfAccountClosingBalanceIntegrationTest {
                 tx -> {
                   var note =
                       invoiceRepository.saveAndFlush(
-                          new Invoice(customerId, "ZAR", CLIENT, null, null, FIRM, memberId));
+                          new Invoice(customerId, currency, CLIENT, null, null, FIRM, memberId));
                   BigDecimal subtotal = BigDecimal.ZERO;
                   BigDecimal tax = BigDecimal.ZERO;
                   int sort = 0;

@@ -10,11 +10,13 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.GenerateStatementRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.StatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
@@ -33,10 +35,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Security review (PR #1749): the Statement of Account prints the client's trust activity only for
@@ -66,6 +70,8 @@ class StatementTrustVisibilityIntegrationTest {
   @Autowired private StatementOfAccountContextBuilder contextBuilder;
   @Autowired private StatementService statementService;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
+  @Autowired private ObjectMapper objectMapper;
 
   private String schema;
   private UUID memberId;
@@ -178,6 +184,103 @@ class StatementTrustVisibilityIntegrationTest {
             .andReturn();
     String html = JsonPath.read(result.getResponse().getContentAsString(), "$.htmlPreview");
     assertThat(html).contains(DEPOSIT_REF).doesNotContain("Trust details are not available");
+  }
+
+  /**
+   * CodeRabbit #5: a statement generated without VIEW_TRUST must record its trust figure as
+   * withheld, not as a zero the Statements table would show everyone as "no trust money held".
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void withheldGeneration_summaryRecordsWithheld_notZero() {
+    UUID statementId =
+        generate("member", Set.of("GENERATE_STATEMENT_OF_ACCOUNT", "VIEW_LEGAL")).id();
+
+    Map<String, Object> summary =
+        inTenantTx(
+            "owner",
+            Set.of("VIEW_LEGAL", "VIEW_TRUST"),
+            () ->
+                (Map<String, Object>)
+                    generatedDocumentRepository
+                        .findById(statementId)
+                        .orElseThrow()
+                        .getContextSnapshot()
+                        .get("summary"));
+    assertThat(summary.get("trust_withheld")).isEqualTo(true);
+    assertThat(summary).doesNotContainKey("trust_balance_held");
+
+    // Even a reader who may see trust money gets the withheld state, never a fabricated zero.
+    Map<String, Object> read = readSummary(statementId, Set.of("VIEW_LEGAL", "VIEW_TRUST"));
+    assertThat(read.get("trustWithheld")).isEqualTo(true);
+    assertThat(read.get("trustBalanceHeld")).isNull();
+  }
+
+  /**
+   * G89-F51 (CodeRabbit #4): the list and get endpoints (VIEW_LEGAL) must not reveal a saved trust
+   * balance to a reader without VIEW_TRUST; the stored snapshot is left as generated.
+   */
+  @Test
+  void nonViewTrustReader_listAndGet_trustBalanceWithheld() {
+    UUID statementId =
+        generate("member", Set.of("GENERATE_STATEMENT_OF_ACCOUNT", "VIEW_LEGAL", "VIEW_TRUST"))
+            .id();
+    Set<String> legalOnly = Set.of("VIEW_LEGAL");
+
+    Map<String, Object> got = readSummary(statementId, legalOnly);
+    assertThat(got.get("trustWithheld")).isEqualTo(true);
+    assertThat(got.get("trustBalanceHeld")).isNull();
+
+    Map<String, Object> listed = listedSummary(statementId, legalOnly);
+    assertThat(listed.get("trustWithheld")).isEqualTo(true);
+    assertThat(listed.get("trustBalanceHeld")).isNull();
+  }
+
+  /** Control: a VIEW_TRUST reader sees the saved balance (R2 500 deposit, not withheld). */
+  @Test
+  void viewTrustReader_seesBalance() {
+    UUID statementId =
+        generate("member", Set.of("GENERATE_STATEMENT_OF_ACCOUNT", "VIEW_LEGAL", "VIEW_TRUST"))
+            .id();
+    Set<String> withTrust = Set.of("VIEW_LEGAL", "VIEW_TRUST");
+
+    for (Map<String, Object> summary :
+        List.of(readSummary(statementId, withTrust), listedSummary(statementId, withTrust))) {
+      assertThat(summary.get("trustWithheld")).isNotEqualTo(true);
+      assertThat(new BigDecimal(String.valueOf(summary.get("trustBalanceHeld"))))
+          .isEqualByComparingTo("2500.00");
+    }
+  }
+
+  /** The {@code summary} of GET /statements/{id}, as the wire JSON (a map). */
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> readSummary(UUID statementId, Set<String> capabilities) {
+    var response =
+        inTenantTx("member", capabilities, () -> statementService.getById(matterId, statementId));
+    return (Map<String, Object>) objectMapper.convertValue(response, Map.class).get("summary");
+  }
+
+  /** The {@code summary} of this statement's row in GET /statements, as the wire JSON (a map). */
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> listedSummary(UUID statementId, Set<String> capabilities) {
+    var page =
+        inTenantTx(
+            "member",
+            capabilities,
+            () -> statementService.list(matterId, PageRequest.of(0, 100)).getContent());
+    var row = page.stream().filter(s -> s.id().equals(statementId)).findFirst().orElseThrow();
+    return (Map<String, Object>) objectMapper.convertValue(row, Map.class).get("summary");
+  }
+
+  private StatementResponse generate(String orgRole, Set<String> capabilities) {
+    return inTenantTx(
+        orgRole,
+        capabilities,
+        () ->
+            statementService.generate(
+                matterId,
+                new GenerateStatementRequest(PERIOD_START, PERIOD_END, null, false, false),
+                memberId));
   }
 
   private String generateHtml(String orgRole, Set<String> capabilities) {

@@ -1,0 +1,135 @@
+
+Running 30 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:98:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Create client Sipho Ndlovu and start FICA onboarding (3.2s)
+  ✓   2 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:115:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Open Sipho's litigation matter from the Litigation template (1.4s)
+  ✘   3 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:140:7 › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page (1.4s)
+  -   4 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:7 › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit
+  -   5 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:197:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment
+  -   6 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:272:7 › Day 5 — Disbursements (Phase 67) › Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link
+  -   7 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:315:7 › Day 5 — Disbursements (Phase 67) › Alice (Thandi): Approve trust-linked disbursement
+  -   8 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:335:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve sheriff-fee OFFICE_ACCOUNT disbursement
+  -   9 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:360:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve dialog opened right after navigating to a disbursement stays open
+  -  10 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:411:7 › Day 5 — Disbursements (Phase 67) › Alice: Sipho's matter Finance → Disbursements tab lists the disbursements
+  -  11 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:448:7 › Day 5 — Disbursements (Phase 67) › Alice: Verify Unbilled Disbursements summary on Sipho's matter
+  ✓  12 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:103:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create client Khumalo Property Holdings and start FICA onboarding (3.4s)
+  ✓  13 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:145:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE (7.1s)
+  ✓  14 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:186:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create matter using Property Transfer template (2.0s)
+  ✓  15 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:219:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Clicking into a matter (route with a loading skeleton) renders its content (10 fresh sessions) (8.5s)
+  ✓  16 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:244:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Verify 16 conveyancing custom fields present on matter detail (2.2s)
+  ✓  17 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:282:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office, seller and purchaser (3.1s)
+  ✓  18 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:314:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document and save it to the matter (3.0s)
+  ✓  19 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:357:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document with conveyancing clauses (3.0s)
+  ✓  20 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:386:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow (3.8s)
+  ✓  21 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:202:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Billing rate override for Alice on Sipho's client (2.5s)
+  ✓  22 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:227:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand (2.9s)
+  ✓  23 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:258:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Open Statements tab on oldest matter (1.6s)
+  ✘  24 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:273:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview (7.5s)
+  -  25 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:294:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab
+  -  26 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:361:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statements-tab Download fetches the PDF
+  -  27 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:376:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Write off one approved-UNBILLED disbursement
+  -  28 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:398:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify write-off audit event present in audit log
+  -  29 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:425:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statement after the write-off — sheriff fee out of the disbursements and the WIP
+  -  30 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:438:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify written-off disbursement excluded from next invoice draft
+
+
+  1) [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:140:7 › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveScreenshot[2m([22m[32mexpected[39m[2m)[22m failed
+
+      9380 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: day-05-disbursements-list-empty.png
+
+    Call log:
+    [2m  - Expect "toHaveScreenshot(day-05-disbursements-list-empty.png)" with timeout 5000ms[22m
+    [2m    - verifying given screenshot expectation[22m
+    [2m  - taking page screenshot[22m
+    [2m    - disabled all CSS animations[22m
+    [2m  - waiting for fonts to load...[22m
+    [2m  - fonts loaded[22m
+    [2m  - 9380 pixels (ratio 0.02 of all image pixels) are different.[22m
+    [2m  - waiting 100ms before taking screenshot[22m
+    [2m  - taking page screenshot[22m
+    [2m    - disabled all CSS animations[22m
+    [2m  - waiting for fonts to load...[22m
+    [2m  - fonts loaded[22m
+    [2m  - captured a stable screenshot[22m
+    [2m  - 9380 pixels (ratio 0.02 of all image pixels) are different.[22m
+
+
+       at ../../helpers/screenshot.ts:67
+
+      65 |       await expect(locator).toHaveScreenshot(`${name}.png`);
+      66 |     } else {
+    > 67 |       await expect(page).toHaveScreenshot(`${name}.png`, {
+         |                          ^
+      68 |         fullPage: fullPage ? true : undefined,
+      69 |       });
+      70 |     }
+        at captureScreenshot (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/frontend/e2e/helpers/screenshot.ts:67:26)
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/frontend/e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:152:28
+
+    attachment #1: day-05-disbursements-list-empty (image/png) ─────────────────────────────────────
+    Expected: e2e/screenshots/legal-depth-ii/day-05-disbursements-list-empty.png
+    Received: test-results/day-05-disbursements-Day-5-f4e12-l-→-Disbursements-list-page-chromium/day-05-disbursements-list-empty-actual.png
+    Diff:     test-results/day-05-disbursements-Day-5-f4e12-l-→-Disbursements-list-page-chromium/day-05-disbursements-list-empty-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-05-disbursements-Day-5-f4e12-l-→-Disbursements-list-page-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-05-disbursements-Day-5-f4e12-l-→-Disbursements-list-page-chromium/error-context.md
+
+  2) [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:273:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: getByTestId('statement-of-account-dialog').getByTestId('statement-preview-container').locator('iframe[title="Document Preview"]').contentFrame().locator('body')
+    Timeout: 5000ms
+    [32m- Expected substring  - 1[39m
+    [31m+ Received string     + 6[39m
+
+    [32m- Sheriff fee — service of process[39m
+    [31m+[39m
+    [31m+ E2E Test OrganizationStatement of AccountReference: SOA-6e8a6c1f-20261107Period: 9 August 2026 — 7 November 2026Generated: 7 November 2026ToSipho Ndlovu mw6gogje18c912 Rivonia Road[39m
+    [31m+ Sandton[39m
+    [31m+ 2196[39m
+    [31m+ ZAMatterMatter: Ndlovu v RAF — Depth II mw6gogje18c9Opened: 7 November 2026Professional FeesDateFee EarnerDescriptionHoursRateAmount7 November 2026Alice OwnerDrafted and served letter of demand on the Road Accident Fund (mw6gogje18c9)2R2 500,00R5 000,00Total fees (excl. VAT): R5 000,00VAT: R750,00Total fees (incl. VAT): R5 750,00DisbursementsDateCategoryDescriptionSupplierAmountVATTotal disbursements: R0,00Trust ActivityOpening balance: R0,00DepositsDateReferenceDescriptionAmountPaymentsDateTypeReferenceDescriptionAmountClosing balance: R0,00SummaryTotal fees: R0,00Total disbursements: R0,00Previous balance owing: R0,00Payments received: R0,00Closing balance owing: R0,00Trust balance held: R0,00Unbilled work in progress (not yet billed): R5 000,00[39m
+    [31m+[39m
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('statement-of-account-dialog').getByTestId('statement-preview-container').locator('iframe[title="Document Preview"]').contentFrame().locator('body')[22m
+    [2m    9 × locator resolved to <body>…</body>[22m
+    [2m      - unexpected value "[22m
+    [2mE2E Test OrganizationStatement of AccountReference: SOA-6e8a6c1f-20261107Period: 9 August 2026 — 7 November 2026Generated: 7 November 2026ToSipho Ndlovu mw6gogje18c912 Rivonia Road[22m
+    [2mSandton[22m
+    [2m2196[22m
+    [2mZAMatterMatter: Ndlovu v RAF — Depth II mw6gogje18c9Opened: 7 November 2026Professional FeesDateFee EarnerDescriptionHoursRateAmount7 November 2026Alice OwnerDrafted and served letter of demand on the Road Accident Fund (mw6gogje18c9)2R2 500,00R5 000,00Total fees (excl. VAT): R5 000,00VAT: R750,00Total fees (incl. VAT): R5 750,00DisbursementsDateCategoryDescriptionSupplierAmountVATTotal disbursements: R0,00Trust ActivityOpening balance: R0,00DepositsDateReferenceDescriptionAmountPaymentsDateTypeReferenceDescriptionAmountClosing balance: R0,00SummaryTotal fees: R0,00Total disbursements: R0,00Previous balance owing: R0,00Payments received: R0,00Closing balance owing: R0,00Trust balance held: R0,00Unbilled work in progress (not yet billed): R5 000,00[22m
+    [2m"[22m
+
+
+      150 |   // statement lists approved, not-written-off disbursements)
+      151 |   if (expected.sheriffFeeListed) {
+    > 152 |     await expect(preview).toContainText(SHERIFF_FEE_DESCRIPTION);
+          |                           ^
+      153 |   } else {
+      154 |     await expect(preview).not.toContainText(SHERIFF_FEE_DESCRIPTION);
+      155 |   }
+        at verifyStatementPreview (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/frontend/e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:152:27)
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/frontend/e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:277:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-30-45-soa-writeoff-Day-459e9-f-Account-with-HTML-preview-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-30-45-soa-writeoff-Day-459e9-f-Account-with-HTML-preview-chromium/error-context.md
+
+  2 failed
+    [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:140:7 › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page 
+    [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:273:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview 
+  1 skipped
+  13 did not run
+  14 passed (57.9s)

@@ -25,6 +25,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D14 | (2026-11-07) **G89-F50** (Section 35 pack lists only the latest interest run in the FY) is **MEDIUM**; fix in Batch E (all runs). **G89-F45** (multi-matter fee note counted in full on each matter) is **LOW**, backlog. **G89-F44** (portal Firm actions lacks deposit/interest events): fix in Batch E. |
 | D15 | (2026-11-07) Founder **signs off the PR #1749 legal wording as written**: s78(1) → s86(2) trust account; s86 LPA citations; compliance-audit prompt s86(1)-(2)/(3)-(4); Section 35 historical-name javadoc; "Unbilled work in progress (not yet billed)". |
 | D16 | (2026-11-07) The VIEW_TRUST fallback line "Trust details are not available." is **signed off**. **G89-F51** (the Statements tab shows the stored `trust_balance_held` to users without VIEW_TRUST, pre-existing) is **MEDIUM**, to be fixed in Batch E server-side with `TrustDataVisibility`. |
+| D17 | (2026-11-07, orchestrator sequencing) **G89-F51** is moved from Batch E into PR #1749. CodeRabbit flagged it there as a Major on the same DTO and table as a PR-introduced Major (a withheld generation saved as a zero trust balance). Severity and fix approach are unchanged from D16. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -56,7 +57,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] G89-F17 — reconciliation list fails to load (E)
 - [x] G89-F18 — Section 35 data pack is hollow (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM
-- [ ] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (E, D16) — MEDIUM
+- [ ] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (moved to C2 / PR #1749, D17) — MEDIUM
 - [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
 
@@ -193,3 +194,16 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
     - (c) `day-14-conveyancing:354`: networkidle-after-preview harness hang, also on main (5 of 16). Spec fix goes into #1749.
     - (c) `day-75-85-closure:391`: capture artefact; passes on re-run and on main.
   - Builder resumed for the two spec fixes. depth-ii is to be re-run from the new head before merge.
+- 2026-11-07 ~16:30 — PR #1749 (C2): all gates were green at 32bd5a633:
+  - depth-ii re-run 40/0/4/0 (`pr1749-e2e/rerun-32bd5a633/`);
+  - 2× spec-delta APPROVE;
+  - FE gate 3688 green.
+  - **Not merged.** CodeRabbit on the final head raised 5 comments (2 Major):
+    - Major: a withheld generation is saved as a zero trust balance (PR-introduced).
+    - Major: F51, the saved trust balance is readable without VIEW_TRUST.
+    - Minor: the generic-menu scan cache.
+    - Minor: the refusal tests.
+    - Minor: the V13 scope. Replied: D12 covers it, no change.
+  - The builder has been resumed for the CodeRabbit round, with F51 moved in (D17).
+  - Needs: full verify, 2 re-reviews, FE gate and a depth-ii re-run (it asserts the statements-table trust cell).
+  - Process gap noted: the audit-trail line written before CodeRabbit had been read. Rule: read the CodeRabbit inline comments *before* writing the `## CodeRabbit:` line.

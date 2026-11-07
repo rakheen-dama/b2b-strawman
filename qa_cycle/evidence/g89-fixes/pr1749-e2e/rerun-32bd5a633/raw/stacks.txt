@@ -1,0 +1,58 @@
+===== stack C checks 2026-11-07T15:38:13+0200 =====
+build rc=0
+git HEAD 32bd5a633e03fb8734ec75b847c08b4e55aedec8
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-07 15:37:39 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-07 15:37:39 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-07 15:37:39 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-07 15:37:39 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-07 15:37:39 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-07 15:37:39 +0200 SAST
+/e2e-backend image=sha256:e89e160634bcd682e5308b44428541a1984d3cdd267851601fdff9d99099c24d created=2026-11-07T13:37:39.59435038Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/compose
+/e2e-frontend image=sha256:f4f8ea56a097b6203f82afe1e0f0882c1a6deac3664438d5588b62f36321030f created=2026-11-07T13:37:39.650420214Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-07T13:37:39.541394255Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/compose
+cached-lines=44
+tenant=tenant_7d218705360b
+tenant flyway: 13|g89 strip matter type suffix
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+===== stack G checks 2026-11-07T15:44:37+0200 =====
+build rc=0
+git HEAD 32bd5a633e03fb8734ec75b847c08b4e55aedec8
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-07 15:44:03 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-07 15:44:03 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-07 15:44:03 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-07 15:44:03 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-07 15:44:03 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-07 15:44:03 +0200 SAST
+/e2e-backend image=sha256:e89e160634bcd682e5308b44428541a1984d3cdd267851601fdff9d99099c24d created=2026-11-07T13:44:03.762283711Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/compose
+/e2e-frontend image=sha256:ecd407e06702140bc88f8914a265a436eb87433a06310e21749df45f392ae9d6 created=2026-11-07T13:44:03.842434127Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-07T13:44:03.524391877Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp2/compose
+cached-lines=44
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Volume docteams-e2e_e2e_postgres_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 13|g89 strip matter type suffix
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+G-lifecycle writing-actual=0
+G-depth-ii writing-actual=0
+G-repeat-1 writing-actual=0
+G-repeat-2 writing-actual=0
+G-repeat-3 writing-actual=0
+G-repeat-4 writing-actual=0
+G-repeat-5 writing-actual=0
+G-repeat-6 writing-actual=0

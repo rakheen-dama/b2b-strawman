@@ -1,0 +1,36 @@
+
+Running 30 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:98:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Create client Sipho Ndlovu and start FICA onboarding (2.8s)
+  ✓   2 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:115:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Open Sipho's litigation matter from the Litigation template (1.4s)
+  ✓   3 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:140:7 › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page (1.0s)
+  ✓   4 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:7 › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit (2.5s)
+  ✓   5 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:197:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment (6.2s)
+  ✓   6 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:272:7 › Day 5 — Disbursements (Phase 67) › Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link (4.3s)
+  ✓   7 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:315:7 › Day 5 — Disbursements (Phase 67) › Alice (Thandi): Approve trust-linked disbursement (1.7s)
+  ✓   8 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:335:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve sheriff-fee OFFICE_ACCOUNT disbursement (1.6s)
+  ✓   9 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:360:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve dialog opened right after navigating to a disbursement stays open (3.7s)
+  ✓  10 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:411:7 › Day 5 — Disbursements (Phase 67) › Alice: Sipho's matter Finance → Disbursements tab lists the disbursements (2.6s)
+  ✓  11 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:448:7 › Day 5 — Disbursements (Phase 67) › Alice: Verify Unbilled Disbursements summary on Sipho's matter (1.2s)
+  ✓  12 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:103:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create client Khumalo Property Holdings and start FICA onboarding (4.4s)
+  ✓  13 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:145:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE (7.0s)
+  ✓  14 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:186:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create matter using Property Transfer template (2.0s)
+  ✓  15 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:219:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Clicking into a matter (route with a loading skeleton) renders its content (10 fresh sessions) (8.6s)
+  ✓  16 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:244:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Verify 16 conveyancing custom fields present on matter detail (2.2s)
+  ✓  17 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:282:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office, seller and purchaser (3.1s)
+  ✓  18 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:314:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document and save it to the matter (3.5s)
+  ✓  19 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:357:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document with conveyancing clauses (2.4s)
+  ✓  20 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:386:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow (4.3s)
+  ✓  21 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:202:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Billing rate override for Alice on Sipho's client (2.5s)
+  ✓  22 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:227:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand (2.9s)
+  ✓  23 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:258:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Open Statements tab on oldest matter (1.6s)
+  ✓  24 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:273:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview (2.5s)
+  ✓  25 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:294:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab (3.9s)
+  -  26 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:361:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statements-tab Download fetches the PDF
+  ✓  27 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:376:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Write off one approved-UNBILLED disbursement (1.2s)
+  ✓  28 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:398:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify write-off audit event present in audit log (1.9s)
+  ✓  29 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:425:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statement after the write-off — sheriff fee out of the disbursements and the WIP (2.1s)
+  ✓  30 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:438:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify written-off disbursement excluded from next invoice draft (2.4s)
+
+  1 skipped
+  29 passed (1.5m)

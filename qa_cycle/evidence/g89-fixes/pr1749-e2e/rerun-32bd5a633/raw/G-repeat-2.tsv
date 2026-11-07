@@ -1,0 +1,30 @@
+day-05-disbursements.spec.ts	98	[setup] Alice (Thandi): Create client Sipho Ndlovu and start FICA onboarding	expected	passed
+day-05-disbursements.spec.ts	115	[setup] Alice (Thandi): Open Sipho's litigation matter from the Litigation template	expected	passed
+day-05-disbursements.spec.ts	140	Bob: Navigate to Legal → Disbursements list page	unexpected	failed
+day-05-disbursements.spec.ts	156	Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit	skipped	skipped
+day-05-disbursements.spec.ts	197	[setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment	skipped	skipped
+day-05-disbursements.spec.ts	272	Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link	skipped	skipped
+day-05-disbursements.spec.ts	315	Alice (Thandi): Approve trust-linked disbursement	skipped	skipped
+day-05-disbursements.spec.ts	335	Bob: Approve sheriff-fee OFFICE_ACCOUNT disbursement	skipped	skipped
+day-05-disbursements.spec.ts	360	Bob: Approve dialog opened right after navigating to a disbursement stays open	skipped	skipped
+day-05-disbursements.spec.ts	411	Alice: Sipho's matter Finance → Disbursements tab lists the disbursements	skipped	skipped
+day-05-disbursements.spec.ts	448	Alice: Verify Unbilled Disbursements summary on Sipho's matter	skipped	skipped
+day-14-conveyancing.spec.ts	103	Alice (Thandi): Create client Khumalo Property Holdings and start FICA onboarding	expected	passed
+day-14-conveyancing.spec.ts	145	Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE	expected	passed
+day-14-conveyancing.spec.ts	186	Alice (Thandi): Create matter using Property Transfer template	expected	passed
+day-14-conveyancing.spec.ts	219	Alice: Clicking into a matter (route with a loading skeleton) renders its content (10 fresh sessions)	expected	passed
+day-14-conveyancing.spec.ts	244	Alice: Verify 16 conveyancing custom fields present on matter detail	expected	passed
+day-14-conveyancing.spec.ts	282	Alice: Fill property_address, erf_number, deeds_office, seller and purchaser	expected	passed
+day-14-conveyancing.spec.ts	314	Alice: Generate Offer to Purchase document and save it to the matter	expected	passed
+day-14-conveyancing.spec.ts	357	Alice: Generate Offer to Purchase document with conveyancing clauses	expected	passed
+day-14-conveyancing.spec.ts	386	Alice: Send OTP for Acceptance via Phase 28 flow	expected	passed
+day-30-45-soa-writeoff.spec.ts	202	[setup] Alice (Thandi): Billing rate override for Alice on Sipho's client	expected	passed
+day-30-45-soa-writeoff.spec.ts	227	[setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand	expected	passed
+day-30-45-soa-writeoff.spec.ts	258	Alice (Thandi): Open Statements tab on oldest matter	expected	passed
+day-30-45-soa-writeoff.spec.ts	273	Alice: Generate Statement of Account with HTML preview	unexpected	failed
+day-30-45-soa-writeoff.spec.ts	294	Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab	skipped	skipped
+day-30-45-soa-writeoff.spec.ts	361	Alice: Statements-tab Download fetches the PDF	skipped	skipped
+day-30-45-soa-writeoff.spec.ts	376	Alice (Thandi): Write off one approved-UNBILLED disbursement	skipped	skipped
+day-30-45-soa-writeoff.spec.ts	398	Alice: Verify write-off audit event present in audit log	skipped	skipped
+day-30-45-soa-writeoff.spec.ts	425	Alice: Statement after the write-off — sheriff fee out of the disbursements and the WIP	skipped	skipped
+day-30-45-soa-writeoff.spec.ts	438	Alice: Verify written-off disbursement excluded from next invoice draft	skipped	skipped

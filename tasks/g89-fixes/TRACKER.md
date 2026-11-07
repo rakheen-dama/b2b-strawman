@@ -23,6 +23,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D11 | 632A(a)/(c): hide dedicated-flow templates (SoA, closure letter, payment receipt) from the generic menus and refuse them on the generic endpoint. Bind trust data to the Client Trust Statement. Hide the Trust Receipt until a deposit-bound flow exists. Hide the common-pack PROJECT templates for legal-za. |
 | D13 | G89-F39 (the portal trust statement shows the recorded date instead of the transaction date) is **MEDIUM** and is folded into Batch D / PR #1747. Founder decision, 2026-11-07. |
 | D14 | (2026-11-07) **G89-F50** (Section 35 pack lists only the latest interest run in the FY) is **MEDIUM**; fix in Batch E (all runs). **G89-F45** (multi-matter fee note counted in full on each matter) is **LOW**, backlog. **G89-F44** (portal Firm actions lacks deposit/interest events): fix in Batch E. |
+| D15 | (2026-11-07) Founder **signs off the PR #1749 legal wording as written**: s78(1) → s86(2) trust account; s86 LPA citations; compliance-audit prompt s86(1)-(2)/(3)-(4); Section 35 historical-name javadoc; "Unbilled work in progress (not yet billed)". |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches

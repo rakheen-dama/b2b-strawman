@@ -11,13 +11,17 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * G89-F6 / D12: the shipped legal content cites the Legal Practice Act 28 of 2014 (trust accounts
  * under section 86, the LPC Rules) — never the repealed Attorneys Act 53 of 1979 or its section 78.
- * Greps every shipped template pack, clause pack and AI skill prompt for the old citations. The
- * historical reconcile fixtures under {@code src/test/resources/fixtures/**} are {@code from}
- * states and are deliberately out of scope (they are not on the main classpath).
+ * Greps every shipped template pack, clause pack and AI skill prompt for the old citations. A
+ * pack's ADR-356 {@code reconcile} block is out of scope — its {@code from} values are the
+ * previously shipped (old) wording by contract — and so are the historical reconcile fixtures under
+ * {@code src/test/resources/fixtures/**} (they are not on the main classpath).
  */
 class LegalZaRegulatoryWordingTest {
 
@@ -26,6 +30,8 @@ class LegalZaRegulatoryWordingTest {
           "classpath*:template-packs/**/*.json",
           "classpath*:clause-packs/**/*.json",
           "classpath*:ai/skills/**/*.txt");
+
+  private static final ObjectMapper JSON = new ObjectMapper();
 
   /** The repealed Act by name, and its trust-account section in the forms the content used. */
   private static final Pattern OLD_CITATION =
@@ -43,12 +49,12 @@ class LegalZaRegulatoryWordingTest {
           continue;
         }
         scanned++;
-        String[] lines = read(resource).split("\n", -1);
-        for (int i = 0; i < lines.length; i++) {
-          var matcher = OLD_CITATION.matcher(lines[i]);
-          while (matcher.find()) {
-            hits.add("%s:%d '%s'".formatted(resource.getFilename(), i + 1, matcher.group().trim()));
-          }
+        String text = withoutReconcileBlock(resource);
+        var matcher = OLD_CITATION.matcher(text);
+        while (matcher.find()) {
+          int from = Math.max(0, matcher.start() - 40);
+          int to = Math.min(text.length(), matcher.end() + 40);
+          hits.add("%s: ...%s...".formatted(resource.getFilename(), text.substring(from, to)));
         }
       }
     }
@@ -56,9 +62,19 @@ class LegalZaRegulatoryWordingTest {
     assertThat(hits).as("old Attorneys Act / section 78 citations").isEmpty();
   }
 
-  private static String read(Resource resource) throws IOException {
+  /** The resource text; for a JSON pack, re-serialised without its {@code reconcile} block. */
+  private static String withoutReconcileBlock(Resource resource) throws IOException {
+    String text;
     try (InputStream in = resource.getInputStream()) {
-      return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+      text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
+    if (!String.valueOf(resource.getFilename()).endsWith(".json")) {
+      return text;
+    }
+    JsonNode tree = JSON.readTree(text);
+    if (tree instanceof ObjectNode object) {
+      object.remove("reconcile");
+    }
+    return tree.toString();
   }
 }

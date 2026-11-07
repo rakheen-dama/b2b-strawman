@@ -196,13 +196,13 @@ class PackReconciliationRunnerTest {
 
   @Test
   void gateClosedOnNonNumericVersion() {
-    rewind("legal-za-clauses", "2", "v1-legacy");
+    rewind("legal-za-clauses", "3", "v1-legacy");
     try {
       assertThatCode(() -> reconciliationRunner.reconcilePacksForTenant(gateSchema, GATE_ORG_ID))
           .doesNotThrowAnyException();
       assertThat(gateVersions()).containsEntry("legal-za-clauses", "v1-legacy");
     } finally {
-      rewind("legal-za-clauses", "v1-legacy", "2");
+      rewind("legal-za-clauses", "v1-legacy", "3");
     }
   }
 

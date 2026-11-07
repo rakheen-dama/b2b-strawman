@@ -56,7 +56,7 @@ class PackInstallBackfillTest {
           new TreeMap<>(
               Map.of(
                   "conveyancing-za-clauses", "3",
-                  "legal-za-clauses", "2",
+                  "legal-za-clauses", "3",
                   "standard-clauses", "2")),
           PackType.FIELD,
           new TreeMap<>(

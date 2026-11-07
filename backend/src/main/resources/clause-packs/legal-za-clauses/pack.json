@@ -1,8 +1,9 @@
 {
   "packId": "legal-za-clauses",
-  "version": 2,
+  "version": 3,
   "reconcile": [
-    { "entity": "clause", "key": "legal-za-fees-hourly", "field": "body", "from": "sha256:61b9a93da416246b3d90e1cc3374cee6d9699a2f35205d1e392d75a1281fcbe2", "to": "sha256:8d5051abc196da18687746695c4000d5283974f692981e4615b68d6b7c910b87" }
+    { "entity": "clause", "key": "legal-za-fees-hourly", "field": "body", "from": "sha256:61b9a93da416246b3d90e1cc3374cee6d9699a2f35205d1e392d75a1281fcbe2", "to": "sha256:8d5051abc196da18687746695c4000d5283974f692981e4615b68d6b7c910b87" },
+    { "entity": "clause", "key": "legal-za-trust-deposits", "field": "description", "from": "Trust account deposit requirements per Section 86 of the Attorneys Act", "to": "Trust account deposit requirements per section 86 of the Legal Practice Act 28 of 2014" }
   ],
   "verticalProfile": "legal-za",
   "name": "SA Legal Clauses",
@@ -121,7 +122,7 @@
       "title": "Trust Account Deposits",
       "slug": "legal-za-trust-deposits",
       "category": "trust",
-      "description": "Trust account deposit requirements per Section 86 of the Attorneys Act",
+      "description": "Trust account deposit requirements per section 86 of the Legal Practice Act 28 of 2014",
       "body": {
         "type": "doc",
         "content": [

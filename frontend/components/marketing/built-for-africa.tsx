@@ -76,7 +76,7 @@ const regulations: Regulation[] = [
   {
     icon: Banknote,
     acronym: "Trust Accounting",
-    name: "Attorneys Act Section 78",
+    name: "Legal Practice Act Section 86",
     detail:
       "Ring-fenced client funds with deposit tracking, payment approvals, and interest distribution.",
     features: [

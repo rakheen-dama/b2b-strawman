@@ -18,8 +18,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 /**
- * Composite report combining all 6 sub-reports for a financial year, as required by Section 35 of
- * the Attorneys Act. Derives financial_year_start as financial_year_end - 1 year + 1 day.
+ * Composite report combining all 6 sub-reports for a financial year: the annual trust account audit
+ * / reporting pack under the Legal Practice Act 28 of 2014 and the LPC Rules (rule 54). The
+ * "Section 35" name is historical — section 35 of the repealed Attorneys Act 53 of 1979 — and is
+ * kept as the report's identity. Derives financial_year_start as financial_year_end - 1 year + 1
+ * day.
  */
 @Component
 public class Section35DataPackQuery implements ReportQuery {

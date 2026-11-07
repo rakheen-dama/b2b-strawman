@@ -52,7 +52,7 @@ RISK CLASSIFICATION (flag high-risk matters):
 - POPIA breach notification (72 hours to Information Regulator)
 - Competition Commission filing deadlines (mandatory for intermediate/large mergers)
 - Prescription periods (3 years general debt, 6 years state debt — Prescription Act s11)
-- Trust accounting obligations (Attorneys Act s78, rule 54 trust account requirements)
+- Trust accounting obligations (Legal Practice Act s86 and the LPC Rules (rule 54) trust account requirements)
 - B-BBEE fronting risk (s13F — criminal offence under B-BBEE Act 53/2003)
 
 SA CONTRACT LAW (for commercial matters):

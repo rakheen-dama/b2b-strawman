@@ -33,6 +33,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 **Fix:** customer-access checks for client-level generated docs, plus VIEW_TRUST for trust-bearing documents. |
 | D19 | (2026-11-07) Batch H also covers **G89-F53** (template generate/preview/generate-docx skip the matter-access check), **G89-F54** (statements list/get skip matter membership) and **G89-F56** (AI contract review reads any document by id with no access check, and the text goes to the LLM). All are rated **HIGH**. F52 lists: trust-bearing rows stay listed, flagged `containsTrustData`, with Download disabled for members without VIEW_TRUST. |
 | D20 | (2026-11-07, orchestrator, under the D19 ruling for the same class) Fold into Batch H / PR #1750: **G89-F58** HIGH (AI skills such as ContractReview and Drafting load the caller-named matter without a matter check; matter data reaches the LLM, same class as F56), **G89-F59** (contract review without a matterId → 500), **G89-F60** (`DELETE /api/generated-documents/{id}` has no matter check). |
+| D21 | (2026-11-08) **G89-F61** (matter-intake sends up to 500 matter names to the LLM) is **by design** (conflict/intake suggestion needs the firm's matter list); recorded, no fix. **G89-F62** (drafting without templateId → 500) is **LOW**, to Batch E. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -45,8 +46,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | **VERIFIED** on KC (632A(a)(b)(c)/S1-67, F6, F26/S2-50, WIP). DEFERRED: 632C (needs a new payment, moved to the exit re-walk); VIEW_TRUST withheld (needs a custom role, moved to the Batch H walk) |
-| 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 → `4f3323525` | MERGED-AWAITING-VERIFY (KC check with a custom role running) |
-| 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
+| 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 → `4f3323525` | **VERIFIED** on KC: F52 lists and direct 403, F53/F54 404, C2 'Withheld'. F56/F58 DEFERRED (AI not configured on the KC dev stack; covered by backend stub-provider tests) → exit re-walk |
+| 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 | gates running |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
@@ -54,11 +55,11 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 ## Gap checklist
 
 ### HIGH
-- [ ] G89-F52 — generated-document downloads bypass trust/client access (H, D18)
-- [ ] G89-F53 — template generate/preview/docx skip matter access (H, D19)
-- [ ] G89-F54 — statements list/get skip matter membership (H, D19)
-- [ ] G89-F56 — AI contract review reads any document unchecked (H, D19)
-- [ ] G89-F58 — AI skills load caller-named matter without access check (H, D20)
+- [x] G89-F52 — generated-document downloads bypass trust/client access (H, D18) — VERIFIED 2026-11-08, PR #1750
+- [x] G89-F53 — template generate/preview/docx skip matter access (H, D19) — VERIFIED 2026-11-08 (404s observed; generate/preview/delete via backend tests)
+- [x] G89-F54 — statements list/get skip matter membership (H, D19) — VERIFIED 2026-11-08
+- [ ] G89-F56 — AI contract review reads any document unchecked (H, D19) — merged #1750; KC observation DEFERRED (AI not configured)
+- [ ] G89-F58 — AI skills load caller-named matter without access check (H, D20) — merged #1750; KC observation DEFERRED (AI not configured)
 - [x] G89-F11 — interest run accepted for a period that has not ended (B) — VERIFIED 2026-11-06, PR #1745
 - [x] G89-F12 — matter-linked refund exceeds matter balance (A) — VERIFIED 2026-11-07, PR #1746
 - [x] G89-F22 — portal trust balance ≠ firm client ledger (A) — VERIFIED 2026-11-07, PR #1746
@@ -70,7 +71,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] G89-F17 — reconciliation list fails to load (E)
 - [x] G89-F18 — Section 35 data pack is hollow (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM
-- [ ] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (moved to C2 / PR #1749, D17) — MEDIUM — merged #1749, awaiting KC
+- [x] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (C2 / PR #1749, D17) — MEDIUM — VERIFIED 2026-11-08 (Batch H walk: 'Withheld' for Carol)
 - [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
 
@@ -262,3 +263,18 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - delete the uncalled `DocumentTextExtractorService.extractText(Document)`;
   - F46 font self-hosting is now urgent (3 occurrences).
 - Open candidates awaiting founder triage: **G89-F61** (matter-intake sends up to 500 matter names to the LLM), **G89-F62** (drafting without templateId returns 500).
+- 2026-11-08 ~00:30 — **Batch H VERIFIED on KC.**
+  - F52: lists show a disabled Download with the tooltip; direct URLs return 403; the matter check (404) runs first.
+  - C2 deferral closed: Carol sees 'Withheld', Thandi sees R 7 000,00.
+  - F53/F54: Khumalo URLs return 404 for Carol.
+  - Teardown verified by SQL.
+  - F56/F58 FICA and contract review are DEFERRED: AI is not configured on the KC dev stack. Backend tests with a stub provider cover both. To be observed at the exit re-walk if a provider can be configured, otherwise founder ruling.
+- New findings from the H walk:
+  - **G89-F63:** the role editor offers only 10 capabilities, so VIEW_LEGAL / GENERATE_STATEMENT_OF_ACCOUNT / MANAGE_DISBURSEMENTS can't be granted in a custom role. Product gap; needs a founder call.
+  - **G89-F64:** a member without VIEW_TRUST gets 500s on the client trust tab, and the page wrongly says "No trust account configured". → Batch E.
+  - **G89-F65:** after a role change the Team list does not refresh and shows the raw slug `org:associate-no-trust`. → Batch E.
+- Founder **D21**: F61 is by design; F62 → E.
+- **PR #1751 (Batch G) opened @f3c191bb7.**
+  - F31 reproduced: after a portal comment, @mentions notified nobody (FK violation rolled back the batch).
+  - All five gaps red-first.
+  - 935 targeted green; FE 3711 green.

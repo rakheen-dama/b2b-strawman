@@ -1,0 +1,1692 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/playwright.legal-depth-ii.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "day-05-disbursements.spec.ts",
+      "file": "day-05-disbursements.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 5 — Disbursements (Phase 67)",
+          "file": "day-05-disbursements.spec.ts",
+          "line": 96,
+          "column": 15,
+          "specs": [
+            {
+              "title": "[setup] Alice (Thandi): Create client Sipho Ndlovu and start FICA onboarding",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2732,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:15.377Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-a8d53ce1869fbf596ff9",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 98,
+              "column": 7
+            },
+            {
+              "title": "[setup] Alice (Thandi): Open Sipho's litigation matter from the Litigation template",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1349,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:18.232Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-6644148390889036fda5",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 115,
+              "column": 7
+            },
+            {
+              "title": "Bob: Navigate to Legal → Disbursements list page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1015,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:19.587Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-072d8219f907c5cc1d34",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 140,
+              "column": 7
+            },
+            {
+              "title": "Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2453,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:20.607Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-3d17b6346cfa871043e4",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 156,
+              "column": 7
+            },
+            {
+              "title": "[setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5869,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:23.065Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-2a7e8ef4ea3e94f33414",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 197,
+              "column": 7
+            },
+            {
+              "title": "Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4142,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:28.940Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-286317e36317ad3e5786",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 272,
+              "column": 7
+            },
+            {
+              "title": "Alice (Thandi): Approve trust-linked disbursement",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1587,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:33.089Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-62cb46ea3a7b3264890e",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 315,
+              "column": 7
+            },
+            {
+              "title": "Bob: Approve sheriff-fee OFFICE_ACCOUNT disbursement",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1113,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:34.681Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-bb8726cdcd03a4c060d4",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 335,
+              "column": 7
+            },
+            {
+              "title": "Bob: Approve dialog opened right after navigating to a disbursement stays open",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4115,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:35.799Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-d85b975f4d80ea135496",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 360,
+              "column": 7
+            },
+            {
+              "title": "Alice: Sipho's matter Finance → Disbursements tab lists the disbursements",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2650,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:39.919Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-7b50d4f2112dd92a3c36",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 411,
+              "column": 7
+            },
+            {
+              "title": "Alice: Verify Unbilled Disbursements summary on Sipho's matter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1169,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:42.574Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74b2e8335729d9556458-ece7750792f84ab83996",
+              "file": "day-05-disbursements.spec.ts",
+              "line": 448,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "day-14-conveyancing.spec.ts",
+      "file": "day-14-conveyancing.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 14 — Conveyancing matter + OTP acceptance (Phase 67)",
+          "file": "day-14-conveyancing.spec.ts",
+          "line": 101,
+          "column": 15,
+          "specs": [
+            {
+              "title": "Alice (Thandi): Create client Khumalo Property Holdings and start FICA onboarding",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3938,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:43.756Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-c5d935dfa93e91d40bad",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 103,
+              "column": 7
+            },
+            {
+              "title": "Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7586,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:47.700Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-203008a8302027ea952b",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 145,
+              "column": 7
+            },
+            {
+              "title": "Alice (Thandi): Create matter using Property Transfer template",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2007,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:55.291Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-ae69b477427d069ec627",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 186,
+              "column": 7
+            },
+            {
+              "title": "Alice: Clicking into a matter (route with a loading skeleton) renders its content (10 fresh sessions)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8786,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:11:57.303Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-0fe5718822ce7ed71efd",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 219,
+              "column": 7
+            },
+            {
+              "title": "Alice: Verify 16 conveyancing custom fields present on matter detail",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2154,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:06.095Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-8a803c9116084b61b7a0",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 244,
+              "column": 7
+            },
+            {
+              "title": "Alice: Fill property_address, erf_number, deeds_office, seller and purchaser",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3295,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:08.254Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-2d3b52a2bb021118d906",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 282,
+              "column": 7
+            },
+            {
+              "title": "Alice: Generate Offer to Purchase document and save it to the matter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3582,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:11.554Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-24274c4ae4a26a9ff6af",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 314,
+              "column": 7
+            },
+            {
+              "title": "Alice: Generate Offer to Purchase document with conveyancing clauses",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2866,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:15.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-46b36e4a46627fbb9abc",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 354,
+              "column": 7
+            },
+            {
+              "title": "Alice: Send OTP for Acceptance via Phase 28 flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3357,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:18.012Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6690ced7ed09c31499fe-2cb74b1a583b87bde75b",
+              "file": "day-14-conveyancing.spec.ts",
+              "line": 380,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "day-30-45-soa-writeoff.spec.ts",
+      "file": "day-30-45-soa-writeoff.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 30-45 — Statement of Account + Write-off (Phase 67)",
+          "file": "day-30-45-soa-writeoff.spec.ts",
+          "line": 134,
+          "column": 15,
+          "specs": [
+            {
+              "title": "[setup] Alice (Thandi): Billing rate override for Alice on Sipho's client",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2246,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:21.385Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-d74ecb4b25c09626dd03",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 138,
+              "column": 7
+            },
+            {
+              "title": "[setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3061,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:23.641Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-3cbcd4961aac771dd0cb",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 163,
+              "column": 7
+            },
+            {
+              "title": "Alice (Thandi): Open Statements tab on oldest matter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1628,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:26.715Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-f840ef11cc74e528e1fd",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 194,
+              "column": 7
+            },
+            {
+              "title": "Alice: Generate Statement of Account with HTML preview",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3367,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:28.351Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-bc5aca1fa76491d81f4c",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 209,
+              "column": 7
+            },
+            {
+              "title": "Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4235,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:31.728Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-ebe65713e10957144ede",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 227,
+              "column": 7
+            },
+            {
+              "title": "Alice: Statements-tab Download fetches the PDF",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "fixme",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts",
+                        "line": 292,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:35.973Z",
+                      "annotations": [
+                        {
+                          "type": "fixme",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts",
+                            "line": 292,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-d99cae9f424c8b8a963b",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 292,
+              "column": 8
+            },
+            {
+              "title": "Alice (Thandi): Write off one approved-UNBILLED disbursement",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1714,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:35.973Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-15a7db0c0cbfd21f4819",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 307,
+              "column": 7
+            },
+            {
+              "title": "Alice: Verify write-off audit event present in audit log",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1948,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:37.694Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-48b54b6ecfcac7c52abf",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 329,
+              "column": 7
+            },
+            {
+              "title": "Alice: Verify written-off disbursement excluded from next invoice draft",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2443,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:39.649Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "037a88e815190e2b8ebf-a062fb273fa5c17e15a8",
+              "file": "day-30-45-soa-writeoff.spec.ts",
+              "line": 356,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "day-75-85-closure.spec.ts",
+      "file": "day-75-85-closure.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 75-85 — Matter Closure (Phase 67)",
+          "file": "day-75-85-closure.spec.ts",
+          "line": 94,
+          "column": 15,
+          "specs": [
+            {
+              "title": "[setup] Alice (Thandi): Create client Apex Holdings and start FICA onboarding",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3211,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:42.105Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-6939e4335df9a9e1dd9d",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 96,
+              "column": 7
+            },
+            {
+              "title": "[setup] Alice (Thandi): Open a clean commercial matter for Apex Holdings",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2197,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:45.323Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-30c9fd0d99374f821729",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 111,
+              "column": 7
+            },
+            {
+              "title": "[setup] Bob: Record + approve counsel's fee disbursement on the Apex matter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2676,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:47.526Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-9b50589569cdb799219e",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "[setup] Alice (Thandi): Bill the Apex matter — fee note drafted, approved and sent",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3000,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:50.208Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-fdd93a59a1ce0434488e",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 173,
+              "column": 7
+            },
+            {
+              "title": "Alice (Thandi): Open Close Matter dialog on clean matter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1654,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:53.213Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-e8e9a4354282caeccdd2",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 229,
+              "column": 7
+            },
+            {
+              "title": "Alice: Step 1 gate report renders all-green (happy path)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1970,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:54.872Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-21a2f6c51434b2c3f46f",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 239,
+              "column": 7
+            },
+            {
+              "title": "Alice: Advance to Step 2 + confirm close with CONCLUDED reason",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2653,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:56.848Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-a952c5cebd6155813331",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 262,
+              "column": 7
+            },
+            {
+              "title": "Alice: Closed matter's retention card shows the deletion date (closure + 5 years)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1120,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:12:59.507Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-2bbea044751229029e76",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 305,
+              "column": 7
+            },
+            {
+              "title": "Bob (Admin): Close Matter on failing-gates matter routes to Step 3 (no override)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1967,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:13:00.631Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-ad4d4d93f6ef377c339a",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 334,
+              "column": 7
+            },
+            {
+              "title": "Alice (Thandi): Override close with justification ≥20 chars",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1972,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:13:02.604Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-11e3e0328c2f0d75cb6a",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 359,
+              "column": 7
+            },
+            {
+              "title": "Alice: Verify override audit event captures override_used=true + justification",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2965,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:13:04.581Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8588fc85c5b684aee7d0-94bace35724867a9e12a",
+              "file": "day-75-85-closure.spec.ts",
+              "line": 391,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "null-prefetch-probe.spec.ts",
+      "file": "null-prefetch-probe.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Next null-prefetch blank-segment probe (opt-in)",
+          "file": "null-prefetch-probe.spec.ts",
+          "line": 70,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Matters list -> matter (projects/[id]): 120 fresh-session clicks render the destination",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "opt-in: NULL_PREFETCH_PROBE=1",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts",
+                        "line": 71,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:13:07.551Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "opt-in: NULL_PREFETCH_PROBE=1",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts",
+                            "line": 71,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "53169fc114848fac9964-6dd6956e516313b7879e",
+              "file": "null-prefetch-probe.spec.ts",
+              "line": 74,
+              "column": 9
+            },
+            {
+              "title": "Reports -> report detail (reports/[reportSlug]): 120 fresh-session clicks render the destination",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "opt-in: NULL_PREFETCH_PROBE=1",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts",
+                        "line": 71,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:13:07.551Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "opt-in: NULL_PREFETCH_PROBE=1",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts",
+                            "line": 71,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "53169fc114848fac9964-3114ad1bdb2b543854fd",
+              "file": "null-prefetch-probe.spec.ts",
+              "line": 74,
+              "column": 9
+            },
+            {
+              "title": "Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "opt-in: NULL_PREFETCH_PROBE=1",
+                      "location": {
+                        "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts",
+                        "line": 71,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-07T01:13:07.551Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "opt-in: NULL_PREFETCH_PROBE=1",
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/frontend/e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts",
+                            "line": 71,
+                            "column": 8
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "53169fc114848fac9964-9c7256ab821e05fdb596",
+              "file": "null-prefetch-probe.spec.ts",
+              "line": 74,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-07T01:11:14.945Z",
+    "duration": 112781.368,
+    "expected": 39,
+    "skipped": 4,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

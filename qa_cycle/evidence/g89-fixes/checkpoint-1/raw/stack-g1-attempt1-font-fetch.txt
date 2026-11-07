@@ -1,0 +1,44 @@
+# G1 attempt 1 (failed, transient) — frontend next build excerpt
+#75 [frontend builder  9/11] COPY frontend/ ./frontend/
+#75 DONE 0.3s
+
+#76 [frontend builder 10/11] COPY packages/ ./packages/
+#76 DONE 0.0s
+
+#77 [frontend builder 11/11] RUN pnpm --filter frontend build
+#77 0.586 
+#77 0.586 > frontend@0.1.0 build /app/frontend
+#77 0.586 > next build
+#77 0.586 
+#77 0.919 ▲ Next.js 16.3.8 (Turbopack)
+#77 0.970 ✓ Running next.config.ts took 51ms
+#77 0.993 - Experiments (use with caution):
+#77 0.993   ⨯ useTypeScriptCli
+#77 0.993 
+#77 1.047   Creating an optimized production build ...
+#77 13.96 
+#77 13.96 > Build error occurred
+#77 13.97 Error: Turbopack build failed with 24 errors:
+#77 13.97 [next]/internal/font/google/ibm_plex_sans_63208076.module.css:8:8
+#77 13.97 Error: Module not found: Can't resolve '@vercel/turbopack-next/internal/font/google/font'
+#77 13.97   [90m 6 |[0m   font-stretch: [35m100[0m%;
+#77 13.97   [90m 7 |[0m   font-display: swap;
+#77 13.97 [31m[1m>[0m [90m 8 |[0m   src: url(@vercel/turbopack-next/internal/font/google/font?{%[35m22[0murl%[35m22[0m:%[35m22[0mhttps:[90m//fonts.gs...[0m
+#77 13.97   [90m   |[0m        [31m[1m^[0m
+...
+#77 14.10  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  frontend@0.1.0 build: `next build`
+#77 ERROR: process "/bin/sh -c pnpm --filter frontend build" did not complete successfully: exit code: 1
+14.10  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  frontend@0.1.0 build: `next build`
+target frontend: failed to solve: process "/bin/sh -c pnpm --filter frontend build" did not complete successfully: exit code: 1
+
+# G1 attempt 2 (same context) — frontend builder 11/11
+#74 [frontend builder 11/11] RUN pnpm --filter frontend build
+#74 DONE 44.9s
+
+# Volume removal lines per stack log
+/private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/8adccadf-2ff1-433e-8c02-83d3600dcef2/scratchpad/cp1/logs/stack-G1-attempt1-FAILED.log: Volume docteams-e2e_e2e_postgres_data  Removed
+/private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/8adccadf-2ff1-433e-8c02-83d3600dcef2/scratchpad/cp1/logs/stack-G1-attempt1-FAILED.log: Volume docteams-e2e_e2e_localstack_data  Removed
+/private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/8adccadf-2ff1-433e-8c02-83d3600dcef2/scratchpad/cp1/logs/stack-C2.log: Volume docteams-e2e_e2e_postgres_data  Removed
+/private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/8adccadf-2ff1-433e-8c02-83d3600dcef2/scratchpad/cp1/logs/stack-C2.log: Volume docteams-e2e_e2e_localstack_data  Removed
+/private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/8adccadf-2ff1-433e-8c02-83d3600dcef2/scratchpad/cp1/logs/stack-G2.log: Volume docteams-e2e_e2e_postgres_data  Removed
+/private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/8adccadf-2ff1-433e-8c02-83d3600dcef2/scratchpad/cp1/logs/stack-G2.log: Volume docteams-e2e_e2e_localstack_data  Removed

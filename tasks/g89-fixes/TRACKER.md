@@ -31,7 +31,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | **VERIFIED**: F11 (batch-B evidence), F10 (observed in the batch-A walk) |
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | **VERIFIED** on KC (F10, F12, F13, F14, F22): `qa_cycle/evidence/g89-fixes/batch-A/` |
 | 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | **VERIFIED** on KC (F23, F39, D2, D6): `qa_cycle/evidence/g89-fixes/batch-D/` |
-| — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
+| — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 | 2× APPROVE @d3b9bea18; full verify re-running |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C | BE + FE | | OPEN |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
@@ -143,3 +143,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - Candidates:
     - **G89-F45:** a fee note with lines on two matters is counted in full on both matters' SoA/closure/tile. Pre-existing, consistent across surfaces.
     - Missing tests for the Section 35 investment, interest and `_total` projections (follow-up).
+- 2026-11-07 ~04:00 — **Checkpoint 1 PASS** on main `d6742789f` (#1745 + #1746 + #1747).
+  - Legal suites: lifecycle 105/0/0, depth-ii 39/0/4, default 165/0/14.
+  - Portal suites: vitest 278, 90-day 13/0/0, responsive 21/0/0, isolation 2/0/0.
+  - Every result is per-test identical to 636A; tenant V12 and global V4 applied.
+  - One class (c) event: the first G1 frontend build failed on a `next/font/google` download; the retry passed.
+  - New tooling candidate **G89-F46**: frontend/portal production builds depend on Google Fonts being reachable. It has now hit both CI (#1747 Portal job) and the e2e build. Self-host the fonts via `next/font/local` (Batch F).

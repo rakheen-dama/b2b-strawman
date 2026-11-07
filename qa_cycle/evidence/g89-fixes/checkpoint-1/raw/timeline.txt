@@ -1,0 +1,40 @@
+portal-vitest start 2026-11-07T02:53:24+0200
+stack-C1 launch 2026-11-07T02:53:24+0200
+portal-vitest rc=0 end 2026-11-07T02:53:35+0200
+stack-C1 rc=0 end 2026-11-07T03:00:33+0200
+C1-lifecycle start 2026-11-07T03:00:42+0200
+C1-lifecycle rc=0 end 2026-11-07T03:03:46+0200
+C1-depth-ii start 2026-11-07T03:03:46+0200
+C1-depth-ii rc=0 end 2026-11-07T03:05:46+0200
+C1-ALLDONE
+stack-G1 launch 2026-11-07T03:06:01+0200
+stack-G1 rc=1 end 2026-11-07T03:06:21+0200
+G1-STACKFAIL
+G1 attempt1 failed: frontend next build — next/font/google fetch (Module not found @vercel/turbopack-next/internal/font/google/font); retrying
+stack-G1 launch 2026-11-07T03:06:48+0200
+stack-G1 rc=0 end 2026-11-07T03:08:11+0200
+G1-lifecycle start 2026-11-07T03:08:11+0200
+G1-lifecycle rc=0 end 2026-11-07T03:11:14+0200
+G1-depth-ii start 2026-11-07T03:11:14+0200
+G1-depth-ii rc=0 end 2026-11-07T03:13:07+0200
+G1-default start 2026-11-07T03:13:07+0200
+G1-default rc=0 end 2026-11-07T03:14:02+0200
+G1-ALLDONE
+stack-C2 launch 2026-11-07T03:14:44+0200
+stack-C2 rc=0 end 2026-11-07T03:15:24+0200
+C2-90day start 2026-11-07T03:15:24+0200
+C2-90day rc=0 end 2026-11-07T03:15:52+0200
+C2-responsive start 2026-11-07T03:21:32+0200
+C2-responsive rc=0 end 2026-11-07T03:22:01+0200
+C2-ALLDONE
+stack-G2 launch 2026-11-07T03:22:18+0200
+stack-G2 rc=0 end 2026-11-07T03:22:57+0200
+G2-90day start 2026-11-07T03:22:57+0200
+G2-90day rc=0 end 2026-11-07T03:23:18+0200
+G2-responsive start 2026-11-07T03:28:51+0200
+G2-responsive rc=0 end 2026-11-07T03:29:17+0200
+G2-isolation start 2026-11-07T03:34:50+0200
+G2-isolation rc=0 end 2026-11-07T03:34:53+0200
+G2-login-bare start 2026-11-07T03:40:42+0200
+G2-login-bare rc=0 end 2026-11-07T03:41:01+0200
+G2-ALLDONE

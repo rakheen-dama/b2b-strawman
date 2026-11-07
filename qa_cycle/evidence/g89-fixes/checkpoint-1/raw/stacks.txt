@@ -1,0 +1,186 @@
+===== stack C1 checks 2026-11-07T03:00:33+0200 =====
+build rc=0 ; launch→end see timeline
+git HEAD d6742789f023869116457889f7b65ba3288e59c3
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+CONTAINER           REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+e2e-backend         docteams-e2e-backend    latest              linux/arm64         f59cb6e9cdc1        377MB               34 seconds ago
+e2e-frontend        docteams-e2e-frontend   latest              linux/arm64         c780864d8d90        220MB               5 minutes ago
+e2e-localstack      localstack/localstack   3                   linux/arm64         5966ecddea63        1.29GB              292 years ago
+e2e-mailpit         axllent/mailpit         latest              linux/arm64         13f27147bfad        35.4MB              292 years ago
+e2e-mock-idp        docteams-e2e-mock-idp   latest              linux/arm64         43d4fc68d4d6        169MB               6 minutes ago
+e2e-postgres        postgres                16-alpine           linux/arm64/v8      7e7dbab8d3b4        288MB               292 years ago
+e2e-seed            docteams-e2e-seed       latest              linux/arm64         933d6df80f0a        14.3MB              7 minutes ago
+/e2e-backend image=sha256:f59cb6e9cdc1eff74a323d8a2fc6d03a1733e81deac30ad62e46981b3a5994d2 created=2026-11-07T00:59:59.44744947Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+/e2e-frontend image=sha256:c780864d8d90e1b098bd640381ea5a8dcd299857bf9a0c75778ee3fadf46e6ad created=2026-11-07T00:59:59.491337386Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-07T00:59:59.375900011Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+cached-lines=10
+tenant=tenant_7d218705360b
+tenant flyway: 12|g89 interest matter allocation
+global flyway: 4|portal trust transaction date
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+===== stack G1 checks 2026-11-07T03:06:21+0200 =====
+build rc=1 ; launch→end see timeline
+git HEAD d6742789f023869116457889f7b65ba3288e59c3
+backend health: 
+frontend 000
+mock-idp 000
+mailpit 000
+CONTAINER           REPOSITORY          TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+
+Error: No such object: e2e-backend
+
+Error: No such object: e2e-frontend
+
+Error: No such object: e2e-postgres
+cached-lines=42
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removed
+Error response from daemon: No such container: e2e-postgres
+tenant=
+Error response from daemon: No such container: e2e-postgres
+tenant flyway: 
+Error response from daemon: No such container: e2e-postgres
+global flyway: 
+projects:
+Error response from daemon: No such container: e2e-postgres
+portal_deadline_view=Error response from daemon: No such container: e2e-postgres
+===== stack G1 checks 2026-11-07T03:08:11+0200 =====
+build rc=0 ; launch→end see timeline
+git HEAD d6742789f023869116457889f7b65ba3288e59c3
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+CONTAINER           REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+e2e-backend         docteams-e2e-backend    latest              linux/arm64         f59cb6e9cdc1        377MB               About a minute ago
+e2e-frontend        docteams-e2e-frontend   latest              linux/arm64         9a3d2eaf43b1        220MB               34 seconds ago
+e2e-localstack      localstack/localstack   3                   linux/arm64         5966ecddea63        1.29GB              292 years ago
+e2e-mailpit         axllent/mailpit         latest              linux/arm64         13f27147bfad        35.4MB              292 years ago
+e2e-mock-idp        docteams-e2e-mock-idp   latest              linux/arm64         43d4fc68d4d6        169MB               About a minute ago
+e2e-postgres        postgres                16-alpine           linux/arm64/v8      7e7dbab8d3b4        288MB               292 years ago
+e2e-seed            docteams-e2e-seed       latest              linux/arm64         933d6df80f0a        14.3MB              About a minute ago
+/e2e-backend image=sha256:f59cb6e9cdc1eff74a323d8a2fc6d03a1733e81deac30ad62e46981b3a5994d2 created=2026-11-07T01:07:36.668725001Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+/e2e-frontend image=sha256:9a3d2eaf43b1239a8ae209fcd23104a4ffad02cb5d4cd494dfbadfd5460d35d2 created=2026-11-07T01:07:36.722468751Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-07T01:07:36.614977334Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+cached-lines=46
+tenant=tenant_7d218705360b
+tenant flyway: 12|g89 interest matter allocation
+global flyway: 4|portal trust transaction date
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+===== G1 projects after default
+Website Redesign|ACTIVE
+Ndlovu v RAF mw5pfllz7767|ACTIVE
+Apex Shareholder Agreement mw5pfllz7767|ACTIVE
+Estate Late Peter Moroka mw5pfllz7767|ACTIVE
+QC Debt Recovery #1 mw5pfllz7767|ACTIVE
+Ndlovu Property Dispute mw5pfllz7767|ACTIVE
+Apex Annual Returns mw5pfllz7767|ACTIVE
+Team spec mw5pj86v809b|ACTIVE
+Ndlovu — transition repro mw5pjhp2c149|ACTIVE
+Khumalo Property Holdings — Erf 1234 Sandton Transfer mw5pjhp2c149|ACTIVE
+Apex Holdings — Shareholders' Agreement Review mw5pjhp2c149|CLOSED
+Ndlovu v RAF — Depth II mw5pjhp2c149|CLOSED
+E2E closure override lxjd|CLOSED
+DocGen Matter m2iw|ACTIVE
+Profit Matter m7ua|ACTIVE
+IReq Matter m99q|ACTIVE
+Bell Matter mebf|ACTIVE
+Void Matter mayn|ACTIVE
+Budget Test Project mivk|ACTIVE
+Task Test Project mjxd|ACTIVE
+Time Test Project mm30|ACTIVE
+Proj Internal mjx7|ACTIVE
+Proj Renamed mjx7|ARCHIVED
+Tag Matter mx04|ACTIVE
+E2E Test 1794014037335|ACTIVE
+===== portal spacing (magic-link caps)
+===== stack C2 checks 2026-11-07T03:15:24+0200 =====
+build rc=0 ; launch→end see timeline
+git HEAD d6742789f023869116457889f7b65ba3288e59c3
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+CONTAINER           REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+e2e-backend         docteams-e2e-backend    latest              linux/arm64         f59cb6e9cdc1        377MB               34 seconds ago
+e2e-frontend        docteams-e2e-frontend   latest              linux/arm64         9a3d2eaf43b1        220MB               34 seconds ago
+e2e-localstack      localstack/localstack   3                   linux/arm64         5966ecddea63        1.29GB              292 years ago
+e2e-mailpit         axllent/mailpit         latest              linux/arm64         13f27147bfad        35.4MB              292 years ago
+e2e-mock-idp        docteams-e2e-mock-idp   latest              linux/arm64         43d4fc68d4d6        169MB               34 seconds ago
+e2e-postgres        postgres                16-alpine           linux/arm64/v8      7e7dbab8d3b4        288MB               292 years ago
+e2e-seed            docteams-e2e-seed       latest              linux/arm64         933d6df80f0a        14.3MB              34 seconds ago
+/e2e-backend image=sha256:f59cb6e9cdc1eff74a323d8a2fc6d03a1733e81deac30ad62e46981b3a5994d2 created=2026-11-07T01:14:50.096077382Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+/e2e-frontend image=sha256:9a3d2eaf43b1239a8ae209fcd23104a4ffad02cb5d4cd494dfbadfd5460d35d2 created=2026-11-07T01:14:50.26336209Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-07T01:14:50.023421507Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+cached-lines=50
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 12|g89 interest matter allocation
+global flyway: 4|portal trust transaction date
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+spacing for before-C2-responsive: tokens|age-at-start=3|19 03:15:53
+token age now=330s 03:21:04
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 03:21:32
+:3002 free
+===== stack G2 checks 2026-11-07T03:22:57+0200 =====
+build rc=0 ; launch→end see timeline
+git HEAD d6742789f023869116457889f7b65ba3288e59c3
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+CONTAINER           REPOSITORY              TAG                 PLATFORM            IMAGE ID            SIZE                CREATED
+e2e-backend         docteams-e2e-backend    latest              linux/arm64         f59cb6e9cdc1        377MB               34 seconds ago
+e2e-frontend        docteams-e2e-frontend   latest              linux/arm64         9a3d2eaf43b1        220MB               34 seconds ago
+e2e-localstack      localstack/localstack   3                   linux/arm64         5966ecddea63        1.29GB              292 years ago
+e2e-mailpit         axllent/mailpit         latest              linux/arm64         13f27147bfad        35.4MB              292 years ago
+e2e-mock-idp        docteams-e2e-mock-idp   latest              linux/arm64         43d4fc68d4d6        169MB               34 seconds ago
+e2e-postgres        postgres                16-alpine           linux/arm64/v8      7e7dbab8d3b4        288MB               292 years ago
+e2e-seed            docteams-e2e-seed       latest              linux/arm64         933d6df80f0a        14.3MB              34 seconds ago
+/e2e-backend image=sha256:f59cb6e9cdc1eff74a323d8a2fc6d03a1733e81deac30ad62e46981b3a5994d2 created=2026-11-07T01:22:23.420014342Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+/e2e-frontend image=sha256:9a3d2eaf43b1239a8ae209fcd23104a4ffad02cb5d4cd494dfbadfd5460d35d2 created=2026-11-07T01:22:23.479286592Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-07T01:22:23.344676508Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp1/compose
+cached-lines=50
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 12|g89 interest matter allocation
+global flyway: 4|portal trust transaction date
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+G2-90day pre: tokens|age=1|3
+== G2-90day post-checks 03:23:18
+portal_deadline_view=0
+G2-90day Exchanged magic link=1
+REQ-0002|IN_PROGRESS|2026-11-07 01:23:03.530078+00
+REQ-0001|SENT|2026-11-07 01:22:54.575333+00
+spacing for before-G2-responsive: tokens|age-at-start=3|15 03:23:18
+token age now=332s 03:28:35
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 03:28:51
+:3002 free
+G2-responsive Exchanged magic link=2
+spacing for before-G2-isolation: tokens|age-at-start=4|16 03:29:17
+token age now=332s 03:34:34
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 03:34:50
+:3002 free
+G2-isolation Exchanged magic link=4
+spacing for before-G2-login-bare: tokens|age-at-start=6|0 03:34:53
+token age now=333s 03:40:26
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 03:40:42
+:3002 free
+G2-login-bare Exchanged magic link=5

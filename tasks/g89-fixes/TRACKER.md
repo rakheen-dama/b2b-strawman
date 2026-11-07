@@ -26,6 +26,11 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D15 | (2026-11-07) Founder **signs off the PR #1749 legal wording as written**: s78(1) → s86(2) trust account; s86 LPA citations; compliance-audit prompt s86(1)-(2)/(3)-(4); Section 35 historical-name javadoc; "Unbilled work in progress (not yet billed)". |
 | D16 | (2026-11-07) The VIEW_TRUST fallback line "Trust details are not available." is **signed off**. **G89-F51** (the Statements tab shows the stored `trust_balance_held` to users without VIEW_TRUST, pre-existing) is **MEDIUM**, to be fixed in Batch E server-side with `TrustDataVisibility`. |
 | D17 | (2026-11-07, orchestrator sequencing) **G89-F51** is moved from Batch E into PR #1749. CodeRabbit flagged it there as a Major on the same DTO and table as a PR-introduced Major (a withheld generation saved as a zero trust balance). Severity and fix approach are unchanged from D16. |
+| D18 | (2026-11-07) **G89-F52 is HIGH**, as Batch H, its own PR, next after C2 and before G. Generated-document download/presign/list endpoints don't check trust or client access:
+- an SoA PDF containing client trust activity can be downloaded by any matter viewer without VIEW_TRUST;
+- client-level generated docs, such as a Client Trust Statement, are downloadable by any tenant member.
+
+**Fix:** customer-access checks for client-level generated docs, plus VIEW_TRUST for trust-bearing documents. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -38,6 +43,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 | security fix round (VIEW_TRUST gate); then verify, reviews, founder wording sign-off |
+| 5b | **H — generated-document access control** | **F52 (HIGH)** | BE (+FE if lists change) | | OPEN (scout) |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
@@ -46,6 +52,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 ## Gap checklist
 
 ### HIGH
+- [ ] G89-F52 — generated-document downloads bypass trust/client access (H, D18)
 - [x] G89-F11 — interest run accepted for a period that has not ended (B) — VERIFIED 2026-11-06, PR #1745
 - [x] G89-F12 — matter-linked refund exceeds matter balance (A) — VERIFIED 2026-11-07, PR #1746
 - [x] G89-F22 — portal trust balance ≠ firm client ledger (A) — VERIFIED 2026-11-07, PR #1746

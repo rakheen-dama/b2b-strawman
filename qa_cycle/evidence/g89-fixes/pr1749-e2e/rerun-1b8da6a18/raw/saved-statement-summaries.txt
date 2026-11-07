@@ -1,0 +1,7 @@
+statement-of-account-website-redesign-2026-11-07.pdf|{"total_fees": "8625.00", "payments_received": "0.00", "trust_balance_held": "0", "total_disbursements": "0", "closing_balance_owing": "8625.00", "previous_balance_owing": "0"}
+statement-of-account-ndlovu-v-raf-depth-ii-mw6j69w0180a-2026-11-07.pdf|{"total_fees": "0", "payments_received": "0", "trust_balance_held": "3750.00", "total_disbursements": "0", "closing_balance_owing": "0", "previous_balance_owing": "0"}
+statement-of-account-ndlovu-v-raf-depth-ii-mw6j69w0180a-2026-11-07.pdf|{"total_fees": "0", "payments_received": "0", "trust_balance_held": "3750.00", "total_disbursements": "0", "closing_balance_owing": "0", "previous_balance_owing": "0"}
+statement-of-account-ndlovu-v-raf-depth-ii-mw6j69w0180a-2026-11-07.pdf|{"total_fees": "0", "payments_received": "0", "trust_balance_held": "3750.00", "total_disbursements": "0", "closing_balance_owing": "0", "previous_balance_owing": "0"}
+statement-of-account-apex-holdings-shareholders-agreement-review-mw6j69-2026-11-07.pdf|{"total_fees": "0.00", "payments_received": "0.00", "trust_balance_held": "0", "total_disbursements": "4025.00", "closing_balance_owing": "4025.00", "previous_balance_owing": "0"}
+statement-of-account-ndlovu-v-raf-depth-ii-mw6j69w0180a-2026-11-07.pdf|{"total_fees": "0", "payments_received": "0", "trust_balance_held": "3750.00", "total_disbursements": "0", "closing_balance_owing": "0", "previous_balance_owing": "0"}
+trust_withheld occurrences: 0

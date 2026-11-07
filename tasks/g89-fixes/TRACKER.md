@@ -31,6 +31,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - client-level generated docs, such as a Client Trust Statement, are downloadable by any tenant member.
 
 **Fix:** customer-access checks for client-level generated docs, plus VIEW_TRUST for trust-bearing documents. |
+| D19 | (2026-11-07) Batch H also covers **G89-F53** (template generate/preview/generate-docx skip the matter-access check), **G89-F54** (statements list/get skip matter membership) and **G89-F56** (AI contract review reads any document by id with no access check, and the text goes to the LLM). All are rated **HIGH**. F52 lists: trust-bearing rows stay listed, flagged `containsTrustData`, with Download disabled for members without VIEW_TRUST. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -42,8 +43,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | **VERIFIED** on KC (F23, F39, D2, D6): `qa_cycle/evidence/g89-fixes/batch-D/` |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | main `d6742789f` | **PASS**: all 7 scored runs 0 failed, per-test identical to 636A (`qa_cycle/evidence/g89-fixes/checkpoint-1/`); the KC spot rows were covered by the Batch A/B/D walks |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
-| 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | MERGED-AWAITING-VERIFY (KC check running) |
-| 5b | **H — generated-document access control** | **F52 (HIGH)** | BE (+FE if lists change) | | OPEN (scout) |
+| 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | **VERIFIED** on KC (632A(a)(b)(c)/S1-67, F6, F26/S2-50, WIP). DEFERRED: 632C (needs a new payment, moved to the exit re-walk); VIEW_TRUST withheld (needs a custom role, moved to the Batch H walk) |
+| 5b | **H — document access control** | **F52, F53, F54, F56 (all HIGH)**, F55 (dead statements `pdfUrl`) | BE + FE | `fix/g89-h-document-access` | IN PROGRESS (builder) |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
@@ -53,6 +54,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 
 ### HIGH
 - [ ] G89-F52 — generated-document downloads bypass trust/client access (H, D18)
+- [ ] G89-F53 — template generate/preview/docx skip matter access (H, D19)
+- [ ] G89-F54 — statements list/get skip matter membership (H, D19)
+- [ ] G89-F56 — AI contract review reads any document unchecked (H, D19)
 - [x] G89-F11 — interest run accepted for a period that has not ended (B) — VERIFIED 2026-11-06, PR #1745
 - [x] G89-F12 — matter-linked refund exceeds matter balance (A) — VERIFIED 2026-11-07, PR #1746
 - [x] G89-F22 — portal trust balance ≠ firm client ledger (A) — VERIFIED 2026-11-07, PR #1746
@@ -71,13 +75,13 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 ### LOW / carried
 - [ ] F1 [ ] F2 [ ] F3 (F)
 - [ ] F5 [ ] F7 [ ] F8 [ ] F9 [ ] F15 [ ] F20 (E)
-- [ ] F6 [ ] F26 (C2)
+- [x] F6 [x] F26 (C2) — VERIFIED 2026-11-07, PR #1749
 - [x] F10 (B) — VERIFIED 2026-11-07 in the Batch A walk (wizard shows "Client" and "Lerato Mthembu" and "LPFF arrangement rate 0.00%")
 - [x] F19 [x] F21 (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] F4 [ ] F24 [ ] F25 [ ] F27 — scenario amendments (F)
 - [ ] G-D10a [ ] G88-F27 (Access denied) [ ] G88-F27 (disbursement "Invoiced · Yes") [ ] G88-M9 [ ] G88-F24 [ ] G88-F2 [ ] 634A (E)
 - [x] 633C D2 [x] 633C D6 (D) — VERIFIED 2026-11-07, PR #1747
-- [ ] 632A(a) [ ] 632A(b) [ ] 632A(c) [ ] 632C (C2)
+- [x] 632A(a) [x] 632A(b) [x] 632A(c) — VERIFIED 2026-11-07, PR #1749 · [ ] 632C (merged; KC observation at the exit re-walk)
 - [x] 634B Outstanding tile / Statements tab (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] 634E(1) [ ] 634E(2) [ ] 634E(3) [ ] 634E(5) [ ] 634C @-autocomplete / access filter (G)
 - [ ] P-E.8 weekly digest observed (exit re-score)
@@ -224,3 +228,12 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - KC stack restarted. Tenant V13 and global V5 applied.
   - C2 KC check launched; Batch H scout running.
   - Next free migrations: tenant **V14**, global **V6**.
+- 2026-11-07 ~18:10 — **C2 VERIFIED on KC** (5 PASS, 2 DEFERRED).
+  - **Menus:** the hidden templates are gone from the generic menus and still listed in Settings with a hint.
+  - **Labels:** required-field labels read "Matter › Seller Name".
+  - **Client Trust Statement:** "Section 86(2) trust account", opening R0,00, 5 lines, closing R7 000,00.
+  - **Trust Receipt:** shows the s86 wording.
+  - **F26:** 0 suffixed rows on firm, portal and templates.
+  - **WIP:** "Unbilled work in progress … R2 500,00" with closing R0,00.
+- Founder **D19**: F53, F54, F56 are HIGH and go into H; lists keep rows and disable Download.
+- New LOW **G89-F57** → E: the SoA summary "Total fees: R0,00" while Professional Fees lists unbilled time (R2 875,00) is confusing under D9. Relabel the summary lines as billed-in-period.

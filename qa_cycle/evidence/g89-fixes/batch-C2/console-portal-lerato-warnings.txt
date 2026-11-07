@@ -1,0 +1,6 @@
+Total messages: 16 (Errors: 2, Warnings: 1)
+Returning 3 messages for level "warning"
+
+[ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/favicon.ico:0
+[WARNING] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior @ http://localhost:3002/_next/static/chunks/1t7m_next_dist_0j_5hoe._.js:776
+[ERROR] Failed to load resource: the server responded with a status of 401 () @ http://localhost:8080/portal/auth/exchange:0

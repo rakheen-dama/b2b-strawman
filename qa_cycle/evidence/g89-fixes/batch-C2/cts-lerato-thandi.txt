@@ -1,0 +1,40 @@
+              Mathebula & Partners
+              Client Trust Statement
+              Client: Lerato Mthembu
+              Statement Date: 7 November 2026
+              Trust Account: Mathebula & Partners — Section 86(2) trust account
+              Transaction Summary
+              The following is a statement of all trust account transactions held on behalf of Lerato Mthembu, 
+              from the first transaction to the date of this statement.
+              Account: Mathebula & Partners Trust Account
+              Opening balance: R0,00
+                Date          Type        Reference                    Description       Amount          Balance
+                                                                       G89 Batch A 
+                1 October     Deposit     DEP/LERATO-g89a              verify deposit    R10 000,00      R10 000,00
+                2026                                                   on RAF 
+                                                                       matter
+                15                                                     G89 Batch D 
+                October       Deposit     DEP/LERATO-g89d              verify - back-    R5 000,00       R15 000,00
+                2026                                                   dated deposit 
+                                                                       -g89d
+                                          INT-CREDIT-5724401a-
+                31                        30b4-47ca-b314-              Interest credit 
+                October       Interest    965c5c67abf1-e0f25d3f-       for period        R55,21          R15 055,21
+                2026          credit      f195-42fe-ba95-              2026-10-01 
+                                          842e79de983d-                to 2026-10-31
+                                          ec988df3
+                7                                                      G89 Batch A 
+                November      Deposit     DEP2/LERATO-g89a             verify deposit    R2 000,00       R17 055,21
+                2026                                                   - no matter
+                                                                       G89 Batch A 
+                7                         REF/LERATO-g89a-             verify - exact 
+                November      Refund      exact                        matter            R10 055,21      R7 000,00
+                2026                                                   balance 
+                                                                       refund
+              Closing balance: R7 000,00
+              Current Balance
+              The current balance held in trust on your behalf is R7 000,00.
+              This statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal 
+              Practice Council.
+              Yours faithfully,
+              Mathebula & Partners

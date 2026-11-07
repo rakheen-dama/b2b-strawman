@@ -103,7 +103,12 @@ function withCaps(ui: React.ReactElement, capabilities: string[]) {
         enabledModules={["disbursements", "trust_accounting"]}
         terminologyNamespace={null}
       >
-        <CapabilityProvider capabilities={capabilities} role="member" isAdmin={false} isOwner={false}>
+        <CapabilityProvider
+          capabilities={capabilities}
+          role="member"
+          isAdmin={false}
+          isOwner={false}
+        >
           {ui}
         </CapabilityProvider>
       </OrgProfileProvider>

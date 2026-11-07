@@ -37,6 +37,7 @@ import { AcceptanceStatusBadge } from "@/components/acceptance/AcceptanceStatusB
 import { SendForAcceptanceDialog } from "@/components/acceptance/SendForAcceptanceDialog";
 import { AcceptanceDetailPanel } from "@/components/acceptance/AcceptanceDetailPanel";
 import { ShareGeneratedDocumentDialog } from "@/components/templates/share-generated-document-dialog";
+import { TrustLockedDownload } from "@/components/documents/trust-locked-download";
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -399,26 +400,38 @@ export function GeneratedDocumentsList({
                     <TableCell>
                       <div className="flex items-center gap-1">
                         {hasPdf && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8"
-                            onClick={() => handleDownload(doc)}
-                            title="Download PDF"
-                          >
-                            <Download className="size-4" />
-                          </Button>
+                          <TrustLockedDownload containsTrustData={doc.containsTrustData}>
+                            {(locked) => (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => handleDownload(doc)}
+                                disabled={locked}
+                                aria-label="Download PDF"
+                                title={locked ? undefined : "Download PDF"}
+                              >
+                                <Download className="size-4" />
+                              </Button>
+                            )}
+                          </TrustLockedDownload>
                         )}
                         {hasDocx && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8"
-                            onClick={() => handleDocxDownload(doc)}
-                            title="Download DOCX"
-                          >
-                            <FileText className="size-4" />
-                          </Button>
+                          <TrustLockedDownload containsTrustData={doc.containsTrustData}>
+                            {(locked) => (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => handleDocxDownload(doc)}
+                                disabled={locked}
+                                aria-label="Download DOCX"
+                                title={locked ? undefined : "Download DOCX"}
+                              >
+                                <FileText className="size-4" />
+                              </Button>
+                            )}
+                          </TrustLockedDownload>
                         )}
                         {showShare && (
                           <ShareGeneratedDocumentDialog

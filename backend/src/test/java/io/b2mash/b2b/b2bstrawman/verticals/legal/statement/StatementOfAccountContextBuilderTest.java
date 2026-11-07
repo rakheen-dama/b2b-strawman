@@ -26,6 +26,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
@@ -75,6 +77,7 @@ class StatementOfAccountContextBuilderTest {
   @Mock private TrustAccountRepository trustAccountRepository;
   @Mock private InvoiceRepository invoiceRepository;
   @Mock private InvoiceLineRepository invoiceLineRepository;
+  @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private PaymentEventRepository paymentEventRepository;
   @Mock private MemberNameResolver memberNameResolver;
   @Mock private TemplateContextHelper templateContextHelper;
@@ -108,6 +111,11 @@ class StatementOfAccountContextBuilderTest {
 
   @BeforeEach
   void setUp() {
+    // CodeRabbit (PR #1748): the fee-note basis counts only the firm's default-currency notes; the
+    // fixtures' fee notes are ZAR.
+    lenient()
+        .when(orgSettingsRepository.findForCurrentTenant())
+        .thenReturn(Optional.of(new OrgSettings("ZAR")));
     builder =
         new StatementOfAccountContextBuilder(
             projectRepository,
@@ -117,7 +125,10 @@ class StatementOfAccountContextBuilderTest {
             clientLedgerService,
             trustAccountRepository,
             new MatterFeeNoteTotals(
-                invoiceRepository, invoiceLineRepository, paymentEventRepository),
+                invoiceRepository,
+                invoiceLineRepository,
+                paymentEventRepository,
+                orgSettingsRepository),
             memberNameResolver,
             templateContextHelper,
             moduleGuard,

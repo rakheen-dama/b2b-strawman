@@ -16,6 +16,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.MatterFeeNoteTotals;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
@@ -48,6 +50,7 @@ class MatterClosureContextBuilderTest {
   @Mock private InvoiceRepository invoiceRepository;
   @Mock private InvoiceLineRepository invoiceLineRepository;
   @Mock private PaymentEventRepository paymentEventRepository;
+  @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private Project project;
 
   private MatterClosureContextBuilder builder;
@@ -58,6 +61,10 @@ class MatterClosureContextBuilderTest {
         new MatterClosureContextBuilder(
             projectRepository, feeNoteTotals(), Clock.system(KaziTime.ZONE));
     lenient().when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project));
+    // CodeRabbit (PR #1748): only default-currency notes count; the mocked notes are ZAR.
+    lenient()
+        .when(orgSettingsRepository.findForCurrentTenant())
+        .thenReturn(Optional.of(new OrgSettings("ZAR")));
     lenient().when(project.getClosedAt()).thenReturn(null);
     lenient().when(project.getCreatedAt()).thenReturn(Instant.now());
   }
@@ -68,7 +75,7 @@ class MatterClosureContextBuilderTest {
    */
   private MatterFeeNoteTotals feeNoteTotals() {
     return new MatterFeeNoteTotals(
-        invoiceRepository, invoiceLineRepository, paymentEventRepository);
+        invoiceRepository, invoiceLineRepository, paymentEventRepository, orgSettingsRepository);
   }
 
   /** A mocked fee note whose lines are served by {@code invoiceLineRepository}. */
@@ -78,6 +85,7 @@ class MatterClosureContextBuilderTest {
     UUID id = UUID.randomUUID();
     lenient().when(invoice.getId()).thenReturn(id);
     lenient().when(invoice.getStatus()).thenReturn(status);
+    lenient().when(invoice.getCurrency()).thenReturn("ZAR");
     lenient().when(invoice.getSubtotal()).thenReturn(new BigDecimal(subtotal));
     lenient().when(invoice.getTaxAmount()).thenReturn(new BigDecimal(tax));
     lenient().when(invoice.getTotal()).thenReturn(new BigDecimal(total));

@@ -1,6 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.config.KaziTime;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -22,6 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>A fee note counts when its status is SENT, PARTIALLY_PAID or PAID ({@link #ISSUED_STATUSES});
  * DRAFT, APPROVED and VOID notes never count. A note is "on the matter" when any of its lines
  * carries the matter ({@link InvoiceRepository#findByProjectId}); all its lines count.
+ *
+ * <p><b>Single currency.</b> Only fee notes in the firm's default currency ({@link
+ * OrgSettings#getDefaultCurrency}, falling back to {@link OrgSettingsService#DEFAULT_CURRENCY}) are
+ * counted — the same rule as the matter Overview "Outstanding" tile ({@code
+ * CollectionsReadService.outstandingSummary}, {@code WHERE i.currency = :currency}), so the
+ * Statement of Account, the closure letter and the tile agree by construction. Notes in any other
+ * currency are <em>excluded, not converted</em>; there is no multi-currency aggregation. {@link
+ * Ledger#currency()} names the currency every total is in.
  */
 @Component
 public class MatterFeeNoteTotals {
@@ -33,28 +44,45 @@ public class MatterFeeNoteTotals {
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
   private final PaymentEventRepository paymentEventRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
 
   public MatterFeeNoteTotals(
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
-      PaymentEventRepository paymentEventRepository) {
+      PaymentEventRepository paymentEventRepository,
+      OrgSettingsRepository orgSettingsRepository) {
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
     this.paymentEventRepository = paymentEventRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
   }
 
   /**
-   * Loads the matter's issued fee notes once — their line split and their COMPLETED payments — so a
-   * caller can ask several period questions ({@link Ledger#issuedBetween}) without re-querying.
+   * The firm's default currency, resolved exactly as {@code CollectionsReadService} does for the
+   * Outstanding tile.
+   */
+  private String defaultCurrency() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(OrgSettings::getDefaultCurrency)
+        .orElse(OrgSettingsService.DEFAULT_CURRENCY);
+  }
+
+  /**
+   * Loads the matter's issued fee notes in the firm's default currency once — their line split and
+   * their COMPLETED payments — so a caller can ask several period questions ({@link
+   * Ledger#issuedBetween}) without re-querying. Notes in another currency are left out.
    */
   @Transactional(readOnly = true)
   public Ledger load(UUID projectId) {
+    String currency = defaultCurrency();
     List<Invoice> issued =
         invoiceRepository.findByProjectId(projectId).stream()
             .filter(note -> ISSUED_STATUSES.contains(note.getStatus()))
+            .filter(note -> currency.equals(note.getCurrency()))
             .toList();
     if (issued.isEmpty()) {
-      return new Ledger(List.of());
+      return new Ledger(currency, List.of());
     }
     Map<UUID, List<PaymentEvent>> paymentsByNote =
         paymentEventRepository
@@ -70,7 +98,7 @@ public class MatterFeeNoteTotals {
               invoiceLineRepository.findByInvoiceIdOrderBySortOrder(note.getId()),
               paymentsByNote.getOrDefault(note.getId(), List.of())));
     }
-    return new Ledger(List.copyOf(notes));
+    return new Ledger(currency, List.copyOf(notes));
   }
 
   /** All the matter's issued fee notes, paid as of now — outstanding = Σ balance due. */
@@ -199,8 +227,11 @@ public class MatterFeeNoteTotals {
     }
   }
 
-  /** A matter's issued fee notes, loaded once by {@link #load}. */
-  public record Ledger(List<NoteFigures> notes) {
+  /**
+   * A matter's issued fee notes in {@code currency} (the firm's default currency), loaded once by
+   * {@link #load}; every total it returns is in that currency.
+   */
+  public record Ledger(String currency, List<NoteFigures> notes) {
 
     /**
      * Totals of the notes issued in {@code [from, to]} (either bound null = open), paid as of

@@ -594,12 +594,17 @@ public class GeneratedDocumentService {
         .orElseThrow(() -> new ResourceNotFoundException("GeneratedDocument", id));
   }
 
+  /**
+   * Deletes a generated document row (the firm endpoint). A matter document needs view access to
+   * the matter (G89-F60, 404) — the endpoint's TEAM_OVERSIGHT capability alone is not enough.
+   */
   @Transactional
   public void delete(UUID id) {
     var doc =
         generatedDocumentRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("GeneratedDocument", id));
+    requireEntityAccess(doc.getPrimaryEntityType(), doc.getPrimaryEntityId());
     generatedDocumentRepository.delete(doc);
     log.info("Deleted generated document: id={}", id);
   }

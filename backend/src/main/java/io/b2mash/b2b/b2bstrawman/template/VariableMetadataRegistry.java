@@ -218,6 +218,18 @@ public class VariableMetadataRegistry {
             "invoiceSummary",
             List.of(new VariableInfo("totalOutstanding", "Total Outstanding", "currency"))));
 
+    // G89 D11: the client's trust ledger (ClientTrustStatementContext; absent without trust
+    // accounting or trust activity).
+    groups.add(
+        new VariableGroup(
+            "Trust account",
+            "trust",
+            List.of(
+                new VariableInfo("trust.account_name", "Trust Account Name", "string"),
+                new VariableInfo("trust.statement_date", "Trust Statement Date", "date"),
+                new VariableInfo("trust.opening_balance", "Trust Opening Balance", "currency"),
+                new VariableInfo("trust.closing_balance", "Trust Balance Held", "currency"))));
+
     groups.add(buildOrgGroup());
     groups.add(buildGeneratedGroup());
 
@@ -238,6 +250,17 @@ public class VariableMetadataRegistry {
                     "total",
                     "currency",
                     "status",
+                    "runningBalance")),
+            new LoopSource(
+                "trust.lines",
+                "Trust ledger lines",
+                List.of("CUSTOMER"),
+                List.of(
+                    "transactionDate",
+                    "type",
+                    "reference",
+                    "description",
+                    "amount",
                     "runningBalance")),
             new LoopSource(
                 "tags", "Tags", List.of("PROJECT", "CUSTOMER"), List.of("name", "color"))));

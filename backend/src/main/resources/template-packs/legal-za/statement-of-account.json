@@ -357,6 +357,13 @@
         { "type": "variable", "attrs": { "key": "summary.trust_balance_held" } }
       ]
     },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Unbilled work in progress (not yet billed): " },
+        { "type": "variable", "attrs": { "key": "summary.unbilled_wip" } }
+      ]
+    },
     { "type": "horizontalRule" },
     {
       "type": "conditionalBlock",

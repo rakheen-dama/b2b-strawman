@@ -119,7 +119,7 @@
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Trust Account:" },
         { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "org.name" } },
-        { "type": "text", "text": " — Section 78(1) Trust Account" }
+        { "type": "text", "text": " — Section 86(2) trust account" }
       ]
     },
     { "type": "horizontalRule" },
@@ -131,17 +131,55 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "trust.account_name", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "text": "The following is a statement of all trust account transactions held on behalf of " },
-        { "type": "variable", "attrs": { "key": "customer.name" } },
-        { "type": "text", "text": " for the period indicated." }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "content": [
-        { "type": "text", "text": "[Transaction details to be inserted]" }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "The following is a statement of all trust account transactions held on behalf of " },
+            { "type": "variable", "attrs": { "key": "customer.name" } },
+            { "type": "text", "text": ", from the first transaction to the date of this statement." }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Account:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "trust.account_name" } }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Opening balance:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "trust.opening_balance" } }
+          ]
+        },
+        {
+          "type": "loopTable",
+          "attrs": {
+            "dataSource": "trust.lines",
+            "columns": [
+              { "header": "Date", "key": "transactionDate", "format": "date" },
+              { "header": "Type", "key": "type" },
+              { "header": "Reference", "key": "reference" },
+              { "header": "Description", "key": "description" },
+              { "header": "Amount", "key": "amount", "format": "currency" },
+              { "header": "Balance", "key": "runningBalance", "format": "currency" }
+            ]
+          }
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Closing balance:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "trust.closing_balance" } }
+          ]
+        }
       ]
     },
     {
@@ -152,9 +190,29 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "trust.account_name", "operator": "isNotEmpty" },
       "content": [
-        { "type": "text", "text": "The current balance held in trust on your behalf is as reflected above." }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "The current balance held in trust on your behalf is " },
+            { "type": "variable", "attrs": { "key": "trust.closing_balance" } },
+            { "type": "text", "text": "." }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "trust.account_name", "operator": "isEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "No trust account transactions have been recorded on your behalf, and no money is held in trust for you." }
+          ]
+        }
       ]
     },
     { "type": "horizontalRule" },

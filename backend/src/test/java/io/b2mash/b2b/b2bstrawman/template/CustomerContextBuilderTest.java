@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.BillingSettings;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientTrustStatementContext;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -40,6 +41,7 @@ class CustomerContextBuilderTest {
   @Mock private ProjectRepository projectRepository;
   @Mock private InvoiceRepository invoiceRepository;
   @Mock private TemplateContextHelper contextHelper;
+  @Mock private ClientTrustStatementContext clientTrustStatementContext;
 
   @InjectMocks private CustomerContextBuilder builder;
 

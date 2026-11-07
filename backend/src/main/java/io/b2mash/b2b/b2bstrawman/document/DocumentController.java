@@ -148,7 +148,8 @@ public class DocumentController {
       UUID uploadedBy,
       String uploadedByName,
       Instant uploadedAt,
-      Instant createdAt) {
+      Instant createdAt,
+      boolean containsTrustData) {
 
     public static DocumentResponse from(Document document) {
       return from(document, Map.of());
@@ -169,7 +170,8 @@ public class DocumentController {
           document.getUploadedBy(),
           document.getUploadedBy() != null ? memberNames.get(document.getUploadedBy()) : null,
           document.getUploadedAt(),
-          document.getCreatedAt());
+          document.getCreatedAt(),
+          document.isContainsTrustData());
     }
   }
 }

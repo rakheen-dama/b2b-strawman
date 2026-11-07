@@ -26,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Clock;
@@ -36,6 +37,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,6 +60,12 @@ public class GeneratedDocumentService {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
   private static final Duration DOWNLOAD_URL_EXPIRY = Duration.ofHours(1);
 
+  /** The {@code trust} context block's status when trust money is printed (G89-F52). */
+  private static final String TRUST_STATUS_AVAILABLE = "available";
+
+  /** The SoA summary's trust figure — the one trust variable outside the {@code trust.} group. */
+  private static final String SUMMARY_TRUST_BALANCE_KEY = "summary.trust_balance_held";
+
   private final GeneratedDocumentRepository generatedDocumentRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
   private final MemberNameResolver memberNameResolver;
@@ -76,6 +84,8 @@ public class GeneratedDocumentService {
   private final List<TemplateContextBuilder> contextBuilders;
   private final OrgSettingsRepository orgSettingsRepository;
   private final DocumentService documentService;
+  private final TrustDataVisibility trustDataVisibility;
+  private final TemplateVariableAnalyzer templateVariableAnalyzer;
   private final Clock clock;
 
   public GeneratedDocumentService(
@@ -97,6 +107,8 @@ public class GeneratedDocumentService {
       List<TemplateContextBuilder> contextBuilders,
       OrgSettingsRepository orgSettingsRepository,
       DocumentService documentService,
+      TrustDataVisibility trustDataVisibility,
+      TemplateVariableAnalyzer templateVariableAnalyzer,
       Clock clock) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
@@ -116,6 +128,8 @@ public class GeneratedDocumentService {
     this.contextBuilders = contextBuilders;
     this.orgSettingsRepository = orgSettingsRepository;
     this.documentService = documentService;
+    this.trustDataVisibility = trustDataVisibility;
+    this.templateVariableAnalyzer = templateVariableAnalyzer;
     this.clock = clock;
   }
 
@@ -271,6 +285,9 @@ public class GeneratedDocumentService {
     // 0b. Resolve clauses
     var resolvedClauses = clauseResolver.resolveClauses(templateId, clauseSelections);
 
+    // 0c. G89-F52: does the stored file print trust money? (gates every later download)
+    boolean containsTrustData = printsTrustData(template, contextMap, resolvedClauses);
+
     // 1. Generate PDF (clause-aware, extra context merged over the builder-produced context)
     var pdfResult =
         pdfRenderingService.generatePdf(
@@ -299,6 +316,7 @@ public class GeneratedDocumentService {
             pdfResult.pdfBytes().length,
             memberId,
             contextSnapshot);
+    generatedDoc.setContainsTrustData(containsTrustData);
 
     // 5b. Store warnings if validation had missing fields
     if (!validationResult.allPresent()) {
@@ -323,7 +341,13 @@ public class GeneratedDocumentService {
     if (saveToDocuments) {
       linkedDocument =
           createLinkedDocument(
-              templateDetail, entityId, pdfResult, s3Key, memberId, intendedVisibility);
+              templateDetail,
+              entityId,
+              pdfResult,
+              s3Key,
+              memberId,
+              intendedVisibility,
+              containsTrustData);
       generatedDoc.linkToDocument(linkedDocument.getId());
       // No explicit save needed — entity is managed within this transaction
     }
@@ -805,6 +829,9 @@ public class GeneratedDocumentService {
     if (secondaryDocxS3Key != null) {
       generatedDoc.setDocxS3Key(secondaryDocxS3Key);
     }
+    // G89-F52: conservative — a DOCX body cannot be scanned cheaply, so an available trust block
+    // flags the document.
+    generatedDoc.setContainsTrustData(trustBlockAvailable(context));
 
     // 10. Audit event
     var auditDetails = new HashMap<String, Object>();
@@ -847,16 +874,26 @@ public class GeneratedDocumentService {
   }
 
   /**
-   * Returns a presigned download URL for the DOCX version of a generated document. Verifies project
-   * access if the document is project-scoped. Throws if no DOCX version is available.
+   * Returns a presigned download URL for a generated document (its primary file), after the read
+   * checks of {@link #requireReadable}.
+   *
+   * @throws ResourceNotFoundException unknown id, or the caller cannot view the matter
+   * @throws io.b2mash.b2b.b2bstrawman.exception.ForbiddenException the file prints trust money and
+   *     the caller lacks VIEW_TRUST (G89-F52)
+   */
+  @Transactional(readOnly = true)
+  public String getDownloadUrl(UUID id) {
+    var generatedDoc = requireReadable(id);
+    return storageService.generateDownloadUrl(generatedDoc.getS3Key(), DOWNLOAD_URL_EXPIRY).url();
+  }
+
+  /**
+   * Returns a presigned download URL for the DOCX version of a generated document, after the read
+   * checks of {@link #requireReadable}. Throws if no DOCX version is available.
    */
   @Transactional(readOnly = true)
   public String getDocxDownloadUrl(UUID id) {
-    var generatedDoc = getById(id);
-    if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
-      var actor = ActorContext.fromRequestScopes();
-      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), actor);
-    }
+    var generatedDoc = requireReadable(id);
     String docxKey = generatedDoc.getDocxS3Key();
     if (docxKey == null) {
       throw ResourceNotFoundException.withDetail(
@@ -867,6 +904,46 @@ public class GeneratedDocumentService {
   }
 
   // --- Private helpers ---
+
+  /**
+   * The read checks of a stored generated document, in order: the matter (a matter document needs
+   * view access — 404), then trust (a file that prints trust money needs VIEW_TRUST — 403,
+   * G89-F52).
+   */
+  private GeneratedDocument requireReadable(UUID id) {
+    var generatedDoc = getById(id);
+    if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
+      projectAccessService.requireViewAccess(
+          generatedDoc.getPrimaryEntityId(), ActorContext.fromRequestScopes());
+    }
+    trustDataVisibility.requireMayRead(generatedDoc.isContainsTrustData());
+    return generatedDoc;
+  }
+
+  /**
+   * G89-F52: the generic path prints trust money when the context's {@code trust} block is
+   * available AND the body (or a selected clause) uses a trust variable. Both are needed: {@code
+   * CustomerContextBuilder} adds the block to every client context, so a Power of Attorney would be
+   * over-flagged on the block alone.
+   */
+  private boolean printsTrustData(
+      DocumentTemplate template, Map<String, Object> context, List<Clause> clauses) {
+    if (!trustBlockAvailable(context)) {
+      return false;
+    }
+    var keys = new HashSet<>(templateVariableAnalyzer.extractVariableKeys(template.getContent()));
+    for (Clause clause : clauses) {
+      keys.addAll(templateVariableAnalyzer.extractVariableKeys(clause.getBody()));
+    }
+    return keys.stream()
+        .anyMatch(key -> key.startsWith("trust.") || SUMMARY_TRUST_BALANCE_KEY.equals(key));
+  }
+
+  /** The {@code trust} block carries trust money (status "available"), not "none" or nothing. */
+  private static boolean trustBlockAvailable(Map<String, Object> context) {
+    return context.get("trust") instanceof Map<?, ?> trust
+        && TRUST_STATUS_AVAILABLE.equals(trust.get("status"));
+  }
 
   private OutputFormat resolveOutputFormat(String rawOutputFormat) {
     if (rawOutputFormat == null || rawOutputFormat.isBlank()) {
@@ -968,7 +1045,8 @@ public class GeneratedDocumentService {
       PdfResult pdfResult,
       String s3Key,
       UUID memberId,
-      String intendedVisibility) {
+      String intendedVisibility,
+      boolean containsTrustData) {
     String visibility =
         intendedVisibility != null ? intendedVisibility : Document.Visibility.INTERNAL;
     var entityType = TemplateEntityType.valueOf(template.primaryEntityType());
@@ -1010,6 +1088,7 @@ public class GeneratedDocumentService {
         };
     document.assignS3Key(s3Key);
     document.confirmUpload();
+    document.setContainsTrustData(containsTrustData);
     Document saved = documentRepository.save(document);
 
     // OBS-2106 follow-up: when the linked Document is born portal-visible, publish a
@@ -1078,7 +1157,8 @@ public class GeneratedDocumentService {
         gd.getDocumentId(),
         gd.getOutputFormat().name(),
         gd.getDocxS3Key() != null,
-        visibility);
+        visibility,
+        gd.isContainsTrustData());
   }
 
   private String resolveTemplateName(UUID templateId) {
@@ -1101,6 +1181,8 @@ public class GeneratedDocumentService {
    * DTO for generated document list responses (also returned by the share action). {@code
    * visibility} is the linked Document's visibility ({@code INTERNAL}/{@code SHARED}/{@code
    * PORTAL}), or {@code null} when the document was not saved to the documents list (ADR-350).
+   * {@code containsTrustData} marks a file that prints trust money (G89-F52): the row stays listed,
+   * but only a member holding VIEW_TRUST may download it.
    */
   public record GeneratedDocumentListResponse(
       UUID id,
@@ -1114,7 +1196,8 @@ public class GeneratedDocumentService {
       UUID documentId,
       String outputFormat,
       boolean hasDocxDownload,
-      String visibility) {}
+      String visibility,
+      boolean containsTrustData) {}
 
   /** Result DTO for DOCX generation. */
   public record GenerateDocxResult(

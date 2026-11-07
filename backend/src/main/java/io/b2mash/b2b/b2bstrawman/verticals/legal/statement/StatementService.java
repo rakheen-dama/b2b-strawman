@@ -142,6 +142,9 @@ public class StatementService {
     storageService.upload(s3Key, pdfBytes, "application/pdf");
 
     StatementSummary summary = extractSummary(context);
+    // G89-F52 (D18): the stored PDF prints trust money unless it was withheld from this member.
+    boolean containsTrustData =
+        trustDataVisibility.visibleToCurrentMember() && !summary.trustWithheld();
 
     var generatedDoc =
         new GeneratedDocument(
@@ -162,6 +165,7 @@ public class StatementService {
     // PDF even if underlying fees/disbursements/trust data changes afterwards.
     snapshot.put("summary", summarySnapshotMap(summary));
     generatedDoc.setContextSnapshot(snapshot);
+    generatedDoc.setContainsTrustData(containsTrustData);
     generatedDoc = generatedDocumentRepository.save(generatedDoc);
 
     // GAP-L-74 part A / GAP-L-74-followup: persist a paired Document row so the SoA appears on
@@ -178,6 +182,7 @@ public class StatementService {
     pairedDocument.confirmUpload();
     pairedDocument.setVisibility(
         shareWithClient ? Document.Visibility.PORTAL : Document.Visibility.INTERNAL);
+    pairedDocument.setContainsTrustData(containsTrustData);
     var savedDocument = documentRepository.save(pairedDocument);
     generatedDoc.linkToDocument(savedDocument.getId());
     // generatedDoc is managed in this @Transactional — Hibernate flushes the link on commit.
@@ -279,7 +284,8 @@ public class StatementService {
         new StatementResponse.MatterRef(projectId, project.getName()),
         summary,
         request.periodStart(),
-        request.periodEnd());
+        request.periodEnd(),
+        generatedDoc.isContainsTrustData());
   }
 
   @Transactional(readOnly = true)
@@ -360,7 +366,8 @@ public class StatementService {
         new StatementResponse.MatterRef(projectId, project.getName()),
         summary,
         snapshotDate(generatedDoc.getContextSnapshot(), "period_start"),
-        snapshotDate(generatedDoc.getContextSnapshot(), "period_end"));
+        snapshotDate(generatedDoc.getContextSnapshot(), "period_end"),
+        generatedDoc.isContainsTrustData());
   }
 
   // ---------- helpers ----------
@@ -514,7 +521,8 @@ public class StatementService {
         new StatementResponse.MatterRef(project.getId(), project.getName()),
         summary,
         snapshotDate(gd.getContextSnapshot(), "period_start"),
-        snapshotDate(gd.getContextSnapshot(), "period_end"));
+        snapshotDate(gd.getContextSnapshot(), "period_end"),
+        gd.isContainsTrustData());
   }
 
   private Map<String, Object> summarySnapshotMap(StatementSummary s) {

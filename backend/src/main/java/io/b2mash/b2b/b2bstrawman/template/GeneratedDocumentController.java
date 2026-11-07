@@ -1,11 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
-import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService.GeneratedDocumentListResponse;
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
@@ -23,18 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/generated-documents")
 public class GeneratedDocumentController {
 
-  private static final Duration URL_EXPIRY = Duration.ofHours(1);
-
   private final GeneratedDocumentService generatedDocumentService;
-  private final StorageService storageService;
   private final ProjectAccessService projectAccessService;
 
   public GeneratedDocumentController(
       GeneratedDocumentService generatedDocumentService,
-      StorageService storageService,
       ProjectAccessService projectAccessService) {
     this.generatedDocumentService = generatedDocumentService;
-    this.storageService = storageService;
     this.projectAccessService = projectAccessService;
   }
 
@@ -50,14 +43,11 @@ public class GeneratedDocumentController {
     return ResponseEntity.ok(documents);
   }
 
+  /** Matter check (404), then trust check (403, G89-F52), then a presigned redirect. */
   @GetMapping("/{id}/download")
-  public ResponseEntity<Void> downloadGeneratedDocument(@PathVariable UUID id, ActorContext actor) {
-    var generatedDoc = generatedDocumentService.getById(id);
-    if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
-      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), actor);
-    }
-    var presigned = storageService.generateDownloadUrl(generatedDoc.getS3Key(), URL_EXPIRY);
-    return ResponseEntity.status(302).header(HttpHeaders.LOCATION, presigned.url()).build();
+  public ResponseEntity<Void> downloadGeneratedDocument(@PathVariable UUID id) {
+    String url = generatedDocumentService.getDownloadUrl(id);
+    return ResponseEntity.status(302).header(HttpHeaders.LOCATION, url).build();
   }
 
   @GetMapping("/{id}/download-docx")

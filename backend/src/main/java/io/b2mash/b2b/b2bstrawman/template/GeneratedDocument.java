@@ -67,6 +67,13 @@ public class GeneratedDocument {
   @Column(name = "docx_s3_key", length = 500)
   private String docxS3Key;
 
+  /**
+   * True when the stored file prints trust money (G89-F52, D18): only a member holding {@code
+   * VIEW_TRUST} may download it. Set at generation; never cleared.
+   */
+  @Column(name = "contains_trust_data", nullable = false)
+  private boolean containsTrustData;
+
   @Column(name = "generated_at", nullable = false, updatable = false)
   private Instant generatedAt;
 
@@ -174,5 +181,13 @@ public class GeneratedDocument {
 
   public void setDocxS3Key(String docxS3Key) {
     this.docxS3Key = docxS3Key;
+  }
+
+  public boolean isContainsTrustData() {
+    return containsTrustData;
+  }
+
+  public void setContainsTrustData(boolean containsTrustData) {
+    this.containsTrustData = containsTrustData;
   }
 }

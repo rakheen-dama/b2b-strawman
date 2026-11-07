@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
@@ -32,13 +33,15 @@ import tools.jackson.databind.ObjectMapper;
  * <p>Access model is scope-dependent. A {@code projectId} search is <b>project-access</b> gated
  * (the service calls {@code requireViewAccess}); an {@code ORG}/{@code CUSTOMER} scope search is
  * org-wide (relying on tenant schema isolation). {@code get_document_url} enforces access inside
- * the service. Service-thrown {@link ResourceNotFoundException}/{@link InvalidStateException} are
- * caught here and surfaced as non-leaking {@link McpError}s.
+ * the service — the matter, then trust (a document that prints trust money needs VIEW_TRUST,
+ * G89-F52). Service-thrown {@link ResourceNotFoundException}/{@link ForbiddenException}/{@link
+ * InvalidStateException} are caught here and surfaced as non-leaking {@link McpError}s.
  */
 @Component
 public class DocumentTools {
 
   private static final String GATE_PROJECT_ACCESS = "project-access";
+  private static final String GATE_VIEW_TRUST = "VIEW_TRUST";
 
   private final DocumentService documentService;
   private final AuditService auditService;
@@ -167,6 +170,16 @@ public class DocumentTools {
           metrics,
           McpToolAudit.elapsed(startNanos));
       return McpToolErrors.asResult(McpError.notFound("document"), objectMapper);
+    } catch (ForbiddenException e) {
+      // G89-F52: the document prints trust money and the caller lacks VIEW_TRUST — no URL, and
+      // audit the refusal under that gate.
+      McpToolAudit.emitDenied(
+          "get_document_url",
+          GATE_VIEW_TRUST,
+          auditService,
+          metrics,
+          McpToolAudit.elapsed(startNanos));
+      return McpToolErrors.asResult(McpError.forbidden(), objectMapper);
     } catch (InvalidStateException e) {
       // Document exists but is not yet downloadable (e.g. not UPLOADED). This is a lifecycle/state
       // condition, NOT an access refusal — record it as an error-outcome metric (gate label

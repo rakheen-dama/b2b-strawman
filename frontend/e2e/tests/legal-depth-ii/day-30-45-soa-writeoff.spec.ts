@@ -7,7 +7,13 @@
  *     shows fees + disbursements (from Day 5) + trust activity + summary. Save
  *     as GeneratedDocument, download PDF.
  *   - Day 45 (Epic 491): write off one approved-UNBILLED disbursement with reason.
- *     Verify status transition, audit event, exclusion from next invoice draft.
+ *     Verify status transition, audit event, its removal from the next statement (its
+ *     disbursements and the unbilled-WIP line) and its exclusion from the next fee-note draft.
+ *
+ * Summary basis (G89-F16 / founder D9, #1748; the WIP row ships with #1749): "Closing balance
+ * owing" counts issued fee notes only. Sipho's matter has none in this group, so nothing is owing
+ * (R0,00); the unbilled fees and disbursements (excl. VAT) are shown separately as "Unbilled work
+ * in progress (not yet billed)" and never counted as owing.
  *
  * Prerequisites:
  *   1. E2E stack running: bash compose/scripts/e2e-up.sh
@@ -71,8 +77,55 @@ async function generateStatement(page: Page, tab: Locator): Promise<Locator> {
   return dialog;
 }
 
-/** Fees + disbursements (Day 5) + trust activity (Day 5) + summary. */
-async function verifyStatementPreview(dialog: Locator): Promise<RegExp> {
+/** Whitespace-tolerant pattern for a printed rand amount, from its text ("R 1 500,00"). */
+function amountPattern(printed: string): RegExp {
+  const digits = printed.replace(/\D/g, "");
+  const grouped = digits.slice(0, -2).split("").join("[\\s\\u00a0\\u202f]?");
+  return new RegExp(`R\\s?${grouped},${digits.slice(-2)}`);
+}
+
+/** The amount printed after `label` in the preview text, as a pattern (fails if absent). */
+function printedAmount(text: string, label: string): RegExp {
+  const match = text.match(
+    new RegExp(`${escapeRegExp(label)}:\\s*R\\s?([\\d\\s\\u00a0\\u202f]+,\\d{2})`)
+  );
+  expect(match, `"${label}" amount in the statement`).not.toBeNull();
+  return amountPattern(match![1]);
+}
+
+/**
+ * What the statement must show at this point of the group. First attempt: 2h at R2 500 = R5 000
+ * fees excl. VAT; the Day 5 sheriff fee (R750) + deeds-office fee (R1 250) until the Day 45
+ * write-off takes the sheriff fee out. A retried group adds time, so its WIP is only non-zero.
+ */
+interface ExpectedStatement {
+  sheriffFeeListed: boolean;
+  /** Disbursements table total, e.g. /R\s?2\s?000,00/. */
+  disbursementsTotal: RegExp;
+  /** First-attempt WIP, e.g. /R\s?7\s?000,00/. */
+  unbilledWip: RegExp;
+}
+
+const BEFORE_WRITE_OFF: ExpectedStatement = {
+  sheriffFeeListed: true,
+  disbursementsTotal: /R\s?2\s?000,00/,
+  unbilledWip: /R\s?7\s?000,00/,
+};
+
+const AFTER_WRITE_OFF: ExpectedStatement = {
+  sheriffFeeListed: false,
+  disbursementsTotal: /R\s?1\s?250,00/,
+  unbilledWip: /R\s?6\s?250,00/,
+};
+
+/**
+ * Fees + disbursements (Day 5) + trust activity (Day 5) + summary. Returns the printed closing
+ * balance owing and trust balance held, as patterns for the saved statement's row.
+ */
+async function verifyStatementPreview(
+  dialog: Locator,
+  expected: ExpectedStatement = BEFORE_WRITE_OFF
+): Promise<{ closingBalanceOwing: RegExp; trustBalanceHeld: RegExp }> {
   const preview = dialog
     .getByTestId("statement-preview-container")
     .frameLocator('iframe[title="Document Preview"]')
@@ -93,25 +146,36 @@ async function verifyStatementPreview(dialog: Locator): Promise<RegExp> {
     /^R\s?[1-9][\d\s]*,\d{2}$/, // amount
   ]);
   // Disbursements: the Day 5 sheriff fee (R750) + trust-linked deeds-office fee (R1,250)
-  // (scenario 30.4; 621D S1)
-  await expect(preview).toContainText(SHERIFF_FEE_DESCRIPTION);
-  await expect(preview).toContainText(/Total disbursements:\s*R\s?2\s?000,00/);
+  // (scenario 30.4; 621D S1); after the Day 45 write-off only the deeds-office fee (#1748: the
+  // statement lists approved, not-written-off disbursements)
+  if (expected.sheriffFeeListed) {
+    await expect(preview).toContainText(SHERIFF_FEE_DESCRIPTION);
+  } else {
+    await expect(preview).not.toContainText(SHERIFF_FEE_DESCRIPTION);
+  }
+  await expect(preview).toContainText(
+    new RegExp(`Total disbursements:\\s*${expected.disbursementsTotal.source}`)
+  );
   // Trust activity: Sipho's client trust ledger (client-scoped) with the Day 5 deposit + payment
   const runId = currentDepthIiRun();
   await expect(preview).toContainText("Trust Activity");
   await expect(preview).toContainText(new RegExp(`Deposits[\\s\\S]*DEP/${runId}`));
   await expect(preview).toContainText(new RegExp(`Payments[\\s\\S]*PAY/DEEDS/${runId}`));
   await expect(preview).toContainText(/Trust balance held:\s*R\s?[1-9]/);
-  // Summary
+  // Summary (fee-note basis, D9): no fee note issued yet, so nothing owing; the unbilled fees +
+  // disbursements are the work in progress, shown but never counted as owing
   await expect(preview).toContainText("Summary");
-  await expect(preview).toContainText(/Closing balance owing:\s*R\s?[1-9]/);
-  // Return the closing balance owing as a whitespace-tolerant amount pattern
-  const summary = (await preview.textContent()) ?? "";
-  const owing = summary.match(/Closing balance owing:\s*R\s?([\d\s\u00a0\u202f]+,\d{2})/);
-  expect(owing, "closing balance owing in the summary").not.toBeNull();
-  const digits = owing![1].replace(/\D/g, "");
-  const pattern = `R\\s?${digits.slice(0, -2).split("").join("[\\s\\u00a0\\u202f]?")},${digits.slice(-2)}`;
-  return new RegExp(pattern);
+  await expect(preview).toContainText(/Closing balance owing:\s*R\s?0,00/);
+  const wip = test.info().retry === 0 ? expected.unbilledWip : /R\s?[1-9][\d\s\u00a0\u202f]*,\d{2}/;
+  await expect(preview).toContainText(
+    new RegExp(`Unbilled work in progress \\(not yet billed\\):\\s*${wip.source}`)
+  );
+  // The printed amounts, for the saved statement's row
+  const text = (await preview.textContent()) ?? "";
+  return {
+    closingBalanceOwing: printedAmount(text, "Closing balance owing"),
+    trustBalanceHeld: printedAmount(text, "Trust balance held"),
+  };
 }
 
 async function openSheriffFeeDetail(page: Page) {
@@ -235,7 +299,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
 
     // "Preview & Save" generates the statement, saves it to the matter and renders the preview
     const dialog = await generateStatement(page, tab);
-    const closingBalanceOwing = await verifyStatementPreview(dialog);
+    const printed = await verifyStatementPreview(dialog);
     await expect(page.getByText("Statement generated")).toBeVisible();
     // Dismiss with Escape (the dialog footer sits below the fold at the default 1280×720 viewport)
     await page.keyboard.press("Escape");
@@ -248,7 +312,9 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
       .toHaveLength(1);
     savedStatementRowId = (await rowIds()).find((id) => !before.has(id))!;
     const row = tab.getByTestId(savedStatementRowId);
-    await expect(row).toContainText(closingBalanceOwing);
+    // Columns: Generated | Closing balance owing | Trust balance held | Actions
+    await expect(row.getByRole("cell").nth(1)).toHaveText(printed.closingBalanceOwing);
+    await expect(row.getByRole("cell").nth(2)).toHaveText(printed.trustBalanceHeld);
     await expect(row.locator('[data-testid^="statement-download-"]')).toBeEnabled();
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-30-statement-saved-list");
@@ -349,6 +415,19 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     );
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-45-audit-log-write-off-event");
+  });
+
+  // D9 (#1748, #1749): the written-off disbursement leaves the next statement — its disbursements
+  // table and total, and the unbilled-WIP line — while nothing becomes owing.
+  test("Alice: Statement after the write-off — sheriff fee out of the disbursements and the WIP", async ({
+    page,
+  }) => {
+    await loginAs(page, "alice");
+    const tab = await openStatementsTab(page);
+    const dialog = await generateStatement(page, tab);
+    await verifyStatementPreview(dialog, AFTER_WRITE_OFF);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
   });
 
   // Regression (was FIXME depth-ii:no-write-off-action): the written-off disbursement is not

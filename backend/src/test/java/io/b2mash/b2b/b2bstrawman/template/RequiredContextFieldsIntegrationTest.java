@@ -155,6 +155,32 @@ class RequiredContextFieldsIntegrationTest {
                 .value(false));
   }
 
+  /**
+   * G89 632A(b): the warning names the field the way the firm knows it ("Matter › Seller Name", the
+   * field definition's display name), not the raw context path "project.customFields.seller_name".
+   */
+  @Test
+  void offerToPurchase_blankSeller_warningCarriesAReadableLabel() throws Exception {
+    String matterId = createMatter("{\"purchaser_name\":\"Thandi Nkosi\"}");
+
+    mockMvc
+        .perform(
+            post("/api/templates/" + packTemplateId("offer-to-purchase") + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"entityId\":\"%s\"}".formatted(matterId)))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.validationResult.fields[?(@.field == '%s')].label", SELLER_FIELD)
+                .value("Matter › Seller Name"));
+
+    generate("offer-to-purchase", matterId, false, false)
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(
+            jsonPath("$.validationResult.fields[?(@.field == '%s')].label", PURCHASER_FIELD)
+                .value("Matter › Purchaser Name"));
+  }
+
   // --- helpers ---
 
   private String createMatter(String customFieldsJson) throws Exception {

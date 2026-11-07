@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -226,6 +227,38 @@ class DocumentMatterAccessIntegrationTest {
         .andExpect(status().isOk());
   }
 
+  // ---- G89-F60: deleting a matter's generated document --------------------------------------
+
+  @Test
+  void deleteGeneratedDocument_memberNotOnMatter_notFound_memberOnMatter_noContent()
+      throws Exception {
+    String generatedId =
+        JsonPath.read(
+                mockMvc
+                    .perform(
+                        post("/api/templates/" + tiptapTemplateId + "/generate")
+                            .with(owner())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """
+                                {"entityId":"%s","saveToDocuments":true,"acknowledgeWarnings":true}"""
+                                    .formatted(matterId)))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString(),
+                "$.id")
+            .toString();
+
+    // N holds TEAM_OVERSIGHT (the endpoint's capability) but is not on the matter.
+    mockMvc
+        .perform(delete("/api/generated-documents/" + generatedId).with(member(N)))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(delete("/api/generated-documents/" + generatedId).with(member(M)))
+        .andExpect(status().isNoContent());
+  }
+
   // ---- G89-F54: statements list / get / generate ------------------------------------------
 
   @Test
@@ -314,7 +347,7 @@ class DocumentMatterAccessIntegrationTest {
     UUID executionId = UUID.fromString(JsonPath.read(body, "$.executionId"));
     var execution = inTenantTx(() -> aiExecutionRepository.findById(executionId).orElseThrow());
     assertThat(execution.getInputTokens()).isZero();
-    assertThat(execution.getErrorMessage()).isNotBlank();
+    assertThat(execution.getErrorMessage()).containsIgnoringCase("not found");
   }
 
   @Test

@@ -74,3 +74,63 @@ As in `batch-B-brief.md` "Process":
 - run the frontend gate
 - open the PR; no full verify, no merge
 - report back with the PR number, head sha, counts, test changes, judgment calls and any deferred 634A item
+
+---
+
+## Additions since the brief was written (2026-11-08)
+
+The branch is cut from fresh `origin/main` **after Batch G (PR #1751) merges**. The next free tenant migration is **V15**, if one is needed.
+
+### MEDIUM (counts against the exit bar)
+
+**G89-F50: the Section 35 Data Pack interest section lists only the latest interest run in the financial year (D14).**
+- `report/Section35DataPackQuery` uses its interest-allocation sub-report with "latest run within year" semantics. See the `InterestAllocationReportQuery` usage and the code comment.
+- Fix: include every POSTED interest run whose period falls in the financial year, one row per client per run, with a per-section total.
+- Red test: two posted runs in one FY must both appear (`Section35DataPackContentIntegrationTest`).
+- Check `InterestAllocationReportQuery` callers outside Section 35, and do not change those.
+
+### LOW
+
+**G89-F44 (D14): portal "Firm actions" shows trust refund approvals but no deposit or interest events.**
+- Add trust deposit (recorded) and interest posted (per client) to the portal activity allow-list (`portal/PortalActivityEventTypes.java`), with client-facing labels (`PortalActivityEventResponse`).
+- Check the existing audit event types and their `entity_id` / customer linkage, so each client sees only their own events (cf. `findActivityFirmForCustomer`).
+- Red test: a deposit for client A appears in A's Firm actions and not in B's.
+
+**G89-F47: Section 35 on-screen table.**
+- The ITEM cell doesn't wrap the long `INT-CREDIT-<uuid>…` references, so AMOUNT ends up off-screen at 1440 px.
+- Make the ITEM cell `whitespace-normal break-words`, with a max width, in `report-results.tsx`.
+
+**G89-F48: Section 35 PDF prints raw money ("10000.00").**
+- Format amounts as in the other trust PDFs, or better, with the ZAR house format if a Thymeleaf helper exists.
+- This changes `TrustReportPackSeeder` `SECTION_35_TEMPLATE`, so it needs **PACK_VERSION 2→3 and a RECONCILE entry**, following the 1→2 precedent from C1.
+
+**G89-F49: CSV negative amounts are apostrophe-prefixed by the formula-injection guard (`ReportRenderingService.escapeCsv`), so they read as text.**
+- Exempt plain numeric values (regex `^-?\d+(\.\d+)?$`) from the guard.
+- Keep the guard for `=`, `+`, `@` and `-` followed by non-digits.
+
+**G89-F57: the SoA summary reads "Total fees: R0,00" while Professional Fees lists unbilled time.**
+- Under D9 this is correct but reads as a contradiction.
+- Relabel the summary lines "Fees billed in period" and "Disbursements billed in period".
+- This is a legal-za pack edit, so **bump v13→v14 with reconcile entries** (ADR-356 cumulative chain).
+- The founder signs off the wording before merge (put it in the PR body under "Wording for sign-off").
+
+**G89-F62 (D21): `POST /api/ai/skills/drafting` without a `templateId` returns 500 (`Map.of` with a null).**
+- Make it null-safe and return a 400 ProblemDetail ("Template required") if the skill needs one.
+- Red test first.
+
+**G89-F64: a member without VIEW_TRUST gets 500s on the client trust tab, and the page then wrongly says "No trust account configured".**
+- Find the failing call. It is probably a trust endpoint that throws AccessDenied, which the frontend treats as "no account".
+- Fix: either don't call trust endpoints when `!canViewTrust`, or handle 403 as "Trust details are not available".
+- No 500s are allowed: the backend must return 403, not 500. Find why it is a 500.
+- Red test on the backend status code, plus a vitest.
+
+**G89-F65: after a role change the Team list doesn't refresh, and on reload it shows the raw slug `org:associate-no-trust`.**
+- Revalidate after the role change.
+- Render the role's display name, not the slug.
+
+**Batch A review follow-ups:** unchanged from the list above.
+
+### Not in E
+
+- **G89-F63** (the role editor can't grant VIEW_LEGAL etc.) is awaiting a founder ruling.
+- **G89-F61** is by design (D21).

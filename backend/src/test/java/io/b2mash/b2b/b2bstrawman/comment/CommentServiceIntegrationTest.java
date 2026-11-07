@@ -8,18 +8,37 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
+import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import io.b2mash.b2b.b2bstrawman.testutil.AbstractIntegrationTest;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
 class CommentServiceIntegrationTest extends AbstractIntegrationTest {
   private static final String ORG_ID = "org_comment_svc_test";
   private static final String ORG_B_ID = "org_comment_svc_test_b";
+
+  @Autowired private CustomerService customerService;
+  @Autowired private PortalContactService portalContactService;
+  @Autowired private PortalJwtService portalJwtService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private PortalReadModelRepository readModelRepository;
+
+  private UUID clientId;
+  private UUID contactlessClientId;
 
   private String projectId;
   private String taskId;
@@ -48,6 +67,33 @@ class CommentServiceIntegrationTest extends AbstractIntegrationTest {
     memberIdMember =
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, "user_cs_member", "cs_member@test.com", "CS Member", "member");
+
+    // 634E(5): a client with a portal contact, and one without (the client-id author fallback)
+    String tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    UUID ownerId = UUID.fromString(memberIdOwner);
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerId)
+        .run(
+            () -> {
+              clientId =
+                  customerService
+                      .createCustomer(
+                          "Lerato Client", "cs-client@test.com", null, null, null, ownerId)
+                      .getId();
+              portalContactService.createContact(
+                  ORG_ID,
+                  clientId,
+                  "cs-contact@test.com",
+                  "Lerato Contact",
+                  PortalContact.ContactRole.PRIMARY);
+              contactlessClientId =
+                  customerService
+                      .createCustomer(
+                          "Contactless Client", "cs-nocontact@test.com", null, null, null, ownerId)
+                      .getId();
+            });
 
     // Sync member for tenant B
     TestMemberHelper.syncMember(
@@ -579,7 +625,80 @@ class CommentServiceIntegrationTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.body").value("Edited shared body"));
   }
 
+  // --- 634E(5): portal-authored comments carry the contact's name, not "Unknown" ---
+
+  @Test
+  void portalAuthoredComment_listedWithContactName() throws Exception {
+    String portalMatterId = createPortalLinkedMatter();
+    String commentId =
+        postPortalComment(portalMatterId, portalJwtService.issueToken(clientId, ORG_ID));
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + portalMatterId + "/comments")
+                .param("entityType", "PROJECT")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '%s')].source".formatted(commentId)).value("PORTAL"))
+        .andExpect(
+            jsonPath("$[?(@.id == '%s')].authorName".formatted(commentId)).value("Lerato Contact"));
+  }
+
+  /** A client without a portal contact posts under the client id; the client's name is shown. */
+  @Test
+  void portalAuthoredComment_withoutContact_listedWithClientName() throws Exception {
+    String portalMatterId = createPortalLinkedMatter(contactlessClientId);
+    String commentId =
+        postPortalComment(portalMatterId, portalJwtService.issueToken(contactlessClientId, ORG_ID));
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + portalMatterId + "/comments")
+                .param("entityType", "PROJECT")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner")))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$[?(@.id == '%s')].authorName".formatted(commentId))
+                .value("Contactless Client"));
+  }
+
   // --- Helpers ---
+
+  private String createPortalLinkedMatter() throws Exception {
+    return createPortalLinkedMatter(clientId);
+  }
+
+  /** A matter owned by Owner and linked to {@code client} in the portal read model. */
+  private String createPortalLinkedMatter(UUID client) throws Exception {
+    String matterId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"),
+            "Portal author matter " + UUID.randomUUID(),
+            "634E(5)");
+    readModelRepository.upsertPortalProject(
+        UUID.fromString(matterId),
+        client,
+        ORG_ID,
+        "Portal author matter",
+        "ACTIVE",
+        "634E(5)",
+        Instant.now());
+    return matterId;
+  }
+
+  private String postPortalComment(String matterId, String portalToken) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/portal/matters/{matterId}/comments", matterId)
+                    .header("Authorization", "Bearer " + portalToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"content\": \"When is transfer?\"}"))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return extractJsonField(result, "id");
+  }
 
   private String createMatterComment(String body) throws Exception {
     var result =

@@ -169,6 +169,11 @@ describe("matters API module URL building", () => {
     expect(mockPut).toHaveBeenLastCalledWith("/api/matters/m1/budget", { budgetHours: 10 });
     await listMatterComments("m1", { entityType: "PROJECT", size: 50 });
     expect(mockGet).toHaveBeenLastCalledWith("/api/matters/m1/comments?entityType=PROJECT&size=50");
+    // 634E(1): page is passed through for the paged thread load.
+    await listMatterComments("m1", { entityType: "TASK", entityId: "t1", page: 1, size: 100 });
+    expect(mockGet).toHaveBeenLastCalledWith(
+      "/api/matters/m1/comments?entityType=TASK&entityId=t1&page=1&size=100"
+    );
     await listMatterExpenses("m1", { page: 0, sort: "date,desc" });
     expect(mockGet).toHaveBeenLastCalledWith("/api/matters/m1/expenses?page=0&sort=date%2Cdesc");
     await writeOffMatterExpense("m1", "e1");

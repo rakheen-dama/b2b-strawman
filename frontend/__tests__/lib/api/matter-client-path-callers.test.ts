@@ -61,14 +61,15 @@ beforeEach(() => {
 
 describe("lib/actions callers", () => {
   it("comments: list / create / update / delete", async () => {
+    // 634E(1): the thread loads in pages of 100; an empty (short) first page ends the load.
     await fetchComments("m1", "TASK", "t1");
     expect(mockGet).toHaveBeenLastCalledWith(
-      "/api/matters/m1/comments?entityType=TASK&entityId=t1"
+      "/api/matters/m1/comments?entityType=TASK&entityId=t1&page=0&size=100"
     );
     // Matter (PROJECT-target) comments go through the generic actions (634E — the Comments tab).
     await fetchComments("m1", "PROJECT", "m1");
     expect(mockGet).toHaveBeenLastCalledWith(
-      "/api/matters/m1/comments?entityType=PROJECT&entityId=m1"
+      "/api/matters/m1/comments?entityType=PROJECT&entityId=m1&page=0&size=100"
     );
     await createComment("acme", "m1", "PROJECT", "m1", " hi ", "SHARED");
     expect(mockPost).toHaveBeenLastCalledWith("/api/matters/m1/comments", {

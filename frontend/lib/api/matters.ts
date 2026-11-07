@@ -117,6 +117,7 @@ export interface MatterActivityParams {
 export interface ListMatterCommentsParams {
   entityType: string;
   entityId?: string;
+  page?: number;
   size?: number;
 }
 

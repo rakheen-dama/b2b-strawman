@@ -24,6 +24,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D13 | G89-F39 (the portal trust statement shows the recorded date instead of the transaction date) is **MEDIUM** and is folded into Batch D / PR #1747. Founder decision, 2026-11-07. |
 | D14 | (2026-11-07) **G89-F50** (Section 35 pack lists only the latest interest run in the FY) is **MEDIUM**; fix in Batch E (all runs). **G89-F45** (multi-matter fee note counted in full on each matter) is **LOW**, backlog. **G89-F44** (portal Firm actions lacks deposit/interest events): fix in Batch E. |
 | D15 | (2026-11-07) Founder **signs off the PR #1749 legal wording as written**: s78(1) → s86(2) trust account; s86 LPA citations; compliance-audit prompt s86(1)-(2)/(3)-(4); Section 35 historical-name javadoc; "Unbilled work in progress (not yet billed)". |
+| D16 | (2026-11-07) The VIEW_TRUST fallback line "Trust details are not available." is **signed off**. **G89-F51** (the Statements tab shows the stored `trust_balance_held` to users without VIEW_TRUST, pre-existing) is **MEDIUM**, to be fixed in Batch E server-side with `TrustDataVisibility`. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -55,6 +56,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] G89-F17 — reconciliation list fails to load (E)
 - [x] G89-F18 — Section 35 data pack is hollow (C1) — VERIFIED 2026-11-07, PR #1748
 - [ ] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM
+- [ ] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (E, D16) — MEDIUM
 - [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
 
@@ -176,3 +178,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - the Client Trust Statement trust block is gated by module only, not by VIEW_TRUST;
   - the pre-existing SoA `buildTrustBlock` has the same gap, so it is fixed in the same round (same rule, one helper).
   - The builder has been resumed for the fix, red tests first.
+- 2026-11-07 ~13:50 — PR #1749 (C2) review round 1 @3788a897b.
+  - **Backend reviewer: APPROVE**, with one confidence-80 item. The dedicated-flow slug prefix over-matches firm ORG_CUSTOM templates (e.g. `statement-of-account-cover-letter`).
+  - **Frontend reviewer: REQUEST_CHANGES.** `e2e/tests/documents/document-generation.spec.ts` uses "Matter Summary Report", which D11 hides for legal-za, so 3 of 5 tests would fail (class b, intended change).
+  - The partial verify reached 4200 tests with 0 failures before it was stopped for the fix round.
+  - Builder resumed: repoint the spec, restrict the prefix arm to clones and platform rows (red first), and optionally hide the "Trust Activity" heading when withheld.
+  - Batch E add: F51.

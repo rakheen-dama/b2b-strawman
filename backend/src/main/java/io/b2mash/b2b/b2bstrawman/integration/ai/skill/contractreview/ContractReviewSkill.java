@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview;
 
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -14,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.skill.DocumentTextExtractorServi
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.ExtractedText;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.LlmJsonParser;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.SkillContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.io.IOException;
@@ -45,6 +47,7 @@ public class ContractReviewSkill implements AiSkill {
       "ai/skills/contract-review/output-schema.json";
 
   private final DocumentTextExtractorService documentTextExtractorService;
+  private final DocumentService documentService;
   private final DocumentRepository documentRepository;
   private final ProjectRepository projectRepository;
   private final AiFirmProfileService firmProfileService;
@@ -53,12 +56,14 @@ public class ContractReviewSkill implements AiSkill {
 
   public ContractReviewSkill(
       DocumentTextExtractorService documentTextExtractorService,
+      DocumentService documentService,
       DocumentRepository documentRepository,
       ProjectRepository projectRepository,
       AiFirmProfileService firmProfileService,
       ObjectMapper objectMapper,
       LlmJsonParser llmJsonParser) {
     this.documentTextExtractorService = documentTextExtractorService;
+    this.documentService = documentService;
     this.documentRepository = documentRepository;
     this.projectRepository = projectRepository;
     this.firmProfileService = firmProfileService;
@@ -89,14 +94,15 @@ public class ContractReviewSkill implements AiSkill {
   public String assembleUserPrompt(SkillContext context) {
     UUID documentId = context.entityId();
 
-    // Pre-flight: document must exist
-    Document document =
-        documentRepository
-            .findById(documentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    // Pre-flight (G89-F56): the invoking member must be allowed to read the document — it must
+    // exist, its matter must be visible to them (404) and, if it prints trust money, they need
+    // VIEW_TRUST (403). A refusal fails the execution before any text reaches the LLM.
+    var readable = documentService.getDocumentBytes(documentId, ActorContext.fromRequestScopes());
+    Document document = readable.document();
 
     // Extract text from the document (throws InvalidStateException for unsupported types)
-    ExtractedText extractedText = documentTextExtractorService.extractText(document);
+    ExtractedText extractedText =
+        documentTextExtractorService.extractText(document, readable.bytes());
 
     // Load matter context if projectId is provided
     String matterContext = "";

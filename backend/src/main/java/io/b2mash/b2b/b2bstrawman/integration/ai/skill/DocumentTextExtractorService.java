@@ -30,8 +30,17 @@ public class DocumentTextExtractorService {
     this.objectMapper = objectMapper;
   }
 
+  /**
+   * Downloads the document and extracts its text. Performs no access check — a caller acting for a
+   * member reads the bytes through {@code DocumentService.getDocumentBytes} (matter + trust checks)
+   * and uses {@link #extractText(Document, byte[])}.
+   */
   public ExtractedText extractText(Document document) {
-    byte[] bytes = storageService.download(document.getS3Key());
+    return extractText(document, storageService.download(document.getS3Key()));
+  }
+
+  /** Extracts the text of {@code document} from bytes the caller already read. */
+  public ExtractedText extractText(Document document, byte[] bytes) {
     String contentType = document.getContentType();
 
     String text;

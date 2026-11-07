@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChanged
 import io.b2mash.b2b.b2bstrawman.document.DocumentController.DocumentResponse;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -640,7 +641,11 @@ public class DocumentService {
    * search_path; project-scoped documents additionally require project membership, and a document
    * that prints trust money requires VIEW_TRUST (G89-F52).
    */
-  @Transactional(readOnly = true)
+  @Transactional(
+      readOnly = true,
+      // A refused read must not mark a caller's transaction rollback-only (the AI skills read
+      // inside their prompt-assembly transaction and record the refusal as a FAILED execution).
+      noRollbackFor = {ResourceNotFoundException.class, ForbiddenException.class})
   public DocumentWithBytes getDocumentBytes(UUID documentId, ActorContext actor) {
     var document =
         documentRepository

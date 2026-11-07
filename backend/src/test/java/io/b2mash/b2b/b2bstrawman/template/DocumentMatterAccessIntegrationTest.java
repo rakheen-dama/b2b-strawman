@@ -162,7 +162,7 @@ class DocumentMatterAccessIntegrationTest {
                     .getContentAsString(),
                 "$.id")
             .toString();
-    contractDocumentId = inTenantTx(this::createContractDocument);
+    contractDocumentId = inTenantTx(() -> createContractDocument("supply-agreement.json", false));
   }
 
   // ---- G89-F53: generic generate / preview / generate-docx --------------------------------
@@ -329,10 +329,35 @@ class DocumentMatterAccessIntegrationTest {
         .andExpect(jsonPath("$.status").value("COMPLETED"));
   }
 
+  /** The trust rule (G89-F52) applies to the skill's read too: M lacks VIEW_TRUST. */
+  @Test
+  void contractReview_trustDocument_memberWithoutViewTrust_deniedAndNeverSent() throws Exception {
+    UUID trustDocumentId =
+        inTenantTx(() -> createContractDocument("trust-letter.json", /* containsTrustData */ true));
+    String body =
+        mockMvc
+            .perform(
+                post("/api/ai/skills/contract-review")
+                    .with(member(M))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(contractReviewBody(trustDocumentId)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat(JsonPath.<String>read(body, "$.status")).isEqualTo("FAILED");
+    assertThat(((Number) JsonPath.read(body, "$.costCents")).longValue()).isZero();
+    assertThat(((Number) JsonPath.read(body, "$.durationMs")).longValue()).isZero();
+  }
+
   // ---- helpers ------------------------------------------------------------------------------
 
   private String contractReviewBody() {
-    return "{\"documentId\":\"%s\",\"matterId\":\"%s\"}".formatted(contractDocumentId, matterId);
+    return contractReviewBody(contractDocumentId);
+  }
+
+  private String contractReviewBody(UUID documentId) {
+    return "{\"documentId\":\"%s\",\"matterId\":\"%s\"}".formatted(documentId, matterId);
   }
 
   private static JwtRequestPostProcessor owner() {
@@ -395,19 +420,20 @@ class DocumentMatterAccessIntegrationTest {
   }
 
   /** A Tiptap-JSON contract on the matter, with its bytes in storage (text-extractable). */
-  private UUID createContractDocument() {
+  private UUID createContractDocument(String fileName, boolean containsTrustData) {
     var doc =
         new Document(
             Document.Scope.PROJECT,
             matterId,
             null,
-            "supply-agreement.json",
+            fileName,
             "application/json",
             512L,
             ownerId,
             Document.Visibility.INTERNAL);
-    doc.assignS3Key("org/" + ORG_ID + "/documents/supply-agreement.json");
+    doc.assignS3Key("org/" + ORG_ID + "/documents/" + fileName);
     doc.confirmUpload();
+    doc.setContainsTrustData(containsTrustData);
     doc = documentRepository.saveAndFlush(doc);
     storageService.upload(
         doc.getS3Key(),

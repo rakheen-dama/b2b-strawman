@@ -360,6 +360,8 @@ class InvestmentReportBasisIntegrationTest {
               result.rows().stream()
                   .filter(
                       r -> "Section 86(3) Investments (Firm Discretion)".equals(r.get("_section")))
+                  // G89-F18: each additive section ends with a "Total" row
+                  .filter(r -> r.get("_total") == null)
                   .toList();
           assertThat(firmRows).hasSize(1);
           assertThat(firmRows.getFirst().get("applicableLpffRate")).isEqualTo("75%");
@@ -384,6 +386,8 @@ class InvestmentReportBasisIntegrationTest {
                       r ->
                           "Section 86(4) Investments (Client Instruction)"
                               .equals(r.get("_section")))
+                  // G89-F18: each additive section ends with a "Total" row
+                  .filter(r -> r.get("_total") == null)
                   .toList();
           assertThat(clientRows).hasSize(1);
           assertThat(clientRows.getFirst().get("applicableLpffRate")).isEqualTo("5% (statutory)");

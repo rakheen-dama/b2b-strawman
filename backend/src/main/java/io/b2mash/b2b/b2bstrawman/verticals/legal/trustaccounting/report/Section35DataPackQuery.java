@@ -4,12 +4,16 @@ import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -71,14 +75,24 @@ public class Section35DataPackQuery implements ReportQuery {
             "dateFrom", financialYearStart.toString(),
             "dateTo", financialYearEnd.toString());
     var rpResult = receiptsPaymentsQuery.executeAll(rpParams);
-    addSection(allRows, sectionSummaries, "Trust Receipts & Payments", rpResult);
+    addSection(
+        allRows,
+        sectionSummaries,
+        "Trust Receipts & Payments",
+        rpResult,
+        Section35DataPackQuery::receiptPaymentLine);
 
     // Section 2: Client Trust Balances (as of year-end)
     var cbParams =
         Map.<String, Object>of(
             "trust_account_id", trustAccountId, "asOfDate", financialYearEnd.toString());
     var cbResult = clientBalancesQuery.executeAll(cbParams);
-    addSection(allRows, sectionSummaries, "Client Trust Balances", cbResult);
+    addSection(
+        allRows,
+        sectionSummaries,
+        "Client Trust Balances",
+        cbResult,
+        row -> line(text(row, "clientName"), money(row, "balance")));
 
     // Section 3: Trust Reconciliation (latest on or before year-end)
     assembleReconciliationSection(trustAccountId, financialYearEnd, allRows, sectionSummaries);
@@ -90,7 +104,11 @@ public class Section35DataPackQuery implements ReportQuery {
     var irFirmResult = investmentRegisterQuery.executeAll(irFirmParams);
     if (!irFirmResult.rows().isEmpty()) {
       addSection(
-          allRows, sectionSummaries, "Section 86(3) Investments (Firm Discretion)", irFirmResult);
+          allRows,
+          sectionSummaries,
+          "Section 86(3) Investments (Firm Discretion)",
+          irFirmResult,
+          Section35DataPackQuery::investmentLine);
     }
 
     // Section 4b: Section 86(4) Investments (Client Instruction)
@@ -103,7 +121,8 @@ public class Section35DataPackQuery implements ReportQuery {
           allRows,
           sectionSummaries,
           "Section 86(4) Investments (Client Instruction)",
-          irClientResult);
+          irClientResult,
+          Section35DataPackQuery::investmentLine);
     }
 
     // Section 5: Interest Allocation (latest run within year)
@@ -165,7 +184,9 @@ public class Section35DataPackQuery implements ReportQuery {
     trParams.put("trust_account_id", trustAccountId);
     trParams.put("reconciliation_id", yearEndRecon.get().getId());
     var reconResult = reconciliationQuery.executeAll(trParams);
-    addSection(allRows, sectionSummaries, "Trust Reconciliation", reconResult);
+    // Reconciliation rows already carry label + amount, and they are a computation (bank ->
+    // adjusted -> comparison), not an additive list: no Total row.
+    addSection(allRows, sectionSummaries, "Trust Reconciliation", reconResult, null);
   }
 
   private void assembleInterestAllocationSection(
@@ -196,20 +217,47 @@ public class Section35DataPackQuery implements ReportQuery {
     iaParams.put("trust_account_id", trustAccountId);
     iaParams.put("interest_run_id", latestRun.getId());
     var iaResult = interestAllocationQuery.executeAll(iaParams);
-    addSection(allRows, sectionSummaries, "Interest Allocation", iaResult);
+    addSection(
+        allRows,
+        sectionSummaries,
+        "Interest Allocation",
+        iaResult,
+        row -> line(text(row, "clientName"), money(row, "clientShare")));
   }
 
+  /**
+   * Adds one sub-report's rows to the pack. G89-F18: the pack's columns are {@code _section},
+   * {@code label} and {@code amount}, so every row gets a {@code label} and an {@code amount} from
+   * the section's {@code projector} (raw sub-report keys are kept — callers and tests read them),
+   * plus one "Total" row per additive section. A {@code null} projector means the rows already
+   * carry {@code label} / {@code amount} (reconciliation) and no total is added.
+   */
   private void addSection(
       List<Map<String, Object>> allRows,
       List<Map<String, Object>> sectionSummaries,
       String sectionName,
-      ReportResult result) {
+      ReportResult result,
+      Function<Map<String, Object>, Line> projector) {
 
-    // Add section marker to each row
+    BigDecimal total = BigDecimal.ZERO;
     for (var row : result.rows()) {
-      var taggedRow = new LinkedHashMap<>(row);
+      var taggedRow = new LinkedHashMap<String, Object>(row);
       taggedRow.put("_section", sectionName);
+      if (projector != null) {
+        Line projected = projector.apply(row);
+        taggedRow.put("label", projected.label());
+        taggedRow.put("amount", projected.amount());
+        total = total.add(projected.amount());
+      }
       allRows.add(taggedRow);
+    }
+    if (projector != null && !result.rows().isEmpty()) {
+      var totalRow = new LinkedHashMap<String, Object>();
+      totalRow.put("_section", sectionName);
+      totalRow.put("label", "Total");
+      totalRow.put("amount", total);
+      totalRow.put("_total", true);
+      allRows.add(totalRow);
     }
 
     // Add section summary metadata
@@ -220,5 +268,46 @@ public class Section35DataPackQuery implements ReportQuery {
       sectionMeta.putAll(result.summary());
     }
     sectionSummaries.add(sectionMeta);
+  }
+
+  /** A pack row's {@code label} and {@code amount}. */
+  private record Line(String label, BigDecimal amount) {}
+
+  private static Line line(String label, BigDecimal amount) {
+    return new Line(label, amount);
+  }
+
+  /** {@code date · reference · client (type)} → credit − debit (receipts positive). */
+  private static Line receiptPaymentLine(Map<String, Object> row) {
+    String type = text(row, "type");
+    String label =
+        Stream.of(text(row, "date"), text(row, "reference"), text(row, "clientName"))
+                .filter(part -> !part.isBlank())
+                .collect(Collectors.joining(" · "))
+            + (type.isBlank() ? "" : " (" + type + ")");
+    return line(label, money(row, "credit").subtract(money(row, "debit")));
+  }
+
+  /** {@code client · institution account} → principal. */
+  private static Line investmentLine(Map<String, Object> row) {
+    String placement = (text(row, "institution") + " " + text(row, "accountNumber")).trim();
+    String label =
+        Stream.of(text(row, "clientName"), placement)
+            .filter(part -> !part.isBlank())
+            .collect(Collectors.joining(" · "));
+    return line(label, money(row, "principal"));
+  }
+
+  private static String text(Map<String, Object> row, String key) {
+    Object value = row.get(key);
+    return value != null ? value.toString() : "";
+  }
+
+  private static BigDecimal money(Map<String, Object> row, String key) {
+    return switch (row.get(key)) {
+      case BigDecimal amount -> amount;
+      case Number number -> new BigDecimal(number.toString());
+      case null, default -> BigDecimal.ZERO;
+    };
   }
 }

@@ -38,7 +38,7 @@ public class TrustReportPackSeeder {
 
   private static final Logger log = LoggerFactory.getLogger(TrustReportPackSeeder.class);
   static final String PACK_ID = "trust-reports";
-  static final int PACK_VERSION = 1;
+  static final int PACK_VERSION = 2;
 
   /** ADR-356 reconcile entity of this pack's rows ({@code key} = the report slug). */
   static final String REPORT_ENTITY = "report_definition";
@@ -58,12 +58,24 @@ public class TrustReportPackSeeder {
           "section-35-data-pack");
 
   /**
-   * ADR-356 reconcile block of the Java-defined trust-reports pack — empty at v1. Same entry
-   * contract as {@code StandardReportPackSeeder.RECONCILE}: {@code name} / {@code description} are
-   * strings; {@code parameterSchema} / {@code columnDefinitions} / {@code templateBody} are
-   * whole-value {@code sha256:} + {@link ContentHashUtil#hashOf}.
+   * ADR-356 reconcile block of the Java-defined trust-reports pack. Same entry contract as {@code
+   * StandardReportPackSeeder.RECONCILE}: {@code name} / {@code description} are strings; {@code
+   * parameterSchema} / {@code columnDefinitions} / {@code templateBody} are whole-value {@code
+   * sha256:} + {@link ContentHashUtil#hashOf}. Bump {@link #PACK_VERSION} with every entry added;
+   * entries are cumulative ({@code TrustReportPackSeederIntegrationTest} pins every {@code from} to
+   * a prior version and every {@code to} to the factories below).
+   *
+   * <p>v2 (G89-F18): the Section 35 data pack PDF prints each section's rows (label + amount) and
+   * totals instead of only the section names and row counts. Column definitions are unchanged — the
+   * query now fills the declared {@code label} / {@code amount} columns.
    */
-  static final List<PackReconcileEntry> RECONCILE = List.of();
+  static final List<PackReconcileEntry> RECONCILE =
+      List.of(
+          entry(
+              "section-35-data-pack",
+              "templateBody",
+              "sha256:80af07498e6ad52e27de1794c56998c501f05dc4f9a31a3807ddabd904392603",
+              "sha256:6b70dd38153d35103916dfe479e40d2baa1d5647cf53b095e894011737d86c86"));
 
   private final ReportDefinitionRepository reportDefinitionRepository;
   private final OrgSettingsRepository orgSettingsRepository;
@@ -251,6 +263,10 @@ public class TrustReportPackSeeder {
         write.accept(to);
       }
     };
+  }
+
+  private static PackReconcileEntry entry(String slug, String field, String from, String to) {
+    return new PackReconcileEntry(REPORT_ENTITY, slug, field, from, to);
   }
 
   private boolean isPackAlreadyApplied(OrgSettings settings) {
@@ -1005,7 +1021,16 @@ public class TrustReportPackSeeder {
           </div>
           <div th:each="section : ${summary['sections']}">
               <div class="section-header" th:text="${section['sectionName']}">Section</div>
-              <p style="font-size: 10px; color: #666;" th:text="'Rows: ' + ${section['rowCount']}"></p>
+              <p th:if="${section['note'] != null}" style="font-size: 10px; color: #666;" th:text="${section['note']}"></p>
+              <table class="data" th:if="${section['rowCount'] > 0}">
+                  <thead><tr><th>Item</th><th class="text-right">Amount</th></tr></thead>
+                  <tbody>
+                      <tr th:each="row : ${rows}" th:if="${row['_section'] == section['sectionName']}" th:style="${row['_total'] != null} ? 'font-weight: 700;' : null">
+                          <td th:text="${row['label']}"></td>
+                          <td class="text-right" th:text="${#numbers.formatDecimal(row['amount'], 1, 2)}"></td>
+                      </tr>
+                  </tbody>
+              </table>
           </div>
           <div class="footer"><div class="footer-right" th:text="'Generated ' + ${generatedAt}"></div></div>
       </body>

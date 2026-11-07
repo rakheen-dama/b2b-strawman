@@ -1,7 +1,7 @@
 {
-  "commit": "6c253d089",
-  "command": "cd portal && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-a-trust-matter-ledger; no portal code changed — regression proof)",
+  "commit": "2748903dc",
+  "command": "cd portal && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-d-portal-correctness)",
   "exit": 0,
-  "ts": "2026-11-06T23:25:00Z",
-  "summary": "PR #1746 (G89 Batch A) head 6c253d089: lint 0 errors (4 warnings), build ok, 47 files / 273 passed, prettier clean"
+  "ts": "2026-11-07T00:30:00Z",
+  "summary": "PR #1747 (G89 Batch D + F39) head 2748903dc: lint 0 errors (4 warnings), build ok, 49 files / 278 passed, prettier clean. CI Portal job 1st attempt failed on next/font/google download (network) — re-run requested"
 }

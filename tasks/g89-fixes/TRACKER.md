@@ -30,9 +30,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 |---|---|---|---|---|---|
 | 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | **VERIFIED**: F11 (batch-B evidence), F10 (observed in the batch-A walk) |
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | **VERIFIED** on KC (F10, F12, F13, F14, F22): `qa_cycle/evidence/g89-fixes/batch-A/` |
-| 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 | fix round for F39 (2× APPROVE @1816aee86 before it) |
+| 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | MERGED-AWAITING-VERIFY (KC check running) |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
-| 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | | OPEN |
+| 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | `fix/g89-c1-statements-reports` | IN PROGRESS (builder) |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C | BE + FE | | OPEN |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C | BE + FE | | OPEN |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
@@ -117,3 +117,13 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - New candidate **G89-F42**: `TrustLedgerPortalSyncService.backfillForTenant` trims each matter to its last 50 rows. It has no production caller today, but any future boot runner built on it would delete portal history.
   - Full verify and 2 re-reviews are running on `2748903dc`.
   - For the KC check, verify with a *fresh* back-dated deposit (old Lerato rows keep their 7 Nov date until the next event).
+- 2026-11-07 ~02:45 — PR #1747 (Batch D + F39) merged as `72f5f3d4d`.
+  - Gates @2748903dc:
+    - full verify: 6630 / 0 / 0 / 26 (17:18)
+    - portal gate: 278 green
+    - reviews: 2× APPROVE on the F39 head
+    - CodeRabbit: REVIEWED @1816aee86 (0 findings), DEFERRED on the F39 head
+  - The first CI Portal attempt failed in `next build`: the `next/font/google` download failed (network). The re-run passed.
+  - KC backend restarted; global V4 applied.
+  - Batch D KC check and the C1 builder launched.
+- New LOW candidate **G89-F43**: the portal trust `from`/`to` filter still compares `occurred_at`.

@@ -1,7 +1,7 @@
 {
-  "commit": "6c253d089",
-  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-a-trust-matter-ledger; verify.sh preflight skipped — it kills the KC dev spring-boot:run launchers; stale-JVM and :13025 checks done by hand)",
+  "commit": "2748903dc",
+  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-d-portal-correctness; verify.sh preflight skipped — kills KC launchers; stale-JVM and :13025 checks by hand)",
   "exit": 0,
-  "ts": "2026-11-06T23:05:00Z",
-  "summary": "PR #1746 (G89 Batch A) head 6c253d089: 6610 tests / 0 failures / 0 errors / 26 skipped — 21:42 min"
+  "ts": "2026-11-07T00:23:00Z",
+  "summary": "PR #1747 (G89 Batch D + F39) head 2748903dc: 6630 tests / 0 failures / 0 errors / 26 skipped — 17:18 min"
 }

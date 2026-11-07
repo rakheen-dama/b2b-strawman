@@ -147,7 +147,10 @@ class StatementTrustVisibilityIntegrationTest {
     assertThat(String.valueOf(trust)).doesNotContain(DEPOSIT_REF).doesNotContain("2500");
 
     String html = generateHtml("member", noTrust);
-    assertThat(html).contains("Trust details are not available").doesNotContain(DEPOSIT_REF);
+    assertThat(html)
+        .contains("Trust details are not available")
+        .doesNotContain(DEPOSIT_REF)
+        .doesNotContain("Trust Activity");
   }
 
   /** Positive control: a member holding VIEW_TRUST gets the trust activity. */

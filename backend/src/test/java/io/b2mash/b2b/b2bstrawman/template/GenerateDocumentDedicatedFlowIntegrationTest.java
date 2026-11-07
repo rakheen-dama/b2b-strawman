@@ -159,6 +159,52 @@ class GenerateDocumentDedicatedFlowIntegrationTest {
             jsonPath("$[?(@.slug == '%s')].hiddenFromGenericMenus", coverLetterSlug).value(false));
   }
 
+  /**
+   * Review (PR #1749): a firm-authored template whose slug starts with a flow key ("Statement of
+   * Account Cover Letter" → {@code statement-of-account-cover-letter}) is not a dedicated-flow
+   * template — it stays in the generic menus and generates there.
+   */
+  @Test
+  void orgCustomTemplateWithFlowPrefixSlug_staysGeneratable() throws Exception {
+    var created =
+        mockMvc
+            .perform(
+                post("/api/templates")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name":"Statement of Account Cover Letter","category":"COVER_LETTER",
+                         "primaryEntityType":"PROJECT",
+                         "content":{"type":"doc","content":[{"type":"paragraph","content":[
+                           {"type":"text","text":"Please find our statement enclosed."}]}]}}"""))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.slug").value("statement-of-account-cover-letter"))
+            .andExpect(jsonPath("$.source").value("ORG_CUSTOM"))
+            .andReturn();
+    String templateId = TestEntityHelper.extractId(created);
+
+    mockMvc
+        .perform(
+            get("/api/templates")
+                .param("primaryEntityType", "PROJECT")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '%s')].dedicatedFlow", templateId).value(false))
+        .andExpect(jsonPath("$[?(@.id == '%s')].hiddenFromGenericMenus", templateId).value(false));
+
+    mockMvc
+        .perform(
+            post("/api/templates/" + templateId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"entityId":"%s","saveToDocuments":false,"acknowledgeWarnings":true}"""
+                        .formatted(createMatter())))
+        .andExpect(status().isOk());
+  }
+
   // --- helpers ---
 
   private org.springframework.test.web.servlet.ResultMatcher dedicatedFlowOf(

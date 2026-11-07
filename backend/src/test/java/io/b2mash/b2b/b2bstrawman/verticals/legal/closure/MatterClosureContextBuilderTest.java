@@ -290,6 +290,7 @@ class MatterClosureContextBuilderTest {
     assertThat(MatterClosureContextBuilder.formatHints())
         .containsExactlyInAnyOrderEntriesOf(
             Map.of(
+                "closure.date", "date",
                 "matter.total_fees_billed", "currency",
                 "matter.total_vat", "currency",
                 "matter.total_disbursements", "currency",

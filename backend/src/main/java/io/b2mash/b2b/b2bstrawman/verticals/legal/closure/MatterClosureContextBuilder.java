@@ -42,9 +42,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class MatterClosureContextBuilder {
 
-  /** Currency hints for the {@code matter.*} totals, merged over the registry hints at render. */
+  /**
+   * Hints for the {@code matter.*} totals and {@code closure.date}, merged over the registry hints
+   * at render. {@code closure.date} stays an ISO date string in the context; the {@code date} hint
+   * prints it as the long date every other client document uses ("6 November 2026", G89-F21).
+   */
   static final Map<String, String> FORMAT_HINTS =
       Map.of(
+          "closure.date", "date",
           "matter.total_fees_billed", "currency",
           "matter.total_vat", "currency",
           "matter.total_disbursements", "currency",

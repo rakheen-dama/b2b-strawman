@@ -35,7 +35,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:2666b54742b49d86e136d6883b0a19e2bd9ac2df1eacc2de34e66551770a2427",
-      "to": "sha256:df7a4dd740dd43549ea6e9a4865cf082177d70478feb4339b158a3ab9264ccb1"
+      "to": "sha256:7d63c04509ae8b13534c61a843b3d451cae4279fd47b78fd2b16b73e59b2eb82"
     },
     {
       "entity": "document_template",
@@ -70,7 +70,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:a1da22c9737608b44109abcc5e7ef5aaa8a80d9b0184d0079416573b76dcc3d1",
-      "to": "sha256:df7a4dd740dd43549ea6e9a4865cf082177d70478feb4339b158a3ab9264ccb1"
+      "to": "sha256:7d63c04509ae8b13534c61a843b3d451cae4279fd47b78fd2b16b73e59b2eb82"
     },
     {
       "entity": "document_template",
@@ -119,7 +119,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:4781c668eb863f979e1fad22ea328a29e7783683b5172ec551a75eccb3d9baea",
-      "to": "sha256:df7a4dd740dd43549ea6e9a4865cf082177d70478feb4339b158a3ab9264ccb1"
+      "to": "sha256:7d63c04509ae8b13534c61a843b3d451cae4279fd47b78fd2b16b73e59b2eb82"
     },
     {
       "entity": "document_template",
@@ -133,7 +133,7 @@
       "key": "client-trust-statement",
       "field": "content",
       "from": "sha256:eeb6e06bf77c7875a8e7a4c262ad7e1268aa49958633d75547cb5f78b8a2ee2b",
-      "to": "sha256:d57c963cf5647bfb38d78a4b11013932efa4a050c9e7c62b8fda73011548c799"
+      "to": "sha256:142377414c7c3251612ee99b27b6df9d3bb91aae250554c7624b3d2ea22f2352"
     },
     {
       "entity": "document_template",
@@ -175,14 +175,14 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3",
-      "to": "sha256:df7a4dd740dd43549ea6e9a4865cf082177d70478feb4339b158a3ab9264ccb1"
+      "to": "sha256:7d63c04509ae8b13534c61a843b3d451cae4279fd47b78fd2b16b73e59b2eb82"
     },
     {
       "entity": "document_template",
       "key": "client-trust-statement",
       "field": "content",
       "from": "sha256:c0d3bd0294d3df8b605e03e7f0daa138578d0bec1a20facfe9f0382092f4b335",
-      "to": "sha256:d57c963cf5647bfb38d78a4b11013932efa4a050c9e7c62b8fda73011548c799"
+      "to": "sha256:142377414c7c3251612ee99b27b6df9d3bb91aae250554c7624b3d2ea22f2352"
     },
     {
       "entity": "document_template",

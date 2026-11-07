@@ -205,12 +205,24 @@
     },
     {
       "type": "conditionalBlock",
-      "attrs": { "fieldKey": "trust.account_name", "operator": "isEmpty" },
+      "attrs": { "fieldKey": "trust.status", "operator": "eq", "value": "none" },
       "content": [
         {
           "type": "paragraph",
           "content": [
             { "type": "text", "text": "No trust account transactions have been recorded on your behalf, and no money is held in trust for you." }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "trust.status", "operator": "isEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Trust details are not available." }
           ]
         }
       ]

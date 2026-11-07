@@ -1,9 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
-import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -22,8 +22,11 @@ import org.springframework.stereotype.Component;
  * The {@code trust} block of the generic client document context (G89 D11): what the legal-za
  * Client Trust Statement prints — the trust account's name, the client's opening balance (zero: the
  * statement covers all history), every ledger line to today with its running balance, and the
- * closing balance. Empty when the {@code trust_accounting} module is off (the ledger service would
- * refuse) or the client has no trust activity.
+ * closing balance, with {@code status} "available". A member who may see trust money but whose
+ * client has no trust activity gets {@code status} "none" only. Empty — no trust data at all — when
+ * {@link TrustDataVisibility} says no: the {@code trust_accounting} module is off, or the member
+ * lacks {@code VIEW_TRUST} (security review, PR #1749; the generic generate endpoint does not
+ * require it). The template prints "Trust details are not available." then.
  *
  * <p>The account is chosen exactly as {@code StatementOfAccountContextBuilder.buildTrustBlock} does
  * (GAP-L-94): the trust account(s) the client actually has activity on; with several, the primary
@@ -35,24 +38,25 @@ public class ClientTrustStatementContext {
 
   private static final Logger log = LoggerFactory.getLogger(ClientTrustStatementContext.class);
 
-  static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
+  static final String STATUS_AVAILABLE = "available";
+  static final String STATUS_NONE = "none";
 
   /** "All history": no ledger line predates this, so the opening balance is zero. */
   static final LocalDate HISTORY_START = LocalDate.EPOCH;
 
-  private final VerticalModuleGuard moduleGuard;
+  private final TrustDataVisibility trustDataVisibility;
   private final TrustTransactionRepository trustTransactionRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final ClientLedgerService clientLedgerService;
   private final Clock clock;
 
   public ClientTrustStatementContext(
-      VerticalModuleGuard moduleGuard,
+      TrustDataVisibility trustDataVisibility,
       TrustTransactionRepository trustTransactionRepository,
       TrustAccountRepository trustAccountRepository,
       ClientLedgerService clientLedgerService,
       Clock clock) {
-    this.moduleGuard = moduleGuard;
+    this.trustDataVisibility = trustDataVisibility;
     this.trustTransactionRepository = trustTransactionRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.clientLedgerService = clientLedgerService;
@@ -63,16 +67,17 @@ public class ClientTrustStatementContext {
    * The client's {@code trust} block: {@code account_name}, {@code opening_balance}, {@code
    * closing_balance}, {@code statement_date} and {@code lines} (each {@code transactionDate},
    * {@code type} — a readable label —, {@code transactionType}, {@code reference}, {@code
-   * description}, {@code amount}, {@code runningBalance}); empty when the module is off or the
-   * client has no trust activity.
+   * description}, {@code amount}, {@code runningBalance}) and {@code status}; {@code status} "none"
+   * alone when the client has no trust activity; empty when the member may not see trust money
+   * ({@link TrustDataVisibility}).
    */
   public Optional<Map<String, Object>> buildFor(UUID clientId) {
-    if (!moduleGuard.isModuleEnabled(TRUST_ACCOUNTING_MODULE)) {
+    if (!trustDataVisibility.visibleToCurrentMember()) {
       return Optional.empty();
     }
     Optional<TrustAccount> account = selectAccount(clientId);
     if (account.isEmpty()) {
-      return Optional.empty();
+      return Optional.of(Map.of("status", STATUS_NONE));
     }
     LocalDate today = LocalDate.now(clock);
     var statement =
@@ -93,6 +98,7 @@ public class ClientTrustStatementContext {
     }
 
     var trust = new LinkedHashMap<String, Object>();
+    trust.put("status", STATUS_AVAILABLE);
     trust.put("account_name", account.get().getAccountName());
     trust.put("statement_date", today);
     trust.put("opening_balance", statement.openingBalance());

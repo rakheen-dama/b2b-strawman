@@ -251,62 +251,78 @@
       "content": [{ "type": "text", "text": "Trust Activity" }]
     },
     {
-      "type": "paragraph",
-      "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Opening balance: " },
-        { "type": "variable", "attrs": { "key": "trust.opening_balance" } }
-      ]
-    },
-    {
       "type": "conditionalBlock",
-      "attrs": { "fieldKey": "trust.deposits", "operator": "isNotEmpty" },
+      "attrs": { "fieldKey": "trust.status", "operator": "neq", "value": "withheld" },
       "content": [
         {
           "type": "paragraph",
-          "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Deposits" }]
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Opening balance: " },
+            { "type": "variable", "attrs": { "key": "trust.opening_balance" } }
+          ]
         },
         {
-          "type": "loopTable",
-          "attrs": {
-            "dataSource": "trust.deposits",
-            "columns": [
-              { "header": "Date", "key": "transactionDate", "format": "date" },
-              { "header": "Reference", "key": "reference" },
-              { "header": "Description", "key": "description" },
-              { "header": "Amount", "key": "amount", "format": "currency" }
-            ]
-          }
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "trust.deposits", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Deposits" }]
+            },
+            {
+              "type": "loopTable",
+              "attrs": {
+                "dataSource": "trust.deposits",
+                "columns": [
+                  { "header": "Date", "key": "transactionDate", "format": "date" },
+                  { "header": "Reference", "key": "reference" },
+                  { "header": "Description", "key": "description" },
+                  { "header": "Amount", "key": "amount", "format": "currency" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "trust.payments", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Payments" }]
+            },
+            {
+              "type": "loopTable",
+              "attrs": {
+                "dataSource": "trust.payments",
+                "columns": [
+                  { "header": "Date", "key": "transactionDate", "format": "date" },
+                  { "header": "Type", "key": "transactionType" },
+                  { "header": "Reference", "key": "reference" },
+                  { "header": "Description", "key": "description" },
+                  { "header": "Amount", "key": "amount", "format": "currency" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Closing balance: " },
+            { "type": "variable", "attrs": { "key": "trust.closing_balance" } }
+          ]
         }
       ]
     },
     {
       "type": "conditionalBlock",
-      "attrs": { "fieldKey": "trust.payments", "operator": "isNotEmpty" },
+      "attrs": { "fieldKey": "trust.status", "operator": "eq", "value": "withheld" },
       "content": [
         {
           "type": "paragraph",
-          "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Payments" }]
-        },
-        {
-          "type": "loopTable",
-          "attrs": {
-            "dataSource": "trust.payments",
-            "columns": [
-              { "header": "Date", "key": "transactionDate", "format": "date" },
-              { "header": "Type", "key": "transactionType" },
-              { "header": "Reference", "key": "reference" },
-              { "header": "Description", "key": "description" },
-              { "header": "Amount", "key": "amount", "format": "currency" }
-            ]
-          }
+          "content": [{ "type": "text", "text": "Trust details are not available." }]
         }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Closing balance: " },
-        { "type": "variable", "attrs": { "key": "trust.closing_balance" } }
       ]
     },
     { "type": "horizontalRule" },
@@ -351,10 +367,16 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "trust.status", "operator": "neq", "value": "withheld" },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Trust balance held: " },
-        { "type": "variable", "attrs": { "key": "summary.trust_balance_held" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Trust balance held: " },
+            { "type": "variable", "attrs": { "key": "summary.trust_balance_held" } }
+          ]
+        }
       ]
     },
     {

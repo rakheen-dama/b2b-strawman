@@ -14,6 +14,8 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.AiSkill;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.LlmJsonParser;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.SkillContext;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
@@ -47,6 +49,7 @@ public class DraftingSkill implements AiSkill {
 
   private final DocumentTemplateRepository documentTemplateRepository;
   private final ProjectRepository projectRepository;
+  private final ProjectAccessService projectAccessService;
   private final CustomerRepository customerRepository;
   private final ClauseRepository clauseRepository;
   private final AiFirmProfileService firmProfileService;
@@ -56,6 +59,7 @@ public class DraftingSkill implements AiSkill {
   public DraftingSkill(
       DocumentTemplateRepository documentTemplateRepository,
       ProjectRepository projectRepository,
+      ProjectAccessService projectAccessService,
       CustomerRepository customerRepository,
       ClauseRepository clauseRepository,
       AiFirmProfileService firmProfileService,
@@ -63,6 +67,7 @@ public class DraftingSkill implements AiSkill {
       LlmJsonParser llmJsonParser) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.projectRepository = projectRepository;
+    this.projectAccessService = projectAccessService;
     this.customerRepository = customerRepository;
     this.clauseRepository = clauseRepository;
     this.firmProfileService = firmProfileService;
@@ -89,6 +94,10 @@ public class DraftingSkill implements AiSkill {
   @Override
   public String assembleUserPrompt(SkillContext context) {
     UUID projectId = context.entityId();
+
+    // G89-F58: the matter must be one the invoking member may view (404) — checked before any
+    // matter data is loaded, so its name and details never reach the LLM.
+    projectAccessService.requireViewAccess(projectId, ActorContext.fromRequestScopes());
 
     // Load project (the matter being drafted for)
     Project project =

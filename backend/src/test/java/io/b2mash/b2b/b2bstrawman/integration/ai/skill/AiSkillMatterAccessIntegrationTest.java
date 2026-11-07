@@ -75,9 +75,16 @@ class AiSkillMatterAccessIntegrationTest {
 
   private String schema;
   private UUID ownerId;
-  private String matterId;
+
+  /** The secret matter: nobody runs a skill on it legitimately, so its name is a clean marker. */
+  private String secretMatterId;
+
+  /** M's own matter, for the positive controls. */
+  private String memberMatterId;
+
   private String templateId;
   private UUID orgDocumentId;
+  private UUID matterDocumentId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -95,10 +102,11 @@ class AiSkillMatterAccessIntegrationTest {
     assignRole(mId, role);
     assignRole(nId, role);
 
-    matterId = TestEntityHelper.createProject(mockMvc, owner(), SECRET_MATTER);
+    secretMatterId = TestEntityHelper.createProject(mockMvc, owner(), SECRET_MATTER);
+    memberMatterId = TestEntityHelper.createProject(mockMvc, owner(), "Mokoena supply review");
     mockMvc
         .perform(
-            post("/api/matters/" + matterId + "/members")
+            post("/api/matters/" + memberMatterId + "/members")
                 .with(owner())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\":\"%s\"}".formatted(mId)))
@@ -106,7 +114,9 @@ class AiSkillMatterAccessIntegrationTest {
 
     templateId = createMatterTemplate();
     // An ORG-scoped document: every member may read it, so only the matter check can refuse N.
-    orgDocumentId = inTenantTx(this::createOrgContract);
+    orgDocumentId = inTenantTx(() -> createContract(null, "standard-terms.json"));
+    matterDocumentId =
+        inTenantTx(() -> createContract(UUID.fromString(memberMatterId), "supply-terms.json"));
   }
 
   // ---- G89-F58: contract review with a matterId the member cannot view -------------------
@@ -117,8 +127,9 @@ class AiSkillMatterAccessIntegrationTest {
         runSkill(
             N,
             "/api/ai/skills/contract-review",
-            "{\"documentId\":\"%s\",\"matterId\":\"%s\"}".formatted(orgDocumentId, matterId));
-    assertRefusedBeforeTheLlm(body);
+            "{\"documentId\":\"%s\",\"matterId\":\"%s\"}".formatted(orgDocumentId, secretMatterId));
+    assertRefusedBeforeTheLlm(body, "not found");
+    assertThat(stubAiProvider.receivedPromptContaining(SECRET_MATTER)).isFalse();
   }
 
   // ---- G89-F58: drafting for a matter the member cannot view --------------------------------
@@ -129,8 +140,9 @@ class AiSkillMatterAccessIntegrationTest {
         runSkill(
             N,
             "/api/ai/skills/drafting",
-            "{\"templateId\":\"%s\",\"matterId\":\"%s\"}".formatted(templateId, matterId));
-    assertRefusedBeforeTheLlm(body);
+            "{\"templateId\":\"%s\",\"matterId\":\"%s\"}".formatted(templateId, secretMatterId));
+    assertRefusedBeforeTheLlm(body, "not found");
+    assertThat(stubAiProvider.receivedPromptContaining(SECRET_MATTER)).isFalse();
   }
 
   // ---- positive controls: a member on the matter -----------------------------------------------
@@ -141,7 +153,7 @@ class AiSkillMatterAccessIntegrationTest {
         runSkill(
             M,
             "/api/ai/skills/contract-review",
-            "{\"documentId\":\"%s\",\"matterId\":\"%s\"}".formatted(orgDocumentId, matterId));
+            "{\"documentId\":\"%s\",\"matterId\":\"%s\"}".formatted(orgDocumentId, memberMatterId));
     assertThat(JsonPath.<String>read(body, "$.status")).isEqualTo("COMPLETED");
   }
 
@@ -151,14 +163,32 @@ class AiSkillMatterAccessIntegrationTest {
         runSkill(
             M,
             "/api/ai/skills/drafting",
-            "{\"templateId\":\"%s\",\"matterId\":\"%s\"}".formatted(templateId, matterId));
+            "{\"templateId\":\"%s\",\"matterId\":\"%s\"}".formatted(templateId, memberMatterId));
     assertThat(JsonPath.<String>read(body, "$.status")).isEqualTo("COMPLETED");
   }
 
   // ---- G89-F59: contract review without a matterId ---------------------------------------------
 
+  /** Without a matterId the review attaches to the document's own matter (the skill contract). */
   @Test
-  void contractReview_withoutMatterId_isNotAServerError() throws Exception {
+  void contractReview_withoutMatterId_matterDocument_completes() throws Exception {
+    var response =
+        mockMvc
+            .perform(
+                post("/api/ai/skills/contract-review")
+                    .with(member(M))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"documentId\":\"%s\"}".formatted(matterDocumentId)))
+            .andReturn()
+            .getResponse();
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(JsonPath.<String>read(response.getContentAsString(), "$.status"))
+        .isEqualTo("COMPLETED");
+  }
+
+  /** No matterId and a document on no matter: refused before the LLM, never a 500. */
+  @Test
+  void contractReview_withoutMatterId_documentOnNoMatter_refusedBeforeTheLlm() throws Exception {
     var response =
         mockMvc
             .perform(
@@ -169,28 +199,26 @@ class AiSkillMatterAccessIntegrationTest {
             .andReturn()
             .getResponse();
     assertThat(response.getStatus()).isEqualTo(200);
-    assertThat(JsonPath.<String>read(response.getContentAsString(), "$.status"))
-        .isEqualTo("COMPLETED");
+    assertRefusedBeforeTheLlm(response.getContentAsString(), "matter");
   }
 
   // ---- helpers --------------------------------------------------------------------------------
 
   /**
    * The skill error contract (a FAILED execution recorded at prompt assembly) with nothing sent: no
-   * output, no cost, a zero duration, the matter's name in no prompt the provider received, and the
-   * refusal itself as the error (not a transaction artefact).
+   * output, no cost, a zero duration (the provider never ran), and the refusal itself as the error
+   * — not a transaction artefact.
    */
-  private void assertRefusedBeforeTheLlm(String body) {
+  private void assertRefusedBeforeTheLlm(String body, String errorContains) {
     assertThat(JsonPath.<String>read(body, "$.status")).isEqualTo("FAILED");
     assertThat(JsonPath.<Object>read(body, "$.output")).isNull();
     assertThat(JsonPath.<List<?>>read(body, "$.gates")).isEmpty();
     assertThat(((Number) JsonPath.read(body, "$.costCents")).longValue()).isZero();
     assertThat(((Number) JsonPath.read(body, "$.durationMs")).longValue()).isZero();
-    assertThat(stubAiProvider.receivedPromptContaining(SECRET_MATTER)).isFalse();
 
     UUID executionId = UUID.fromString(JsonPath.read(body, "$.executionId"));
     var execution = inTenantTx(() -> aiExecutionRepository.findById(executionId).orElseThrow());
-    assertThat(execution.getErrorMessage()).containsIgnoringCase("not found");
+    assertThat(execution.getErrorMessage()).containsIgnoringCase(errorContains);
   }
 
   private String runSkill(String subject, String path, String json) throws Exception {
@@ -231,18 +259,19 @@ class AiSkillMatterAccessIntegrationTest {
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
   }
 
-  private UUID createOrgContract() {
+  /** A Tiptap-JSON contract: ORG-scoped when {@code matter} is null, else on that matter. */
+  private UUID createContract(UUID matter, String fileName) {
     var doc =
         new Document(
-            Document.Scope.ORG,
+            matter == null ? Document.Scope.ORG : Document.Scope.PROJECT,
+            matter,
             null,
-            null,
-            "standard-terms.json",
+            fileName,
             "application/json",
             256L,
             ownerId,
             Document.Visibility.INTERNAL);
-    doc.assignS3Key("org/" + ORG_ID + "/documents/standard-terms.json");
+    doc.assignS3Key("org/" + ORG_ID + "/documents/" + fileName);
     doc.confirmUpload();
     doc = documentRepository.saveAndFlush(doc);
     storageService.upload(

@@ -181,7 +181,9 @@ public class AiSkillExecutionService {
             documentId,
             "DOCUMENT",
             "Contract review for document " + documentId,
-            Map.of("projectId", projectId));
+            // G89-F59: the matter is optional (the skill falls back to the document's own matter);
+            // Map.of rejects a null value, which made a request without matterId a 500.
+            projectId != null ? Map.of("projectId", projectId) : Map.of());
     return executeSkill("contract-review", context, memberId, List.of());
   }
 

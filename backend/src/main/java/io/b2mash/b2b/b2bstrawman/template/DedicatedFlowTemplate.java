@@ -12,8 +12,9 @@ import java.util.Optional;
  * {@code GeneratedDocumentService} entry points and are unaffected.
  *
  * <p>Matched on the pack template key (clones keep it, so a firm's clone of the Statement of
- * Account is still a statement) or on the slug — the base slug or a {@code <slug>-*} clone slug,
- * the rule {@code StatementService} applies to statement templates.
+ * Account is still a statement) or on the slug — the base slug, or a {@code <slug>-*} slug on a
+ * clone or PLATFORM row only (a firm-authored template is never caught by its name; see {@link
+ * #of}). {@code StatementService} keeps its own, separate statement-template slug rule.
  */
 public enum DedicatedFlowTemplate {
   STATEMENT_OF_ACCOUNT(
@@ -48,15 +49,25 @@ public enum DedicatedFlowTemplate {
     return flowHint;
   }
 
-  /** The dedicated flow {@code template} belongs to, if any. */
+  /**
+   * The dedicated flow {@code template} belongs to, if any: its pack template key or its exact slug
+   * is the flow key, or — for a clone ({@code sourceTemplateId} set) or a PLATFORM row only — its
+   * slug is a {@code <key>-*} variant. A firm-authored template whose slug merely starts with a key
+   * ("Statement of Account Cover Letter") belongs to no flow and stays generatable (review, PR
+   * #1749).
+   */
   public static Optional<DedicatedFlowTemplate> of(DocumentTemplate template) {
+    String slug = template.getSlug();
+    boolean prefixApplies =
+        slug != null
+            && (template.getSourceTemplateId() != null
+                || template.getSource() == TemplateSource.PLATFORM);
     return Arrays.stream(values())
         .filter(
             flow ->
                 flow.key.equals(template.getPackTemplateKey())
-                    || flow.key.equals(template.getSlug())
-                    || (template.getSlug() != null
-                        && template.getSlug().startsWith(flow.key + "-")))
+                    || flow.key.equals(slug)
+                    || (prefixApplies && slug.startsWith(flow.key + "-")))
         .findFirst();
   }
 }

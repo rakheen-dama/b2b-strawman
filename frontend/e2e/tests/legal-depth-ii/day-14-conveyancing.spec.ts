@@ -336,7 +336,10 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
 
     await dialog.getByRole("button", { name: "Save to Documents" }).click();
     await expect(dialog.getByText("Document saved successfully")).toBeVisible({ timeout: 15_000 });
-    await page.waitForLoadState("networkidle");
+    // Not networkidle (the sandboxed preview iframe can keep it from settling): the preview still
+    // shows the merged contract and the next step's Close control is ready.
+    await expect(preview).toContainText("Offer to Purchase");
+    await expect(dialog.getByRole("button", { name: "Close" }).first()).toBeEnabled();
     await captureScreenshot(page, "day-14-otp-document-generated");
     await dialog.getByRole("button", { name: "Close" }).first().click();
     await expect(dialog).toBeHidden();
@@ -372,7 +375,10 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await expect(preview).toContainText(`and ${SELLER_NAME} shall not be liable`);
     await expect(preview).toContainText(/suspensive/i);
     await expect(preview).toContainText(/transfer duty/i);
-    await page.waitForLoadState("networkidle");
+    // Not networkidle: the sandboxed srcdoc preview iframe can keep it from settling (harness
+    // hang, PR #1749 e2e gate). The preview content above is asserted; the frame is ready once
+    // its actions are.
+    await expect(dialog.getByRole("button", { name: "Save to Documents" })).toBeEnabled();
     await captureScreenshot(page, "otp-document-with-clauses", { curated: true });
   });
 

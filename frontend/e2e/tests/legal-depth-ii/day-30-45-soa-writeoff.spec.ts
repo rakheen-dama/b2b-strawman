@@ -283,7 +283,10 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
       dialogBox!.x + dialogBox!.width
     );
 
-    await page.waitForLoadState("networkidle");
+    // Not networkidle: the sandboxed srcdoc preview iframe can keep it from settling (harness
+    // hang, PR #1749 e2e gate). The preview content is asserted above; the dialog is ready once
+    // its download action is.
+    await expect(dialog.getByTestId("statement-download-btn")).toBeEnabled();
     await captureScreenshot(page, "day-30-statement-of-account-preview");
     await captureScreenshot(page, "statement-of-account-preview", { curated: true });
   });

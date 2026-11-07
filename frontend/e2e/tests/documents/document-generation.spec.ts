@@ -27,12 +27,21 @@ const BASE = `/org/${ORG}`;
 const RUN_ID = Date.now().toString(36).slice(-4);
 const CLIENT = `DocGen Client ${RUN_ID}`;
 const MATTER = `DocGen Matter ${RUN_ID}`;
-/** A matter template without clause associations (one-step dialog: preview → save). */
-const TEMPLATE = "Matter Summary Report";
+/**
+ * A legal-za matter template that prints both the matter and the client name. D11 (G89 632A(c))
+ * hides the universal common pack's "Matter Summary Report" from the Generate menus on legal-za, and
+ * every legal-za matter template that prints both names has clause associations
+ * (legal-za-clauses pack), so the dialog opens on its clause step and the preview follows
+ * "Next: Preview".
+ */
+const TEMPLATE = "Engagement Letter — General";
 /** A client (CUSTOMER) template without clause associations (legal-za pack). */
 const CLIENT_TEMPLATE = "Power of Attorney";
 
-/** Opens the matter's Generate Document menu and picks `TEMPLATE`; returns the dialog. */
+/**
+ * Opens the matter's Generate Document menu, picks `TEMPLATE`, steps past its clause step (the
+ * pack's default clauses, unchanged) and returns the dialog on its preview step.
+ */
 async function openGenerateDialog(page: Page, matterId: string) {
   await page.goto(`${BASE}/matters/${matterId}`);
   await expect(page.getByRole("heading", { level: 1, name: MATTER })).toBeVisible({
@@ -44,6 +53,13 @@ async function openGenerateDialog(page: Page, matterId: string) {
   // The prerequisite check passes for an ACTIVE client's matter, so the dialog opens
   const dialog = page.getByRole("dialog", { name: `Generate: ${TEMPLATE}` });
   await expect(dialog).toBeVisible({ timeout: 15_000 });
+  // The clause step (components/templates/generation-clause-step.tsx) comes first
+  const next = dialog.getByRole("button", { name: "Next: Preview" });
+  await expect(next).toBeVisible({ timeout: 15_000 });
+  await next.click();
+  await expect(dialog.frameLocator('iframe[title="Document Preview"]').locator("body")).toBeVisible(
+    { timeout: 15_000 }
+  );
   return dialog;
 }
 

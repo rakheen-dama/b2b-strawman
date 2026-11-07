@@ -1,0 +1,8 @@
+== portal deadlines for Lerato Sat Nov  7 02:49:53 SAST 2026 ==
+                  id                  |    source_entity     | deadline_type |                label                 |  due_date  |  status  
+--------------------------------------+----------------------+---------------+--------------------------------------+------------+----------
+ 3346fe45-9a3b-42fc-823b-e942b4b2368a | COURT_DATE           | COURT_DATE    | Hearing — Gauteng High Court         | 2026-11-13 | DUE_SOON
+ 45ae1185-7876-4665-af9b-e66f72e294d3 | PRESCRIPTION_TRACKER | PRESCRIPTION  | Prescription deadline                | 2026-11-26 | UPCOMING
+ 443c2adc-7c34-410f-8c35-886eff3a3535 | COURT_DATE           | COURT_DATE    | Case management — Gauteng High Court | 2026-12-20 | UPCOMING
+(3 rows)
+

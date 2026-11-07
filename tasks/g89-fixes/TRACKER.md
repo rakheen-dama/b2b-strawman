@@ -30,7 +30,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 |---|---|---|---|---|---|
 | 1 | B — interest period guard | F11 (HIGH), F10 | BE + FE | PR #1745 → `e0a44ba72` | **VERIFIED**: F11 (batch-B evidence), F10 (observed in the batch-A walk) |
 | 2 | A — trust ledger, client vs matter | F12 (HIGH), F22 (HIGH), F14, F13 + InterestPosted publish + matter debit guard | BE + FE + PT | PR #1746 → `9cb368e50` | **VERIFIED** on KC (F10, F12, F13, F14, F22): `qa_cycle/evidence/g89-fixes/batch-A/` |
-| 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | MERGED-AWAITING-VERIFY (KC check running) |
+| 3 | D — portal correctness | F23, 633C D2, 633C D6, **F39** (D13) | BE + PT | PR #1747 → `72f5f3d4d` | **VERIFIED** on KC (F23, F39, D2, D6): `qa_cycle/evidence/g89-fixes/batch-D/` |
 | — | Checkpoint 1 | suites on a fresh stack + KC spot re-walk (S2-03, S2-12, CORR/S2-13, S2-45) | — | | OPEN |
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | `fix/g89-c1-statements-reports` | IN PROGRESS (builder) |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C | BE + FE | | OPEN |
@@ -52,7 +52,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] G89-F16 — closure SoA counts the written-off disbursement (C1)
 - [ ] G89-F17 — reconciliation list fails to load (E)
 - [ ] G89-F18 — Section 35 data pack is hollow (C1)
-- [ ] G89-F23 — portal feed announces internal-draft documents (D)
+- [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
+- [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
 
 ### LOW / carried
 - [ ] F1 [ ] F2 [ ] F3 (F)
@@ -62,7 +63,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [ ] F19 [ ] F21 (C1)
 - [ ] F4 [ ] F24 [ ] F25 [ ] F27 — scenario amendments (F)
 - [ ] G-D10a [ ] G88-F27 (Access denied) [ ] G88-F27 (disbursement "Invoiced · Yes") [ ] G88-M9 [ ] G88-F24 [ ] G88-F2 [ ] 634A (E)
-- [ ] 633C D2 [ ] 633C D6 (D)
+- [x] 633C D2 [x] 633C D6 (D) — VERIFIED 2026-11-07, PR #1747
 - [ ] 632A(a) [ ] 632A(b) [ ] 632A(c) [ ] 632C (C2)
 - [ ] 634B Outstanding tile (C1, verify first)
 - [ ] 634E(1) [ ] 634E(2) [ ] 634E(3) [ ] 634E(5) [ ] 634C @-autocomplete / access filter (G)
@@ -127,3 +128,12 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - KC backend restarted; global V4 applied.
   - Batch D KC check and the C1 builder launched.
 - New LOW candidate **G89-F43**: the portal trust `from`/`to` filter still compares `occurred_at`.
+- 2026-11-07 ~03:00 — Batch D **VERIFIED** on KC.
+  - **F23:** an internal-draft Matter Summary Report was hidden from Lerato's Firm actions. After "Share with client" it appeared.
+  - **D6:** the trust email reads "Type Deposit · Date 15 Oct 2026" (Mailpit `QkA55gTkNQepzfKNaKaL9w`).
+  - **F39:** the back-dated deposit triggered a full recompute. Rows now read 01 Oct / 15 Oct / 31 Oct / 07 Nov, in sequence, and the balance R 5 000,00 equals the firm ledger.
+  - **D2:** badges read "Due soon" and "Upcoming".
+- Walk notes (LOW candidates, not filed as defects yet):
+  - "Share with client" lives under Work › Generated documents, not on the Documents tab.
+  - Portal Firm actions shows no trust deposit or interest events (product question, candidate **G89-F44**).
+  - The home "Last trust movement" tile shows the latest row by transaction date, not the most recently recorded one.

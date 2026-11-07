@@ -1,0 +1,15 @@
+== F23 AFTER SHARE Sat Nov  7 02:47:34 SAST 2026 ==
+                gd_id                 |             document_id              |         generated_at          | visibility |  status  
+--------------------------------------+--------------------------------------+-------------------------------+------------+----------
+ 5439af3b-7e98-4af0-b004-bb5c5455b62d | 5f4907ba-aa0b-4c21-9124-671d3fc44ac1 | 2026-11-07 00:44:36.497529+00 | PORTAL     | UPLOADED
+(1 row)
+
+                  id                  |         event_type          |    entity_type     |              entity_id               |          occurred_at          
+--------------------------------------+-----------------------------+--------------------+--------------------------------------+-------------------------------
+ 157926eb-4578-4c7e-8d96-47e7ad7bd5f4 | document.generated          | generated_document | 5439af3b-7e98-4af0-b004-bb5c5455b62d | 2026-11-07 00:44:36.503978+00
+ 08d8ab9f-57b9-483c-b82b-9931cfd4c63d | document.visibility_changed | document           | 5f4907ba-aa0b-4c21-9124-671d3fc44ac1 | 2026-11-07 00:47:25.768111+00
+(2 rows)
+
+ERROR:  column "visibility" does not exist
+LINE 1: select id, title, visibility, last_synced_at from portal.por...
+                          ^

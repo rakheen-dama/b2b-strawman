@@ -1,0 +1,190 @@
+== Mailpit message QkA55gTkNQepzfKNaKaL9w (new, after PR #1747) ==
+Subject: Mathebula & Partners: Trust account activity
+To: [{'Name': '', 'Address': 'lerato.mthembu@email.co.za'}]
+Date: 2026-11-07T02:48:24+02:00
+--- Text ---
+Mathebula & Partners: Trust account activity
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ Mathebula & Partners
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ Trust account activity
+ 
+ Hi Lerato Mthembu,
+ 
+
+ 
+ A new transaction has been recorded in your trust account.
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ Date
+
+ 15 Oct 2026
+ 
+ 
+ Type
+
+ Deposit
+ 
+ 
+ Amount
+
+ R 5 000,00
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ View trust ledger
+ (http://localhost:3002/trust/e0f25d3f-f195-42fe-ba95-842e79de983d?orgId=mathebula-partners)
+ 
+ 
+
+ 
+ 
+ Best,
+
+ Mathebula & Partners
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ Mathebula & Partners
+
+== Comparison: pre-fix message iFD6qrwhDcvC8Nx9Tx4nFA (Batch A DEP2 deposit, sent before #1747) ==
+Subject: Mathebula & Partners: Trust account activity
+Date: 2026-11-07T01:22:26+02:00
+--- Text ---
+Mathebula & Partners: Trust account activity
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ Mathebula & Partners
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ Trust account activity
+ 
+ Hi Lerato Mthembu,
+ 
+
+ 
+ A new transaction has been recorded in your trust account.
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ Date
+
+ 7 Nov 2026
+ 
+ 
+ Type
+
+ DEPOSIT
+ 
+ 
+ Amount
+
+ R 2 000,00
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ View trust ledger
+ (http://localhost:3002/trust?orgId=mathebula-partners)
+ 
+ 
+
+ 
+ 
+ Best,
+
+ Mathebula & Partners
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ Mathebula & Partners

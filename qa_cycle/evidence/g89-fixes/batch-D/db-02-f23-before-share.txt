@@ -1,0 +1,15 @@
+== F23 BEFORE SHARE Sat Nov  7 02:44:47 SAST 2026 ==
+                gd_id                 |             document_id              |         generated_at          |                                  file_name                                   | visibility |  status  
+--------------------------------------+--------------------------------------+-------------------------------+------------------------------------------------------------------------------+------------+----------
+ 5439af3b-7e98-4af0-b004-bb5c5455b62d | 5f4907ba-aa0b-4c21-9124-671d3fc44ac1 | 2026-11-07 00:44:36.497529+00 | matter-summary-report-lerato-mthembu-raf-claim-mva-2025-11-03-2026-11-07.pdf | INTERNAL   | UPLOADED
+(1 row)
+
+                  id                  |          event_type           |     entity_type      |              entity_id               |          occurred_at          
+--------------------------------------+-------------------------------+----------------------+--------------------------------------+-------------------------------
+ 157926eb-4578-4c7e-8d96-47e7ad7bd5f4 | document.generated            | generated_document   | 5439af3b-7e98-4af0-b004-bb5c5455b62d | 2026-11-07 00:44:36.503978+00
+ 6b04c5b4-6932-4d94-b7cd-0f454431077d | invoice.receipt_generated     | invoice              | c7340009-63b9-462c-9e15-5933cabae4d9 | 2026-11-05 23:08:00.404771+00
+ e7069d65-263a-4e29-8b83-92fdb6ddaf53 | document.generated            | generated_document   | 1936543f-bebe-48a8-94a0-8a6a29c5cdb4 | 2026-11-05 23:08:00.403221+00
+ 0df931e5-826b-43f5-afb7-56c4b7ae7f85 | data.subject.export.generated | customer             | 1078b1c6-bb9c-4639-b491-a8e7cc8218c1 | 2026-11-05 23:00:30.605099+00
+ 7f6784f5-e01b-41fd-9a59-b71ea54f1d41 | data.export.generated         | data_subject_request | 10e61cab-0fc1-473f-a95c-cc439cfd5296 | 2026-11-05 22:59:43.291968+00
+(5 rows)
+

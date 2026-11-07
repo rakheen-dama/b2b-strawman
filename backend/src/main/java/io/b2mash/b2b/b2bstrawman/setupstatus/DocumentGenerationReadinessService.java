@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextBuilder;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
@@ -31,18 +33,29 @@ public class DocumentGenerationReadinessService {
   private final DocumentTemplateRepository documentTemplateRepository;
   private final List<TemplateContextBuilder> contextBuilders;
   private final TemplateValidationService templateValidationService;
+  private final ProjectAccessService projectAccessService;
 
   public DocumentGenerationReadinessService(
       DocumentTemplateRepository documentTemplateRepository,
       List<TemplateContextBuilder> contextBuilders,
-      TemplateValidationService templateValidationService) {
+      TemplateValidationService templateValidationService,
+      ProjectAccessService projectAccessService) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.contextBuilders = contextBuilders;
     this.templateValidationService = templateValidationService;
+    this.projectAccessService = projectAccessService;
   }
 
+  /**
+   * Per-template readiness (missing required fields) of {@code entityId}. A matter needs view
+   * access (security review of PR #1750, 404) — readiness builds the matter's full template
+   * context, like generate / preview (G89-F53). Clients have no ACL by design.
+   */
   @Transactional(readOnly = true)
   public List<TemplateReadiness> checkReadiness(TemplateEntityType entityType, UUID entityId) {
+    if (entityType == TemplateEntityType.PROJECT) {
+      projectAccessService.requireViewAccess(entityId, ActorContext.fromRequestScopes());
+    }
     var templates =
         documentTemplateRepository.findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(entityType);
 

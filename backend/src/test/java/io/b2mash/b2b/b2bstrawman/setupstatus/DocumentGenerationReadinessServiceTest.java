@@ -8,6 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
@@ -39,6 +41,8 @@ class DocumentGenerationReadinessServiceTest {
   private static final UUID INVOICE_ID = UUID.randomUUID();
 
   @Mock private DocumentTemplateRepository documentTemplateRepository;
+  // Security review (PR #1750): readiness checks matter access; a no-op mock here.
+  @Mock private ProjectAccessService projectAccessService;
 
   private TemplateContextBuilder projectBuilder;
   private TemplateContextBuilder customerBuilder;
@@ -60,7 +64,8 @@ class DocumentGenerationReadinessServiceTest {
         new DocumentGenerationReadinessService(
             documentTemplateRepository,
             List.of(projectBuilder, customerBuilder, invoiceBuilder),
-            new TemplateValidationService());
+            new TemplateValidationService(),
+            projectAccessService);
   }
 
   @Test
@@ -77,7 +82,7 @@ class DocumentGenerationReadinessServiceTest {
     context.put("org", Map.of("defaultCurrency", "ZAR"));
     when(projectBuilder.buildContext(eq(PROJECT_ID), any())).thenReturn(context);
 
-    var result = service.checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
+    var result = asMember(service).checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
 
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().ready()).isTrue();
@@ -103,7 +108,7 @@ class DocumentGenerationReadinessServiceTest {
     context.put("org", Map.of("defaultCurrency", "ZAR"));
     when(projectBuilder.buildContext(eq(PROJECT_ID), any())).thenReturn(context);
 
-    var result = service.checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
+    var result = asMember(service).checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
 
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().ready()).isTrue();
@@ -116,7 +121,7 @@ class DocumentGenerationReadinessServiceTest {
             TemplateEntityType.PROJECT))
         .thenReturn(List.of());
 
-    var result = service.checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
+    var result = asMember(service).checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
 
     assertThat(result).isEmpty();
   }
@@ -136,7 +141,7 @@ class DocumentGenerationReadinessServiceTest {
     context.put("org", Map.of("defaultCurrency", "ZAR"));
     when(projectBuilder.buildContext(eq(PROJECT_ID), any())).thenReturn(context);
 
-    var result = service.checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
+    var result = asMember(service).checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
 
     assertThat(result).hasSize(2);
     assertThat(result).allMatch(TemplateReadiness::ready);
@@ -156,7 +161,7 @@ class DocumentGenerationReadinessServiceTest {
     context.put("org", Map.of("defaultCurrency", "ZAR"));
     when(projectBuilder.buildContext(eq(PROJECT_ID), any())).thenReturn(context);
 
-    service.checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
+    asMember(service).checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
 
     // Verify buildContext was called with a non-null memberId (the sentinel UUID)
     verify(projectBuilder).buildContext(eq(PROJECT_ID), any(UUID.class));
@@ -167,14 +172,17 @@ class DocumentGenerationReadinessServiceTest {
     // Create a service with no builders
     var serviceNoBuilders =
         new DocumentGenerationReadinessService(
-            documentTemplateRepository, List.of(), new TemplateValidationService());
+            documentTemplateRepository,
+            List.of(),
+            new TemplateValidationService(),
+            projectAccessService);
 
     var template = createProjectTemplate("Engagement Letter", "engagement-letter");
     when(documentTemplateRepository.findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(
             TemplateEntityType.PROJECT))
         .thenReturn(List.of(template));
 
-    var result = serviceNoBuilders.checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
+    var result = asMember(serviceNoBuilders).checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
 
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().ready()).isFalse();
@@ -201,7 +209,7 @@ class DocumentGenerationReadinessServiceTest {
     context.put("lines", List.of()); // empty lines
     when(invoiceBuilder.buildContext(eq(INVOICE_ID), any())).thenReturn(context);
 
-    var result = service.checkReadiness(TemplateEntityType.INVOICE, INVOICE_ID);
+    var result = asMember(service).checkReadiness(TemplateEntityType.INVOICE, INVOICE_ID);
 
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().ready()).isFalse();
@@ -211,5 +219,18 @@ class DocumentGenerationReadinessServiceTest {
   private DocumentTemplate createProjectTemplate(String name, String slug) {
     return new DocumentTemplate(
         TemplateEntityType.PROJECT, name, slug, TemplateCategory.ENGAGEMENT_LETTER, CONTENT);
+  }
+
+  /** Runs {@code checkReadiness} with a member bound (the matter access check reads the actor). */
+  private static ReadinessCall asMember(DocumentGenerationReadinessService target) {
+    return (entityType, entityId) ->
+        ScopedValue.where(RequestScopes.MEMBER_ID, UUID.randomUUID())
+            .where(RequestScopes.ORG_ROLE, "member")
+            .call(() -> target.checkReadiness(entityType, entityId));
+  }
+
+  @FunctionalInterface
+  private interface ReadinessCall {
+    List<TemplateReadiness> checkReadiness(TemplateEntityType entityType, UUID entityId);
   }
 }

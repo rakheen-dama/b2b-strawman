@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -9,6 +10,9 @@ import java.util.UUID;
  * This is NOT part of the sealed DomainEvent hierarchy — it is a standalone event record used with
  * {@link org.springframework.context.ApplicationEventPublisher} and {@link
  * org.springframework.transaction.event.TransactionalEventListener}.
+ *
+ * <p>{@code transactionDate} is the transaction's SA business date (the ledger date the client
+ * sees); {@code occurredAt} is when the event was published (G89-F39).
  */
 public record TrustTransactionApprovalEvent(
     String eventType,
@@ -17,6 +21,7 @@ public record TrustTransactionApprovalEvent(
     UUID projectId,
     String transactionType,
     BigDecimal amount,
+    LocalDate transactionDate,
     UUID customerId,
     UUID recordedBy,
     UUID approvedBy,
@@ -31,6 +36,7 @@ public record TrustTransactionApprovalEvent(
       UUID projectId,
       String transactionType,
       BigDecimal amount,
+      LocalDate transactionDate,
       UUID customerId,
       UUID recordedBy,
       String tenantId,
@@ -42,6 +48,7 @@ public record TrustTransactionApprovalEvent(
         projectId,
         transactionType,
         amount,
+        transactionDate,
         customerId,
         recordedBy,
         null,
@@ -57,6 +64,7 @@ public record TrustTransactionApprovalEvent(
       UUID projectId,
       String transactionType,
       BigDecimal amount,
+      LocalDate transactionDate,
       UUID customerId,
       UUID recordedBy,
       UUID approvedBy,
@@ -69,6 +77,7 @@ public record TrustTransactionApprovalEvent(
         projectId,
         transactionType,
         amount,
+        transactionDate,
         customerId,
         recordedBy,
         approvedBy,
@@ -84,6 +93,7 @@ public record TrustTransactionApprovalEvent(
       UUID projectId,
       String transactionType,
       BigDecimal amount,
+      LocalDate transactionDate,
       UUID customerId,
       UUID recordedBy,
       UUID rejectedBy,
@@ -96,6 +106,7 @@ public record TrustTransactionApprovalEvent(
         projectId,
         transactionType,
         amount,
+        transactionDate,
         customerId,
         recordedBy,
         null,

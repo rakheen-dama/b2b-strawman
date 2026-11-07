@@ -402,6 +402,10 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
         "DEPOSIT",
         new BigDecimal("777.00"),
         new BigDecimal("777.00"),
+        java.time.Instant.parse("2026-01-01T00:00:00Z")
+            .atZone(io.b2mash.b2b.b2bstrawman.config.KaziTime.ZONE)
+            .toLocalDate(),
+        java.time.Instant.parse("2026-01-01T00:00:00Z"),
         java.time.Instant.parse("2026-01-01T00:00:00Z"),
         "stale",
         "STALE-REF");
@@ -578,6 +582,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                                 matterId,
                                 type,
                                 amount,
+                                LocalDate.of(2026, 4, 5),
                                 customerId,
                                 memberId,
                                 memberId,
@@ -633,6 +638,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                                 matterId,
                                 type,
                                 amount,
+                                LocalDate.of(2026, 4, 5),
                                 customerId,
                                 memberId,
                                 tenantSchema,

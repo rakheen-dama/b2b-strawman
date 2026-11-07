@@ -65,6 +65,9 @@ class PortalEmailNotificationChannelIntegrationTest {
   private static final String ORG_ID = "org_portal_channel_test";
   private static final String CONTACT_EMAIL = "channel-contact@test.com";
 
+  /** G89-F39: trust events carry the transaction's business date. */
+  private static final java.time.LocalDate TXN_DATE = java.time.LocalDate.of(2026, 10, 1);
+
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private PortalContactRepository portalContactRepository;
@@ -154,6 +157,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     projectId,
                     "DEPOSIT",
                     new BigDecimal("500.00"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     memberId,
@@ -214,6 +218,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     projectId,
                     "DEPOSIT",
                     new BigDecimal("50000"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     tenantSchema,
@@ -286,6 +291,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     UUID.randomUUID(),
                     "FEE_TRANSFER",
                     new BigDecimal("1200.00"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     memberId,
@@ -324,6 +330,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     // matter
                     "DEPOSIT",
                     new BigDecimal("125.00"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     tenantSchema,
@@ -369,6 +376,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     UUID.randomUUID(),
                     "TRANSFER_OUT",
                     new BigDecimal("250.00"),
+                    TXN_DATE,
                     customerId,
                     memberId,
                     tenantSchema,

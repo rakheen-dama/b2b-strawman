@@ -303,7 +303,8 @@ public class PortalEmailNotificationChannel {
     context.put("amountFormatted", formatAmount(amount, currencyCode));
     context.put("currency", currencyCode);
     context.put("occurredAt", event.occurredAt());
-    context.put("occurredAtFormatted", formatOccurredAt(event.occurredAt()));
+    context.put(
+        "occurredAtFormatted", formatTrustDate(event.transactionDate(), event.occurredAt()));
     // Deep link keys the portal trust page by matter (project) id when present.
     // Falls back to the /trust index page when the transaction has no matter
     // (e.g. cross-customer transfers, or matter id genuinely unset).
@@ -352,7 +353,8 @@ public class PortalEmailNotificationChannel {
     context.put("amountFormatted", formatAmount(amount, currencyCode));
     context.put("currency", currencyCode);
     context.put("occurredAt", event.occurredAt());
-    context.put("occurredAtFormatted", formatOccurredAt(event.occurredAt()));
+    context.put(
+        "occurredAtFormatted", formatTrustDate(event.transactionDate(), event.occurredAt()));
     // Deep link keys the portal trust page by matter (project) id when present.
     // Falls back to the /trust index page when the transaction has no matter
     // (e.g. cross-customer transfers, or matter id genuinely unset).
@@ -525,11 +527,15 @@ public class PortalEmailNotificationChannel {
   }
 
   /**
-   * Formats an {@link Instant} timestamp as a calendar-day string (e.g. {@code "30 Apr 2026"}) in
-   * South African time. Returns {@code null} for null input so the template can render an "N/A"
-   * fallback.
+   * The trust email's Date cell (e.g. {@code "1 Oct 2026"}): the transaction's own SA business date
+   * (G89-F39), not the moment it was recorded -- a back-dated deposit reads as its ledger date.
+   * Falls back to the event instant in South African time only when no transaction date is carried;
+   * returns {@code null} when neither is present so the template renders its "N/A" fallback.
    */
-  private static String formatOccurredAt(Instant occurredAt) {
+  private static String formatTrustDate(LocalDate transactionDate, Instant occurredAt) {
+    if (transactionDate != null) {
+      return transactionDate.format(OCCURRED_AT_FMT);
+    }
     if (occurredAt == null) {
       return null;
     }

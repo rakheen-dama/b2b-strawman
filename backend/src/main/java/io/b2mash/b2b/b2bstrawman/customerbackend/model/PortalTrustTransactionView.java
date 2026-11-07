@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -17,6 +18,8 @@ public record PortalTrustTransactionView(
     String transactionType,
     BigDecimal amount,
     BigDecimal runningBalance,
+    LocalDate transactionDate,
+    Instant recordedAt,
     Instant occurredAt,
     String description,
     String reference,

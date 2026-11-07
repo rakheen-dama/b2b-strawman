@@ -156,6 +156,11 @@ class PortalTrustControllerIntegrationTest {
           "DEPOSIT",
           new BigDecimal("100.00"),
           new BigDecimal("100.00").multiply(BigDecimal.valueOf(i + 1L)),
+          janStart
+              .plus(i, ChronoUnit.DAYS)
+              .atZone(io.b2mash.b2b.b2bstrawman.config.KaziTime.ZONE)
+              .toLocalDate(),
+          janStart.plus(i, ChronoUnit.DAYS),
           janStart.plus(i, ChronoUnit.DAYS),
           "Jan deposit " + i,
           "REF-JAN-" + i);
@@ -168,6 +173,11 @@ class PortalTrustControllerIntegrationTest {
           "DEPOSIT",
           new BigDecimal("100.00"),
           new BigDecimal("100.00").multiply(BigDecimal.valueOf(i + 6L)),
+          febStart
+              .plus(i, ChronoUnit.DAYS)
+              .atZone(io.b2mash.b2b.b2bstrawman.config.KaziTime.ZONE)
+              .toLocalDate(),
+          febStart.plus(i, ChronoUnit.DAYS),
           febStart.plus(i, ChronoUnit.DAYS),
           "Feb deposit " + i,
           "REF-FEB-" + i);
@@ -180,6 +190,11 @@ class PortalTrustControllerIntegrationTest {
           "DEPOSIT",
           new BigDecimal("100.00"),
           new BigDecimal("100.00").multiply(BigDecimal.valueOf(i + 11L)),
+          marStart
+              .plus(i, ChronoUnit.DAYS)
+              .atZone(io.b2mash.b2b.b2bstrawman.config.KaziTime.ZONE)
+              .toLocalDate(),
+          marStart.plus(i, ChronoUnit.DAYS),
           marStart.plus(i, ChronoUnit.DAYS),
           "Mar deposit " + i,
           "REF-MAR-" + i);
@@ -193,6 +208,8 @@ class PortalTrustControllerIntegrationTest {
         "DEPOSIT",
         new BigDecimal("250.00"),
         new BigDecimal("250.00"),
+        lastTxnB.atZone(io.b2mash.b2b.b2bstrawman.config.KaziTime.ZONE).toLocalDate(),
+        lastTxnB,
         lastTxnB,
         "Matter B seed",
         "REF-B-0");
@@ -363,6 +380,10 @@ class PortalTrustControllerIntegrationTest {
         "DEPOSIT",
         new BigDecimal("9999.00"),
         new BigDecimal("9999.00"),
+        Instant.parse("2030-01-01T00:00:00Z")
+            .atZone(io.b2mash.b2b.b2bstrawman.config.KaziTime.ZONE)
+            .toLocalDate(),
+        Instant.parse("2030-01-01T00:00:00Z"),
         Instant.parse("2030-01-01T00:00:00Z"),
         "Other-customer leak probe",
         "REF-LEAK");

@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTrustTransactionVie
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -51,6 +52,11 @@ public class PortalTrustReadModelRepository {
 
   // ── Transaction upserts ───────────────────────────────────────────────
 
+  /**
+   * Upserts one portal trust row. {@code transactionDate} is the firm transaction's SA business
+   * date (what the client sees, G89-F39); {@code recordedAt} is the firm row's {@code created_at},
+   * the ledger tiebreak after the date; {@code occurredAt} is the approval / recorded instant.
+   */
   public void upsertTransaction(
       UUID id,
       UUID customerId,
@@ -58,6 +64,8 @@ public class PortalTrustReadModelRepository {
       String transactionType,
       BigDecimal amount,
       BigDecimal runningBalance,
+      LocalDate transactionDate,
+      Instant recordedAt,
       Instant occurredAt,
       String description,
       String reference) {
@@ -65,14 +73,17 @@ public class PortalTrustReadModelRepository {
             """
             INSERT INTO portal.portal_trust_transaction
                 (id, customer_id, matter_id, transaction_type, amount, running_balance,
-                 occurred_at, description, reference, last_synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, now())
+                 transaction_date, recorded_at, occurred_at, description, reference,
+                 last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
             ON CONFLICT (id)
             DO UPDATE SET customer_id = EXCLUDED.customer_id,
                           matter_id = EXCLUDED.matter_id,
                           transaction_type = EXCLUDED.transaction_type,
                           amount = EXCLUDED.amount,
                           running_balance = EXCLUDED.running_balance,
+                          transaction_date = EXCLUDED.transaction_date,
+                          recorded_at = EXCLUDED.recorded_at,
                           occurred_at = EXCLUDED.occurred_at,
                           description = EXCLUDED.description,
                           reference = EXCLUDED.reference,
@@ -85,6 +96,8 @@ public class PortalTrustReadModelRepository {
             transactionType,
             amount,
             runningBalance,
+            transactionDate,
+            toTimestamp(recordedAt),
             toTimestamp(occurredAt),
             description,
             reference)
@@ -135,8 +148,9 @@ public class PortalTrustReadModelRepository {
 
   /**
    * Returns transactions for the given customer/matter, optionally bounded by {@code from}/{@code
-   * to} occurrence timestamps. Ordered newest-first. Supports offset-based pagination via {@code
-   * size} and {@code offset}.
+   * to} occurrence timestamps. Ordered newest-first in firm-ledger order (transaction date, then
+   * recorded time, G89-F39) so each row's running balance reads in sequence. Supports offset-based
+   * pagination via {@code size} and {@code offset}.
    */
   public List<PortalTrustTransactionView> findTransactions(
       UUID customerId, UUID matterId, Instant from, Instant to, int size, int offset) {
@@ -146,13 +160,14 @@ public class PortalTrustReadModelRepository {
     return jdbc.sql(
             """
             SELECT id, customer_id, matter_id, transaction_type, amount, running_balance,
-                   occurred_at, description, reference, last_synced_at
+                   transaction_date, recorded_at, occurred_at, description, reference,
+                   last_synced_at
             FROM portal.portal_trust_transaction
             WHERE customer_id = ?
               AND matter_id = ?
               AND (CAST(? AS TIMESTAMPTZ) IS NULL OR occurred_at >= CAST(? AS TIMESTAMPTZ))
               AND (CAST(? AS TIMESTAMPTZ) IS NULL OR occurred_at <= CAST(? AS TIMESTAMPTZ))
-            ORDER BY occurred_at DESC, id DESC
+            ORDER BY transaction_date DESC, recorded_at DESC, id DESC
             LIMIT ? OFFSET ?
             """)
         .params(
@@ -178,10 +193,11 @@ public class PortalTrustReadModelRepository {
     return jdbc.sql(
             """
             SELECT id, customer_id, matter_id, transaction_type, amount, running_balance,
-                   occurred_at, description, reference, last_synced_at
+                   transaction_date, recorded_at, occurred_at, description, reference,
+                   last_synced_at
             FROM portal.portal_trust_transaction
             WHERE customer_id = ?
-            ORDER BY occurred_at DESC, id DESC
+            ORDER BY transaction_date DESC, recorded_at DESC, id DESC
             LIMIT ?
             """)
         .params(customerId, limit)

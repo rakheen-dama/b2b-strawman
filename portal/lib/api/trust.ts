@@ -33,6 +33,9 @@ export interface PortalTrustTransactionResponse {
   transactionType: string;
   amount: number;
   runningBalance: number;
+  /** "YYYY-MM-DD" SA business date of the transaction — the date to show (G89-F39). */
+  transactionDate: string;
+  /** ISO 8601 instant the transaction was approved / recorded — not for display. */
   occurredAt: string;
   description: string;
   reference: string;

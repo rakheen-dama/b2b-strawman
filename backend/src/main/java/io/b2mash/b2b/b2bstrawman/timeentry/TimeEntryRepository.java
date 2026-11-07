@@ -285,6 +285,23 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
       @Param("fromDate") LocalDate from, @Param("toDate") LocalDate to);
 
   /**
+   * Unbilled billable time on a matter worked on or before {@code toDate} (unbilled = {@code
+   * billable AND invoice_id IS NULL}). The Statement of Account's "unbilled work in progress" line
+   * (G89-F16, D9) — shown, never counted as owing.
+   */
+  @Query(
+      """
+      SELECT te FROM TimeEntry te, Task t
+      WHERE te.taskId = t.id
+        AND t.projectId = :projectId
+        AND te.billable = true
+        AND te.invoiceId IS NULL
+        AND te.date <= :toDate
+      """)
+  List<TimeEntry> findUnbilledBillableByProjectIdUpTo(
+      @Param("projectId") UUID projectId, @Param("toDate") LocalDate toDate);
+
+  /**
    * Hours grouped by period for trend computation. Uses date_trunc for grouping. Tenant isolation
    * is provided by the dedicated schema (search_path).
    */

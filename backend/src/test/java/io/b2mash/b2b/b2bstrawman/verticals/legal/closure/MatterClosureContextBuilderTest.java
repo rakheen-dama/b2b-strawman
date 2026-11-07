@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.MatterFeeNoteTotals;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
@@ -45,6 +47,7 @@ class MatterClosureContextBuilderTest {
   @Mock private ProjectRepository projectRepository;
   @Mock private InvoiceRepository invoiceRepository;
   @Mock private InvoiceLineRepository invoiceLineRepository;
+  @Mock private PaymentEventRepository paymentEventRepository;
   @Mock private Project project;
 
   private MatterClosureContextBuilder builder;
@@ -53,13 +56,19 @@ class MatterClosureContextBuilderTest {
   void setUp() {
     builder =
         new MatterClosureContextBuilder(
-            projectRepository,
-            invoiceRepository,
-            invoiceLineRepository,
-            Clock.system(KaziTime.ZONE));
+            projectRepository, feeNoteTotals(), Clock.system(KaziTime.ZONE));
     lenient().when(projectRepository.findById(PROJECT_ID)).thenReturn(Optional.of(project));
     lenient().when(project.getClosedAt()).thenReturn(null);
     lenient().when(project.getCreatedAt()).thenReturn(Instant.now());
+  }
+
+  /**
+   * G89-F16: the real fee-note basis helper (shared with the Statement of Account) over the mocked
+   * invoice, line and payment repositories.
+   */
+  private MatterFeeNoteTotals feeNoteTotals() {
+    return new MatterFeeNoteTotals(
+        invoiceRepository, invoiceLineRepository, paymentEventRepository);
   }
 
   /** A mocked fee note whose lines are served by {@code invoiceLineRepository}. */
@@ -112,10 +121,7 @@ class MatterClosureContextBuilderTest {
     when(project.getClosedAt()).thenReturn(closedAt);
     var atClose =
         new MatterClosureContextBuilder(
-            projectRepository,
-            invoiceRepository,
-            invoiceLineRepository,
-            Clock.fixed(closedAt, KaziTime.ZONE));
+            projectRepository, feeNoteTotals(), Clock.fixed(closedAt, KaziTime.ZONE));
 
     Map<String, Object> context =
         atClose.buildClosureContext(
@@ -214,6 +220,8 @@ class MatterClosureContextBuilderTest {
     assertThat(money(matter, "total_fees_billed")).isEqualByComparingTo("1800.00");
     assertThat(money(matter, "total_vat")).isEqualByComparingTo("270.00");
     assertThat(money(matter, "total_disbursements")).isEqualByComparingTo("750.00");
+    // G89-F16: nothing paid on the SENT note — the letter's balance owing is its whole total.
+    assertThat(money(matter, "balance_owing")).isEqualByComparingTo("2820.00");
   }
 
   @Test
@@ -278,12 +286,13 @@ class MatterClosureContextBuilderTest {
   }
 
   @Test
-  void formatHintsMapTheThreeTotalsToCurrency() {
+  void formatHintsMapTheTotalsToCurrency() {
     assertThat(MatterClosureContextBuilder.formatHints())
         .containsExactlyInAnyOrderEntriesOf(
             Map.of(
                 "matter.total_fees_billed", "currency",
                 "matter.total_vat", "currency",
-                "matter.total_disbursements", "currency"));
+                "matter.total_disbursements", "currency",
+                "matter.balance_owing", "currency"));
   }
 }

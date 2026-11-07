@@ -14,8 +14,12 @@ import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.MatterFeeNoteTotals;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
@@ -50,7 +54,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.ObjectMapper;
@@ -71,6 +74,7 @@ class StatementOfAccountContextBuilderTest {
   @Mock private ClientLedgerService clientLedgerService;
   @Mock private TrustAccountRepository trustAccountRepository;
   @Mock private InvoiceRepository invoiceRepository;
+  @Mock private InvoiceLineRepository invoiceLineRepository;
   @Mock private PaymentEventRepository paymentEventRepository;
   @Mock private MemberNameResolver memberNameResolver;
   @Mock private TemplateContextHelper templateContextHelper;
@@ -88,7 +92,10 @@ class StatementOfAccountContextBuilderTest {
   @org.mockito.Spy private ObjectMapper objectMapper = new ObjectMapper();
 
   @org.mockito.Spy private Clock clock = Clock.system(KaziTime.ZONE);
-  @InjectMocks private StatementOfAccountContextBuilder builder;
+
+  // G89-F16: the summary reads the REAL fee-note basis helper over the mocked invoice, line and
+  // payment repositories, so these tests exercise the same arithmetic production runs.
+  private StatementOfAccountContextBuilder builder;
 
   private final UUID projectId = UUID.randomUUID();
   private final UUID customerId = UUID.randomUUID();
@@ -101,6 +108,23 @@ class StatementOfAccountContextBuilderTest {
 
   @BeforeEach
   void setUp() {
+    builder =
+        new StatementOfAccountContextBuilder(
+            projectRepository,
+            customerRepository,
+            timeEntryRepository,
+            disbursementService,
+            clientLedgerService,
+            trustAccountRepository,
+            new MatterFeeNoteTotals(
+                invoiceRepository, invoiceLineRepository, paymentEventRepository),
+            memberNameResolver,
+            templateContextHelper,
+            moduleGuard,
+            objectMapper,
+            taxRateRepository,
+            trustTransactionRepository,
+            clock);
     lenient().when(templateContextHelper.buildOrgContext()).thenReturn(Map.of("name", "Acme Law"));
     lenient().when(memberNameResolver.resolveName(any())).thenReturn("Jane Attorney");
     // Default: trust_accounting module is enabled (matches a fully legal tenant). Individual
@@ -200,9 +224,11 @@ class StatementOfAccountContextBuilderTest {
 
     @SuppressWarnings("unchecked")
     Map<String, Object> summary = (Map<String, Object>) context.get("summary");
-    // closing = 0 + 4500 + 287.50 - 0
+    // G89-F16 / D9: the summary is on a fee-note basis. The time entries and disbursements above
+    // are activity listings; with no issued fee note nothing is billed, so nothing is owing.
+    assertThat((BigDecimal) summary.get("total_fees")).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat((BigDecimal) summary.get("closing_balance_owing"))
-        .isEqualByComparingTo(new BigDecimal("4787.50"));
+        .isEqualByComparingTo(BigDecimal.ZERO);
   }
 
   @Test
@@ -429,29 +455,47 @@ class StatementOfAccountContextBuilderTest {
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of(disb));
 
-    // Previous balance: an old SENT invoice (issueDate before periodStart) with R500 outstanding.
+    // G89-F16 / D9 (fee-note basis). Previous balance: an old SENT note (issued before
+    // periodStart) with R500 outstanding. Billed in the period: a note with a R1000 fee line and a
+    // R200 + R30 VAT disbursement line (R1230), on which R300 was paid in the period.
     var oldInvoice =
         invoiceWithStatusTotalAndIssueDate(
             InvoiceStatus.SENT, new BigDecimal("500.00"), periodStart.minusDays(10));
-    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of(oldInvoice));
+    var periodNote =
+        invoiceWithStatusTotalAndIssueDate(
+            InvoiceStatus.PARTIALLY_PAID, new BigDecimal("1230.00"), LocalDate.of(2026, 4, 20));
+    TestIds.withField(periodNote, "subtotal", new BigDecimal("1200.00"));
+    TestIds.withField(periodNote, "taxAmount", new BigDecimal("30.00"));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of(oldInvoice, periodNote));
+    var feeLine = invoiceLine(periodNote, InvoiceLineType.TIME, "1000.00", null);
+    var disbursementLine =
+        invoiceLine(periodNote, InvoiceLineType.DISBURSEMENT, "200.00", new BigDecimal("30.00"));
+    when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(oldInvoice.getId()))
+        .thenReturn(List.of(invoiceLine(oldInvoice, InvoiceLineType.TIME, "500.00", null)));
+    when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(periodNote.getId()))
+        .thenReturn(List.of(feeLine, disbursementLine));
+    var payment =
+        completedPayment(
+            periodNote.getId(), new BigDecimal("300.00"), Instant.parse("2026-04-25T10:00:00Z"));
     when(paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(anyCollection()))
-        .thenReturn(List.of());
+        .thenReturn(List.of(payment));
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
     @SuppressWarnings("unchecked")
     Map<String, Object> summary = (Map<String, Object>) context.get("summary");
-    // fees = 1h * 1000 = 1000; disbursements = 230; previous = 500; payments = 0
-    // closing = 500 + 1000 + 230 - 0 = 1730
+    // fees = 1000 (the note's fee line, no VAT); disbursements = 230 (incl. VAT); previous = 500;
+    // payments = 300 → closing = 500 + 1000 + 230 − 300 = 1430 = Σ balance due on the two notes.
     assertThat((BigDecimal) summary.get("total_fees"))
         .isEqualByComparingTo(new BigDecimal("1000.00"));
     assertThat((BigDecimal) summary.get("total_disbursements"))
         .isEqualByComparingTo(new BigDecimal("230.00"));
     assertThat((BigDecimal) summary.get("previous_balance_owing"))
         .isEqualByComparingTo(new BigDecimal("500.00"));
-    assertThat((BigDecimal) summary.get("payments_received")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat((BigDecimal) summary.get("payments_received"))
+        .isEqualByComparingTo(new BigDecimal("300.00"));
     assertThat((BigDecimal) summary.get("closing_balance_owing"))
-        .isEqualByComparingTo(new BigDecimal("1730.00"));
+        .isEqualByComparingTo(new BigDecimal("1430.00"));
   }
 
   @Test
@@ -506,10 +550,9 @@ class StatementOfAccountContextBuilderTest {
         invoiceWithStatusTotalAndIssueDate(
             InvoiceStatus.PAID, new BigDecimal("1000.00"), LocalDate.of(2026, 10, 15));
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of(octoberNote));
-    var payment = org.mockito.Mockito.mock(PaymentEvent.class);
-    lenient().when(payment.getStatus()).thenReturn(PaymentEventStatus.COMPLETED);
-    lenient().when(payment.getCreatedAt()).thenReturn(Instant.parse("2026-10-31T23:30:00Z"));
-    lenient().when(payment.getAmount()).thenReturn(new BigDecimal("1000.00"));
+    var payment =
+        completedPayment(
+            octoberNote.getId(), new BigDecimal("1000.00"), Instant.parse("2026-10-31T23:30:00Z"));
     when(paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(anyCollection()))
         .thenReturn(List.of(payment));
 
@@ -1468,5 +1511,28 @@ class StatementOfAccountContextBuilderTest {
     TestIds.withField(inv, "total", total);
     TestIds.withField(inv, "issueDate", issueDate);
     return inv;
+  }
+
+  /** A tax-exclusive line of {@code note}; {@code tax} null = no per-line tax. */
+  private InvoiceLine invoiceLine(
+      Invoice note, InvoiceLineType type, String amount, BigDecimal tax) {
+    var line =
+        new InvoiceLine(
+            note.getId(), projectId, null, type.name(), BigDecimal.ONE, new BigDecimal(amount), 0);
+    line.setLineType(type);
+    if (tax != null) {
+      TestIds.withField(line, "taxAmount", tax);
+    }
+    return line;
+  }
+
+  /** A COMPLETED payment event on {@code invoiceId} recorded at {@code at}. */
+  private PaymentEvent completedPayment(UUID invoiceId, BigDecimal amount, Instant at) {
+    var payment = org.mockito.Mockito.mock(PaymentEvent.class);
+    lenient().when(payment.getInvoiceId()).thenReturn(invoiceId);
+    lenient().when(payment.getStatus()).thenReturn(PaymentEventStatus.COMPLETED);
+    lenient().when(payment.getCreatedAt()).thenReturn(at);
+    lenient().when(payment.getAmount()).thenReturn(amount);
+    return payment;
   }
 }

@@ -472,13 +472,38 @@ class DisbursementServiceTest {
                       "court mid"),
                   memberId);
           // February: outside range
+          var before =
+              disbursementService.create(
+                  officeRequest(
+                      DisbursementCategory.COURT_FEES,
+                      VatTreatment.ZERO_RATED_PASS_THROUGH,
+                      LocalDate.of(2026, 2, 28),
+                      "court before"),
+                  memberId);
+          // G89-F16: the statement lists APPROVED, not-written-off disbursements only.
+          for (var d : List.of(a, b, c, before)) {
+            disbursementService.submitForApproval(d.id());
+            disbursementService.approve(d.id(), memberId, "ok");
+          }
+          // In range but never chargeable: still DRAFT, and approved-then-written-off.
           disbursementService.create(
               officeRequest(
                   DisbursementCategory.COURT_FEES,
                   VatTreatment.ZERO_RATED_PASS_THROUGH,
-                  LocalDate.of(2026, 2, 28),
-                  "court before"),
+                  LocalDate.of(2026, 3, 12),
+                  "court draft"),
               memberId);
+          var writtenOff =
+              disbursementService.create(
+                  officeRequest(
+                      DisbursementCategory.COUNSEL_FEES,
+                      VatTreatment.STANDARD_15,
+                      LocalDate.of(2026, 3, 15),
+                      "counsel written off"),
+                  memberId);
+          disbursementService.submitForApproval(writtenOff.id());
+          disbursementService.approve(writtenOff.id(), memberId, "ok");
+          disbursementService.writeOff(writtenOff.id(), "firm absorbs");
 
           var result =
               disbursementService.listForStatement(

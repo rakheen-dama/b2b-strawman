@@ -3,12 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.MatterFeeNoteTotals;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
@@ -20,7 +15,6 @@ import java.time.Period;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,33 +42,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class MatterClosureContextBuilder {
 
-  /**
-   * Issued fee notes — exactly SENT, PARTIALLY_PAID and PAID (Phase 88 622D status set); DRAFT,
-   * APPROVED and VOID notes are never counted.
-   */
-  private static final Set<InvoiceStatus> BILLED_INVOICE_STATUSES =
-      Set.of(InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID);
-
   /** Currency hints for the {@code matter.*} totals, merged over the registry hints at render. */
   static final Map<String, String> FORMAT_HINTS =
       Map.of(
           "matter.total_fees_billed", "currency",
           "matter.total_vat", "currency",
-          "matter.total_disbursements", "currency");
+          "matter.total_disbursements", "currency",
+          "matter.balance_owing", "currency");
 
   private final ProjectRepository projectRepository;
-  private final InvoiceRepository invoiceRepository;
-  private final InvoiceLineRepository invoiceLineRepository;
+  private final MatterFeeNoteTotals feeNoteTotals;
   private final Clock clock;
 
   public MatterClosureContextBuilder(
-      ProjectRepository projectRepository,
-      InvoiceRepository invoiceRepository,
-      InvoiceLineRepository invoiceLineRepository,
-      Clock clock) {
+      ProjectRepository projectRepository, MatterFeeNoteTotals feeNoteTotals, Clock clock) {
     this.projectRepository = projectRepository;
-    this.invoiceRepository = invoiceRepository;
-    this.invoiceLineRepository = invoiceLineRepository;
+    this.feeNoteTotals = feeNoteTotals;
     this.clock = clock;
   }
 
@@ -126,57 +109,20 @@ public class MatterClosureContextBuilder {
     context.put("closure", closureMap);
 
     // matter.*
+    // matter.* — fees and disbursements excl. VAT from the lines of the matter's ISSUED fee notes,
+    // VAT once per note, and what is still owing on them: the same fee-note basis the Statement of
+    // Account summary reads (MatterFeeNoteTotals, G89-F16 / D9). Disbursements are counted only as
+    // DISBURSEMENT lines of issued notes — never again from the disbursement register (N-4).
     var matterMap = new LinkedHashMap<String, Object>();
-    BilledTotals totals = billedTotals(projectId);
-    matterMap.put("total_fees_billed", totals.fees());
+    var totals = feeNoteTotals.current(projectId);
+    matterMap.put("total_fees_billed", totals.feesExclVat());
     matterMap.put("total_vat", totals.vat());
-    matterMap.put("total_disbursements", totals.disbursements());
+    matterMap.put("total_disbursements", totals.disbursementsExclVat());
+    matterMap.put("balance_owing", totals.outstanding());
     matterMap.put("duration_months", durationMonths(project.getCreatedAt()));
     context.put("matter", matterMap);
 
     return context;
-  }
-
-  /**
-   * Fees and disbursements excl. VAT summed from the lines of the matter's issued fee notes; VAT
-   * once, from each note (covers legacy notes with a manual invoice-level tax and no per-line tax).
-   * A fee note is "on the matter" when any of its lines carries the project ({@code
-   * InvoiceRepository.findByProjectId}); all its lines count. Disbursements are counted only as
-   * DISBURSEMENT lines of issued notes — never again from the disbursement register (N-4: they used
-   * to be added on top of the VAT-inclusive note totals, and disbursements sitting on DRAFT notes
-   * were counted because they are marked billed at draft time).
-   */
-  private BilledTotals billedTotals(UUID projectId) {
-    BigDecimal fees = BigDecimal.ZERO;
-    BigDecimal vat = BigDecimal.ZERO;
-    BigDecimal disbursements = BigDecimal.ZERO;
-    for (Invoice note : invoiceRepository.findByProjectId(projectId)) {
-      if (!BILLED_INVOICE_STATUSES.contains(note.getStatus())) {
-        continue;
-      }
-      BigDecimal noteVat = nz(note.getTaxAmount());
-      // Tax-inclusive per-line notes carry VAT inside each line amount (Invoice.recalculateTotals
-      // sets total == subtotal only for them); the invoice row has no tax-inclusive flag.
-      boolean inclusive =
-          noteVat.signum() > 0 && nz(note.getTotal()).compareTo(nz(note.getSubtotal())) == 0;
-      vat = vat.add(noteVat);
-      for (InvoiceLine line : invoiceLineRepository.findByInvoiceIdOrderBySortOrder(note.getId())) {
-        BigDecimal exclVat =
-            nz(line.getAmount()).subtract(inclusive ? nz(line.getTaxAmount()) : BigDecimal.ZERO);
-        if (line.getLineType() == InvoiceLineType.DISBURSEMENT) {
-          disbursements = disbursements.add(exclVat);
-        } else {
-          fees = fees.add(exclVat); // null line type (legacy rows) counts as a fee line
-        }
-      }
-    }
-    return new BilledTotals(fees, vat, disbursements);
-  }
-
-  private record BilledTotals(BigDecimal fees, BigDecimal vat, BigDecimal disbursements) {}
-
-  private static BigDecimal nz(BigDecimal value) {
-    return value != null ? value : BigDecimal.ZERO;
   }
 
   private long durationMonths(Instant createdAt) {

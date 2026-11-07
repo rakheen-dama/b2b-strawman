@@ -7,6 +7,11 @@ import { formatCurrency } from "@/lib/format";
 
 vi.mock("server-only", () => ({}));
 
+/** en-ZA currency text as Testing Library sees it (its normaliser folds NBSP grouping to spaces). */
+function money(amount: number): string {
+  return formatCurrency(amount).replace(/\s/g, " ");
+}
+
 function makeResponse(overrides: Partial<ReportExecutionResponse> = {}): ReportExecutionResponse {
   return {
     reportName: "Test Report",
@@ -78,11 +83,13 @@ describe("ReportResults", () => {
     expect(screen.getByText("Charlie")).toBeInTheDocument();
   });
 
-  it("formats decimal values to 2 decimal places", () => {
+  it("formats decimal values to 2 decimal places and currency values as currency", () => {
     render(<ReportResults response={makeResponse()} isLoading={false} onPageChange={vi.fn()} />);
 
     expect(screen.getByText("40.50")).toBeInTheDocument();
-    expect(screen.getByText("4050.00")).toBeInTheDocument();
+    // G89-F18: currency columns render through formatCurrency (en-ZA), not toFixed(2).
+    expect(screen.getByText(money(4050))).toBeInTheDocument();
+    expect(screen.queryByText("4050.00")).not.toBeInTheDocument();
   });
 
   it("renders null values as em-dash", () => {
@@ -134,9 +141,9 @@ describe("ReportResults", () => {
       />
     );
 
-    const money = formatCurrency(38019.15);
+    const yearEnd = money(38019.15);
     // once on the summary card, once in the amount cell
-    expect(screen.getAllByText(money)).toHaveLength(2);
+    expect(screen.getAllByText(yearEnd)).toHaveLength(2);
     expect(screen.queryByText("38019.15")).not.toBeInTheDocument();
     // hours are not money
     expect(screen.getByText("12.5")).toBeInTheDocument();

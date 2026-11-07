@@ -180,7 +180,7 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.loopSources[0].label").value("Fee note lines"))
         .andExpect(jsonPath("$.loopSources[0].fields.length()").value(4));
 
-    // CUSTOMER has projects, invoices, and tags loop sources
+    // CUSTOMER has projects, invoices, trust ledger lines (G89 D11) and tags loop sources
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -188,12 +188,14 @@ class VariableMetadataEndpointTest {
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.loopSources.length()").value(3))
+        .andExpect(jsonPath("$.loopSources.length()").value(4))
         .andExpect(jsonPath("$.loopSources[0].key").value("projects"))
         .andExpect(jsonPath("$.loopSources[1].key").value("invoices"))
         .andExpect(jsonPath("$.loopSources[1].label").value("Fee notes"))
         .andExpect(jsonPath("$.loopSources[1].fields.length()").value(7))
-        .andExpect(jsonPath("$.loopSources[2].key").value("tags"));
+        .andExpect(jsonPath("$.loopSources[2].key").value("trust.lines"))
+        .andExpect(jsonPath("$.loopSources[2].fields.length()").value(6))
+        .andExpect(jsonPath("$.loopSources[3].key").value("tags"));
   }
 
   @Test

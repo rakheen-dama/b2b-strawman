@@ -233,8 +233,11 @@ public class VariableMetadataRegistry {
             "invoiceSummary",
             List.of(new VariableInfo("totalOutstanding", "Total Outstanding", "currency"))));
 
+    groups.add(buildOrgGroup());
+    groups.add(buildGeneratedGroup());
+
     // G89 D11: the client's trust ledger (ClientTrustStatementContext; absent without trust
-    // accounting or trust activity).
+    // accounting or trust activity). Appended last so the existing group order is unchanged.
     groups.add(
         new VariableGroup(
             "Trust account",
@@ -244,9 +247,6 @@ public class VariableMetadataRegistry {
                 new VariableInfo("trust.statement_date", "Trust Statement Date", "date"),
                 new VariableInfo("trust.opening_balance", "Trust Opening Balance", "currency"),
                 new VariableInfo("trust.closing_balance", "Trust Balance Held", "currency"))));
-
-    groups.add(buildOrgGroup());
-    groups.add(buildGeneratedGroup());
 
     staticGroupsByType.put(TemplateEntityType.CUSTOMER, List.copyOf(groups));
 

@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.StubAiProvider;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
@@ -83,6 +84,7 @@ class DocumentMatterAccessIntegrationTest {
   @Autowired private DocumentRepository documentRepository;
   @Autowired private AiExecutionRepository aiExecutionRepository;
   @Autowired private StorageService storageService;
+  @Autowired private StubAiProvider stubAiProvider;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private ObjectMapper objectMapper;
 
@@ -345,13 +347,16 @@ class DocumentMatterAccessIntegrationTest {
 
   @Test
   void contractReview_documentOnAMatterTheMemberIsNotOn_deniedAndNeverSent() throws Exception {
+    // Its own document: the positive control legitimately sends supply-agreement.json's text.
+    UUID deniedDocumentId =
+        inTenantTx(() -> createContractDocument("n-denied-agreement.json", false));
     String body =
         mockMvc
             .perform(
                 post("/api/ai/skills/contract-review")
                     .with(member(N))
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(contractReviewBody()))
+                    .content(contractReviewBody(deniedDocumentId)))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -368,6 +373,8 @@ class DocumentMatterAccessIntegrationTest {
     var execution = inTenantTx(() -> aiExecutionRepository.findById(executionId).orElseThrow());
     assertThat(execution.getInputTokens()).isZero();
     assertThat(execution.getErrorMessage()).containsIgnoringCase("not found");
+    assertThat(stubAiProvider.receivedPromptContaining(textMarker("n-denied-agreement.json")))
+        .isFalse();
   }
 
   @Test
@@ -401,6 +408,24 @@ class DocumentMatterAccessIntegrationTest {
     assertThat(JsonPath.<String>read(body, "$.status")).isEqualTo("FAILED");
     assertThat(((Number) JsonPath.read(body, "$.costCents")).longValue()).isZero();
     assertThat(((Number) JsonPath.read(body, "$.durationMs")).longValue()).isZero();
+    assertThat(stubAiProvider.receivedPromptContaining(textMarker("trust-letter.json"))).isFalse();
+  }
+
+  /** The marker check can see a sent document: M's allowed review does reach the provider. */
+  @Test
+  void contractReview_allowedReview_documentTextReachesTheProvider() throws Exception {
+    UUID allowedDocumentId =
+        inTenantTx(() -> createContractDocument("m-allowed-agreement.json", false));
+    mockMvc
+        .perform(
+            post("/api/ai/skills/contract-review")
+                .with(member(M))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(contractReviewBody(allowedDocumentId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("COMPLETED"));
+    assertThat(stubAiProvider.receivedPromptContaining(textMarker("m-allowed-agreement.json")))
+        .isTrue();
   }
 
   // ---- helpers ------------------------------------------------------------------------------
@@ -473,6 +498,11 @@ class DocumentMatterAccessIntegrationTest {
   }
 
   /** A Tiptap-JSON contract on the matter, with its bytes in storage (text-extractable). */
+  /** A text marker unique to the contract {@code fileName} — proof of what reached the LLM. */
+  private static String textMarker(String fileName) {
+    return "DOCREF-" + fileName.replace('.', '-').toUpperCase();
+  }
+
   private UUID createContractDocument(String fileName, boolean containsTrustData) {
     var doc =
         new Document(
@@ -492,7 +522,8 @@ class DocumentMatterAccessIntegrationTest {
         doc.getS3Key(),
         """
         {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text",\
-        "text":"SUPPLY AGREEMENT between Dlamini Trading and a supplier. Clause 4 - Payment."}]}]}"""
+        "text":"SUPPLY AGREEMENT between Dlamini Trading and a supplier. Clause 4 - Payment. %s"}]}]}"""
+            .formatted(textMarker(fileName))
             .getBytes(StandardCharsets.UTF_8),
         "application/json");
     return doc.getId();

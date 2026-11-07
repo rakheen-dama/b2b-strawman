@@ -21,10 +21,12 @@ import { entityNounLabel } from "@/components/audit/entity-type-labels";
 
 /**
  * Lower-case display noun for the backend report parameter `entityType` (`project` → "matter").
+ * Other types split their camelCase into words (`trustAccount` → "trust account", G89-F19).
  * The wire value is passed to the server action unchanged; only the copy uses the legal noun.
  */
 function entityDisplayNoun(entityType: string): string {
-  return (entityNounLabel(entityType) ?? entityType).toLowerCase();
+  const noun = entityNounLabel(entityType) ?? entityType.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
+  return noun.toLowerCase();
 }
 
 interface EntityPickerProps {
@@ -88,13 +90,13 @@ export function EntityPicker({
               hasError && "border-red-500"
             )}
           >
-            {selectedOption ? selectedOption.label : `Select a ${entityNoun}...`}
+            {selectedOption ? selectedOption.label : `Select a ${entityNoun}…`}
             <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
           <Command>
-            <CommandInput placeholder={`Search ${entityNoun}s...`} />
+            <CommandInput placeholder={`Search ${entityNoun}s…`} />
             <CommandList>
               {isLoading && (
                 <div className="flex items-center justify-center py-6">

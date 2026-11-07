@@ -110,3 +110,10 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - Both reviewers APPROVE @1816aee86.
   - The partial verify reached 4600 tests with 0 failures before it was stopped.
   - Founder D13: fold G89-F39 (MEDIUM) into Batch D. The builder is resumed for the F39 fix round; full verify and re-review follow on the new head.
+- 2026-11-07 ~02:05 — PR #1747 F39 fix round done (head `2748903dc`).
+  - Global **V4** adds `portal_trust_transaction.transaction_date` and `recorded_at`.
+  - Events carry `transactionDate`; ordering is now transaction_date, recorded_at, id.
+  - Orchestrator call, following the D6 reasoning: no deploy-time repair of existing portal rows. V4 fills them from `occurred_at` (SA day), and the true dates are rewritten on the matter's next trust event (full-replay `recomputeMatter`). This affects only dev/QA/VPS-demo data.
+  - New candidate **G89-F42**: `TrustLedgerPortalSyncService.backfillForTenant` trims each matter to its last 50 rows. It has no production caller today, but any future boot runner built on it would delete portal history.
+  - Full verify and 2 re-reviews are running on `2748903dc`.
+  - For the KC check, verify with a *fresh* back-dated deposit (old Lerato rows keep their 7 Nov date until the next event).

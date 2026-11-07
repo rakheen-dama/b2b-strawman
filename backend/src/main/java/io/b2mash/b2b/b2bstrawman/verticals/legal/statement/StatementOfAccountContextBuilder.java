@@ -5,12 +5,7 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
-import io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent;
-import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
-import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.MatterFeeNoteTotals;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -96,6 +91,7 @@ public class StatementOfAccountContextBuilder {
           Map.entry("summary.payments_received", "currency"),
           Map.entry("summary.closing_balance_owing", "currency"),
           Map.entry("summary.trust_balance_held", "currency"),
+          Map.entry("summary.unbilled_wip", "currency"),
           Map.entry("org.logoUrl", "image"));
 
   /** Format hints matching the context produced by {@link #build}. */
@@ -125,8 +121,7 @@ public class StatementOfAccountContextBuilder {
   private final DisbursementService disbursementService;
   private final ClientLedgerService clientLedgerService;
   private final TrustAccountRepository trustAccountRepository;
-  private final InvoiceRepository invoiceRepository;
-  private final PaymentEventRepository paymentEventRepository;
+  private final MatterFeeNoteTotals feeNoteTotals;
   private final MemberNameResolver memberNameResolver;
   private final TemplateContextHelper templateContextHelper;
   private final VerticalModuleGuard moduleGuard;
@@ -142,8 +137,7 @@ public class StatementOfAccountContextBuilder {
       DisbursementService disbursementService,
       ClientLedgerService clientLedgerService,
       TrustAccountRepository trustAccountRepository,
-      InvoiceRepository invoiceRepository,
-      PaymentEventRepository paymentEventRepository,
+      MatterFeeNoteTotals feeNoteTotals,
       MemberNameResolver memberNameResolver,
       TemplateContextHelper templateContextHelper,
       VerticalModuleGuard moduleGuard,
@@ -157,8 +151,7 @@ public class StatementOfAccountContextBuilder {
     this.disbursementService = disbursementService;
     this.clientLedgerService = clientLedgerService;
     this.trustAccountRepository = trustAccountRepository;
-    this.invoiceRepository = invoiceRepository;
-    this.paymentEventRepository = paymentEventRepository;
+    this.feeNoteTotals = feeNoteTotals;
     this.memberNameResolver = memberNameResolver;
     this.templateContextHelper = templateContextHelper;
     this.moduleGuard = moduleGuard;
@@ -200,7 +193,7 @@ public class StatementOfAccountContextBuilder {
     // fees, disbursements, trust, summary — all share the same queries + math, so compute
     // them once and reuse for both the rendered context (build) and the persisted snapshot
     // (computeSummary). Keeps the rendered totals from drifting from the snapshot on changes.
-    Aggregates agg = aggregate(project, customer, projectId, periodStart, periodEnd);
+    Aggregates agg = aggregate(customer, projectId, periodStart, periodEnd);
 
     context.put(
         "fees",
@@ -227,7 +220,11 @@ public class StatementOfAccountContextBuilder {
             "closing_balance",
             agg.trust().closingBalance));
 
-    context.put("summary", toSummaryMap(agg.summary()));
+    var summary = toSummaryMap(agg.summary());
+    // G89-F16 / D9: shown, never counted in closing_balance_owing. Context key only — the template
+    // row arrives with the legal-za pack bump (Batch C2).
+    summary.put("unbilled_wip", agg.unbilledWip());
+    context.put("summary", summary);
 
     // org.* — the shared org helper supplies org.bankingDetails (a map, or null when the firm has
     // no banking details; Phase 88 626B, ADR-353). No SoA-specific placeholder: the renderer prints
@@ -254,7 +251,7 @@ public class StatementOfAccountContextBuilder {
             ? customerRepository.findById(project.getCustomerId()).orElse(null)
             : null;
 
-    return aggregate(project, customer, projectId, periodStart, periodEnd).summary();
+    return aggregate(customer, projectId, periodStart, periodEnd).summary();
   }
 
   // ---------- helpers ----------
@@ -289,14 +286,11 @@ public class StatementOfAccountContextBuilder {
       List<DisbursementStatementDto> disbursementLines,
       BigDecimal disbursementsTotal,
       TrustBlock trust,
-      StatementSummary summary) {}
+      StatementSummary summary,
+      BigDecimal unbilledWip) {}
 
   private Aggregates aggregate(
-      Project project,
-      Customer customer,
-      UUID projectId,
-      LocalDate periodStart,
-      LocalDate periodEnd) {
+      Customer customer, UUID projectId, LocalDate periodStart, LocalDate periodEnd) {
     var feeLines = loadFeeLines(projectId, periodStart, periodEnd);
     BigDecimal totalHours = sumHours(feeLines);
     BigDecimal totalFeesExcl = sumAmounts(feeLines);
@@ -314,15 +308,27 @@ public class StatementOfAccountContextBuilder {
 
     TrustBlock trust = buildTrustBlock(customer, periodStart, periodEnd);
 
-    BigDecimal previousBalance = previousBalanceOwing(project, periodStart);
-    BigDecimal paymentsReceived = paymentsReceivedInPeriod(project, periodStart, periodEnd);
-    BigDecimal closingBalance =
-        previousBalance.add(totalFeesIncl).add(disbursementsTotal).subtract(paymentsReceived);
+    // G89-F16 / D9: the summary is on a FEE-NOTE basis — the same issued notes the closure letter
+    // reads (MatterFeeNoteTotals). The fee and disbursement tables above stay activity listings;
+    // the owing figures come from what was billed and paid:
+    //   previous = owing at the end of the day before periodStart on notes issued before it
+    //   fees / disbursements = the fee / disbursement lines (incl. VAT) of notes issued in period
+    //   closing = owing at the end of periodEnd (= Σ balance due when periodEnd is today)
+    //   payments = previous + fees + disbursements − closing, so the printed summary always adds
+    //     up; it equals the COMPLETED payments recorded in the period on notes issued by its end.
+    var ledger = feeNoteTotals.load(projectId);
+    BigDecimal previousBalance = ledger.outstandingAsOf(periodStart.minusDays(1));
+    var billedInPeriod = ledger.issuedBetween(periodStart, periodEnd);
+    BigDecimal billedFees = billedInPeriod.feesInclVat();
+    BigDecimal billedDisbursements = billedInPeriod.disbursementsInclVat();
+    BigDecimal closingBalance = ledger.outstandingAsOf(periodEnd);
+    BigDecimal paymentsReceived =
+        previousBalance.add(billedFees).add(billedDisbursements).subtract(closingBalance);
 
     StatementSummary summary =
         new StatementSummary(
-            totalFeesIncl,
-            disbursementsTotal,
+            billedFees,
+            billedDisbursements,
             previousBalance,
             paymentsReceived,
             closingBalance,
@@ -337,7 +343,26 @@ public class StatementOfAccountContextBuilder {
         disbursementLines,
         disbursementsTotal,
         trust,
-        summary);
+        summary,
+        unbilledWip(projectId, periodEnd));
+  }
+
+  /**
+   * Unbilled work in progress at the end of {@code periodEnd}, excl. VAT: unbilled billable time
+   * (rate snapshot × hours, same precision as the fee lines) plus APPROVED + UNBILLED disbursements
+   * incurred by then. Shown on the statement, never counted in the closing balance (D9).
+   */
+  private BigDecimal unbilledWip(UUID projectId, LocalDate periodEnd) {
+    BigDecimal time =
+        timeEntryRepository.findUnbilledBillableByProjectIdUpTo(projectId, periodEnd).stream()
+            .map(te -> feeAmount(te.getDurationMinutes(), te.getBillingRateSnapshot()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal disbursements =
+        disbursementService.listUnbilledForProject(projectId).stream()
+            .filter(d -> d.incurredDate() == null || !d.incurredDate().isAfter(periodEnd))
+            .map(d -> d.amount() != null ? d.amount() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    return time.add(disbursements);
   }
 
   private Map<String, Object> buildStatementMap(
@@ -423,11 +448,7 @@ public class StatementOfAccountContextBuilder {
       BigDecimal hours = minutes.divide(MINUTES_PER_HOUR, 2, RoundingMode.HALF_UP);
       BigDecimal rate =
           te.getBillingRateSnapshot() != null ? te.getBillingRateSnapshot() : BigDecimal.ZERO;
-      BigDecimal amount =
-          minutes
-              .divide(MINUTES_PER_HOUR, 10, RoundingMode.HALF_UP)
-              .multiply(rate)
-              .setScale(2, RoundingMode.HALF_UP);
+      BigDecimal amount = feeAmount(te.getDurationMinutes(), rate);
       String memberName = memberNameResolver.resolveName(te.getMemberId());
       lines.add(
           new FeeLineDto(
@@ -441,6 +462,14 @@ public class StatementOfAccountContextBuilder {
               amount));
     }
     return lines;
+  }
+
+  /** Minutes × hourly rate, at full precision, rounded once to cents. */
+  private static BigDecimal feeAmount(int durationMinutes, BigDecimal rate) {
+    return BigDecimal.valueOf(durationMinutes)
+        .divide(MINUTES_PER_HOUR, 10, RoundingMode.HALF_UP)
+        .multiply(rate != null ? rate : BigDecimal.ZERO)
+        .setScale(2, RoundingMode.HALF_UP);
   }
 
   private BigDecimal sumHours(List<FeeLineDto> lines) {
@@ -569,81 +598,7 @@ public class StatementOfAccountContextBuilder {
     return new TrustBlock(opening, deposits, payments, closing);
   }
 
-  private BigDecimal previousBalanceOwing(Project project, LocalDate periodStart) {
-    if (project.getId() == null) {
-      return BigDecimal.ZERO;
-    }
-    // Statement of Account is a per-MATTER document, so the opening balance must reflect
-    // invoices linked to THIS project only. Customer-scoping would conflate balances across
-    // every matter the customer has — a client with three active matters would see Matter A's
-    // statement showing the combined arrears of all three.
-    //
-    // Any invoice issued before periodStart contributes to the opening balance regardless of
-    // its CURRENT status (an invoice issued in March and paid in May still owed money on
-    // April 1). Filtering by SENT-only would silently drop invoices later marked PAID, while
-    // their post-periodStart payments would also be excluded — netting to a zero opening
-    // contribution and understating the previous balance owing. VOID is excluded because a
-    // cancelled invoice never owed anything; DRAFT/APPROVED are excluded because they have
-    // no issueDate set (issueDate is populated on send).
-    List<Invoice> issued =
-        invoiceRepository.findByProjectId(project.getId()).stream()
-            .filter(
-                inv ->
-                    inv.getStatus() != InvoiceStatus.VOID
-                        && inv.getStatus() != InvoiceStatus.DRAFT
-                        && inv.getStatus() != InvoiceStatus.APPROVED
-                        && inv.getIssueDate() != null
-                        && inv.getIssueDate().isBefore(periodStart))
-            .toList();
-    if (issued.isEmpty()) {
-      return BigDecimal.ZERO;
-    }
-    BigDecimal grossOutstanding =
-        issued.stream()
-            .map(Invoice::getTotal)
-            .filter(t -> t != null)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-    // One query for all invoices, then group in memory (avoids N+1).
-    List<UUID> issuedIds = issued.stream().map(Invoice::getId).toList();
-    var startInstant = periodStart.atStartOfDay(KaziTime.ZONE).toInstant();
-    BigDecimal paymentsBefore =
-        paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(issuedIds).stream()
-            .filter(p -> p.getStatus() == PaymentEventStatus.COMPLETED)
-            .filter(p -> p.getCreatedAt() != null)
-            .filter(p -> p.getCreatedAt().isBefore(startInstant))
-            .map(PaymentEvent::getAmount)
-            .filter(a -> a != null)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-    return grossOutstanding.subtract(paymentsBefore).max(BigDecimal.ZERO);
-  }
-
-  private BigDecimal paymentsReceivedInPeriod(
-      Project project, LocalDate periodStart, LocalDate periodEnd) {
-    if (project.getId() == null) {
-      return BigDecimal.ZERO;
-    }
-    // Per-matter scope — see previousBalanceOwing for the rationale.
-    List<Invoice> invoices = invoiceRepository.findByProjectId(project.getId());
-    if (invoices.isEmpty()) {
-      return BigDecimal.ZERO;
-    }
-    List<UUID> invoiceIds = invoices.stream().map(Invoice::getId).toList();
-    var startInstant = periodStart.atStartOfDay(KaziTime.ZONE).toInstant();
-    var endInstant = periodEnd.plusDays(1).atStartOfDay(KaziTime.ZONE).toInstant();
-
-    // Single batched query, filtered in memory (avoids N+1 from per-invoice calls).
-    return paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(invoiceIds).stream()
-        .filter(p -> p.getStatus() == PaymentEventStatus.COMPLETED)
-        .filter(p -> p.getCreatedAt() != null)
-        .filter(p -> !p.getCreatedAt().isBefore(startInstant))
-        .filter(p -> p.getCreatedAt().isBefore(endInstant))
-        .map(PaymentEvent::getAmount)
-        .filter(a -> a != null)
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
-  }
-
-  private Map<String, Object> toSummaryMap(StatementSummary s) {
+  private LinkedHashMap<String, Object> toSummaryMap(StatementSummary s) {
     var map = new LinkedHashMap<String, Object>();
     map.put("total_fees", s.totalFees());
     map.put("total_disbursements", s.totalDisbursements());

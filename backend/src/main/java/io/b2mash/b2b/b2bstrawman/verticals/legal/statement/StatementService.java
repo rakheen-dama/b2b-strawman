@@ -36,7 +36,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -284,19 +287,33 @@ public class StatementService {
             .findById(projectId)
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, projectId));
 
-    UUID statementTemplateId =
-        documentTemplateRepository
-            .findBySlug(SYSTEM_TEMPLATE_SLUG)
-            .map(DocumentTemplate::getId)
-            .orElse(null);
-
-    List<GeneratedDocument> all =
+    // 634B: a statement row is a document generate() produced — its snapshot carries the
+    // `summary` block — from the base statement-of-account template or one of its
+    // statement-of-account-* clones (the same slugs resolveTemplate accepts). A SoA generated from
+    // the generic document menu has no summary (the tab printed R 0,00 for it), and filtering on
+    // the base template id alone dropped every statement generated from a clone.
+    List<GeneratedDocument> withSummary =
         generatedDocumentRepository
             .findByPrimaryEntityTypeAndPrimaryEntityIdOrderByGeneratedAtDesc(
                 TemplateEntityType.PROJECT, projectId)
             .stream()
-            .filter(
-                gd -> statementTemplateId == null || statementTemplateId.equals(gd.getTemplateId()))
+            .filter(gd -> gd.getContextSnapshot() != null)
+            .filter(gd -> gd.getContextSnapshot().get("summary") instanceof Map<?, ?>)
+            .toList();
+    Set<UUID> statementTemplateIds =
+        documentTemplateRepository
+            .findAllById(
+                withSummary.stream()
+                    .map(GeneratedDocument::getTemplateId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet()))
+            .stream()
+            .filter(t -> isStatementTemplateSlug(t.getSlug()))
+            .map(DocumentTemplate::getId)
+            .collect(Collectors.toSet());
+    List<GeneratedDocument> all =
+        withSummary.stream()
+            .filter(gd -> statementTemplateIds.contains(gd.getTemplateId()))
             .toList();
 
     int from = (int) Math.min(pageable.getOffset(), all.size());
@@ -360,6 +377,12 @@ public class StatementService {
     }
   }
 
+  /** The base statement-of-account slug or one of its clones ({@code statement-of-account-*}). */
+  private static boolean isStatementTemplateSlug(String slug) {
+    return slug != null
+        && (slug.equals(SYSTEM_TEMPLATE_SLUG) || slug.startsWith(SYSTEM_TEMPLATE_SLUG + "-"));
+  }
+
   private DocumentTemplate resolveTemplate(UUID templateId) {
     if (templateId != null) {
       var tpl =
@@ -370,8 +393,7 @@ public class StatementService {
       // Both base templates (slug = SYSTEM_TEMPLATE_SLUG) and any clones (slug starts with the
       // system slug + "-") are accepted.
       String slug = tpl.getSlug();
-      if (slug == null
-          || !(slug.equals(SYSTEM_TEMPLATE_SLUG) || slug.startsWith(SYSTEM_TEMPLATE_SLUG + "-"))) {
+      if (!isStatementTemplateSlug(slug)) {
         throw new InvalidStateException(
             "Template is not a statement-of-account template",
             "templateId " + templateId + " resolves to a template with slug '" + slug + "'.");

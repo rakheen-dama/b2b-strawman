@@ -90,13 +90,17 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
       UUID projectId, String approvalStatus, String billingStatus);
 
   /**
-   * Returns all disbursements on a project with {@code incurredDate} within the given inclusive
-   * range, ordered by category then incurred date. Used for Statement of Account generation.
+   * Returns the APPROVED disbursements on a project that are not written off (UNBILLED or BILLED),
+   * with {@code incurredDate} within the given inclusive range, ordered by category then incurred
+   * date. Used for Statement of Account generation — DRAFT / PENDING / REJECTED and WRITTEN_OFF
+   * rows were never chargeable to the client and must not be listed (G89-F16).
    */
   @Query(
       """
       SELECT d FROM LegalDisbursement d
       WHERE d.projectId = :projectId
+        AND d.approvalStatus = 'APPROVED'
+        AND d.billingStatus <> 'WRITTEN_OFF'
         AND d.incurredDate BETWEEN :from AND :to
       ORDER BY d.category, d.incurredDate
       """)

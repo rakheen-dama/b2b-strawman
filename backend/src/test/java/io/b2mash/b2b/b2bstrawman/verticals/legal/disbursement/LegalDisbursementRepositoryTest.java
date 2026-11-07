@@ -348,14 +348,34 @@ class LegalDisbursementRepositoryTest {
                           null,
                           memberId);
 
+                  // G89-F16: only APPROVED, not-written-off rows are statement lines.
+                  for (var d : List.of(inWindow1, inWindow2, inWindow3, outWindow)) {
+                    d.submitForApproval();
+                    d.approve(memberId, null);
+                  }
+
+                  // In the window but never chargeable: still DRAFT, and written off.
+                  var draft = validDisbursement();
+                  draft.setDescription("court draft");
+                  draft.setIncurredDate(LocalDate.of(2026, 3, 12));
+                  var writtenOff = validDisbursement();
+                  writtenOff.setDescription("sheriff written off");
+                  writtenOff.setIncurredDate(LocalDate.of(2026, 3, 15));
+                  writtenOff.submitForApproval();
+                  writtenOff.approve(memberId, null);
+                  writtenOff.writeOff("firm absorbs the cost");
+
                   disbursementRepository.saveAndFlush(inWindow1);
                   disbursementRepository.saveAndFlush(inWindow2);
                   disbursementRepository.saveAndFlush(inWindow3);
                   disbursementRepository.saveAndFlush(outWindow);
+                  disbursementRepository.saveAndFlush(draft);
+                  disbursementRepository.saveAndFlush(writtenOff);
 
                   var result = disbursementRepository.findForStatement(projectId, from, to);
 
-                  // Only the three in-window items
+                  // Only the three approved in-window items — the draft and the written-off
+                  // disbursement are excluded.
                   assertThat(result).hasSize(3);
 
                   // Ordered by category ASC, then incurredDate ASC.

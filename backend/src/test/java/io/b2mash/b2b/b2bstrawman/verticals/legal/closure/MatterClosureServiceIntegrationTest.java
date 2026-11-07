@@ -746,9 +746,16 @@ class MatterClosureServiceIntegrationTest {
     assertThat(pdfText)
         .as("closure.reason_label must render the human-readable reason")
         .contains("Matter concluded");
+    // G89-F21: the closure date prints as the long date every other client document uses
+    // ("6 November 2026"), not ISO — the context keeps the ISO string, the `date` hint formats it.
+    LocalDate closureDate = response.closedAt().atZone(KaziTime.ZONE).toLocalDate();
     assertThat(pdfText)
-        .as("closure.date must render the closure date (ISO, per MatterClosureContextBuilder)")
-        .contains(response.closedAt().atZone(KaziTime.ZONE).toLocalDate().toString());
+        .as("closure.date must render as the long date (\"6 November 2026\" style)")
+        .contains(
+            closureDate.format(
+                java.time.format.DateTimeFormatter.ofPattern(
+                    "d MMMM yyyy", java.util.Locale.ENGLISH)))
+        .doesNotContain(closureDate.toString());
     assertThat(pdfText)
         .as("closure.notes must render the operator notes")
         .contains("LZKC-018 marker note");

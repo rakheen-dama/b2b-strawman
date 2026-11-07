@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.packs.ContentHashUtil;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstall;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstallRepository;
 import io.b2mash.b2b.b2bstrawman.packs.PackType;
@@ -90,11 +91,12 @@ class TrustReportPackSeederIntegrationTest {
 
           PackInstall row = packInstallRepository.findByPackId("trust-reports").orElseThrow();
           assertThat(row.getPackType()).isEqualTo(PackType.REPORT);
-          assertThat(row.getPackVersion()).isEqualTo("1");
+          // G89-F18: v2 — a fresh tenant installs at the head version.
+          assertThat(row.getPackVersion()).isEqualTo("2");
 
           assertThat(trustPackStatus())
               .singleElement()
-              .satisfies(e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(1));
+              .satisfies(e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(2));
           return null;
         });
   }
@@ -115,7 +117,7 @@ class TrustReportPackSeederIntegrationTest {
         });
   }
 
-  /** Second pass: no duplicate rows, no second status entry, ledger row untouched (v1 gate). */
+  /** Second pass: no duplicate rows, no second status entry, ledger row untouched (v2 gate). */
   @Test
   @Order(3)
   void secondPass_isANoOp() {
@@ -136,7 +138,7 @@ class TrustReportPackSeederIntegrationTest {
           assertThat(trustPackStatus()).hasSize(1);
           PackInstall after = packInstallRepository.findByPackId("trust-reports").orElseThrow();
           assertThat(after.getId()).isEqualTo(before.getId());
-          assertThat(after.getPackVersion()).isEqualTo("1");
+          assertThat(after.getPackVersion()).isEqualTo("2");
           return null;
         });
   }
@@ -145,7 +147,7 @@ class TrustReportPackSeederIntegrationTest {
   @Test
   @Order(4)
   void reconcileResolver_targetsShippedSystemRowsOnly() {
-    assertThat(TrustReportPackSeeder.RECONCILE).isEmpty();
+    assertThat(TrustReportPackSeeder.RECONCILE).isNotEmpty();
     assertThat(TrustReportPackSeeder.SLUGS).containsExactlyElementsOf(TRUST_SLUGS);
     in(
         legalSchema,
@@ -170,6 +172,129 @@ class TrustReportPackSeederIntegrationTest {
               .isEmpty();
           return null;
         });
+  }
+
+  // ==========================================================================
+  // G89-F18 — v2: the Section 35 data pack template prints each section's rows.
+  // ==========================================================================
+
+  /**
+   * Guard (no tenant needed): the v2 block's only entry moves the section-35 template body from the
+   * verbatim v1 copy ({@link TrustReportsV1}) to the shipped body — {@code to} must be the head or
+   * the resolver WARN-skips it at every tenant's boot.
+   */
+  @Test
+  @Order(5)
+  void reconcileBlock_movesSection35TemplateFromV1ToShipped() {
+    assertThat(TrustReportPackSeeder.PACK_VERSION).isEqualTo(2);
+    var entries =
+        PackReconcileEntry.parse(TrustReportPackSeeder.PACK_ID, TrustReportPackSeeder.RECONCILE);
+    assertThat(entries)
+        .singleElement()
+        .satisfies(
+            e -> {
+              assertThat(e.entity()).isEqualTo(TrustReportPackSeeder.REPORT_ENTITY);
+              assertThat(e.key()).isEqualTo("section-35-data-pack");
+              assertThat(e.field()).isEqualTo("templateBody");
+              assertThat(e.from()).isEqualTo(hashRef(TrustReportsV1.SECTION_35_TEMPLATE));
+              assertThat(e.to())
+                  .isEqualTo(
+                      hashRef(
+                          TrustReportPackSeeder.shipped("section-35-data-pack").getTemplateBody()));
+            });
+  }
+
+  /** Installed at v1 (v1 body, ledger at 1) → the next pass reconciles the body to v2. */
+  @Test
+  @Order(6)
+  void v1Section35Template_isReconciledToV2() {
+    String shippedBody = TrustReportPackSeeder.shipped("section-35-data-pack").getTemplateBody();
+    simulateV1Section35(TrustReportsV1.SECTION_35_TEMPLATE);
+
+    trustReportPackSeeder.seedForTenant(legalSchema, LEGAL_ORG_ID);
+
+    in(
+        legalSchema,
+        LEGAL_ORG_ID,
+        () -> {
+          assertThat(section35().getTemplateBody()).isEqualTo(shippedBody);
+          assertThat(packInstallRepository.findByPackId("trust-reports").orElseThrow())
+              .extracting(PackInstall::getPackVersion)
+              .isEqualTo("2");
+          return null;
+        });
+
+    // Equal version is a no-op: an edit made after the reconcile is not overwritten.
+    in(
+        legalSchema,
+        LEGAL_ORG_ID,
+        () -> {
+          var row = section35();
+          row.updateTemplate("<html>edited at v2</html>");
+          reportDefinitionRepository.save(row);
+          return null;
+        });
+    trustReportPackSeeder.seedForTenant(legalSchema, LEGAL_ORG_ID);
+    in(
+        legalSchema,
+        LEGAL_ORG_ID,
+        () -> {
+          assertThat(section35().getTemplateBody()).isEqualTo("<html>edited at v2</html>");
+          var row = section35();
+          row.updateTemplate(shippedBody);
+          reportDefinitionRepository.save(row);
+          return null;
+        });
+  }
+
+  /** One rule: a body that is neither the v1 body nor the head is left alone. */
+  @Test
+  @Order(7)
+  void editedSection35Template_survivesReconcile() {
+    String shippedBody = TrustReportPackSeeder.shipped("section-35-data-pack").getTemplateBody();
+    simulateV1Section35("<html>firm edit</html>");
+
+    trustReportPackSeeder.seedForTenant(legalSchema, LEGAL_ORG_ID);
+
+    in(
+        legalSchema,
+        LEGAL_ORG_ID,
+        () -> {
+          assertThat(section35().getTemplateBody()).isEqualTo("<html>firm edit</html>");
+          assertThat(packInstallRepository.findByPackId("trust-reports").orElseThrow())
+              .extracting(PackInstall::getPackVersion)
+              .isEqualTo("2");
+          var row = section35();
+          row.updateTemplate(shippedBody);
+          reportDefinitionRepository.save(row);
+          return null;
+        });
+  }
+
+  /** Sets the section-35 body to {@code body} and rewinds the ledger 2 → 1, committed. */
+  private void simulateV1Section35(String body) {
+    in(
+        legalSchema,
+        LEGAL_ORG_ID,
+        () -> {
+          var row = section35();
+          row.updateTemplate(body);
+          reportDefinitionRepository.save(row);
+          assertThat(
+                  packInstallRepository.compareAndSetVersion(
+                      TrustReportPackSeeder.PACK_ID, "2", "1"))
+              .as("rewind trust-reports 2 -> 1")
+              .isEqualTo(1);
+          return null;
+        });
+  }
+
+  private ReportDefinition section35() {
+    return reportDefinitionRepository.findBySlug("section-35-data-pack").orElseThrow();
+  }
+
+  private static String hashRef(Object value) {
+    return PackReconcileEntry.HASH_PREFIX + ContentHashUtil.hashOf(value);
   }
 
   private List<ReportDefinition> trustDefinitions() {

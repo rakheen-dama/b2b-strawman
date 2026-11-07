@@ -3,8 +3,14 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportResults } from "@/components/reports/report-results";
 import type { ReportExecutionResponse } from "@/lib/api/reports";
+import { formatCurrency } from "@/lib/format";
 
 vi.mock("server-only", () => ({}));
+
+/** en-ZA currency text as Testing Library sees it (its normaliser folds NBSP grouping to spaces). */
+function money(amount: number): string {
+  return formatCurrency(amount).replace(/\s/g, " ");
+}
 
 function makeResponse(overrides: Partial<ReportExecutionResponse> = {}): ReportExecutionResponse {
   return {
@@ -77,11 +83,13 @@ describe("ReportResults", () => {
     expect(screen.getByText("Charlie")).toBeInTheDocument();
   });
 
-  it("formats decimal values to 2 decimal places", () => {
+  it("formats decimal values to 2 decimal places and currency values as currency", () => {
     render(<ReportResults response={makeResponse()} isLoading={false} onPageChange={vi.fn()} />);
 
     expect(screen.getByText("40.50")).toBeInTheDocument();
-    expect(screen.getByText("4050.00")).toBeInTheDocument();
+    // G89-F18: currency columns render through formatCurrency (en-ZA), not toFixed(2).
+    expect(screen.getByText(money(4050))).toBeInTheDocument();
+    expect(screen.queryByText("4050.00")).not.toBeInTheDocument();
   });
 
   it("renders null values as em-dash", () => {
@@ -90,6 +98,55 @@ describe("ReportResults", () => {
     // Bob's billableAmount is null
     const emDashes = screen.getAllByText("\u2014");
     expect(emDashes.length).toBeGreaterThan(0);
+  });
+
+  // G89-F18: the Section 35 data pack summary holds `sections` (a list of maps) and a raw
+  // BigDecimal year-end total; its rows carry money in a currency `amount` column.
+  it("skips object and array summary values instead of printing [object Object]", () => {
+    const { container } = render(
+      <ReportResults
+        response={makeResponse({
+          summary: {
+            sectionCount: 6,
+            sections: [{ sectionName: "Client Trust Balances", rowCount: 1 }],
+            reconciliation: { status: "BALANCED" },
+          },
+        })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    expect(container.textContent).not.toContain("[object Object]");
+    expect(screen.queryByText("Sections")).not.toBeInTheDocument();
+    expect(screen.queryByText("Reconciliation")).not.toBeInTheDocument();
+    expect(screen.getByText("Section Count")).toBeInTheDocument();
+    expect(screen.getByText("6")).toBeInTheDocument();
+  });
+
+  it("formats money summary values and currency cells as currency", () => {
+    render(
+      <ReportResults
+        response={makeResponse({
+          columns: [
+            { key: "_section", label: "Section", type: "string" },
+            { key: "label", label: "Item", type: "string" },
+            { key: "amount", label: "Amount", type: "currency" },
+          ],
+          rows: [{ _section: "Client Trust Balances", label: "Dlamini", amount: 38019.15 }],
+          summary: { totalTrustBalanceAtYearEnd: 38019.15, totalHours: 12.5 },
+        })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    const yearEnd = money(38019.15);
+    // once on the summary card, once in the amount cell
+    expect(screen.getAllByText(yearEnd)).toHaveLength(2);
+    expect(screen.queryByText("38019.15")).not.toBeInTheDocument();
+    // hours are not money
+    expect(screen.getByText("12.5")).toBeInTheDocument();
   });
 
   it("shows pagination as 'Page 1 of 2' for totalPages=2", () => {

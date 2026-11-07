@@ -13,6 +13,7 @@ import {
 import { Button } from "@b2mash/ui/button";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { formatCurrency } from "@/lib/format";
 import type { ReportExecutionResponse, ColumnDefinition } from "@/lib/api/reports";
 
 interface ReportResultsProps {
@@ -31,8 +32,9 @@ function formatCellValue(value: unknown, column: ColumnDefinition): string {
   }
 
   switch (column.type) {
-    case "decimal":
     case "currency":
+      return formatCurrency(Number(value));
+    case "decimal":
       return Number(value).toFixed(2);
     case "integer":
       return String(value);
@@ -41,6 +43,26 @@ function formatCellValue(value: unknown, column: ColumnDefinition): string {
     default:
       return String(value);
   }
+}
+
+// Summary values carry no column type, so money is recognised by its key (G89-F18): balances,
+// totals, receipts, shares… — but never counts, hours, days or rates.
+const MONEY_SUMMARY_KEY =
+  /(amount|balance|total|receipts|payments|movement|principal|interest|share|fees|revenue|cost|billed|outstanding|owing)/i;
+const NON_MONEY_SUMMARY_KEY = /(count|hours|days|minutes|rate|percent)/i;
+
+function formatSummaryValue(key: string, value: unknown): string {
+  if (value == null) {
+    return "—";
+  }
+  if (
+    typeof value === "number" &&
+    MONEY_SUMMARY_KEY.test(key) &&
+    !NON_MONEY_SUMMARY_KEY.test(key)
+  ) {
+    return formatCurrency(value);
+  }
+  return String(value);
 }
 
 function isNumericType(type: string): boolean {
@@ -70,7 +92,11 @@ export function ReportResults({ response, isLoading, onPageChange }: ReportResul
     return null;
   }
 
-  const summaryEntries = Object.entries(response.summary);
+  // Nested summary values (e.g. the Section 35 pack's `sections` list) are not stat cards: String()
+  // would print "[object Object]" (G89-F18).
+  const summaryEntries = Object.entries(response.summary).filter(
+    ([, value]) => value == null || typeof value !== "object"
+  );
   const { pagination } = response;
 
   return (
@@ -83,7 +109,7 @@ export function ReportResults({ response, isLoading, onPageChange }: ReportResul
               <CardContent className="pt-6">
                 <p className="text-sm text-slate-600 dark:text-slate-400">{formatLabel(key)}</p>
                 <p className="mt-1 font-mono text-2xl text-slate-900 tabular-nums dark:text-slate-100">
-                  {value != null ? String(value) : "\u2014"}
+                  {formatSummaryValue(key, value)}
                 </p>
               </CardContent>
             </Card>

@@ -222,8 +222,8 @@ class PaymentReceiptIntegrationTest {
   }
 
   /**
-   * G89 632C: two receipts on one fee note on one day used to share the file name {@code
-   * <template slug>-<note>-<date>.pdf}; the file name now carries the receipt number (R1, R2).
+   * G89 632C: two receipts on one fee note on one day used to share the file name {@code <template
+   * slug>-<note>-<date>.pdf}; the file name now carries the receipt number (R1, R2).
    */
   @Test
   void twoReceiptsSameNoteSameDay_distinctFilenames() throws Exception {

@@ -334,14 +334,14 @@
     {
       "type": "paragraph",
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total fees: " },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Fees billed in period: " },
         { "type": "variable", "attrs": { "key": "summary.total_fees" } }
       ]
     },
     {
       "type": "paragraph",
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total disbursements: " },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Disbursements billed in period: " },
         { "type": "variable", "attrs": { "key": "summary.total_disbursements" } }
       ]
     },

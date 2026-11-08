@@ -50,7 +50,8 @@ import tools.jackson.databind.ObjectMapper;
  * the shipped body. Phase 89 v12: a v11 tenant receives the new {@code payment-receipt-za} template
  * on the bump (the installer's "create missing" — no reconcile entry). Phase 89 v13 (G89-F6, D11):
  * a v12 tenant's statement of account, client trust statement and trust receipt reach the v13
- * bodies — only while pristine or still at the v12 body.
+ * bodies — only while pristine or still at the v12 body. Phase 89 v14 (G89-F57): a v13 tenant's
+ * statement of account reaches the v14 summary labels on the same terms.
  *
  * <p>A v7 (v8) tenant is simulated by writing each rewritten row's exact v7 (v8) body (test fixture
  * copied from git before the edit) with its install-time hash pinned (pristine), then rewinding
@@ -65,7 +66,7 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static final String ORG_ID = "org_legal_za_template_reconcile_test";
   private static final String PACK_ID = "legal-za";
-  private static final String CURRENT_VERSION = "13";
+  private static final String CURRENT_VERSION = "14";
   private static final List<String> RECONCILED_KEYS =
       List.of(
           "engagement-letter-litigation",
@@ -116,6 +117,9 @@ class LegalZaTemplateReconcileIntegrationTest {
    */
   private static final List<String> V13_EDITED_KEYS =
       List.of("statement-of-account", "client-trust-statement", "trust-receipt");
+
+  /** The body re-edited in v14 (G89-F57 SoA summary labels), from its v13 body. */
+  private static final String V14_EDITED_KEY = "statement-of-account";
 
   /**
    * A legal-za template outside the reconcile block with no clause links: deleted to force a
@@ -889,6 +893,107 @@ class LegalZaTemplateReconcileIntegrationTest {
     }
   }
 
+  /**
+   * (q) Phase 89 v14 (G89-F57): a pristine v13 tenant's statement of account reaches the v14 body
+   * (summary lines "Fees billed in period" / "Disbursements billed in period") and stays pristine.
+   */
+  @Test
+  void pristineV13Tenant_reachesTheV14StatementOfAccount_andStaysPristine() {
+    simulateV13Tenant(row -> {}, true);
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          var row = packRow(V14_EDITED_KEY);
+          assertThat(ContentHashUtil.hashOf(row.getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(shippedBody(V14_EDITED_KEY)));
+          assertThat(row.getContentHash())
+              .isEqualTo(templatePackInstaller.computeContentHash(row.getContent(), row.getCss()));
+          assertThat(row.getContent().toString())
+              .contains("Fees billed in period: ")
+              .contains("Disbursements billed in period: ")
+              .doesNotContain("Total fees: ");
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+  }
+
+  /** (r) A firm-edited v13 statement of account keeps its body and is logged at INFO. */
+  @Test
+  void firmEditedV13StatementOfAccount_survives_andIsLoggedAtInfo() {
+    Map<String, Object> edited = withExtraParagraph(v13Body(V14_EDITED_KEY), "Our own summary");
+    simulateV13Tenant(
+        row -> row.updateContent(row.getName(), row.getDescription(), edited, null), true);
+    try {
+      var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+      inTenantTx(
+          () -> {
+            assertThat(ContentHashUtil.hashOf(packRow(V14_EDITED_KEY).getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(edited));
+            assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+            return null;
+          });
+      assertThat(logs)
+          .anyMatch(
+              m ->
+                  m.startsWith("Reconcile skipped (edited)")
+                      && m.contains("'statement-of-account' field content"));
+    } finally {
+      restorePristineShippedBody(V14_EDITED_KEY);
+    }
+  }
+
+  /**
+   * (s) A css-edited v13 statement of account is skipped by the refresh pass; the new v13 → v14
+   * {@code content} entry applies the body and keeps the css.
+   */
+  @Test
+  void cssEditedV13StatementOfAccount_getsTheV14BodyFromTheReconcileBlock_cssKept() {
+    String css = "p { line-height: 1.5; }";
+    simulateV13Tenant(
+        row -> row.updateContent(row.getName(), row.getDescription(), row.getContent(), css), true);
+    try {
+      var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+      inTenantTx(
+          () -> {
+            var row = packRow(V14_EDITED_KEY);
+            assertThat(ContentHashUtil.hashOf(row.getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody(V14_EDITED_KEY)));
+            assertThat(row.getCss()).isEqualTo(css);
+            return null;
+          });
+      assertThat(logs)
+          .anyMatch(
+              m ->
+                  m.startsWith("Reconcile applied")
+                      && m.contains("'statement-of-account' field content"));
+    } finally {
+      restorePristineShippedBody(V14_EDITED_KEY);
+    }
+  }
+
+  /** (t) Equal version at v14: the gate stays closed — the v13 body stays. */
+  @Test
+  void equalVersionV14_isANoOp_forTheV13StatementOfAccount() {
+    simulateV13Tenant(row -> {}, false);
+    try {
+      packInstallService.internalInstall(PACK_ID, schema);
+
+      inTenantTx(
+          () -> {
+            assertThat(ContentHashUtil.hashOf(packRow(V14_EDITED_KEY).getContent()))
+                .isEqualTo(ContentHashUtil.hashOf(v13Body(V14_EDITED_KEY)));
+            assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+            return null;
+          });
+    } finally {
+      restorePristineShippedBody(V14_EDITED_KEY);
+    }
+  }
+
   /** (e) Equal version: the gate stays closed and nothing is written. */
   @Test
   void equalVersion_isANoOp() {
@@ -1029,6 +1134,30 @@ class LegalZaTemplateReconcileIntegrationTest {
         });
   }
 
+  /**
+   * A v13 tenant: the statement of account carries its v13 body (pristine, fixture copied before
+   * the v14 edit), every other rewritten row its shipped body; {@code firmEdit} applied to the SoA
+   * row, then (optionally) rewound 14 → 13.
+   */
+  private void simulateV13Tenant(Consumer<DocumentTemplate> firmEdit, boolean rewind) {
+    inTenantTx(
+        () -> {
+          var rows = new LinkedHashMap<String, DocumentTemplate>();
+          rows.put(V14_EDITED_KEY, packRowWithPinnedBody(V14_EDITED_KEY, v13Body(V14_EDITED_KEY)));
+          for (String key : RECONCILED_KEYS) {
+            rows.computeIfAbsent(key, k -> packRowWithPinnedBody(k, shippedBody(k)));
+          }
+          firmEdit.accept(rows.get(V14_EDITED_KEY));
+          documentTemplateRepository.saveAll(rows.values());
+          if (rewind) {
+            assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, CURRENT_VERSION, "13"))
+                .as("rewind %s %s -> 13", PACK_ID, CURRENT_VERSION)
+                .isEqualTo(1);
+          }
+          return null;
+        });
+  }
+
   private DocumentTemplate packRowWithPinnedBody(String key, Map<String, Object> body) {
     var row = packRow(key);
     row.updateContent(row.getName(), row.getDescription(), body, null);
@@ -1119,6 +1248,10 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static Map<String, Object> v12Body(String key) {
     return readBody("fixtures/template-packs/legal-za-v12/" + key + ".json");
+  }
+
+  private static Map<String, Object> v13Body(String key) {
+    return readBody("fixtures/template-packs/legal-za-v13/" + key + ".json");
   }
 
   private static Map<String, Object> shippedBody(String key) {

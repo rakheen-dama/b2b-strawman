@@ -1,0 +1,105 @@
+day-00-firm-setup.spec.ts	92	Alice: Home loads after login	expected	passed
+day-00-firm-setup.spec.ts	102	Alice: Legal-za profile active — sidebar shows legal terms	expected	passed
+day-00-firm-setup.spec.ts	119	Alice: Settings — currency is ZAR	expected	passed
+day-00-firm-setup.spec.ts	127	Alice: Settings — set brand colour #1B3A4B	expected	passed
+day-00-firm-setup.spec.ts	143	Alice: Settings — rate cards page loads	expected	passed
+day-00-firm-setup.spec.ts	150	Alice: Settings — create billing rates Alice R2,500, Bob R1,200, Carol R550	expected	passed
+day-00-firm-setup.spec.ts	159	Alice: Settings — create cost rates for Alice R1000, Bob R500, Carol R200	expected	passed
+day-00-firm-setup.spec.ts	171	Alice: Settings — tax rates page loads	expected	passed
+day-00-firm-setup.spec.ts	178	Alice: Settings — VAT 15% is seeded as the default tax rate	expected	passed
+day-00-firm-setup.spec.ts	193	Alice: Team page shows Alice, Bob, Carol	expected	passed
+day-00-firm-setup.spec.ts	202	Alice: Custom fields — SA Legal matter fields loaded (case number, court, opposing party)	expected	passed
+day-00-firm-setup.spec.ts	221	Alice: 6 legal matter templates listed	expected	passed
+day-00-firm-setup.spec.ts	242	Alice: Trust account — Mathebula & Partners Trust Account (GENERAL, Standard Bank) exists	expected	passed
+day-00-firm-setup.spec.ts	262	Alice: LPFF rate 6.5% — added on Trust › Interest, listed on the trust settings tab	expected	passed
+day-00-firm-setup.spec.ts	303	Alice: Legal modules enabled (trust, court, conflict, tariff)	expected	passed
+day-00-firm-setup.spec.ts	324	Alice: Capture dashboard with legal navigation	expected	passed
+day-01-03-onboarding.spec.ts	100	Bob: Conflict check for Sipho Ndlovu — CLEAR	expected	passed
+day-01-03-onboarding.spec.ts	108	Bob: Create client Sipho Ndlovu (Individual)	expected	passed
+day-01-03-onboarding.spec.ts	130	Bob: Transition Sipho to ONBOARDING	expected	passed
+day-01-03-onboarding.spec.ts	136	Bob: Complete FICA checklist for Sipho — auto-transitions to ACTIVE	expected	passed
+day-01-03-onboarding.spec.ts	197	Alice: Create Litigation matter for Sipho from template	expected	passed
+day-01-03-onboarding.spec.ts	222	Alice: Add Carol to the Sipho matter team (Team tab)	expected	passed
+day-01-03-onboarding.spec.ts	248	Day 5 — Alice: Matter header shows case number, court and opposing party	expected	passed
+day-01-03-onboarding.spec.ts	303	Bob: Conflict check for Apex Holdings — CLEAR	expected	passed
+day-01-03-onboarding.spec.ts	308	Bob: Create client Apex Holdings (Company) and start onboarding	expected	passed
+day-01-03-onboarding.spec.ts	322	Alice: Create Commercial matter for Apex from template	expected	passed
+day-01-03-onboarding.spec.ts	339	Bob: Conflict check for Moroka Family Trust — CLEAR	expected	passed
+day-01-03-onboarding.spec.ts	344	Bob: Create client Moroka Family Trust (Trust) and start onboarding	expected	passed
+day-01-03-onboarding.spec.ts	355	Alice: Create Deceased Estate matter for Moroka from template	expected	passed
+day-01-03-onboarding.spec.ts	377	Bob: Conflict check for QuickCollect Services — CLEAR	expected	passed
+day-01-03-onboarding.spec.ts	382	Bob: Create client QuickCollect Services (Company) and start onboarding	expected	passed
+day-01-03-onboarding.spec.ts	394	Alice: Create initial Collections matter for QuickCollect from template	expected	passed
+day-01-03-onboarding.spec.ts	413	Alice: Verify 4 clients on client list	expected	passed
+day-07-14-work-trust.spec.ts	54	Carol: Navigate to My Work page	expected	passed
+day-07-14-work-trust.spec.ts	62	Carol: Log 90min time on Sipho matter	expected	passed
+day-07-14-work-trust.spec.ts	78	Bob: Log 120min on Sipho — letter of demand	expected	passed
+day-07-14-work-trust.spec.ts	98	Bob: Add internal comment on the Sipho letter-of-demand task	expected	passed
+day-07-14-work-trust.spec.ts	119	Alice: Create court date for Sipho (Motion, 30 days out)	expected	passed
+day-07-14-work-trust.spec.ts	153	Alice: Log 60min on Moroka estate matter	expected	passed
+day-07-14-work-trust.spec.ts	167	Alice: My Work lists today's Moroka time entry	expected	passed
+day-07-14-work-trust.spec.ts	186	Alice: Navigate to Trust Accounting	expected	passed
+day-07-14-work-trust.spec.ts	197	Alice: Deposit R250,000 into trust for Moroka estate	expected	passed
+day-07-14-work-trust.spec.ts	211	Alice: Moroka trust deposit is RECORDED — no approval step	expected	passed
+day-07-14-work-trust.spec.ts	221	Alice: Verify Moroka trust ledger balance	expected	passed
+day-07-14-work-trust.spec.ts	245	Alice: Deposit R45,000 into trust for QuickCollect	expected	passed
+day-07-14-work-trust.spec.ts	258	Alice: Add adverse party "Road Accident Fund" to registry	expected	passed
+day-07-14-work-trust.spec.ts	284	Bob: Conflict check "Road Accident Fund" — adverse party match (Conflict Found)	expected	passed
+day-07-14-work-trust.spec.ts	299	Carol: Log additional time on the Sipho matter (letter of demand)	expected	passed
+day-07-14-work-trust.spec.ts	323	Alice: Trust dashboard overview	expected	passed
+day-30-billing.spec.ts	80	Alice: Navigate to fee notes page	expected	passed
+day-30-billing.spec.ts	90	Alice: Generate Sipho's fee note from unbilled time, add an LSSA tariff item and a sheriff disbursement line (VAT 15%)	expected	passed
+day-30-billing.spec.ts	141	Alice: Create Apex fee note — fixed fee R35,000 + VAT = R40,250	expected	passed
+day-30-billing.spec.ts	175	Alice: Create, approve and send Moroka's estate fee note (R8,625)	expected	passed
+day-30-billing.spec.ts	195	Alice: Record trust FEE_TRANSFER R8,500 for Moroka — awaits approval, her own approval is refused	expected	passed
+day-30-billing.spec.ts	223	Bob: Approve Moroka's fee transfer — Moroka trust balance R241,500	expected	passed
+day-30-billing.spec.ts	256	Bob logs QuickCollect collections time; Alice creates its fee note with a court-filing line	expected	passed
+day-30-billing.spec.ts	282	Alice: Fee note lifecycle — Sipho's and Apex's fee notes DRAFT → APPROVED → SENT	expected	passed
+day-30-billing.spec.ts	315	Alice: Set fee estimate on Apex matter (R150,000)	expected	passed
+day-45-recon-prescription.spec.ts	40	Alice: Navigate to Trust Reconciliation page	expected	passed
+day-45-recon-prescription.spec.ts	50	Alice: Start a bank reconciliation — select the trust account and period end, reach the statement upload step	expected	passed
+day-45-recon-prescription.spec.ts	96	Alice: Create prescription tracker for Sipho (Delict, 3 years)	expected	passed
+day-45-recon-prescription.spec.ts	132	Alice: Court date lifecycle — Sipho's motion SCHEDULED → POSTPONED, the new date SCHEDULED	expected	passed
+day-45-recon-prescription.spec.ts	160	Alice: Record payment on Apex fee note (R40,250) → PAID	expected	passed
+day-60-interest.spec.ts	87	Alice: Navigate to Trust Interest page	expected	passed
+day-60-interest.spec.ts	97	Alice: Interest run — create for the last 30 days and calculate allocations at the 6.5% LPFF rate	expected	passed
+day-60-interest.spec.ts	173	Bob: Review & approve Alice's interest run as the second member	expected	passed
+day-60-interest.spec.ts	194	Alice: Post the approved interest run to the client ledgers	expected	passed
+day-60-interest.spec.ts	219	Alice: Navigate to Investment Register	expected	passed
+day-60-interest.spec.ts	226	Alice: Place investment — Moroka R200,000 Standard Bank Fixed Deposit (s86(3))	expected	passed
+day-60-interest.spec.ts	255	Alice: Place investment — QuickCollect R30,000 Nedbank Call Account (s86(4))	expected	passed
+day-60-interest.spec.ts	278	Alice: Second billing cycle — log new Sipho time and generate its fee note	expected	passed
+day-60-interest.spec.ts	304	Alice: Run the timesheet report for this month	expected	passed
+day-60-interest.spec.ts	325	Alice: Check profitability report	expected	passed
+day-75-complex.spec.ts	91	Alice: Create 2nd litigation matter for Sipho from template	expected	passed
+day-75-complex.spec.ts	115	Alice: Add adverse parties Mokoena and Pillay; link RAF, Mokoena and Pillay to Sipho's matters	expected	passed
+day-75-complex.spec.ts	148	Bob: Conflict stress test — search "Ndlovu" flags Sipho's two matters (Potential Conflict)	expected	passed
+day-75-complex.spec.ts	161	Bob: Conflict stress test — search "Road Accident Fund" finds the adverse party on the RAF matter	expected	passed
+day-75-complex.spec.ts	173	Bob: Conflict stress test — search "Mokoena" finds the adverse party on the property matter	expected	passed
+day-75-complex.spec.ts	191	Alice: Progress Moroka estate — claim and complete two estate tasks	expected	passed
+day-75-complex.spec.ts	224	Alice: Log 360min on Moroka estate matter	expected	passed
+day-75-complex.spec.ts	243	Alice: Send information request to Moroka (beneficiary details)	expected	passed
+day-75-complex.spec.ts	270	Alice: Create 2nd Commercial matter for Apex (annual returns)	expected	passed
+day-90-review.spec.ts	69	Alice: Client list shows the four lifecycle clients	expected	passed
+day-90-review.spec.ts	83	Alice: Matters list shows the lifecycle's six matters	expected	passed
+day-90-review.spec.ts	95	Alice: Fee notes list shows the run's five fee notes	unexpected	failed
+day-90-review.spec.ts	118	Alice: Generate Section 35 Data Pack report	unexpected	failed
+day-90-review.spec.ts	148	Alice: Trust reports — Client Trust Balances	expected	passed
+day-90-review.spec.ts	159	Alice: Trust reports — Investment Register with s86 basis	unexpected	failed
+day-90-review.spec.ts	172	Alice: Trust reports — Receipts & Payments	expected	passed
+day-90-review.spec.ts	191	Alice: Profitability report — revenue, cost and margin columns for this month's matters	unexpected	failed
+day-90-review.spec.ts	217	Alice: Home shows the owner dashboard	unexpected	failed
+day-90-review.spec.ts	231	Alice: Generate an engagement letter for Sipho's matter	expected	passed
+day-90-review.spec.ts	255	Alice: Compliance overview page	expected	passed
+day-90-review.spec.ts	268	Alice: Sipho's diary shows the POSTPONED motion, its rescheduled SCHEDULED date and the prescription tracker	expected	passed
+day-90-review.spec.ts	295	Carol: Blocked from rate card settings	expected	passed
+day-90-review.spec.ts	312	Carol: Blocked from trust account configuration	expected	passed
+day-90-review.spec.ts	326	Alice: Record a R500 trust fee transfer for Sipho — awaiting approval	expected	passed
+day-90-review.spec.ts	339	Carol: Blocked from recording or approving trust transactions	expected	passed
+day-90-review.spec.ts	351	Bob: Has admin access to rate cards	expected	passed
+day-90-review.spec.ts	362	Bob: Has admin access to trust accounting	expected	passed
+day-90-review.spec.ts	379	Alice: Has full owner access to all areas	expected	passed
+matter-team.spec.ts	56	Alice: template matter auto-adds her as lead; she adds Carol	expected	passed
+matter-team.spec.ts	87	Carol (Member): sees the matter and its team, but no management controls	expected	passed
+matter-team.spec.ts	98	Bob (Admin, not on the matter): transfers the lead to Carol	expected	passed
+matter-team.spec.ts	126	Carol (now lead): adds Bob, then removes him	expected	passed

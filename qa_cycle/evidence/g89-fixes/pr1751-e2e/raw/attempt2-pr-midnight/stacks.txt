@@ -1,0 +1,104 @@
+===== stack C1 checks 2026-11-08T00:37:10+0200 =====
+build rc=0
+git HEAD f3c191bb7707a287bc5c2448f5a47d0458edd52e
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-08 00:36:37 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-08 00:36:37 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-08 00:36:36 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-08 00:36:36 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-08 00:36:36 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-08 00:36:36 +0200 SAST
+/e2e-backend image=sha256:0e4a0d42ab6227dfb6a3b59871bcb0538a49913f95e1dd8384cda55026bcf7e2 created=2026-11-07T22:36:37.003286709Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+/e2e-frontend image=sha256:987d275ab7dce4413b7e1fa86eaa8652205e08be94fa2d343a790441f5184769 created=2026-11-07T22:36:37.041391375Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-07T22:36:36.93475875Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+cached-lines=50
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Volume docteams-e2e_e2e_postgres_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+===== stack G1 checks 2026-11-08T00:43:26+0200 =====
+build rc=0
+git HEAD f3c191bb7707a287bc5c2448f5a47d0458edd52e
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-08 00:42:53 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-08 00:42:53 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-08 00:42:53 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-08 00:42:53 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-08 00:42:53 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-08 00:42:53 +0200 SAST
+/e2e-backend image=sha256:0e4a0d42ab6227dfb6a3b59871bcb0538a49913f95e1dd8384cda55026bcf7e2 created=2026-11-07T22:42:53.182884675Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+/e2e-frontend image=sha256:538c1ce35bd5e95ff76a04edafa8d8978bf7d669912a40f2d989474d8adef4e0 created=2026-11-07T22:42:53.236560925Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-07T22:42:53.1118033Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+cached-lines=44
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Volume docteams-e2e_e2e_postgres_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+G1-lifecycle writing-actual=0
+===== G1 comments after lifecycle 00:46:20
+TASK|INTERNAL|INTERNAL|Bob Admin|Reviewed claim documents — need additional medical records from Dr. Nk
+G1-depth-ii writing-actual=0
+G1-default writing-actual=0
+===== G1 comments (all) after default 00:49:08
+TASK|INTERNAL|INTERNAL|Bob Admin|11b33437-5d0d-44ac-941f-d199c75a4589|Reviewed claim documents — need additional medical records from Dr. Nk
+TASK|INTERNAL|INTERNAL|Alice Owner|7c5a1502-d678-4597-8400-dde558dae6f8|@Carol please review w3g4
+PROJECT|SHARED|INTERNAL|Alice Owner|ea67101f-1b30-42f8-a6d9-40b2cd3043ce|@Carol matter thread w3g4
+===== G1 comment notifications after default 00:49:08
+COMMENT_ADDED|Carol Member|TASK|7c5a1502-d678-4597-8400-dde558dae6f8|Alice Owner commented on task "Deep Link Task w3g4"
+COMMENT_ADDED|Carol Member|PROJECT|ea67101f-1b30-42f8-a6d9-40b2cd3043ce|Alice Owner commented on matter
+===== G1 projects after default
+Website Redesign|ACTIVE
+Ndlovu v RAF mw6zpb1lb40d|ACTIVE
+Apex Shareholder Agreement mw6zpb1lb40d|ACTIVE
+Estate Late Peter Moroka mw6zpb1lb40d|ACTIVE
+QC Debt Recovery #1 mw6zpb1lb40d|ACTIVE
+Ndlovu Property Dispute mw6zpb1lb40d|ACTIVE
+Apex Annual Returns mw6zpb1lb40d|ACTIVE
+Team spec mw6zsqoac153|ACTIVE
+Ndlovu v RAF — Depth II mw6zt0q39a9e|CLOSED
+Ndlovu — transition repro mw6zt0q39a9e|ACTIVE
+Khumalo Property Holdings — Erf 1234 Sandton Transfer mw6zt0q39a9e|ACTIVE
+Apex Holdings — Shareholders' Agreement Review mw6zt0q39a9e|CLOSED
+E2E closure override vgna|CLOSED
+DocGen Matter vm1g|ACTIVE
+Profit Matter vrld|ACTIVE
+IReq Matter vsmh|ACTIVE
+Bell Matter vyus|ACTIVE
+Void Matter vucl|ACTIVE
+Budget Test Project w2b1|ACTIVE
+Task Test Project w3g4|ACTIVE
+Proj Renamed w325|ARCHIVED
+Time Test Project w4u2|ACTIVE
+Proj Internal w325|ACTIVE
+E2E Test 1794091742039|ACTIVE
+Tag Matter wf9j|ACTIVE
+===== G1 backend log scan (comment/notification WARN|ERROR)
+{"@timestamp":"2026-11-07T22:43:24.212527092Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-102"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=2c600830-bc63-4668-8d8a-65e1b8ea2b70","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"926e417e-7b5b-49b1-b104-c96a29074d66","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:46:02.888874679Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-4939"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=a49dda2a-901c-4d9a-b981-90a535750b43","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"040708f6-299d-416f-81ef-3e851f2b06e0","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:47:20.615988423Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-7251"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=600fba76-f5e3-4ed7-8ca9-bcea39c1034c","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"89f7f374-ee72-4fdb-b2d6-dfe0175a4131","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:47:36.395349167Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-7634"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=236732d4-e83c-4959-81ae-a67c6c13bb32","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"8ee02699-14c2-4aab-abf5-2c8a3a32c5db","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:47:38.939586293Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-7722"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=2820fd9d-a34d-45ab-b407-ec9251c59899","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"bc3ec64f-9846-4f2a-862a-3392a43ddc16","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:47:46.145536213Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-7855"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=2ac6949b-2e27-4d80-b4a4-a758e60942f5","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"8ed33ed8-1733-44cf-aee2-2e3f8973a20c","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:48:04.925284138Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-8415"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=20f0e571-ff84-4260-a7d5-f57a9cd51047","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"27eb9eca-8319-47da-b59f-1d5ed2ef72fa","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:48:04.964318222Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-8415"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=073b66d9-3ca3-447d-a455-f18d10a20a27","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"27eb9eca-8319-47da-b59f-1d5ed2ef72fa","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:48:11.417053711Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-8611"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=21867d4e-e29f-4f7f-b8db-09e28c6b877a","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"b5f39397-4590-4b03-8933-3bc8fc246b5a","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:48:11.460155252Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-8611"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=e83e7b79-26b2-4dd8-86a6-ae593d34a3d2","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"b5f39397-4590-4b03-8933-3bc8fc246b5a","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:48:30.212260720Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9647"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=b2c2ef8c-4906-45e2-8c92-496a508ab248","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"b3136790-326f-4e11-a27d-3c8aad869bad","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-07T22:48:37.650382250Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.notification.NotificationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10265"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"No recipients found for DOCUMENT_GENERATED notification: entity=b32c2c4f-5238-4f3c-adfc-e2ef284c8787","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"b8bcd73f-dd9b-4c1f-b696-4f61ae914021","memberId":"418e3461-d601-4eea-b6f9-9f61569f77f0","ecs":{"version":"8.11"}}
+count=12

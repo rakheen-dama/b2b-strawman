@@ -1,0 +1,222 @@
+
+> frontend@0.1.0 test:e2e /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend
+> playwright test --config e2e/playwright.config.ts --reporter=list,json
+
+
+Running 179 tests using 5 workers
+
+  -    4 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:33:7 › Phase 69 capstone — Day 0 baseline + audit-log first render › Audit Log page renders for Owner with default view
+  -    2 [chromium] › e2e/tests/auth/auth-change-password.spec.ts:35:7 › in-app change password (kc_action=UPDATE_PASSWORD) › keycloak: Account & Security renders the branded change-password page and returns to app
+  -    6 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:52:7 › Phase 69 capstone — Day 5 permission denial / Security preset › Security preset renders for Owner (emission gap acknowledged)
+  ✓    3 [chromium] › e2e/tests/auth/auth-expiry.spec.ts:19:7 › graceful expiry funnel › expired session lands on branded /sign-in?reason=expired with reason banner (466ms)
+  -    8 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:70:7 › Phase 69 capstone — Day 10 trust approval / Financial approvals preset [legal-za] › Financial approvals preset surfaces trust_transaction.approved row
+  -   10 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:88:7 › Phase 69 capstone — Day 15 closure override (CRITICAL) + widget › Override row surfaces on Audit Log + matter detail + dashboard widget
+  -   11 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:108:7 › Phase 69 capstone — Day 20 per-entity customer Audit tab › Customer detail Audit tab renders for Admin and is scope-correct
+  ✓    7 [chromium] › e2e/tests/auth/auth-logout.spec.ts:17:7 › branded signed-out terminus › logout lands on the branded /signed-out page with a 'Sign in again' CTA (776ms)
+  -   12 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:125:7 › Phase 69 capstone — Day 22 PDF export + reflexive event › PDF export succeeds and emits audit.export.generated row
+  -   14 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:143:7 › Phase 69 capstone — Day 25 DSAR pack scope correctness › DSAR pack ships audit-trail/events.csv scoped to the subject
+  -   15 [chromium] › e2e/tests/admin-audit-30day/admin-audit-lifecycle.spec.ts:159:7 › Phase 69 capstone — Day 30 export-row hard cap probe › Wide window fails gracefully; narrowed window succeeds
+  ✓    9 [chromium] › e2e/tests/auth/auth-expiry.spec.ts:39:7 › graceful expiry funnel › return-to round-trips the original destination after re-login (1.3s)
+  ✓   16 [chromium] › e2e/tests/automations/automation-crud.spec.ts:83:7 › AUTO-01: Automation CRUD › View seeded automation rules (925ms)
+  ✓   17 [chromium] › e2e/tests/automations/automation-triggers.spec.ts:41:7 › AUTO-02: Automation Triggers › Each installed rule shows its trigger type (724ms)
+  ✓   13 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:8:7 › AUTH-01: RBAC Capabilities › Owner can access all settings pages (1.7s)
+  ✓    1 [chromium] › e2e/tests/audit-log/audit-log-smoke.spec.ts:19:7 › Audit Log — Smoke (Epic 506B) › apply Sensitive preset shows events or empty-state (3.1s)
+  ✓    5 [chromium] › e2e/tests/audit-log/matter-closure-audit-tab.spec.ts:52:7 › Epic 508B — Matter closure override audit surface › override row surfaces matter.closure.override_used CRITICAL event with justification (3.2s)
+  ✓   19 [chromium] › e2e/tests/automations/automation-triggers.spec.ts:53:7 › AUTO-02: Automation Triggers › Execution Log filters by every installed rule (708ms)
+  ✓   20 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:18:7 › AUTH-01: RBAC Capabilities › Admin can access general settings (990ms)
+  ✓   18 [chromium] › e2e/tests/automations/automation-crud.spec.ts:93:7 › AUTO-01: Automation CRUD › Disable automation rule (1.6s)
+  ✓   21 [chromium] › e2e/tests/compliance/compliance-overview.spec.ts:21:7 › COMPLY-01: Compliance Overview › Compliance dashboard loads (981ms)
+  ✓   23 [chromium] › e2e/tests/automations/automation-triggers.spec.ts:63:7 › AUTO-02: Automation Triggers › Execution Log filters by execution status (1.2s)
+  ✓   24 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:24:7 › AUTH-01: RBAC Capabilities › Member sees permission denied on profitability (941ms)
+  ✓   26 [chromium] › e2e/tests/compliance/compliance-overview.spec.ts:43:7 › COMPLY-01: Compliance Overview › Compliance requests list (785ms)
+  ✓   28 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:31:7 › AUTH-01: RBAC Capabilities › Member sees permission denied on reports (642ms)
+  ✓   25 [chromium] › e2e/tests/automations/automation-crud.spec.ts:99:7 › AUTO-01: Automation CRUD › Enable automation rule (1.7s)
+  ✓   30 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:37:7 › AUTH-01: RBAC Capabilities › Member sees permission denied on customers (748ms)
+  ✓   29 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:50:7 › CUST-02: Customer Lifecycle › New customer defaults to PROSPECT (1.4s)
+  ✓   32 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:44:7 › AUTH-01: RBAC Capabilities › Member sees permission denied on roles settings (564ms)
+  ✓   31 [chromium] › e2e/tests/automations/automation-crud.spec.ts:105:7 › AUTO-01: Automation CRUD › View execution history (983ms)
+  ✓   34 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:50:7 › AUTH-01: RBAC Capabilities › Member can access My Work (498ms)
+  ✓   22 [chromium] › e2e/tests/customers/customer-crud.spec.ts:54:7 › CUST-01: Customer CRUD › Create customer with required fields (4.9s)
+  ✓   27 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:47:7 › DP-01: Customer Data Protection › Download customer data export (3.9s)
+  ✓   36 [chromium] › e2e/tests/auth/rbac-capabilities.spec.ts:56:7 › AUTH-01: RBAC Capabilities › Member can access Projects (1.2s)
+  ✓   39 [chromium] › e2e/tests/documents/template-management.spec.ts:77:7 › DOC-01: Template Management › Template list shows seeded templates (1.0s)
+  ✓   37 [chromium] › e2e/tests/customers/customer-crud.spec.ts:84:7 › CUST-01: Customer CRUD › Create customer with custom fields (step 2) (2.6s)
+  ✓   40 [chromium] › e2e/tests/documents/template-management.spec.ts:88:7 › DOC-01: Template Management › Create new template (1.2s)
+  ✓   38 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:77:7 › DP-01: Customer Data Protection › Anonymize customer preview shows entity counts (2.5s)
+  ✓   35 [chromium] › e2e/tests/documents/document-generation.spec.ts:78:7 › DOC-02: Document Generation › Preview shows resolved variables (3.8s)
+  ✓   33 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:66:7 › CUST-02: Customer Lifecycle › PROSPECT -> ONBOARDING (5.4s)
+  ✓   45 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:85:7 › CUST-02: Customer Lifecycle › ONBOARDING -> ACTIVE (via checklist completion) (468ms)
+  ✓   46 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:92:7 › CUST-02: Customer Lifecycle › PROSPECT blocked from creating project (62ms)
+  ✓   47 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:113:7 › CUST-02: Customer Lifecycle › Fee note blocked for a client without a billing address (99ms)
+  ✓   42 [chromium] › e2e/tests/documents/template-management.spec.ts:120:7 › DOC-01: Template Management › Clone template (2.0s)
+  ✓   48 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:135:7 › CUST-02: Customer Lifecycle › ACTIVE -> DORMANT (2.6s)
+  ✓   41 [chromium] › e2e/tests/customers/customer-crud.spec.ts:112:7 › CUST-01: Customer CRUD › Edit customer name (4.2s)
+  -   50 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:157:7 › CUST-02: Customer Lifecycle › DORMANT -> OFFBOARDING
+  -   52 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:178:7 › CUST-02: Customer Lifecycle › OFFBOARDING -> OFFBOARDED
+  ✓   43 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:108:7 › DP-01: Customer Data Protection › Execute anonymization (4.3s)
+  ✓   53 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:199:7 › CUST-02: Customer Lifecycle › OFFBOARDED blocked from project creation (450ms)
+  ✓   55 [chromium] › e2e/tests/customers/customer-lifecycle.spec.ts:223:7 › CUST-02: Customer Lifecycle › Invalid: PROSPECT -> ACTIVE (skip) rejected via API (97ms)
+  ✓   44 [chromium] › e2e/tests/documents/document-generation.spec.ts:87:7 › DOC-02: Document Generation › Generate document from template on the matter page (5.2s)
+  ✓   49 [chromium] › e2e/tests/documents/template-management.spec.ts:143:7 › DOC-01: Template Management › Edit template content (3.5s)
+  ✓   51 [chromium] › e2e/tests/customers/customer-crud.spec.ts:145:7 › CUST-01: Customer CRUD › Search customer list (1.3s)
+  ✓   54 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:150:7 › DP-01: Customer Data Protection › ANONYMIZED customer is read-only (1.1s)
+  ✓   56 [chromium] › e2e/tests/finance/profitability.spec.ts:63:7 › FIN-01: Profitability Dashboard › Page loads with data (372ms)
+  ✓   60 [chromium] › e2e/tests/customers/customer-data-protection.spec.ts:165:7 › DP-01: Customer Data Protection › Cannot transition out of ANONYMIZED via API (221ms)
+  ✓   58 [chromium] › e2e/tests/finance/reports.spec.ts:48:7 › FIN-02: Reports › Reports hub loads (745ms)
+  ✓   59 [chromium] › e2e/tests/customers/customer-crud.spec.ts:168:7 › CUST-01: Customer CRUD › Client list renders rows (822ms)
+  ✓   61 [chromium] › e2e/tests/finance/profitability.spec.ts:71:7 › FIN-01: Profitability Dashboard › Project profitability view (1.1s)
+  ✓   64 [chromium] › e2e/tests/invoices/billing-runs.spec.ts:25:7 › BR-01: Billing Runs › Billing runs page loads (626ms)
+  ✓   65 [chromium] › e2e/tests/finance/profitability.spec.ts:85:7 › FIN-01: Profitability Dashboard › Customer profitability view (573ms)
+  ✓   63 [chromium] › e2e/tests/finance/reports.spec.ts:59:7 › FIN-02: Reports › Run a report with parameters (1.4s)
+  ✓   67 [chromium] › e2e/tests/finance/profitability.spec.ts:93:7 › FIN-01: Profitability Dashboard › Utilization metrics (671ms)
+  ✓   66 [chromium] › e2e/tests/invoices/billing-runs.spec.ts:34:7 › BR-01: Billing Runs › New billing run wizard (1.1s)
+  ✓   68 [chromium] › e2e/tests/finance/reports.spec.ts:70:7 › FIN-02: Reports › Export report to CSV (648ms)
+  ✓   69 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:62:7 › INV-03: Invoice Arithmetic › Single line: 3h x R450 (49ms)
+  ✓   72 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:74:7 › INV-03: Invoice Arithmetic › Multiple lines: (2 x R500) + (1 x R1,500) (69ms)
+  ✓   73 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:91:7 › INV-03: Invoice Arithmetic › Rounding: non-terminating decimal (1.5h x R333.33) (47ms)
+  ✓   74 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:105:7 › INV-03: Invoice Arithmetic › Zero quantity line (42ms)
+  ✓   75 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:124:7 › INV-03: Invoice Arithmetic › Fractional quantity: 0.25h x R1,200 (128ms)
+  ✓   76 [chromium] › e2e/tests/invoices/invoice-arithmetic.spec.ts:134:7 › INV-03: Invoice Arithmetic › Rate snapshot immutability (73ms)
+  ✓   70 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:74:7 › INV-01: Invoice CRUD › Draft created via the API opens as a Draft (379ms)
+  ✓   62 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:70:7 › IREQ-01: Information Request CRUD › View information requests list (2.2s)
+  ✓   57 [chromium] › e2e/tests/documents/document-generation.spec.ts:103:7 › DOC-02: Document Generation › Generate a document from the client page (3.6s)
+  ✓   77 [chromium] › e2e/tests/navigation/command-palette.spec.ts:41:7 › CMD-01: Command Palette › Cmd+K opens palette (1.4s)
+  ✓   71 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (2.0s)
+  ✓   81 [chromium] › e2e/tests/navigation/command-palette.spec.ts:46:7 › CMD-01: Command Palette › Search navigates to page (1.2s)
+  ✓   78 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:82:7 › INV-01: Invoice CRUD › Add line item to draft (2.8s)
+  ✓   80 [chromium] › e2e/tests/documents/document-generation.spec.ts:120:7 › DOC-02: Document Generation › Download PDF (2.7s)
+  ✓   82 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (1.3s)
+  ✓   83 [chromium] › e2e/tests/navigation/command-palette.spec.ts:58:7 › CMD-01: Command Palette › Escape closes palette (979ms)
+  ✓   87 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Home page loads (789ms)
+  ✓   84 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:98:7 › INV-01: Invoice CRUD › Edit line item on draft (2.3s)
+  ✓   88 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › My work page loads (1.0s)
+  ✓   86 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (2.2s)
+  ✓   85 [chromium] › e2e/tests/documents/document-generation.spec.ts:134:7 › DOC-02: Document Generation › Generated documents list (2.5s)
+  ✓   90 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Diary page loads (400ms)
+  ✓   79 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:83:7 › IREQ-01: Information Request CRUD › Create information request from a request template (5.8s)
+  ✓   93 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Matters page loads (825ms)
+  ✓   92 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:68:7 › NOTIF-01: Notification Bell › Bell shows unread count (1.0s)
+  ✓   95 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Clients page loads (791ms)
+  ✓   91 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (2.4s)
+  ✓   97 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › FICA & compliance page loads (377ms)
+  ✓   96 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:76:7 › NOTIF-01: Notification Bell › Click bell opens dropdown (884ms)
+  ✓   89 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:127:7 › INV-01: Invoice CRUD › Remove line item from draft (2.9s)
+  ✓   99 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Fee notes page loads (457ms)
+  ✓  100 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:89:7 › NOTIF-01: Notification Bell › Mark notification as read (1.1s)
+  ✓  101 [chromium] › e2e/tests/invoices/invoice-crud.spec.ts:146:7 › INV-01: Invoice CRUD › Draft invoice shows correct totals (1.0s)
+  ✓  102 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Profitability page loads (802ms)
+  ✓  103 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:110:7 › NOTIF-01: Notification Bell › Navigate to notifications page (689ms)
+  ✓  105 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Reports page loads (579ms)
+  ✓  104 [chromium] › e2e/tests/notifications/notification-preferences.spec.ts:91:7 › NOTIF-02: Notification Preferences › View preference categories (786ms)
+  ✓   98 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries (2.4s)
+  ✓   94 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:116:7 › IREQ-01: Information Request CRUD › Send information request (4.3s)
+  ✓  107 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Team page loads (995ms)
+  ✓  106 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:123:7 › NOTIF-01: Notification Bell › Mark all as read (1.5s)
+  -  112 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:36:7 › PORTAL-01: Data Isolation › Kgosi sees only Kgosi matters via API
+  -  113 [chromium] › e2e/tests/portal/portal-data-isolation.spec.ts:48:7 › PORTAL-01: Data Isolation › Portal JWT blocked from org API
+  ✓  111 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Notifications page loads (719ms)
+  ✓  108 [chromium] › e2e/tests/notifications/notification-preferences.spec.ts:106:7 › NOTIF-02: Notification Preferences › Enable email for a category (1.8s)
+  ✓  109 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (1.8s)
+  ✓  117 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (95ms)
+  ✓  118 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (38ms)
+  ✓  115 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Settings page loads (854ms)
+  ✓  116 [chromium] › e2e/tests/notifications/notification-preferences.spec.ts:111:7 › NOTIF-02: Notification Preferences › Disable email for a category (1.1s)
+  ✓  110 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:137:7 › IREQ-01: Information Request CRUD › Sent request detail shows the portal contact and requested items (2.9s)
+  ✓  120 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:75:7 › NAV-02: Sidebar zones › six zones in order with 28 items in order (1.2s)
+  ✓  114 [chromium] › e2e/tests/projects/project-budget.spec.ts:81:7 › BUDGET-01: Project Budget › 1. View budget tab on project (2.3s)
+  ✓  119 [chromium] › e2e/tests/projects/project-crud.spec.ts:36:7 › PROJ-01: Project CRUD › 1. Create project with customer (3.1s)
+  ✓  124 [chromium] › e2e/tests/projects/project-budget.spec.ts:91:7 › BUDGET-01: Project Budget › 2. Set project budget via API and verify in UI (2.4s)
+  ✓  122 [chromium] › e2e/tests/information-requests/information-request-crud.spec.ts:156:7 › IREQ-01: Information Request CRUD › Track completion status (2.9s)
+  ✓  125 [chromium] › e2e/tests/projects/project-crud.spec.ts:71:7 › PROJ-01: Project CRUD › 2. Create project without customer (internal) (1.1s)
+  ✓  127 [chromium] › e2e/tests/settings/custom-fields.spec.ts:34:7 › CF-01: Custom Fields › View custom field definitions (690ms)
+  ✓  123 [chromium] › e2e/tests/projects/project-time.spec.ts:88:7 › PROJ-03: Time Entries › 1. Log time on task via UI (3.5s)
+  ✓  126 [chromium] › e2e/tests/projects/project-budget.spec.ts:121:7 › BUDGET-01: Project Budget › 3. Budget shows usage after logging time (2.3s)
+  ✓  129 [chromium] › e2e/tests/settings/custom-fields.spec.ts:43:7 › CF-01: Custom Fields › Create text custom field (1.8s)
+  ✓  131 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:93:7 › DP-02: Data Protection Settings › View data protection tab (373ms)
+  ✓  121 [chromium] › e2e/tests/projects/project-tasks.spec.ts:105:7 › PROJ-02: Project Tasks › 1. Create task on project via UI (6.1s)
+  ✓  130 [chromium] › e2e/tests/projects/project-time.spec.ts:119:7 › PROJ-03: Time Entries › 2. Edit time entry via API and verify (1.8s)
+  ✓  135 [chromium] › e2e/tests/projects/project-time.spec.ts:147:7 › PROJ-03: Time Entries › 3. Delete time entry via API and verify (37ms)
+  ✓  136 [chromium] › e2e/tests/projects/project-time.spec.ts:165:7 › PROJ-03: Time Entries › 4. Time entry captures rate snapshot (29ms)
+  ✓  132 [chromium] › e2e/tests/settings/custom-fields.spec.ts:64:7 › CF-01: Custom Fields › Custom field appears on entity form (1.4s)
+  ✓  133 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:99:7 › DP-02: Data Protection Settings › Set jurisdiction to South Africa (2.3s)
+  ✓  128 [chromium] › e2e/tests/projects/project-crud.spec.ts:94:7 › PROJ-01: Project CRUD › 3. Edit project name (4.9s)
+  ✓  139 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:108:7 › DP-02: Data Protection Settings › Set information officer (514ms)
+  ✓  134 [chromium] › e2e/tests/projects/project-tasks.spec.ts:135:7 › PROJ-02: Project Tasks › 2. Edit task title via API and verify in UI (2.6s)
+  ✓  141 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:126:7 › DP-02: Data Protection Settings › View retention policies (351ms)
+  ✓  137 [chromium] › e2e/tests/projects/project-time.spec.ts:190:7 › PROJ-03: Time Entries › 5. Billable flag defaults to checked in UI (2.7s)
+  ✓  144 [chromium] › e2e/tests/projects/project-time.spec.ts:204:7 › PROJ-03: Time Entries › 6. Mark time entry non-billable (62ms)
+  ✓  143 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:133:7 › DP-02: Data Protection Settings › Edit retention period (1.1s)
+  ✓  146 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:150:7 › DP-02: Data Protection Settings › View processing register (295ms)
+  ✓  142 [chromium] › e2e/tests/projects/project-tasks.spec.ts:163:7 › PROJ-02: Project Tasks › 3. Change task status: OPEN -> IN_PROGRESS (1.8s)
+  ✓  138 [chromium] › e2e/tests/settings/custom-fields.spec.ts:88:7 › CF-01: Custom Fields › Custom field value persists (3.8s)
+  ✓  147 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:156:7 › DP-02: Data Protection Settings › Generate PAIA manual (541ms)
+  ✓  149 [chromium] › e2e/tests/settings/general-settings.spec.ts:60:7 › SET-01: General Settings › View org name and currency (348ms)
+  ✓  150 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:169:7 › DP-02: Data Protection Settings › View DSAR list (503ms)
+  ✓  151 [chromium] › e2e/tests/settings/general-settings.spec.ts:65:7 › SET-01: General Settings › Update brand colour (1.0s)
+  ✓  140 [chromium] › e2e/tests/projects/project-crud.spec.ts:122:7 › PROJ-01: Project CRUD › 4. Project detail tabs load (4.2s)
+  ✓  148 [chromium] › e2e/tests/projects/project-tasks.spec.ts:189:7 › PROJ-02: Project Tasks › 4. Change task status: IN_PROGRESS -> DONE (2.0s)
+  ✓  154 [chromium] › e2e/tests/projects/project-crud.spec.ts:157:7 › PROJ-01: Project CRUD › 4b. Legacy expenses URL redirects to the Disbursements tab (2.3s)
+  ✓  152 [chromium] › e2e/tests/settings/data-protection-settings.spec.ts:179:7 › DP-02: Data Protection Settings › Create DSAR (1.3s)
+  ✘  145 [chromium] › e2e/tests/projects/project-time.spec.ts:238:7 › PROJ-03: Time Entries › 7. My Work lists today's time entries (5.9s)
+  ✓  155 [chromium] › e2e/tests/projects/project-tasks.spec.ts:204:7 › PROJ-02: Project Tasks › 5. Reopen completed task (2.6s)
+  ✓  153 [chromium] › e2e/tests/settings/general-settings.spec.ts:78:7 › SET-01: General Settings › Update document footer (1.9s)
+  ✓  157 [chromium] › e2e/tests/settings/packs.spec.ts:105:7 › PACK-01: Pack Lifecycle › Seeded legal-za pack is installed and its templates are present (1.2s)
+  ✓  159 [chromium] › e2e/tests/settings/roles-capabilities.spec.ts:31:7 › ROLE-01: Roles & Capabilities › View roles list (821ms)
+  ✓  156 [chromium] › e2e/tests/projects/project-crud.spec.ts:178:7 › PROJ-01: Project CRUD › 5. Archive project (Complete then Archive) (1.7s)
+  ✓  163 [chromium] › e2e/tests/projects/project-crud.spec.ts:231:7 › PROJ-01: Project CRUD › 6. Archived project blocks task creation (39ms)
+  ✓  164 [chromium] › e2e/tests/projects/project-crud.spec.ts:245:7 › PROJ-01: Project CRUD › 7. Archived project blocks time logging via API (122ms)
+  ✓  162 [chromium] › e2e/tests/settings/roles-capabilities.spec.ts:39:7 › ROLE-01: Roles & Capabilities › View system role cards and the capability reference (774ms)
+  -  166 [chromium] › e2e/tests/settings/roles-capabilities.spec.ts:53:7 › ROLE-01: Roles & Capabilities › Create, edit and delete a custom role
+  ✓  165 [chromium] › e2e/tests/settings/tags.spec.ts:33:7 › TAG-01: Tags › View tags (705ms)
+  ✓  160 [chromium] › e2e/tests/settings/rate-cards.spec.ts:7:7 › SET-02: Rate Cards › Rates page loads without crash (AvatarCircle regression) (916ms)
+  ✓  158 [chromium] › e2e/tests/projects/project-tasks.spec.ts:216:7 › PROJ-02: Project Tasks › 6. Cancel task (2.4s)
+  ✓  161 [chromium] › e2e/tests/settings/packs.spec.ts:138:7 › PACK-01: Pack Lifecycle › Uninstall blocked when template edited, edit block cleared after revert (1.5s)
+  ✓  167 [chromium] › e2e/tests/settings/tax-settings.spec.ts:34:7 › SET-03: Tax Settings › View tax rates (614ms)
+  ✓  169 [chromium] › e2e/tests/settings/rate-cards.spec.ts:21:7 › SET-02: Rate Cards › Rates page loads for Admin (644ms)
+  ✓  171 [chromium] › e2e/tests/smoke.spec.ts:4:5 › mock login redirects to dashboard (882ms)
+  ✓  168 [chromium] › e2e/tests/settings/tags.spec.ts:39:7 › TAG-01: Tags › Create tag (2.1s)
+  ✓  173 [chromium] › e2e/tests/settings/rate-cards.spec.ts:32:7 › SET-02: Rate Cards › Member sees permission denied on rates (1.4s)
+  ✓  172 [chromium] › e2e/tests/settings/tax-settings.spec.ts:44:7 › SET-03: Tax Settings › Create tax rate (2.5s)
+  ✓  170 [chromium] › e2e/tests/projects/project-tasks.spec.ts:230:7 › PROJ-02: Project Tasks › 7. Assign member to task (3.2s)
+  ✓  176 [chromium] › e2e/tests/settings/tax-settings.spec.ts:61:7 › SET-03: Tax Settings › Tax applies to invoices (704ms)
+  ✓  174 [chromium] › e2e/tests/smoke.spec.ts:11:5 › owner can create a project (2.9s)
+  ✓  178 [chromium] › e2e/tests/smoke.spec.ts:27:5 › member cannot access admin settings (371ms)
+  ✓  177 [chromium] › e2e/tests/projects/project-tasks.spec.ts:277:7 › PROJ-02: Project Tasks › 8. Comment notification deep-links to the comment in the task sheet (G88-M6) (1.8s)
+  ✓  175 [chromium] › e2e/tests/settings/tags.spec.ts:57:7 › TAG-01: Tags › Apply tag to entity (3.3s)
+  ✓  179 [chromium] › e2e/tests/projects/project-tasks.spec.ts:322:7 › PROJ-02: Project Tasks › 9. Matter comment notification deep-links to the highlighted comment on the Comments tab (B7) (3.3s)
+
+
+  1) [chromium] › e2e/tests/projects/project-time.spec.ts:238:7 › PROJ-03: Time Entries › 7. My Work lists today's time entries 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Time Test Project eye0 — Non-billable entry eye0')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Time Test Project eye0 — Non-billable entry eye0')[22m
+
+
+      245 |     await expect(
+      246 |       page.getByText(`${PROJECT_NAME} \u2014 Non-billable entry ${RUN_ID}`)
+    > 247 |     ).toBeVisible();
+          |       ^
+      248 |     await expect(
+      249 |       page.getByText(`${PROJECT_NAME} \u2014 Rate snapshot test ${RUN_ID}`)
+      250 |     ).toBeVisible();
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend/e2e/tests/projects/project-time.spec.ts:247:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/projects-project-time-PROJ-fe1bb--lists-today-s-time-entries-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/projects-project-time-PROJ-fe1bb--lists-today-s-time-entries-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/tests/projects/project-time.spec.ts:238:7 › PROJ-03: Time Entries › 7. My Work lists today's time entries 
+  14 skipped
+  164 passed (59.2s)
+ ELIFECYCLE  Command failed with exit code 1.

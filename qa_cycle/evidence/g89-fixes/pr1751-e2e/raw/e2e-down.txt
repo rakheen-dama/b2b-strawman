@@ -1,0 +1,7 @@
+e2e-down rc=0 2026-11-08T02:30:29+0200
+
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+e2e containers:        0
+e2e volumes: 0
+worktree: f3c191bb7707a287bc5c2448f5a47d0458edd52e dirty=       0

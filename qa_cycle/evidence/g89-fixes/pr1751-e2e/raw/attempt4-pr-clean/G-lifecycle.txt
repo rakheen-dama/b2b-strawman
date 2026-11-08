@@ -1,0 +1,168 @@
+
+> frontend@0.1.0 test:e2e:legal-lifecycle /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend
+> playwright test --config e2e/playwright.legal-lifecycle.config.ts --reporter=list,json
+
+
+Running 105 tests using 1 worker
+
+  ✓    1 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:92:7 › Day 0 — Firm Setup › Alice: Home loads after login (905ms)
+  ✓    2 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:102:7 › Day 0 — Firm Setup › Alice: Legal-za profile active — sidebar shows legal terms (399ms)
+  ✓    3 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:119:7 › Day 0 — Firm Setup › Alice: Settings — currency is ZAR (538ms)
+  ✓    4 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:127:7 › Day 0 — Firm Setup › Alice: Settings — set brand colour #1B3A4B (1.0s)
+  ✓    5 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:143:7 › Day 0 — Firm Setup › Alice: Settings — rate cards page loads (367ms)
+  ✓    6 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:150:7 › Day 0 — Firm Setup › Alice: Settings — create billing rates Alice R2,500, Bob R1,200, Carol R550 (3.0s)
+  ✓    7 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:159:7 › Day 0 — Firm Setup › Alice: Settings — create cost rates for Alice R1000, Bob R500, Carol R200 (2.5s)
+  ✓    8 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:171:7 › Day 0 — Firm Setup › Alice: Settings — tax rates page loads (367ms)
+  ✓    9 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:178:7 › Day 0 — Firm Setup › Alice: Settings — VAT 15% is seeded as the default tax rate (334ms)
+  ✓   10 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:193:7 › Day 0 — Firm Setup › Alice: Team page shows Alice, Bob, Carol (414ms)
+  ✓   11 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:202:7 › Day 0 — Firm Setup › Alice: Custom fields — SA Legal matter fields loaded (case number, court, opposing party) (409ms)
+  ✓   12 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:221:7 › Day 0 — Firm Setup › Alice: 6 legal matter templates listed (377ms)
+  ✓   13 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:242:7 › Day 0 — Firm Setup › Alice: Trust account — Mathebula & Partners Trust Account (GENERAL, Standard Bank) exists (750ms)
+  ✓   14 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:262:7 › Day 0 — Firm Setup › Alice: LPFF rate 6.5% — added on Trust › Interest, listed on the trust settings tab (1.4s)
+  ✓   15 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:303:7 › Day 0 — Firm Setup › Alice: Legal modules enabled (trust, court, conflict, tariff) (639ms)
+  ✓   16 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:324:7 › Day 0 — Firm Setup › Alice: Capture dashboard with legal navigation (423ms)
+  ✓   17 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:100:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Conflict check for Sipho Ndlovu — CLEAR (718ms)
+  ✓   18 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:108:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Create client Sipho Ndlovu (Individual) (2.4s)
+  ✓   19 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:130:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Transition Sipho to ONBOARDING (1.6s)
+  ✓   20 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:136:7 › Day 1 — Sipho Ndlovu Onboarding › Bob: Complete FICA checklist for Sipho — auto-transitions to ACTIVE (9.7s)
+  ✓   21 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:197:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Create Litigation matter for Sipho from template (2.7s)
+  ✓   22 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:222:7 › Day 1 — Sipho Ndlovu Onboarding › Alice: Add Carol to the Sipho matter team (Team tab) (2.1s)
+  ✓   23 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:248:7 › Day 1 — Sipho Ndlovu Onboarding › Day 5 — Alice: Matter header shows case number, court and opposing party (2.2s)
+  ✓   24 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:303:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Apex Holdings — CLEAR (492ms)
+  ✓   25 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:308:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Apex Holdings (Company) and start onboarding (3.4s)
+  ✓   26 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:322:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Commercial matter for Apex from template (2.6s)
+  ✓   27 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:339:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Conflict check for Moroka Family Trust — CLEAR (485ms)
+  ✓   28 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:344:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Bob: Create client Moroka Family Trust (Trust) and start onboarding (3.1s)
+  ✓   29 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:355:7 › Day 2 — Apex Holdings & Moroka Trust Onboarding › Alice: Create Deceased Estate matter for Moroka from template (2.2s)
+  ✓   30 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:377:7 › Day 3 — QuickCollect Services Onboarding › Bob: Conflict check for QuickCollect Services — CLEAR (484ms)
+  ✓   31 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:382:7 › Day 3 — QuickCollect Services Onboarding › Bob: Create client QuickCollect Services (Company) and start onboarding (2.6s)
+  ✓   32 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:394:7 › Day 3 — QuickCollect Services Onboarding › Alice: Create initial Collections matter for QuickCollect from template (2.1s)
+  ✓   33 [chromium] › e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:413:7 › Day 3 — QuickCollect Services Onboarding › Alice: Verify 4 clients on client list (369ms)
+  ✓   34 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:54:7 › Day 7 — First Week of Work › Carol: Navigate to My Work page (513ms)
+  ✓   35 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:62:7 › Day 7 — First Week of Work › Carol: Log 90min time on Sipho matter (2.3s)
+  ✓   36 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:78:7 › Day 7 — First Week of Work › Bob: Log 120min on Sipho — letter of demand (3.2s)
+  ✓   37 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:98:7 › Day 7 — First Week of Work › Bob: Add internal comment on the Sipho letter-of-demand task (2.3s)
+  ✓   38 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:119:7 › Day 7 — First Week of Work › Alice: Create court date for Sipho (Motion, 30 days out) (2.6s)
+  ✓   39 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:153:7 › Day 7 — First Week of Work › Alice: Log 60min on Moroka estate matter (2.3s)
+  ✓   40 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:167:7 › Day 7 — First Week of Work › Alice: My Work lists today's Moroka time entry (501ms)
+  ✓   41 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:186:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Navigate to Trust Accounting (295ms)
+  ✓   42 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:197:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R250,000 into trust for Moroka estate (2.7s)
+  ✓   43 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:211:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Moroka trust deposit is RECORDED — no approval step (362ms)
+  ✓   44 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:221:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Verify Moroka trust ledger balance (994ms)
+  ✓   45 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:245:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R45,000 into trust for QuickCollect (2.3s)
+  ✓   46 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:258:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Add adverse party "Road Accident Fund" to registry (1.2s)
+  ✓   47 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:284:7 › Day 14 — Trust Deposits & Conflict Detection › Bob: Conflict check "Road Accident Fund" — adverse party match (Conflict Found) (655ms)
+  ✓   48 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:299:7 › Day 14 — Trust Deposits & Conflict Detection › Carol: Log additional time on the Sipho matter (letter of demand) (2.9s)
+  ✓   49 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:323:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Trust dashboard overview (526ms)
+  ✓   50 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:80:7 › Day 30 — First Billing Cycle › Alice: Navigate to fee notes page (318ms)
+  ✓   51 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:90:7 › Day 30 — First Billing Cycle › Alice: Generate Sipho's fee note from unbilled time, add an LSSA tariff item and a sheriff disbursement line (VAT 15%) (4.9s)
+  ✓   52 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:141:7 › Day 30 — First Billing Cycle › Alice: Create Apex fee note — fixed fee R35,000 + VAT = R40,250 (6.8s)
+  ✓   53 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:175:7 › Day 30 — First Billing Cycle › Alice: Create, approve and send Moroka's estate fee note (R8,625) (3.9s)
+  ✓   54 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:195:7 › Day 30 — First Billing Cycle › Alice: Record trust FEE_TRANSFER R8,500 for Moroka — awaits approval, her own approval is refused (1.7s)
+  ✓   55 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:223:7 › Day 30 — First Billing Cycle › Bob: Approve Moroka's fee transfer — Moroka trust balance R241,500 (1.4s)
+  ✓   56 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:256:7 › Day 30 — First Billing Cycle › Bob logs QuickCollect collections time; Alice creates its fee note with a court-filing line (5.4s)
+  ✘   57 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:282:7 › Day 30 — First Billing Cycle › Alice: Fee note lifecycle — Sipho's and Apex's fee notes DRAFT → APPROVED → SENT (2.2s)
+  -   58 [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:315:7 › Day 30 — First Billing Cycle › Alice: Set fee estimate on Apex matter (R150,000)
+  ✓   59 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:40:7 › Day 45 — Reconciliation & Prescription › Alice: Navigate to Trust Reconciliation page (330ms)
+  ✓   60 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:50:7 › Day 45 — Reconciliation & Prescription › Alice: Start a bank reconciliation — select the trust account and period end, reach the statement upload step (691ms)
+  ✓   61 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:96:7 › Day 45 — Reconciliation & Prescription › Alice: Create prescription tracker for Sipho (Delict, 3 years) (2.1s)
+  ✓   62 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:132:7 › Day 45 — Reconciliation & Prescription › Alice: Court date lifecycle — Sipho's motion SCHEDULED → POSTPONED, the new date SCHEDULED (1.9s)
+  ✓   63 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:160:7 › Day 45 — Reconciliation & Prescription › Alice: Record payment on Apex fee note (R40,250) → PAID (596ms)
+  ✓   64 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:87:7 › Day 60 — Interest Run & Investments › Alice: Navigate to Trust Interest page (310ms)
+  ✓   65 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:97:7 › Day 60 — Interest Run & Investments › Alice: Interest run — create for the last 30 days and calculate allocations at the 6.5% LPFF rate (2.0s)
+  ✓   66 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:173:7 › Day 60 — Interest Run & Investments › Bob: Review & approve Alice's interest run as the second member (1.4s)
+  ✓   67 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:194:7 › Day 60 — Interest Run & Investments › Alice: Post the approved interest run to the client ledgers (1.4s)
+  ✓   68 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:219:7 › Day 60 — Interest Run & Investments › Alice: Navigate to Investment Register (372ms)
+  ✓   69 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:226:7 › Day 60 — Interest Run & Investments › Alice: Place investment — Moroka R200,000 Standard Bank Fixed Deposit (s86(3)) (1.0s)
+  ✓   70 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:255:7 › Day 60 — Interest Run & Investments › Alice: Place investment — QuickCollect R30,000 Nedbank Call Account (s86(4)) (1.2s)
+  ✓   71 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:278:7 › Day 60 — Interest Run & Investments › Alice: Second billing cycle — log new Sipho time and generate its fee note (4.8s)
+  ✓   72 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:304:7 › Day 60 — Interest Run & Investments › Alice: Run the timesheet report for this month (854ms)
+  ✓   73 [chromium] › e2e/tests/legal-lifecycle/day-60-interest.spec.ts:325:7 › Day 60 — Interest Run & Investments › Alice: Check profitability report (537ms)
+  ✓   74 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:91:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Create 2nd litigation matter for Sipho from template (3.3s)
+  ✓   75 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:115:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Add adverse parties Mokoena and Pillay; link RAF, Mokoena and Pillay to Sipho's matters (7.5s)
+  ✓   76 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:148:7 › Day 75 — Complex Engagement & Adverse Parties › Bob: Conflict stress test — search "Ndlovu" flags Sipho's two matters (Potential Conflict) (491ms)
+  ✓   77 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:161:7 › Day 75 — Complex Engagement & Adverse Parties › Bob: Conflict stress test — search "Road Accident Fund" finds the adverse party on the RAF matter (466ms)
+  ✓   78 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:173:7 › Day 75 — Complex Engagement & Adverse Parties › Bob: Conflict stress test — search "Mokoena" finds the adverse party on the property matter (561ms)
+  ✓   79 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:191:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Progress Moroka estate — claim and complete two estate tasks (2.3s)
+  ✓   80 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:224:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Log 360min on Moroka estate matter (3.0s)
+  ✓   81 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:243:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Send information request to Moroka (beneficiary details) (2.4s)
+  ✓   82 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:270:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Create 2nd Commercial matter for Apex (annual returns) (2.1s)
+  ✓   83 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:69:7 › Day 90 — Quarter Review › Alice: Client list shows the four lifecycle clients (351ms)
+  ✓   84 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:83:7 › Day 90 — Quarter Review › Alice: Matters list shows the lifecycle's six matters (367ms)
+  ✓   85 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:95:7 › Day 90 — Quarter Review › Alice: Fee notes list shows the run's five fee notes (423ms)
+  ✓   86 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:118:7 › Day 90 — Quarter Review › Alice: Generate Section 35 Data Pack report (1.5s)
+  ✓   87 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:148:7 › Day 90 — Quarter Review › Alice: Trust reports — Client Trust Balances (310ms)
+  ✓   88 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:159:7 › Day 90 — Quarter Review › Alice: Trust reports — Investment Register with s86 basis (419ms)
+  ✓   89 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:172:7 › Day 90 — Quarter Review › Alice: Trust reports — Receipts & Payments (351ms)
+  ✓   90 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:191:7 › Day 90 — Quarter Review › Alice: Profitability report — revenue, cost and margin columns for this month's matters (428ms)
+  ✓   91 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:217:7 › Day 90 — Quarter Review › Alice: Home shows the owner dashboard (423ms)
+  ✓   92 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:231:7 › Day 90 — Quarter Review › Alice: Generate an engagement letter for Sipho's matter (3.0s)
+  ✓   93 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:255:7 › Day 90 — Quarter Review › Alice: Compliance overview page (318ms)
+  ✓   94 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:268:7 › Day 90 — Quarter Review › Alice: Sipho's diary shows the POSTPONED motion, its rescheduled SCHEDULED date and the prescription tracker (928ms)
+  ✓   95 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:295:7 › Day 90 — Role-Based Access › Carol: Blocked from rate card settings (279ms)
+  ✓   96 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:312:7 › Day 90 — Role-Based Access › Carol: Blocked from trust account configuration (286ms)
+  ✓   97 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:326:7 › Day 90 — Role-Based Access › Alice: Record a R500 trust fee transfer for Sipho — awaiting approval (1.4s)
+  ✓   98 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:339:7 › Day 90 — Role-Based Access › Carol: Blocked from recording or approving trust transactions (311ms)
+  ✓   99 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:351:7 › Day 90 — Role-Based Access › Bob: Has admin access to rate cards (330ms)
+  ✓  100 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:362:7 › Day 90 — Role-Based Access › Bob: Has admin access to trust accounting (516ms)
+  ✓  101 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:379:7 › Day 90 — Role-Based Access › Alice: Has full owner access to all areas (839ms)
+  ✓  102 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:56:7 › Matter team — Team tab (add, transfer, remove) › Alice: template matter auto-adds her as lead; she adds Carol (3.2s)
+  ✓  103 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:87:7 › Matter team — Team tab (add, transfer, remove) › Carol (Member): sees the matter and its team, but no management controls (1.4s)
+  ✓  104 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:98:7 › Matter team — Team tab (add, transfer, remove) › Bob (Admin, not on the matter): transfers the lead to Carol (3.0s)
+  ✓  105 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:126:7 › Matter team — Team tab (add, transfer, remove) › Carol (now lead): adds Bob, then removes him (2.9s)
+
+
+  1) [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:282:7 › Day 30 — First Billing Cycle › Alice: Fee note lifecycle — Sipho's and Apex's fee notes DRAFT → APPROVED → SENT 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveScreenshot[2m([22m[32mexpected[39m[2m)[22m failed
+
+      9510 pixels (ratio 0.02 of all image pixels) are different.
+
+      Snapshot: day-30-fee-note-list-mixed.png
+
+    Call log:
+    [2m  - Expect "toHaveScreenshot(day-30-fee-note-list-mixed.png)" with timeout 5000ms[22m
+    [2m    - verifying given screenshot expectation[22m
+    [2m  - taking page screenshot[22m
+    [2m    - disabled all CSS animations[22m
+    [2m  - waiting for fonts to load...[22m
+    [2m  - fonts loaded[22m
+    [2m  - 9510 pixels (ratio 0.02 of all image pixels) are different.[22m
+    [2m  - waiting 100ms before taking screenshot[22m
+    [2m  - taking page screenshot[22m
+    [2m    - disabled all CSS animations[22m
+    [2m  - waiting for fonts to load...[22m
+    [2m  - fonts loaded[22m
+    [2m  - captured a stable screenshot[22m
+    [2m  - 9510 pixels (ratio 0.02 of all image pixels) are different.[22m
+
+
+       at ../../helpers/screenshot.ts:67
+
+      65 |       await expect(locator).toHaveScreenshot(`${name}.png`);
+      66 |     } else {
+    > 67 |       await expect(page).toHaveScreenshot(`${name}.png`, {
+         |                          ^
+      68 |         fullPage: fullPage ? true : undefined,
+      69 |       });
+      70 |     }
+        at captureScreenshot (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend/e2e/helpers/screenshot.ts:67:26)
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend/e2e/tests/legal-lifecycle/day-30-billing.spec.ts:311:28
+
+    attachment #1: day-30-fee-note-list-mixed (image/png) ──────────────────────────────────────────
+    Expected: e2e/screenshots/legal-lifecycle/day-30-fee-note-list-mixed.png
+    Received: test-results/day-30-billing-Day-30-—-Fi-8bb44-tes-DRAFT-→-APPROVED-→-SENT-chromium/day-30-fee-note-list-mixed-actual.png
+    Diff:     test-results/day-30-billing-Day-30-—-Fi-8bb44-tes-DRAFT-→-APPROVED-→-SENT-chromium/day-30-fee-note-list-mixed-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-30-billing-Day-30-—-Fi-8bb44-tes-DRAFT-→-APPROVED-→-SENT-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-30-billing-Day-30-—-Fi-8bb44-tes-DRAFT-→-APPROVED-→-SENT-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/tests/legal-lifecycle/day-30-billing.spec.ts:282:7 › Day 30 — First Billing Cycle › Alice: Fee note lifecycle — Sipho's and Apex's fee notes DRAFT → APPROVED → SENT 
+  1 did not run
+  103 passed (2.9m)
+ ELIFECYCLE  Command failed with exit code 1.

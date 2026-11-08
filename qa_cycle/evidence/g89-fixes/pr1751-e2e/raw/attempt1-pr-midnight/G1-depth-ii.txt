@@ -1,0 +1,108 @@
+
+> frontend@0.1.0 test:e2e:legal-depth-ii /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend
+> playwright test --config e2e/playwright.legal-depth-ii.config.ts --reporter=list,json
+
+
+Running 44 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:98:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Create client Sipho Ndlovu and start FICA onboarding (4.9s)
+  ✓   2 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:115:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice (Thandi): Open Sipho's litigation matter from the Litigation template (2.5s)
+  ✓   3 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:140:7 › Day 5 — Disbursements (Phase 67) › Bob: Navigate to Legal → Disbursements list page (1.2s)
+  ✓   4 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:156:7 › Day 5 — Disbursements (Phase 67) › Bob: Create sheriff-fee OFFICE_ACCOUNT disbursement + submit (2.5s)
+  ✓   5 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:197:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment (5.9s)
+  ✓   6 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:272:7 › Day 5 — Disbursements (Phase 67) › Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link (4.5s)
+  ✓   7 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:315:7 › Day 5 — Disbursements (Phase 67) › Alice (Thandi): Approve trust-linked disbursement (2.1s)
+  ✓   8 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:335:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve sheriff-fee OFFICE_ACCOUNT disbursement (1.6s)
+  ✓   9 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:360:7 › Day 5 — Disbursements (Phase 67) › Bob: Approve dialog opened right after navigating to a disbursement stays open (4.3s)
+  ✓  10 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:411:7 › Day 5 — Disbursements (Phase 67) › Alice: Sipho's matter Finance → Disbursements tab lists the disbursements (2.8s)
+  ✓  11 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:448:7 › Day 5 — Disbursements (Phase 67) › Alice: Verify Unbilled Disbursements summary on Sipho's matter (1.9s)
+  ✓  12 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:103:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create client Khumalo Property Holdings and start FICA onboarding (4.3s)
+  ✓  13 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:145:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Complete Khumalo's FICA checklist → client becomes ACTIVE (7.6s)
+  ✓  14 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:186:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice (Thandi): Create matter using Property Transfer template (2.2s)
+  ✓  15 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:219:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Clicking into a matter (route with a loading skeleton) renders its content (10 fresh sessions) (9.6s)
+  ✓  16 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:244:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Verify 16 conveyancing custom fields present on matter detail (2.2s)
+  ✘  17 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:282:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office, seller and purchaser (3.7s)
+  -  18 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:314:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document and save it to the matter
+  -  19 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:357:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Generate Offer to Purchase document with conveyancing clauses
+  -  20 [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:386:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Send OTP for Acceptance via Phase 28 flow
+  ✓  21 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:202:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Billing rate override for Alice on Sipho's client (2.4s)
+  ✓  22 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:227:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand (3.7s)
+  ✓  23 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:258:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Open Statements tab on oldest matter (1.7s)
+  ✓  24 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:273:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview (2.8s)
+  ✓  25 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:294:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab (4.1s)
+  -  26 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:361:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statements-tab Download fetches the PDF
+  ✓  27 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:376:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Write off one approved-UNBILLED disbursement (1.8s)
+  ✓  28 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:398:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify write-off audit event present in audit log (2.0s)
+  ✓  29 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:425:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statement after the write-off — sheriff fee out of the disbursements and the WIP (3.0s)
+  ✓  30 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:438:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify written-off disbursement excluded from next invoice draft (2.6s)
+  ✓  31 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:96:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Create client Apex Holdings and start FICA onboarding (2.6s)
+  ✓  32 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:111:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Open a clean commercial matter for Apex Holdings (2.4s)
+  ✓  33 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:135:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Bob: Record + approve counsel's fee disbursement on the Apex matter (3.0s)
+  ✓  34 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:173:7 › Day 75-85 — Matter Closure (Phase 67) › [setup] Alice (Thandi): Bill the Apex matter — fee note drafted, approved and sent (3.6s)
+  ✓  35 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:229:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Open Close Matter dialog on clean matter (1.7s)
+  ✓  36 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:239:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Step 1 gate report renders all-green (happy path) (2.0s)
+  ✓  37 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:262:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Advance to Step 2 + confirm close with CONCLUDED reason (3.2s)
+  ✓  38 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:305:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Closed matter's retention card shows the deletion date (closure + 5 years) (1.2s)
+  ✓  39 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:334:7 › Day 75-85 — Matter Closure (Phase 67) › Bob (Admin): Close Matter on failing-gates matter routes to Step 3 (no override) (2.5s)
+  ✓  40 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:359:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Override close with justification ≥20 chars (2.2s)
+  ✓  41 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:391:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Verify override audit event captures override_used=true + justification (3.0s)
+  -  42 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Matters list -> matter (projects/[id]): 120 fresh-session clicks render the destination
+  -  43 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Reports -> report detail (reports/[reportSlug]): 120 fresh-session clicks render the destination
+  -  44 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination
+
+
+  1) [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:282:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office, seller and purchaser 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveScreenshot[2m([22m[32mexpected[39m[2m)[22m failed
+
+      20056 pixels (ratio 0.03 of all image pixels) are different.
+
+      Snapshot: day-14-conveyancing-fields-populated.png
+
+    Call log:
+    [2m  - Expect "toHaveScreenshot(day-14-conveyancing-fields-populated.png)" with timeout 5000ms[22m
+    [2m    - verifying given screenshot expectation[22m
+    [2m  - taking page screenshot[22m
+    [2m    - disabled all CSS animations[22m
+    [2m  - waiting for fonts to load...[22m
+    [2m  - fonts loaded[22m
+    [2m  - 20056 pixels (ratio 0.03 of all image pixels) are different.[22m
+    [2m  - waiting 100ms before taking screenshot[22m
+    [2m  - taking page screenshot[22m
+    [2m    - disabled all CSS animations[22m
+    [2m  - waiting for fonts to load...[22m
+    [2m  - fonts loaded[22m
+    [2m  - captured a stable screenshot[22m
+    [2m  - 20056 pixels (ratio 0.03 of all image pixels) are different.[22m
+
+
+       at ../../helpers/screenshot.ts:67
+
+      65 |       await expect(locator).toHaveScreenshot(`${name}.png`);
+      66 |     } else {
+    > 67 |       await expect(page).toHaveScreenshot(`${name}.png`, {
+         |                          ^
+      68 |         fullPage: fullPage ? true : undefined,
+      69 |       });
+      70 |     }
+        at captureScreenshot (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend/e2e/helpers/screenshot.ts:67:26)
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend/e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:310:28
+
+    attachment #1: day-14-conveyancing-fields-populated (image/png) ────────────────────────────────
+    Expected: e2e/screenshots/legal-depth-ii/day-14-conveyancing-fields-populated.png
+    Received: test-results/day-14-conveyancing-Day-14-8af3a-office-seller-and-purchaser-chromium/day-14-conveyancing-fields-populated-actual.png
+    Diff:     test-results/day-14-conveyancing-Day-14-8af3a-office-seller-and-purchaser-chromium/day-14-conveyancing-fields-populated-diff.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-14-conveyancing-Day-14-8af3a-office-seller-and-purchaser-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-14-conveyancing-Day-14-8af3a-office-seller-and-purchaser-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:282:7 › Day 14 — Conveyancing matter + OTP acceptance (Phase 67) › Alice: Fill property_address, erf_number, deeds_office, seller and purchaser 
+  4 skipped
+  3 did not run
+  36 passed (1.9m)
+ ELIFECYCLE  Command failed with exit code 1.

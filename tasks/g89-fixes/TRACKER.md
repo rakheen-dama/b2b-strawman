@@ -47,7 +47,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | **VERIFIED** on KC (632A(a)(b)(c)/S1-67, F6, F26/S2-50, WIP). DEFERRED: 632C (needs a new payment, moved to the exit re-walk); VIEW_TRUST withheld (needs a custom role, moved to the Batch H walk) |
 | 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 → `4f3323525` | **VERIFIED** on KC: F52 lists and direct 403, F53/F54 404, C2 'Withheld'. F56/F58 DEFERRED (AI not configured on the KC dev stack; covered by backend stub-provider tests) → exit re-walk |
-| 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 | gates running |
+| 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 @6859a3f17 | 2× APPROVE; FE 3716 green; BE verify 6736/0 @f3c191bb7 (BE unchanged since); e2e gate PASS @f3c191bb7 (`pr1751-e2e/`); targeted comment e2e on the final head running |
 | 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
@@ -278,3 +278,12 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - F31 reproduced: after a portal comment, @mentions notified nobody (FK violation rolled back the batch).
   - All five gaps red-first.
   - 935 targeted green; FE 3711 green.
+- 2026-11-08 ~02:40 — PR #1751 (G) gates.
+  - Review: FE reviewer REQUEST_CHANGES @f3c191bb7 (mention combobox a11y, IME, Shift+Tab). Fixed @6859a3f17 with red vitests first; cmdk replaced by an ARIA listbox. 2× APPROVE @6859a3f17.
+  - Full verify: 6736/0/0/26 @f3c191bb7.
+  - E2E gate PASS @f3c191bb7, after 4 PR cycles and 2 main control cycles. Every failure is class (c) and reproduced on main:
+    - midnight-window date failures;
+    - screenshot scroll and reflow artefacts on the day-30 fee-note frames.
+  - New Batch F items:
+    - **G89-F66**: `projects/project-time.spec.ts` dates entries with the UTC date, but My Work uses the SA date, so it fails every night 00:00–02:00 SAST. Use the SA date helper.
+    - **G89-F67**: the `day-30-billing` fee-note screenshots (`fee-note-tariff-completed`, `fee-note-list-mixed`) are flaky on scroll position and on run-id width. Mask the volatile parts or use element-scoped shots.

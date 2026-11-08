@@ -18,6 +18,13 @@ vi.mock("@/components/audit/audit-timeline-tab", () => ({
   useAuditTabVisible: () => false,
 }));
 
+// G89-F64: TrustBalanceCard reads VIEW_TRUST from the capability context; these tests render it
+// for a trust reader.
+vi.mock("@/lib/capabilities", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/capabilities")>()),
+  useCapabilities: () => ({ hasCapability: () => true }),
+}));
+
 vi.mock("swr", () => ({
   default: vi.fn(),
   useSWRConfig: () => ({ mutate: vi.fn() }),

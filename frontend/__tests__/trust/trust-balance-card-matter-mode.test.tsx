@@ -6,6 +6,13 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 
 vi.mock("server-only", () => ({}));
 
+// G89-F64: TrustBalanceCard reads VIEW_TRUST from the capability context; these tests render it
+// for a trust reader.
+vi.mock("@/lib/capabilities", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/capabilities")>()),
+  useCapabilities: () => ({ hasCapability: () => true }),
+}));
+
 vi.mock("swr", () => ({
   default: vi.fn(),
   useSWRConfig: () => ({ mutate: vi.fn() }),

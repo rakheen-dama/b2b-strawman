@@ -191,7 +191,10 @@ export default async function InvoiceDetailPage({
         <h2 className="font-display text-lg text-slate-950 dark:text-slate-50">
           Generated Documents
         </h2>
+        {/* Both panels fetch once on mount: the key remounts them when a send / payment /
+            void changes the fee note, so they never go stale until a reload (G88-M9). */}
         <GeneratedDocumentsList
+          key={`${invoice!.status}-${invoice!.updatedAt}`}
           entityType="INVOICE"
           entityId={id}
           slug={slug}
@@ -215,7 +218,7 @@ export default async function InvoiceDetailPage({
       </div>
 
       {/* Audit Trail (Epic 507A) — capability-gated client-side */}
-      <InvoiceAuditSection invoiceId={id} />
+      <InvoiceAuditSection key={`${invoice!.status}-${invoice!.updatedAt}`} invoiceId={id} />
     </div>
   );
 }

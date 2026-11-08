@@ -366,6 +366,27 @@ describe("Firm › Audit trail tab loader (server shell)", () => {
     expect(screen.queryByTestId("entity-cell-link")).not.toBeInTheDocument();
   });
 
+  it("G-D10a: a row shows the event label only, never the stored event key", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [
+        makeEvent({
+          id: "evt-key",
+          eventType: "checklist.item.completed",
+          entityType: "checklist_instance_item",
+          entityId: "5831f9d6-0000-0000-0000-000000000000",
+          label: "Checklist item completed",
+        }),
+      ],
+      page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+    });
+
+    await renderTab();
+
+    const row = screen.getByTestId("audit-row-toggle-evt-key").closest("tr")!;
+    expect(row).toHaveTextContent("Checklist item completed");
+    expect(row.textContent).not.toContain("checklist.item.completed");
+  });
+
   it("names a fee note by its number: 'Fee note INV-0003'", async () => {
     mockListAuditEvents.mockResolvedValue({
       content: [

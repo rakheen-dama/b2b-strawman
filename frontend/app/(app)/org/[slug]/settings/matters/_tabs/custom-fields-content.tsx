@@ -217,7 +217,12 @@ export function CustomFieldsContent({
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="plain" size="icon" className="size-8">
+                              <Button
+                                variant="plain"
+                                size="icon"
+                                className="size-8"
+                                aria-label={`Actions for ${field.name}`}
+                              >
                                 <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -316,7 +321,12 @@ export function CustomFieldsContent({
                       {canManage && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="plain" size="icon" className="size-8">
+                            <Button
+                              variant="plain"
+                              size="icon"
+                              className="size-8"
+                              aria-label={`Actions for ${group.name}`}
+                            >
                               <MoreHorizontal className="size-4" />
                             </Button>
                           </DropdownMenuTrigger>

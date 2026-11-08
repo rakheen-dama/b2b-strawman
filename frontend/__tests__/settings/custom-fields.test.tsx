@@ -165,6 +165,13 @@ describe("CustomFieldsContent", () => {
     expect(screen.getByRole("button", { name: /Add Group/ })).toBeInTheDocument();
   });
 
+  it("names the row and card action menu buttons (634A follow-up)", () => {
+    render(<CustomFieldsContent {...makeProps(true)} />);
+
+    expect(screen.getByRole("button", { name: "Actions for Priority Level" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Actions for Financial Info" })).toBeInTheDocument();
+  });
+
   it("member does not see Add Field or Add Group buttons", () => {
     render(<CustomFieldsContent {...makeProps(false)} />);
 

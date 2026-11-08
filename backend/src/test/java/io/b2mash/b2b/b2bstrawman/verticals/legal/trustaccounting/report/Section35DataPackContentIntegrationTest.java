@@ -222,6 +222,23 @@ class Section35DataPackContentIntegrationTest {
         .doesNotContain("Rows:");
   }
 
+  /** G89-F48: the PDF printed raw money ("38019.15"); it prints rand, grouped, comma decimals. */
+  @Test
+  void pdf_formatsAmountsAsRand() {
+    String html =
+        runInTenantReturning(
+            () -> {
+              var definition = reportDefinitionRepository.findBySlug(SLUG).orElseThrow();
+              return reportRenderingService.renderHtml(definition, execute(), params);
+            });
+
+    assertThat(html)
+        .contains(">R 38 019,15<")
+        .doesNotContain("38019.15")
+        .as("a payment (the LPFF share of interest) is a negative rand amount")
+        .containsPattern(">-R \\d");
+  }
+
   @Test
   void csv_hasNoBlankAmountColumn() {
     String csv =

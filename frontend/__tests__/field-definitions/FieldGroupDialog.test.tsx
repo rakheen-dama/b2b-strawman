@@ -307,4 +307,111 @@ describe("FieldGroupDialog", () => {
       });
     });
   });
+
+  // 634A follow-ups (PR #1733 review, carried into G89 Batch E)
+  describe("634A follow-ups", () => {
+    const depGroup: FieldGroupResponse = {
+      id: "g-dep",
+      entityType: "PROJECT",
+      name: "Dependency Group",
+      slug: "dependency_group",
+      description: null,
+      packId: null,
+      sortOrder: 1,
+      active: true,
+      autoApply: false,
+      dependsOn: null,
+      fieldDefinitionIds: [],
+      createdAt: "2025-01-15T10:00:00Z",
+      updatedAt: "2025-01-15T10:00:00Z",
+    };
+    const editedGroup: FieldGroupResponse = {
+      ...depGroup,
+      id: "g-edit",
+      name: "Edited Group",
+      slug: "edited_group",
+      sortOrder: 0,
+      dependsOn: ["g-dep"],
+      // fd-gone is a member whose definition is inactive (not offered in availableFields)
+      fieldDefinitionIds: ["fd-1", "fd-gone"],
+    };
+
+    function renderEdit(label: string) {
+      return render(
+        <FieldGroupDialog
+          slug="acme"
+          entityType="PROJECT"
+          group={editedGroup}
+          availableFields={makeAvailableFields()}
+          allGroups={[editedGroup, depGroup]}
+          initialFieldIds={editedGroup.fieldDefinitionIds}
+        >
+          <button>{label}</button>
+        </FieldGroupDialog>
+      );
+    }
+
+    it("an inactive member field is listed and can be removed", async () => {
+      mockUpdateFieldGroup.mockResolvedValue({ success: true });
+      const user = userEvent.setup();
+      renderEdit("Open Inactive Member Dialog");
+
+      await user.click(screen.getByText("Open Inactive Member Dialog"));
+      await user.click(screen.getByRole("button", { name: "Remove Inactive field" }));
+      await user.click(screen.getByRole("button", { name: "Save Changes" }));
+
+      await waitFor(() =>
+        expect(mockUpdateFieldGroup).toHaveBeenCalledWith(
+          "acme",
+          "g-edit",
+          expect.objectContaining({ fieldDefinitionIds: ["fd-1"] })
+        )
+      );
+    });
+
+    it("removing the last dependency clears dependsOn on save", async () => {
+      mockUpdateFieldGroup.mockResolvedValue({ success: true });
+      const user = userEvent.setup();
+      renderEdit("Open Clear Deps Dialog");
+
+      await user.click(screen.getByText("Open Clear Deps Dialog"));
+      await user.click(screen.getByRole("button", { name: "Remove Dependency Group" }));
+      await user.click(screen.getByRole("button", { name: "Save Changes" }));
+
+      await waitFor(() =>
+        expect(mockUpdateFieldGroup).toHaveBeenCalledWith(
+          "acme",
+          "g-edit",
+          expect.objectContaining({ dependsOn: [] })
+        )
+      );
+    });
+
+    it("the badge remove buttons have accessible names", async () => {
+      const user = userEvent.setup();
+      renderEdit("Open Named Buttons Dialog");
+
+      await user.click(screen.getByText("Open Named Buttons Dialog"));
+
+      expect(screen.getByRole("button", { name: "Remove Budget Code" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Remove Dependency Group" })).toBeInTheDocument();
+    });
+
+    it("the Slug pattern is a valid regular expression under the v flag", async () => {
+      const user = userEvent.setup();
+      render(
+        <FieldGroupDialog slug="acme" entityType="PROJECT" availableFields={makeAvailableFields()}>
+          <button>Open Slug Pattern Dialog</button>
+        </FieldGroupDialog>
+      );
+      await user.click(screen.getByText("Open Slug Pattern Dialog"));
+
+      // Browsers compile the pattern attribute with the "v" flag; "[a-z0-9_-]" is invalid there
+      // and logged a console error on every keystroke.
+      const pattern = screen.getByLabelText("Slug").getAttribute("pattern")!;
+      expect(() => new RegExp(`^(?:${pattern})$`, "v")).not.toThrow();
+      expect(new RegExp(`^(?:${pattern})$`, "v").test("contact-and_address2")).toBe(true);
+      expect(new RegExp(`^(?:${pattern})$`, "v").test("Bad Slug")).toBe(false);
+    });
+  });
 });

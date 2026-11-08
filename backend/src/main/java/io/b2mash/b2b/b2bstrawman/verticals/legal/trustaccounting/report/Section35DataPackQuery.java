@@ -2,11 +2,13 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRun;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -128,7 +130,7 @@ public class Section35DataPackQuery implements ReportQuery {
           Section35DataPackQuery::investmentLine);
     }
 
-    // Section 5: Interest Allocation (latest run within year)
+    // Section 5: Interest Allocation (every posted run within the year)
     assembleInterestAllocationSection(
         trustAccountId, financialYearStart, financialYearEnd, allRows, sectionSummaries);
 
@@ -199,33 +201,60 @@ public class Section35DataPackQuery implements ReportQuery {
       List<Map<String, Object>> allRows,
       List<Map<String, Object>> sectionSummaries) {
 
-    // Find the latest interest run within the financial year
+    // G89-F50 (D14): every POSTED run whose period ends in the financial year, oldest first — one
+    // row per client per run, one section total. Unposted (DRAFT / APPROVED) runs are not trust
+    // money yet and are left out.
     var runs =
         interestRunRepository.findByTrustAccountIdOrderByPeriodEndDesc(trustAccountId).stream()
+            .filter(r -> "POSTED".equals(r.getStatus()))
             .filter(
                 r -> !r.getPeriodEnd().isBefore(yearStart) && !r.getPeriodEnd().isAfter(yearEnd))
+            .sorted(Comparator.comparing(InterestRun::getPeriodEnd))
             .toList();
 
     if (runs.isEmpty()) {
       var meta = new LinkedHashMap<String, Object>();
       meta.put("sectionName", "Interest Allocation");
-      meta.put("note", "No interest runs found in financial year");
+      meta.put("note", "No posted interest runs found in financial year");
       meta.put("rowCount", 0);
       sectionSummaries.add(meta);
       return;
     }
 
-    var latestRun = runs.getFirst();
-    var iaParams = new HashMap<String, Object>();
-    iaParams.put("trust_account_id", trustAccountId);
-    iaParams.put("interest_run_id", latestRun.getId());
-    var iaResult = interestAllocationQuery.executeAll(iaParams);
+    var rows = new ArrayList<Map<String, Object>>();
+    BigDecimal totalInterest = BigDecimal.ZERO;
+    BigDecimal totalLpffShare = BigDecimal.ZERO;
+    BigDecimal totalClientShare = BigDecimal.ZERO;
+    for (var run : runs) {
+      var iaParams = new HashMap<String, Object>();
+      iaParams.put("trust_account_id", trustAccountId);
+      iaParams.put("interest_run_id", run.getId());
+      var iaResult = interestAllocationQuery.executeAll(iaParams);
+      String period = run.getPeriodStart() + " – " + run.getPeriodEnd();
+      for (var row : iaResult.rows()) {
+        var runRow = new LinkedHashMap<String, Object>(row);
+        runRow.put("interestRunId", run.getId());
+        runRow.put("period", period);
+        rows.add(runRow);
+      }
+      totalInterest = totalInterest.add(money(iaResult.summary(), "totalInterest"));
+      totalLpffShare = totalLpffShare.add(money(iaResult.summary(), "totalLpffShare"));
+      totalClientShare = totalClientShare.add(money(iaResult.summary(), "totalClientShare"));
+    }
+
+    var summary = new LinkedHashMap<String, Object>();
+    summary.put("totalInterest", totalInterest);
+    summary.put("totalLpffShare", totalLpffShare);
+    summary.put("totalClientShare", totalClientShare);
+    summary.put("allocationCount", rows.size());
+    summary.put("runCount", runs.size());
     addSection(
         allRows,
         sectionSummaries,
         "Interest Allocation",
-        iaResult,
-        row -> line(text(row, "clientName"), money(row, "clientShare")));
+        new ReportResult(rows, summary),
+        row ->
+            line(text(row, "clientName") + " · " + text(row, "period"), money(row, "clientShare")));
   }
 
   /**

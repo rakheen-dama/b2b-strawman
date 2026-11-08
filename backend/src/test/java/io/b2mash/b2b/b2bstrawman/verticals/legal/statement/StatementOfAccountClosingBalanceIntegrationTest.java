@@ -217,6 +217,12 @@ class StatementOfAccountClosingBalanceIntegrationTest {
 
     String text = pdfText(response.statementOfAccountDocumentId());
     assertThat(text).contains("Closing balance owing: R0,00").doesNotContain("R500,00");
+    // G89-F57: under D9 the summary counts fee notes issued in the period, so its lines say so
+    // ("Total fees: R0,00" beside listed unbilled time read as a contradiction).
+    assertThat(text)
+        .contains("Fees billed in period: R")
+        .contains("Disbursements billed in period: R")
+        .doesNotContain("Total fees: ");
   }
 
   // ---------------------------------------------------------------------------------------------

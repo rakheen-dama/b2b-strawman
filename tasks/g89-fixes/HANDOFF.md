@@ -69,3 +69,25 @@ Resume from here. First read `TRACKER.md` (decisions D1–D22, batch table, log)
 - Google Fonts build flake (F46): clear `.next` and retry.
 - CodeRabbit hourly limit: record REVIEWED on the head it actually reviewed and DEFERRED on the final head, with the bound re-reviews as cover.
 - Bookkeeping commits go from the detached worktree `../b2b-strawman-g89-docs` with `git push origin HEAD:main`. Never commit in the main checkout.
+
+## UPDATE 2026-11-08 ~04:45: Batch E PR is open
+
+**PR #1752**, head `da212c11265ea2e9b452e3790796cf95b148ac1c`. Worktree and branch are unchanged. All gaps are fixed and committed red-first, including F17 and F50 (both MEDIUM). 2573 targeted backend tests pass, and the FE gate is green (3742 tests).
+
+Still to do before merge:
+- **Full verify.** Not run yet.
+- **Two bound reviews.**
+- **CodeRabbit.** Read its inline comments first.
+- **Pre-merge e2e.** Many screenshot frames shift; the builder report lists them (Section 35, interest posted date, SoA, audit-log, disbursement Billed, KPI grid, 1024 tables, Team).
+- **Founder sign-off on the F57 wording.** In the Summary lines, "Total fees: " becomes "Fees billed in period: " and "Total disbursements: " becomes "Disbursements billed in period: ".
+- **KC check** at 1440 and 1024.
+
+Deferred and needing a decision:
+- three 634A items:
+  - Slug read-only on edit;
+  - the card menu reopens after a dialog closes;
+  - 212 px cards at 1024;
+- interest-posted notification raw amounts;
+- sentence-casing about 20 audit labels.
+
+The builder judgment calls are in the PR body.

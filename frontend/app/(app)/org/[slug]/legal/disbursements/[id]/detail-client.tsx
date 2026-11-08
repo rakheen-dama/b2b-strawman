@@ -287,8 +287,9 @@ export function DisbursementDetailClient({
             {disbursement.invoiceLineId && (
               // TODO: wire invoice id when 488B updates the backend DTO to expose invoiceId
               // (current DTO only has invoiceLineId which is NOT a valid /invoices/:id path).
+              // "Billed", never "Invoiced" — the legal word is fee note (ADR-357, G88-F27)
               <Row
-                label="Invoiced"
+                label="Billed"
                 value={<span className="text-slate-600 dark:text-slate-400">Yes</span>}
               />
             )}

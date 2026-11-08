@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
@@ -572,6 +573,7 @@ public class InterestService {
                       description,
                       transactionDate,
                       memberId));
+          auditInterestCredit(savedTxn);
           allocation.setTrustTransactionId(savedTxn.getId());
         } else {
           for (var line : lines) {
@@ -587,6 +589,7 @@ public class InterestService {
                         description,
                         transactionDate,
                         memberId));
+            auditInterestCredit(savedTxn);
             line.setTrustTransactionId(savedTxn.getId());
           }
           interestAllocationLineRepository.saveAll(lines);
@@ -1095,6 +1098,27 @@ public class InterestService {
       return "INT-CREDIT-" + runId + "-" + customerId;
     }
     return "INT-CREDIT-" + runId + "-" + projectId + "-" + customerId.toString().substring(0, 8);
+  }
+
+  /**
+   * G89-F44: one audit row per posted INTEREST_CREDIT, scoped to its client and matter, so the
+   * client's portal "Firm actions" tab can show it (allow-listed) and the matter feed records it.
+   * The run-level {@code interest_run.posted} row has no client, so it can never reach a portal.
+   */
+  private void auditInterestCredit(TrustTransaction credit) {
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_interest_credit.recorded")
+            .entityType("trust_transaction")
+            .entityId(credit.getId())
+            .details(
+                AuditDetails.matterScoped(
+                    credit.getProjectId(),
+                    credit.getCustomerId(),
+                    Map.of(
+                        "amount", credit.getAmount().toString(),
+                        "reference", credit.getReference())))
+            .build());
   }
 
   private static TrustTransaction interestCredit(

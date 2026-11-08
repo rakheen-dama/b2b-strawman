@@ -41,6 +41,12 @@ public final class PortalActivityEventTypes {
           "trust_refund.approved",
           "trust_reversal.approved",
           "trust_transaction.reversed",
+          // G89-F44 (D14): money received for the client, and each interest credit posted to the
+          // client's matter. Both rows are matter- and client-scoped (AuditDetails.matterScoped),
+          // so findActivityFirmForCustomer shows them to that client only; a deposit or credit
+          // with no matter has no project_id and never surfaces (ADR-366 D7).
+          "trust_deposit.recorded",
+          "trust_interest_credit.recorded",
           // Documents the firm shared with the client
           "document.generated",
           "docx_document.generated",

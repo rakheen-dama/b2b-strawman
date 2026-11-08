@@ -1709,6 +1709,7 @@ class ActivityMessageFormatterTest {
           new String[] {"trust_transfer.recorded", "trust_transaction"},
           new String[] {"trust_fee_transfer.recorded", "trust_transaction"},
           new String[] {"trust_refund.recorded", "trust_transaction"},
+          new String[] {"trust_interest_credit.recorded", "trust_transaction"},
           new String[] {"trust_payment.approved", "trust_transaction"},
           new String[] {"trust_fee_transfer.approved", "trust_transaction"},
           new String[] {"trust_refund.approved", "trust_transaction"},

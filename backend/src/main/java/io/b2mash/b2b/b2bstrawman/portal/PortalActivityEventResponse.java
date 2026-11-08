@@ -104,6 +104,8 @@ public record PortalActivityEventResponse(
       case "trust_refund.approved" -> "Trust refund approved";
       case "trust_reversal.approved" -> "Trust transaction reversed";
       case "trust_transaction.reversed" -> "Trust transaction reversed";
+      case "trust_deposit.recorded" -> "Trust deposit received";
+      case "trust_interest_credit.recorded" -> "Interest credited to your trust balance";
       case "document.generated", "docx_document.generated" -> "Document generated for you";
       case "statement.generated" -> "Statement of Account generated";
       case "matter_closure.closed" -> "Matter closed";

@@ -188,6 +188,13 @@ public class AiSkillExecutionService {
   }
 
   public SkillExecutionResult executeDrafting(UUID templateId, UUID projectId, UUID memberId) {
+    // G89-F62: drafting needs both; Map.of rejects a null value, which made either missing a 500
+    if (templateId == null) {
+      throw new InvalidStateException("Template required", "Choose a template to draft from.");
+    }
+    if (projectId == null) {
+      throw new InvalidStateException("Matter required", "Choose the matter to draft for.");
+    }
     var context =
         new SkillContext(
             projectId,

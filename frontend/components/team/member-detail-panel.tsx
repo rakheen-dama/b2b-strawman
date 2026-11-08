@@ -41,6 +41,8 @@ interface MemberDetailPanelProps {
   member: MemberInfo | null;
   roles: OrgRole[];
   slug: string;
+  /** Called after a successful save, so the caller can reload its list (G89-F65). */
+  onSaved?: () => void;
 }
 
 export function MemberDetailPanel({
@@ -49,6 +51,7 @@ export function MemberDetailPanel({
   member,
   roles,
   slug,
+  onSaved,
 }: MemberDetailPanelProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -147,6 +150,7 @@ export function MemberDetailPanel({
       const result = await assignMemberRole(slug, member.id, selectedRoleId, overrides);
       if (result.success) {
         onOpenChange(false);
+        onSaved?.();
       } else {
         setError(result.error ?? "An error occurred.");
       }

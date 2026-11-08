@@ -28,6 +28,9 @@ interface MemberListProps {
 interface InnerMemberListProps {
   isAdmin?: boolean;
   onRowClick: (member: MemberRowData) => void;
+  roles: OrgRole[];
+  /** Bumped after a role change is saved, so the list reloads (G89-F65). */
+  refreshKey: number;
 }
 
 interface MemberRowData {
@@ -40,7 +43,7 @@ interface MemberRowData {
   capabilityOverridesCount?: number;
 }
 
-function MockMemberList({ isAdmin, onRowClick }: InnerMemberListProps) {
+function MockMemberList({ isAdmin, onRowClick, roles }: InnerMemberListProps) {
   const { members, isLoaded } = useOrgMembers();
 
   if (!isLoaded) {
@@ -74,13 +77,21 @@ function MockMemberList({ isAdmin, onRowClick }: InnerMemberListProps) {
           role: member.role,
           joinedAt: "\u2014",
         };
-        return <MemberRow key={member.id} member={row} isAdmin={isAdmin} onRowClick={onRowClick} />;
+        return (
+          <MemberRow
+            key={member.id}
+            member={row}
+            roles={roles}
+            isAdmin={isAdmin}
+            onRowClick={onRowClick}
+          />
+        );
       })}
     </MemberTable>
   );
 }
 
-function KeycloakBffMemberList({ isAdmin, onRowClick }: InnerMemberListProps) {
+function KeycloakBffMemberList({ isAdmin, onRowClick, roles, refreshKey }: InnerMemberListProps) {
   const [members, setMembers] = useState<BffMember[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -90,7 +101,7 @@ function KeycloakBffMemberList({ isAdmin, onRowClick }: InnerMemberListProps) {
         setMembers(data);
       })
       .finally(() => setIsLoaded(true));
-  }, []);
+  }, [refreshKey]);
 
   if (!isLoaded) {
     return (
@@ -125,7 +136,15 @@ function KeycloakBffMemberList({ isAdmin, onRowClick }: InnerMemberListProps) {
           orgRoleName: member.orgRoleName,
           capabilityOverridesCount: member.capabilityOverridesCount,
         };
-        return <MemberRow key={member.id} member={row} isAdmin={isAdmin} onRowClick={onRowClick} />;
+        return (
+          <MemberRow
+            key={member.id}
+            member={row}
+            roles={roles}
+            isAdmin={isAdmin}
+            onRowClick={onRowClick}
+          />
+        );
       })}
     </MemberTable>
   );
@@ -159,12 +178,24 @@ function MemberTable({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * A custom role's display name: the gateway's orgRoleName, else the org role whose slug matches the
+ * member's "org:<slug>" role, else the bare slug — never the "org:" wire form (G89-F65).
+ */
+function customRoleLabel(member: MemberRowData, roles: OrgRole[]): string {
+  if (member.orgRoleName) return member.orgRoleName;
+  const slug = member.role.startsWith("org:") ? member.role.slice(4) : member.role;
+  return roles.find((r) => r.slug === slug)?.name ?? slug;
+}
+
 function MemberRow({
   member,
+  roles,
   isAdmin,
   onRowClick,
 }: {
   member: MemberRowData;
+  roles: OrgRole[];
   isAdmin?: boolean;
   onRowClick?: (member: MemberRowData) => void;
 }) {
@@ -200,7 +231,7 @@ function MemberRow({
             </Badge>
           ) : (
             <Badge variant="neutral" data-testid="member-role-badge">
-              {member.orgRoleName ?? member.role}
+              {customRoleLabel(member, roles)}
             </Badge>
           )}
           {(member.capabilityOverridesCount ?? 0) > 0 && (
@@ -218,6 +249,7 @@ function MemberRow({
 export function MemberList({ isAdmin, roles, slug }: MemberListProps) {
   const [selectedMember, setSelectedMember] = useState<MemberRowData | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   function handleRowClick(member: MemberRowData) {
     if (!isAdmin) return;
@@ -225,7 +257,12 @@ export function MemberList({ isAdmin, roles, slug }: MemberListProps) {
     setPanelOpen(true);
   }
 
-  const innerProps: InnerMemberListProps = { isAdmin, onRowClick: handleRowClick };
+  const innerProps: InnerMemberListProps = {
+    isAdmin,
+    onRowClick: handleRowClick,
+    roles,
+    refreshKey,
+  };
 
   return (
     <>
@@ -242,6 +279,7 @@ export function MemberList({ isAdmin, roles, slug }: MemberListProps) {
           member={selectedMember}
           roles={roles}
           slug={slug}
+          onSaved={() => setRefreshKey((k) => k + 1)}
         />
       )}
     </>

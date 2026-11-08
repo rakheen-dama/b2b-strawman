@@ -75,6 +75,8 @@ export function LedgerTotalsBreakdown({
               <span aria-hidden="true" className="inline-block w-3 text-slate-400">
                 {row.sign}
               </span>
+              {/* The visual "−" is aria-hidden; say it for screen readers (PR #1746 review) */}
+              {row.sign === "−" && <span className="sr-only">less </span>}
               {row.label}
             </dt>
             <dd className="font-mono text-slate-900 tabular-nums dark:text-slate-100">

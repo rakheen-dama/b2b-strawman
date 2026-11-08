@@ -65,7 +65,7 @@ public class AuditEventTypeRegistry {
             // NOTICE/SECURITY classification the prefix gives them — only the label is explicit.
             new AuditEventTypeMetadata(
                 "security.access_denied",
-                "Access Denied",
+                "Access denied",
                 AuditSeverity.NOTICE,
                 AuditEventGroup.SECURITY),
             new AuditEventTypeMetadata(

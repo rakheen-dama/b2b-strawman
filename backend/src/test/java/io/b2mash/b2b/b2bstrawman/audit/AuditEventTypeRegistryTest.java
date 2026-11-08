@@ -194,6 +194,12 @@ class AuditEventTypeRegistryTest {
   }
 
   @Test
+  void securityAccessDenied_labelIsSentenceCase() {
+    // G88-F27 / G-D10c: the audit Event-type filter showed "Access Denied" in Title Case.
+    assertThat(registry.resolve("security.access_denied").label()).isEqualTo("Access denied");
+  }
+
+  @Test
   void entriesReturnsFullCatalogueExcludingDefaultFallback() {
     // 16 base entries + 1 ai.specialist.failed entry (Epic 515A; the other 6 removed in Phase 86
     // Epic 601, D2)

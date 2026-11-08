@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,9 @@ import org.thymeleaf.templateresolver.StringTemplateResolver;
 public class ReportRenderingService {
 
   private static final int PREVIEW_ROW_LIMIT = 50;
+
+  /** An optionally negative decimal: exempt from the CSV formula guard (G89-F49). */
+  private static final Pattern PLAIN_NUMBER = Pattern.compile("^-?\\d+(\\.\\d+)?$");
 
   private final PdfRenderingService pdfRenderingService;
   private final OrgSettingsRepository orgSettingsRepository;
@@ -161,8 +165,11 @@ public class ReportRenderingService {
     if (value == null) {
       return "";
     }
-    // Defuse CSV formula injection (OWASP recommendation)
-    if (!value.isEmpty() && "=+-@\t\r".indexOf(value.charAt(0)) >= 0) {
+    // Defuse CSV formula injection (OWASP recommendation). A plain number such as "-10055.21" is
+    // not a formula and must stay numeric in a spreadsheet (G89-F49).
+    if (!value.isEmpty()
+        && "=+-@\t\r".indexOf(value.charAt(0)) >= 0
+        && !PLAIN_NUMBER.matcher(value).matches()) {
       value = "'" + value;
     }
     if (value.contains(",")

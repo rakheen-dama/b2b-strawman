@@ -147,6 +147,11 @@ describe("ReportResults", () => {
     expect(screen.queryByText("38019.15")).not.toBeInTheDocument();
     // hours are not money
     expect(screen.getByText("12.5")).toBeInTheDocument();
+    // G89-F47: text cells wrap within a capped width; the amount cell stays right-aligned
+    const item = screen.getByText("Dlamini").closest("td")!;
+    expect(item.className).toContain("whitespace-normal");
+    expect(item.className).toContain("wrap-anywhere");
+    expect(screen.getAllByText(yearEnd)[1].closest("td")!.className).not.toContain("wrap-anywhere");
   });
 
   it("shows pagination as 'Page 1 of 2' for totalPages=2", () => {

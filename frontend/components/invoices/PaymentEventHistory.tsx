@@ -177,10 +177,11 @@ export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHis
               <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Status
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+              {/* G89-F9: Provider / Method show from xl; below it the 7 columns overflowed */}
+              <th className="hidden px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase xl:table-cell dark:text-slate-400">
                 Provider
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+              <th className="hidden px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase xl:table-cell dark:text-slate-400">
                 Method
               </th>
               <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
@@ -208,10 +209,10 @@ export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHis
                   <td className="px-3 py-2">
                     <Badge variant={badge.variant}>{badge.label}</Badge>
                   </td>
-                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
+                  <td className="hidden px-3 py-2 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
                     {PROVIDER_LABELS[event.providerSlug] ?? event.providerSlug}
                   </td>
-                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
+                  <td className="hidden px-3 py-2 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
                     {event.paymentMethod
                       ? (METHOD_LABELS[event.paymentMethod] ?? event.paymentMethod)
                       : "\u2014"}

@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
@@ -200,6 +201,37 @@ class AiSkillMatterAccessIntegrationTest {
             .getResponse();
     assertThat(response.getStatus()).isEqualTo(200);
     assertRefusedBeforeTheLlm(response.getContentAsString(), "matter");
+  }
+
+  // ---- G89-F62: drafting without a templateId --------------------------------------------------
+
+  /** Map.of rejected the null templateId, so the request was a 500; it is a 400 ProblemDetail. */
+  @Test
+  void drafting_withoutTemplateId_is400TemplateRequired() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/ai/skills/drafting")
+                .with(member(M))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"matterId\":\"%s\"}".formatted(memberMatterId)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Template required"))
+        .andExpect(jsonPath("$.detail").value("Choose a template to draft from."));
+    assertThat(stubAiProvider.receivedPromptContaining(SECRET_MATTER)).isFalse();
+  }
+
+  /** The same null-safety for the matter: a 400, never a 500. */
+  @Test
+  void drafting_withoutMatterId_is400MatterRequired() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/ai/skills/drafting")
+                .with(member(M))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"templateId\":\"%s\"}".formatted(templateId)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Matter required"))
+        .andExpect(jsonPath("$.detail").value("Choose the matter to draft for."));
   }
 
   // ---- helpers --------------------------------------------------------------------------------

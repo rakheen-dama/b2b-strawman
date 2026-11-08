@@ -4,7 +4,7 @@ import { handleApiError } from "@/lib/api";
 import { Badge } from "@b2mash/ui/badge";
 import { DataRequestTimeline } from "@/components/compliance/DataRequestTimeline";
 import { DataRequestActions } from "@/components/compliance/DataRequestActions";
-import { STATUS_CONFIG } from "@/components/compliance/DataRequestTable";
+import { STATUS_CONFIG } from "@/lib/compliance/data-request-status";
 import { isOverdue, formatLocalDate, formatComplianceDateWithTime } from "@/lib/format";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

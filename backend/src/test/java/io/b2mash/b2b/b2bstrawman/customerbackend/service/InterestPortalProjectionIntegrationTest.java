@@ -60,6 +60,10 @@ class InterestPortalProjectionIntegrationTest {
   private static final String ORG_ID = "org_interest_portal_projection";
   private static final String OWNER_SUB = "user_ipp_owner";
   private static final String APPROVER_SUB = "user_ipp_approver";
+
+  /** A plain member: never notified of a posted interest run (admins and owners only). */
+  private static final String MEMBER_SUB = "user_ipp_member";
+
   private static final GreenMail greenMail = GreenMailTestSupport.getInstance();
 
   @Autowired private MockMvc mockMvc;
@@ -73,6 +77,7 @@ class InterestPortalProjectionIntegrationTest {
   private String tenantSchema;
   private UUID ownerId;
   private UUID approverId;
+  private UUID plainMemberId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -88,6 +93,10 @@ class InterestPortalProjectionIntegrationTest {
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, APPROVER_SUB, "ipp_approver@test.com", "IPP Approver", "owner"));
+    plainMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, MEMBER_SUB, "ipp_member@test.com", "IPP Member", "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(
@@ -143,21 +152,14 @@ class InterestPortalProjectionIntegrationTest {
 
     // Firm admins and owners get the in-app TRUST_INTEREST_POSTED notification for this run
     for (var memberId : List.of(ownerId, approverId)) {
-      var notifications =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-              .call(
-                  () ->
-                      transactionTemplate.execute(
-                          tx ->
-                              notificationRepository
-                                  .findByRecipientMemberId(memberId, Pageable.unpaged())
-                                  .getContent()
-                                  .stream()
-                                  .filter(n -> "TRUST_INTEREST_POSTED".equals(n.getType()))
-                                  .filter(n -> runId.equals(n.getReferenceEntityId()))
-                                  .toList()));
-      assertThat(notifications).as("TRUST_INTEREST_POSTED for member %s", memberId).hasSize(1);
+      assertThat(interestPostedNotifications(memberId, runId))
+          .as("TRUST_INTEREST_POSTED for member %s", memberId)
+          .hasSize(1);
     }
+    // ... a plain member does not (PR #1746 review: the "not clients" claim covers staff too)
+    assertThat(interestPostedNotifications(plainMemberId, runId))
+        .as("TRUST_INTEREST_POSTED for a plain member")
+        .isEmpty();
 
     // ... and the client is never emailed about it
     greenMail.waitForIncomingEmail(2000, 1);
@@ -178,6 +180,21 @@ class InterestPortalProjectionIntegrationTest {
   }
 
   // --- Helpers ---
+
+  private List<?> interestPostedNotifications(UUID memberId, UUID runId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .call(
+            () ->
+                transactionTemplate.execute(
+                    tx ->
+                        notificationRepository
+                            .findByRecipientMemberId(memberId, Pageable.unpaged())
+                            .getContent()
+                            .stream()
+                            .filter(n -> "TRUST_INTEREST_POSTED".equals(n.getType()))
+                            .filter(n -> runId.equals(n.getReferenceEntityId()))
+                            .toList()));
+  }
 
   private String createClient(String name, String email) throws Exception {
     return TestEntityHelper.createCustomer(mockMvc, ownerJwt(), name, email);

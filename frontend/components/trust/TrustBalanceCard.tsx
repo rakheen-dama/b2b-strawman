@@ -111,7 +111,9 @@ export function TrustBalanceCard({
     : ledger?.balance;
 
   const isLoading = accountsLoading || ledgerLoading || matterLoading;
-  const loadError = Boolean(ledgerError) || matterError;
+  // In matter mode the client card only feeds the secondary line: its failure drops that line
+  // (rendered only when `ledger` is present) instead of blanking the card (PR #1746 review).
+  const loadError = isMatterMode ? matterError : Boolean(ledgerError);
 
   // Revalidate SWR caches after a successful transaction mutation
   const handleMutationSuccess = useCallback(() => {

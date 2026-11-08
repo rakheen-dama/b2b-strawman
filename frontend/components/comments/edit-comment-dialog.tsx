@@ -11,10 +11,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@b2mash/ui/label";
 import { updateComment } from "@/lib/actions/comments";
+import { isVisibilityLocked, type MentionCandidate } from "@/lib/comments";
 import { CommentAttachmentsField } from "@/components/comments/comment-attachments-field";
+import { MentionTextarea } from "@/components/comments/mention-textarea";
 import { useCommentAttachments } from "@/components/comments/use-comment-attachments";
 import type { Comment, CommentAttachment } from "@/lib/types";
 
@@ -37,6 +38,8 @@ interface EditCommentDialogProps {
   triggerClassName?: string;
   triggerIcon?: ReactNode;
   triggerAriaLabel?: string;
+  /** Members the @-mention autocomplete offers (634C). */
+  mentionCandidates?: MentionCandidate[];
 }
 
 export function EditCommentDialog({
@@ -51,6 +54,7 @@ export function EditCommentDialog({
   triggerClassName,
   triggerIcon,
   triggerAriaLabel,
+  mentionCandidates = [],
 }: EditCommentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,9 +73,9 @@ export function EditCommentDialog({
     projectId,
     existingCount: kept.length,
   });
-  // Matter (PROJECT) comments stay SHARED (634E): the backend update path does not guard a PROJECT
-  // target, so the dialog must not offer INTERNAL. `undefined` visibility = unchanged.
-  const visibilityLocked = comment.entityType === "PROJECT";
+  // Matter (PROJECT) comments stay SHARED (634E): the dialog offers no INTERNAL choice for them (the
+  // backend rejects it on edit too, 634E(2)). `undefined` visibility = unchanged.
+  const visibilityLocked = isVisibilityLocked(comment.entityType);
   const showVisibility = canManageVisibility && !visibilityLocked;
 
   // onSubmit + startTransition rather than `<form action>`: the same transition, minus React's
@@ -178,11 +182,12 @@ export function EditCommentDialog({
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="edit-comment-body">Comment</Label>
-            <Textarea
+            <MentionTextarea
               id="edit-comment-body"
               name="body"
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onValueChange={setBody}
+              candidates={mentionCandidates}
               required
               disabled={isSubmitting}
             />

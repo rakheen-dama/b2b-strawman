@@ -35,7 +35,13 @@ vi.mock("@/lib/api", () => ({ api: apiMock, ApiError: MockApiError }));
 vi.mock("@/lib/api/client", () => ({ api: apiMock, ApiError: MockApiError }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { fetchComments, createComment, updateComment, deleteComment } from "@/lib/actions/comments";
+import {
+  fetchComments,
+  fetchMentionCandidates,
+  createComment,
+  updateComment,
+  deleteComment,
+} from "@/lib/actions/comments";
 import { fetchProjectActivity } from "@/lib/actions/activity";
 import { fetchPortalContacts } from "@/lib/actions/acceptance-actions";
 // 614B: the dashboard wrapper fetchAggregatedCompleteness was deleted with the admin stats
@@ -61,14 +67,15 @@ beforeEach(() => {
 
 describe("lib/actions callers", () => {
   it("comments: list / create / update / delete", async () => {
+    // 634E(1): the thread loads in pages of 100; an empty (short) first page ends the load.
     await fetchComments("m1", "TASK", "t1");
     expect(mockGet).toHaveBeenLastCalledWith(
-      "/api/matters/m1/comments?entityType=TASK&entityId=t1"
+      "/api/matters/m1/comments?entityType=TASK&entityId=t1&page=0&size=100"
     );
     // Matter (PROJECT-target) comments go through the generic actions (634E — the Comments tab).
     await fetchComments("m1", "PROJECT", "m1");
     expect(mockGet).toHaveBeenLastCalledWith(
-      "/api/matters/m1/comments?entityType=PROJECT&entityId=m1"
+      "/api/matters/m1/comments?entityType=PROJECT&entityId=m1&page=0&size=100"
     );
     await createComment("acme", "m1", "PROJECT", "m1", " hi ", "SHARED");
     expect(mockPost).toHaveBeenLastCalledWith("/api/matters/m1/comments", {
@@ -90,6 +97,43 @@ describe("lib/actions callers", () => {
     });
     await deleteComment("acme", "m1", "c1");
     expect(mockDelete).toHaveBeenLastCalledWith("/api/matters/m1/comments/c1");
+  });
+
+  it("comments: mention candidates = matter members ∪ org owners/admins (634C)", async () => {
+    mockGet.mockImplementation((url: string) =>
+      Promise.resolve(
+        url === "/api/matters/m1/members"
+          ? [
+              { memberId: "u-dave", name: "Dave Insider", orgRole: "member" },
+              { memberId: "u-alice", name: "Alice Owner", orgRole: "owner" },
+            ]
+          : [
+              { id: "u-alice", name: "Alice Owner", orgRole: "owner" },
+              { id: "u-bob", name: "Bob Admin", orgRole: "admin" },
+              { id: "u-carol", name: "Carol Outsider", orgRole: "member" },
+            ]
+      )
+    );
+
+    const candidates = await fetchMentionCandidates("m1");
+
+    expect(mockGet).toHaveBeenCalledWith("/api/matters/m1/members");
+    expect(mockGet).toHaveBeenCalledWith("/api/members");
+    expect(candidates).toEqual([
+      { id: "u-dave", name: "Dave Insider" },
+      { id: "u-alice", name: "Alice Owner" },
+      { id: "u-bob", name: "Bob Admin" },
+    ]);
+  });
+
+  it("comments: mention candidates fall back to matter members if the org list fails", async () => {
+    mockGet.mockImplementation((url: string) =>
+      url === "/api/matters/m1/members"
+        ? Promise.resolve([{ memberId: "u-dave", name: "Dave Insider", orgRole: "member" }])
+        : Promise.reject(new Error("boom"))
+    );
+
+    expect(await fetchMentionCandidates("m1")).toEqual([{ id: "u-dave", name: "Dave Insider" }]);
   });
 
   it("activity: default size 20, optional entityType/page", async () => {

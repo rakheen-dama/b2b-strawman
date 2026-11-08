@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import useSWR from "swr";
 import { useSearchParams } from "next/navigation";
 import { MessageSquare } from "lucide-react";
-import { fetchComments } from "@/lib/actions/comments";
+import { fetchComments, fetchMentionCandidates } from "@/lib/actions/comments";
+import type { MentionCandidate } from "@/lib/comments";
 import type { Comment } from "@/lib/types";
 import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
@@ -43,6 +45,18 @@ export function CommentSectionClient({
     { dedupingInterval: 2000 }
   );
 
+  // 634C: @-mention candidates, fetched once per matter and shared by the form and every edit
+  // dialog. Best-effort — without them the textarea simply offers no suggestions.
+  const { data: candidates } = useSWR<MentionCandidate[]>(
+    `mention-candidates-${projectId}`,
+    () => fetchMentionCandidates(projectId),
+    { revalidateOnFocus: false, shouldRetryOnError: false }
+  );
+  const mentionCandidates = useMemo(
+    () => (candidates ?? []).filter((candidate) => candidate.id !== currentMemberId),
+    [candidates, currentMemberId]
+  );
+
   const refresh = () => mutate();
 
   if (isLoading) {
@@ -79,6 +93,7 @@ export function CommentSectionClient({
               projectId={projectId}
               onCommentChange={refresh}
               highlighted={comment.id === targetCommentId}
+              mentionCandidates={mentionCandidates}
             />
           ))}
         </div>
@@ -91,6 +106,7 @@ export function CommentSectionClient({
         orgSlug={orgSlug}
         canManageVisibility={canManageVisibility}
         onCommentChange={refresh}
+        mentionCandidates={mentionCandidates}
       />
     </div>
   );

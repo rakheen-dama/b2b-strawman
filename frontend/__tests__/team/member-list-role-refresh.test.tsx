@@ -76,6 +76,16 @@ describe("Team member list roles (G89-F65)", () => {
     expect(row.textContent).not.toContain("associate-no-trust");
   });
 
+  it("has no Joined column: the members API carries no join date (G88-F2)", async () => {
+    mockListMembers.mockResolvedValue([{ ...carol, role: "org:member" }]);
+
+    render(<MemberList isAdmin={true} roles={roles} slug="acme" />);
+
+    const row = await screen.findByTestId("member-row-carol@test.com");
+    expect(screen.queryByRole("columnheader", { name: "Joined" })).toBeNull();
+    expect(row.textContent).not.toContain("—");
+  });
+
   it("reloads the list after a role change is saved", async () => {
     mockListMembers
       .mockResolvedValueOnce([{ ...carol, role: "org:member" }])

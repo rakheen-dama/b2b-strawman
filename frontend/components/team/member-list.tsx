@@ -38,7 +38,6 @@ interface MemberRowData {
   name: string;
   email: string;
   role: string;
-  joinedAt: string;
   orgRoleName?: string;
   capabilityOverridesCount?: number;
 }
@@ -75,7 +74,6 @@ function MockMemberList({ isAdmin, onRowClick, roles }: InnerMemberListProps) {
           name: member.name ?? "Unknown",
           email: member.email,
           role: member.role,
-          joinedAt: "\u2014",
         };
         return (
           <MemberRow
@@ -132,7 +130,6 @@ function KeycloakBffMemberList({ isAdmin, onRowClick, roles, refreshKey }: Inner
           name: member.name ?? "Unknown",
           email: member.email,
           role: member.role,
-          joinedAt: "\u2014",
           orgRoleName: member.orgRoleName,
           capabilityOverridesCount: member.capabilityOverridesCount,
         };
@@ -166,9 +163,6 @@ function MemberTable({ children }: { children: React.ReactNode }) {
             </th>
             <th className="w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Role
-            </th>
-            <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-              Joined
             </th>
           </tr>
         </thead>
@@ -241,7 +235,6 @@ function MemberRow({
           )}
         </div>
       </td>
-      <td className="py-3 text-slate-600 dark:text-slate-400">{member.joinedAt}</td>
     </tr>
   );
 }

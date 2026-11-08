@@ -1,7 +1,7 @@
 {
-  "commit": "289892ea3",
-  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-h-document-access)",
+  "commit": "6859a3f17",
+  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-g-comments)",
   "exit": 0,
-  "ts": "2026-11-07T20:20:00Z",
-  "summary": "PR #1750 head 289892ea3: lint 0 errors (78 warnings), build ok, 447 files / 3696 passed / 2 skipped, prettier clean"
+  "ts": "2026-11-07T22:40:00Z",
+  "summary": "PR #1751 head 6859a3f17: lint 0 errors (78 warnings), build ok, 449 files / 3716 passed / 2 skipped, prettier clean"
 }

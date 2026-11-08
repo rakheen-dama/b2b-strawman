@@ -1,7 +1,7 @@
 {
-  "commit": "289892ea3",
-  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-h-document-access)",
+  "commit": "f3c191bb7",
+  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-g-comments; backend unchanged in the later frontend-only commits 0dafd9155, 6859a3f17)",
   "exit": 0,
-  "ts": "2026-11-07T20:06:00Z",
-  "summary": "PR #1750 (G89 Batch H) head 289892ea3: 6727 tests / 0 failures / 0 errors / 26 skipped — 20:00 min"
+  "ts": "2026-11-07T22:30:00Z",
+  "summary": "PR #1751 (G89 Batch G) head f3c191bb7: 6736 tests / 0 failures / 0 errors / 26 skipped — 27:21 min"
 }

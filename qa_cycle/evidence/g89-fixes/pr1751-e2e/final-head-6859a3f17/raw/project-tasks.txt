@@ -1,0 +1,18 @@
+
+> frontend@0.1.0 test:e2e /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/frontend
+> playwright test --config e2e/playwright.config.ts e2e/tests/projects/project-tasks.spec.ts --reporter=list,json --ignore-snapshots
+
+
+Running 9 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/tests/projects/project-tasks.spec.ts:105:7 › PROJ-02: Project Tasks › 1. Create task on project via UI (3.7s)
+  ✓  2 [chromium] › e2e/tests/projects/project-tasks.spec.ts:135:7 › PROJ-02: Project Tasks › 2. Edit task title via API and verify in UI (1.5s)
+  ✓  3 [chromium] › e2e/tests/projects/project-tasks.spec.ts:163:7 › PROJ-02: Project Tasks › 3. Change task status: OPEN -> IN_PROGRESS (1.6s)
+  ✓  4 [chromium] › e2e/tests/projects/project-tasks.spec.ts:189:7 › PROJ-02: Project Tasks › 4. Change task status: IN_PROGRESS -> DONE (1.6s)
+  ✓  5 [chromium] › e2e/tests/projects/project-tasks.spec.ts:204:7 › PROJ-02: Project Tasks › 5. Reopen completed task (1.5s)
+  ✓  6 [chromium] › e2e/tests/projects/project-tasks.spec.ts:216:7 › PROJ-02: Project Tasks › 6. Cancel task (1.7s)
+  ✓  7 [chromium] › e2e/tests/projects/project-tasks.spec.ts:230:7 › PROJ-02: Project Tasks › 7. Assign member to task (1.6s)
+  ✓  8 [chromium] › e2e/tests/projects/project-tasks.spec.ts:277:7 › PROJ-02: Project Tasks › 8. Comment notification deep-links to the comment in the task sheet (G88-M6) (954ms)
+  ✓  9 [chromium] › e2e/tests/projects/project-tasks.spec.ts:322:7 › PROJ-02: Project Tasks › 9. Matter comment notification deep-links to the highlighted comment on the Comments tab (B7) (3.0s)
+
+  9 passed (17.7s)

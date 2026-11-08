@@ -1,0 +1,31 @@
+e2e-down start 2026-11-08T02:38:46+0200
+ Container e2e-mock-idp  Stopped
+ Container e2e-mock-idp  Removing
+ Container e2e-mock-idp  Removed
+ Container e2e-localstack  Stopped
+ Container e2e-localstack  Removing
+ Container e2e-localstack  Removed
+ Volume docteams-e2e_e2e_postgres_data  Removing
+ Network docteams-e2e_e2e-network  Removing
+ Volume docteams-e2e_e2e_localstack_data  Removing
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Network docteams-e2e_e2e-network  Removed
+
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+rc=(not captured: zsh has no PIPESTATUS; script printed "Stack stopped. All containers and volumes removed.") end 2026-11-08T02:38:49+0200
+e2e containers left:        0
+docteams-e2e volumes left: 0
+worktree HEAD 6859a3f17 status-lines=      16
+?? documentation/screenshots/legal-vertical/bank-reconciliation-upload-step.png
+?? documentation/screenshots/legal-vertical/client-ledger-balance.png
+?? documentation/screenshots/legal-vertical/conflict-check-adverse-match.png
+?? documentation/screenshots/legal-vertical/conflict-check-clear-result.png
+?? documentation/screenshots/legal-vertical/court-calendar-scheduled.png
+?? documentation/screenshots/legal-vertical/fee-note-tariff-disbursement.png
+?? documentation/screenshots/legal-vertical/interest-run-lpff-split.png
+?? documentation/screenshots/legal-vertical/investment-s86-selection.png
+?? documentation/screenshots/legal-vertical/litigation-template-action-items.png
+?? documentation/screenshots/legal-vertical/prescription-tracker-days.png
+untracked curated PNGs archived to /private/tmp/claude-501/-Users-rakheendama-Projects-2026-b2b-strawman/8adccadf-2ff1-433e-8c02-83d3600dcef2/scratchpad/pr1751-final/lifecycle-curated-screenshots.tgz (      16 files) then removed; status-lines now        0

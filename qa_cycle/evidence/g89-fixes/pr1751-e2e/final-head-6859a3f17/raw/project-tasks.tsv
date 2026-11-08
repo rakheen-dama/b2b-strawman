@@ -1,0 +1,9 @@
+projects/project-tasks.spec.ts	105	1. Create task on project via UI	expected	passed
+projects/project-tasks.spec.ts	135	2. Edit task title via API and verify in UI	expected	passed
+projects/project-tasks.spec.ts	163	3. Change task status: OPEN -> IN_PROGRESS	expected	passed
+projects/project-tasks.spec.ts	189	4. Change task status: IN_PROGRESS -> DONE	expected	passed
+projects/project-tasks.spec.ts	204	5. Reopen completed task	expected	passed
+projects/project-tasks.spec.ts	216	6. Cancel task	expected	passed
+projects/project-tasks.spec.ts	230	7. Assign member to task	expected	passed
+projects/project-tasks.spec.ts	277	8. Comment notification deep-links to the comment in the task sheet (G88-M6)	expected	passed
+projects/project-tasks.spec.ts	322	9. Matter comment notification deep-links to the highlighted comment on the Comments tab (B7)	expected	passed

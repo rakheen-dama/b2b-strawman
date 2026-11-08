@@ -1,0 +1,50 @@
+===== stack S checks 2026-11-08T02:34:51+0200 =====
+build rc=0
+git HEAD 6859a3f17032e364d477efa754d8a2e6cced4f00
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-08 02:34:17 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-08 02:34:17 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-08 02:34:17 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-08 02:34:17 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-08 02:34:17 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-08 02:34:17 +0200 SAST
+/e2e-backend image=sha256:0e4a0d42ab6227dfb6a3b59871bcb0538a49913f95e1dd8384cda55026bcf7e2 created=2026-11-08T00:34:17.791134463Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+/e2e-frontend image=sha256:08c9c3692514e742f6568786b23dfcb343719b4288acffa4c0a45a4441e9ddb8 created=2026-11-08T00:34:17.871578755Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-08T00:34:17.668877088Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp4/compose
+cached-lines=44
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+===== bundle check 02:35:17: MentionTextarea chunk in e2e-frontend image
+chunk=/app/frontend/.next/static/chunks/3-ma4nt15l458.js
+isComposing
+aria-haspopup":"listbox
+role:"combobox"
+lifecycle writing-actual=0
+project-tasks writing-actual=0
+===== comments (all) 02:38:02
+TASK|INTERNAL|INTERNAL|Bob Admin|babfd6ab-729b-4c14-af43-1e636ca8cdc6|Reviewed claim documents — need additional medical records from Dr. Nk
+TASK|INTERNAL|INTERNAL|Alice Owner|58f64441-c085-4c47-864b-a5a5426a8248|@Carol please review s95i
+PROJECT|SHARED|INTERNAL|Alice Owner|fc85521c-054e-415a-a2e0-2a25f94d41b1|@Carol matter thread s95i
+===== comment notifications 02:38:02
+COMMENT_ADDED|Carol Member|TASK|58f64441-c085-4c47-864b-a5a5426a8248|Alice Owner commented on task "Deep Link Task s95i"
+COMMENT_ADDED|Carol Member|PROJECT|fc85521c-054e-415a-a2e0-2a25f94d41b1|Alice Owner commented on matter
+===== backend log WARN/ERROR mentioning comment|mention
+count=0
+===== frontend container error lines
+⨯ Error: The destination stream closed early.
+⨯ Error: The destination stream closed early.
+⨯ Error: The destination stream closed early.
+⨯ Error: The destination stream closed early.
+⨯ Error: The destination stream closed early.
+⨯ Error: The destination stream closed early.
+⨯ Error: The destination stream closed early.
+⨯ Error: The destination stream closed early.
+⨯ Error: The destination stream closed early.

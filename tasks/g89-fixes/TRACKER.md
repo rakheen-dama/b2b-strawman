@@ -34,6 +34,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D19 | (2026-11-07) Batch H also covers **G89-F53** (template generate/preview/generate-docx skip the matter-access check), **G89-F54** (statements list/get skip matter membership) and **G89-F56** (AI contract review reads any document by id with no access check, and the text goes to the LLM). All are rated **HIGH**. F52 lists: trust-bearing rows stay listed, flagged `containsTrustData`, with Download disabled for members without VIEW_TRUST. |
 | D20 | (2026-11-07, orchestrator, under the D19 ruling for the same class) Fold into Batch H / PR #1750: **G89-F58** HIGH (AI skills such as ContractReview and Drafting load the caller-named matter without a matter check; matter data reaches the LLM, same class as F56), **G89-F59** (contract review without a matterId → 500), **G89-F60** (`DELETE /api/generated-documents/{id}` has no matter check). |
 | D21 | (2026-11-08) **G89-F61** (matter-intake sends up to 500 matter names to the LLM) is **by design** (conflict/intake suggestion needs the firm's matter list); recorded, no fix. **G89-F62** (drafting without templateId → 500) is **LOW**, to Batch E. |
+| D22 | (2026-11-08) **G89-F63** (the role editor can't grant VIEW_LEGAL / GENERATE_STATEMENT_OF_ACCOUNT / MANAGE_DISBURSEMENTS) is **LOW, backlog**. **F56/F58**: the founder accepts the integration-test evidence. Status is **VERIFIED-BY-TEST**: the stub provider is asserted never to receive protected text. This is not a browser PASS; AI is not configured on the KC dev stack. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -47,8 +48,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 4 | C1 — statements & reports | F16, F18, F19, F21, 634B | BE + FE | PR #1748 → `08c64dd88` | **VERIFIED** on KC (F16, 634B, F21, F18, F19): `qa_cycle/evidence/g89-fixes/batch-C1/` |
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | **VERIFIED** on KC (632A(a)(b)(c)/S1-67, F6, F26/S2-50, WIP). DEFERRED: 632C (needs a new payment, moved to the exit re-walk); VIEW_TRUST withheld (needs a custom role, moved to the Batch H walk) |
 | 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 → `4f3323525` | **VERIFIED** on KC: F52 lists and direct 403, F53/F54 404, C2 'Withheld'. F56/F58 DEFERRED (AI not configured on the KC dev stack; covered by backend stub-provider tests) → exit re-walk |
-| 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 @6859a3f17 | 2× APPROVE; FE 3716 green; BE verify 6736/0 @f3c191bb7 (BE unchanged since); e2e gate PASS @f3c191bb7 (`pr1751-e2e/`); targeted comment e2e on the final head running |
-| 7 | E — layout, copy, small BE LOWs | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
+| 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 → `1d2b5d0e3` | MERGED-AWAITING-VERIFY (KC check running) |
+| 7 | E — layout, copy, small BE LOWs (+ F50 MEDIUM, F44, F47–F49, F57, F62, F64, F65) | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
 | 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
 
@@ -58,8 +59,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [x] G89-F52 — generated-document downloads bypass trust/client access (H, D18) — VERIFIED 2026-11-08, PR #1750
 - [x] G89-F53 — template generate/preview/docx skip matter access (H, D19) — VERIFIED 2026-11-08 (404s observed; generate/preview/delete via backend tests)
 - [x] G89-F54 — statements list/get skip matter membership (H, D19) — VERIFIED 2026-11-08
-- [ ] G89-F56 — AI contract review reads any document unchecked (H, D19) — merged #1750; KC observation DEFERRED (AI not configured)
-- [ ] G89-F58 — AI skills load caller-named matter without access check (H, D20) — merged #1750; KC observation DEFERRED (AI not configured)
+- [x] G89-F56 — AI contract review reads any document unchecked (H, D19) — **VERIFIED-BY-TEST** (D22), PR #1750
+- [x] G89-F58 — AI skills load caller-named matter without access check (H, D20) — **VERIFIED-BY-TEST** (D22), PR #1750
 - [x] G89-F11 — interest run accepted for a period that has not ended (B) — VERIFIED 2026-11-06, PR #1745
 - [x] G89-F12 — matter-linked refund exceeds matter balance (A) — VERIFIED 2026-11-07, PR #1746
 - [x] G89-F22 — portal trust balance ≠ firm client ledger (A) — VERIFIED 2026-11-07, PR #1746
@@ -287,3 +288,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - New Batch F items:
     - **G89-F66**: `projects/project-time.spec.ts` dates entries with the UTC date, but My Work uses the SA date, so it fails every night 00:00–02:00 SAST. Use the SA date helper.
     - **G89-F67**: the `day-30-billing` fee-note screenshots (`fee-note-tariff-completed`, `fee-note-list-mixed`) are flaky on scroll position and on run-id width. Mask the volatile parts or use element-scoped shots.
+- 2026-11-08 ~03:00 — **PR #1751 (G) merged as `1d2b5d0e3`.**
+  - Final head checks @6859a3f17: lifecycle 105/0 and project-tasks 9/0 (functional, snapshots ignored); FE gate 3716 green; 2× APPROVE.
+  - CodeRabbit: REVIEWED @f3c191bb7, 1 Minor (the IME guard), fixed.
+  - KC restarted.
+  - G KC check and the **Batch E builder** launched.
+  - Founder **D22**: F63 is LOW (backlog); F56/F58 are VERIFIED-BY-TEST.

@@ -309,3 +309,22 @@ describe("Interest runs table — Actions column (630B)", () => {
     expect(within(wizard).getByRole("button", { name: "Approve Run" })).toBeEnabled();
   });
 });
+
+describe("Interest runs table — Posted Date (G89-F41)", () => {
+  afterEach(() => cleanup());
+
+  it("shows the South African posting date, not the UTC date of the instant", async () => {
+    vi.clearAllMocks();
+    mockFetchLpffRates.mockResolvedValue([]);
+    mockFetchMyCapabilities.mockResolvedValue(caps(ALL, OTHER));
+    // Posted at 01:18 SAST on 6 Nov = 23:18 UTC on 5 Nov
+    mockFetchInterestRuns.mockResolvedValue([
+      makeRun({ id: "late", status: "POSTED", postedAt: "2026-11-05T23:18:00Z" }),
+    ]);
+    await renderPage();
+
+    const cell = within(row("late")).getByTestId("run-posted-at");
+    expect(cell.textContent).toMatch(/\b0?6 Nov 2026\b/);
+    expect(cell.textContent).not.toMatch(/\b0?5 Nov/);
+  });
+});

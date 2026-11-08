@@ -1,0 +1,7 @@
+                  id                  | entity_type |           author_member_id           | visibility |  source  |          created_at          |          updated_at           |                                                   body                                                    
+--------------------------------------+-------------+--------------------------------------+------------+----------+------------------------------+-------------------------------+-----------------------------------------------------------------------------------------------------------
+ e6fbab9c-8db4-4a86-bef9-529b9aec935b | TASK        | 734b36a6-f598-49cf-aa4b-bee743f69c4a | INTERNAL   | INTERNAL | 2026-11-05 20:42:50.40198+00 | 2026-11-05 20:42:50.401981+00 | @Bob ready for summons
+ 6df60eb7-c86b-4daf-8982-b691352bde7e | PROJECT     | 5c3c00c7-baae-473f-b42d-65dfac68f713 | SHARED     | PORTAL   | 2026-11-08 00:43:54.15262+00 | 2026-11-08 00:43:54.152621+00 | G89G portal comment from Lerato — please confirm the RAF settlement offer timeline.
+ 879dfb58-7bad-4f66-911c-713ca4169bc7 | PROJECT     | 4034b9e2-b14a-48f9-a408-c32851da898f | SHARED     | INTERNAL | 2026-11-08 00:45:33.03895+00 | 2026-11-08 00:47:04.692317+00 | Noted the client query, @Carol Mokoena please draft the reply on the settlement timeline (G89G). [edited]
+(3 rows)
+

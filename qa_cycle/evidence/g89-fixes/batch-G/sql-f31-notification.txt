@@ -1,0 +1,5 @@
+                  id                  |   recipient   |     type      |             title              | reference_entity_type |         reference_entity_id          |         reference_project_id         |         reference_comment_id         | is_read |          created_at           
+--------------------------------------+---------------+---------------+--------------------------------+-----------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------+-------------------------------
+ cb726e22-4d36-415f-a665-80af18d83500 | Carol Mokoena | COMMENT_ADDED | Bob Ndlovu commented on matter | PROJECT               | e0f25d3f-f195-42fe-ba95-842e79de983d | e0f25d3f-f195-42fe-ba95-842e79de983d | 879dfb58-7bad-4f66-911c-713ca4169bc7 | t       | 2026-11-08 00:45:33.065248+00
+(1 row)
+

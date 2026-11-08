@@ -436,7 +436,7 @@ export function DocumentsPanel({
                 <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   File
                 </TableHead>
-                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase xl:table-cell dark:text-slate-400">
                   Size
                 </TableHead>
                 {showScope && (
@@ -447,7 +447,7 @@ export function DocumentsPanel({
                 <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </TableHead>
-                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase xl:table-cell dark:text-slate-400">
                   Uploaded
                 </TableHead>
                 <TableHead className="w-[100px]" />
@@ -469,7 +469,9 @@ export function DocumentsPanel({
                         isExpanded && "bg-slate-50/50 dark:bg-slate-900/50"
                       )}
                     >
-                      <TableCell>
+                      {/* G89-F15: w-full + max-w-0 lets the file name's truncate take effect
+                          (otherwise the nowrap cell grew the table to 938 px in a 654 px card) */}
+                      <TableCell className="w-full max-w-0">
                         <div className="flex min-w-0 items-center gap-2">
                           <button
                             type="button"
@@ -495,7 +497,7 @@ export function DocumentsPanel({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">
+                      <TableCell className="hidden xl:table-cell">
                         <span className="text-sm text-slate-600 dark:text-slate-400">
                           {formatFileSize(doc.size)}
                         </span>
@@ -512,7 +514,7 @@ export function DocumentsPanel({
                       <TableCell>
                         <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">
+                      <TableCell className="hidden xl:table-cell">
                         <span className="text-sm text-slate-600 dark:text-slate-400">
                           {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
                         </span>

@@ -145,7 +145,7 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
                     <TableRow key={template.id} data-testid="template-list-item">
                       {/* G89-F8: the description and .docx file name wrap inside the card
                           instead of inheriting the cell's nowrap (a 1621 px table) */}
-                      <TableCell className="max-w-[32rem] min-w-[16rem] whitespace-normal break-words">
+                      <TableCell className="max-w-[32rem] min-w-[16rem] break-words whitespace-normal">
                         <Link
                           href={`/org/${slug}/settings/documents/templates/${template.id}/edit`}
                           className="font-medium text-slate-950 hover:text-teal-600 hover:underline dark:text-slate-50 dark:hover:text-teal-400"

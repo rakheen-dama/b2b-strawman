@@ -175,7 +175,9 @@ describe("KPIDashboard", () => {
     expect(four.className).not.toContain("lg:grid-cols-3");
     cleanup();
 
-    render(await KPIDashboard({ ...defaultProps, outstandingSummary: { state: "ok", data: SUMMARY } }));
+    render(
+      await KPIDashboard({ ...defaultProps, outstandingSummary: { state: "ok", data: SUMMARY } })
+    );
     const three = screen.getByTestId("metric-card-grid");
     expect(three.querySelectorAll("[data-testid^='metric-card-']")).toHaveLength(3);
     expect(three.className).toContain("lg:grid-cols-3");

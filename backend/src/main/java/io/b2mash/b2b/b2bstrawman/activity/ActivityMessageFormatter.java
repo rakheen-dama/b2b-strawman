@@ -435,7 +435,8 @@ public class ActivityMessageFormatter {
     // Check for status change
     if (details.containsKey("status")) {
       Object statusVal = details.get("status");
-      String newStatus = extractNewValue(statusVal);
+      // G88-F24: the TaskStatus constant reads as its label (IN_PROGRESS → "In progress")
+      String newStatus = humanise(extractNewValue(statusVal));
       return "%s changed task \"%s\" status to %s".formatted(actorName, title, newStatus);
     }
     return "%s updated task \"%s\"".formatted(actorName, title);

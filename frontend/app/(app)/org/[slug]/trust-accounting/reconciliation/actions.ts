@@ -10,16 +10,6 @@ import type {
 
 // ── Response types ─────────────────────────────────────────────────
 
-interface PaginatedResponse<T> {
-  content: T[];
-  page: {
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    number: number;
-  };
-}
-
 export interface ReconciliationPage {
   content: TrustReconciliationResponse[];
   totalElements: number;
@@ -35,6 +25,9 @@ interface ActionResult {
 
 // ── Reconciliation fetch actions ──────────────────────────────────
 
+// The backend list endpoints return a plain JSON array (`ResponseEntity<List<…>>`, ordered by
+// period end descending), not a Spring `Page` envelope (G89-F17), so paging is applied here to keep
+// the page component's shape.
 export async function fetchReconciliations(
   accountId: string,
   params: {
@@ -42,22 +35,18 @@ export async function fetchReconciliations(
     size?: number;
   } = {}
 ): Promise<ReconciliationPage> {
-  const queryParams = new URLSearchParams();
-  queryParams.set("page", String(params.page ?? 0));
-  queryParams.set("size", String(params.size ?? 20));
-  queryParams.set("sort", "periodEnd,desc");
-
-  const qs = queryParams.toString();
-  const result = await api.get<PaginatedResponse<TrustReconciliationResponse>>(
-    `/api/trust-accounts/${accountId}/reconciliations${qs ? `?${qs}` : ""}`
+  const pageNumber = params.page ?? 0;
+  const pageSize = params.size ?? 20;
+  const all = await api.get<TrustReconciliationResponse[]>(
+    `/api/trust-accounts/${accountId}/reconciliations`
   );
 
   return {
-    content: result.content,
-    totalElements: result.page.totalElements,
-    totalPages: result.page.totalPages,
-    pageSize: result.page.size,
-    pageNumber: result.page.number,
+    content: all.slice(pageNumber * pageSize, (pageNumber + 1) * pageSize),
+    totalElements: all.length,
+    totalPages: Math.ceil(all.length / pageSize),
+    pageSize,
+    pageNumber,
   };
 }
 
@@ -128,10 +117,7 @@ export async function uploadBankStatement(
 }
 
 export async function fetchBankStatements(accountId: string): Promise<BankStatementResponse[]> {
-  const result = await api.get<PaginatedResponse<BankStatementResponse>>(
-    `/api/trust-accounts/${accountId}/bank-statements?size=100&sort=createdAt,desc`
-  );
-  return result.content;
+  return api.get<BankStatementResponse[]>(`/api/trust-accounts/${accountId}/bank-statements`);
 }
 
 export async function fetchBankStatement(statementId: string): Promise<BankStatementResponse> {

@@ -91,12 +91,12 @@ class TrustReportPackSeederIntegrationTest {
 
           PackInstall row = packInstallRepository.findByPackId("trust-reports").orElseThrow();
           assertThat(row.getPackType()).isEqualTo(PackType.REPORT);
-          // G89-F18: v2 — a fresh tenant installs at the head version.
-          assertThat(row.getPackVersion()).isEqualTo("2");
+          // G89-F48: v3 — a fresh tenant installs at the head version.
+          assertThat(row.getPackVersion()).isEqualTo("3");
 
           assertThat(trustPackStatus())
               .singleElement()
-              .satisfies(e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(2));
+              .satisfies(e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(3));
           return null;
         });
   }
@@ -117,7 +117,7 @@ class TrustReportPackSeederIntegrationTest {
         });
   }
 
-  /** Second pass: no duplicate rows, no second status entry, ledger row untouched (v2 gate). */
+  /** Second pass: no duplicate rows, no second status entry, ledger row untouched (v3 gate). */
   @Test
   @Order(3)
   void secondPass_isANoOp() {
@@ -138,7 +138,7 @@ class TrustReportPackSeederIntegrationTest {
           assertThat(trustPackStatus()).hasSize(1);
           PackInstall after = packInstallRepository.findByPackId("trust-reports").orElseThrow();
           assertThat(after.getId()).isEqualTo(before.getId());
-          assertThat(after.getPackVersion()).isEqualTo("2");
+          assertThat(after.getPackVersion()).isEqualTo("3");
           return null;
         });
   }
@@ -179,37 +179,38 @@ class TrustReportPackSeederIntegrationTest {
   // ==========================================================================
 
   /**
-   * Guard (no tenant needed): the v2 block's only entry moves the section-35 template body from the
-   * verbatim v1 copy ({@link TrustReportsV1}) to the shipped body — {@code to} must be the head or
-   * the resolver WARN-skips it at every tenant's boot.
+   * Guard (no tenant needed): the v3 block is the ADR-356 cumulative chain for the section-35
+   * template body — one entry from the verbatim v1 copy ({@link TrustReportsV1}) and one from the
+   * verbatim v2 copy ({@link TrustReportsV2}), both to the shipped body. {@code to} must be the
+   * head or the resolver WARN-skips it at every tenant's boot.
    */
   @Test
   @Order(5)
-  void reconcileBlock_movesSection35TemplateFromV1ToShipped() {
-    assertThat(TrustReportPackSeeder.PACK_VERSION).isEqualTo(2);
+  void reconcileBlock_movesSection35TemplateFromV1AndV2ToShipped() {
+    assertThat(TrustReportPackSeeder.PACK_VERSION).isEqualTo(3);
+    String head = hashRef(TrustReportPackSeeder.shipped("section-35-data-pack").getTemplateBody());
     var entries =
         PackReconcileEntry.parse(TrustReportPackSeeder.PACK_ID, TrustReportPackSeeder.RECONCILE);
     assertThat(entries)
-        .singleElement()
-        .satisfies(
+        .allSatisfy(
             e -> {
               assertThat(e.entity()).isEqualTo(TrustReportPackSeeder.REPORT_ENTITY);
               assertThat(e.key()).isEqualTo("section-35-data-pack");
               assertThat(e.field()).isEqualTo("templateBody");
-              assertThat(e.from()).isEqualTo(hashRef(TrustReportsV1.SECTION_35_TEMPLATE));
-              assertThat(e.to())
-                  .isEqualTo(
-                      hashRef(
-                          TrustReportPackSeeder.shipped("section-35-data-pack").getTemplateBody()));
-            });
+              assertThat(e.to()).isEqualTo(head);
+            })
+        .extracting(PackReconcileEntry::from)
+        .containsExactly(
+            hashRef(TrustReportsV1.SECTION_35_TEMPLATE),
+            hashRef(TrustReportsV2.SECTION_35_TEMPLATE));
   }
 
-  /** Installed at v1 (v1 body, ledger at 1) → the next pass reconciles the body to v2. */
+  /** Installed at v1 (v1 body, ledger at 1) → the next pass reconciles the body to v3. */
   @Test
   @Order(6)
-  void v1Section35Template_isReconciledToV2() {
+  void v1Section35Template_isReconciledToV3() {
     String shippedBody = TrustReportPackSeeder.shipped("section-35-data-pack").getTemplateBody();
-    simulateV1Section35(TrustReportsV1.SECTION_35_TEMPLATE);
+    simulateInstalledSection35(TrustReportsV1.SECTION_35_TEMPLATE, "1");
 
     trustReportPackSeeder.seedForTenant(legalSchema, LEGAL_ORG_ID);
 
@@ -220,7 +221,7 @@ class TrustReportPackSeederIntegrationTest {
           assertThat(section35().getTemplateBody()).isEqualTo(shippedBody);
           assertThat(packInstallRepository.findByPackId("trust-reports").orElseThrow())
               .extracting(PackInstall::getPackVersion)
-              .isEqualTo("2");
+              .isEqualTo("3");
           return null;
         });
 
@@ -230,7 +231,7 @@ class TrustReportPackSeederIntegrationTest {
         LEGAL_ORG_ID,
         () -> {
           var row = section35();
-          row.updateTemplate("<html>edited at v2</html>");
+          row.updateTemplate("<html>edited at v3</html>");
           reportDefinitionRepository.save(row);
           return null;
         });
@@ -239,7 +240,7 @@ class TrustReportPackSeederIntegrationTest {
         legalSchema,
         LEGAL_ORG_ID,
         () -> {
-          assertThat(section35().getTemplateBody()).isEqualTo("<html>edited at v2</html>");
+          assertThat(section35().getTemplateBody()).isEqualTo("<html>edited at v3</html>");
           var row = section35();
           row.updateTemplate(shippedBody);
           reportDefinitionRepository.save(row);
@@ -247,12 +248,34 @@ class TrustReportPackSeederIntegrationTest {
         });
   }
 
-  /** One rule: a body that is neither the v1 body nor the head is left alone. */
+  /** G89-F48: installed at v2 (v2 body, ledger at 2) → the next pass reconciles to v3. */
   @Test
   @Order(7)
+  void v2Section35Template_isReconciledToV3() {
+    String shippedBody = TrustReportPackSeeder.shipped("section-35-data-pack").getTemplateBody();
+    simulateInstalledSection35(TrustReportsV2.SECTION_35_TEMPLATE, "2");
+
+    trustReportPackSeeder.seedForTenant(legalSchema, LEGAL_ORG_ID);
+
+    in(
+        legalSchema,
+        LEGAL_ORG_ID,
+        () -> {
+          assertThat(section35().getTemplateBody()).isEqualTo(shippedBody);
+          assertThat(shippedBody).contains("'WHITESPACE', 2, 'COMMA'");
+          assertThat(packInstallRepository.findByPackId("trust-reports").orElseThrow())
+              .extracting(PackInstall::getPackVersion)
+              .isEqualTo("3");
+          return null;
+        });
+  }
+
+  /** One rule: a body that is neither a prior body nor the head is left alone. */
+  @Test
+  @Order(8)
   void editedSection35Template_survivesReconcile() {
     String shippedBody = TrustReportPackSeeder.shipped("section-35-data-pack").getTemplateBody();
-    simulateV1Section35("<html>firm edit</html>");
+    simulateInstalledSection35("<html>firm edit</html>", "2");
 
     trustReportPackSeeder.seedForTenant(legalSchema, LEGAL_ORG_ID);
 
@@ -263,7 +286,7 @@ class TrustReportPackSeederIntegrationTest {
           assertThat(section35().getTemplateBody()).isEqualTo("<html>firm edit</html>");
           assertThat(packInstallRepository.findByPackId("trust-reports").orElseThrow())
               .extracting(PackInstall::getPackVersion)
-              .isEqualTo("2");
+              .isEqualTo("3");
           var row = section35();
           row.updateTemplate(shippedBody);
           reportDefinitionRepository.save(row);
@@ -271,8 +294,8 @@ class TrustReportPackSeederIntegrationTest {
         });
   }
 
-  /** Sets the section-35 body to {@code body} and rewinds the ledger 2 → 1, committed. */
-  private void simulateV1Section35(String body) {
+  /** Sets the section-35 body to {@code body} and rewinds the ledger 3 → {@code version}. */
+  private void simulateInstalledSection35(String body, String version) {
     in(
         legalSchema,
         LEGAL_ORG_ID,
@@ -282,8 +305,8 @@ class TrustReportPackSeederIntegrationTest {
           reportDefinitionRepository.save(row);
           assertThat(
                   packInstallRepository.compareAndSetVersion(
-                      TrustReportPackSeeder.PACK_ID, "2", "1"))
-              .as("rewind trust-reports 2 -> 1")
+                      TrustReportPackSeeder.PACK_ID, "3", version))
+              .as("rewind trust-reports 3 -> %s", version)
               .isEqualTo(1);
           return null;
         });

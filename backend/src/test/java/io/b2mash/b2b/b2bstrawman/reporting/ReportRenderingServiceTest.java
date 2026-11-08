@@ -386,4 +386,54 @@ class ReportRenderingServiceTest {
               assertThat(csv).contains("\"Doe, John \"\"Jr\"\"\"");
             });
   }
+
+  @Test
+  void writeCsvLeavesPlainNegativeNumbersAlone_butStillDefusesFormulas() {
+    // G89-F49: the formula-injection guard prefixed negative amounts with an apostrophe, so a
+    // spreadsheet read "-10055.21" as text. Plain numbers are not formulas; "-cmd", "=…", "+…",
+    // "@…" still are.
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var definition = reportDefinitionRepository.findBySlug("timesheet").orElseThrow();
+              @SuppressWarnings("unchecked")
+              var columns =
+                  (List<Map<String, String>>) definition.getColumnDefinitions().get("columns");
+              String firstKey = columns.getFirst().get("key");
+
+              List<Map<String, Object>> rows =
+                  List.of("-10055.21", "-42", "-cmd|' /C calc'!A0", "=SUM(A1)", "+1+1", "@SUM(A1)")
+                      .stream()
+                      .map(
+                          v -> {
+                            Map<String, Object> row = new HashMap<>();
+                            row.put(firstKey, v);
+                            return row;
+                          })
+                      .toList();
+
+              var outputStream = new ByteArrayOutputStream();
+              try {
+                reportRenderingService.writeCsv(
+                    definition, new ReportResult(rows, Map.of()), new HashMap<>(), outputStream);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+              List<String> firstCells =
+                  outputStream
+                      .toString()
+                      .lines()
+                      .filter(l -> !l.startsWith("#"))
+                      .skip(1)
+                      .map(l -> l.split(",", -1)[0])
+                      .toList();
+              assertThat(firstCells)
+                  .containsExactly(
+                      "-10055.21", "-42", "'-cmd|' /C calc'!A0", "'=SUM(A1)", "'+1+1", "'@SUM(A1)");
+            });
+  }
 }

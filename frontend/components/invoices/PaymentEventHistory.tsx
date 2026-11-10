@@ -226,7 +226,11 @@ export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHis
                       className="mt-0.5 font-sans text-xs text-slate-500 xl:hidden dark:text-slate-400"
                       data-testid="payment-provider-method-compact"
                     >
-                      {`${providerLabel} \u00b7 ${methodLabel}`}
+                      <span className="sr-only">Provider: </span>
+                      {providerLabel}
+                      <span aria-hidden="true">{" \u00b7 "}</span>
+                      <span className="sr-only">Method: </span>
+                      {methodLabel}
                     </div>
                   </td>
                   <td className="px-3 py-2 text-right text-sm text-slate-900 dark:text-slate-100">

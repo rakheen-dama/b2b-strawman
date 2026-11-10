@@ -144,8 +144,10 @@ export function TemplatesContent({ slug, templates, settings, canManage }: Templ
                   {grouped[cat].map((template) => (
                     <TableRow key={template.id} data-testid="template-list-item">
                       {/* G89-F8: the description and .docx file name wrap inside the card
-                          instead of inheriting the cell's nowrap (a 1621 px table) */}
-                      <TableCell className="max-w-[32rem] min-w-[16rem] break-words whitespace-normal">
+                          instead of inheriting the cell's nowrap (a 1621 px table). wrap-anywhere,
+                          not break-words: only overflow-wrap:anywhere lowers the cell's
+                          min-content width, so an unbroken file name cannot widen the table */}
+                      <TableCell className="max-w-[32rem] min-w-[16rem] wrap-anywhere whitespace-normal">
                         <Link
                           href={`/org/${slug}/settings/documents/templates/${template.id}/edit`}
                           className="font-medium text-slate-950 hover:text-teal-600 hover:underline dark:text-slate-50 dark:hover:text-teal-400"

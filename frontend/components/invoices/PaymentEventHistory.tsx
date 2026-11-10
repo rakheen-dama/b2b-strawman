@@ -201,6 +201,10 @@ export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHis
           <tbody>
             {events.map((event) => {
               const badge = STATUS_BADGE[event.status] ?? STATUS_BADGE.CREATED;
+              const providerLabel = PROVIDER_LABELS[event.providerSlug] ?? event.providerSlug;
+              const methodLabel = event.paymentMethod
+                ? (METHOD_LABELS[event.paymentMethod] ?? event.paymentMethod)
+                : "\u2014";
               return (
                 <tr
                   key={event.id}
@@ -210,15 +214,20 @@ export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHis
                     <Badge variant={badge.variant}>{badge.label}</Badge>
                   </td>
                   <td className="hidden px-3 py-2 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
-                    {PROVIDER_LABELS[event.providerSlug] ?? event.providerSlug}
+                    {providerLabel}
                   </td>
                   <td className="hidden px-3 py-2 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
-                    {event.paymentMethod
-                      ? (METHOD_LABELS[event.paymentMethod] ?? event.paymentMethod)
-                      : "\u2014"}
+                    {methodLabel}
                   </td>
                   <td className="px-3 py-2 font-mono text-sm text-slate-600 dark:text-slate-400">
                     {event.paymentReference ?? "\u2014"}
+                    {/* Below xl the Provider / Method columns are hidden; they ride here */}
+                    <div
+                      className="mt-0.5 font-sans text-xs text-slate-500 xl:hidden dark:text-slate-400"
+                      data-testid="payment-provider-method-compact"
+                    >
+                      {`${providerLabel} \u00b7 ${methodLabel}`}
+                    </div>
                   </td>
                   <td className="px-3 py-2 text-right text-sm text-slate-900 dark:text-slate-100">
                     {formatCurrency(event.amount, event.currency)}

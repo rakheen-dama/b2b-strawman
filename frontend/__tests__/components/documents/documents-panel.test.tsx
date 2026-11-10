@@ -91,6 +91,28 @@ describe("DocumentsPanel", () => {
     expect(within(manualRow!).queryByText("Comment")).not.toBeInTheDocument();
   });
 
+  // PR #1752 review: Size / Uploaded columns show from xl only; below it they ride under the name,
+  // and a truncated name is readable in full (title + accessible name).
+  it("keeps size and upload date in a compact line and exposes the full file name", () => {
+    const longName = "a-very-long-unbroken-document-file-name-that-will-truncate.pdf";
+    render(
+      <DocumentsPanel
+        documents={[makeDocument({ fileName: longName })]}
+        projectId="p1"
+        slug="acme"
+      />
+    );
+
+    const compact = screen.getByTestId("document-meta-compact");
+    expect(compact).toHaveClass("xl:hidden");
+    expect(compact).toHaveTextContent("2.0 KB");
+    expect(compact).toHaveTextContent("2026");
+    expect(screen.getByRole("button", { name: `Expand comments for ${longName}` })).toHaveAttribute(
+      "title",
+      longName
+    );
+  });
+
   // G88-M6 (634C): a document comment notification (?documentId=&commentId=) opens the panel with
   // that document's comments expanded.
   it("expands the document named by ?documentId= on mount", () => {

@@ -470,15 +470,18 @@ export function DocumentsPanel({
                       )}
                     >
                       {/* G89-F15: w-full + max-w-0 lets the file name's truncate take effect
-                          (otherwise the nowrap cell grew the table to 938 px in a 654 px card) */}
+                          (otherwise the nowrap cell grew the table to 938 px in a 654 px card).
+                          A truncated name shows in full on hover (title) and wraps on keyboard
+                          focus; the button's accessible name carries it too. */}
                       <TableCell className="w-full max-w-0">
                         <div className="flex min-w-0 items-center gap-2">
                           <button
                             type="button"
-                            className="flex min-w-0 items-center gap-1.5 text-left"
+                            className="group flex min-w-0 items-center gap-1.5 text-left"
                             onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}
                             aria-expanded={isExpanded}
                             aria-label={`${isExpanded ? "Collapse" : "Expand"} comments for ${doc.fileName}`}
+                            title={doc.fileName}
                           >
                             {isExpanded ? (
                               <ChevronDown className="size-3.5 shrink-0 text-slate-400" />
@@ -486,7 +489,7 @@ export function DocumentsPanel({
                               <ChevronRight className="size-3.5 shrink-0 text-slate-400" />
                             )}
                             <Icon className="size-4 shrink-0 text-slate-400 dark:text-slate-500" />
-                            <span className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
+                            <span className="truncate text-sm font-medium text-slate-950 group-focus-visible:wrap-anywhere group-focus-visible:whitespace-normal dark:text-slate-50">
                               {doc.fileName}
                             </span>
                           </button>
@@ -496,6 +499,14 @@ export function DocumentsPanel({
                             </Badge>
                           )}
                         </div>
+                        {/* Size and Uploaded columns show from xl; below it they ride here */}
+                        <p
+                          className="mt-0.5 truncate pl-[2.625rem] text-xs text-slate-500 xl:hidden dark:text-slate-400"
+                          data-testid="document-meta-compact"
+                        >
+                          {formatFileSize(doc.size)} ·{" "}
+                          {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
+                        </p>
                       </TableCell>
                       <TableCell className="hidden xl:table-cell">
                         <span className="text-sm text-slate-600 dark:text-slate-400">

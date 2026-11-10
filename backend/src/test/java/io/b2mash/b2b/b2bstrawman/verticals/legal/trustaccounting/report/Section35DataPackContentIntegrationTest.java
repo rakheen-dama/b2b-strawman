@@ -135,7 +135,8 @@ class Section35DataPackContentIntegrationTest {
                         .formatted(clientId)))
         .andExpect(status().isCreated());
 
-    // G89-F50: two POSTED interest runs inside FY 2025/26 plus one calculated-but-unposted run.
+    // G89-F50: two POSTED interest runs inside FY 2025/26, one calculated-but-unposted run, and one
+    // POSTED run after the year end.
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, APPROVER, "s35_content_admin@test.com", "S35 Admin", "admin");
     mockMvc
@@ -152,6 +153,9 @@ class Section35DataPackContentIntegrationTest {
     postedRun(trustAccountId, "2025-07-01", "2025-07-31", true);
     postedRun(trustAccountId, "2025-08-01", "2025-08-31", true);
     postedRun(trustAccountId, "2025-09-01", "2025-09-30", false);
+    // A POSTED run outside FY 2025/26 (period ends after 2026-03-31) must be excluded, which pins
+    // the year bounds in Section35DataPackQuery (PR #1752 review).
+    postedRun(trustAccountId, "2026-04-01", "2026-04-30", true);
 
     params = Map.of("trust_account_id", trustAccountId, "financial_year_end", "2026-03-31");
   }
@@ -171,7 +175,8 @@ class Section35DataPackContentIntegrationTest {
         .extracting(row -> String.valueOf(row.get("label")))
         .anySatisfy(label -> assertThat(label).contains(CLIENT).contains("2025-07-31"))
         .anySatisfy(label -> assertThat(label).contains(CLIENT).contains("2025-08-31"))
-        .noneSatisfy(label -> assertThat(label).contains("2025-09-30"));
+        .noneSatisfy(label -> assertThat(label).contains("2025-09-30"))
+        .noneSatisfy(label -> assertThat(label).contains("2026-04-30"));
 
     var totals =
         result.rows().stream()

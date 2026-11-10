@@ -265,7 +265,8 @@ class MatterTrustBalanceEndpointTest {
         .perform(get("/api/trust-accounts").with(TestJwtFactory.memberJwt(ORG_ID, NO_TRUST)))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.status").value(403))
-        .andExpect(jsonPath("$.title").value("Access denied"));
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
   }
 
   @Test

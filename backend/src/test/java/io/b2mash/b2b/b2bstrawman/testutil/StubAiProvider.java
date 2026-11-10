@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,12 +49,24 @@ public class StubAiProvider implements AiProvider {
    */
   private final Queue<String> receivedUserPrompts = new ConcurrentLinkedQueue<>();
 
+  /** Every completion call this stub received; monotonic, unlike the bounded prompt queue. */
+  private final AtomicLong completionCalls = new AtomicLong();
+
+  /**
+   * How many completion calls this stub has received. Take it before and after a request to prove
+   * that this request (not just an unrelated marker) never reached the provider.
+   */
+  public long completionCallCount() {
+    return completionCalls.get();
+  }
+
   /** True when any user prompt this stub received contains {@code marker}. */
   public boolean receivedPromptContaining(String marker) {
     return receivedUserPrompts.stream().anyMatch(p -> p != null && p.contains(marker));
   }
 
   private void record(String userPrompt) {
+    completionCalls.incrementAndGet();
     receivedUserPrompts.add(userPrompt);
     while (receivedUserPrompts.size() > MAX_RECORDED_PROMPTS) {
       receivedUserPrompts.poll();

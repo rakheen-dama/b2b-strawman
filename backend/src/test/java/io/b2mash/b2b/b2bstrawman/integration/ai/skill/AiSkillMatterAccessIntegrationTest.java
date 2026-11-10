@@ -208,6 +208,7 @@ class AiSkillMatterAccessIntegrationTest {
   /** Map.of rejected the null templateId, so the request was a 500; it is a 400 ProblemDetail. */
   @Test
   void drafting_withoutTemplateId_is400TemplateRequired() throws Exception {
+    long callsBefore = stubAiProvider.completionCallCount();
     mockMvc
         .perform(
             post("/api/ai/skills/drafting")
@@ -215,14 +216,17 @@ class AiSkillMatterAccessIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"matterId\":\"%s\"}".formatted(memberMatterId)))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Template required"))
         .andExpect(jsonPath("$.detail").value("Choose a template to draft from."));
-    assertThat(stubAiProvider.receivedPromptContaining(SECRET_MATTER)).isFalse();
+    // This request (memberMatterId) never reached the provider.
+    assertThat(stubAiProvider.completionCallCount()).isEqualTo(callsBefore);
   }
 
   /** The same null-safety for the matter: a 400, never a 500. */
   @Test
   void drafting_withoutMatterId_is400MatterRequired() throws Exception {
+    long callsBefore = stubAiProvider.completionCallCount();
     mockMvc
         .perform(
             post("/api/ai/skills/drafting")
@@ -230,8 +234,10 @@ class AiSkillMatterAccessIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"templateId\":\"%s\"}".formatted(templateId)))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(jsonPath("$.detail").value("Choose the matter to draft for."));
+    assertThat(stubAiProvider.completionCallCount()).isEqualTo(callsBefore);
   }
 
   // ---- helpers --------------------------------------------------------------------------------

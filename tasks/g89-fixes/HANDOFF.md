@@ -116,3 +116,13 @@ The builder judgment calls are in the PR body.
 - F's opt-in visual compares change the e2e gate recipe. If F merges first, E's e2e gate runs without capture-then-score; record that.
 
 The brief is still `tasks/g89-fixes/batch-F-brief.md`. Tenant V15 / global V6 are next free (confirm with `ls`).
+
+## Note for Batch F (2026-11-11): exact G89-F66 locations
+
+These specs compute "today" as UTC via `new Date().toISOString().split("T")[0]`. Replace each with the SA helper `isoDate()` from `e2e/helpers/legal-depth-ii.ts:98`, which builds on `todayInSA()`:
+- `frontend/e2e/tests/projects/project-time.spec.ts:172`
+- `frontend/e2e/tests/projects/project-time.spec.ts:211`
+- `frontend/e2e/tests/projects/project-crud.spec.ts:250`
+- `frontend/e2e/tests/projects/project-budget.spec.ts:123`
+
+The product is SA-time throughout (KaziTime). Founder direction, 2026-11-11: gates do not wait out 00:00–02:00 SAST. Any failure in that window is classified against G89-F66.

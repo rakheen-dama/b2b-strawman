@@ -357,7 +357,8 @@ describe("FieldGroupDialog", () => {
       renderEdit("Open Inactive Member Dialog");
 
       await user.click(screen.getByText("Open Inactive Member Dialog"));
-      await user.click(screen.getByRole("button", { name: "Remove Inactive field" }));
+      // fd-gone has no resolvable name: a distinct id-suffixed label, never a shared one
+      await user.click(screen.getByRole("button", { name: "Remove Inactive field fd-gone" }));
       await user.click(screen.getByRole("button", { name: "Save Changes" }));
 
       await waitFor(() =>
@@ -365,6 +366,42 @@ describe("FieldGroupDialog", () => {
           "acme",
           "g-edit",
           expect.objectContaining({ fieldDefinitionIds: ["fd-1"] })
+        )
+      );
+    });
+
+    it("each inactive member is identified by name before it can be removed (PR #1752 review)", async () => {
+      mockUpdateFieldGroup.mockResolvedValue({ success: true });
+      const user = userEvent.setup();
+      const twoInactive: FieldGroupResponse = {
+        ...editedGroup,
+        fieldDefinitionIds: ["fd-1", "fd-old-a", "fd-old-b"],
+      };
+      render(
+        <FieldGroupDialog
+          slug="acme"
+          entityType="PROJECT"
+          group={twoInactive}
+          availableFields={makeAvailableFields()}
+          allGroups={[twoInactive, depGroup]}
+          initialFieldIds={twoInactive.fieldDefinitionIds}
+          inactiveFieldNames={{ "fd-old-a": "Old Code", "fd-old-b": "Legacy Ref" }}
+        >
+          <button>Open Two Inactive Dialog</button>
+        </FieldGroupDialog>
+      );
+
+      await user.click(screen.getByText("Open Two Inactive Dialog"));
+      expect(screen.getByText("Old Code (inactive)")).toBeInTheDocument();
+      expect(screen.getByText("Legacy Ref (inactive)")).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Remove Legacy Ref (inactive)" }));
+      await user.click(screen.getByRole("button", { name: "Save Changes" }));
+
+      await waitFor(() =>
+        expect(mockUpdateFieldGroup).toHaveBeenCalledWith(
+          "acme",
+          "g-edit",
+          expect.objectContaining({ fieldDefinitionIds: ["fd-1", "fd-old-a"] })
         )
       );
     });

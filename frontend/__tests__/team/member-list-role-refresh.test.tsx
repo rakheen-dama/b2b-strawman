@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // G89-F65: after a role change in the member panel the Team list kept the old role until a reload,
@@ -116,5 +116,84 @@ describe("Team member list roles (G89-F65)", () => {
         within(screen.getByTestId("member-row-carol@test.com")).getByTestId("member-role-badge")
       ).toHaveTextContent("Associate (no trust)")
     );
+  });
+});
+
+describe("Team member list reloads (PR #1752 review)", () => {
+  const capabilities = {
+    memberId: carol.id,
+    roleName: "Member",
+    roleCapabilities: ["VIEW_LEGAL"],
+    overrides: [],
+    effectiveCapabilities: ["VIEW_LEGAL"],
+  };
+
+  async function saveRoleFor(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByTestId("member-row-carol@test.com"));
+    const save = await screen.findByRole("button", { name: "Save" });
+    await waitFor(() => expect(save).toBeEnabled());
+    await user.click(save);
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Save" })).toBeNull());
+  }
+
+  it("ignores a superseded reload that resolves after the newer one", async () => {
+    let resolveFirst: (v: unknown) => void = () => {};
+    let resolveSecond: (v: unknown) => void = () => {};
+    mockListMembers
+      .mockResolvedValueOnce([{ ...carol, role: "org:member" }])
+      .mockReturnValueOnce(new Promise((r) => (resolveFirst = r)))
+      .mockReturnValueOnce(new Promise((r) => (resolveSecond = r)));
+    mockFetchMemberCapabilities.mockResolvedValue(capabilities);
+    mockAssignMemberRole.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+
+    render(<MemberList isAdmin={true} roles={roles} slug="acme" />);
+    await screen.findByTestId("member-row-carol@test.com");
+
+    await saveRoleFor(user);
+    await waitFor(() => expect(mockListMembers).toHaveBeenCalledTimes(2));
+    await saveRoleFor(user);
+    await waitFor(() => expect(mockListMembers).toHaveBeenCalledTimes(3));
+
+    // The newer reload lands first; the older one (stale data) lands last and must be ignored.
+    await act(async () => resolveSecond([{ ...carol, role: "org:associate-no-trust" }]));
+    await act(async () => resolveFirst([{ ...carol, role: "org:member" }]));
+
+    expect(
+      within(screen.getByTestId("member-row-carol@test.com")).getByTestId("member-role-badge")
+    ).toHaveTextContent("Associate (no trust)");
+  });
+
+  it("keeps the rows and says so when a post-save reload fails", async () => {
+    mockListMembers.mockResolvedValueOnce([{ ...carol, role: "org:member" }]).mockResolvedValue(null);
+    mockFetchMemberCapabilities.mockResolvedValue(capabilities);
+    mockAssignMemberRole.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+
+    render(<MemberList isAdmin={true} roles={roles} slug="acme" />);
+    await screen.findByTestId("member-row-carol@test.com");
+    await saveRoleFor(user);
+
+    await waitFor(() => expect(mockListMembers).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText("Could not refresh the member list.")).toBeInTheDocument();
+    expect(screen.getByTestId("member-row-carol@test.com")).toBeInTheDocument();
+    expect(screen.queryByText("No members found")).toBeNull();
+  });
+
+  it("a non-admin sees a custom role's name from roleNames, never its slug", async () => {
+    mockListMembers.mockResolvedValue([{ ...carol, role: "org:associate-no-trust" }]);
+
+    render(
+      <MemberList
+        isAdmin={false}
+        roles={[]}
+        roleNames={[{ slug: "associate-no-trust", name: "Associate (no trust)" }]}
+        slug="acme"
+      />
+    );
+
+    const row = await screen.findByTestId("member-row-carol@test.com");
+    expect(within(row).getByTestId("member-role-badge")).toHaveTextContent("Associate (no trust)");
+    expect(row.textContent).not.toContain("associate-no-trust");
   });
 });

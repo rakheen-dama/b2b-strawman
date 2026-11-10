@@ -91,3 +91,28 @@ Deferred and needing a decision:
 - sentence-casing about 20 audit labels.
 
 The builder judgment calls are in the PR body.
+
+## UPDATE 2026-11-10: Batch E still in flight; Batch F being started by a separate agent
+
+**Batch E (PR #1752) is not merged.**
+- Full verify @da212c112: 6753 / 0 / 0 / 26, BUILD SUCCESS. CI green.
+- Founder **D23**: F57 wording signed off.
+- CodeRabbit raised 12 actionable comments. A builder is fixing them in the worktree `.claude/worktrees/agent-a8c780f7d1e0f9b9a` (branch `fix/g89-e-layout-copy`). Its findings file is in the old session scratchpad.
+- **Still owed after that round:**
+  - full verify on the new head;
+  - 2 bound reviews, and a re-read of CodeRabbit;
+  - pre-merge e2e (all suites, fresh stacks, outside 00:00–02:00 SAST);
+  - merge;
+  - KC check (1440/1024, F17 list loads, F50 multiple runs, F44 portal feed, F64 no 500).
+
+**Batch F runs in parallel at the founder's request (2026-11-10).** This is an exception to "no parallel development". For the F agent:
+- Cut `fix/g89-f-tooling-docs` from fresh `origin/main`, and work in its own worktree.
+- **Do not touch files Batch E changes.** List them with `git diff --stat origin/main...origin/fix/g89-e-layout-copy`.
+- Likely overlap: frontend layout and components, `report-results.tsx`, the trust-report pack, and the legal-za pack (E bumps legal-za to v14 and trust-reports to v3).
+- F must not bump packs.
+- If F needs a tenant migration, take V15 only after confirming E added none. E added none at `da212c112`.
+- The F e2e gate and the E e2e gate must **not run at the same time**: one e2e stack fits on this machine, alongside a Maven verify at most. Coordinate through `TRACKER.md` before starting a stack.
+- Whichever merges second rebases on main and re-runs the affected suites.
+- F's opt-in visual compares change the e2e gate recipe. If F merges first, E's e2e gate runs without capture-then-score; record that.
+
+The brief is still `tasks/g89-fixes/batch-F-brief.md`. Tenant V15 / global V6 are next free (confirm with `ls`).

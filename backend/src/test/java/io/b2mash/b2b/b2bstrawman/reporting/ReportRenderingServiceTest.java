@@ -16,9 +16,11 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -434,6 +436,47 @@ class ReportRenderingServiceTest {
               assertThat(firstCells)
                   .containsExactly(
                       "-10055.21", "-42", "'-cmd|' /C calc'!A0", "'=SUM(A1)", "'+1+1", "'@SUM(A1)");
+            });
+  }
+
+  @Test
+  void writeCsvFormatsNumbersLocaleIndependently_underCommaDecimalDefaultLocale() {
+    // PR #1752 review: String.format used the JVM default locale, so under a comma-decimal locale
+    // -10055.21 became "-10055,21" — quoted, apostrophe-prefixed text in a spreadsheet.
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var definition = reportDefinitionRepository.findBySlug("invoice-aging").orElseThrow();
+              Map<String, Object> row = new HashMap<>();
+              row.put("invoiceNumber", "FN-LOCALE-1");
+              row.put("amount", new BigDecimal("-10055.21"));
+
+              var outputStream = new ByteArrayOutputStream();
+              Locale previous = Locale.getDefault();
+              try {
+                Locale.setDefault(Locale.GERMANY);
+                reportRenderingService.writeCsv(
+                    definition,
+                    new ReportResult(List.of(row), Map.of()),
+                    new HashMap<>(),
+                    outputStream);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              } finally {
+                Locale.setDefault(previous);
+              }
+
+              String dataLine =
+                  outputStream
+                      .toString()
+                      .lines()
+                      .filter(l -> l.startsWith("FN-LOCALE-1"))
+                      .findFirst()
+                      .orElseThrow();
+              assertThat(dataLine).contains(",-10055.21,").doesNotContain("10055,21");
             });
   }
 }

@@ -165,7 +165,9 @@ describe("Team member list reloads (PR #1752 review)", () => {
   });
 
   it("keeps the rows and says so when a post-save reload fails", async () => {
-    mockListMembers.mockResolvedValueOnce([{ ...carol, role: "org:member" }]).mockResolvedValue(null);
+    mockListMembers
+      .mockResolvedValueOnce([{ ...carol, role: "org:member" }])
+      .mockResolvedValue(null);
     mockFetchMemberCapabilities.mockResolvedValue(capabilities);
     mockAssignMemberRole.mockResolvedValue({ success: true });
     const user = userEvent.setup();

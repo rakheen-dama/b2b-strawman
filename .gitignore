@@ -161,3 +161,4 @@ frontend/test-results/
 # Leftover build output from the deleted docs/ Nextra site (Epic 603)
 docs/.next/
 docs/next-env.d.ts
+/shadcn-nextjs-admincn-admin-template-1.0.0/

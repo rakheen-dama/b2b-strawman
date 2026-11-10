@@ -186,8 +186,15 @@ describe("PaymentEventHistory", () => {
     );
 
     const compact = screen.getByTestId("payment-provider-method-compact");
-    expect(compact).toHaveTextContent("Manual \u00b7 EFT");
+    expect(compact).toHaveTextContent("Manual");
+    expect(compact).toHaveTextContent("EFT");
     expect(compact).toHaveClass("xl:hidden");
+    // Below xl the Provider / Method headers are hidden, so each value carries its own
+    // screen-reader label (PR #1752 CodeRabbit review).
+    const srLabels = Array.from(compact.querySelectorAll(".sr-only")).map((el) =>
+      el.textContent?.trim()
+    );
+    expect(srLabels).toEqual(["Provider:", "Method:"]);
   });
 
   it("shows empty state when no events", () => {

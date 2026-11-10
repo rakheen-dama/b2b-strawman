@@ -46,6 +46,8 @@ interface FieldGroupDialogProps {
   availableFields: FieldDefinitionResponse[];
   initialFieldIds?: string[];
   allGroups?: FieldGroupResponse[];
+  /** Names of member definitions that are inactive (so absent from availableFields), by id. */
+  inactiveFieldNames?: Record<string, string>;
   children: React.ReactNode;
 }
 
@@ -56,6 +58,7 @@ export function FieldGroupDialog({
   availableFields,
   initialFieldIds,
   allGroups = [],
+  inactiveFieldNames = {},
   children,
 }: FieldGroupDialogProps) {
   const isEditing = !!group;
@@ -438,9 +441,16 @@ export function FieldGroupDialog({
               <div className="flex flex-wrap gap-1.5">
                 {selectedFieldIds.map((fieldId) => {
                   // A member whose definition is inactive is not offered in availableFields;
-                  // it is still listed so it can be removed (634A follow-up)
+                  // it is still listed so it can be removed (634A follow-up), under its own name
+                  // so two inactive members are told apart (PR #1752 review). With no name, the
+                  // id prefix keeps each label distinct.
+                  const activeName = availableFields.find((f) => f.id === fieldId)?.name;
+                  const inactiveName = inactiveFieldNames[fieldId];
                   const fieldName =
-                    availableFields.find((f) => f.id === fieldId)?.name ?? "Inactive field";
+                    activeName ??
+                    (inactiveName
+                      ? `${inactiveName} (inactive)`
+                      : `Inactive field ${fieldId.slice(0, 8)}`);
                   return (
                     <Badge key={fieldId} variant="secondary" className="gap-1">
                       {fieldName}

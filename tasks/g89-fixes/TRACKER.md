@@ -35,6 +35,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D20 | (2026-11-07, orchestrator, under the D19 ruling for the same class) Fold into Batch H / PR #1750: **G89-F58** HIGH (AI skills such as ContractReview and Drafting load the caller-named matter without a matter check; matter data reaches the LLM, same class as F56), **G89-F59** (contract review without a matterId → 500), **G89-F60** (`DELETE /api/generated-documents/{id}` has no matter check). |
 | D21 | (2026-11-08) **G89-F61** (matter-intake sends up to 500 matter names to the LLM) is **by design** (conflict/intake suggestion needs the firm's matter list); recorded, no fix. **G89-F62** (drafting without templateId → 500) is **LOW**, to Batch E. |
 | D22 | (2026-11-08) **G89-F63** (the role editor can't grant VIEW_LEGAL / GENERATE_STATEMENT_OF_ACCOUNT / MANAGE_DISBURSEMENTS) is **LOW, backlog**. **F56/F58**: the founder accepts the integration-test evidence. Status is **VERIFIED-BY-TEST**: the stub provider is asserted never to receive protected text. This is not a browser PASS; AI is not configured on the KC dev stack. |
+| D23 | (2026-11-10) Founder **signs off the G89-F57 wording**: the SoA summary reads "Fees billed in period:" / "Disbursements billed in period:" (PR #1752). Go-ahead given for the CodeRabbit fix round on #1752. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -302,3 +303,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - **634E(2):** no visibility control on edit; the comment stays SHARED.
   - **Deferred:** 634E(1) (no thread has more than 50 comments) moves to the exit re-walk.
   - **Noted:** the portal magic-link double-exchange 401 (dev quirk, as before).
+- 2026-11-10 — PR #1752 (E) status:
+  - Full verify @da212c112: 6753 / 0 / 0 / 26, BUILD SUCCESS. Wall clock was 11:53 h, likely machine sleep.
+  - CI green.
+  - CodeRabbit @da212c112: 12 actionable (11 inline, plus nitpicks).
+  - Founder D23: F57 wording signed off.
+  - CodeRabbit fix round launched in the existing worktree.

@@ -50,6 +50,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D35 | (2026-11-11) **G89-F36 is MEDIUM: fix before exit** (a trust reference over 100 chars aborts that matter's portal sync). F32, F33, F34, F35, F38, F42 are **LOW, backlog**. |
 | D36 | (2026-11-11) F28 fix design: **require a matter** on client trust deposits, payments, refunds and transfers (backend validation + UI). This removes the no-matter bucket and the D5 unmattered interest line, and matches SA practice. |
 | D37 | (2026-11-11) F28 + F36 ship together as **Batch L** (same family: trust rows not reaching the portal trust view; §7 cluster authorised). Each gets its own red test and commits. |
+| D38 | (2026-11-11) Amend legal-za 12.2 with D36: the R50 000 Moroka deposit names Matter = 'Estate Late Peter Moroka'; the field list drops 'Matter (Optional)'. Ships in PR #1757. |
+| D39 | (2026-11-11) Transfers: **add a required target matter** linked to the target client; TRANSFER_OUT posts on the source matter and TRANSFER_IN on the target matter. CodeRabbit Major plus a reviewer note on #1757. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -69,7 +71,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 8b | **I — G89-F71** portal deadline status stale (D29 MEDIUM) | F71 | BE | PR #1754 → `452ba3d7a` | **VERIFIED** (red→green integration test 8/8; runtime probe on the PR-head e2e stack: stored = API = rule for 8 deadlines, filter groups exact). Staleness over real days is not browser-observable on a single day. |
 | 8c | **J — raw-label copy** (D32) | W2-c2, W2-c3 | BE + legal-za v15 | PR #1755 → merged | **MERGED**: e2e-observed (SoA PDFs 'Payment'/'Refund'; digest 'Paid R 40 250,00'; v14→v15 reconcile on an upgrade stack) |
 | 8d | **K — Day 0 banking step** (D30, §6 docs) | W1-c1 → G89-F78 | DOC | PR #1756 → `6547d2319` | **MERGED** (2× APPROVE, CodeRabbit 0 actionable) |
-| 8e | **L — trust rows to the portal** (D34–D37) | F28 (require matter), F36 (long reference) | BE + FE (+PT) | | OPEN |
+| 8e | **L — trust rows to the portal** (D34–D39) | F28 (require matter), F36 (long reference) | BE + FE + global V6 | PR #1757 | CodeRabbit fix round (D39 transfer target matter; fee-transfer link; withdrawal needs completed placement; dialog scroll) |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
 
 ## Gap checklist
@@ -422,3 +424,10 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - portal: vitest 284, 90-day 13/0/0, responsive 21/0/0, isolation 2/0/0, login-bare 1/0/0.
   - Flyway 14/5; legal-za 15; trust-reports 3; 0 backend ERROR.
 - **Register re-rated** (founder D33–D35): the open never-rated ids were rated. **F28 and F36 are MEDIUM and open**, so the exit is not PASS yet; **Batch L** is next (D36 design, D37 bundle). All other open ids are LOW backlog (26). Register G89-F28 … F85; next free id **G89-F86**.
+- 2026-11-11 ~19:40 — **PR #1757 (Batch L) opened** @4959b2a76.
+  - Red tests: F28 8/11 failing on main → 11/11; F36 sync abort `varchar(100)` → 1/1.
+  - Global **V6** widens the portal trust reference to 200; next free is tenant V15 / global V7.
+  - Full verify @4959b2a76: **6810/0/0/26**. 2× APPROVE @4959b2a76 and @b63284ef5. `b63284ef5` = D38 scenario 12.2.
+  - **CodeRabbit: 4 Majors.** Transfer target leg on the source matter → founder **D39**. Fee-transfer matter not re-checked against the client link. Withdrawal while the placement payment is unapproved credits a matter never debited. Investment dialog cannot scroll.
+  - Fix round launched. The e2e gate running @b63284ef5 is an early read only; it re-runs on the final head.
+  - Post-merge docs pass: 12.2's stale `TrustTransactionService.java:96-102` / `RecordDepositDialog.tsx:126-213` citations; steps 9.1–9.3 do not say the estate matter is created from the Moroka client.

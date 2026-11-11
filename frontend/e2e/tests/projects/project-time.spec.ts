@@ -17,6 +17,8 @@ import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
 import { apiOk, apiStatus } from "../../helpers/api";
+// SA business date (G89-F66): My Work and the product "today" are South African time.
+import { todayInSA } from "@b2mash/shared/date";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
@@ -169,7 +171,7 @@ test.describe.serial("PROJ-03: Time Entries", () => {
       {
         method: "POST",
         body: {
-          date: new Date().toISOString().split("T")[0],
+          date: todayInSA(),
           durationMinutes: 60,
           billable: true,
           description: `Rate snapshot test ${RUN_ID}`,
@@ -208,7 +210,7 @@ test.describe.serial("PROJ-03: Time Entries", () => {
       {
         method: "POST",
         body: {
-          date: new Date().toISOString().split("T")[0],
+          date: todayInSA(),
           durationMinutes: 30,
           billable: false,
           description: `Non-billable entry ${RUN_ID}`,

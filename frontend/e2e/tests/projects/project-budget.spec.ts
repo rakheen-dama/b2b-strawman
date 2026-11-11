@@ -16,6 +16,8 @@ import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
 import { apiOk, apiStatus, type ApiEntity } from "../../helpers/api";
+// SA business date (G89-F66): My Work and the product "today" are South African time.
+import { todayInSA } from "@b2mash/shared/date";
 
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
@@ -120,7 +122,7 @@ test.describe.serial("BUDGET-01: Project Budget", () => {
 
   test("3. Budget shows usage after logging time", async ({ page }) => {
     // Log time via API to consume some budget
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayInSA();
 
     const logged = await apiStatus(
       `/api/tasks/${taskId}/time-entries`,

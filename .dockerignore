@@ -21,4 +21,7 @@ frontend/test-results
 portal/test-results
 frontend/playwright-report
 portal/playwright-report
+# Local Playwright baselines (G89-F1): untracked PNGs would otherwise change the build context
+frontend/e2e/screenshots
+portal/e2e/screenshots
 **/.env*

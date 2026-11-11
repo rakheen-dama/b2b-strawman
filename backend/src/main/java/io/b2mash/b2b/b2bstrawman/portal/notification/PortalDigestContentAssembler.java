@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -67,7 +68,12 @@ public class PortalDigestContentAssembler {
       return new DigestInvoiceLine(
           invoice.invoiceNumber(),
           invoiceStatusLabel(invoice.status()),
-          PortalEmailNotificationChannel.formatAmount(invoice.total(), invoice.currency()));
+          digestTotal(invoice.total(), invoice.currency()));
+    }
+
+    /** The fee-note total as the digest prints it. */
+    static String digestTotal(BigDecimal total, String currency) {
+      return PortalEmailNotificationChannel.formatAmount(total, currency);
     }
   }
 

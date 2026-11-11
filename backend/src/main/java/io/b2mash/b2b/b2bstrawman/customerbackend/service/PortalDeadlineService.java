@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
 import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalDeadlineResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineStatus;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalDeadlineViewRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -18,6 +19,11 @@ import org.springframework.stereotype.Service;
  * Service backing the portal deadline endpoints (Epic 497A). Owns the module gate, default
  * date-range computation (today..today+60d), read-model queries, and response-record mapping so the
  * controller stays thin per CLAUDE.md controller discipline.
+ *
+ * <p>Status is derived at read time (G89-F71): every response carries {@link
+ * PortalDeadlineStatus#effective} on {@code LocalDate.now(clock)}, and the {@code status} filter
+ * matches the same rule, so a deadline that has entered the DUE_SOON window or passed reads so
+ * without any re-sync.
  *
  * <p>Per ADR-254 ("portal surfaces hide disabled modules") a disabled {@code deadlines} module
  * surfaces as 404 (not 403) so a disabled vertical feature is indistinguishable from missing data.
@@ -37,7 +43,12 @@ public class PortalDeadlineService {
   private static final int DEFAULT_LOOKAHEAD_DAYS = 60;
 
   private static final Set<String> VALID_STATUS_FILTERS =
-      Set.of("UPCOMING", "DUE_SOON", "OVERDUE", "COMPLETED", "CANCELLED");
+      Set.of(
+          PortalDeadlineStatus.UPCOMING,
+          PortalDeadlineStatus.DUE_SOON,
+          PortalDeadlineStatus.OVERDUE,
+          PortalDeadlineStatus.COMPLETED,
+          PortalDeadlineStatus.CANCELLED);
 
   private final PortalDeadlineViewRepository deadlineRepo;
   private final VerticalModuleGuard moduleGuard;
@@ -76,9 +87,9 @@ public class PortalDeadlineService {
     }
     UUID customerId = RequestScopes.requireCustomerId();
     return deadlineRepo
-        .findByCustomer(customerId, effectiveFrom, effectiveTo, normalisedStatus)
+        .findByCustomer(customerId, effectiveFrom, effectiveTo, normalisedStatus, today)
         .stream()
-        .map(PortalDeadlineService::toResponse)
+        .map(v -> toResponse(v, today))
         .toList();
   }
 
@@ -90,9 +101,10 @@ public class PortalDeadlineService {
   public PortalDeadlineResponse getForContact(String sourceEntity, UUID id) {
     requireDeadlinesEnabled();
     UUID customerId = RequestScopes.requireCustomerId();
+    LocalDate today = LocalDate.now(clock);
     return deadlineRepo
         .findByCustomerIdAndSourceEntityAndId(customerId, sourceEntity, id)
-        .map(PortalDeadlineService::toResponse)
+        .map(v -> toResponse(v, today))
         .orElseThrow(() -> new ResourceNotFoundException("Deadline", id));
   }
 
@@ -105,14 +117,19 @@ public class PortalDeadlineService {
     }
   }
 
-  private static PortalDeadlineResponse toResponse(PortalDeadlineView v) {
+  /**
+   * Maps a read-model row to the portal response with its <b>effective</b> status on {@code today}
+   * (G89-F71): the status stored at sync time goes stale as the calendar moves, so only a terminal
+   * one is kept.
+   */
+  private static PortalDeadlineResponse toResponse(PortalDeadlineView v, LocalDate today) {
     return new PortalDeadlineResponse(
         v.id(),
         v.sourceEntity(),
         v.deadlineType(),
         v.label(),
         v.dueDate(),
-        v.status(),
+        PortalDeadlineStatus.effective(v.status(), v.dueDate(), today),
         v.descriptionSanitised(),
         v.matterId());
   }

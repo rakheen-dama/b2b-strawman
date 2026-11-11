@@ -166,10 +166,10 @@ class DeadlinePortalSyncIntegrationTest {
             deadlineRepo.findByCustomerIdAndSourceEntityAndId(
                 coClientId, "PRESCRIPTION_TRACKER", trackerId))
         .isEmpty();
-    assertThat(deadlineRepo.findByCustomer(coClientId, null, null, null))
+    assertThat(deadlineRepo.findByCustomer(coClientId, null, null, null, LocalDate.now()))
         .extracting(PortalDeadlineView::id)
         .doesNotContain(courtId, trackerId);
-    assertThat(deadlineRepo.findByCustomer(ownerId, null, null, null))
+    assertThat(deadlineRepo.findByCustomer(ownerId, null, null, null, LocalDate.now()))
         .extracting(PortalDeadlineView::id)
         .contains(courtId, trackerId);
   }

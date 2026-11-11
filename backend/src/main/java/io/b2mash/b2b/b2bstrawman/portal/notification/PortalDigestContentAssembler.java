@@ -115,7 +115,7 @@ public class PortalDigestContentAssembler {
 
     // ── Upcoming deadlines (today..today+lookback) ──
     List<PortalDeadlineView> upcomingDeadlines =
-        portalDeadlineViewRepository.findByCustomer(customerId, today, upcomingTo, null);
+        portalDeadlineViewRepository.findByCustomer(customerId, today, upcomingTo, null, today);
 
     boolean allEmpty =
         recentInvoices.isEmpty()

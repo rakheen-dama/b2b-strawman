@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineStatus;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalDeadlineViewRepository;
 import io.b2mash.b2b.b2bstrawman.event.CourtDateCancelledEvent;
@@ -15,7 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -55,10 +55,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       only leak to the portal when an admin has explicitly opted-in per field.
  * </ol>
  *
- * <p>Status derivation happens at sync time (ADR-253), not at read time. See {@link
- * #deriveStatus(LocalDate, LocalDate)}: past due_date → {@code OVERDUE}, within 7 days → {@code
- * DUE_SOON}, otherwise {@code UPCOMING}. {@code COMPLETED} and {@code CANCELLED} are driven by
- * firm-side state (filing.filed, court-date.cancelled, etc.) and are set by future wiring code.
+ * <p>The status written here is a <b>snapshot</b>: {@code UPCOMING} / {@code DUE_SOON} / {@code
+ * OVERDUE} depend on today, so readers re-derive them at read time with {@link
+ * PortalDeadlineStatus#effective} (G89-F71) — nothing re-syncs a row as the calendar moves. Only
+ * {@code COMPLETED} / {@code CANCELLED}, driven by firm-side state (court date HEARD, a future
+ * filing.filed), are authoritative on the stored row. The column is NOT NULL, so the write still
+ * fills it with {@link PortalDeadlineStatus#derive} on the sync day.
  *
  * <p>Court-date and prescription rows go to the matter's <b>owning client only</b> — co-clients
  * linked through {@code customer_projects} see nothing (§14.12 #5, decided 2026-11-04). Their
@@ -74,9 +76,6 @@ public class DeadlinePortalSyncService {
 
   /** Fallback description label when {@link FieldDateApproachingEvent} details are blank. */
   private static final String CUSTOM_DATE_FALLBACK_LABEL = "CUSTOM_DATE";
-
-  /** Threshold (inclusive) below which a row flips from UPCOMING to DUE_SOON. */
-  private static final long DUE_SOON_DAYS = 7;
 
   static final String COURT_DATE_SOURCE = "COURT_DATE";
   static final String COURT_DATE_TYPE = "COURT_DATE";
@@ -370,7 +369,7 @@ public class DeadlinePortalSyncService {
             "CUSTOM_DATE",
             label,
             dueDate,
-            deriveStatus(dueDate, LocalDate.now(clock)),
+            PortalDeadlineStatus.derive(dueDate, LocalDate.now(clock)),
             sanitisedDescription,
             null);
 
@@ -400,7 +399,7 @@ public class DeadlinePortalSyncService {
             src.dueDate(),
             src.overrideStatus() != null
                 ? src.overrideStatus()
-                : deriveStatus(src.dueDate(), LocalDate.now(clock)),
+                : PortalDeadlineStatus.derive(src.dueDate(), LocalDate.now(clock)),
             sanitisedDescription,
             null);
     portalTxTemplate.executeWithoutResult(status -> deadlineRepo.upsert(view));
@@ -412,8 +411,8 @@ public class DeadlinePortalSyncService {
    * shared write path free of event-type specifics.
    *
    * @param overrideStatus set to {@code COMPLETED} or {@code CANCELLED} when firm-side state forces
-   *     a terminal status; otherwise {@code null} to let {@link #deriveStatus} compute from the due
-   *     date.
+   *     a terminal status; otherwise {@code null} to let {@link PortalDeadlineStatus#derive}
+   *     snapshot it from the due date (readers re-derive it, G89-F71).
    */
   public record DeadlineSource(
       String sourceEntity,
@@ -514,21 +513,6 @@ public class DeadlinePortalSyncService {
   }
 
   // ── Pure helpers ────────────────────────────────────────────────────────
-
-  /**
-   * Derives the deadline status from the due date. Per ADR-253 this is computed at sync time, not
-   * at read time, so a read hitting the portal during the nightly scanner's gap is never stale.
-   */
-  static String deriveStatus(LocalDate dueDate, LocalDate today) {
-    if (dueDate.isBefore(today)) {
-      return "OVERDUE";
-    }
-    long daysUntil = ChronoUnit.DAYS.between(today, dueDate);
-    if (daysUntil <= DUE_SOON_DAYS) {
-      return "DUE_SOON";
-    }
-    return "UPCOMING";
-  }
 
   private UUID resolveCustomerId(EntityType entityType, UUID entityId, UUID projectId) {
     return switch (entityType) {

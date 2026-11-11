@@ -218,7 +218,7 @@ class PortalDeadlineBackfillRunnerTest {
   void aCoClientGetsNoBackfilledRow() {
     fixedClockRunner.backfillTenant(mapping);
 
-    assertThat(deadlineRepo.findByCustomer(coClientId, null, null, null))
+    assertThat(deadlineRepo.findByCustomer(coClientId, null, null, null, LocalDate.now()))
         .extracting(PortalDeadlineView::id)
         .doesNotContain(futureCourt, todayCourt, runningTracker, warnedTracker);
     assertThat(ownerRowIds()).contains(futureCourt, runningTracker);
@@ -360,7 +360,7 @@ class PortalDeadlineBackfillRunnerTest {
   }
 
   private List<UUID> ownerRowIds() {
-    return deadlineRepo.findByCustomer(ownerId, null, null, null).stream()
+    return deadlineRepo.findByCustomer(ownerId, null, null, null, LocalDate.now()).stream()
         .map(PortalDeadlineView::id)
         .toList();
   }

@@ -38,6 +38,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D23 | (2026-11-10) Founder **signs off the G89-F57 wording**: the SoA summary reads "Fees billed in period:" / "Disbursements billed in period:" (PR #1752). Go-ahead given for the CodeRabbit fix round on #1752. |
 | D24 | (2026-11-11) The F25 ruling extends to the two Day 75 lines that depended on the removed P-75.6: the heading (`portal-client-90day-keycloak.md:190`, no longer "→ download related doc") and the "Download audit event recorded" checkpoint (`:203`, removed). Raised by the PR #1753 FE/docs review. |
 | D25 | (2026-11-11) **G89-F29, F30, F37** (trust reversal / transfer-reversal gaps) are **LOW, backlog**. None corrupts a firm-side balance. |
+| D26 | (2026-11-11) The F24 ruling extends to the Day 75 email lines: Day 75 is dropped from Session 0 item 0.D (`portal-client-90day-keycloak.md:60`) and exit checkpoint E.8 (`:249`). Raised by CodeRabbit on PR #1753. |
+| D27 | (2026-11-11) The Day 75 actor is **Lerato Mthembu**: the court dates and prescription belong to her Road Accident Fund matter, Sipho's matter has none, and the 636B walk ran P-75.1 as Lerato. Raised by CodeRabbit on PR #1753. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -356,3 +358,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - Reviews @d852bc4a7: backend/tooling **APPROVE**; FE/docs **REQUEST_CHANGES** (Day 75 :190/:203 depend on the removed P-75.6). Founder **D24**, **D25**.
   - Fix round `b146c09e0` (docs only; diff vs d852bc4a7 empty for backend/frontend/portal/packages, so the verify stands): D24 lines, D25 severities, F66 row line numbers, the two remaining F2 prune lines.
   - Re-review @b146c09e0 and pre-merge e2e gate (fresh stacks, no capture-then-score — compares now opt-in) launched.
+- 2026-11-11 ~05:10 — PR #1753 CodeRabbit (6 @d852bc4a7 + 2 @b146c09e0) all triaged; replies posted on every thread.
+  - Fixed in `1e3bb1046` / `7f58d02db` (docs + `run-phase.sh` only): portal README `E2E_VISUAL=1`; founder **D26**, **D27**; `run-phase.sh` 137 = timeout only at the cap; gaps.md §6 labelled the historical snapshot; §1/§4 consistency.
+  - Not changed (reason posted): skip `EmbeddedPostgresWorkingDirectoryTest` outside Surefire (it would pass vacuously if the pom pin were removed).
+  - **New candidate G89-F71 (unrated, code read, reproduce first):** portal deadline `status` is derived only at sync time and never refreshed, so a deadline synced more than 7 days out keeps reading "Upcoming" through due-soon and overdue (the list colour is derived client-side and is right). → exit re-score: reproduce; then founder rating.
+  - Qodana "393 new problems" is identical on #1751/#1752 (baseline noise, check passes).

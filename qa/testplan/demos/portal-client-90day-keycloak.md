@@ -39,7 +39,7 @@
 
 | Tenant | Firm-side lifecycle already run | Produces |
 |---|---|---|
-| `mathebula-partners` (legal-za) | `legal-za-90day-keycloak.md` Days 0–21 minimum | Matter + info requests + trust deposit |
+| `mathebula-partners` (legal-za) | `legal-za-90day-keycloak.md` Days 0–23 minimum (Days 0–21 for Sipho; 22.4 creates Lerato's RAF matter and 23.3 its Case Management court date); **plus, for Day 75 only** — Firm-side, as Thandi or Bob, before the Day 75 sign-in: **Diary** → **New court date** → Matter = Lerato's RAF matter, Type = **Hearing**, Date = within 7 days of the walk date (e.g. today + 7), Court = "Gauteng High Court"; then **Diary** → **New prescription tracker** → Matter = the RAF matter, Prescription Type = **Delict (3 years)**, Cause of Action Date = the walk date + 20 days − 3 years | Matter + info requests + trust deposit; Lerato's RAF matter; A **Due soon** court date and a prescription on Lerato's `/deadlines` (75.1, 75.2) (G89 fix initiative D28 — prerequisite added, founder-authorised 2026-11-11: the scenarios create only the +45-day Case Management event (`legal-za-90day-keycloak.md:388`), so nothing is due within 7 days and no prescription exists; the 636B walk set up a Hearing at +7 and a Prescription at +20 the same way. Controls: `diary-page-client.tsx:400`, `:408`; `create-prescription-dialog.tsx:46-52`) |
 
 ## Demo wow moments (capture 📸 on clean pass)
 

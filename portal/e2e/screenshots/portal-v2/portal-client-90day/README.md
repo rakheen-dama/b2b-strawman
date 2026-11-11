@@ -2,6 +2,8 @@
 
 This directory holds the Playwright `toHaveScreenshot()` baseline PNGs for the **Portal Client-POV 90-Day** lifecycle (Phase 68 / Epic 500), captured at the `lg` viewport via `portal/playwright.portal.config.ts` (project `portal-client-90day`).
 
+> **Visual compares are opt-in (G89 Batch F, founder ruling 2026-11-03).** `playwright.portal.config.ts` sets `ignoreSnapshots` unless `E2E_VISUAL=1`, so every `toHaveScreenshot()` below is skipped by default and gates need no capture-then-score stack pair. Every `--update-snapshots` command in this file needs `E2E_VISUAL=1` in front of it to write anything.
+
 ## Status
 
 **Empty placeholder.** Baselines are populated on the **first** Playwright run with `--update-snapshots`. Slice 500B (this PR) ships the directory + this README; baseline PNGs are deferred to a human-operator live-stack run because the lifecycle requires three vertical Keycloak tenants to be pre-provisioned (estimated 60+ minutes of firm-side `/qa-cycle-kc` runs before the portal lifecycle can begin).

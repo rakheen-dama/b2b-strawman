@@ -76,12 +76,15 @@ import { defineConfig, devices } from "@playwright/test";
  *   pnpm test:e2e:login-bare             # opt-in, production portal
  * They default PORTAL_CONTACT_EMAIL to the seed contact (login-bare does not).
  *
- * First-run usage (baselines):
- *   pnpm exec playwright test \
+ * Visual compares are OPT-IN (founder ruling 2026-11-03; G89 Batch F): every
+ * `toHaveScreenshot()` is skipped (`ignoreSnapshots`) unless E2E_VISUAL=1, so a
+ * gate needs no capture-then-score stack pair. With the flag, first-run usage
+ * (baselines):
+ *   E2E_VISUAL=1 pnpm exec playwright test \
  *     --config=playwright.portal.config.ts --update-snapshots
  *
  *   # Just the lifecycle project:
- *   pnpm exec playwright test \
+ *   E2E_VISUAL=1 pnpm exec playwright test \
  *     --config=playwright.portal.config.ts \
  *     --project=portal-client-90day --update-snapshots
  *
@@ -109,6 +112,8 @@ export default defineConfig({
   // level also preserves the existing single-worker behaviour for the
   // responsive project (Epic 499B) and prevents cross-project interference.
   workers: 1,
+  // Baseline compares only with E2E_VISUAL=1 (see the header).
+  ignoreSnapshots: process.env.E2E_VISUAL !== "1",
   expect: {
     toHaveScreenshot: {
       maxDiffPixelRatio: 0.01,

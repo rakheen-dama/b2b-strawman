@@ -9,4 +9,10 @@ public record KpiValues(
     double totalHoursLogged,
     Double billablePercent,
     int overdueTaskCount,
-    Double averageMarginPercent) {}
+    Double averageMarginPercent) {
+
+  /** Returns a copy with financial fields (billablePercent, averageMarginPercent) set to null. */
+  public KpiValues withFinancialsRedacted() {
+    return new KpiValues(activeMatterCount, totalHoursLogged, null, overdueTaskCount, null);
+  }
+}

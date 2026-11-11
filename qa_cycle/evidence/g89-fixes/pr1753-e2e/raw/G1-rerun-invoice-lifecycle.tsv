@@ -1,0 +1,8 @@
+invoices/invoice-lifecycle.spec.ts	88	DRAFT -> APPROVED	expected	passed
+invoices/invoice-lifecycle.spec.ts	112	APPROVED -> SENT	expected	passed
+invoices/invoice-lifecycle.spec.ts	131	SENT -> PAID (record payment)	expected	passed
+invoices/invoice-lifecycle.spec.ts	192	VOID a sent invoice	expected	passed
+invoices/invoice-lifecycle.spec.ts	205	VOID releases time entries	expected	passed
+invoices/invoice-lifecycle.spec.ts	229	Cannot edit approved invoice	expected	passed
+invoices/invoice-lifecycle.spec.ts	251	Cannot skip DRAFT -> SENT	expected	passed
+invoices/invoice-lifecycle.spec.ts	262	Cannot transition PAID -> VOID	expected	passed

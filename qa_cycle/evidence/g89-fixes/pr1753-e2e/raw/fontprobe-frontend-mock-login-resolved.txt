@@ -1,0 +1,19 @@
+===== fontprobe frontend-mock-login-resolved http://localhost:3001/mock-login 2026-11-11T11:11:47+0200
+page http=200
+google refs in HTML: 0
+css /_next/static/chunks/10jk34lh5g694.css: @font-face=8 google-refs=0
+  @font-face{font-family:sora;src:url(../media/sora_latin_wght_normal-s.p.2o7d_x-bmx02y.woff2)format("woff2");font-display:swap;font-weight:100 800;font-style:normal}
+  @font-face{font-family:sora Fallback;src:local(Arial);ascent-override:85.11%;descent-override:25.44%;line-gap-override:0.0%;size-adjust:113.97%}
+  @font-face{font-family:plexSans;src:url(../media/ibm_plex_sans_latin_400_normal-s.p.1xf5nwxyfigak.woff2)format("woff2");font-display:swap;font-weight:400;font-style:normal}
+  @font-face{font-family:plexSans;src:url(../media/ibm_plex_sans_latin_500_normal-s.p.2i4a1iuj6lbvw.woff2)format("woff2");font-display:swap;font-weight:500;font-style:normal}
+  @font-face{font-family:plexSans;src:url(../media/ibm_plex_sans_latin_600_normal-s.p.2ovda_azncp9b.woff2)format("woff2");font-display:swap;font-weight:600;font-style:normal}
+  @font-face{font-family:plexSans;src:url(../media/ibm_plex_sans_latin_700_normal-s.p.3cj1z__33gk9h.woff2)format("woff2");font-display:swap;font-weight:700;font-style:normal}
+  @font-face{font-family:plexSans Fallback;src:local(Arial);ascent-override:101.35%;descent-override:27.19%;line-gap-override:0.0%;size-adjust:101.13%}
+  @font-face{font-family:jetbrainsMono;src:url(../media/jetbrains_mono_latin_wght_normal.p.2rmhnsrc80fag.woff2)format("woff2");font-display:swap;font-weight:100 800;font-style:normal}
+  ../media/ibm_plex_sans_latin_400_normal-s.p.1xf5nwxyfigak.woff2 => /_next/static/media/ibm_plex_sans_latin_400_normal-s.p.1xf5nwxyfigak.woff2 -> http=200 type=font/woff2 bytes=22588
+  ../media/ibm_plex_sans_latin_500_normal-s.p.2i4a1iuj6lbvw.woff2 => /_next/static/media/ibm_plex_sans_latin_500_normal-s.p.2i4a1iuj6lbvw.woff2 -> http=200 type=font/woff2 bytes=24184
+  ../media/ibm_plex_sans_latin_600_normal-s.p.2ovda_azncp9b.woff2 => /_next/static/media/ibm_plex_sans_latin_600_normal-s.p.2ovda_azncp9b.woff2 -> http=200 type=font/woff2 bytes=24252
+  ../media/ibm_plex_sans_latin_700_normal-s.p.3cj1z__33gk9h.woff2 => /_next/static/media/ibm_plex_sans_latin_700_normal-s.p.3cj1z__33gk9h.woff2 -> http=200 type=font/woff2 bytes=22832
+  ../media/jetbrains_mono_latin_wght_normal.p.2rmhnsrc80fag.woff2 => /_next/static/media/jetbrains_mono_latin_wght_normal.p.2rmhnsrc80fag.woff2 -> http=200 type=font/woff2 bytes=40404
+  ../media/sora_latin_wght_normal-s.p.2o7d_x-bmx02y.woff2 => /_next/static/media/sora_latin_wght_normal-s.p.2o7d_x-bmx02y.woff2 -> http=200 type=font/woff2 bytes=33652
+n=8

@@ -1,0 +1,202 @@
+
+Running 80 tests using 5 workers
+
+  ✘   5 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (0ms)
+  -   6 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT
+  -   7 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment)
+  -   8 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice
+  -   9 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries
+  -  10 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice
+  -  11 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT
+  -  12 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID
+  ✘   1 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (0ms)
+  -  13 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT
+  -  14 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment)
+  -  15 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice
+  -  16 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries
+  -  17 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice
+  -  18 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT
+  -  19 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID
+  ✓   3 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (1.6s)
+  ✓   4 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (1.7s)
+  ✓   2 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (1.7s)
+  ✓  20 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (1.7s)
+  ✓  21 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (1.7s)
+  ✓  22 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (1.8s)
+  ✓  24 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (1.8s)
+  ✓  23 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (1.8s)
+  ✓  25 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (1.8s)
+  ✓  26 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (1.8s)
+  ✓  28 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (2.5s)
+  ✓  27 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (2.5s)
+  ✓  29 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (2.5s)
+  ✓  30 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (2.2s)
+  ✓  31 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (2.2s)
+  ✓  32 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (1.4s)
+  ✓  33 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (1.4s)
+  ✓  34 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (1.5s)
+  ✓  35 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (1.6s)
+  ✓  36 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (2.1s)
+  ✓  37 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries (1.8s)
+  ✓  38 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries (2.0s)
+  ✓  39 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries (2.1s)
+  ✓  40 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries (1.7s)
+  ✓  42 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (998ms)
+  ✓  46 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (89ms)
+  ✓  47 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (15ms)
+  ✓  43 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (944ms)
+  ✓  44 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (835ms)
+  ✓  48 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (96ms)
+  ✓  50 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (23ms)
+  ✓  49 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (127ms)
+  ✓  51 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (20ms)
+  ✓  41 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries (2.0s)
+  ✓  45 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (764ms)
+  ✓  53 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (60ms)
+  ✓  54 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (10ms)
+  ✓  52 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (383ms)
+  ✓  58 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (51ms)
+  ✓  59 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (9ms)
+  ✓  55 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (858ms)
+  ✓  60 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (790ms)
+  ✓  61 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (645ms)
+  ✓  62 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (605ms)
+  ✓  63 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries (637ms)
+  ✓  64 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (308ms)
+  ✓  65 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (41ms)
+  ✓  66 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (8ms)
+  ✘  57 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (6.1s)
+  -  67 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT
+  -  68 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment)
+  -  69 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice
+  -  70 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries
+  -  71 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice
+  -  72 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT
+  -  73 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID
+  ✘  56 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (6.1s)
+  -  74 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT
+  -  75 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment)
+  -  76 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice
+  -  77 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries
+  -  78 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice
+  -  79 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT
+  -  80 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID
+
+
+  1) [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+
+    Error: POST /api/clients "InvLife Client p84t"
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m201[39m
+    Received: [31m500[39m
+
+       at ../helpers/api.ts:155
+
+      153 |     },
+      154 |   });
+    > 155 |   expect(status, `POST /api/clients "${name}"`).toBe(201);
+          |                                                 ^
+      156 |   return data;
+      157 | }
+      158 |
+        at createClient (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/helpers/api.ts:155:49)
+        at createActiveClient (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/helpers/api.ts:169:18)
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/tests/invoices/invoice-lifecycle.spec.ts:85:18
+
+    Error Context: test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium/error-context.md
+
+  2) [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+
+    Error: POST /api/clients "InvLife Client p84w"
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m201[39m
+    Received: [31m409[39m
+
+       at ../helpers/api.ts:155
+
+      153 |     },
+      154 |   });
+    > 155 |   expect(status, `POST /api/clients "${name}"`).toBe(201);
+          |                                                 ^
+      156 |   return data;
+      157 | }
+      158 |
+        at createClient (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/helpers/api.ts:155:49)
+        at createActiveClient (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/helpers/api.ts:169:18)
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/tests/invoices/invoice-lifecycle.spec.ts:85:18
+
+    Error Context: test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium-repeat1/error-context.md
+
+  3) [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('button', { name: 'Approve' })
+    Expected: [32m0[39m
+    Received: [31m1[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveCount" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: 'Approve' })[22m
+    [2m    9 × locator resolved to 1 element[22m
+    [2m      - unexpected value "1"[22m
+
+
+      104 |       timeout: 15_000,
+      105 |     });
+    > 106 |     await expect(approveBtn).toHaveCount(0);
+          |                              ^
+      107 |
+      108 |     // Verify invoice number assigned (INV-XXXX)
+      109 |     await expect(page.getByText(/INV-\d+/).first()).toBeVisible({ timeout: 10000 });
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/tests/invoices/invoice-lifecycle.spec.ts:106:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium-repeat8/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium-repeat8/error-context.md
+
+  4) [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('button', { name: 'Approve' })
+    Expected: [32m0[39m
+    Received: [31m1[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveCount" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('button', { name: 'Approve' })[22m
+    [2m    9 × locator resolved to 1 element[22m
+    [2m      - unexpected value "1"[22m
+
+
+      104 |       timeout: 15_000,
+      105 |     });
+    > 106 |     await expect(approveBtn).toHaveCount(0);
+          |                              ^
+      107 |
+      108 |     // Verify invoice number assigned (INV-XXXX)
+      109 |     await expect(page.getByText(/INV-\d+/).first()).toBeVisible({ timeout: 10000 });
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/tests/invoices/invoice-lifecycle.spec.ts:106:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium-repeat9/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium-repeat9/error-context.md
+
+  4 failed
+    [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+    [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+    [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+    [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+  28 did not run
+  48 passed (18.5s)

@@ -1,0 +1,8 @@
+  backend      45314    yes      yes      8080
+  gateway      45474    yes      yes      8443
+  frontend     45609    yes      yes      3000
+  portal       45658    yes      yes      3002
+
+
+Done.
+2026-11-11 11:50:10 SAST

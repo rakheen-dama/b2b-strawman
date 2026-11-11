@@ -1,0 +1,35 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:324:7 › Day 0 — Firm Setup › Alice: Capture dashboard with legal navigation (613ms)
+
+
+  1) [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:324:7 › Day 0 — Firm Setup › Alice: Capture dashboard with legal navigation 
+
+    Error: A snapshot doesn't exist at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/screenshots/legal-lifecycle/day-00-dashboard-legal-nav-active.png, writing actual.
+
+       at ../../helpers/screenshot.ts:79
+
+      77 |       await expect(locator).toHaveScreenshot(`${name}.png`);
+      78 |     } else {
+    > 79 |       await expect(page).toHaveScreenshot(`${name}.png`, {
+         |       ^
+      80 |         fullPage: fullPage ? true : undefined,
+      81 |       });
+      82 |     }
+        at captureScreenshot (/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/helpers/screenshot.ts:79:7)
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp6/frontend/e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:330:5
+
+    attachment #1: day-00-dashboard-legal-nav-active (image/png) ───────────────────────────────────
+    Expected: e2e/screenshots/legal-lifecycle/day-00-dashboard-legal-nav-active.png
+    Received: test-results/day-00-firm-setup-Day-0-—--beb2a-board-with-legal-navigation-chromium/day-00-dashboard-legal-nav-active-actual.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-00-firm-setup-Day-0-—--beb2a-board-with-legal-navigation-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/day-00-firm-setup-Day-0-—--beb2a-board-with-legal-navigation-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:324:7 › Day 0 — Firm Setup › Alice: Capture dashboard with legal navigation 

@@ -1,0 +1,28 @@
+{
+ "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+ "loadedFaces": [
+  "sora w=100 800",
+  "jetbrainsMono w=100 800"
+ ],
+ "heading": {
+  "sel": "h1",
+  "text": "Home",
+  "fontFamily": "sora, \"sora Fallback\""
+ },
+ "body": "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+ "htmlClass": "",
+ "fontResponses": [
+  "200 font/woff2 http://localhost:3001/_next/static/media/ibm_plex_sans_latin_400_normal-s.p.1xf5nwxyfigak.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/ibm_plex_sans_latin_500_normal-s.p.2i4a1iuj6lbvw.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/ibm_plex_sans_latin_600_normal-s.p.2ovda_azncp9b.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/ibm_plex_sans_latin_700_normal-s.p.3cj1z__33gk9h.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/jetbrains_mono_latin_wght_normal.p.2rmhnsrc80fag.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/sora_latin_wght_normal-s.p.2o7d_x-bmx02y.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/ibm_plex_sans_latin_400_normal-s.p.1xf5nwxyfigak.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/ibm_plex_sans_latin_500_normal-s.p.2i4a1iuj6lbvw.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/ibm_plex_sans_latin_600_normal-s.p.2ovda_azncp9b.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/ibm_plex_sans_latin_700_normal-s.p.3cj1z__33gk9h.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/jetbrains_mono_latin_wght_normal.p.2rmhnsrc80fag.woff2",
+  "200 font/woff2 http://localhost:3001/_next/static/media/sora_latin_wght_normal-s.p.2o7d_x-bmx02y.woff2"
+ ]
+}

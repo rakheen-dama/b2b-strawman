@@ -1,0 +1,55 @@
+===== G1-backend-final.log: JSON log level WARN/ERROR by logger | message (first 110 chars)
+ 176 WARN PDType1Font | Using fallback font LiberationSans for base font ZapfDingbats
+ 176 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica
+ 100 WARN InvoiceCreationService | Draft invoice for customer <uuid> created without a tax number — send will be blocked until the customer profi
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Roman
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Italic
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Times-BoldItalic
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Bold
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Symbol
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-Oblique
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-BoldOblique
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-Bold
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-Oblique
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-BoldOblique
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-Bold
+  88 WARN PDType1Font | Using fallback font LiberationSans for base font Courier
+  15 WARN InvoiceEmailService | Rate limit exceeded for invoice email, invoice=<uuid>
+  12 WARN NotificationService | No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+  12 WARN GlobalExceptionHandler | Forbidden: path=/api/matters/<uuid>/time-summary/by-member, method=GET, reason=Per-member time breakdown is re
+   2 WARN error | HHH000247: ErrorCode: 0, SQLState: 23505
+   2 WARN error | Batch entry 0 insert into customers (address_line1,address_line2,applied_field_groups,city,collections_exempt,
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAu
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotatio
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManag
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfigu
+===== G2-backend.log: JSON log level WARN/ERROR by logger | message (first 110 chars)
+   8 WARN PDType1Font | Using fallback font LiberationSans for base font ZapfDingbats
+   8 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAu
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotatio
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManag
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfigu
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManage
+   4 WARN PdfConversionService | LibreOffice not found — PDF conversion will fall back to docx4j
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Roman
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Italic
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Times-BoldItalic
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Bold
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Symbol
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-Oblique
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-Bold
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-Oblique
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-BoldOblique
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-Bold
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Courier
+   4 WARN CglibAopProxy | Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterB
+   3 WARN InvoiceCreationService | Draft invoice for customer <uuid> created without a tax number — send will be blocked until the customer profi
+   1 WARN NotificationService | No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+   1 WARN FileSystemFontProvider | Finished building on-disk font cache, found 22 fonts
+G1-backend-final.log level=ERROR count=1
+2026-11-11T09:18:17.548232716Z io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler Unhandled exception
+G2-backend.log level=ERROR count=0

@@ -1,0 +1,12 @@
+===== F46 frontend e2e image build (stack-G1.log)
+next build lines:
+234:#67 [frontend builder 11/11] RUN pnpm --filter frontend build
+237:#67 0.519 > next build
+312:#67 [frontend builder 11/11] RUN pnpm --filter frontend build
+313:#67 12.37 ✓ Compiled successfully in 11.2s
+1008:#67 [frontend builder 11/11] RUN pnpm --filter frontend build
+1015:#67 42.16 ✓ Generating static pages using 9 workers (14/14) in 339ms
+google-font fetch lines (fonts.googleapis|fonts.gstatic|Failed to fetch|next/font/google|font/google): 0
+built CSS in image: google refs / woff2 media files
+0
+6

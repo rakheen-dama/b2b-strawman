@@ -1,0 +1,52 @@
+HEAD b146c09e0b5a8b14bf393f65534ec6d09fa0a207 2026-11-11T11:01:29+0200 dirty=0 E2E_VISUAL=unset
+pnpm-install start 2026-11-11T11:01:30+0200 node=v20.11.1
+pnpm-install rc=0 end 2026-11-11T11:01:38+0200
+portal-vitest start 2026-11-11T11:01:38+0200 node=v20.11.1 envnode=v20.11.1
+portal-vitest rc=0 end 2026-11-11T11:01:46+0200
+before-G1 no foreign e2e stack 2026-11-11T11:01:46+0200
+stack-G1 launch 2026-11-11T11:01:46+0200
+stack-G1 rc=0 end 2026-11-11T11:11:35+0200
+G1-lifecycle start 2026-11-11T11:11:37+0200 node=v20.11.1 envnode=v20.11.1
+G1-lifecycle rc=0 end 2026-11-11T11:14:30+0200
+G1-depth-ii start 2026-11-11T11:14:32+0200 node=v20.11.1 envnode=v20.11.1
+G1-depth-ii rc=0 end 2026-11-11T11:16:21+0200
+G1-default start 2026-11-11T11:16:22+0200 node=v20.11.1 envnode=v20.11.1
+G1-default rc=1 end 2026-11-11T11:17:19+0200
+frontend-shot start 2026-11-11T11:17:19+0200
+frontend-shot rc=0 end 2026-11-11T11:17:22+0200
+VIS1-optin-missing start 2026-11-11T11:17:23+0200 node=v20.11.1 envnode=v20.11.1
+VIS1-optin-missing rc=1 end 2026-11-11T11:17:25+0200
+VIS2-optin-compare start 2026-11-11T11:17:25+0200 node=v20.11.1 envnode=v20.11.1
+VIS2-optin-compare rc=0 end 2026-11-11T11:17:27+0200
+G1-ALLDONE 2026-11-11T11:17:27+0200
+G1-rerun-invoice-lifecycle start 2026-11-11T11:17:55+0200 node=v20.11.1 envnode=v20.11.1
+G1-rerun-invoice-lifecycle rc=0 end 2026-11-11T11:18:00+0200
+G1-repeat10-invoice-lifecycle start 2026-11-11T11:18:16+0200 node=v20.11.1 envnode=v20.11.1
+G1-repeat10-invoice-lifecycle rc=1 end 2026-11-11T11:18:35+0200
+G1-repeat10w1-invoice-lifecycle start 2026-11-11T11:18:48+0200 node=v20.11.1 envnode=v20.11.1
+G1-repeat10w1-invoice-lifecycle rc=0 end 2026-11-11T11:19:31+0200
+G2 HEAD b146c09e0b5a8b14bf393f65534ec6d09fa0a207 2026-11-11T11:20:47+0200 dirty=0 E2E_VISUAL=unset
+portal-prod-build start 2026-11-11T11:20:47+0200
+portal-prod-build rc=0 end 2026-11-11T11:20:59+0200 google-font-lines=0
+before-G2 no foreign e2e stack 2026-11-11T11:20:59+0200
+stack-G2 launch 2026-11-11T11:20:59+0200
+stack-G2 rc=0 end 2026-11-11T11:21:38+0200
+G2-90day start 2026-11-11T11:21:40+0200 node=v20.11.1 envnode=v20.11.1
+G2-90day rc=0 end 2026-11-11T11:21:58+0200
+G2-responsive start 2026-11-11T11:27:30+0200 node=v20.11.1 envnode=v20.11.1
+G2-responsive rc=0 end 2026-11-11T11:27:46+0200
+G2-isolation start 2026-11-11T11:33:18+0200 node=v20.11.1 envnode=v20.11.1
+G2-isolation rc=0 end 2026-11-11T11:33:19+0200
+G2-login-bare start 2026-11-11T11:39:06+0200 node=v20.11.1 envnode=v20.11.1
+G2-login-bare rc=0 end 2026-11-11T11:39:19+0200
+portal prod server up 2026-11-11T11:45:01+0200
+portal-shot rc=0 end 2026-11-11T11:45:04+0200
+G2-ALLDONE 2026-11-11T11:45:07+0200
+R HEAD b146c09e0b5a8b14bf393f65534ec6d09fa0a207 2026-11-11T11:47:40+0200 dirty=0
+before-R no foreign e2e stack 2026-11-11T11:47:40+0200
+stack-R launch 2026-11-11T11:47:40+0200
+stack-R rc=0 end 2026-11-11T11:48:18+0200
+R-default start 2026-11-11T11:48:20+0200 node=v20.11.1 envnode=v20.11.1
+R-default rc=0 end 2026-11-11T11:49:20+0200
+e2e-down rc=0 2026-11-11T11:49:22+0200 e2e-containers=0 volumes=0
+R-ALLDONE 2026-11-11T11:49:22+0200 HEAD=b146c09e0 dirty=0

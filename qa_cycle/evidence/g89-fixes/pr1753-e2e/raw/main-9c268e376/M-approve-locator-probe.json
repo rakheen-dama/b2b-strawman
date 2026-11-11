@@ -1,0 +1,10 @@
+{
+ "url": "http://localhost:3001/org/e2e-test-org/invoices/26871e83-9430-44b1-8fa2-49cd76d2100f",
+ "status": true,
+ "sendFeeNoteVisible": true,
+ "substringApproveCount": 1,
+ "substringMatches": [
+  "INFOFee note approvedAlice Ownerjust now"
+ ],
+ "exactApproveCount": 0
+}

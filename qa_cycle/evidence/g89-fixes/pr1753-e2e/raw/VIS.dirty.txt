@@ -1,0 +1,1 @@
+?? frontend/e2e/screenshots/legal-lifecycle/day-00-dashboard-legal-nav-active.png

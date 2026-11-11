@@ -1,0 +1,19 @@
+Scope: all 5 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +697
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 697, reused 695, downloaded 0, added 163
+Progress: resolved 697, reused 695, downloaded 0, added 544
+Progress: resolved 697, reused 695, downloaded 0, added 693
+Progress: resolved 697, reused 695, downloaded 0, added 696
+Progress: resolved 697, reused 695, downloaded 0, added 697, done
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: esbuild@0.27.7, unrs-resolver@1.11.1.               │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 8s using pnpm v10.26.1

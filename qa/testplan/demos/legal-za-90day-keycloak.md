@@ -135,7 +135,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.37** Navigate to **Settings › Firm › General** (`/settings/firm?tab=general`) (Phase 87, ADR-344 — nav amendment, Epic 616F, PR #1638: settings are five families of `?tab=` tabs per ADR-341; the old settings URL 308s to this tab)
 - [ ] **0.38** Verify default currency is **ZAR** (pre-seeded from `legal-za` profile)
 - [ ] **0.39** Set brand colour to **#1B3A4B** (dark teal) → Save → verify chip updates and persists on reload
-- [ ] **0.40** Upload firm logo (any PNG under 500KB) → Save → verify preview renders
+- [ ] **0.40** Upload firm logo (any PNG under 500KB) → Save → verify preview renders; then, below it on the same tab, the **Letterhead** card's **Banking** section: Bank name = "First National Bank", Account number = "62123456789", Branch code = "250655", Account type = "Cheque", Payment reference note = "Please use the fee note number as your payment reference." → **Save letterhead** → verify the values persist on reload (G89 fix initiative D30 — step added, founder-authorised 2026-11-11: fee-note PDFs print the banking block only when banking details are set — `frontend/components/settings/letterhead-settings-form.tsx:71-72` "Payment details printed on fee notes. Leave blank to leave them off." — and 47.2 expects banking details, which no earlier step entered; the exit re-walk W1 set the same values, `qa_cycle/evidence/g89-fixes/exit-rescore/steps/W1.md` D-W1-b)
 
 ### Phase F: Rates & tax
 

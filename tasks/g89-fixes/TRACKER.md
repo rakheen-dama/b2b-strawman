@@ -41,6 +41,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D26 | (2026-11-11) The F24 ruling extends to the Day 75 email lines: Day 75 is dropped from Session 0 item 0.D (`portal-client-90day-keycloak.md:60`) and exit checkpoint E.8 (`:249`). Raised by CodeRabbit on PR #1753. |
 | D27 | (2026-11-11) The Day 75 actor is **Lerato Mthembu**: the court dates and prescription belong to her Road Accident Fund matter, Sipho's matter has none, and the 636B walk ran P-75.1 as Lerato. Raised by CodeRabbit on PR #1753. |
 | D28 | (2026-11-11) Day 75 prerequisite: the firm-side prerequisite becomes Days 0–23. Before the Day 75 sign-in, a Hearing within 7 days and a Delict (3 years) prescription tracker due at about +20 days are set up on Lerato's RAF matter (Diary → New court date / New prescription tracker), as the 636B walk did. The scenarios otherwise create only the +45-day Case Management event. Raised by CodeRabbit on PR #1753. |
+| D29 | (2026-11-11) **G89-F71 is MEDIUM: fix before the exit PASS.** Reproduced by integration test (8/8: court date + prescription due D+10 still read UPCOMING at D+5 and D+11; DUE_SOON/OVERDUE filters empty; detail badge stale). Fix: derive status at read time (Batch I). |
+| D30 | (2026-11-11) W1-c1: legal-za 47.2 expects banking details on the fee-note PDF, but no step enters them. **Add a Day 0 banking-details step** (§6 amendment, small docs PR). |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -57,6 +59,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 → `1d2b5d0e3` | **VERIFIED** on KC (F31, 634C, 634E(5), 634E(2) UI). 634E(1) (>50 comments) DEFERRED → exit re-walk (seed 52 comments via the UI with Playwright) |
 | 7 | E — layout, copy, small BE LOWs (+ F50 MEDIUM, F44, F47–F49, F57, F62, F64, F65) | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | PR #1752 → `6e510dc23` | **VERIFIED** on KC 2026-11-11 (20 PASS, 2 PARTIAL → F69/F44-exit, 1 DEFERRED → exit): `qa_cycle/evidence/g89-fixes/batch-E/` |
 | 8 | F — tooling, docs, scenarios | F46 fonts, F66, F67 (opt-in compares), embedded-PG workdir, F1, F2, F3, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, dead `extractText(Document)`, file F28–F70 | BE(test infra) + FE + PT + DOC | PR #1753 → `be5b06ecb` | **MERGED** 2026-11-11 (tooling/docs; F46 + opt-in compares observed in the pre-merge e2e gate; F66 observed at the exit re-score if a run lands in 00:00–02:00) |
+| 8b | **I — G89-F71** portal deadline status stale (D29 MEDIUM) | F71 | BE (+PT if needed) | branch `fix/g89-f71-deadline-status` | IN PROGRESS (builder launched 2026-11-11) |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
 
 ## Gap checklist
@@ -379,3 +382,5 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - CodeRabbit: REVIEWED @d852bc4a7 (6 + 2 extra), @b146c09e0 (2), @dbf8cb9e3 (1). All triaged and replied to; 1 not changed with the reason posted. No new actionable comments @03247fa43.
   - Markers committed: backend @d852bc4a7, frontend @9c7a58c4e, portal @d852bc4a7.
   - **Batches A–H, E, F all merged.** Next: exit re-score (row 9).
+- 2026-11-11 ~13:10–14:00 — **Exit re-score W1** (fresh tenant `tenant_5039f2d497cf`, KC org `fe76c0d4…`, main `819034db5`): **7/7 PASS**: S1-02, S1-29 (F4 as amended), S1-30 (F5), S1-65 (F57 wording; full preview vs PDF), S1-67 (F6), S1-76, 634E(1) (52 UI comments, oldest visible, deep link #51). The orchestrator read the 634E(1) and 5.3 screenshots. Candidate **W1-c1** → D30. Evidence `qa_cycle/evidence/g89-fixes/exit-rescore/` (W1 committed `809759966`). W2 running.
+- 2026-11-11 ~14:40 — **G89-F71 reproduced** by `PortalDeadlineStatusStalenessIntegrationTest` (scratch worktree; 1 testcase, 8 soft-assertion failures on main) → founder **D29 MEDIUM**. Related, not tested: past-due rows drop out of the default `/deadlines` window (from=today); `CourtDateReminderJob.processPrescriptionWarnings` sets EXPIRED with no portal event. **Batch I** builder launched (`.claude/worktrees/g89-i`, from `1bf85f0b1`, docs-only ahead of `819034db5`).

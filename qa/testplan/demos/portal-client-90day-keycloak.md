@@ -95,7 +95,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **3.1** Navigate to `/home` → click the same pending info request opened on Day 0
 - [ ] **3.2** Choose a document (any PDF ≤ 2 MB) in the item's upload slot — nothing uploads yet; selecting the file only enables **Upload and submit** (the portal shows no upload progress) (Phase 89 decision 7 / G88-F37 — amended, not built, founder-authorised 2026-11-03: file input + disabled-until-chosen button, `requests/[id]/page.tsx:203-216`)
 - [ ] **3.3** (If the request has a free-text field) fill a short response: "ID copy attached as requested"
-- [ ] **3.4** Click **Upload and submit** (upload and submit are one action; the button reads "Uploading…" while it works, then the item reads **Submitted**) → verify info-request state transitions to **"Submitted"** or **"Awaiting review"** (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the click uploads then submits, `requests/[id]/page.tsx:140-167,209-216`)
+- [ ] **3.4** Click **Upload and submit** (upload and submit are one action; the button reads "Uploading…" while it works, then the item reads **Submitted**) → verify the item reads **"Submitted"** and the info request reads **"In progress"** (G89 fix initiative D3 / G89-F27 — wording amendment, founder-authorised 2026-11-06: the request lifecycle has no Submitted / Awaiting-review state — `IN_PROGRESS` = at least one item submitted, `backend/src/main/java/io/b2mash/b2b/b2bstrawman/informationrequest/RequestStatus.java:11-12`, labelled "In progress" at `portal/lib/labels.ts:15`) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the click uploads then submits, `requests/[id]/page.tsx:140-167,209-216`)
 - [ ] **3.5** Verify `/home` "Pending info requests" card no longer shows this request as pending (it may move into a "Recently submitted" sub-list)
 - [ ] **3.6** 📸 **Screenshot**: `day-03-info-request-submitted.png`
 
@@ -191,12 +191,12 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Sipho (legal-za)
 
-- [ ] **75.1** Open Mailpit → verify deadline-approaching nudge email (subject contains "deadline" or "due in 7 days" or "reminder")
-- [ ] **75.2** Click through → lands on `/deadlines` → the approaching deadline is highlighted / flagged
+- [ ] **75.1** Open `/deadlines` → the RAF court date and prescription are listed; no deadline-approaching nudge email is sent for them, so there is no email to open (G89 fix initiative D3 / G89-F24 — wording amendment, founder-authorised 2026-11-06: the portal deadline email is produced only for custom-field dates — `PortalEmailNotificationChannel.java:48,201-202` handles `FieldDateApproachingEvent` alone, published by `FieldDateScannerJob.java:193`)
+- [ ] **75.2** On `/deadlines`, the deadline due within 7 days carries the **Due soon** flag (G89 fix initiative D3 / G89-F24 — wording amendment, founder-authorised 2026-11-06: no nudge email to click through (see 75.1); `DeadlinePortalSyncService.java:78-79,527-528` flips a row to `DUE_SOON` at ≤ 7 days, labelled "Due soon" at `portal/lib/labels.ts:45`)
 - [ ] **75.3** Click into the deadline → the **Deadline details** panel shows Label (a court date reads "<type> — <court>", e.g. "Hearing — Gauteng High Court"; a prescription reads "Prescription deadline"), Due date, Status, Description (a court date's court reference only) and Source — never the judge / magistrate, the outcome or the firm's notes (Phase 89 decision 7 / §5b row 19 — sanitised copy, founder-authorised 2026-11-03: ADR-363 copy rule, `DeadlinePortalSyncService.java:433-460`; panel fields `deadline-detail-panel.tsx:124-172`)
 - [ ] **75.4** Removed — the portal has no control that marks a deadline nudge read (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: ADR-363 "No mark-read control"; `deadline-detail-panel.tsx:83-172` has none)
 - [ ] **75.5** Removed — with no mark-read there is no unread state to clear (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: see 75.4)
-- [ ] **75.6** Download the related document from the deadline detail view → PDF opens successfully
+- [ ] **75.6** Removed — the deadline detail view has no related document to download (G89 fix initiative D3 / G89-F25 — step removed, founder-authorised 2026-11-06: the **Deadline details** panel renders only Label, Due date, Status, Description and Source, `portal/components/deadlines/deadline-detail-panel.tsx:121-171`)
 - [ ] **75.7** 📸 **Screenshot**: `day-75-deadline-detail.png` (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: the frame shows the deadline detail, not a read state; `portal/e2e/tests/portal-client-90day/day-45-75.spec.ts:243`)
 
 **Day 75 checkpoints**

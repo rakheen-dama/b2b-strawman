@@ -117,6 +117,14 @@ Cited, still-open Phase 88 LOWs (not re-filed): G-D10a (audit row key under labe
 
 Also recorded (wording only, not filed): 72.1 "withdrawal" is a Payment (PR #1738 item 13, S2-08); 6.2's §5a-row-4 annotation ("no matter-level comment thread") is stale since 634E (scout §8); the Section 35 "Financial Year End" input (S2-25) is not described by the scenario.
 
+**Rulings applied (G89 Batch F, founder D3 2026-11-06).** All four mismatches were amended in the scenario files, each with a one-line justification citing the design proof as it stands on main after Batches A–E:
+- G89-F4 → `legal-za-90day-keycloak.md:273` "Comments" (`frontend/lib/constants/matter-tab-groups.ts:70`).
+- G89-F24 → `portal-client-90day-keycloak.md:194-195` (P-75.1 / P-75.2): open `/deadlines` directly, no nudge email for court dates / prescriptions, "Due soon" flag at ≤ 7 days (`PortalEmailNotificationChannel.java:48,201-202`, `FieldDateScannerJob.java:193`, `DeadlinePortalSyncService.java:78-79,527-528`). The handler line cited above as `:185` is now `:201-202`.
+- G89-F25 → `portal-client-90day-keycloak.md:199` (P-75.6) removed (`deadline-detail-panel.tsx:121-171`, the panel's `<dl>`).
+- G89-F27 → `portal-client-90day-keycloak.md:98` (P-3.4): item "Submitted", request "In progress" (`RequestStatus.java:11-12`, `portal/lib/labels.ts:15` — was `:14`).
+
+The three wording-only notes above were **not** amended (D3 authorises exactly the four ids); they stay recorded here: `legal-za-90day-keycloak.md:491` (72.1 "withdrawal" — the product records it as a Payment), `:297` (6.2 — the §5a-row-4 annotation "no matter-level comment thread" is stale since 634E added one), and the Section 35 Data Pack "Financial Year End" input (S2-25) that no scenario step describes. Two lines that depend on the removed P-75.6 were also left as written and need a ruling: the Day 75 heading ("→ download related doc") and the Day 75 checkpoint "Download audit event recorded" (`portal-client-90day-keycloak.md:190`, `:203`).
+
 ## 5. Pre-known candidates (brief §8) — disposition
 
 | Source | Candidate | Disposition |

@@ -126,3 +126,25 @@ These specs compute "today" as UTC via `new Date().toISOString().split("T")[0]`.
 - `frontend/e2e/tests/projects/project-budget.spec.ts:123`
 
 The product is SA-time throughout (KaziTime). Founder direction, 2026-11-11: gates do not wait out 00:00–02:00 SAST. Any failure in that window is classified against G89-F66.
+
+## UPDATE 2026-11-11: Batch E merged and verified, Batch F next (no longer parallel)
+
+**Batch E is done.** PR #1752 merged as `6e510dc23` and was VERIFIED on KC. Every HIGH and MEDIUM is now closed.
+
+**Batch F starts from current `origin/main`**, which includes E. The collision rules in the update above no longer apply.
+- F must not bump the legal-za pack (now v14) or the trust-reports pack (now v3).
+- Next free migrations: tenant V15, global V6.
+
+**Add to the F register (gaps.md §7):**
+- **G89-F68 (LOW):** fee-note lines for same-date time entries have no deterministic sort order.
+- **G89-F69 (LOW):** amounts in the Section 35 PDF wrap mid-number. The fix needs a trust-reports v3→v4 bump, so ship it as a separate small follow-up PR. It is not in F.
+- **G89-F70 (LOW):** raw labels:
+  - "REPORT EXPORTED" in the audit trail;
+  - `comment.created` in the portal Your-actions feed;
+  - `edited a comment on entity "entity"` in Activity;
+  - "ORGANIZATION" in the templates table.
+
+**Gates for every remaining PR:**
+- Do not wait out the 00:00–02:00 SAST window.
+- A failure in that window is a class (c) result under G89-F66 only if the spec uses a UTC date.
+- G89-F67 (flaky fee-note screenshot frame) fails on main too, so compare against main before blaming the PR.

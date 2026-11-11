@@ -17,8 +17,10 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,6 +44,8 @@ class TrustReconciliationControllerTest {
   private static final String ORG_ID = "org_trust_recon_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -457,13 +461,14 @@ class TrustReconciliationControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 20000.00,
                       "reference": "DEP-CTRL-COMP",
                       "description": "Controller complete test deposit",
                       "transactionDate": "2026-03-25"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Import statement whose closing balance matches the single deposit (20000)
@@ -543,5 +548,21 @@ class TrustReconciliationControllerTest {
         .andExpect(jsonPath("$.status").value("COMPLETED"))
         .andExpect(jsonPath("$.completedBy").isNotEmpty())
         .andExpect(jsonPath("$.completedAt").isNotEmpty());
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                customerRepository,
+                UUID.fromString(id),
+                "Trust matter " + id));
   }
 }

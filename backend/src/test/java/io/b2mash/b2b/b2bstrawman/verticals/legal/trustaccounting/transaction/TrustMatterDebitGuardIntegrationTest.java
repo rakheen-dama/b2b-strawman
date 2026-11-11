@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -17,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.gates.TrustBalanceZeroGate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
@@ -84,6 +86,7 @@ class TrustMatterDebitGuardIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TrustBalanceZeroGate trustBalanceZeroGate;
   @Autowired private EntityManager entityManager;
+  @Autowired private CustomerProjectRepository customerProjectRepository;
   @Autowired private Clock clock;
 
   private String tenantSchema;
@@ -275,6 +278,9 @@ class TrustMatterDebitGuardIntegrationTest {
     UUID matterN = newMatter("Transfer Matter N");
     deposit(source, matterM, "1000.00", 10);
     deposit(source, matterN, "5000.00", 10);
+    postingMatter(source, matterM);
+    UUID targetMatter = newMatter("Transfer Target Matter");
+    postingMatter(target, targetMatter);
 
     mockMvc
         .perform(
@@ -285,15 +291,16 @@ class TrustMatterDebitGuardIntegrationTest {
                     """
                     {
                       "sourceClientId": "%s",
+                      "sourceMatterId": "%s",
                       "targetClientId": "%s",
-                      "matterId": "%s",
+                      "targetMatterId": "%s",
                       "amount": 1500.00,
                       "reference": "TRF-CELL-%d",
                       "description": "Over the source cell",
                       "transactionDate": "%s"
                     }
                     """
-                        .formatted(source, target, matterM, counter, today)))
+                        .formatted(source, matterM, target, targetMatter, counter, today)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value(INSUFFICIENT_TITLE))
         .andExpect(jsonPath("$.code").value(MATTER_CODE))
@@ -310,8 +317,10 @@ class TrustMatterDebitGuardIntegrationTest {
     UUID target = newClient("Reverse Target");
     UUID matterM = newMatter("Reverse Matter M");
     UUID matterN = newMatter("Reverse Target Other Matter");
+    UUID matterT = newMatter("Reverse Target Transfer Matter");
     deposit(source, matterM, "1000.00", 10);
     deposit(target, matterN, "5000.00", 10);
+    postingMatter(target, matterT);
 
     var legs =
         as(
@@ -321,8 +330,9 @@ class TrustMatterDebitGuardIntegrationTest {
                     trustAccountId,
                     new RecordTransferRequest(
                         source,
-                        target,
                         matterM,
+                        target,
+                        matterT,
                         new BigDecimal("1000.00"),
                         "TRF-REV-" + counter,
                         "Move to target",
@@ -342,9 +352,10 @@ class TrustMatterDebitGuardIntegrationTest {
                   return transactionRepository.save(out);
                 }));
 
-    // The target spends the transferred money on M. Its card (5 000) still covers R1 000, but its
-    // cell on M is now empty — reversing the transfer would take M's sub-ledger negative.
-    approve(payment(target, matterM, "1000.00", 2));
+    // The target spends the transferred money on T (the TRANSFER_IN's matter, D39). Its card
+    // (5 000) still covers R1 000, but its cell on T is now empty — reversing the transfer would
+    // take T's sub-ledger negative.
+    approve(payment(target, matterT, "1000.00", 2));
 
     mockMvc
         .perform(
@@ -358,7 +369,7 @@ class TrustMatterDebitGuardIntegrationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value(INSUFFICIENT_TITLE))
         .andExpect(jsonPath("$.code").value(MATTER_CODE))
-        .andExpect(jsonPath("$.matterId").value(matterM.toString()));
+        .andExpect(jsonPath("$.matterId").value(matterT.toString()));
 
     // Nothing reversed: both legs keep their status, no ledger card moved
     assertThat(statusOf(transferOutId)).isEqualTo("APPROVED");
@@ -366,6 +377,7 @@ class TrustMatterDebitGuardIntegrationTest {
     assertThat(cardBalance(source)).isEqualByComparingTo("0.00");
     assertThat(cardBalance(target)).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(matterM)).isEqualByComparingTo("0.00");
+    assertThat(matterBalance(matterT)).isEqualByComparingTo("0.00");
   }
 
   @Test
@@ -405,56 +417,97 @@ class TrustMatterDebitGuardIntegrationTest {
     return UUID.fromString(TestEntityHelper.createProject(mockMvc, ownerJwt(), name));
   }
 
+  /**
+   * {@code matter} null = a legacy client-level posting (recorded before G89-F28 made a matter
+   * mandatory; D6 keeps such rows): recorded on a throwaway matter of the client, then stripped of
+   * it, so the ledger card moves exactly as the pre-F28 service moved it.
+   */
   private void deposit(UUID client, UUID matter, String amount, int daysAgo) {
     int n = ++counter;
-    as(
-        ownerId,
-        () ->
-            transactionService.recordDeposit(
-                trustAccountId,
-                new RecordDepositRequest(
-                    client,
-                    matter,
-                    new BigDecimal(amount),
-                    "TMDG-DEP-" + n,
-                    "Deposit",
-                    today.minusDays(daysAgo))));
+    UUID posted = postingMatter(client, matter);
+    UUID id =
+        as(
+            ownerId,
+            () ->
+                transactionService
+                    .recordDeposit(
+                        trustAccountId,
+                        new RecordDepositRequest(
+                            client,
+                            posted,
+                            new BigDecimal(amount),
+                            "TMDG-DEP-" + n,
+                            "Deposit",
+                            today.minusDays(daysAgo)))
+                    .id());
+    legacyIfUnmattered(matter, id);
+  }
+
+  /** The matter to post on: {@code matter} linked to the client, or a throwaway one (legacy). */
+  private UUID postingMatter(UUID client, UUID matter) {
+    if (matter == null) {
+      return TestTrustMatterHelper.openClientMatter(
+          tenantSchema,
+          transactionTemplate,
+          projectRepository,
+          client,
+          "TMDG legacy posting matter " + counter,
+          ownerId);
+    }
+    TestTrustMatterHelper.linkClientMatter(
+        tenantSchema, transactionTemplate, customerProjectRepository, client, matter, ownerId);
+    return matter;
+  }
+
+  private void legacyIfUnmattered(UUID matter, UUID transactionId) {
+    if (matter == null) {
+      TestTrustMatterHelper.stripMatter(
+          tenantSchema, transactionTemplate, entityManager, transactionId);
+    }
   }
 
   private UUID payment(UUID client, UUID matter, String amount, int daysAgo) {
     int n = ++counter;
-    return as(
-        ownerId,
-        () ->
-            transactionService
-                .recordPayment(
-                    trustAccountId,
-                    new RecordPaymentRequest(
-                        client,
-                        matter,
-                        new BigDecimal(amount),
-                        "TMDG-PAY-" + n,
-                        "Payment",
-                        today.minusDays(daysAgo)))
-                .id());
+    UUID posted = postingMatter(client, matter);
+    UUID id =
+        as(
+            ownerId,
+            () ->
+                transactionService
+                    .recordPayment(
+                        trustAccountId,
+                        new RecordPaymentRequest(
+                            client,
+                            posted,
+                            new BigDecimal(amount),
+                            "TMDG-PAY-" + n,
+                            "Payment",
+                            today.minusDays(daysAgo)))
+                    .id());
+    legacyIfUnmattered(matter, id);
+    return id;
   }
 
   private UUID refund(UUID client, UUID matter, String amount, int daysAgo) {
     int n = ++counter;
-    return as(
-        ownerId,
-        () ->
-            transactionService
-                .recordRefund(
-                    trustAccountId,
-                    new RecordRefundRequest(
-                        client,
-                        matter,
-                        new BigDecimal(amount),
-                        "TMDG-REF-" + n,
-                        "Refund",
-                        today.minusDays(daysAgo)))
-                .id());
+    UUID posted = postingMatter(client, matter);
+    UUID id =
+        as(
+            ownerId,
+            () ->
+                transactionService
+                    .recordRefund(
+                        trustAccountId,
+                        new RecordRefundRequest(
+                            client,
+                            posted,
+                            new BigDecimal(amount),
+                            "TMDG-REF-" + n,
+                            "Refund",
+                            today.minusDays(daysAgo)))
+                    .id());
+    legacyIfUnmattered(matter, id);
+    return id;
   }
 
   /** Single-approval mode refuses self-approval — approve as the second member. */

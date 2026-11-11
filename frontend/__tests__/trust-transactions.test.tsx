@@ -8,6 +8,7 @@ vi.mock("server-only", () => ({}));
 // ── Mock server actions for transactions ─────────────────────────
 const mockFetchTransactions = vi.fn();
 const mockRecordDeposit = vi.fn();
+const mockRecordTransfer = vi.fn();
 const mockApproveTransaction = vi.fn();
 const mockRejectTransaction = vi.fn();
 const mockReverseTransaction = vi.fn();
@@ -36,7 +37,7 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
   fetchTransactions: (...args: unknown[]) => mockFetchTransactions(...args),
   recordDeposit: (...args: unknown[]) => mockRecordDeposit(...args),
   recordPayment: vi.fn(),
-  recordTransfer: vi.fn(),
+  recordTransfer: (...args: unknown[]) => mockRecordTransfer(...args),
   recordFeeTransfer: vi.fn(),
   recordRefund: vi.fn(),
   approveTransaction: (...args: unknown[]) => mockApproveTransaction(...args),
@@ -125,6 +126,7 @@ vi.mock("next/link", () => ({
 // ── Imports after mocks ──────────────────────────────────────────
 import TransactionsPage from "@/app/(app)/org/[slug]/trust-accounting/transactions/page";
 import { RecordDepositDialog } from "@/components/trust/RecordDepositDialog";
+import { RecordTransferDialog } from "@/components/trust/RecordTransferDialog";
 import { ApprovalBadge } from "@/components/trust/approval-badge";
 import { ReversalButton } from "@/components/trust/reversal-button";
 
@@ -260,6 +262,7 @@ describe("Trust Transactions", () => {
           },
         ]}
         defaultCustomerId="550e8400-e29b-41d4-a716-446655440000"
+        defaultProjectId="770e8400-e29b-41d4-a716-446655440002"
       />
     );
 
@@ -290,7 +293,120 @@ describe("Trust Transactions", () => {
         "acc-1",
         expect.objectContaining({
           customerId: "550e8400-e29b-41d4-a716-446655440000",
+          projectId: "770e8400-e29b-41d4-a716-446655440002",
           reference: "DEP/2026/TEST",
+        })
+      );
+    });
+  });
+
+  // G89-F28 (D36): a client deposit without a matter never reached the portal, so the matter is
+  // required — the dialog shows a field error under the Matter picker and does not submit.
+  it("refuses a deposit without a matter with a field error (G89-F28)", async () => {
+    mockRecordDeposit.mockClear();
+    render(
+      <RecordDepositDialog
+        accountId="acc-1"
+        slug="acme"
+        open={true}
+        onOpenChange={vi.fn()}
+        customers={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            name: "Sipho Dlamini",
+            email: "sipho@example.com",
+          },
+        ]}
+        defaultCustomerId="550e8400-e29b-41d4-a716-446655440000"
+      />
+    );
+
+    expect(screen.getByText("Matter")).toBeInTheDocument();
+    expect(screen.queryByText("Matter (Optional)")).toBeNull();
+
+    const amountInput = screen.getByPlaceholderText("0.00");
+    fireEvent.change(amountInput, { target: { value: "15000" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. DEP/2026/001"), {
+      target: { value: "DEP/2026/NO-MATTER" },
+    });
+    fireEvent.submit(amountInput.closest("form")!);
+
+    expect(
+      await screen.findByText("A matter is required for client trust transactions")
+    ).toBeInTheDocument();
+    expect(mockRecordDeposit).not.toHaveBeenCalled();
+  });
+
+  // PR #1757 review (D39): a transfer names the target client's matter as well as the source's;
+  // without it the dialog shows a field error under Target Matter and does not submit.
+  it("refuses a transfer without a target matter with a field error (D39)", async () => {
+    mockRecordTransfer.mockClear();
+    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+
+    fireEvent.change(screen.getByPlaceholderText("Source client UUID"), {
+      target: { value: "550e8400-e29b-41d4-a716-446655440000" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Target client UUID"), {
+      target: { value: "660e8400-e29b-41d4-a716-446655440001" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Source client's matter UUID"), {
+      target: { value: "770e8400-e29b-41d4-a716-446655440002" },
+    });
+    const amountInput = screen.getByPlaceholderText("0.00");
+    fireEvent.change(amountInput, { target: { value: "100" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. TRF/2026/001"), {
+      target: { value: "TRF/2026/NO-TARGET-MATTER" },
+    });
+    fireEvent.submit(amountInput.closest("form")!);
+
+    expect(screen.getByText("Target Matter")).toBeInTheDocument();
+    expect(
+      await screen.findByText("A matter is required for client trust transactions")
+    ).toBeInTheDocument();
+    expect(mockRecordTransfer).not.toHaveBeenCalled();
+  });
+
+  // PR #1757 review round 2: the transfer dialog grew to nine fields, so its content scrolls at
+  // short viewport heights like PlaceInvestmentDialog and the repo's other tall dialogs.
+  it("transfer dialog scrolls at short viewport heights", () => {
+    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+
+    // DialogContent puts its className on the panel inside the positioned dialog element
+    const panel = screen.getByRole("dialog").firstElementChild as HTMLElement;
+    expect(panel.className).toContain("max-h-[90vh]");
+    expect(panel.className).toContain("overflow-y-auto");
+    expect(panel.className).toContain("sm:max-w-lg");
+  });
+
+  it("submits a transfer with both matters (D39)", async () => {
+    mockRecordTransfer.mockResolvedValue({ success: true });
+    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+
+    fireEvent.change(screen.getByPlaceholderText("Source client UUID"), {
+      target: { value: "550e8400-e29b-41d4-a716-446655440000" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Target client UUID"), {
+      target: { value: "660e8400-e29b-41d4-a716-446655440001" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Source client's matter UUID"), {
+      target: { value: "770e8400-e29b-41d4-a716-446655440002" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Target client's matter UUID"), {
+      target: { value: "880e8400-e29b-41d4-a716-446655440003" },
+    });
+    const amountInput = screen.getByPlaceholderText("0.00");
+    fireEvent.change(amountInput, { target: { value: "100" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. TRF/2026/001"), {
+      target: { value: "TRF/2026/BOTH" },
+    });
+    fireEvent.submit(amountInput.closest("form")!);
+
+    await waitFor(() => {
+      expect(mockRecordTransfer).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({
+          projectId: "770e8400-e29b-41d4-a716-446655440002",
+          targetProjectId: "880e8400-e29b-41d4-a716-446655440003",
         })
       );
     });

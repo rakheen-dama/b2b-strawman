@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 
 // -- Mock server-only -----------------------------------------------------
 vi.mock("server-only", () => ({}));
@@ -187,6 +187,21 @@ describe("Trust Investments & Reports", () => {
     expect(screen.getByText("2 investments found")).toBeInTheDocument();
   });
 
+  // G89-F87 (D41): a rejected placement cancels its investment; the register labels it Cancelled
+  // and offers no actions on it.
+  it("labels a cancelled investment Cancelled with no actions", async () => {
+    mockFetchInvestments.mockResolvedValue([
+      makeInvestment({ id: "inv-cxl", clientName: "Cancelled Client", status: "CANCELLED" }),
+    ]);
+
+    await renderInvestmentsPage();
+
+    const row = screen.getByText("Cancelled Client").closest("tr") as HTMLElement;
+    expect(within(row).getByText("Cancelled")).toBeInTheDocument();
+    expect(within(row).queryByText("CANCELLED")).toBeNull();
+    expect(within(row).queryByRole("button")).toBeNull();
+  });
+
   it("place investment dialog submits with valid data", async () => {
     mockPlaceInvestment.mockResolvedValue({
       success: true,
@@ -205,6 +220,12 @@ describe("Trust Investments & Reports", () => {
     const clientInput = screen.getByPlaceholderText("Client UUID");
     fireEvent.change(clientInput, {
       target: { value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
+    });
+
+    // G89-F28: the invested money's matter is required
+    const matterInput = screen.getByPlaceholderText("Matter UUID");
+    fireEvent.change(matterInput, {
+      target: { value: "b2c3d4e5-f6a7-4890-abcd-ef1234567890" },
     });
 
     const institutionInput = screen.getByPlaceholderText("e.g. FNB Money Market");
@@ -229,6 +250,7 @@ describe("Trust Investments & Reports", () => {
         "acc-1",
         expect.objectContaining({
           customerId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          projectId: "b2c3d4e5-f6a7-4890-abcd-ef1234567890",
           institution: "ABSA Fixed Deposit",
           accountNumber: "INV-999",
           principal: 100000,
@@ -236,6 +258,49 @@ describe("Trust Investments & Reports", () => {
         })
       );
     });
+  });
+
+  // PR #1757 review: the dialog is taller than short viewports (the Day 60 e2e had to submit with
+  // Enter because the button was off-screen), so its content scrolls like the repo's other tall
+  // dialogs (edit-customer-dialog, create-project-dialog).
+  it("place investment dialog scrolls at short viewport heights", () => {
+    render(
+      <PlaceInvestmentDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        onSuccess={vi.fn()}
+      />
+    );
+
+    // DialogContent puts its className on the panel inside the positioned (test id) element
+    const dialog = screen.getByTestId("place-investment-dialog");
+    expect(dialog.className).toContain("sm:max-w-lg");
+    const panel = dialog.firstElementChild as HTMLElement;
+    expect(panel.className).toContain("max-h-[90vh]");
+    expect(panel.className).toContain("overflow-y-auto");
+  });
+
+  it("place investment dialog refuses a missing matter with a field error (G89-F28)", async () => {
+    render(
+      <PlaceInvestmentDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        onSuccess={vi.fn()}
+      />
+    );
+
+    const clientInput = screen.getByPlaceholderText("Client UUID");
+    fireEvent.change(clientInput, {
+      target: { value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
+    });
+    fireEvent.submit(clientInput.closest("form")!);
+
+    expect(
+      await screen.findByText("A matter is required for client trust transactions")
+    ).toBeInTheDocument();
+    expect(mockPlaceInvestment).not.toHaveBeenCalled();
   });
 
   it("maturity alert highlights investments maturing within 30 days", async () => {

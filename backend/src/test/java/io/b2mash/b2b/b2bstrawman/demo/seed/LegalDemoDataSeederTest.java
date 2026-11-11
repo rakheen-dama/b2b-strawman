@@ -187,10 +187,15 @@ class LegalDemoDataSeederTest {
             net.merge(txn.getCustomerId(), signed, BigDecimal::add);
           }
           boolean hasDebit = net.values().stream().anyMatch(v -> v.signum() < 0);
-          result.set(new boolean[] {hasAccount, hasDebit});
+          // G89-F28: every client trust row sits on a matter (the portal view is per matter)
+          boolean allOnMatters =
+              trustTransactionRepository.findAll().stream()
+                  .allMatch(txn -> txn.getProjectId() != null);
+          result.set(new boolean[] {hasAccount, hasDebit, allOnMatters});
         });
     assertTrue(result.get()[0], "Seeder must create at least one trust account");
     assertTrue(result.get()[1], "Seeder must leave at least one trust creditor in debit");
+    assertTrue(result.get()[2], "Seeder must put every client trust row on a matter (G89-F28)");
   }
 
   @Test

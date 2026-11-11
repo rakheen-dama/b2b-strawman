@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.StubAiProvider;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
@@ -84,6 +85,7 @@ class FicaVerificationTrustAccessIntegrationTest {
   private static final String ID_MARKER = "IDFTA5512";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomerRepository customerRepository;
@@ -183,7 +185,7 @@ class FicaVerificationTrustAccessIntegrationTest {
                   trustAccountId,
                   new RecordDepositRequest(
                       id,
-                      null,
+                      trustMatterOf(id),
                       new BigDecimal("3100.00"),
                       reference,
                       "Deposit on instruction",
@@ -347,5 +349,16 @@ class FicaVerificationTrustAccessIntegrationTest {
         .where(RequestScopes.ORG_ROLE, "owner")
         .where(RequestScopes.CAPABILITIES, Set.of("MANAGE_TRUST", "VIEW_TRUST"))
         .call(() -> transactionTemplate.execute(tx -> body.get()));
+  }
+
+  private final java.util.Map<UUID, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(UUID clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                schema, transactionTemplate, projectRepository, id, "Trust matter " + id, ownerId));
   }
 }

@@ -94,6 +94,7 @@ import {
 const C = "11111111-1111-1111-1111-111111111111";
 const C2 = "22222222-2222-2222-2222-222222222222";
 const M = "33333333-3333-3333-3333-333333333333";
+const M2 = "44444444-4444-4444-4444-444444444444";
 
 function lastPost(): [string, Record<string, unknown>] {
   return mockPost.mock.calls.at(-1) as [string, Record<string, unknown>];
@@ -144,21 +145,30 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     expect(body).not.toHaveProperty("projectId");
   });
 
-  it("recordTransfer sends sourceClientId/targetClientId/matterId", async () => {
+  it("recordTransfer sends sourceClientId/sourceMatterId/targetClientId/targetMatterId", async () => {
     await recordTransfer("ta-1", {
       sourceCustomerId: C,
       targetCustomerId: C2,
       projectId: M,
+      targetProjectId: M2,
       amount: 1000,
       reference: "TRF-1",
       transactionDate: "2026-10-20",
     });
     const [path, body] = lastPost();
     expect(path).toBe("/api/trust-accounts/ta-1/transactions/transfer");
-    expect(body).toMatchObject({ sourceClientId: C, targetClientId: C2, matterId: M });
+    // D39: each leg names its own client's matter
+    expect(body).toMatchObject({
+      sourceClientId: C,
+      sourceMatterId: M,
+      targetClientId: C2,
+      targetMatterId: M2,
+    });
+    expect(body).not.toHaveProperty("matterId");
     expect(body).not.toHaveProperty("sourceCustomerId");
     expect(body).not.toHaveProperty("targetCustomerId");
     expect(body).not.toHaveProperty("projectId");
+    expect(body).not.toHaveProperty("targetProjectId");
   });
 
   it("recordFeeTransfer sends clientId", async () => {
@@ -371,9 +381,10 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     }
   );
 
-  it("placeInvestment sends clientId (never customerId) and a decimal rate", async () => {
+  it("placeInvestment sends clientId + matterId (never customerId/projectId) and a decimal rate", async () => {
     await placeInvestment("ta-1", {
       customerId: C,
+      projectId: M,
       institution: "ABSA",
       accountNumber: "INV-1",
       principal: 1000,
@@ -384,7 +395,10 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     const [path, body] = lastPost();
     expect(path).toBe("/api/trust-accounts/ta-1/investments");
     expect(body.clientId).toBe(C);
+    // G89-F28: the invested money's matter
+    expect(body.matterId).toBe(M);
     expect(body).not.toHaveProperty("customerId");
+    expect(body).not.toHaveProperty("projectId");
     expect(body.interestRate).toBeCloseTo(0.075);
   });
 

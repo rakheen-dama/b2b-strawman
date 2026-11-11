@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -80,6 +81,7 @@ class ClientLedgerRunningBalanceIntegrationTest {
       Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF");
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -480,7 +482,7 @@ class ClientLedgerRunningBalanceIntegrationTest {
                         trustAccountId,
                         new RecordDepositRequest(
                             clientId,
-                            null,
+                            trustMatterOf(clientId),
                             new BigDecimal("10000.00"),
                             "RB-DEP-" + n,
                             "Opening deposit",
@@ -496,7 +498,7 @@ class ClientLedgerRunningBalanceIntegrationTest {
                         trustAccountId,
                         new RecordRefundRequest(
                             clientId,
-                            null,
+                            trustMatterOf(clientId),
                             new BigDecimal("1000.00"),
                             "RB-REF-" + n,
                             "Partial refund",
@@ -526,6 +528,25 @@ class ClientLedgerRunningBalanceIntegrationTest {
                         .setParameter("dueDate", today.plusDays(30))
                         .setParameter("customerName", "RB Client " + n)
                         .setParameter("memberId", ownerId)
+                        .executeUpdate()));
+    // G89-F28: the fee transfer takes its matter from the fee note
+    UUID feeNoteMatter = trustMatterOf(clientId);
+    as(
+        ownerId,
+        () ->
+            transactionTemplate.execute(
+                tx ->
+                    entityManager
+                        .createNativeQuery(
+                            """
+                            INSERT INTO invoice_lines (id, invoice_id, project_id, line_type,
+                                description, quantity, unit_price, amount, sort_order, tax_exempt,
+                                created_at, updated_at)
+                            VALUES (gen_random_uuid(), :invoiceId, :projectId, 'TIME',
+                                'Legal services', 1, 1150.00, 1150.00, 0, false, now(), now())
+                            """)
+                        .setParameter("invoiceId", invoiceId)
+                        .setParameter("projectId", feeNoteMatter)
                         .executeUpdate()));
     UUID feeTransferId =
         as(
@@ -569,7 +590,7 @@ class ClientLedgerRunningBalanceIntegrationTest {
                     trustAccountId,
                     new RecordPaymentRequest(
                         clientId,
-                        null,
+                        trustMatterOf(clientId),
                         new BigDecimal(amount),
                         reference,
                         "Payment " + reference,
@@ -653,5 +674,21 @@ class ClientLedgerRunningBalanceIntegrationTest {
   private static BigDecimal money(Object jsonNumber) {
     assertThat(jsonNumber).as("money value").isNotNull();
     return new BigDecimal(String.valueOf(jsonNumber));
+  }
+
+  private final java.util.Map<UUID, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(UUID clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                id,
+                "Trust matter " + id,
+                ownerId));
   }
 }

@@ -20,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,6 +64,7 @@ class CatalogueBatch2TrustBillingTest {
       {"jsonrpc":"2.0","method":"notifications/initialized"}""";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ObjectMapper objectMapper;
@@ -146,9 +148,17 @@ class CatalogueBatch2TrustBillingTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"clientId":"%s","amount":25000.00,"reference":"DEP-SETUP",
+                    {"clientId":"%s","matterId":"%s","amount":25000.00,"reference":"DEP-SETUP",
                      "description":"Setup deposit","transactionDate":"2026-03-01"}"""
-                        .formatted(customerId)))
+                        .formatted(
+                            customerId,
+                            TestTrustMatterHelper.openClientMatter(
+                                tenantSchema,
+                                transactionTemplate,
+                                projectRepository,
+                                UUID.fromString(customerId),
+                                "Trust Customer Matter",
+                                ownerMemberId))))
         .andExpect(status().isCreated());
 
     // Invoice for billing tools (invoiceClientId seeded above as an ACTIVE customer)

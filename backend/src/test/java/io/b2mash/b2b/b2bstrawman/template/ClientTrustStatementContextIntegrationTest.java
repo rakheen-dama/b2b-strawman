@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
@@ -58,6 +59,7 @@ class ClientTrustStatementContextIntegrationTest {
   private static final String OWNER = "user_cts_owner";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomerRepository customerRepository;
@@ -110,7 +112,7 @@ class ClientTrustStatementContextIntegrationTest {
                   accountId,
                   new RecordDepositRequest(
                       id,
-                      null,
+                      trustMatterOf(id),
                       new BigDecimal("1000.00"),
                       "DEP-CTS-001",
                       "Deposit on instruction",
@@ -119,7 +121,7 @@ class ClientTrustStatementContextIntegrationTest {
                   accountId,
                   new RecordDepositRequest(
                       id,
-                      null,
+                      trustMatterOf(id),
                       new BigDecimal("500.00"),
                       "DEP-CTS-002",
                       "Top-up for transfer costs",
@@ -257,5 +259,21 @@ class ClientTrustStatementContextIntegrationTest {
         .where(RequestScopes.ORG_ROLE, orgRole)
         .where(RequestScopes.CAPABILITIES, capabilities)
         .call(() -> transactionTemplate.execute(tx -> body.get()));
+  }
+
+  private final java.util.Map<UUID, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(UUID clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                schema,
+                transactionTemplate,
+                projectRepository,
+                id,
+                "Trust matter " + id,
+                memberId));
   }
 }

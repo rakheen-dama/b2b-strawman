@@ -16,8 +16,10 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -40,6 +42,8 @@ class TrustInvestmentControllerTest {
   private static final String ORG_ID = "org_trust_invest_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -70,6 +74,14 @@ class TrustInvestmentControllerTest {
         "invest_ctrl_member@test.com",
         "Invest Ctrl Member",
         "member");
+    // Approves placement payments (single-approval mode refuses self-approval)
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_invest_ctrl_approver",
+        "invest_ctrl_approver@test.com",
+        "Invest Ctrl Approver",
+        "owner");
 
     // Enable trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -123,13 +135,14 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 100000.00,
                       "reference": "DEP-INVEST-CTRL-001",
                       "description": "Setup deposit for investment controller tests",
                       "transactionDate": "2026-01-15"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
   }
 
@@ -146,6 +159,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "ABSA Bank",
                       "accountNumber": "9012345678",
                       "principal": 20000.00,
@@ -156,7 +170,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.status").value("ACTIVE"))
         .andExpect(jsonPath("$.principal").value(20000.00))
@@ -180,6 +194,7 @@ class TrustInvestmentControllerTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "institution": "Nedbank",
                           "accountNumber": "5551234567",
                           "principal": 10000.00,
@@ -189,7 +204,7 @@ class TrustInvestmentControllerTest {
                           "investmentBasis": "FIRM_DISCRETION"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -230,6 +245,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "FNB",
                       "accountNumber": "1112223334",
                       "principal": 5000.00,
@@ -239,7 +255,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId, maturingDate)))
+                        .formatted(customerId, trustMatterOf(customerId), maturingDate)))
         .andExpect(status().isCreated());
 
     // Query maturing within 30 days
@@ -270,6 +286,7 @@ class TrustInvestmentControllerTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "institution": "Standard Bank",
                           "accountNumber": "7778889990",
                           "principal": 3000.00,
@@ -278,12 +295,22 @@ class TrustInvestmentControllerTest {
                           "investmentBasis": "FIRM_DISCRETION"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
     var investmentId =
         JsonPath.read(investResult.getResponse().getContentAsString(), "$.id").toString();
+
+    // PR #1757 review: only a completed (approved) placement can be withdrawn
+    var placementId =
+        JsonPath.read(investResult.getResponse().getContentAsString(), "$.depositTransactionId")
+            .toString();
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + placementId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_approver")))
+        .andExpect(status().isOk());
 
     // Withdraw
     mockMvc
@@ -305,6 +332,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "Test Bank",
                       "accountNumber": "0001112223",
                       "principal": 1000.00,
@@ -313,7 +341,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isForbidden());
   }
 
@@ -341,6 +369,7 @@ class TrustInvestmentControllerTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "institution": "Capitec",
                           "accountNumber": "4445556667",
                           "principal": 2000.00,
@@ -349,7 +378,7 @@ class TrustInvestmentControllerTest {
                           "investmentBasis": "FIRM_DISCRETION"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -377,6 +406,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "Investec",
                       "accountNumber": "8880001111",
                       "principal": 5000.00,
@@ -386,7 +416,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "CLIENT_INSTRUCTION"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.investmentBasis").value("CLIENT_INSTRUCTION"))
         .andExpect(jsonPath("$.status").value("ACTIVE"));
@@ -403,6 +433,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "Capitec Basis",
                       "accountNumber": "8880002222",
                       "principal": 4000.00,
@@ -411,7 +442,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.investmentBasis").value("FIRM_DISCRETION"));
   }
@@ -430,6 +461,7 @@ class TrustInvestmentControllerTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "institution": "FNB Basis",
                           "accountNumber": "8880003333",
                           "principal": 3000.00,
@@ -438,7 +470,7 @@ class TrustInvestmentControllerTest {
                           "investmentBasis": "CLIENT_INSTRUCTION"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -465,6 +497,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "Filter Test Bank CI",
                       "accountNumber": "8880004444",
                       "principal": 2000.00,
@@ -473,7 +506,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "CLIENT_INSTRUCTION"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Also create a FIRM_DISCRETION investment so the filter has something to exclude
@@ -486,6 +519,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "Filter Test Bank FD",
                       "accountNumber": "8880005555",
                       "principal": 2000.00,
@@ -494,7 +528,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Filter by CLIENT_INSTRUCTION
@@ -529,6 +563,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "No Basis Bank",
                       "accountNumber": "9990001111",
                       "principal": 1000.00,
@@ -536,7 +571,7 @@ class TrustInvestmentControllerTest {
                       "depositDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isBadRequest());
   }
 
@@ -551,6 +586,7 @@ class TrustInvestmentControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "institution": "Invalid Basis Bank",
                       "accountNumber": "9990002222",
                       "principal": 1000.00,
@@ -559,7 +595,23 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "INVALID_VALUE"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isBadRequest());
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                customerRepository,
+                UUID.fromString(id),
+                "Trust matter " + id));
   }
 }

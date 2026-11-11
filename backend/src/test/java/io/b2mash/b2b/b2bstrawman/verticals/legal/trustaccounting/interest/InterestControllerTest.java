@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,6 +39,8 @@ class InterestControllerTest {
   private static final String ORG_ID = "org_interest_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -129,13 +132,14 @@ class InterestControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 50000.00,
                       "reference": "DEP-CTRL-001",
                       "description": "Test deposit for controller tests",
                       "transactionDate": "2025-01-15"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Create LPFF rate
@@ -378,5 +382,21 @@ class InterestControllerTest {
     var content = result.getResponse().getContentAsString();
     var id = JsonPath.read(content, "$.id");
     org.assertj.core.api.Assertions.assertThat(id).isNotNull();
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                customerRepository,
+                UUID.fromString(id),
+                "Trust matter " + id));
   }
 }

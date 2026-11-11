@@ -18,7 +18,9 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -40,6 +42,7 @@ class TrustTransactionControllerTest {
   private static final String ORG_ID = "org_trust_txn_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -48,6 +51,7 @@ class TrustTransactionControllerTest {
   private String tenantSchema;
   private String trustAccountId;
   private String customerId;
+  private UUID ownerMemberId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -56,13 +60,15 @@ class TrustTransactionControllerTest {
             .provisionTenant(ORG_ID, "Trust Txn Controller Test Org", null)
             .schemaName();
 
-    TestMemberHelper.syncMember(
-        mockMvc,
-        ORG_ID,
-        "user_txn_ctrl_owner",
-        "txn_ctrl_owner@test.com",
-        "Txn Ctrl Owner",
-        "owner");
+    ownerMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_txn_ctrl_owner",
+                "txn_ctrl_owner@test.com",
+                "Txn Ctrl Owner",
+                "owner"));
     TestMemberHelper.syncMember(
         mockMvc,
         ORG_ID,
@@ -134,13 +140,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 10000.00,
                       "reference": "DEP-CTRL-001",
                       "description": "Controller test deposit",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.transactionType").value("DEPOSIT"))
         .andExpect(jsonPath("$.status").value("RECORDED"))
@@ -161,13 +168,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 5000.00,
                       "reference": "DEP-CTRL-PAY-SETUP",
                       "description": "Setup deposit for payment test",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     mockMvc
@@ -179,13 +187,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 2000.00,
                       "reference": "PAY-CTRL-001",
                       "description": "Controller test payment",
                       "transactionDate": "2026-03-02"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.transactionType").value("PAYMENT"))
         .andExpect(jsonPath("$.status").value("AWAITING_APPROVAL"))
@@ -212,13 +221,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 8000.00,
                       "reference": "DEP-CTRL-XFER-SETUP",
                       "description": "Setup deposit for transfer test",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     mockMvc
@@ -230,14 +240,20 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "sourceClientId": "%s",
+                      "sourceMatterId": "%s",
                       "targetClientId": "%s",
+                      "targetMatterId": "%s",
                       "amount": 3000.00,
                       "reference": "XFER-CTRL-001",
                       "description": "Controller test transfer",
                       "transactionDate": "2026-03-02"
                     }
                     """
-                        .formatted(customerId, targetCustomerId)))
+                        .formatted(
+                            customerId,
+                            trustMatterOf(customerId),
+                            targetCustomerId,
+                            trustMatterOf(targetCustomerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$[0].transactionType").value("TRANSFER_OUT"))
         .andExpect(jsonPath("$[0].status").value("RECORDED"))
@@ -257,13 +273,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 1000.00,
                       "reference": "DEP-CTRL-LIST",
                       "description": "Deposit for list test",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     mockMvc
@@ -291,13 +308,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 6000.00,
                       "reference": "DEP-CTRL-APPROVE-SETUP",
                       "description": "Setup deposit for approve test",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Admin records a payment (will be AWAITING_APPROVAL)
@@ -311,13 +329,14 @@ class TrustTransactionControllerTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "amount": 1000.00,
                           "reference": "PAY-CTRL-APPROVE",
                           "description": "Payment for approve test",
                           "transactionDate": "2026-03-02"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -347,13 +366,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 7000.00,
                       "reference": "DEP-CTRL-ADMIN-APPROVE-SETUP",
                       "description": "Setup deposit for admin approve test",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Owner records a payment (will be AWAITING_APPROVAL)
@@ -367,13 +387,14 @@ class TrustTransactionControllerTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "amount": 1500.00,
                           "reference": "PAY-CTRL-ADMIN-APPROVE",
                           "description": "Payment for admin approve test",
                           "transactionDate": "2026-03-02"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -403,13 +424,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 3000.00,
                       "reference": "DEP-CTRL-REJECT-SETUP",
                       "description": "Setup deposit for reject test",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Admin records a payment
@@ -423,13 +445,14 @@ class TrustTransactionControllerTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "amount": 500.00,
                           "reference": "PAY-CTRL-REJECT",
                           "description": "Payment for reject test",
                           "transactionDate": "2026-03-02"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -467,13 +490,14 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 4000.00,
                       "reference": "DEP-CTRL-REVERSE",
                       "description": "Deposit for reversal test",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Admin records a payment (MANAGE_TRUST)
@@ -487,13 +511,14 @@ class TrustTransactionControllerTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "amount": 1500.00,
                           "reference": "PAY-CTRL-REVERSE",
                           "description": "Payment for reversal test",
                           "transactionDate": "2026-03-02"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -534,8 +559,8 @@ class TrustTransactionControllerTest {
     var clientId =
         TestEntityHelper.createCustomer(
             mockMvc, ownerJwt, "Trust Filter Client", "trust_filter_client@test.com");
-    var matterA = TestEntityHelper.createProject(mockMvc, ownerJwt, "Trust Filter Matter A");
-    var matterB = TestEntityHelper.createProject(mockMvc, ownerJwt, "Trust Filter Matter B");
+    var matterA = clientMatter(clientId, "Trust Filter Matter A");
+    var matterB = clientMatter(clientId, "Trust Filter Matter B");
 
     var depositA = recordDeposit(clientId, matterA, "5000.00", "DEP-FILTER-A");
     var approvedA = recordPayment(clientId, matterA, "1000.00", "PAY-FILTER-A1");
@@ -587,7 +612,7 @@ class TrustTransactionControllerTest {
     var clientId =
         TestEntityHelper.createCustomer(
             mockMvc, ownerJwt, "Trust Link Client", "trust_link_client@test.com");
-    var matter = TestEntityHelper.createProject(mockMvc, ownerJwt, "Trust Link Matter");
+    var matter = clientMatter(clientId, "Trust Link Matter");
 
     recordDeposit(clientId, matter, "5000.00", "DEP-LINK-1");
     var linked = recordPayment(clientId, matter, "1250.00", "PAY-LINK-DEEDS");
@@ -712,12 +737,13 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 100.00,
                       "reference": "DEP-FRACTION-SETUP",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(sourceId)))
+                        .formatted(sourceId, trustMatterOf(sourceId))))
         .andExpect(status().isCreated());
 
     // 100.001 against a 100.00 balance: before the fix this was refused as "Insufficient trust
@@ -731,13 +757,16 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "sourceClientId": "%s",
+                      "sourceMatterId": "%s",
                       "targetClientId": "%s",
+                      "targetMatterId": "%s",
                       "amount": 100.001,
                       "reference": "XFER-FRACTION-001",
                       "transactionDate": "2026-03-02"
                     }
                     """
-                        .formatted(sourceId, targetId)))
+                        .formatted(
+                            sourceId, trustMatterOf(sourceId), targetId, trustMatterOf(targetId))))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Invalid amount"))
@@ -755,12 +784,13 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 100.005,
                       "reference": "DEP-FRACTION-001",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Invalid amount"))
@@ -779,12 +809,13 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 250.500,
                       "reference": "DEP-TRAILING-ZERO-001",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.amount").value(250.50));
   }
@@ -798,5 +829,33 @@ class TrustTransactionControllerTest {
             post("/api/trust-transactions/" + "00000000-0000-0000-0000-000000000001" + "/approve")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_txn_ctrl_member")))
         .andExpect(status().isForbidden());
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                UUID.fromString(id),
+                "Trust matter " + id,
+                ownerMemberId));
+  }
+
+  /** G89-F28: a matter opened for the client (trust postings need the client's own matter). */
+  private String clientMatter(String clientId, String name) {
+    return TestTrustMatterHelper.openClientMatter(
+            tenantSchema,
+            transactionTemplate,
+            projectRepository,
+            UUID.fromString(clientId),
+            name,
+            ownerMemberId)
+        .toString();
   }
 }

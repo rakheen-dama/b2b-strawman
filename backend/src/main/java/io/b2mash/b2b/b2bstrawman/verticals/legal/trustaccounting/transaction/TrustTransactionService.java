@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
@@ -24,6 +26,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.persistence.EntityManager;
@@ -36,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -60,10 +65,21 @@ public class TrustTransactionService {
   public static final String INSUFFICIENT_MATTER_TRUST_BALANCE =
       "INSUFFICIENT_MATTER_TRUST_BALANCE";
 
+  /** ProblemDetail {@code code} of a client posting refused for want of a matter (G89-F28). */
+  public static final String MATTER_REQUIRED = "MATTER_REQUIRED";
+
+  /** ProblemDetail {@code code} of a client posting on a matter not linked to it (G89-F28). */
+  public static final String MATTER_NOT_LINKED_TO_CLIENT = "MATTER_NOT_LINKED_TO_CLIENT";
+
+  /** The refusal detail for a client trust posting without a matter (G89-F28, D36). */
+  static final String MATTER_REQUIRED_DETAIL = "A matter is required for client trust transactions";
+
   private final TrustTransactionRepository transactionRepository;
   private final ClientLedgerCardRepository ledgerCardRepository;
+  private final TrustInvestmentRepository trustInvestmentRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
+  private final CustomerProjectRepository customerProjectRepository;
   private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
@@ -78,8 +94,10 @@ public class TrustTransactionService {
   public TrustTransactionService(
       TrustTransactionRepository transactionRepository,
       ClientLedgerCardRepository ledgerCardRepository,
+      TrustInvestmentRepository trustInvestmentRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
+      CustomerProjectRepository customerProjectRepository,
       ProjectRepository projectRepository,
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
@@ -92,8 +110,10 @@ public class TrustTransactionService {
       Clock clock) {
     this.transactionRepository = transactionRepository;
     this.ledgerCardRepository = ledgerCardRepository;
+    this.trustInvestmentRepository = trustInvestmentRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
+    this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
@@ -116,10 +136,16 @@ public class TrustTransactionService {
       String description,
       LocalDate transactionDate) {}
 
+  /**
+   * An inter-client transfer: TRANSFER_OUT debits the source client on {@code sourceMatterId} (a
+   * matter of the source client), TRANSFER_IN credits the target client on {@code targetMatterId}
+   * (a matter of the target client; G89-F28, D39).
+   */
   public record RecordTransferRequest(
       UUID sourceClientId,
+      UUID sourceMatterId,
       UUID targetClientId,
-      UUID matterId,
+      UUID targetMatterId,
       BigDecimal amount,
       String reference,
       String description,
@@ -239,6 +265,63 @@ public class TrustTransactionService {
 
   @Transactional
   public TrustTransactionResponse recordDeposit(UUID trustAccountId, RecordDepositRequest request) {
+    return postDeposit(trustAccountId, request, true);
+  }
+
+  /**
+   * Credits a withdrawn trust investment back to the client: the deposit carries the matter the
+   * placement payment ({@code placementTransactionId}) debited, so the money returns to the matter
+   * it left (G89-F28). The matter is derived, not chosen, so it is not re-validated; a placement
+   * recorded before G89-F28 has no matter and its withdrawal mirrors it client-level (D6: no
+   * backfill of legacy rows).
+   *
+   * <p>PR #1757 review: the withdrawal returns money the placement took, so the placement payment
+   * must be completed (APPROVED). While it awaits approval, once rejected, or once reversed, the
+   * client was never (or is no longer) debited and a withdrawal would create trust money.
+   */
+  @Transactional
+  public TrustTransactionResponse recordInvestmentWithdrawal(
+      UUID trustAccountId, UUID placementTransactionId, RecordDepositRequest request) {
+    // Checked under the placement row lock (the same lock reverseTransaction takes first), so a
+    // concurrent reversal of the placement either commits before this check or waits for it.
+    var placement =
+        placementTransactionId == null
+            ? null
+            : transactionRepository.findByIdForUpdate(placementTransactionId).orElse(null);
+    if (placement == null || !"APPROVED".equals(placement.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot withdraw investment",
+          "The investment's placement payment must be approved before the investment can be"
+              + " withdrawn (placement payment status: "
+              + (placement == null ? "missing" : placement.getStatus())
+              + ")");
+    }
+    UUID placementMatterId = placement.getProjectId();
+    return postDeposit(
+        trustAccountId,
+        new RecordDepositRequest(
+            request.clientId(),
+            placementMatterId,
+            request.amount(),
+            request.reference(),
+            request.description(),
+            request.transactionDate()),
+        false);
+  }
+
+  /**
+   * Locks an investment's placement PAYMENT row — the first lock of both the withdrawal and a
+   * reversal of the placement (PR #1757 security review); the investment row is locked second.
+   */
+  @Transactional
+  public void lockInvestmentPlacement(UUID placementTransactionId) {
+    if (placementTransactionId != null) {
+      transactionRepository.findByIdForUpdate(placementTransactionId);
+    }
+  }
+
+  private TrustTransactionResponse postDeposit(
+      UUID trustAccountId, RecordDepositRequest request, boolean requireMatter) {
     moduleGuard.requireModule(MODULE_ID);
     validateAmount(request.amount());
     validateReference(request.reference());
@@ -257,6 +340,10 @@ public class TrustTransactionService {
             .findById(request.clientId())
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
+
+    if (requireMatter) {
+      requireClientMatter(customer, request.matterId());
+    }
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -354,10 +441,16 @@ public class TrustTransactionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.sourceClientId()));
 
-    customerRepository
-        .findById(request.targetClientId())
-        .orElseThrow(
-            () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.targetClientId()));
+    var targetCustomer =
+        customerRepository
+            .findById(request.targetClientId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.targetClientId()));
+
+    // G89-F28 / D39: each leg sits on its own client's matter, both checked before either is
+    // written — TRANSFER_OUT on the source's matter, TRANSFER_IN on the target's.
+    requireClientMatter(sourceCustomer, request.sourceMatterId());
+    requireClientMatter(targetCustomer, request.targetMatterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -415,12 +508,12 @@ public class TrustTransactionService {
               + rand(request.amount()));
     }
 
-    // A transfer on a matter moves the source client's money on that matter (G89-F12)
+    // A transfer moves the source client's money on its matter (G89-F12)
     requireMatterCellCovers(
         trustAccountId,
         request.sourceClientId(),
         sourceCustomer.getName(),
-        request.matterId(),
+        request.sourceMatterId(),
         request.amount());
 
     // Create paired transactions
@@ -430,7 +523,7 @@ public class TrustTransactionService {
             "TRANSFER_OUT",
             request.amount(),
             request.sourceClientId(),
-            request.matterId(),
+            request.sourceMatterId(),
             request.targetClientId(),
             request.reference(),
             request.description(),
@@ -444,7 +537,7 @@ public class TrustTransactionService {
             "TRANSFER_IN",
             request.amount(),
             request.targetClientId(),
-            request.matterId(),
+            request.targetMatterId(),
             request.sourceClientId(),
             request.reference(),
             request.description(),
@@ -540,6 +633,8 @@ public class TrustTransactionService {
             .findById(request.clientId())
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
+
+    requireClientMatter(customer, request.matterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -644,6 +739,18 @@ public class TrustTransactionService {
     var distinctProjectIds =
         invoiceLineRepository.findDistinctProjectIdsByInvoiceId(invoice.getId());
     UUID inferredProjectId = distinctProjectIds.size() == 1 ? distinctProjectIds.get(0) : null;
+    // G89-F28: a fee transfer is a client posting like any other and must land on a matter of the
+    // client. The matter comes from the fee note: refused when the fee note has no single matter,
+    // and (PR #1757 review) when that matter is no longer linked to the client.
+    if (inferredProjectId == null) {
+      throw matterRequired(
+          "Fee note "
+              + (invoice.getInvoiceNumber() != null
+                  ? invoice.getInvoiceNumber()
+                  : invoice.getId().toString())
+              + " does not belong to a single matter, so the transfer has no matter to post to.");
+    }
+    requireClientMatter(customer, inferredProjectId);
 
     var transaction =
         new TrustTransaction(
@@ -717,6 +824,8 @@ public class TrustTransactionService {
             .findById(request.clientId())
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
+
+    requireClientMatter(customer, request.matterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -1036,6 +1145,40 @@ public class TrustTransactionService {
     transaction.setStatus("REJECTED");
     transactionRepository.save(transaction);
 
+    // G89-F87 (D41): an investment is created ACTIVE while its placement PAYMENT awaits approval.
+    // A rejected placement never moved the money, so the investment is CANCELLED (terminal) in the
+    // same transaction — otherwise it stays ACTIVE on the s86 register, in getMaturing and in the
+    // Section 35 data pack with nothing behind it. Lock order as withdrawInvestment and
+    // reverseTransaction: the placement row (locked above), then the investment row.
+    if ("PAYMENT".equals(transaction.getTransactionType())) {
+      trustInvestmentRepository
+          .findByPlacementTransactionIdForUpdate(transaction.getId())
+          .filter(
+              investment ->
+                  "ACTIVE".equals(investment.getStatus())
+                      || "MATURED".equals(investment.getStatus()))
+          .ifPresent(
+              investment -> {
+                investment.setStatus("CANCELLED");
+                trustInvestmentRepository.save(investment);
+                auditService.log(
+                    AuditEventBuilder.builder()
+                        .eventType("trust_investment.cancelled")
+                        .entityType("trust_investment")
+                        .entityId(investment.getId())
+                        .details(
+                            AuditDetails.matterScoped(
+                                transaction.getProjectId(),
+                                transaction.getCustomerId(),
+                                Map.of(
+                                    "placement_transaction_id",
+                                    transaction.getId().toString(),
+                                    "reason",
+                                    reason)))
+                        .build());
+              });
+    }
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("trust_" + transaction.getTransactionType().toLowerCase() + ".rejected")
@@ -1124,6 +1267,26 @@ public class TrustTransactionService {
         || transactionRepository.existsByReversalOf(original.getId())) {
       throw new InvalidStateException(
           "Cannot reverse transaction", "Transaction has already been reversed");
+    }
+
+    // G89-F86 (D40): a PAYMENT that placed a trust investment is never reversed, whatever the
+    // investment's status — the investment is withdrawn instead. While the investment is ACTIVE or
+    // MATURED a reversal would credit the client while the s86 register (and getMaturing, the
+    // Section 35 data pack) still shows the money invested, and the investment could never be
+    // withdrawn; once it is WITHDRAWN the withdrawal already returned the money, so a reversal
+    // would
+    // credit the client twice (PR #1757 review). Lock order as in TrustInvestmentService
+    // .withdrawInvestment — the placement row (locked above), then the investment row.
+    var placedInvestment =
+        "PAYMENT".equals(original.getTransactionType())
+            ? trustInvestmentRepository.findByPlacementTransactionIdForUpdate(original.getId())
+            : Optional.<TrustInvestment>empty();
+    if (placedInvestment.isPresent()) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction",
+          "This payment placed a trust investment ("
+              + placedInvestment.get().getStatus()
+              + "). Withdraw the investment instead of reversing its placement payment.");
     }
 
     var memberId = RequestScopes.requireMemberId();
@@ -1449,6 +1612,45 @@ public class TrustTransactionService {
   }
 
   // --- Private Helpers ---
+
+  /**
+   * G89-F28 (D36): every new client trust posting names a matter linked to the client (directly,
+   * {@code projects.customer_id}, or through {@code customer_projects} — the client's matter list).
+   * A row without a matter never reaches the portal, whose trust view is per client and matter, so
+   * the client's portal balance would fall short of the firm ledger. Firm-level rows without a
+   * client (INTEREST_LPFF) and rows derived from an existing row (reversals, interest credits) do
+   * not pass through here.
+   */
+  private void requireClientMatter(Customer client, UUID matterId) {
+    if (matterId == null) {
+      throw matterRequired(null);
+    }
+    var matter =
+        projectRepository
+            .findById(matterId)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, matterId));
+    if (client.getId().equals(matter.getCustomerId())
+        || customerProjectRepository.existsByCustomerIdAndProjectId(client.getId(), matterId)) {
+      return;
+    }
+    var properties = new LinkedHashMap<String, Object>();
+    properties.put("code", MATTER_NOT_LINKED_TO_CLIENT);
+    properties.put("matterId", matterId);
+    throw InvalidStateException.withProperties(
+        "Matter not linked to client",
+        "Matter " + matter.getName() + " is not linked to client " + client.getName(),
+        properties);
+  }
+
+  private static InvalidStateException matterRequired(String reason) {
+    var properties = new LinkedHashMap<String, Object>();
+    properties.put("code", MATTER_REQUIRED);
+    if (reason != null) {
+      properties.put("reason", reason);
+    }
+    return InvalidStateException.withProperties(
+        "Matter required", MATTER_REQUIRED_DETAIL, properties);
+  }
 
   /**
    * G89-F12: a debit on a matter must be covered by this client's money on that matter in this

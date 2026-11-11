@@ -91,10 +91,15 @@ public class InvestmentRegisterQuery implements ReportQuery {
               .getContent();
     }
 
-    // Filter by status if provided
+    // Filter by status if provided. A CANCELLED investment (its placement payment was rejected, so
+    // no money was ever invested; G89-F87) is not on the s86 register — nor, through this query, in
+    // the Section 35 data pack — unless it is asked for by status.
     if (statusFilter != null) {
       investments =
           investments.stream().filter(inv -> statusFilter.equals(inv.getStatus())).toList();
+    } else {
+      investments =
+          investments.stream().filter(inv -> !"CANCELLED".equals(inv.getStatus())).toList();
     }
 
     // Look up the latest general LPFF rate for the trust account

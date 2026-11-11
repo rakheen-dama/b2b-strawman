@@ -20,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.GreenMailTestSupport;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import jakarta.mail.Address;
 import jakarta.mail.Message;
 import java.math.BigDecimal;
@@ -67,6 +68,7 @@ class InterestPortalProjectionIntegrationTest {
   private static final GreenMail greenMail = GreenMailTestSupport.getInstance();
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -112,7 +114,7 @@ class InterestPortalProjectionIntegrationTest {
   @Test
   void portalTrustBalance_equalsFirmClientLedger_afterInterestRun() throws Exception {
     var clientId = createClient("IPP Client One", "ipp_client_one@test.com");
-    var matterId = TestEntityHelper.createProject(mockMvc, ownerJwt(), "IPP Matter One");
+    var matterId = clientMatter(clientId, "IPP Matter One");
     var accountId = createAccountWithRate("62890000101");
     deposit(accountId, clientId, matterId, "100000.00", "2025-01-15", "DEP-IPP-1");
 
@@ -143,7 +145,7 @@ class InterestPortalProjectionIntegrationTest {
   void postInterestRun_notifiesAdminsNotClients() throws Exception {
     var clientEmail = "ipp_client_two@test.com";
     var clientId = createClient("IPP Client Two", clientEmail);
-    var matterId = TestEntityHelper.createProject(mockMvc, ownerJwt(), "IPP Matter Two");
+    var matterId = clientMatter(clientId, "IPP Matter Two");
     var accountId = createAccountWithRate("62890000102");
     deposit(accountId, clientId, matterId, "50000.00", "2025-01-15", "DEP-IPP-2");
     greenMail.purgeEmailFromAllMailboxes();
@@ -194,6 +196,18 @@ class InterestPortalProjectionIntegrationTest {
                             .filter(n -> "TRUST_INTEREST_POSTED".equals(n.getType()))
                             .filter(n -> runId.equals(n.getReferenceEntityId()))
                             .toList()));
+  }
+
+  /** G89-F28: trust money sits on a matter of the client. */
+  private String clientMatter(String clientId, String name) {
+    return TestTrustMatterHelper.openClientMatter(
+            tenantSchema,
+            transactionTemplate,
+            projectRepository,
+            UUID.fromString(clientId),
+            name,
+            ownerId)
+        .toString();
   }
 
   private String createClient(String name, String email) throws Exception {

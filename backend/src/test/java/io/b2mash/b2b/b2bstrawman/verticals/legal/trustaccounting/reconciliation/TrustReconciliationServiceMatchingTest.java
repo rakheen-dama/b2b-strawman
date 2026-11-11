@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -42,6 +43,8 @@ class TrustReconciliationServiceMatchingTest {
   private static final String ORG_ID = "org_trust_match_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -120,13 +123,15 @@ class TrustReconciliationServiceMatchingTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "amount": %s,
                           "reference": "%s",
                           "description": "Test deposit",
                           "transactionDate": "%s"
                         }
                         """
-                            .formatted(customerId, amount, reference, date)))
+                            .formatted(
+                                customerId, trustMatterOf(customerId), amount, reference, date)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
@@ -148,13 +153,15 @@ class TrustReconciliationServiceMatchingTest {
                         """
                         {
                           "clientId": "%s",
+                          "matterId": "%s",
                           "amount": %s,
                           "reference": "%s",
                           "description": "Test payment",
                           "transactionDate": "%s"
                         }
                         """
-                            .formatted(customerId, amount, reference, date)))
+                            .formatted(
+                                customerId, trustMatterOf(customerId), amount, reference, date)))
             .andExpect(status().isCreated())
             .andReturn();
     String paymentId =
@@ -582,5 +589,21 @@ class TrustReconciliationServiceMatchingTest {
               assertThat(lines).hasSize(1);
               assertThat(lines.getFirst().getMatchStatus()).isEqualTo("UNMATCHED");
             });
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                customerRepository,
+                UUID.fromString(id),
+                "Trust matter " + id));
   }
 }

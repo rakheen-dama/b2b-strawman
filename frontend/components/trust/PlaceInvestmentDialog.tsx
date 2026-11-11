@@ -47,6 +47,7 @@ function getDefaultValues(): PlaceInvestmentFormData {
   const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return {
     customerId: "",
+    projectId: "",
     institution: "",
     accountNumber: "",
     principal: 0,
@@ -103,7 +104,10 @@ export function PlaceInvestmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg" data-testid="place-investment-dialog">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
+        data-testid="place-investment-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Place Investment</DialogTitle>
           <DialogDescription>
@@ -121,6 +125,20 @@ export function PlaceInvestmentDialog({
                   <FormLabel>Client ID</FormLabel>
                   <FormControl>
                     <Input placeholder="Client UUID" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="projectId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Matter ID</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Matter UUID" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

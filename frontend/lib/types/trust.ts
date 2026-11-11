@@ -283,7 +283,8 @@ export interface TrustDashboardData {
 
 // Trust investment types
 
-export type TrustInvestmentStatus = "ACTIVE" | "MATURED" | "WITHDRAWN";
+/** CANCELLED: the placement payment was rejected, so nothing was invested (G89-F87). */
+export type TrustInvestmentStatus = "ACTIVE" | "MATURED" | "WITHDRAWN" | "CANCELLED";
 
 export type InvestmentBasis = "FIRM_DISCRETION" | "CLIENT_INSTRUCTION";
 

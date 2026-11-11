@@ -164,7 +164,7 @@ export function TrustMatterPicker<TFieldValues extends FieldValues>({
   } else if (isLoading) {
     triggerLabel = "Loading matters...";
   } else {
-    triggerLabel = "Select a matter (optional)...";
+    triggerLabel = "Select a matter...";
   }
 
   return (

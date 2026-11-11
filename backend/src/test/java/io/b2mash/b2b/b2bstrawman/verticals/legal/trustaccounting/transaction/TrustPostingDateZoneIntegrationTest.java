@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
@@ -79,6 +80,7 @@ class TrustPostingDateZoneIntegrationTest {
   }
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -157,7 +159,7 @@ class TrustPostingDateZoneIntegrationTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("8500.00"),
                           "DEP-ZONE-001",
                           "Funding at 01:30 SAST",
@@ -178,6 +180,19 @@ class TrustPostingDateZoneIntegrationTest {
                       .setParameter("customerId", customer.getId())
                       .setParameter("dueDate", LocalDate.of(2026, 11, 30))
                       .setParameter("createdBy", memberId)
+                      .executeUpdate();
+                  // G89-F28: the fee transfer takes its matter from the fee note
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoice_lines (id, invoice_id, project_id, line_type,
+                              description, quantity, unit_price, amount, sort_order, tax_exempt,
+                              created_at, updated_at)
+                          VALUES (gen_random_uuid(), :invoiceId, :projectId, 'TIME',
+                              'Legal services', 1, 8500.00, 8500.00, 0, false, now(), now())
+                          """)
+                      .setParameter("invoiceId", invoiceId)
+                      .setParameter("projectId", trustMatterOf(customer.getId()))
                       .executeUpdate();
                   entityManager.flush();
 
@@ -232,7 +247,7 @@ class TrustPostingDateZoneIntegrationTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           source.getId(),
-                          null,
+                          trustMatterOf(source.getId()),
                           new BigDecimal("6000.00"),
                           "DEP-ZONE-TRF",
                           "Funding the transfer",
@@ -242,8 +257,9 @@ class TrustPostingDateZoneIntegrationTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               source.getId(),
+                              trustMatterOf(source.getId()),
                               target.getId(),
-                              null,
+                              trustMatterOf(target.getId()),
                               new BigDecimal("2500.00"),
                               "TRF-ZONE-001",
                               "Transfer to reverse",
@@ -286,7 +302,7 @@ class TrustPostingDateZoneIntegrationTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("4000.00"),
                           "DEP-ZONE-REF",
                           "Funding the refund",
@@ -296,7 +312,7 @@ class TrustPostingDateZoneIntegrationTest {
                           trustAccountId,
                           new RecordRefundRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("1500.00"),
                               "REF-ZONE-001",
                               "Refund to reverse",
@@ -410,5 +426,22 @@ class TrustPostingDateZoneIntegrationTest {
             RequestScopes.CAPABILITIES,
             Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
         .run(action);
+  }
+
+  private final java.util.Map<UUID, UUID> trustMatters =
+      new java.util.concurrent.ConcurrentHashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(UUID clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                id,
+                "Trust matter " + id,
+                memberId));
   }
 }

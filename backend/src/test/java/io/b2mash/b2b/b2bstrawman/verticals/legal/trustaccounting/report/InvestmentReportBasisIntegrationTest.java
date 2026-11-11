@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
@@ -43,6 +44,7 @@ class InvestmentReportBasisIntegrationTest {
   private static final String ORG_ID = "org_inv_report_basis_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -164,6 +166,7 @@ class InvestmentReportBasisIntegrationTest {
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
                         UUID.fromString(customerId1),
+                        trustMatterOf(customerId1),
                         "ABSA Bank",
                         "9012345678",
                         new BigDecimal("20000.00"),
@@ -182,6 +185,7 @@ class InvestmentReportBasisIntegrationTest {
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
                         UUID.fromString(customerId2),
+                        trustMatterOf(customerId2),
                         "Nedbank",
                         "1122334455",
                         new BigDecimal("15000.00"),
@@ -207,13 +211,19 @@ class InvestmentReportBasisIntegrationTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": %s,
                       "reference": "%s",
                       "description": "Test deposit for basis report",
                       "transactionDate": "%s"
                     }
                     """
-                        .formatted(custId, amount.toPlainString(), reference, date)))
+                        .formatted(
+                            custId,
+                            trustMatterOf(custId),
+                            amount.toPlainString(),
+                            reference,
+                            date)))
         .andExpect(status().isCreated());
   }
 
@@ -434,5 +444,21 @@ class InvestmentReportBasisIntegrationTest {
                   .findFirst();
           assertThat(emptyRegister).isEmpty();
         });
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                UUID.fromString(id),
+                "Trust matter " + id,
+                ownerMemberId));
   }
 }

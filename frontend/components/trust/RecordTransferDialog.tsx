@@ -39,6 +39,7 @@ function getDefaultValues() {
     sourceCustomerId: "",
     targetCustomerId: "",
     projectId: "",
+    targetProjectId: "",
     amount: 0,
     reference: "",
     description: "",
@@ -83,7 +84,7 @@ export function RecordTransferDialog({ accountId, open, onOpenChange }: RecordTr
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Record Transfer</DialogTitle>
           <DialogDescription>
@@ -126,9 +127,23 @@ export function RecordTransferDialog({ accountId, open, onOpenChange }: RecordTr
               name="projectId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Matter (Optional)</FormLabel>
+                  <FormLabel>Source Matter</FormLabel>
                   <FormControl>
-                    <Input placeholder="Matter UUID (optional)" {...field} />
+                    <Input placeholder="Source client's matter UUID" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="targetProjectId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Target Matter</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Target client's matter UUID" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

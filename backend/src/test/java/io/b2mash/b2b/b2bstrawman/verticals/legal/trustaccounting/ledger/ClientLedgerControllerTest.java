@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,6 +38,8 @@ class ClientLedgerControllerTest {
   private static final String ORG_ID = "org_client_ledger_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -113,13 +116,14 @@ class ClientLedgerControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 25000.00,
                       "reference": "DEP-LEDGER-SETUP",
                       "description": "Setup deposit for ledger tests",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
   }
 
@@ -303,13 +307,14 @@ class ClientLedgerControllerTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 5000.00,
                       "reference": "DEP-CLOSE-GUARD",
                       "description": "Deposit for close guard test",
                       "transactionDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Attempt to close -- should fail
@@ -354,5 +359,21 @@ class ClientLedgerControllerTest {
         .perform(post("/api/trust-accounts/" + zeroBalanceAccountId + "/close").with(ownerJwt))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CLOSED"));
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                customerRepository,
+                UUID.fromString(id),
+                "Trust matter " + id));
   }
 }

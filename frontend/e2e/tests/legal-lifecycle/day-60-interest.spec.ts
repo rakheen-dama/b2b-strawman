@@ -26,6 +26,7 @@ import {
   feeNoteTotalsRow,
   generateFeeNoteDraft,
   logTimeOnTask,
+  matterId,
   morokaClient,
   openClientFeeNotes,
   openTrustTransactions,
@@ -44,11 +45,13 @@ async function openInvestments(page: Page): Promise<void> {
   await expect(page.getByRole("heading", { level: 1, name: "Investments" })).toBeVisible();
 }
 
-/** Places a trust investment for a client (the dialog takes the client's raw UUID). */
+/** Places a trust investment for a client on its matter (the dialog takes raw UUIDs). */
 async function placeInvestment(
   page: Page,
   opts: {
     clientId: string;
+    /** The client's matter whose trust money is invested (required since G89-F28). */
+    matterId: string;
     institution: string;
     accountNumber: string;
     principal: string;
@@ -63,6 +66,7 @@ async function placeInvestment(
   const dialog = page.getByTestId("place-investment-dialog");
   await expect(dialog.getByRole("heading", { name: "Place Investment" })).toBeVisible();
   await dialog.getByLabel("Client ID").fill(opts.clientId);
+  await dialog.getByLabel("Matter ID").fill(opts.matterId);
   await dialog.getByLabel("Institution").fill(opts.institution);
   await dialog.getByLabel("Account Number").fill(opts.accountNumber);
   await dialog.getByLabel("Principal").fill(opts.principal);
@@ -229,6 +233,7 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     await loginAs(page, "alice");
     await placeInvestment(page, {
       clientId: clientId("moroka"),
+      matterId: matterId("moroka"),
       institution: "Standard Bank",
       accountNumber: "FD-0987654321",
       principal: "200000",
@@ -258,6 +263,7 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     await loginAs(page, "alice");
     await placeInvestment(page, {
       clientId: clientId("qc"),
+      matterId: matterId("qc"),
       institution: "Nedbank",
       accountNumber: "CALL-1122334455",
       principal: "30000",

@@ -17,9 +17,19 @@ export const createTrustAccountSchema = z.object({
 
 export type CreateTrustAccountFormData = z.infer<typeof createTrustAccountSchema>;
 
+/**
+ * G89-F28 (D36): every client trust posting names a matter — the client's portal trust view is
+ * per matter, so a client-level row never reached it. The backend refuses a missing matter with
+ * "A matter is required for client trust transactions".
+ */
+const requiredMatter = z
+  .string()
+  .min(1, "A matter is required for client trust transactions")
+  .uuid("Must be a valid matter");
+
 export const recordDepositSchema = z.object({
   customerId: z.string().uuid("Must be a valid client UUID"),
-  projectId: z.string().uuid().optional().or(z.literal("")),
+  projectId: requiredMatter,
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
@@ -30,7 +40,7 @@ export type RecordDepositFormData = z.infer<typeof recordDepositSchema>;
 
 export const recordPaymentSchema = z.object({
   customerId: z.string().uuid("Must be a valid client UUID"),
-  projectId: z.string().uuid().optional().or(z.literal("")),
+  projectId: requiredMatter,
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
@@ -42,7 +52,10 @@ export type RecordPaymentFormData = z.infer<typeof recordPaymentSchema>;
 export const recordTransferSchema = z.object({
   sourceCustomerId: z.string().uuid("Must be a valid source client UUID"),
   targetCustomerId: z.string().uuid("Must be a valid target client UUID"),
-  projectId: z.string().uuid().optional().or(z.literal("")),
+  /** The source client's matter: TRANSFER_OUT debits it. */
+  projectId: requiredMatter,
+  /** The target client's matter: TRANSFER_IN credits it (D39). */
+  targetProjectId: requiredMatter,
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
@@ -62,7 +75,7 @@ export type RecordFeeTransferFormData = z.infer<typeof recordFeeTransferSchema>;
 
 export const recordRefundSchema = z.object({
   customerId: z.string().uuid("Must be a valid client UUID"),
-  projectId: z.string().uuid().optional().or(z.literal("")),
+  projectId: requiredMatter,
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
@@ -109,6 +122,7 @@ export type AddLpffRateFormData = z.infer<typeof addLpffRateSchema>;
 
 export const placeInvestmentSchema = z.object({
   customerId: z.string().uuid("Must be a valid client UUID"),
+  projectId: requiredMatter,
   institution: z.string().min(1, "Institution is required").max(200),
   accountNumber: z.string().min(1, "Account number is required").max(50),
   principal: z.number().positive("Principal must be greater than zero"),

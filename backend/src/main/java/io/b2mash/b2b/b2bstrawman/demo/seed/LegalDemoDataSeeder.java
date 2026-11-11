@@ -225,25 +225,46 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     account = trustAccountRepository.save(account);
     UUID accountId = account.getId();
 
+    // G89-F28: client trust rows sit on one of the client's matters, so the portal trust view
+    // (per client and matter) shows them.
+    UUID healthyMatter = firstMatterOf(healthy.id());
+    UUID inDebitMatter = firstMatterOf(inDebit.id());
+
     // Healthy creditor: 50 000 in, 20 000 out -> +30 000.
     saveTrustTxn(
-        accountId, "DEPOSIT", "50000.00", healthy.id(), "Funds received on account", 60, createdBy);
+        accountId,
+        "DEPOSIT",
+        "50000.00",
+        healthy.id(),
+        healthyMatter,
+        "Funds received on account",
+        60,
+        createdBy);
     saveTrustTxn(
         accountId,
         "PAYMENT",
         "20000.00",
         healthy.id(),
+        healthyMatter,
         "Disbursement — transfer duty",
         30,
         createdBy);
     // Debit creditor: 15 000 in, 18 000 out -> -3 000 (overpayment in error).
     saveTrustTxn(
-        accountId, "DEPOSIT", "15000.00", inDebit.id(), "Deposit on account", 50, createdBy);
+        accountId,
+        "DEPOSIT",
+        "15000.00",
+        inDebit.id(),
+        inDebitMatter,
+        "Deposit on account",
+        50,
+        createdBy);
     saveTrustTxn(
         accountId,
         "PAYMENT",
         "18000.00",
         inDebit.id(),
+        inDebitMatter,
         "Payment out (overpayment in error)",
         20,
         createdBy);
@@ -258,6 +279,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
       String type,
       String amount,
       UUID customerId,
+      UUID matterId,
       String description,
       int daysAgo,
       UUID recordedBy) {
@@ -268,7 +290,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
             type,
             new BigDecimal(amount),
             customerId,
-            null,
+            matterId,
             null,
             "%s-%s".formatted(type.substring(0, 3), date),
             description,
@@ -276,6 +298,16 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
             "RECORDED",
             recordedBy);
     trustTransactionRepository.save(txn);
+  }
+
+  /** The client's first matter by name (createProjects opens at least one per active client). */
+  private UUID firstMatterOf(UUID customerId) {
+    return projectRepository.findByCustomerId(customerId).stream()
+        .sorted(java.util.Comparator.comparing(Project::getName))
+        .map(Project::getId)
+        .findFirst()
+        .orElseThrow(
+            () -> new IllegalStateException("Demo client " + customerId + " has no matter"));
   }
 
   /**

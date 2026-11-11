@@ -12,9 +12,9 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientTrustBalancesQuery;
@@ -67,6 +67,7 @@ class ClientLedgerTotalsIntegrationTest {
   private static final String OWNER_SUB = "user_clt_owner";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -139,8 +140,7 @@ class ClientLedgerTotalsIntegrationTest {
   @Test
   void totals_reconcile_5000_plus_1_34_minus_1250_minus_3751_34_equals_0() throws Exception {
     UUID client = newClient("636B Totals Client");
-    UUID matter =
-        UUID.fromString(TestEntityHelper.createProject(mockMvc, ownerJwt(), "636B Totals"));
+    UUID matter = trustMatterOf(client);
     deposit(client, matter, "5000.00", 30);
     approve(payment(client, matter, "1250.00", 20));
     postedInterestCredit(client, matter, "1.34", 10);
@@ -190,8 +190,9 @@ class ClientLedgerTotalsIntegrationTest {
                 trustAccountId,
                 new RecordTransferRequest(
                     source,
+                    trustMatterOf(source),
                     target,
-                    null,
+                    trustMatterOf(target),
                     new BigDecimal("400.00"),
                     "CLT-TRF-" + (++counter),
                     "Inter-client transfer",
@@ -313,7 +314,7 @@ class ClientLedgerTotalsIntegrationTest {
                 trustAccountId,
                 new RecordDepositRequest(
                     client,
-                    matter,
+                    matter != null ? matter : trustMatterOf(client),
                     new BigDecimal(amount),
                     "CLT-DEP-" + n,
                     "Deposit",
@@ -330,7 +331,7 @@ class ClientLedgerTotalsIntegrationTest {
                     trustAccountId,
                     new RecordPaymentRequest(
                         client,
-                        matter,
+                        matter != null ? matter : trustMatterOf(client),
                         new BigDecimal(amount),
                         "CLT-PAY-" + n,
                         "Payment",
@@ -348,7 +349,7 @@ class ClientLedgerTotalsIntegrationTest {
                     trustAccountId,
                     new RecordRefundRequest(
                         client,
-                        matter,
+                        matter != null ? matter : trustMatterOf(client),
                         new BigDecimal(amount),
                         "CLT-REF-" + n,
                         "Refund",
@@ -413,5 +414,22 @@ class ClientLedgerTotalsIntegrationTest {
 
   private static JwtRequestPostProcessor ownerJwt() {
     return TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB);
+  }
+
+  private final java.util.Map<UUID, UUID> trustMatters =
+      new java.util.concurrent.ConcurrentHashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(UUID clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                id,
+                "Trust matter " + id,
+                ownerId));
   }
 }

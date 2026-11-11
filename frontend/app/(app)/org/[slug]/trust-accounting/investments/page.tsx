@@ -18,6 +18,18 @@ const STATUS_BADGE_VARIANT: Record<TrustInvestmentStatus, "neutral" | "success" 
   ACTIVE: "success",
   MATURED: "warning",
   WITHDRAWN: "neutral",
+  CANCELLED: "neutral",
+};
+
+/**
+ * Status text in the register. CANCELLED (G89-F87: the placement payment was rejected, nothing was
+ * invested) reads "Cancelled"; the other statuses keep their existing text.
+ */
+const STATUS_LABEL: Record<TrustInvestmentStatus, string> = {
+  ACTIVE: "ACTIVE",
+  MATURED: "MATURED",
+  WITHDRAWN: "WITHDRAWN",
+  CANCELLED: "Cancelled",
 };
 
 const BASIS_BADGE_VARIANT: Record<InvestmentBasis, "neutral" | "lead"> = {
@@ -248,7 +260,9 @@ export default async function InvestmentsPage({
                             {formatCurrency(inv.interestEarned, currency)}
                           </td>
                           <td className="py-3 pr-4">
-                            <Badge variant={STATUS_BADGE_VARIANT[inv.status]}>{inv.status}</Badge>
+                            <Badge variant={STATUS_BADGE_VARIANT[inv.status]}>
+                              {STATUS_LABEL[inv.status]}
+                            </Badge>
                           </td>
                           {hasManageTrust && (
                             <td className="py-3">

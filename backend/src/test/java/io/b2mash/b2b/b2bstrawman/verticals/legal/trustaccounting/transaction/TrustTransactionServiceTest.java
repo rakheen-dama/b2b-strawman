@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
@@ -64,6 +65,7 @@ class TrustTransactionServiceTest {
   private static final String ORG_ID = "org_trust_txn_svc_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -214,7 +216,7 @@ class TrustTransactionServiceTest {
                   var request =
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-001",
                           "Initial deposit",
@@ -252,7 +254,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordDepositRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("750.00"),
                               "DEP-EVT-1",
                               "Deposit for event publication",
@@ -289,7 +291,7 @@ class TrustTransactionServiceTest {
                   var request =
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("5000.00"),
                           "DEP-002",
                           "Deposit for ledger test",
@@ -324,7 +326,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("3000.00"),
                           "DEP-003A",
                           "First deposit",
@@ -334,7 +336,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("2000.00"),
                           "DEP-003B",
                           "Second deposit",
@@ -369,7 +371,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("1000.00"),
                           "DEP-004",
                           "Audit test deposit",
@@ -400,7 +402,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer1.getId(),
-                          null,
+                          trustMatterOf(customer1.getId()),
                           new BigDecimal("1000.00"),
                           "DEP-005A",
                           null,
@@ -410,7 +412,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer2.getId(),
-                          null,
+                          trustMatterOf(customer2.getId()),
                           new BigDecimal("2000.00"),
                           "DEP-005B",
                           null,
@@ -439,7 +441,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("7500.00"),
                           "DEP-006",
                           "History test",
@@ -480,7 +482,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           sourceCustomer.getId(),
-                          null,
+                          trustMatterOf(sourceCustomer.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-007",
                           "Funding for transfer",
@@ -491,8 +493,9 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               sourceCustomer.getId(),
+                              trustMatterOf(sourceCustomer.getId()),
                               targetCustomer.getId(),
-                              null,
+                              trustMatterOf(targetCustomer.getId()),
                               new BigDecimal("3000.00"),
                               "TRF-001",
                               "Client transfer",
@@ -538,7 +541,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           sourceCustomer.getId(),
-                          null,
+                          trustMatterOf(sourceCustomer.getId()),
                           new BigDecimal("8000.00"),
                           "DEP-008",
                           null,
@@ -549,8 +552,9 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordTransferRequest(
                           sourceCustomer.getId(),
+                          trustMatterOf(sourceCustomer.getId()),
                           targetCustomer.getId(),
-                          null,
+                          trustMatterOf(targetCustomer.getId()),
                           new BigDecimal("3000.00"),
                           "TRF-002",
                           null,
@@ -601,7 +605,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           sourceCustomer.getId(),
-                          null,
+                          trustMatterOf(sourceCustomer.getId()),
                           new BigDecimal("1000.00"),
                           "DEP-009",
                           null,
@@ -617,8 +621,9 @@ class TrustTransactionServiceTest {
                             trustAccountId,
                             new RecordTransferRequest(
                                 sourceId[0],
+                                trustMatterOf(sourceId[0]),
                                 targetId[0],
-                                null,
+                                trustMatterOf(targetId[0]),
                                 new BigDecimal("5000.00"),
                                 "TRF-003",
                                 null,
@@ -659,7 +664,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           source.getId(),
-                          null,
+                          trustMatterOf(source.getId()),
                           new BigDecimal("5000.00"),
                           "DEP-010",
                           null,
@@ -690,8 +695,9 @@ class TrustTransactionServiceTest {
                                       trustAccountId,
                                       new RecordTransferRequest(
                                           sourceId[0],
+                                          trustMatterOf(sourceId[0]),
                                           target1Id[0],
-                                          null,
+                                          trustMatterOf(target1Id[0]),
                                           new BigDecimal("3000.00"),
                                           "TRF-CONC-A",
                                           null,
@@ -717,8 +723,9 @@ class TrustTransactionServiceTest {
                                       trustAccountId,
                                       new RecordTransferRequest(
                                           sourceId[0],
+                                          trustMatterOf(sourceId[0]),
                                           target2Id[0],
-                                          null,
+                                          trustMatterOf(target2Id[0]),
                                           new BigDecimal("3000.00"),
                                           "TRF-CONC-B",
                                           null,
@@ -778,7 +785,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("100.00"),
                           "DEP-011",
                           null,
@@ -816,7 +823,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           sourceCustomer.getId(),
-                          null,
+                          trustMatterOf(sourceCustomer.getId()),
                           new BigDecimal("2500.00"),
                           "DEP-012",
                           null,
@@ -828,8 +835,9 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               sourceCustomer.getId(),
+                              trustMatterOf(sourceCustomer.getId()),
                               targetCustomer.getId(),
-                              null,
+                              trustMatterOf(targetCustomer.getId()),
                               new BigDecimal("2500.00"),
                               "TRF-004",
                               null,
@@ -867,7 +875,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordDepositRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "DEP-REV-001",
                               "Deposit to reverse",
@@ -945,7 +953,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           sourceCustomer.getId(),
-                          null,
+                          trustMatterOf(sourceCustomer.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-REV-002",
                           "Funding for debit reversal test",
@@ -957,8 +965,9 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               sourceCustomer.getId(),
+                              trustMatterOf(sourceCustomer.getId()),
                               targetCustomer.getId(),
-                              null,
+                              trustMatterOf(targetCustomer.getId()),
                               new BigDecimal("3000.00"),
                               "TRF-REV-001",
                               "Transfer to reverse",
@@ -1095,7 +1104,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           sourceCustomer.getId(),
-                          null,
+                          trustMatterOf(sourceCustomer.getId()),
                           new BigDecimal("5000.00"),
                           "DEP-TRFIN-001",
                           null,
@@ -1106,8 +1115,9 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               sourceCustomer.getId(),
+                              trustMatterOf(sourceCustomer.getId()),
                               targetCustomer.getId(),
-                              null,
+                              trustMatterOf(targetCustomer.getId()),
                               new BigDecimal("2000.00"),
                               "TRF-TRFIN-001",
                               null,
@@ -1147,7 +1157,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordDepositRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("2000.00"),
                               "DEP-REV-003",
                               "Deposit for double reversal test",
@@ -1194,7 +1204,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordDepositRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("1500.00"),
                               "DEP-REV-004",
                               "Deposit for awaiting reversal test",
@@ -1246,7 +1256,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer1.getId(),
-                          null,
+                          trustMatterOf(customer1.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-CB-001",
                           "Cashbook deposit 1",
@@ -1257,7 +1267,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer2.getId(),
-                          null,
+                          trustMatterOf(customer2.getId()),
                           new BigDecimal("5000.00"),
                           "DEP-CB-002",
                           "Cashbook deposit 2",
@@ -1268,8 +1278,9 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordTransferRequest(
                           customer1.getId(),
+                          trustMatterOf(customer1.getId()),
                           customer2.getId(),
-                          null,
+                          trustMatterOf(customer2.getId()),
                           new BigDecimal("2000.00"),
                           "TRF-CB-001",
                           "Cashbook transfer",
@@ -1305,7 +1316,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("8000.00"),
                           "DEP-CB-003",
                           "Normal deposit",
@@ -1317,7 +1328,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordDepositRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("3000.00"),
                               "DEP-CB-004",
                               "Rejected deposit",
@@ -1362,7 +1373,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-HIST-001",
                           "March deposit",
@@ -1373,7 +1384,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("5000.00"),
                           "DEP-HIST-002",
                           "Mid-March deposit",
@@ -1421,7 +1432,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer1.getId(),
-                          null,
+                          trustMatterOf(customer1.getId()),
                           new BigDecimal("6000.00"),
                           "DEP-TOT-001",
                           null,
@@ -1432,7 +1443,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer2.getId(),
-                          null,
+                          trustMatterOf(customer2.getId()),
                           new BigDecimal("4000.00"),
                           "DEP-TOT-002",
                           null,
@@ -1480,7 +1491,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("20000.00"),
                           "DEP-PAY-001",
                           "Funding for payment test",
@@ -1491,7 +1502,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-001",
                               "Payment to supplier",
@@ -1526,7 +1537,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-PAY-002",
                           "Funding",
@@ -1537,7 +1548,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("3000.00"),
                               "PAY-002",
                               "Payment for approval",
@@ -1588,7 +1599,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-PAY-003",
                           "Funding",
@@ -1599,7 +1610,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("1000.00"),
                               "PAY-003",
                               "Self-approval test",
@@ -1635,7 +1646,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("500.00"),
                           "DEP-PAY-004",
                           "Small funding",
@@ -1646,7 +1657,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-004",
                               "Too large payment",
@@ -1684,7 +1695,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("8000.00"),
                           "DEP-PAY-005",
                           "Funding",
@@ -1695,7 +1706,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("2000.00"),
                               "PAY-005",
                               "Payment to reject",
@@ -1747,7 +1758,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("1000.00"),
                               "PAY-006",
                               "Already approved",
@@ -1784,7 +1795,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("15000.00"),
                           "DEP-FT-001",
                           "Funding for fee transfer",
@@ -1807,6 +1818,7 @@ class TrustTransactionServiceTest {
                       .setParameter("dueDate", LocalDate.of(2026, 5, 1))
                       .setParameter("createdBy", memberId)
                       .executeUpdate();
+                  lineOnTrustMatter(invoiceId, customer.getId());
 
                   entityManager.flush();
 
@@ -1840,7 +1852,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("5000.00"),
                           "DEP-REF-001",
                           "Funding for refund test",
@@ -1851,7 +1863,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordRefundRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("2000.00"),
                               "REF-001",
                               "Refund to client",
@@ -1882,7 +1894,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-PAY-009",
                           "Funding",
@@ -1893,7 +1905,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("1000.00"),
                               "PAY-009",
                               "Audit approval test",
@@ -1934,7 +1946,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("500.00"),
                               "PAY-010",
                               "Rejection reason test",
@@ -1979,7 +1991,7 @@ class TrustTransactionServiceTest {
                       dualApprovalAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("20000.00"),
                           "DEP-DUAL-001",
                           "Funding",
@@ -1990,7 +2002,7 @@ class TrustTransactionServiceTest {
                           dualApprovalAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-DUAL-001",
                               "Dual approval test",
@@ -2032,7 +2044,7 @@ class TrustTransactionServiceTest {
                       dualApprovalAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("20000.00"),
                           "DEP-DUAL-002",
                           "Funding",
@@ -2043,7 +2055,7 @@ class TrustTransactionServiceTest {
                           dualApprovalAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-DUAL-002",
                               "Dual complete test",
@@ -2096,7 +2108,7 @@ class TrustTransactionServiceTest {
                       dualApprovalAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("20000.00"),
                           "DEP-DUAL-003",
                           "Funding",
@@ -2107,7 +2119,7 @@ class TrustTransactionServiceTest {
                           dualApprovalAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-DUAL-003",
                               "Dual same person test",
@@ -2148,7 +2160,7 @@ class TrustTransactionServiceTest {
                       dualApprovalAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("20000.00"),
                           "DEP-DUAL-004",
                           "Funding",
@@ -2159,7 +2171,7 @@ class TrustTransactionServiceTest {
                           dualApprovalAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-DUAL-004",
                               "Recorder as first approver",
@@ -2206,7 +2218,7 @@ class TrustTransactionServiceTest {
                       thresholdAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("20000.00"),
                           "DEP-THR-001",
                           "Funding",
@@ -2218,7 +2230,7 @@ class TrustTransactionServiceTest {
                           thresholdAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-THR-001",
                               "Below threshold test",
@@ -2257,7 +2269,7 @@ class TrustTransactionServiceTest {
                       thresholdAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("50000.00"),
                           "DEP-THR-002",
                           "Funding",
@@ -2269,7 +2281,7 @@ class TrustTransactionServiceTest {
                           thresholdAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("10000.00"),
                               "PAY-THR-002",
                               "At threshold test",
@@ -2322,7 +2334,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("8000.00"),
                           "DEP-CONC-001",
                           "Funding",
@@ -2333,7 +2345,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-CONC-001",
                               "First concurrent",
@@ -2345,7 +2357,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("5000.00"),
                               "PAY-CONC-002",
                               "Second concurrent",
@@ -2388,7 +2400,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("50000.00"),
                           "DEP-FT-INV-001",
                           "Funding",
@@ -2411,6 +2423,7 @@ class TrustTransactionServiceTest {
                       .setParameter("customerId", customer.getId())
                       .setParameter("memberId", memberId)
                       .executeUpdate();
+                  lineOnTrustMatter(invoiceId, customer.getId());
                   entityManager.flush();
 
                   var response =
@@ -2458,7 +2471,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("50000.00"),
                           "DEP-FT-PAID-001",
                           "Funding",
@@ -2480,6 +2493,7 @@ class TrustTransactionServiceTest {
                       .setParameter("customerId", customer.getId())
                       .setParameter("memberId", memberId)
                       .executeUpdate();
+                  lineOnTrustMatter(invoiceId, customer.getId());
                   entityManager.flush();
 
                   var response =
@@ -2531,7 +2545,7 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("10000.00"),
                           "DEP-NOTIF-001",
                           "Funding",
@@ -2542,7 +2556,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("1000.00"),
                               "PAY-NOTIF-001",
                               "Notification test",
@@ -2573,15 +2587,17 @@ class TrustTransactionServiceTest {
    * Inserts a project row directly so the trust_transactions.project_id FK constraint is satisfied
    * (`trust_transactions_project_id_fkey` -> projects.id, V85 trust accounting tables).
    */
-  private void insertProject(UUID projectId, String name) {
+  private void insertProject(UUID projectId, String name, UUID customerId) {
     entityManager
         .createNativeQuery(
             """
-            INSERT INTO projects (id, name, description, status, created_by, created_at, updated_at)
-            VALUES (:id, :name, 'L69 test', 'ACTIVE', :memberId, now(), now())
+            INSERT INTO projects (id, name, description, status, customer_id, created_by,
+                created_at, updated_at)
+            VALUES (:id, :name, 'L69 test', 'ACTIVE', :customerId, :memberId, now(), now())
             """)
         .setParameter("id", projectId)
         .setParameter("name", name)
+        .setParameter("customerId", customerId)
         .setParameter("memberId", memberId)
         .executeUpdate();
   }
@@ -2595,12 +2611,11 @@ class TrustTransactionServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  insertProject(projectId, "L69 Single Matter");
-
                   var customer =
-                      customerRepository.save(
+                      customerRepository.saveAndFlush(
                           TestCustomerFactory.createActiveCustomer(
                               "L69 Single Matter Client", "l69_single@test.com", memberId));
+                  insertProject(projectId, "L69 Single Matter", customer.getId());
 
                   transactionService.recordDeposit(
                       trustAccountId,
@@ -2672,7 +2687,7 @@ class TrustTransactionServiceTest {
   }
 
   @Test
-  void recordFeeTransfer_multiMatterInvoice_leavesProjectIdNull() {
+  void recordFeeTransfer_multiMatterInvoice_rejectedMatterRequired() {
     UUID projectIdA = UUID.randomUUID();
     UUID projectIdB = UUID.randomUUID();
 
@@ -2680,13 +2695,12 @@ class TrustTransactionServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  insertProject(projectIdA, "L69 Multi Matter A");
-                  insertProject(projectIdB, "L69 Multi Matter B");
-
                   var customer =
-                      customerRepository.save(
+                      customerRepository.saveAndFlush(
                           TestCustomerFactory.createActiveCustomer(
                               "L69 Multi Matter Client", "l69_multi@test.com", memberId));
+                  insertProject(projectIdA, "L69 Multi Matter A", customer.getId());
+                  insertProject(projectIdB, "L69 Multi Matter B", customer.getId());
 
                   transactionService.recordDeposit(
                       trustAccountId,
@@ -2744,18 +2758,20 @@ class TrustTransactionServiceTest {
                       .executeUpdate();
                   entityManager.flush();
 
-                  var response =
-                      transactionService.recordFeeTransfer(
-                          trustAccountId,
-                          new RecordFeeTransferRequest(
-                              customer.getId(),
-                              invoiceId,
-                              new BigDecimal("2300.00"),
-                              "FT-L69-MULTI"));
-
-                  assertThat(response.matterId())
-                      .as("FEE_TRANSFER projectId should be null when invoice spans matters")
-                      .isNull();
+                  // G89-F28: a fee note spanning matters gives the transfer no matter to post to
+                  assertThatThrownBy(
+                          () ->
+                              transactionService.recordFeeTransfer(
+                                  trustAccountId,
+                                  new RecordFeeTransferRequest(
+                                      customer.getId(),
+                                      invoiceId,
+                                      new BigDecimal("2300.00"),
+                                      "FT-L69-MULTI")))
+                      .isInstanceOf(InvalidStateException.class)
+                      .hasMessageContaining("Matter required");
+                  // The refused call marked the shared transaction rollback-only
+                  tx.setRollbackOnly();
                 }));
   }
 
@@ -2768,12 +2784,11 @@ class TrustTransactionServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  insertProject(projectId, "L69 Refund Matter");
-
                   var customer =
-                      customerRepository.save(
+                      customerRepository.saveAndFlush(
                           TestCustomerFactory.createActiveCustomer(
                               "L69 Refund Matter Client", "l69_refund_matter@test.com", memberId));
+                  insertProject(projectId, "L69 Refund Matter", customer.getId());
 
                   transactionService.recordDeposit(
                       trustAccountId,
@@ -2812,7 +2827,7 @@ class TrustTransactionServiceTest {
   }
 
   @Test
-  void recordRefund_withoutProjectId_persistsNullProjectId() {
+  void recordRefund_withoutMatter_rejectedMatterRequired() {
     runInTenantWithCapabilities(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -2828,26 +2843,28 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("5000.00"),
                           "DEP-L69-REF-NOMATTER",
                           "Funding",
                           LocalDate.of(2026, 4, 25)));
 
-                  var response =
-                      transactionService.recordRefund(
-                          trustAccountId,
-                          new RecordRefundRequest(
-                              customer.getId(),
-                              null,
-                              new BigDecimal("1000.00"),
-                              "REF-L69-NOMATTER",
-                              "Customer-level refund",
-                              LocalDate.of(2026, 4, 25)));
-
-                  assertThat(response.matterId())
-                      .as("REFUND projectId should remain null when omitted (back-compat)")
-                      .isNull();
+                  // G89-F28: a client-level (no matter) refund is refused
+                  assertThatThrownBy(
+                          () ->
+                              transactionService.recordRefund(
+                                  trustAccountId,
+                                  new RecordRefundRequest(
+                                      customer.getId(),
+                                      null,
+                                      new BigDecimal("1000.00"),
+                                      "REF-L69-NOMATTER",
+                                      "Customer-level refund",
+                                      LocalDate.of(2026, 4, 25))))
+                      .isInstanceOf(InvalidStateException.class)
+                      .hasMessageContaining("Matter required");
+                  // The refused call marked the shared transaction rollback-only
+                  tx.setRollbackOnly();
                 }));
   }
 
@@ -2892,5 +2909,40 @@ class TrustTransactionServiceTest {
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
+  }
+
+  private final java.util.Map<UUID, UUID> trustMatters =
+      new java.util.concurrent.ConcurrentHashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(UUID clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                id,
+                "Trust matter " + id,
+                memberId));
+  }
+
+  /**
+   * G89-F28: a fee transfer takes its matter from the fee note, so the fee note gets one line on
+   * the client's trust matter.
+   */
+  private void lineOnTrustMatter(UUID invoiceId, UUID clientId) {
+    entityManager
+        .createNativeQuery(
+            """
+            INSERT INTO invoice_lines (id, invoice_id, project_id, line_type, description,
+                quantity, unit_price, amount, sort_order, tax_exempt, created_at, updated_at)
+            VALUES (gen_random_uuid(), :invoiceId, :projectId, 'TIME', 'Legal services', 1, 0, 0,
+                0, false, now(), now())
+            """)
+        .setParameter("invoiceId", invoiceId)
+        .setParameter("projectId", trustMatterOf(clientId))
+        .executeUpdate();
   }
 }

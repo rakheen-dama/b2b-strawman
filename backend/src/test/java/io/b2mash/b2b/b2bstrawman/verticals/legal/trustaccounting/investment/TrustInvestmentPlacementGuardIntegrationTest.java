@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -74,6 +75,10 @@ class TrustInvestmentPlacementGuardIntegrationTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private Clock clock;
+
+  @Autowired
+  private io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.InvestmentRegisterQuery
+      investmentRegisterQuery;
 
   private String tenantSchema;
   private UUID ownerId;
@@ -215,6 +220,98 @@ class TrustInvestmentPlacementGuardIntegrationTest {
             .getResponse()
             .getContentAsString();
     assertThat((String) JsonPath.read(investment, "$.status")).isEqualTo("ACTIVE");
+  }
+
+  /**
+   * G89-F87 (MEDIUM, D41): the investment is created ACTIVE while its placement PAYMENT still
+   * awaits approval. A rejected placement left it ACTIVE on the s86 register, in getMaturing and in
+   * the Section 35 data pack with no money behind it. Rejecting the placement now cancels the
+   * investment (terminal CANCELLED), which drops out of the maturing list and the register.
+   */
+  @Test
+  void rejectedPlacement_cancelsTheInvestment_outOfMaturingAndRegister() throws Exception {
+    UUID client = newClient("Cancelled Placement Client");
+    UUID matter = newMatter(client, "Cancelled Placement Matter");
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"clientId": "%s", "matterId": "%s", "amount": 5000.00,
+                     "reference": "TIPG-DEP-%d", "transactionDate": "%s"}
+                    """
+                        .formatted(client, matter, ++counter, today.minusDays(5))))
+        .andExpect(status().isCreated());
+    String accountNumber = "TIPG-CXL-" + (++counter);
+    String placed =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/investments")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"clientId": "%s", "matterId": "%s", "institution": "Cancel Bank",
+                         "accountNumber": "%s", "principal": 1000.00,
+                         "interestRate": 0.07, "depositDate": "%s", "maturityDate": "%s",
+                         "investmentBasis": "FIRM_DISCRETION"}
+                        """
+                            .formatted(
+                                client,
+                                matter,
+                                accountNumber,
+                                today.minusDays(4),
+                                today.plusDays(10))))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    UUID investmentId = UUID.fromString(JsonPath.read(placed, "$.id"));
+    UUID placementId = UUID.fromString(JsonPath.read(placed, "$.depositTransactionId"));
+    assertThat(maturingIds()).contains(investmentId.toString());
+
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + placementId + "/reject")
+                .with(approverJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Not instructed\"}"))
+        .andExpect(status().isOk());
+
+    String investment =
+        mockMvc
+            .perform(get("/api/trust-investments/" + investmentId).with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat((String) JsonPath.read(investment, "$.status")).isEqualTo("CANCELLED");
+    assertThat(maturingIds()).doesNotContain(investmentId.toString());
+
+    // The s86 investment register (and the Section 35 data pack built on it) leaves it out
+    var register =
+        as(
+            () ->
+                investmentRegisterQuery.executeAll(
+                    Map.<String, Object>of("trust_account_id", trustAccountId)));
+    assertThat(register.rows()).noneMatch(row -> accountNumber.equals(row.get("accountNumber")));
+    assertThat(register.rows()).noneMatch(row -> "CANCELLED".equals(row.get("status")));
+    assertThat(cardBalance(client)).isEqualByComparingTo("5000.00");
+  }
+
+  private List<String> maturingIds() throws Exception {
+    String body =
+        mockMvc
+            .perform(
+                get("/api/trust-accounts/" + trustAccountId + "/investments/maturing?daysAhead=30")
+                    .with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return JsonPath.read(body, "$[*].id");
   }
 
   // --- helpers ---

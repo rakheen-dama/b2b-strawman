@@ -13,13 +13,7 @@ interface DonutChartProps {
   className?: string;
 }
 
-const DEFAULT_COLORS = [
-  CHART_THEME.colors.primary,
-  CHART_THEME.colors.secondary,
-  CHART_THEME.colors.tertiary,
-  CHART_THEME.colors.quaternary,
-  CHART_THEME.colors.quinary,
-];
+const DEFAULT_COLORS: readonly string[] = CHART_THEME.categorical;
 
 export function DonutChart({
   data,

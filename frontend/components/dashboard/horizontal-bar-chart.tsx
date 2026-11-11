@@ -27,13 +27,7 @@ interface HorizontalBarChartProps {
   referenceLine?: number;
 }
 
-const THEME_COLORS = [
-  CHART_THEME.colors.primary,
-  CHART_THEME.colors.secondary,
-  CHART_THEME.colors.tertiary,
-  CHART_THEME.colors.quaternary,
-  CHART_THEME.colors.quinary,
-];
+const THEME_COLORS: readonly string[] = CHART_THEME.categorical;
 
 export function HorizontalBarChart({
   data,
@@ -130,13 +124,13 @@ export function HorizontalBarChart({
         {referenceLine != null && (
           <ReferenceLine
             x={referenceLine}
-            stroke={CHART_THEME.slate.muted}
+            stroke={CHART_THEME.axis}
             strokeDasharray="4 4"
             label={{
               value: String(referenceLine),
               position: "top",
               fontSize: 11,
-              fill: CHART_THEME.slate.muted,
+              fill: CHART_THEME.axis,
             }}
           />
         )}

@@ -21,25 +21,25 @@ describe("MiniProgressRing", () => {
   });
 
   it("applies auto-color correctly based on value thresholds", () => {
-    // value > 66 = green
+    // value > 66 = success
     const { container: c1, unmount: u1 } = render(<MiniProgressRing value={80} />);
     const greenCircles = c1.querySelectorAll("circle");
     const greenArc = greenCircles[1];
-    expect(greenArc.getAttribute("stroke")).toContain("green");
+    expect(greenArc.getAttribute("stroke")).toBe("var(--success)");
     u1();
 
-    // value > 33 = amber
+    // value > 33 = warning
     const { container: c2, unmount: u2 } = render(<MiniProgressRing value={50} />);
     const amberCircles = c2.querySelectorAll("circle");
     const amberArc = amberCircles[1];
-    expect(amberArc.getAttribute("stroke")).toContain("amber");
+    expect(amberArc.getAttribute("stroke")).toBe("var(--warning)");
     u2();
 
-    // value <= 33 = red
+    // value <= 33 = danger
     const { container: c3 } = render(<MiniProgressRing value={20} />);
     const redCircles = c3.querySelectorAll("circle");
     const redArc = redCircles[1];
-    expect(redArc.getAttribute("stroke")).toContain("red");
+    expect(redArc.getAttribute("stroke")).toBe("var(--danger)");
   });
 
   it("shows percentage text when size >= 40", () => {

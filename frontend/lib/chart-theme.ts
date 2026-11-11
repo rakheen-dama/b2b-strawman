@@ -1,38 +1,65 @@
+/**
+ * Chart theme — token references only (ADR-370; architecture §15.2.5).
+ *
+ * Every colour is a `var(--…)` defined in `@b2mash/ui/styles/globals.css` for both `:root`
+ * and `.dark`, so charts follow the theme with no hex fallbacks and no `dark:` overrides.
+ * Slots are assigned in fixed order (never cycled past 5 — fold the rest into "Other"), and a
+ * series keeps its slot when a filter removes others. A chart uses categorical **or** status
+ * colours, never both. Pinned by `__tests__/theme/chart-palette.test.ts`.
+ */
 export const CHART_THEME = {
-  // Color palette — references CSS custom properties with hex fallbacks
-  colors: {
-    primary: "var(--color-chart-1, #2563eb)", // warm orange
-    secondary: "var(--color-chart-2, #e11d48)", // teal
-    tertiary: "var(--color-chart-3, #e77e23)", // dark blue
-    quaternary: "var(--color-chart-4, #8b5cf6)", // yellow
-    quinary: "var(--color-chart-5, #06b6d4)", // amber
+  /** Categorical series slots — one hue each, stepped per theme. */
+  categorical: [
+    "var(--chart-1)", // slot 1 — teal (Kazi accent family)
+    "var(--chart-2)", // slot 2 — orange
+    "var(--chart-3)", // slot 3 — blue
+    "var(--chart-4)", // slot 4 — amber (sits near the warning hue)
+    "var(--chart-5)", // slot 5 — violet
+  ],
+  /** Magnitude — one hue (teal), low → high. */
+  sequential: [
+    "var(--seq-100)",
+    "var(--seq-200)",
+    "var(--seq-300)",
+    "var(--seq-400)",
+    "var(--seq-500)",
+  ],
+  /** Ordered aged-debtor buckets — one hue (orange), current → 90+ days. */
+  aging: {
+    current: "var(--aging-current)",
+    d30: "var(--aging-d30)",
+    d60: "var(--aging-d60)",
+    d90plus: "var(--aging-d90plus)",
+  },
+  /** Above / below zero (profitability ranking); the midpoint is the border colour. */
+  diverging: {
+    positive: "var(--div-pos)",
+    negative: "var(--div-neg)",
+    midpoint: "var(--border)",
+  },
+  /** State, not series — always paired with an icon and a label. */
+  status: {
+    success: "var(--success)",
+    warning: "var(--warning)",
+    danger: "var(--danger)",
+    info: "var(--info)",
   },
 
-  // Slate-based supplementary colors for data-heavy charts
-  slate: {
-    grid: "var(--color-slate-200)", // light mode grid lines
-    gridDark: "var(--color-slate-700)", // dark mode grid lines
-    axis: "var(--color-slate-500)", // axis text
-    muted: "var(--color-slate-400)", // secondary series
-  },
-
-  // Gradient fill factory — returns [startColor, endColor] for area charts
-  gradientOpacity: { top: 0.3, bottom: 0.0 },
-
-  // Tooltip styling
+  /** Recessive grid lines. */
+  grid: { stroke: "var(--border)", strokeDasharray: "3 3" },
+  /** Axis ticks, labels and reference lines — a text token, never a series colour. */
+  axis: "var(--muted-foreground)",
+  /** Tooltip surface — the popover tokens (one step above cards in dark). */
   tooltip: {
-    background: "var(--color-slate-900)",
-    text: "#ffffff",
-    border: "none",
+    background: "var(--popover)",
+    text: "var(--popover-foreground)",
+    border: "1px solid var(--border)",
     borderRadius: 8,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    boxShadow: "var(--shadow-overlay)",
   },
 
-  // Grid line styling
-  grid: {
-    strokeDasharray: "3 3",
-    stroke: "var(--color-slate-200)",
-  },
+  // Area-chart gradient fill opacity (top → bottom)
+  gradientOpacity: { top: 0.3, bottom: 0.0 },
 
   // Bar chart defaults
   bar: {

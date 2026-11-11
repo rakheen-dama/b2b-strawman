@@ -7,6 +7,22 @@
  * (each app's globals.css imports Tailwind, adds its own @source globs, then
  * imports this file). App-specific tokens (e.g. the frontend sidebar + brand
  * colour + scroll-shadow utility) stay local to the consuming app.
+ *
+ * Phase 90 token model (architecture §15.2.5, ADR-370, ADR-371). Colour values are written
+ * only here (and the sidebar block of frontend/app/globals.css). Every token is defined in
+ * :root (light) and .dark; the portal imports this file but never applies .dark.
+ *
+ * Kazi categorical chart slots — one hue per slot, stepped per theme; validated 2026-11-11
+ * with the dataviz skill's validate_palette.js against the card surface
+ * (light #fdfdff, dark #14171c; re-run 2026-11-12 against #fdfeff, the 99.6% card: same ΔE
+ * results, all PASS, surface contrasts within 0.02):
+ *   light #009787 #e06623 #096acb #c8800d #894ed6 · dark #00aa99 #df6c32 #3986e4 #bd891c #9d6fe3
+ *   lightness band + chroma floor PASS both modes; worst adjacent CVD ΔE 12.3 light (protan)
+ *   / 13.6 dark (deutan) (target ≥ 8); worst adjacent normal-vision ΔE 26.4 / 26.0 (floor 15);
+ *   every slot ≥ 3:1 on card; first three slots --pairs all: CVD 12.3 / 13.6, normal 18.9 / 17.5.
+ * --aging-* passes --ordinal (light end 2.18:1 light / 2.60:1 dark); --seq-* monotone, ΔL ≥ 0.06.
+ * Pinned by frontend/__tests__/theme/{token-contrast,chart-palette}.test.ts — a retune that
+ * breaks AA or the palette checks fails vitest.
  */
 
 @theme inline {
@@ -36,6 +52,37 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Sequential (magnitude, one hue) */
+  --color-seq-100: var(--seq-100);
+  --color-seq-200: var(--seq-200);
+  --color-seq-300: var(--seq-300);
+  --color-seq-400: var(--seq-400);
+  --color-seq-500: var(--seq-500);
+
+  /* Ordinal — aged debtors */
+  --color-aging-current: var(--aging-current);
+  --color-aging-d30: var(--aging-d30);
+  --color-aging-d60: var(--aging-d60);
+  --color-aging-d90plus: var(--aging-d90plus);
+
+  /* Diverging */
+  --color-div-pos: var(--div-pos);
+  --color-div-neg: var(--div-neg);
+
+  /* Status (fixed scale; always icon + label) */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-foreground: var(--info-foreground);
 
   /* Slate color scale (OKLCH, hue ~260) */
   --color-slate-50: oklch(98.2% 0.003 260);
@@ -69,6 +116,12 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+/*
+ * Elevation tokens (--shadow-card, --shadow-overlay) are plain custom properties, deliberately
+ * NOT mapped in @theme inline (a same-name mapping would self-reference). Consume them with
+ * Tailwind's var shorthand, e.g. `shadow-(--shadow-card)`.
+ */
+
 :root {
   --radius: 0.5rem;
 
@@ -89,10 +142,10 @@
   --teal-500: oklch(72% 0.15 185);
   --teal-600: oklch(62% 0.16 183);
 
-  /* Semantic tokens — light mode ("Concrete Studio": gray bg, white cards with lift) */
-  --background: oklch(94% 0.008 260);
+  /* Surfaces — light: near-white canvas, cards one step up (border + faint shadow) */
+  --background: oklch(97.2% 0.004 260); /* † was 94% */
   --foreground: var(--slate-900);
-  --card: oklch(99.5% 0.002 260);
+  --card: oklch(99.6% 0.002 260);
   --card-foreground: var(--slate-900);
   --popover: oklch(100% 0 0);
   --popover-foreground: var(--slate-900);
@@ -105,44 +158,117 @@
   --accent: var(--teal-600);
   --accent-foreground: oklch(100% 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: var(--slate-200);
-  --input: var(--slate-200);
-  --ring: var(--slate-500);
+  --border: oklch(91.5% 0.008 260);
+  --input: oklch(91.5% 0.008 260);
+  /* Focus ring: teal-600's hue one step darker. teal-600 itself measures 2.92:1 on the 97.2%
+     canvas (< 3:1); this value is 3.57:1 on background, 3.83:1 on card (637A ruling 1). */
+  --ring: oklch(58% 0.13 183);
 
-  /* Chart colors */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  /* Elevation — light: faint shadow; dark: none (surface step + border) */
+  --shadow-card:
+    0 1px 2px oklch(13.5% 0.006 258 / 0.05),
+    0 1px 3px oklch(13.5% 0.006 258 / 0.04);
+  --shadow-overlay: 0 8px 24px oklch(13.5% 0.006 258 / 0.12);
+
+  /* Categorical chart slots (fixed order; a series keeps its slot in both themes) */
+  --chart-1: oklch(60% 0.12 183); /* teal   #009787 */
+  --chart-2: oklch(65% 0.17 45); /* orange #e06623 */
+  --chart-3: oklch(53% 0.17 255); /* blue   #096acb */
+  /* slot 4 (amber) sits near --warning: a chart uses categorical OR status colours */
+  --chart-4: oklch(66% 0.14 70); /* amber  #c8800d */
+  --chart-5: oklch(56% 0.2 300); /* violet #894ed6 */
+
+  /* Sequential — one hue (teal), magnitude light → dark */
+  --seq-100: oklch(93% 0.04 183);
+  --seq-200: oklch(85% 0.08 183);
+  --seq-300: oklch(75% 0.11 183);
+  --seq-400: oklch(64% 0.12 183);
+  --seq-500: oklch(52% 0.1 183);
+
+  /* Ordinal — aged debtors, one hue (orange), current → 90+ days */
+  --aging-current: oklch(76% 0.12 50); /* #ee9a69 */
+  --aging-d30: oklch(67% 0.15 46); /* #de733c */
+  --aging-d60: oklch(58% 0.17 41); /* #c94d13 */
+  --aging-d90plus: oklch(49% 0.15 37); /* #a33714 */
+
+  /* Diverging — profitability above/below zero; midpoint = --border */
+  --div-pos: var(--chart-3);
+  --div-neg: oklch(58% 0.19 27);
+
+  /* Status — fixed scale, always icon + label. -soft mixes in oklab (not oklch): oklch
+     interpolates hue, and the card's hue 260 at 86% weight turns the fills blue/lavender. */
+  --success: oklch(60% 0.15 150); /* #25984d */
+  /* --warning is < 3:1 on the light card by design (always icon + label) */
+  --warning: oklch(75% 0.15 75); /* #e49e22 */
+  --danger: oklch(58% 0.21 27); /* #db2c2b */
+  --info: oklch(58% 0.14 240); /* #0083c4 */
+  --success-soft: color-mix(in oklab, var(--success) 14%, var(--card));
+  --warning-soft: color-mix(in oklab, var(--warning) 14%, var(--card));
+  --danger-soft: color-mix(in oklab, var(--danger) 14%, var(--card));
+  --info-soft: color-mix(in oklab, var(--info) 14%, var(--card));
+  --success-foreground: oklch(44% 0.12 150); /* † */
+  --warning-foreground: oklch(44% 0.09 75); /* † */
+  --danger-foreground: oklch(44% 0.14 27); /* † */
+  --info-foreground: oklch(44% 0.1 240); /* † */
 }
 
 .dark {
+  /* Surfaces — dark: elevation is a surface step + border, never a shadow */
   --background: var(--slate-950);
   --foreground: oklch(100% 0 0);
   --card: var(--slate-900);
   --card-foreground: oklch(100% 0 0);
-  --popover: var(--slate-900);
+  --popover: oklch(23.5% 0.012 260); /* † one step above cards */
   --popover-foreground: oklch(100% 0 0);
   --primary: oklch(100% 0 0);
   --primary-foreground: var(--slate-950);
   --secondary: var(--slate-800);
   --secondary-foreground: oklch(100% 0 0);
-  --muted: var(--slate-900);
+  /* --muted was slate-900: slate-800 keeps muted fills visible on dark cards */
+  --muted: var(--slate-800);
   --muted-foreground: var(--slate-400);
   --accent: var(--teal-500);
   --accent-foreground: oklch(100% 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: var(--slate-800);
-  --input: var(--slate-800);
-  --ring: var(--slate-500);
+  --border: oklch(28.5% 0.014 260); /* † */
+  --input: oklch(28.5% 0.014 260);
+  --ring: var(--teal-500);
 
-  /* Chart colors */
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --shadow-card: none;
+  --shadow-overlay: 0 8px 24px oklch(0% 0 0 / 0.5);
+
+  --chart-1: oklch(66% 0.12 183); /* teal   #00aa99 */
+  --chart-2: oklch(66% 0.16 45); /* orange #df6c32 */
+  --chart-3: oklch(62% 0.16 255); /* blue   #3986e4 */
+  --chart-4: oklch(66.5% 0.13 80); /* amber  #bd891c */
+  --chart-5: oklch(64% 0.17 300); /* violet #9d6fe3 */
+
+  --seq-100: oklch(30% 0.05 183);
+  --seq-200: oklch(40% 0.08 183);
+  --seq-300: oklch(52% 0.11 183);
+  --seq-400: oklch(64% 0.12 183);
+  --seq-500: oklch(78% 0.11 183);
+
+  --aging-current: oklch(48% 0.12 40); /* #944123 */
+  --aging-d30: oklch(59% 0.15 43); /* #c45928 */
+  --aging-d60: oklch(70% 0.14 47); /* #e4804c */
+  --aging-d90plus: oklch(81% 0.1 52); /* #f5af84 */
+
+  --div-pos: var(--chart-3);
+  --div-neg: oklch(66% 0.17 25);
+
+  --success: oklch(70% 0.15 150); /* #4cb86a */
+  --warning: oklch(80% 0.14 80); /* #edb345 */
+  --danger: oklch(68% 0.18 25); /* #f3625d */
+  --info: oklch(70% 0.12 240); /* #4fa8e1 */
+  --success-soft: color-mix(in oklab, var(--success) 14%, var(--card));
+  --warning-soft: color-mix(in oklab, var(--warning) 14%, var(--card));
+  --danger-soft: color-mix(in oklab, var(--danger) 14%, var(--card));
+  --info-soft: color-mix(in oklab, var(--info) 14%, var(--card));
+  --success-foreground: oklch(85% 0.12 150); /* † */
+  --warning-foreground: oklch(85% 0.12 80); /* † */
+  --danger-foreground: oklch(85% 0.08 25); /* † */
+  --info-foreground: oklch(85% 0.08 240); /* † */
 }
 
 @layer base {

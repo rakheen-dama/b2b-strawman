@@ -104,7 +104,10 @@ export function PlaceInvestmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg" data-testid="place-investment-dialog">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
+        data-testid="place-investment-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Place Investment</DialogTitle>
           <DialogDescription>

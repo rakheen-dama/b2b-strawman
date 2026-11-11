@@ -366,6 +366,18 @@ describe("Trust Transactions", () => {
     expect(mockRecordTransfer).not.toHaveBeenCalled();
   });
 
+  // PR #1757 review round 2: the transfer dialog grew to nine fields, so its content scrolls at
+  // short viewport heights like PlaceInvestmentDialog and the repo's other tall dialogs.
+  it("transfer dialog scrolls at short viewport heights", () => {
+    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+
+    // DialogContent puts its className on the panel inside the positioned dialog element
+    const panel = screen.getByRole("dialog").firstElementChild as HTMLElement;
+    expect(panel.className).toContain("max-h-[90vh]");
+    expect(panel.className).toContain("overflow-y-auto");
+    expect(panel.className).toContain("sm:max-w-lg");
+  });
+
   it("submits a transfer with both matters (D39)", async () => {
     mockRecordTransfer.mockResolvedValue({ success: true });
     render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);

@@ -192,6 +192,35 @@ class PortalDigestSchedulerIntegrationTest {
     assertThat(lastSent).isNotNull();
   }
 
+  /**
+   * G89 W2-c2: the "Recent fee notes" row reads the client-facing status label and SA money, the
+   * same copy the portal fee-note badge and the trust-activity email use, never the raw enum
+   * ("PAID") or "ZAR 5335.00".
+   */
+  @Test
+  void feeNoteRow_readsStatusLabelAndSaMoney_notRawValues() throws Exception {
+    seedPortalInvoice(
+        UUID.randomUUID(), "INV-DIGEST-PAID", "PAID", new BigDecimal("5335.00"), "ZAR");
+    seedPortalInvoice(
+        UUID.randomUUID(), "INV-DIGEST-PART", "PARTIALLY_PAID", new BigDecimal("12224.50"), "ZAR");
+
+    runInTenant(() -> scheduler.runWeeklyDigest());
+
+    String body = extractBody(awaitDigestForContact());
+    assertThat(body)
+        .as("status label, not the enum")
+        .contains(">Paid<")
+        .contains(">Partially paid<")
+        .doesNotContain(">PAID<")
+        .doesNotContain("PARTIALLY_PAID");
+    assertThat(body)
+        .as("SA money format (R, space grouping, comma decimals), not the currency code")
+        .contains("R 5 335,00")
+        .contains("R 12 224,50")
+        .doesNotContain("ZAR")
+        .doesNotContain("5335.00");
+  }
+
   @Test
   void emptyLookback_suppressesSend() throws Exception {
     // No portal invoices / trust / etc. seeded for this contact — everything is empty.
@@ -295,6 +324,27 @@ class PortalDigestSchedulerIntegrationTest {
     return false;
   }
 
+  /**
+   * Polls the shared GreenMail inbox for this test's digest (other tenants' digests from the same
+   * sweep may arrive first).
+   */
+  private MimeMessage awaitDigestForContact() throws Exception {
+    long deadline = System.currentTimeMillis() + Duration.ofSeconds(10).toMillis();
+    while (System.currentTimeMillis() < deadline) {
+      for (MimeMessage msg : greenMail.getReceivedMessages()) {
+        if (msg.getSubject() != null
+            && msg.getSubject().toLowerCase().contains("weekly update")
+            && msg.getAllRecipients() != null
+            && msg.getAllRecipients().length > 0
+            && CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())) {
+          return msg;
+        }
+      }
+      greenMail.waitForIncomingEmail(500, greenMail.getReceivedMessages().length + 1);
+    }
+    throw new AssertionError("no weekly digest reached " + CONTACT_EMAIL);
+  }
+
   private static String extractBody(MimeMessage message) throws Exception {
     StringBuilder out = new StringBuilder();
     collectParts(message.getContent(), out);
@@ -312,19 +362,28 @@ class PortalDigestSchedulerIntegrationTest {
   }
 
   private void seedPortalInvoice(UUID portalInvoiceId, String invoiceNumber) {
+    seedPortalInvoice(portalInvoiceId, invoiceNumber, "SENT", new BigDecimal("115.00"), "USD");
+  }
+
+  private void seedPortalInvoice(
+      UUID portalInvoiceId,
+      String invoiceNumber,
+      String status,
+      BigDecimal total,
+      String currency) {
     // Directly upsert the portal read-model row — avoids needing a firm-side invoice lifecycle.
     portalReadModelRepository.upsertPortalInvoice(
         portalInvoiceId,
         ORG_ID,
         customerId,
         invoiceNumber,
-        "SENT",
+        status,
         LocalDate.now().minusDays(2),
         LocalDate.now().plusDays(28),
-        new BigDecimal("100.00"),
-        new BigDecimal("15.00"),
-        new BigDecimal("115.00"),
-        "USD",
+        total,
+        BigDecimal.ZERO,
+        total,
+        currency,
         null,
         null,
         null,

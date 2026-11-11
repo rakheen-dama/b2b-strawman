@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalLinkBuilder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -74,23 +75,6 @@ public class PortalEmailNotificationChannel {
    */
   private static final DateTimeFormatter OCCURRED_AT_FMT =
       DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
-
-  /**
-   * 633C D6: client-facing labels for the trust-activity email's Type cell (tenant {@code
-   * chk_trust_txn_type}). Same copy as the portal trust page the email links to ({@code
-   * portal/lib/labels.ts} TRUST_TRANSACTION_TYPE_LABELS), so the client reads one vocabulary.
-   */
-  private static final Map<String, String> TRUST_TRANSACTION_TYPE_LABELS =
-      Map.of(
-          "DEPOSIT", "Deposit",
-          "PAYMENT", "Payment",
-          "REFUND", "Refund",
-          "FEE_TRANSFER", "Fee transfer",
-          "INTEREST_CREDIT", "Interest credited",
-          "INTEREST_LPFF", "Interest to LPFF",
-          "TRANSFER_IN", "Transfer in",
-          "TRANSFER_OUT", "Transfer out",
-          "REVERSAL", "Reversal");
 
   private final PortalContactRepository portalContactRepository;
   private final PortalNotificationPreferenceService preferenceService;
@@ -297,7 +281,7 @@ public class PortalEmailNotificationChannel {
     String orgName = context.getOrDefault("orgName", productName).toString();
     context.put("subject", orgName + ": Trust account activity");
     context.put("contactName", contact.getDisplayName());
-    context.put("transactionType", trustTransactionTypeLabel(event.transactionType()));
+    context.put("transactionType", TrustTransactionTypeLabels.label(event.transactionType()));
     BigDecimal amount = event.amount();
     String currencyCode = resolveCurrencyCode();
     context.put("amount", amount != null ? amount.toPlainString() : null);
@@ -319,23 +303,6 @@ public class PortalEmailNotificationChannel {
   }
 
   /**
-   * The client-facing label for a trust transaction type; an unmapped value falls back to sentence
-   * case ({@code "SOME_TYPE"} → {@code "Some type"}), never the raw enum. Null/blank stays null so
-   * the template prints its "N/A" placeholder.
-   */
-  static String trustTransactionTypeLabel(String transactionType) {
-    if (transactionType == null || transactionType.isBlank()) {
-      return null;
-    }
-    String label = TRUST_TRANSACTION_TYPE_LABELS.get(transactionType);
-    if (label != null) {
-      return label;
-    }
-    String text = transactionType.trim().replace('_', ' ').toLowerCase(Locale.ROOT);
-    return Character.toUpperCase(text.charAt(0)) + text.substring(1);
-  }
-
-  /**
    * Variant for the RECORDED-path event (currently DEPOSIT only). Mirrors the approval-path subject
    * line so portal contacts see a single, consistent "Trust account activity" framing whether the
    * underlying transaction went through the dual-approval flow or straight to RECORDED.
@@ -347,7 +314,7 @@ public class PortalEmailNotificationChannel {
     String orgName = context.getOrDefault("orgName", productName).toString();
     context.put("subject", orgName + ": Trust account activity");
     context.put("contactName", contact.getDisplayName());
-    context.put("transactionType", trustTransactionTypeLabel(event.transactionType()));
+    context.put("transactionType", TrustTransactionTypeLabels.label(event.transactionType()));
     BigDecimal amount = event.amount();
     String currencyCode = resolveCurrencyCode();
     context.put("amount", amount != null ? amount.toPlainString() : null);
@@ -485,7 +452,7 @@ public class PortalEmailNotificationChannel {
    * separator, comma decimal separator — rather than trusting {@code
    * NumberFormat.getCurrencyInstance(locale)} or {@code DecimalFormatSymbols.getInstance(locale)}.
    */
-  private static String formatAmount(BigDecimal amount, String currencyCode) {
+  static String formatAmount(BigDecimal amount, String currencyCode) {
     if (amount == null) {
       return null;
     }

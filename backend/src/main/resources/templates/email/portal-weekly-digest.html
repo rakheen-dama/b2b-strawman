@@ -16,11 +16,10 @@
         <td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; color: #374151;">
           <strong th:text="${inv.invoiceNumber()}">INV-0001</strong>
           <span> &mdash; </span>
-          <span th:text="${inv.status()}">DRAFT</span>
+          <span th:text="${inv.statusLabel()}">Sent</span>
         </td>
         <td align="right" style="padding: 6px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; color: #111827;">
-          <span th:text="${inv.currency() != null ? inv.currency() : ''}"></span>
-          <span th:text="${inv.total()}"></span>
+          <span th:text="${inv.totalFormatted()}">R 0,00</span>
         </td>
       </tr>
     </table>

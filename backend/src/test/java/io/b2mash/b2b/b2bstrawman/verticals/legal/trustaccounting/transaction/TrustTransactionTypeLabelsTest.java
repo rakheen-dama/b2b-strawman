@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.portal.notification;
+package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,10 +7,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /**
- * 633C D6: the trust-activity email's Type cell uses client-facing labels (same copy as the portal
- * trust page) and never prints a raw enum.
+ * 633C D6 / G89 W2-c3: the trust-activity email's Type cell and the Statement of Account's trust
+ * Payments Type column use client-facing labels (same copy as the portal trust page) and never
+ * print a raw enum.
  */
-class TrustTransactionTypeLabelTest {
+class TrustTransactionTypeLabelsTest {
 
   @ParameterizedTest
   @CsvSource({
@@ -25,18 +26,17 @@ class TrustTransactionTypeLabelTest {
     "REVERSAL, Reversal"
   })
   void everyTrustTransactionType_hasAClientFacingLabel(String type, String label) {
-    assertThat(PortalEmailNotificationChannel.trustTransactionTypeLabel(type)).isEqualTo(label);
+    assertThat(TrustTransactionTypeLabels.label(type)).isEqualTo(label);
   }
 
   @Test
   void unmappedType_fallsBackToSentenceCase() {
-    assertThat(PortalEmailNotificationChannel.trustTransactionTypeLabel("SOME_NEW_TYPE"))
-        .isEqualTo("Some new type");
+    assertThat(TrustTransactionTypeLabels.label("SOME_NEW_TYPE")).isEqualTo("Some new type");
   }
 
   @Test
   void missingType_staysNullForTheTemplatePlaceholder() {
-    assertThat(PortalEmailNotificationChannel.trustTransactionTypeLabel(null)).isNull();
-    assertThat(PortalEmailNotificationChannel.trustTransactionTypeLabel(" ")).isNull();
+    assertThat(TrustTransactionTypeLabels.label(null)).isNull();
+    assertThat(TrustTransactionTypeLabels.label(" ")).isNull();
   }
 }

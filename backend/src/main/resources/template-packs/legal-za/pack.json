@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 14,
+  "version": 15,
   "reconcile": [
     {
       "entity": "document_template",
@@ -35,7 +35,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:2666b54742b49d86e136d6883b0a19e2bd9ac2df1eacc2de34e66551770a2427",
-      "to": "sha256:b49ceb09dd24aad3137163e648fcedd4c04495674d7ca57de00088ce784a3795"
+      "to": "sha256:2d513fa18c853ba7a7c93a9786610f79e9dbf1b999bd6c652ead8e88fc67f384"
     },
     {
       "entity": "document_template",
@@ -70,7 +70,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:a1da22c9737608b44109abcc5e7ef5aaa8a80d9b0184d0079416573b76dcc3d1",
-      "to": "sha256:b49ceb09dd24aad3137163e648fcedd4c04495674d7ca57de00088ce784a3795"
+      "to": "sha256:2d513fa18c853ba7a7c93a9786610f79e9dbf1b999bd6c652ead8e88fc67f384"
     },
     {
       "entity": "document_template",
@@ -119,7 +119,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:4781c668eb863f979e1fad22ea328a29e7783683b5172ec551a75eccb3d9baea",
-      "to": "sha256:b49ceb09dd24aad3137163e648fcedd4c04495674d7ca57de00088ce784a3795"
+      "to": "sha256:2d513fa18c853ba7a7c93a9786610f79e9dbf1b999bd6c652ead8e88fc67f384"
     },
     {
       "entity": "document_template",
@@ -175,7 +175,7 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:726da02eb3cfd57320d90abbfac3cd3437aead5fd20c715200dbf48797177bd3",
-      "to": "sha256:b49ceb09dd24aad3137163e648fcedd4c04495674d7ca57de00088ce784a3795"
+      "to": "sha256:2d513fa18c853ba7a7c93a9786610f79e9dbf1b999bd6c652ead8e88fc67f384"
     },
     {
       "entity": "document_template",
@@ -196,7 +196,14 @@
       "key": "statement-of-account",
       "field": "content",
       "from": "sha256:8b2088ae55c4b3e1b26ecd9235c395010816d99f4166451079f5e715c6a80e28",
-      "to": "sha256:b49ceb09dd24aad3137163e648fcedd4c04495674d7ca57de00088ce784a3795"
+      "to": "sha256:2d513fa18c853ba7a7c93a9786610f79e9dbf1b999bd6c652ead8e88fc67f384"
+    },
+    {
+      "entity": "document_template",
+      "key": "statement-of-account",
+      "field": "content",
+      "from": "sha256:b49ceb09dd24aad3137163e648fcedd4c04495674d7ca57de00088ce784a3795",
+      "to": "sha256:2d513fa18c853ba7a7c93a9786610f79e9dbf1b999bd6c652ead8e88fc67f384"
     }
   ],
   "verticalProfile": "legal-za",

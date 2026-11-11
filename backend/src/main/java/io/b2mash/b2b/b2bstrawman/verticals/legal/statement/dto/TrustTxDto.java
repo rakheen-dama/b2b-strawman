@@ -14,11 +14,16 @@ import java.util.UUID;
  * row.get(colKey)} after Jackson serialisation, so any divergence between record-component names
  * and the template's {@code "key"} attribute renders the column as blank — the cause of
  * GAP-OBS-Day60-SoA-Fees/Trust-Empty in cycle 1.
+ *
+ * <p>{@code transactionTypeLabel} is the client-facing label the Payments table's Type column binds
+ * (G89 W2-c3, legal-za v15); {@code transactionType} keeps the stored enum for any template that
+ * still binds it.
  */
 public record TrustTxDto(
     UUID id,
     LocalDate transactionDate,
     String transactionType,
+    String transactionTypeLabel,
     BigDecimal amount,
     String reference,
     String description) {}

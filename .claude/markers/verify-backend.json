@@ -1,7 +1,7 @@
 {
-  "commit": "ecf9395a6bc7d4b494974b0620adf5804e866e76",
+  "commit": "34ab1c90e7bd21de59f2caab82a1a11fc6989f32",
   "command": "caffeinate -is ./mvnw verify (worktree .claude/worktrees/g89-j, fix/g89-j-raw-labels)",
   "exit": 0,
-  "ts": "2026-11-11T14:28:51Z",
-  "summary": "PR #1755 (G89 Batch J) @ecf9395a6: 6800 testcases / 0 failures / 0 errors / 26 skipped, BUILD SUCCESS 18:48. Head 1d2918ea8 = +1 test-only commit (exhaustive digest label guard); DigestInvoiceStatusLabelTest 8/0/0 and mutation-checked."
+  "ts": "2026-11-11T14:54:01Z",
+  "summary": "PR #1755 (G89 Batch J) final head 34ab1c90e: 6798 testcases / 0 failures / 0 errors / 26 skipped, BUILD SUCCESS 22:05 (earlier @ecf9395a6: 6800/0/0/26; delta = guard test reshaped -5, currency test +3)."
 }

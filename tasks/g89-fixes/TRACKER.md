@@ -62,7 +62,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 7 | E — layout, copy, small BE LOWs (+ F50 MEDIUM, F44, F47–F49, F57, F62, F64, F65) | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | PR #1752 → `6e510dc23` | **VERIFIED** on KC 2026-11-11 (20 PASS, 2 PARTIAL → F69/F44-exit, 1 DEFERRED → exit): `qa_cycle/evidence/g89-fixes/batch-E/` |
 | 8 | F — tooling, docs, scenarios | F46 fonts, F66, F67 (opt-in compares), embedded-PG workdir, F1, F2, F3, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, dead `extractText(Document)`, file F28–F70 | BE(test infra) + FE + PT + DOC | PR #1753 → `be5b06ecb` | **MERGED** 2026-11-11 (tooling/docs; F46 + opt-in compares observed in the pre-merge e2e gate; F66 observed at the exit re-score if a run lands in 00:00–02:00) |
 | 8b | **I — G89-F71** portal deadline status stale (D29 MEDIUM) | F71 | BE | PR #1754 → `452ba3d7a` | **VERIFIED** (red→green integration test 8/8; runtime probe on the PR-head e2e stack: stored = API = rule for 8 deadlines, filter groups exact). Staleness over real days is not browser-observable on a single day. |
-| 8c | **J — raw-label copy** (D32) | W2-c2, W2-c3 | BE (+pack bump) | | OPEN (after I) |
+| 8c | **J — raw-label copy** (D32) | W2-c2, W2-c3 | BE + legal-za v15 | PR #1755 → merged | **MERGED**: e2e-observed (SoA PDFs 'Payment'/'Refund'; digest 'Paid R 40 250,00'; v14→v15 reconcile on an upgrade stack) |
 | 8d | **K — Day 0 banking step** (D30, §6 docs) | W1-c1 | DOC | | OPEN |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
 
@@ -402,3 +402,11 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - **All HIGH and MEDIUM ids, F71 included, are now closed.**
   - Flake candidate from the gate: `day-07-14-work-trust:78`, the matter time summary lagging a just-saved entry under heavy load (F5 area). It did not persist on the re-run → note only.
   - The main checkout now carries the founder's in-progress Phase 90 architecture work. The KC stack runs from it at `1bf85f0b1` (pre-#1754); leave it alone.
+- 2026-11-11 ~17:15 — **PR #1755 (Batch J) merged** (`--squash --match-head-commit 34ab1c90e`).
+  - Full verify @34ab1c90e 6798/0/0/26; @ecf9395a6 6800/0/0/26.
+  - Review round 1: the digest label guard could not fail → made exhaustive, mutation-checked.
+  - CodeRabbit Minor: non-ZAR totals lost their ISO code → fixed red-first.
+  - 2× bound APPROVE @34ab1c90e.
+  - Pre-merge e2e PASS @1d2918ea8 (`pr1755-e2e/`); legal-za v15 reconcile observed on an upgrade stack. The final-head delta is non-ZAR only, pinned by unit and GreenMail tests.
+  - **Pre-existing LOW candidates noted, not filed as fixes:** digest plain-text part prints a literal `&amp;mdash;`; a lower-case `zar` would miss the ZAR checks in `formatAmount`; digest deadline dates are ISO; `ClientTrustStatementContext.typeLabel` reads 'Interest credit'.
+  - The founder committed Phase 90 work in the main checkout during the gate; commit `90fc069de` also carried the interim J marker, which is harmless.

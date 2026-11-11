@@ -1,0 +1,14 @@
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      16719    yes      yes      8080
+  gateway      16867    yes      yes      8443
+  frontend     17005    yes      yes      3000
+  portal       17054    yes      yes      3002
+
+
+Done.
+2026-11-11 15:48:30 SAST

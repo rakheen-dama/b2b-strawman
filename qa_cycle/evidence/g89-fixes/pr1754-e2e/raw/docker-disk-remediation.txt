@@ -1,0 +1,28 @@
+===== Docker VM disk remediation 2026-11-11T15:10:17+0200
+cause: G1 attempts 1+2 — e2e-postgres initdb: could not create directory "/var/lib/postgresql/data/pg_wal": No space left on device
+before:
+overlay                  58.4G     56.2G         0 100% /
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          272       10        35.16GB   31.27GB (88%)
+Containers      12        8         172.9MB   0B (0%)
+Local Volumes   25        5         1.009GB   868.4MB (86%)
+Build Cache     848       0         17.4GB    17.4GB
+dangling images=235
+action: docker image prune -f   (dangling/untagged images only; no -a, no volumes, no build cache)
+Total reclaimed space: 0B
+after:
+overlay                  58.4G     56.2G         0 100% /
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          37        10        11.1GB    6.842GB (61%)
+Containers      12        8         172.9MB   0B (0%)
+Local Volumes   25        5         1.009GB   868.4MB (86%)
+Build Cache     848       0         40.87GB   40.87GB
+action 2 2026-11-11T15:10:26+0200: docker builder prune -f --filter until=72h   (build cache unused for >72h only; image prune reclaimed 0B because the layers were build-cache-held)
+Total:	14.51GB
+after 2:
+overlay                  58.4G     22.0G     33.4G  40% /
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          37        10        11.1GB    6.842GB (61%)
+Containers      12        8         172.9MB   0B (0%)
+Local Volumes   25        5         1.009GB   868.4MB (86%)
+Build Cache     187       0         6.956GB   6.956GB

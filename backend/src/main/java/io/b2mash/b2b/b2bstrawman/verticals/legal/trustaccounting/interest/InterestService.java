@@ -322,6 +322,8 @@ public class InterestService {
                 .anyMatch(
                     inv ->
                         inv.getInvestmentBasis() == InvestmentBasis.CLIENT_INSTRUCTION
+                            // a CANCELLED investment was never placed (G89-F87)
+                            && !"CANCELLED".equals(inv.getStatus())
                             && !inv.getDepositDate().isAfter(periodEnd)
                             && (inv.getWithdrawalDate() == null
                                 || !inv.getWithdrawalDate().isBefore(periodStart)));

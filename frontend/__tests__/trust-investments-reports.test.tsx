@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 
 // -- Mock server-only -----------------------------------------------------
 vi.mock("server-only", () => ({}));
@@ -185,6 +185,21 @@ describe("Trust Investments & Reports", () => {
     expect(screen.getByText("Smith & Associates")).toBeInTheDocument();
     expect(screen.getByText("Jones Trust")).toBeInTheDocument();
     expect(screen.getByText("2 investments found")).toBeInTheDocument();
+  });
+
+  // G89-F87 (D41): a rejected placement cancels its investment; the register labels it Cancelled
+  // and offers no actions on it.
+  it("labels a cancelled investment Cancelled with no actions", async () => {
+    mockFetchInvestments.mockResolvedValue([
+      makeInvestment({ id: "inv-cxl", clientName: "Cancelled Client", status: "CANCELLED" }),
+    ]);
+
+    await renderInvestmentsPage();
+
+    const row = screen.getByText("Cancelled Client").closest("tr") as HTMLElement;
+    expect(within(row).getByText("Cancelled")).toBeInTheDocument();
+    expect(within(row).queryByText("CANCELLED")).toBeNull();
+    expect(within(row).queryByRole("button")).toBeNull();
   });
 
   it("place investment dialog submits with valid data", async () => {

@@ -1145,6 +1145,40 @@ public class TrustTransactionService {
     transaction.setStatus("REJECTED");
     transactionRepository.save(transaction);
 
+    // G89-F87 (D41): an investment is created ACTIVE while its placement PAYMENT awaits approval.
+    // A rejected placement never moved the money, so the investment is CANCELLED (terminal) in the
+    // same transaction — otherwise it stays ACTIVE on the s86 register, in getMaturing and in the
+    // Section 35 data pack with nothing behind it. Lock order as withdrawInvestment and
+    // reverseTransaction: the placement row (locked above), then the investment row.
+    if ("PAYMENT".equals(transaction.getTransactionType())) {
+      trustInvestmentRepository
+          .findByPlacementTransactionIdForUpdate(transaction.getId())
+          .filter(
+              investment ->
+                  "ACTIVE".equals(investment.getStatus())
+                      || "MATURED".equals(investment.getStatus()))
+          .ifPresent(
+              investment -> {
+                investment.setStatus("CANCELLED");
+                trustInvestmentRepository.save(investment);
+                auditService.log(
+                    AuditEventBuilder.builder()
+                        .eventType("trust_investment.cancelled")
+                        .entityType("trust_investment")
+                        .entityId(investment.getId())
+                        .details(
+                            AuditDetails.matterScoped(
+                                transaction.getProjectId(),
+                                transaction.getCustomerId(),
+                                Map.of(
+                                    "placement_transaction_id",
+                                    transaction.getId().toString(),
+                                    "reason",
+                                    reason)))
+                        .build());
+              });
+    }
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("trust_" + transaction.getTransactionType().toLowerCase() + ".rejected")

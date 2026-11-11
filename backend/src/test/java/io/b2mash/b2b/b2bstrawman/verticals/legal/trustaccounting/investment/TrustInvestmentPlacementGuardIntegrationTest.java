@@ -147,9 +147,11 @@ class TrustInvestmentPlacementGuardIntegrationTest {
                 .content("{\"reason\": \"Not instructed\"}"))
         .andExpect(status().isOk());
 
+    // G89-F87: the rejection cancelled the investment, so the investment-status check refuses the
+    // withdrawal before the placement-status check is reached
     withdraw(placed.investmentId())
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Cannot withdraw investment"));
+        .andExpect(jsonPath("$.title").value("Invalid investment state"));
     assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
   }
 

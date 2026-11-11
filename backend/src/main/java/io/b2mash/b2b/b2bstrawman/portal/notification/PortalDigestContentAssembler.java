@@ -71,9 +71,17 @@ public class PortalDigestContentAssembler {
           digestTotal(invoice.total(), invoice.currency()));
     }
 
-    /** The fee-note total as the digest prints it. */
+    /**
+     * The fee-note total as the digest prints it: the house rand format for ZAR (or no currency),
+     * and the formatted amount followed by its ISO code for any other currency, so a symbol shared
+     * by several currencies ("$") is never ambiguous.
+     */
     static String digestTotal(BigDecimal total, String currency) {
-      return PortalEmailNotificationChannel.formatAmount(total, currency);
+      String formatted = PortalEmailNotificationChannel.formatAmount(total, currency);
+      if (formatted == null || currency == null || currency.isBlank() || "ZAR".equals(currency)) {
+        return formatted;
+      }
+      return formatted + " " + currency;
     }
   }
 

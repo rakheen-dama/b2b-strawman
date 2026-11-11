@@ -148,3 +148,33 @@ The product is SA-time throughout (KaziTime). Founder direction, 2026-11-11: gat
 - Do not wait out the 00:00–02:00 SAST window.
 - A failure in that window is a class (c) result under G89-F66 only if the spec uses a UTC date.
 - G89-F67 (flaky fee-note screenshot frame) fails on main too, so compare against main before blaming the PR.
+
+## UPDATE 2026-11-11 (final): the initiative is closed, and the exit re-score is PASS
+
+- **PRs merged since the last update.** Each passed full verify, 2 bound reviews and CodeRabbit, plus a pre-merge e2e on fresh stacks wherever code changed.
+
+| PR | Batch | Fixes | Notes |
+|---|---|---|---|
+| #1753 | F | tooling and docs | self-hosted fonts; e2e visual compares opt-in; embedded-PG workdir; F66; scenario amendments |
+| #1754 | I | F71 | portal deadline status now derived at read time |
+| #1755 | J | F75, F76 | raw labels in the digest and the SoA; legal-za v15 |
+| #1756 | K | scenario | Day 0 banking step |
+| #1757 | L | F28, F36, F86, F87 | a matter is required on client trust rows; portal reference widened to 200 (global V6); D39 transfer target matter; investment withdraw, reverse and reject guards (tenant V15) |
+
+- **Exit evidence:**
+  - `qa_cycle/evidence/g89-fixes/exit-rescore/`: W1 and W2 walks, plus the suites;
+  - `qa_cycle/evidence/g89-fixes/batch-L/`;
+  - `qa_cycle/evidence/phase89-rewalk/gaps.md` §8.
+- **Register:** 0 HIGH and 0 MEDIUM open, and 30 LOW on the backlog. The next free id is G89-F92.
+- **Next free migrations:** tenant **V16**, global **V7**.
+- **Not started (backlog), in candidate order:**
+  - F69: a trust-reports v3→v4 bump so S35 PDF amounts stop wrapping;
+  - F90 and F91: raw labels;
+  - F88: the approval-time link check;
+  - the e2e flakes F73, F85 and F89;
+  - the remaining §7 LOWs.
+- **Environment:**
+  - The KC stack runs from the main checkout, which was fast-forwarded to `6612135be` and holds only the founder's untracked Phase 90 files.
+  - The exit tenant `tenant_5039f2d497cf` has the walk data.
+  - The pre-walk tenant backup is in the session scratchpad and is not durable.
+

@@ -18,9 +18,9 @@ Scored rows walked: **106** (PASS 95 · FAIL 8 · PARTIAL 3 · DEFERRED 0) + 2 N
 | LOW | 11 (F5, F6, F7, F8, F9, F10, F15, F19, F20, F21, F26) | 4 (F4, F24, F25, F27) | 0 | 3 (F1, F2, F3) | **18** |
 | **Total** | 20 | 4 | 0 | 3 | **27** |
 
-Next free id at 636B: **G89-F28** (now **G89-F86**, see §7).
+Next free id at 636B: **G89-F28** (now **G89-F92**, see §7).
 
-**Status after the G89 fix initiative (updated 2026-11-11, G89 Batch F).** Of the 27 ids above, every HIGH and MEDIUM is closed: F11 (#1745), F12, F13, F14, F22 (#1746), F23 (#1747), F16, F18 (#1748), F17 (#1752), all VERIFIED on KC. The four scenario mismatches are ruled and amended (D3, §4). F1, F2, F3 are fixed in Batch F. The TRACKER holds the per-id status of the remaining LOWs. §7 files the 44 ids raised during the initiative, G89-F28 … G89-F71: 25 fixed, 1 by design, 18 open. Open by severity: **0 HIGH, 0 MEDIUM**, 9 LOW (F29/F30/F37 rated LOW by D25) and 9 unrated (including the F71 candidate, not yet reproduced). The exit re-score (fresh-stack suites + KC re-walk) is still to run.
+**Status after the G89 fix initiative (final, 2026-11-11). The exit re-score is PASS (§8).** Of the 27 ids above, every HIGH and MEDIUM is closed and VERIFIED: F11 (#1745); F12, F13, F14, F22 (#1746); F23 (#1747); F16, F18 (#1748); F17 (#1752). The four scenario mismatches are ruled and amended (D3, §4). F1, F2 and F3 were fixed in #1753. §7 files the 64 ids raised during the initiative, G89-F28 to F91: 32 fixed, 1 scenario-amended, 1 by design, and 30 open, all LOW backlog. **Open: 0 HIGH, 0 MEDIUM.**
 
 *Counts updated 2026-11-06 after the CodeRabbit review of PR #1742: S1-65 PASS → PARTIAL (PDF/preview layout compared only for the region the preview frames show), S2-41 PASS → FAIL as written (new G89-F27, scenario mismatch), S2-56 PASS → FAIL as written (G89-F24 root, no new id).*
 
@@ -166,7 +166,7 @@ Ids filed during the G89 fix initiative (`tasks/g89-fixes/TRACKER.md`), after th
 
 | ID | Severity | Class | Observation (one line) | file:line | Status |
 |---|---|---|---|---|---|
-| G89-F28 | MEDIUM (D34; fix design D36: require a matter on client trust transactions) | product gap (trust / portal) | Trust rows with no matter (client-level) are never projected to the portal | `backend/…/customerbackend/service/TrustLedgerPortalSyncService.java:524-526` (`hasPortalScope` needs client + matter; applied at `:202`, `:221`, `:364`) | backlog (D7) |
+| G89-F28 | MEDIUM (D34; fix design D36: require a matter on client trust transactions) | product gap (trust / portal) | Trust rows with no matter (client-level) are never projected to the portal | `backend/…/customerbackend/service/TrustLedgerPortalSyncService.java:524-526` (`hasPortalScope` needs client + matter; applied at `:202`, `:221`, `:364`) | fixed #1757 (L) — matter required on client trust transactions (D36); e2e-observed (400 `MATTER_REQUIRED`; firm = portal = R 1 907,00) |
 | G89-F29 | LOW (D25) | product bug (trust / portal) | `reverseTransaction` / `reverseTransferOut` publish no event, so a reversal never reaches the portal read-model | `backend/…/verticals/legal/trustaccounting/transaction/TrustTransactionService.java:1081-1271` (audit only, `:1252-1268`) | backlog |
 | G89-F30 | LOW (D25) | product bug (trust ledger) | Reversing a credit-type row is a no-op: it goes AWAITING_APPROVAL, approval moves no ledger money and the original is never marked REVERSED (DEPOSIT / INTEREST_CREDIT are RECORDED, so the APPROVED-only check refuses them first) | `TrustTransactionService.java:1136-1148`, `:1177-1191`, `:1249-1251`, `:886`; APPROVED check `:1114-1118` | backlog |
 | G89-F31 | unrated | product bug (notifications) | After a portal (client) comment, @mentions notified nobody — an FK violation rolled back the notification batch | — (fix: PR #1751) | fixed #1751 (G) — VERIFIED 2026-11-08 |
@@ -174,7 +174,7 @@ Ids filed during the G89 fix initiative (`tasks/g89-fixes/TRACKER.md`), after th
 | G89-F33 | LOW (D35) | product bug (portal visibility) | SHARED task / document comments appear in the portal matter thread: the handler checks visibility only, not the target entity type | `PortalEventHandler.java:560-583` (check at `:567`) | backlog |
 | G89-F34 | LOW (D35) | product bug (portal UI) | Portal optimistic comment append goes to the bottom of a newest-first list, so the new comment jumps on refresh | `portal/components/comment-section.tsx:114`; order `backend/…/customerbackend/repository/PortalReadModelRepository.java:392-398` | backlog |
 | G89-F35 | LOW (D35) | product bug (access control) — unverified | `GET /api/matters/{id}/members` performs no matter-access check (code read; not reproduced over HTTP) | `backend/…/member/ProjectMemberController.java:30-37` → `ProjectMemberService.java:55-57` | backlog (verify first) |
-| G89-F36 | MEDIUM (D35) | product bug (portal sync) | A firm trust reference over 100 characters aborts the portal sync (firm column 200, portal column 100, no validation or truncation) | `backend/src/main/resources/db/migration/global/V1__baseline.sql:245`; firm `TrustTransaction.java:44`; `TrustTransactionService.java:1557-1561` | backlog |
+| G89-F36 | MEDIUM (D35) | product bug (portal sync) | A firm trust reference over 100 characters aborts the portal sync (firm column 200, portal column 100, no validation or truncation) | `backend/src/main/resources/db/migration/global/V1__baseline.sql:245`; firm `TrustTransaction.java:44`; `TrustTransactionService.java:1557-1561` | fixed #1757 (L) — global V6 widens the portal reference to 200; e2e-observed (150-char reference stored in full) |
 | G89-F37 | LOW (D25) | product bug (trust) | Transfers cannot be reversed via the API: legs are created RECORDED, reversal requires APPROVED | `TrustTransactionService.java:438`, `:452`, `:1114-1118` | backlog |
 | G89-F38 | LOW (D35) | test bug (e2e fixture) | `admin-audit-30day/fixtures.ts` posts to a non-existent `POST /api/trust-transactions` (cents, no account / client) | `frontend/e2e/tests/admin-audit-30day/fixtures.ts:121-132`, `:212-227` | backlog — not trivial: recording is `POST /api/trust-accounts/{accountId}/transactions/{deposit,transfer,…}` with a client id and a rand amount, and a RECORDED transfer cannot be approved; `seedDay0` / `seedDay10` have no caller in `frontend/e2e` |
 | G89-F39 | MEDIUM (D13) | product bug (portal trust read-model) | Portal trust statement / home tile / deposit email showed the *recorded* date, not the transaction date | — (fix: PR #1747, global V4) | fixed #1747 (D) — VERIFIED 2026-11-07 |
@@ -224,14 +224,45 @@ Ids filed during the G89 fix initiative (`tasks/g89-fixes/TRACKER.md`), after th
 | G89-F83 | LOW (D33) | product behaviour (portal) | Past-due deadlines drop out of the portal `/deadlines` default view (window starts at today); they appear only with an explicit wider range | `backend/…/customerbackend/service/PortalDeadlineService.java:73` | backlog |
 | G89-F84 | LOW (D33) | product gap (portal sync) | An expiring prescription tracker is set EXPIRED with a plain save and publishes no portal event (since #1754 it reads Overdue, not a stale Upcoming) | `backend/…/courtcalendar/CourtDateReminderJob.java:171` | backlog |
 | G89-F85 | LOW (D33) | e2e flake | `legal-lifecycle/day-07-14-work-trust.spec.ts:78`: the matter time summary lagged a just-saved entry once under heavy load (load ≈ 22 during a parallel full verify); did not reproduce on re-run (#1754 gate) | `frontend/e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:78` | backlog (observe) |
+| G89-F86 | MEDIUM (D40) | product bug (trust investments / s86 register) | Reversing an investment's placement payment while the investment was ACTIVE left a phantom ACTIVE investment on the s86 register and the S35 pack (pre-existing; on main it could also then be withdrawn, double-crediting) | — (fix: PR #1757: a placement payment that has an investment cannot be reversed) | fixed #1757 (L) — e2e-observed (400 'Withdraw the investment instead…') |
+| G89-F87 | MEDIUM (D41) | product bug (trust investments / s86 register) | Rejecting an AWAITING_APPROVAL placement payment left its investment ACTIVE on the s86 register and the S35 pack (pre-existing) | — (fix: PR #1757: reject cancels the investment; tenant V15 adds `CANCELLED`) | fixed #1757 (L) — e2e-observed (CANCELLED, off the register report) |
+| G89-F88 | LOW (D43) | latent race (trust) | A fee transfer re-checks the client-matter link only at record time; a join-table unlink while it awaits approval could still debit on that matter | `backend/…/trustaccounting/transaction/TrustTransactionService.java` (`recordFeeTransfer` → approval) | backlog |
+| G89-F89 | LOW (test flake, F73/F85 class) | e2e flake | `settings/general-settings.spec.ts:65`: parallel settings specs overwrite the shared org settings, so a saved brand colour can be clobbered (#1757 final gate, at load ≈ 60) | `frontend/e2e/tests/settings/general-settings.spec.ts:65` | backlog |
+| G89-F90 | LOW (orchestrator, F70 / D33 raw-label class; founder may re-rate) | product copy (portal) | Portal trust rows with no firm description show the raw type as their description (`TRANSFER_OUT — <reference>`); pre-existing, now more visible since #1757 makes every transfer reach the portal (Batch L KC check L-c1) | `backend/…/customerbackend/service/TrustLedgerPortalSyncService.java:287`; `PortalTrustDescriptionSanitiser.java:78-90` | backlog |
+| G89-F91 | LOW (orchestrator, same class) | product copy (firm) | Two firm-only refusal messages print raw statuses (`…status: AWAITING_APPROVAL`, `…investment (ACTIVE)`) (Batch L KC check L-c2) | `backend/…/trustaccounting/transaction/TrustTransactionService.java:295`, `:1287` | backlog |
 
-**Tally (58 ids, G89-F28 … G89-F85; updated at the exit re-score, 2026-11-11).**
-- **Fixed: 28.** In #1745–#1752: 22 (F31, F39, F40, F41, F44, F47–F60, F62, F64, F65). In #1753 (F): 3 (F46, F66, F67). In #1754 (I): F71. In #1755 (J): F75, F76.
+**Tally (64 ids, G89-F28 … G89-F91; final, 2026-11-11).**
+- **Fixed: 32.** In #1745–#1752: 22 (F31, F39, F40, F41, F44, F47–F60, F62, F64, F65). #1753 (F): F46, F66, F67. #1754 (I): F71. #1755 (J): F75, F76. #1757 (L): F28, F36, F86, F87.
 - **Scenario amended: 1** (F78, D30, #1756).
 - **By design: 1** (F61, D21).
-- **Open: 28.** MEDIUM 2, **Batch L (in progress)**: F28 and F36. LOW backlog 26: F29, F30, F32–F35, F37, F38, F42, F43, F45, F63, F68, F69 (follow-up PR, trust-reports v4), F70, F72, F73, F74, F77, F79–F85.
-- **By severity:** HIGH 5 (F52, F53, F54, F56, F58 — all fixed) · MEDIUM 6 (F39, F50, F51, F71 fixed; F28, F36 open) · LOW 36 · unrated 11 (all closed: F31, F44, F46, F55, F59, F60, F64–F67 fixed; F61 by design).
-- **Open by severity:** HIGH 0 · MEDIUM 2 (F28, F36 — Batch L) · LOW 26 · unrated 0. Founder D33 (F79–F85 LOW), D34 (F28 MEDIUM), D35 (F36 MEDIUM; F32–F35, F38, F42 LOW).
+- **Open: 30, all LOW, backlog.** F29, F30, F32–F35, F37, F38, F42, F43, F45, F63, F68, F69 (follow-up PR, trust-reports v4), F70, F72, F73, F74, F77, F79–F85, F88–F91.
+- **By severity:** HIGH 5 (all fixed) · MEDIUM 8 (F28, F36, F39, F50, F51, F71, F86, F87 — all fixed) · LOW 40 · unrated 11 (all closed: F31, F44, F46, F55, F59, F60, F64–F67 fixed; F61 by design).
+- **Open by severity:** **HIGH 0 · MEDIUM 0** · LOW 30 · unrated 0. Founder ratings D25, D29, D31–D35, D40, D41, D43.
 - **Founder D25 (2026-11-11):** the trust-path ids F29, F30 and F37 are **LOW, backlog**. None corrupts a firm-side balance; each is a missing capability or a portal view that stays stale until the next trust event. The remaining unrated ids are backlog and outside the exit bar.
 
-Next free id: **G89-F86**.
+Next free id: **G89-F92**.
+
+## 8. Exit re-score (G89 fix initiative, 2026-11-11) — **PASS**
+
+**Exit rule** (`$TASK:675`, 0 HIGH + 0 MEDIUM open, every mismatch ruled): **PASS** on main `af0a84925` (PR #1757, the last code PR).
+
+- **Register:** 64 initiative ids (§7) plus the 27 636B ids (§3).
+  - **Open: HIGH 0 · MEDIUM 0** · LOW 30 (backlog) · unrated 0.
+  - Every HIGH and MEDIUM ever raised is fixed and observed. The fixes landed in PRs #1745–#1757: batches B, A, D, C1, C2, H, G, E, F, I, J, K and L.
+- **Scenario mismatches:** all ruled and amended. These cover F4, F24, F25, F27 (D3), plus D24, D26, D27, D28, D30 (F78), D38 and D42. The register entries for these are in §4 and §7.
+- **Targeted Keycloak re-walk (fresh tenant `tenant_5039f2d497cf`, `qa_cycle/evidence/g89-fixes/exit-rescore/`):** **21 PASS · 0 FAIL · 0 PARTIAL · 0 DEFERRED · 1 N/A** (S2-59, removed by D24).
+  - All 8 636B FAIL rows passed, as did the side rows and the 3 former PARTIALs.
+  - **P-E.8 PASS**, including the Day 7 weekly digest.
+  - Deferred items: **632C, 634E(1), F44 and G88-M9 PASS**. F66 and F56/F58 were N/A (F56/F58 are VERIFIED-BY-TEST, D22).
+- **Fixes after the walk, each observed:**
+  - **F71** (#1754): red→green integration test plus a runtime probe.
+  - **F75, F76** (#1755): e2e-observed, and the legal-za v15 reconcile was observed.
+  - **F28, F36, F86, F87** (#1757): e2e-observed through API and SQL, plus a **Batch L KC browser check 15/15 PASS** (`qa_cycle/evidence/g89-fixes/batch-L/`).
+- **Suites on fresh stacks:**
+  - **Main `461fb99ec`** (all batches through J; `exit-rescore/suites/`): lifecycle 105/0/0 on its re-run (F85 flake on the first run, DB-proven); depth-ii 40/0/4; default 165/0/14; portal vitest 284; 90-day 13/0/0; responsive 21/0/0; isolation 2/0/0; login-bare 1/0/0.
+  - **PR #1757's final gate @d7ef98978:** the same suites, matching baseline with empty diffs on the fresh re-run. Its production code is identical to `af0a84925`. Flyway tenant 15 / global 6.
+- **Known e2e flakes (LOW, backlog), each DB-proven when it fired:**
+  - F73: the invoice locator;
+  - F85: time-summary lag under load;
+  - F89: parallel settings specs clobber each other.
+

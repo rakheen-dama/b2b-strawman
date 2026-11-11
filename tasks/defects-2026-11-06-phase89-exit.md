@@ -138,3 +138,38 @@ Verification standing: G88-F12 attorney wording sign-off and the 631A Keycloak o
 | 8 | §3 rulings | — | closes F4, F24, F25, F27 |
 
 Four backend verifies in total (B, A, D, C). Each batch is one PR with reproduce-first tests, two bound reviewer verdicts and a browser-observed PASS on the Keycloak stack for the rows that failed in 636B (S2-12, S2-25, S2-45, S2-64 side, S2-14 side). When A, B, C and D are merged, a targeted re-walk of those rows re-scores the exit; no full phase is needed.
+
+---
+
+## Closure (2026-11-11): exit re-score PASS
+
+Every batch in this document has shipped and been verified as ordinary bug PRs (`tasks/g89-fixes/TRACKER.md`):
+
+| PR | Batch |
+|---|---|
+| #1745 | B |
+| #1746 | A |
+| #1747 | D |
+| #1748 | C1 |
+| #1749 | C2 |
+| #1750 | H |
+| #1751 | G |
+| #1752 | E |
+| #1753 | F |
+
+The exit walk and its review rounds turned up more defects, which were fixed and verified the same way:
+
+| PR | Batch | Fixed |
+|---|---|---|
+| #1754 | I | F71 |
+| #1755 | J | F75, F76 |
+| #1756 | K | scenario |
+| #1757 | L | F28, F36, F86, F87 |
+
+**The exit rule is PASS on main `af0a84925`:** 0 HIGH and 0 MEDIUM open, and every scenario mismatch is ruled (founder decisions D1–D43). The evidence:
+- a targeted Keycloak re-walk on a fresh tenant: 21 PASS, 0 FAIL, 1 N/A;
+- a Batch L KC check: 15/15;
+- the three suite groups on fresh stacks: PASS.
+
+Details are in `qa_cycle/evidence/phase89-rewalk/gaps.md` §8. The 30 open ids are all LOW, on the backlog (§7).
+

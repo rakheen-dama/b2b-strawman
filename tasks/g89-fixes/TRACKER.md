@@ -75,8 +75,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 8b | **I — G89-F71** portal deadline status stale (D29 MEDIUM) | F71 | BE | PR #1754 → `452ba3d7a` | **VERIFIED** (red→green integration test 8/8; runtime probe on the PR-head e2e stack: stored = API = rule for 8 deadlines, filter groups exact). Staleness over real days is not browser-observable on a single day. |
 | 8c | **J — raw-label copy** (D32) | W2-c2, W2-c3 | BE + legal-za v15 | PR #1755 → merged | **MERGED**: e2e-observed (SoA PDFs 'Payment'/'Refund'; digest 'Paid R 40 250,00'; v14→v15 reconcile on an upgrade stack) |
 | 8d | **K — Day 0 banking step** (D30, §6 docs) | W1-c1 → G89-F78 | DOC | PR #1756 → `6547d2319` | **MERGED** (2× APPROVE, CodeRabbit 0 actionable) |
-| 8e | **L — trust rows to the portal** (D34–D43) | F28, F36, F86, F87 | BE + FE + global V6 + tenant V15 | PR #1757 → `af0a84925` | **MERGED**: final e2e observed every behaviour via API + SQL (`pr1757-e2e/final-d7ef98978/`); KC browser check pending |
-| 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
+| 8e | **L — trust rows to the portal** (D34–D43) | F28, F36, F86, F87 | BE + FE + global V6 + tenant V15 | PR #1757 → `af0a84925` | **MERGED**: final e2e observed every behaviour via API + SQL (`pr1757-e2e/final-d7ef98978/`); **VERIFIED** on KC 15/15 (`batch-L/`) |
+| 9 | Exit re-score | fresh-stack suites + KC re-walk | — | main `af0a84925` | **PASS 2026-11-11** — 0 HIGH + 0 MEDIUM open; KC re-walk 21/0/0/0 (+1 N/A); Batch L KC 15/15; suites PASS (`gaps.md` §8) |
 
 ## Gap checklist
 
@@ -98,6 +98,10 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [x] G89-F18 — Section 35 data pack is hollow (C1) — VERIFIED 2026-11-07, PR #1748
 - [x] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM — VERIFIED 2026-11-11, PR #1752
 - [x] G89-F71 — portal deadline status never re-derived (I, D29) — MEDIUM — VERIFIED 2026-11-11, PR #1754
+- [x] G89-F28 — trust rows with no matter never reached the portal (L, D34/D36) — MEDIUM — VERIFIED 2026-11-11, PR #1757
+- [x] G89-F36 — portal trust reference too short, sync aborts (L, D35) — MEDIUM — VERIFIED 2026-11-11, PR #1757
+- [x] G89-F86 — phantom ACTIVE investment after placement reversal (L, D40) — MEDIUM — VERIFIED 2026-11-11, PR #1757
+- [x] G89-F87 — phantom ACTIVE investment after placement reject (L, D41) — MEDIUM — VERIFIED 2026-11-11, PR #1757
 - [x] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (C2 / PR #1749, D17) — MEDIUM — VERIFIED 2026-11-08 (Batch H walk: 'Withheld' for Carol)
 - [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
@@ -447,3 +451,13 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - **Final e2e PASS @d7ef98978** (`pr1757-e2e/final-d7ef98978/`), Flyway 15/6. All observations held: F28 400s and ledger = portal = R 1 907,00; F36; D39 legs on each client's matter; withdrawal refused before approval; reject → CANCELLED and off the register; reversal refused; withdrawal credited once; 0 deadlocks.
   - First-run flakes at load 60–68 (concurrent verify): 2 with DB proof (F85 time-summary lag at a new site, `day-75-complex:224`, plus a knock-on); `invoice-lifecycle:112` (F73 family); `general-settings:65` (parallel settings tests overwrite each other's saves; new test-flake candidate **G89-F89**, LOW class). All passed on the fresh R1 re-run.
 - 2026-11-11 ~21:45 — **PR #1757 (Batch L) merged as `af0a84925`** (`--squash --match-head-commit 864af7343`). Next free migrations: **tenant V16, global V7**. **All HIGH and MEDIUM ids in the register are closed.** Remaining: a KC browser check of the L behaviours, then closure (register, defects doc, HANDOFF, memory).
+- 2026-11-11 ~22:30 — **Batch L VERIFIED on KC: 15/15 PASS** (`qa_cycle/evidence/g89-fixes/batch-L/`). Stack rebuilt on main `6612135be` after a ff-only pull of the main checkout, which carries only the founder's untracked Phase 90 files. Flyway tenant 15 / global 6; 0 backend ERROR lines.
+  - F28: field error on deposits; portal = firm.
+  - F36: 150-char reference stored in full.
+  - D39: each transfer leg sits on its own client's matter; a wrong target matter is refused inline.
+  - Withdrawal refused before approval; F87: reject → 'Cancelled'; reversal refused; withdrawal credited once.
+  - Both dialogs scroll at 1280×720.
+  - F71: deadline statuses agree with their dates.
+  - The orchestrator read the register 'Cancelled' and the transfer-refusal screenshots.
+  - New LOW copy candidates **G89-F90** (portal row shows `TRANSFER_OUT — <ref>` when there is no description) and **G89-F91** (raw statuses in two firm refusal messages), rated LOW by the orchestrator in the F70/D33 class.
+- 2026-11-11 ~22:35 — **EXIT RE-SCORE: PASS.** Open register: **0 HIGH, 0 MEDIUM**, 30 LOW (backlog); every scenario mismatch is ruled. See `gaps.md` §8. **The G89 fix initiative is closed.** Follow-ups (LOW backlog, not blocking): F69 (trust-reports v4, S35 PDF amounts wrap), F88, F89, F90, F91, and the rest of §7. Next free migrations: tenant **V16**, global **V7**; next free register id **G89-F92**.

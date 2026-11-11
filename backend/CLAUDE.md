@@ -265,7 +265,7 @@ Authorization uses `@RequiresCapability` annotations on controllers. Capabilitie
 
 ## Testing
 
-- **Database**: Embedded Postgres (zonky `io.zonky.test:embedded-postgres`) — real Postgres 16 binary, no Docker required. Pinned via `embedded-postgres-binaries-bom` in `dependencyManagement`.
+- **Database**: Embedded Postgres (zonky `io.zonky.test:embedded-postgres`) — real Postgres 16 binary, no Docker required. Pinned via `embedded-postgres-binaries-bom` in `dependencyManagement`. Binaries and data dirs live in `backend/target/embedded-pg` (Surefire sets zonky's `ot.epg.working-dir`; `infrastructure/testutil/EmbeddedPostgresDirectories`), not `$TMPDIR`, which the macOS nightly cleanup prunes (G89 Batch F); `mvn clean` removes them. Build every new `EmbeddedPostgres` via `EmbeddedPostgresDirectories.builder()`.
 - **S3/Storage**: `InMemoryStorageService` (test utility) replaces LocalStack for all tests. Uses `ConcurrentHashMap` with the same key validation regex as `S3StorageAdapter`.
 - **REST tests**: MockMvc + Spring REST Docs (generates API documentation from tests)
 - **Test config**: `TestcontainersConfiguration.java` provides embedded Postgres + `InMemoryStorageService` beans

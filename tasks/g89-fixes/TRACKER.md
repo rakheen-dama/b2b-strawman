@@ -36,6 +36,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D21 | (2026-11-08) **G89-F61** (matter-intake sends up to 500 matter names to the LLM) is **by design** (conflict/intake suggestion needs the firm's matter list); recorded, no fix. **G89-F62** (drafting without templateId → 500) is **LOW**, to Batch E. |
 | D22 | (2026-11-08) **G89-F63** (the role editor can't grant VIEW_LEGAL / GENERATE_STATEMENT_OF_ACCOUNT / MANAGE_DISBURSEMENTS) is **LOW, backlog**. **F56/F58**: the founder accepts the integration-test evidence. Status is **VERIFIED-BY-TEST**: the stub provider is asserted never to receive protected text. This is not a browser PASS; AI is not configured on the KC dev stack. |
 | D23 | (2026-11-10) Founder **signs off the G89-F57 wording**: the SoA summary reads "Fees billed in period:" / "Disbursements billed in period:" (PR #1752). Go-ahead given for the CodeRabbit fix round on #1752. |
+| D24 | (2026-11-11) The F25 ruling extends to the two Day 75 lines that depended on the removed P-75.6: the heading (`portal-client-90day-keycloak.md:190`, no longer "→ download related doc") and the "Download audit event recorded" checkpoint (`:203`, removed). Raised by the PR #1753 FE/docs review. |
+| D25 | (2026-11-11) **G89-F29, F30, F37** (trust reversal / transfer-reversal gaps) are **LOW, backlog**. None corrupts a firm-side balance. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -349,3 +351,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
     - Test refund rejected.
     - Kept: a 30-min time entry `c3ce8756…` on Lerato's RAF matter and an internal SoA draft `6cd4b8d9…`.
 - 2026-11-11 — **Batch F builder launched** in `.claude/worktrees/g89-f` (branch `fix/g89-f-tooling-docs` from `9c268e376`). Brief: `batch-F-brief.md` + HANDOFF 2026-11-11 notes (F66 locations; F68/F69/F70 to file; F69 is a separate trust-reports v3→v4 follow-up PR, not F).
+- 2026-11-11 ~04:40 — **PR #1753 (Batch F) opened** @d852bc4a7 (12 commits, one per item; 547 targeted backend testcases green; FE 3756 + portal 284 vitest green; offline `next build` of both apps proven in a no-network sandbox, with main as the failing control).
+  - **Full verify @d852bc4a7: 6759 / 0 / 0 / 26, BUILD SUCCESS (18:36).** During it, the `$TMPDIR` zonky extraction mtime stayed at Nov 10 23:26 and no new `$TMPDIR/epg*` data dir appeared; binaries in `backend/target/embedded-pg`. Zonky 2.1.0 jar confirmed to read `ot.epg.working-dir`.
+  - Reviews @d852bc4a7: backend/tooling **APPROVE**; FE/docs **REQUEST_CHANGES** (Day 75 :190/:203 depend on the removed P-75.6). Founder **D24**, **D25**.
+  - Fix round `b146c09e0` (docs only; diff vs d852bc4a7 empty for backend/frontend/portal/packages, so the verify stands): D24 lines, D25 severities, F66 row line numbers, the two remaining F2 prune lines.
+  - Re-review @b146c09e0 and pre-merge e2e gate (fresh stacks, no capture-then-score — compares now opt-in) launched.

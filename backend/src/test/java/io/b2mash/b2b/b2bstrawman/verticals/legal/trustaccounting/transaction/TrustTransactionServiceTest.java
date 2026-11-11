@@ -493,8 +493,9 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               sourceCustomer.getId(),
-                              targetCustomer.getId(),
                               trustMatterOf(sourceCustomer.getId()),
+                              targetCustomer.getId(),
+                              trustMatterOf(targetCustomer.getId()),
                               new BigDecimal("3000.00"),
                               "TRF-001",
                               "Client transfer",
@@ -551,8 +552,9 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordTransferRequest(
                           sourceCustomer.getId(),
-                          targetCustomer.getId(),
                           trustMatterOf(sourceCustomer.getId()),
+                          targetCustomer.getId(),
+                          trustMatterOf(targetCustomer.getId()),
                           new BigDecimal("3000.00"),
                           "TRF-002",
                           null,
@@ -619,8 +621,9 @@ class TrustTransactionServiceTest {
                             trustAccountId,
                             new RecordTransferRequest(
                                 sourceId[0],
-                                targetId[0],
                                 trustMatterOf(sourceId[0]),
+                                targetId[0],
+                                trustMatterOf(targetId[0]),
                                 new BigDecimal("5000.00"),
                                 "TRF-003",
                                 null,
@@ -692,8 +695,9 @@ class TrustTransactionServiceTest {
                                       trustAccountId,
                                       new RecordTransferRequest(
                                           sourceId[0],
-                                          target1Id[0],
                                           trustMatterOf(sourceId[0]),
+                                          target1Id[0],
+                                          trustMatterOf(target1Id[0]),
                                           new BigDecimal("3000.00"),
                                           "TRF-CONC-A",
                                           null,
@@ -719,8 +723,9 @@ class TrustTransactionServiceTest {
                                       trustAccountId,
                                       new RecordTransferRequest(
                                           sourceId[0],
-                                          target2Id[0],
                                           trustMatterOf(sourceId[0]),
+                                          target2Id[0],
+                                          trustMatterOf(target2Id[0]),
                                           new BigDecimal("3000.00"),
                                           "TRF-CONC-B",
                                           null,
@@ -830,8 +835,9 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               sourceCustomer.getId(),
-                              targetCustomer.getId(),
                               trustMatterOf(sourceCustomer.getId()),
+                              targetCustomer.getId(),
+                              trustMatterOf(targetCustomer.getId()),
                               new BigDecimal("2500.00"),
                               "TRF-004",
                               null,
@@ -959,8 +965,9 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               sourceCustomer.getId(),
-                              targetCustomer.getId(),
                               trustMatterOf(sourceCustomer.getId()),
+                              targetCustomer.getId(),
+                              trustMatterOf(targetCustomer.getId()),
                               new BigDecimal("3000.00"),
                               "TRF-REV-001",
                               "Transfer to reverse",
@@ -1108,8 +1115,9 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               sourceCustomer.getId(),
-                              targetCustomer.getId(),
                               trustMatterOf(sourceCustomer.getId()),
+                              targetCustomer.getId(),
+                              trustMatterOf(targetCustomer.getId()),
                               new BigDecimal("2000.00"),
                               "TRF-TRFIN-001",
                               null,
@@ -1270,8 +1278,9 @@ class TrustTransactionServiceTest {
                       trustAccountId,
                       new RecordTransferRequest(
                           customer1.getId(),
-                          customer2.getId(),
                           trustMatterOf(customer1.getId()),
+                          customer2.getId(),
+                          trustMatterOf(customer2.getId()),
                           new BigDecimal("2000.00"),
                           "TRF-CB-001",
                           "Cashbook transfer",
@@ -2902,7 +2911,8 @@ class TrustTransactionServiceTest {
         .run(action);
   }
 
-  private final java.util.Map<UUID, UUID> trustMatters = new java.util.HashMap<>();
+  private final java.util.Map<UUID, UUID> trustMatters =
+      new java.util.concurrent.ConcurrentHashMap<>();
 
   /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
   private UUID trustMatterOf(UUID clientId) {

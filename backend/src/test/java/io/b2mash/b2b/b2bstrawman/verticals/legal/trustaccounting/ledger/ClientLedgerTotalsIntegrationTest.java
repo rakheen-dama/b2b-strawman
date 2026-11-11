@@ -190,8 +190,9 @@ class ClientLedgerTotalsIntegrationTest {
                 trustAccountId,
                 new RecordTransferRequest(
                     source,
-                    target,
                     trustMatterOf(source),
+                    target,
+                    trustMatterOf(target),
                     new BigDecimal("400.00"),
                     "CLT-TRF-" + (++counter),
                     "Inter-client transfer",
@@ -415,7 +416,8 @@ class ClientLedgerTotalsIntegrationTest {
     return TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB);
   }
 
-  private final java.util.Map<UUID, UUID> trustMatters = new java.util.HashMap<>();
+  private final java.util.Map<UUID, UUID> trustMatters =
+      new java.util.concurrent.ConcurrentHashMap<>();
 
   /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
   private UUID trustMatterOf(UUID clientId) {

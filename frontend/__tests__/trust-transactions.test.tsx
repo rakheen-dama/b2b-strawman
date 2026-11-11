@@ -8,6 +8,7 @@ vi.mock("server-only", () => ({}));
 // ── Mock server actions for transactions ─────────────────────────
 const mockFetchTransactions = vi.fn();
 const mockRecordDeposit = vi.fn();
+const mockRecordTransfer = vi.fn();
 const mockApproveTransaction = vi.fn();
 const mockRejectTransaction = vi.fn();
 const mockReverseTransaction = vi.fn();
@@ -36,7 +37,7 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
   fetchTransactions: (...args: unknown[]) => mockFetchTransactions(...args),
   recordDeposit: (...args: unknown[]) => mockRecordDeposit(...args),
   recordPayment: vi.fn(),
-  recordTransfer: vi.fn(),
+  recordTransfer: (...args: unknown[]) => mockRecordTransfer(...args),
   recordFeeTransfer: vi.fn(),
   recordRefund: vi.fn(),
   approveTransaction: (...args: unknown[]) => mockApproveTransaction(...args),
@@ -125,6 +126,7 @@ vi.mock("next/link", () => ({
 // ── Imports after mocks ──────────────────────────────────────────
 import TransactionsPage from "@/app/(app)/org/[slug]/trust-accounting/transactions/page";
 import { RecordDepositDialog } from "@/components/trust/RecordDepositDialog";
+import { RecordTransferDialog } from "@/components/trust/RecordTransferDialog";
 import { ApprovalBadge } from "@/components/trust/approval-badge";
 import { ReversalButton } from "@/components/trust/reversal-button";
 
@@ -333,6 +335,69 @@ describe("Trust Transactions", () => {
       await screen.findByText("A matter is required for client trust transactions")
     ).toBeInTheDocument();
     expect(mockRecordDeposit).not.toHaveBeenCalled();
+  });
+
+  // PR #1757 review (D39): a transfer names the target client's matter as well as the source's;
+  // without it the dialog shows a field error under Target Matter and does not submit.
+  it("refuses a transfer without a target matter with a field error (D39)", async () => {
+    mockRecordTransfer.mockClear();
+    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+
+    fireEvent.change(screen.getByPlaceholderText("Source client UUID"), {
+      target: { value: "550e8400-e29b-41d4-a716-446655440000" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Target client UUID"), {
+      target: { value: "660e8400-e29b-41d4-a716-446655440001" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Source client's matter UUID"), {
+      target: { value: "770e8400-e29b-41d4-a716-446655440002" },
+    });
+    const amountInput = screen.getByPlaceholderText("0.00");
+    fireEvent.change(amountInput, { target: { value: "100" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. TRF/2026/001"), {
+      target: { value: "TRF/2026/NO-TARGET-MATTER" },
+    });
+    fireEvent.submit(amountInput.closest("form")!);
+
+    expect(screen.getByText("Target Matter")).toBeInTheDocument();
+    expect(
+      await screen.findByText("A matter is required for client trust transactions")
+    ).toBeInTheDocument();
+    expect(mockRecordTransfer).not.toHaveBeenCalled();
+  });
+
+  it("submits a transfer with both matters (D39)", async () => {
+    mockRecordTransfer.mockResolvedValue({ success: true });
+    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+
+    fireEvent.change(screen.getByPlaceholderText("Source client UUID"), {
+      target: { value: "550e8400-e29b-41d4-a716-446655440000" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Target client UUID"), {
+      target: { value: "660e8400-e29b-41d4-a716-446655440001" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Source client's matter UUID"), {
+      target: { value: "770e8400-e29b-41d4-a716-446655440002" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Target client's matter UUID"), {
+      target: { value: "880e8400-e29b-41d4-a716-446655440003" },
+    });
+    const amountInput = screen.getByPlaceholderText("0.00");
+    fireEvent.change(amountInput, { target: { value: "100" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. TRF/2026/001"), {
+      target: { value: "TRF/2026/BOTH" },
+    });
+    fireEvent.submit(amountInput.closest("form")!);
+
+    await waitFor(() => {
+      expect(mockRecordTransfer).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({
+          projectId: "770e8400-e29b-41d4-a716-446655440002",
+          targetProjectId: "880e8400-e29b-41d4-a716-446655440003",
+        })
+      );
+    });
   });
 
   // OBS-1001: when no `defaultCustomerId` is supplied the customer trigger

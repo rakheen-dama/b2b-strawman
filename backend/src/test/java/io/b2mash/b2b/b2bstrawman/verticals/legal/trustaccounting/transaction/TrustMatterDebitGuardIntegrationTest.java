@@ -279,6 +279,8 @@ class TrustMatterDebitGuardIntegrationTest {
     deposit(source, matterM, "1000.00", 10);
     deposit(source, matterN, "5000.00", 10);
     postingMatter(source, matterM);
+    UUID targetMatter = newMatter("Transfer Target Matter");
+    postingMatter(target, targetMatter);
 
     mockMvc
         .perform(
@@ -289,15 +291,16 @@ class TrustMatterDebitGuardIntegrationTest {
                     """
                     {
                       "sourceClientId": "%s",
+                      "sourceMatterId": "%s",
                       "targetClientId": "%s",
-                      "matterId": "%s",
+                      "targetMatterId": "%s",
                       "amount": 1500.00,
                       "reference": "TRF-CELL-%d",
                       "description": "Over the source cell",
                       "transactionDate": "%s"
                     }
                     """
-                        .formatted(source, target, matterM, counter, today)))
+                        .formatted(source, matterM, target, targetMatter, counter, today)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value(INSUFFICIENT_TITLE))
         .andExpect(jsonPath("$.code").value(MATTER_CODE))
@@ -314,8 +317,10 @@ class TrustMatterDebitGuardIntegrationTest {
     UUID target = newClient("Reverse Target");
     UUID matterM = newMatter("Reverse Matter M");
     UUID matterN = newMatter("Reverse Target Other Matter");
+    UUID matterT = newMatter("Reverse Target Transfer Matter");
     deposit(source, matterM, "1000.00", 10);
     deposit(target, matterN, "5000.00", 10);
+    postingMatter(target, matterT);
 
     var legs =
         as(
@@ -325,8 +330,9 @@ class TrustMatterDebitGuardIntegrationTest {
                     trustAccountId,
                     new RecordTransferRequest(
                         source,
-                        target,
                         matterM,
+                        target,
+                        matterT,
                         new BigDecimal("1000.00"),
                         "TRF-REV-" + counter,
                         "Move to target",
@@ -346,9 +352,10 @@ class TrustMatterDebitGuardIntegrationTest {
                   return transactionRepository.save(out);
                 }));
 
-    // The target spends the transferred money on M. Its card (5 000) still covers R1 000, but its
-    // cell on M is now empty — reversing the transfer would take M's sub-ledger negative.
-    approve(payment(target, matterM, "1000.00", 2));
+    // The target spends the transferred money on T (the TRANSFER_IN's matter, D39). Its card
+    // (5 000) still covers R1 000, but its cell on T is now empty — reversing the transfer would
+    // take T's sub-ledger negative.
+    approve(payment(target, matterT, "1000.00", 2));
 
     mockMvc
         .perform(
@@ -362,7 +369,7 @@ class TrustMatterDebitGuardIntegrationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value(INSUFFICIENT_TITLE))
         .andExpect(jsonPath("$.code").value(MATTER_CODE))
-        .andExpect(jsonPath("$.matterId").value(matterM.toString()));
+        .andExpect(jsonPath("$.matterId").value(matterT.toString()));
 
     // Nothing reversed: both legs keep their status, no ledger card moved
     assertThat(statusOf(transferOutId)).isEqualTo("APPROVED");
@@ -370,6 +377,7 @@ class TrustMatterDebitGuardIntegrationTest {
     assertThat(cardBalance(source)).isEqualByComparingTo("0.00");
     assertThat(cardBalance(target)).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(matterM)).isEqualByComparingTo("0.00");
+    assertThat(matterBalance(matterT)).isEqualByComparingTo("0.00");
   }
 
   @Test

@@ -240,15 +240,20 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "sourceClientId": "%s",
-                      "matterId": "%s",
+                      "sourceMatterId": "%s",
                       "targetClientId": "%s",
+                      "targetMatterId": "%s",
                       "amount": 3000.00,
                       "reference": "XFER-CTRL-001",
                       "description": "Controller test transfer",
                       "transactionDate": "2026-03-02"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId), targetCustomerId)))
+                        .formatted(
+                            customerId,
+                            trustMatterOf(customerId),
+                            targetCustomerId,
+                            trustMatterOf(targetCustomerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$[0].transactionType").value("TRANSFER_OUT"))
         .andExpect(jsonPath("$[0].status").value("RECORDED"))
@@ -752,14 +757,16 @@ class TrustTransactionControllerTest {
                     """
                     {
                       "sourceClientId": "%s",
-                      "matterId": "%s",
+                      "sourceMatterId": "%s",
                       "targetClientId": "%s",
+                      "targetMatterId": "%s",
                       "amount": 100.001,
                       "reference": "XFER-FRACTION-001",
                       "transactionDate": "2026-03-02"
                     }
                     """
-                        .formatted(sourceId, trustMatterOf(sourceId), targetId)))
+                        .formatted(
+                            sourceId, trustMatterOf(sourceId), targetId, trustMatterOf(targetId))))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Invalid amount"))

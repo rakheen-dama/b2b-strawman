@@ -130,10 +130,16 @@ public class TrustTransactionService {
       String description,
       LocalDate transactionDate) {}
 
+  /**
+   * An inter-client transfer: TRANSFER_OUT debits the source client on {@code sourceMatterId} (a
+   * matter of the source client), TRANSFER_IN credits the target client on {@code targetMatterId}
+   * (a matter of the target client; G89-F28, D39).
+   */
   public record RecordTransferRequest(
       UUID sourceClientId,
+      UUID sourceMatterId,
       UUID targetClientId,
-      UUID matterId,
+      UUID targetMatterId,
       BigDecimal amount,
       String reference,
       String description,
@@ -406,14 +412,16 @@ public class TrustTransactionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.sourceClientId()));
 
-    customerRepository
-        .findById(request.targetClientId())
-        .orElseThrow(
-            () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.targetClientId()));
+    var targetCustomer =
+        customerRepository
+            .findById(request.targetClientId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.targetClientId()));
 
-    // The money leaves the source client's cell on the matter, so the matter is the source's; the
-    // TRANSFER_IN leg credits the target on the same matter (co-clients on a shared matter).
-    requireClientMatter(sourceCustomer, request.matterId());
+    // G89-F28 / D39: each leg sits on its own client's matter, both checked before either is
+    // written — TRANSFER_OUT on the source's matter, TRANSFER_IN on the target's.
+    requireClientMatter(sourceCustomer, request.sourceMatterId());
+    requireClientMatter(targetCustomer, request.targetMatterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -471,12 +479,12 @@ public class TrustTransactionService {
               + rand(request.amount()));
     }
 
-    // A transfer on a matter moves the source client's money on that matter (G89-F12)
+    // A transfer moves the source client's money on its matter (G89-F12)
     requireMatterCellCovers(
         trustAccountId,
         request.sourceClientId(),
         sourceCustomer.getName(),
-        request.matterId(),
+        request.sourceMatterId(),
         request.amount());
 
     // Create paired transactions
@@ -486,7 +494,7 @@ public class TrustTransactionService {
             "TRANSFER_OUT",
             request.amount(),
             request.sourceClientId(),
-            request.matterId(),
+            request.sourceMatterId(),
             request.targetClientId(),
             request.reference(),
             request.description(),
@@ -500,7 +508,7 @@ public class TrustTransactionService {
             "TRANSFER_IN",
             request.amount(),
             request.targetClientId(),
-            request.matterId(),
+            request.targetMatterId(),
             request.sourceClientId(),
             request.reference(),
             request.description(),

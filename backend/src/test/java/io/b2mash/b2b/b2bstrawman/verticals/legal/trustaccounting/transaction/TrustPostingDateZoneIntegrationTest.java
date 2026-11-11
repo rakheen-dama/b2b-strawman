@@ -257,8 +257,9 @@ class TrustPostingDateZoneIntegrationTest {
                           trustAccountId,
                           new RecordTransferRequest(
                               source.getId(),
-                              target.getId(),
                               trustMatterOf(source.getId()),
+                              target.getId(),
+                              trustMatterOf(target.getId()),
                               new BigDecimal("2500.00"),
                               "TRF-ZONE-001",
                               "Transfer to reverse",
@@ -427,7 +428,8 @@ class TrustPostingDateZoneIntegrationTest {
         .run(action);
   }
 
-  private final java.util.Map<UUID, UUID> trustMatters = new java.util.HashMap<>();
+  private final java.util.Map<UUID, UUID> trustMatters =
+      new java.util.concurrent.ConcurrentHashMap<>();
 
   /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
   private UUID trustMatterOf(UUID clientId) {

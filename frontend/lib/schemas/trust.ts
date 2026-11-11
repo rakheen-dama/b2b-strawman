@@ -52,7 +52,10 @@ export type RecordPaymentFormData = z.infer<typeof recordPaymentSchema>;
 export const recordTransferSchema = z.object({
   sourceCustomerId: z.string().uuid("Must be a valid source client UUID"),
   targetCustomerId: z.string().uuid("Must be a valid target client UUID"),
+  /** The source client's matter: TRANSFER_OUT debits it. */
   projectId: requiredMatter,
+  /** The target client's matter: TRANSFER_IN credits it (D39). */
+  targetProjectId: requiredMatter,
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),

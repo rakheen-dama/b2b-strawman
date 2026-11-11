@@ -137,8 +137,9 @@ export async function recordTransfer(
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/transfer`, {
       sourceClientId: data.sourceCustomerId,
+      sourceMatterId: data.projectId || null,
       targetClientId: data.targetCustomerId,
-      matterId: data.projectId || null,
+      targetMatterId: data.targetProjectId || null,
       amount: data.amount,
       reference: data.reference,
       description: data.description || null,

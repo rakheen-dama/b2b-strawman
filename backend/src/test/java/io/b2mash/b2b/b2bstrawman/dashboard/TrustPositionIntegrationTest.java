@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -66,6 +67,8 @@ class TrustPositionIntegrationTest {
   private static final String NO_ACCOUNT_OWNER = "user_dtp_noacct_owner";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -74,6 +77,7 @@ class TrustPositionIntegrationTest {
   private final LocalDate today = LocalDate.now(KaziTime.ZONE);
   private final LocalDate reconciledTo = today.minusDays(5);
 
+  private String tenantSchema;
   private String primaryAccountId;
   private String secondAccountId;
 
@@ -81,6 +85,7 @@ class TrustPositionIntegrationTest {
   void setup() throws Exception {
     String schema =
         provisioningService.provisionTenant(ORG_ID, "Trust Position Org", null).schemaName();
+    tenantSchema = schema;
     TestMemberHelper.syncMember(mockMvc, ORG_ID, OWNER, "dtp_owner@test.com", "DTP Owner", "owner");
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, MEMBER, "dtp_member@test.com", "DTP Member", "member");
@@ -373,13 +378,35 @@ class TrustPositionIntegrationTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": %s,
                       "reference": "%s",
                       "description": "Trust position fixture",
                       "transactionDate": "%s"
                     }
                     """
-                        .formatted(clientId, amount, reference, today.minusDays(10))))
+                        .formatted(
+                            clientId,
+                            trustMatterOf(clientId),
+                            amount,
+                            reference,
+                            today.minusDays(10))))
         .andExpect(status().isCreated());
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                customerRepository,
+                UUID.fromString(id),
+                "Trust matter " + id));
   }
 }

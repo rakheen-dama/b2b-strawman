@@ -3,9 +3,11 @@ package io.b2mash.b2b.b2bstrawman.portal.notification;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 
 /**
@@ -14,25 +16,34 @@ import org.junit.jupiter.params.provider.EnumSource;
  */
 class DigestInvoiceStatusLabelTest {
 
-  @ParameterizedTest
-  @CsvSource({
-    "DRAFT, Draft",
-    "APPROVED, Approved",
-    "SENT, Sent",
-    "PARTIALLY_PAID, Partially paid",
-    "PAID, Paid",
-    "VOID, Void"
-  })
-  void everyFeeNoteStatus_hasThePortalLabel(String status, String label) {
-    assertThat(PortalDigestContentAssembler.invoiceStatusLabel(status)).isEqualTo(label);
+  /**
+   * The portal fee-note badge labels (`portal/components/invoice-status-badge.tsx`). Must cover
+   * every {@link InvoiceStatus}: adding a status without deciding its client-facing label fails
+   * {@link #expectedLabels_coverEveryFeeNoteStatus()} (the sentence-case fallback alone would
+   * otherwise let it through silently).
+   */
+  private static final Map<InvoiceStatus, String> EXPECTED =
+      new EnumMap<>(
+          Map.of(
+              InvoiceStatus.DRAFT, "Draft",
+              InvoiceStatus.APPROVED, "Approved",
+              InvoiceStatus.SENT, "Sent",
+              InvoiceStatus.PARTIALLY_PAID, "Partially paid",
+              InvoiceStatus.PAID, "Paid",
+              InvoiceStatus.VOID, "Void"));
+
+  @Test
+  void expectedLabels_coverEveryFeeNoteStatus() {
+    assertThat(EXPECTED.keySet())
+        .as("every InvoiceStatus needs a decided digest label (portal badge parity)")
+        .containsExactlyInAnyOrderElementsOf(EnumSet.allOf(InvoiceStatus.class));
   }
 
-  /** Drift guard: a new {@link InvoiceStatus} must not reach the digest as its enum name. */
   @ParameterizedTest
   @EnumSource(InvoiceStatus.class)
-  void noFeeNoteStatus_printsItsEnumName(InvoiceStatus status) {
+  void everyFeeNoteStatus_hasThePortalLabel(InvoiceStatus status) {
     assertThat(PortalDigestContentAssembler.invoiceStatusLabel(status.name()))
-        .isNotBlank()
+        .isEqualTo(EXPECTED.get(status))
         .isNotEqualTo(status.name());
   }
 

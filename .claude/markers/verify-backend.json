@@ -1,7 +1,7 @@
 {
-  "commit": "f3c191bb7",
-  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-g-comments; backend unchanged in the later frontend-only commits 0dafd9155, 6859a3f17)",
+  "commit": "b291386b4",
+  "command": "caffeinate -is ./mvnw verify (worktree fix/g89-e-layout-copy)",
   "exit": 0,
-  "ts": "2026-11-07T22:30:00Z",
-  "summary": "PR #1751 (G89 Batch G) head f3c191bb7: 6736 tests / 0 failures / 0 errors / 26 skipped — 27:21 min"
+  "ts": "2026-11-10T22:37:00Z",
+  "summary": "PR #1752 (G89 Batch E) head b291386b4: 6757 tests / 0 failures / 0 errors / 26 skipped — 20:17 min"
 }

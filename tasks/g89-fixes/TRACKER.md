@@ -309,3 +309,16 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - CodeRabbit @da212c112: 12 actionable (11 inline, plus nitpicks).
   - Founder D23: F57 wording signed off.
   - CodeRabbit fix round launched in the existing worktree.
+- 2026-11-11 ~03:15 — **PR #1752 (Batch E) merged as `6e510dc23`.**
+  - Fixes: G89-F17 and F50 (the last MEDIUMs), F5, F7, F8, F9, F15, F20, F40, F41, F44, F47, F48, F49, F57, F62, F64, F65; G-D10a; G88-F2/F24/F27(a+b)/M9; 634A (partial); and the #1746 follow-ups.
+  - Packs: legal-za v14, trust-reports v3.
+  - **CodeRabbit:** 12 findings @da212c112 fixed red-first (sub-cent trust amounts, CSV `Locale.ROOT`, below-xl readability, member-list race, role names for non-admins). 1 Minor @b291386b4 (sr-only labels) fixed.
+  - **Full verify:** @b291386b4 6757 / 0 / 0 / 26. **FE gate:** @6f9f16e02 3748 green. **Reviews:** 2× APPROVE @6fcd91abe.
+  - **E2E:** functional lifecycle 105/0 and depth-ii 40/0/4 @6fcd91abe. Portal suites identical to the baseline.
+    - Scored lifecycle 72/5/28, per-test identical on main `1d2b5d0e3` (G89-F67, class c).
+    - Depth-ii closure spec (b): fixed by matching the audit row via the server filter, not the raw key.
+    - Default `project-time:238` = G89-F66 (UTC-date spec, DB-proven).
+  - Founder direction: gates do not wait out 00:00–02:00; in-window failures are classified against F66.
+  - KC check is due once the e2e agent restores the KC stack.
+- New candidate **G89-F68 (LOW)**: fee-note lines for same-date time entries have no deterministic order (sort tie). Seen in the day-30 frame diff → backlog / Batch F register.
+- Deferred from E (need a decision): 634A (Slug read-only on edit; card menu reopens after dialog close; 212 px cards at 1024); raw amounts in the interest-posted notification; sentence-casing the ~20 Title Case audit labels; sr-only spacing nit in PaymentEventHistory.

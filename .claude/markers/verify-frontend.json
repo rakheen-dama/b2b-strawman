@@ -1,7 +1,7 @@
 {
-  "commit": "6f9f16e02",
-  "command": "cd frontend && NODE_OPTIONS='' pnpm lint && pnpm build && pnpm test && pnpm format:check (worktree fix/g89-e-layout-copy)",
+  "commit": "9c7a58c4e5aba6e116d135b3f8f0af470654d354",
+  "command": "frontend: pnpm lint && pnpm run typecheck && pnpm build (rm -rf .next) && pnpm test && pnpm format:check",
   "exit": 0,
-  "ts": "2026-11-10T22:50:00Z",
-  "summary": "PR #1752 (G89 Batch E) head 6f9f16e02: lint 0 errors (78 warnings), build ok, 454 files / 3748 passed / 2 skipped, prettier clean"
+  "ts": "2026-11-11T09:56:49Z",
+  "summary": "PR #1753 final head 9c7a58c4e: lint rc0, typecheck rc0, build rc0 (0 Google Fonts lines), vitest 457 files / 3756 passed / 2 skipped, format:check rc0."
 }

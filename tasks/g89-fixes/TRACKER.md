@@ -56,7 +56,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 → `4f3323525` | **VERIFIED** on KC: F52 lists and direct 403, F53/F54 404, C2 'Withheld'. F56/F58 DEFERRED (AI not configured on the KC dev stack; covered by backend stub-provider tests) → exit re-walk |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 → `1d2b5d0e3` | **VERIFIED** on KC (F31, 634C, 634E(5), 634E(2) UI). 634E(1) (>50 comments) DEFERRED → exit re-walk (seed 52 comments via the UI with Playwright) |
 | 7 | E — layout, copy, small BE LOWs (+ F50 MEDIUM, F44, F47–F49, F57, F62, F64, F65) | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | PR #1752 → `6e510dc23` | **VERIFIED** on KC 2026-11-11 (20 PASS, 2 PARTIAL → F69/F44-exit, 1 DEFERRED → exit): `qa_cycle/evidence/g89-fixes/batch-E/` |
-| 8 | F — tooling, docs, scenarios | F46 fonts, F66, F67 (opt-in compares), embedded-PG workdir, F1, F2, F3, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, dead `extractText(Document)`, file F28–F70 | BE(test infra) + FE + PT + DOC | branch `fix/g89-f-tooling-docs` | IN PROGRESS (builder launched 2026-11-11) |
+| 8 | F — tooling, docs, scenarios | F46 fonts, F66, F67 (opt-in compares), embedded-PG workdir, F1, F2, F3, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, dead `extractText(Document)`, file F28–F70 | BE(test infra) + FE + PT + DOC | PR #1753 → `be5b06ecb` | **MERGED** 2026-11-11 (tooling/docs; F46 + opt-in compares observed in the pre-merge e2e gate; F66 observed at the exit re-score if a run lands in 00:00–02:00) |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
 
 ## Gap checklist
@@ -83,12 +83,12 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
 
 ### LOW / carried
-- [ ] F1 [ ] F2 [ ] F3 (F)
+- [x] F1 [x] F2 [x] F3 (F) — merged #1753
 - [ ] F5 [ ] F7 [ ] F8 [ ] F9 [ ] F15 [ ] F20 (E)
 - [x] F6 [x] F26 (C2) — VERIFIED 2026-11-07, PR #1749
 - [x] F10 (B) — VERIFIED 2026-11-07 in the Batch A walk (wizard shows "Client" and "Lerato Mthembu" and "LPFF arrangement rate 0.00%")
 - [x] F19 [x] F21 (C1) — VERIFIED 2026-11-07, PR #1748
-- [ ] F4 [ ] F24 [ ] F25 [ ] F27 — scenario amendments (F)
+- [x] F4 [x] F24 [x] F25 [x] F27 — scenario amendments merged #1753 (D3 + D24/D26/D27/D28); walked at the exit re-score
 - [ ] G-D10a [ ] G88-F27 (Access denied) [ ] G88-F27 (disbursement "Invoiced · Yes") [ ] G88-M9 [ ] G88-F24 [ ] G88-F2 [ ] 634A (E)
 - [x] 633C D2 [x] 633C D6 (D) — VERIFIED 2026-11-07, PR #1747
 - [x] 632A(a) [x] 632A(b) [x] 632A(c) — VERIFIED 2026-11-07, PR #1749 · [ ] 632C (merged; KC observation at the exit re-walk)
@@ -96,7 +96,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [x] 634E(2) [x] 634E(3) [x] 634E(5) [x] 634C @-autocomplete / access filter (G) — VERIFIED 2026-11-08, PR #1751 · [ ] 634E(1) (merged; observe at exit re-walk)
 - [x] G89-F31 — notifications break after a client comments (G) — VERIFIED 2026-11-08, PR #1751
 - [ ] P-E.8 weekly digest observed (exit re-score)
-- [ ] New ids filed: G89-F28 (no-matter trust rows), F29 (reversal publishes no portal event), F30 (credit reversals no-op) (F)
+- [x] New ids filed: G89-F28 … F71 in `gaps.md` §7 (#1753); F72/F73 candidates in this TRACKER → register at the exit re-score
 
 ## Log
 - 2026-11-06 — plan approved; decisions D1–D8; Batch B started.
@@ -374,3 +374,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
     - **G89-F73** (LOW, e2e test bug, pre-existing): `invoices/invoice-lifecycle.spec.ts:88` uses a non-exact `getByRole('button', { name: 'Approve' })` that also matches the "Fee note approved" audit row, so the test races the audit-trail render. Main 5/10 vs PR 2/10 under `--repeat-each`; fix is `exact: true`. Class (c) for this gate.
 - 2026-11-11 ~11:55 — **CI Frontend failed** on `pnpm run typecheck` (`screenshot-visual-opt-in.test.ts:23-27`: `{}` is not `NodeJS.ProcessEnv`). The local gate (`lint && build && test && format:check`) does not run `tsc` over `__tests__`. Fixed in `9c7a58c4e` (the helper takes a plain env record; type-only, so runtime is identical to the e2e-gated head); frontend and portal typecheck rc 0, vitest 3756 green. Bound re-reviews on `9c7a58c4e` requested.
 - 2026-11-11 ~12:15 — PR #1753: 2× APPROVE @9c7a58c4e; CodeRabbit's last open point (Day 75 setup after D27) → founder **D28**, fixed in `dbf8cb9e3` (docs only, folded into the prerequisites row so no cited line shifts). Re-verdicts @dbf8cb9e3 requested. Markers written in the main checkout: backend @d852bc4a7, frontend @9c7a58c4e, portal @d852bc4a7.
+- 2026-11-11 13:02 — **PR #1753 (Batch F) merged as `be5b06ecb`** (`--squash --match-head-commit 03247fa43`).
+  - Final gates: full verify @d852bc4a7 6759/0/0/26 (backend unchanged to the final head); FE @9c7a58c4e lint/typecheck/build/vitest 3756/format; portal @d852bc4a7 (vitest 284) + typecheck @9c7a58c4e; CI green @03247fa43; pre-merge e2e PASS @b146c09e0; 2× bound APPROVE @03247fa43.
+  - CodeRabbit: REVIEWED @d852bc4a7 (6 + 2 extra), @b146c09e0 (2), @dbf8cb9e3 (1). All triaged and replied to; 1 not changed with the reason posted. No new actionable comments @03247fa43.
+  - Markers committed: backend @d852bc4a7, frontend @9c7a58c4e, portal @d852bc4a7.
+  - **Batches A–H, E, F all merged.** Next: exit re-score (row 9).

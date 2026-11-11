@@ -1,7 +1,7 @@
 {
-  "commit": "53cabef57",
-  "command": "portal vitest + portal e2e (90-day 13/0, responsive 21/0, isolation 2/0) on fresh stacks from the PR head (pre-merge e2e gate); no portal source changed in this PR",
+  "commit": "d852bc4a7e43576532cc053537e80c439087f111",
+  "command": "portal: pnpm lint && pnpm build && pnpm test && pnpm format:check (builder @d852bc4a7); pnpm run typecheck @9c7a58c4e",
   "exit": 0,
-  "ts": "2026-11-07T20:30:00Z",
-  "summary": "PR #1750 (G89 Batch H): portal vitest 278 passed; portal e2e per-test identical to baseline; shared SoA client download OK"
+  "ts": "2026-11-11T09:56:49Z",
+  "summary": "PR #1753: builder portal gate @d852bc4a7 all rc0, vitest 51 files / 284 passed; offline sandbox build rc0. Portal source unchanged to 9c7a58c4e (README only). e2e gate @b146c09e0: vitest 284, production builds (login-bare 1/0/0) with 0 font fetches. typecheck @9c7a58c4e rc0."
 }

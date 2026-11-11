@@ -231,9 +231,19 @@ public class TrustInvestmentService {
   public TrustInvestmentResponse withdrawInvestment(UUID investmentId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // PR #1757 security review: a withdrawal and a reversal of the investment's placement PAYMENT
+    // each check the other's effect, so both lock the same rows in the same order — the placement
+    // PAYMENT row, then the investment row — and check under those locks. The investment is read
+    // (and its status checked) only after both locks are held; the placement id comes from a scalar
+    // query so no stale investment is loaded before its lock.
+    var placementId =
+        investmentRepository
+            .findPlacementTransactionIdById(investmentId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustInvestment", investmentId));
+    transactionService.lockInvestmentPlacement(placementId);
     var investment =
         investmentRepository
-            .findById(investmentId)
+            .findByIdForUpdate(investmentId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustInvestment", investmentId));
 
     // Verify caller has access to the associated trust account

@@ -280,10 +280,12 @@ public class TrustTransactionService {
   @Transactional
   public TrustTransactionResponse recordInvestmentWithdrawal(
       UUID trustAccountId, UUID placementTransactionId, RecordDepositRequest request) {
+    // Checked under the placement row lock (the same lock reverseTransaction takes first), so a
+    // concurrent reversal of the placement either commits before this check or waits for it.
     var placement =
         placementTransactionId == null
             ? null
-            : transactionRepository.findById(placementTransactionId).orElse(null);
+            : transactionRepository.findByIdForUpdate(placementTransactionId).orElse(null);
     if (placement == null || !"APPROVED".equals(placement.getStatus())) {
       throw new InvalidStateException(
           "Cannot withdraw investment",
@@ -303,6 +305,17 @@ public class TrustTransactionService {
             request.description(),
             request.transactionDate()),
         false);
+  }
+
+  /**
+   * Locks an investment's placement PAYMENT row — the first lock of both the withdrawal and a
+   * reversal of the placement (PR #1757 security review); the investment row is locked second.
+   */
+  @Transactional
+  public void lockInvestmentPlacement(UUID placementTransactionId) {
+    if (placementTransactionId != null) {
+      transactionRepository.findByIdForUpdate(placementTransactionId);
+    }
   }
 
   private TrustTransactionResponse postDeposit(
@@ -1222,10 +1235,14 @@ public class TrustTransactionService {
 
     // PR #1757 review: the placement payment of a withdrawn trust investment was already undone by
     // the withdrawal deposit (it credited the client back on the placement's matter); reversing it
-    // as well would credit the client twice.
+    // as well would credit the client twice. Lock order as in TrustInvestmentService
+    // .withdrawInvestment — the placement row (locked above), then the investment row — so a
+    // concurrent withdrawal is either committed and seen here, or waits behind this reversal.
     if ("PAYMENT".equals(original.getTransactionType())
-        && trustInvestmentRepository.existsByDepositTransactionIdAndStatus(
-            original.getId(), "WITHDRAWN")) {
+        && trustInvestmentRepository
+            .findByPlacementTransactionIdForUpdate(original.getId())
+            .filter(investment -> "WITHDRAWN".equals(investment.getStatus()))
+            .isPresent()) {
       throw new InvalidStateException(
           "Cannot reverse transaction",
           "This payment placed a trust investment that has since been withdrawn; the withdrawal"

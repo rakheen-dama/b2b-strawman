@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
@@ -76,6 +77,7 @@ class TrustFeeTransferReversalCascadeTest {
   private static final String ORG_ID = "org_l70_cascade_test";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -164,9 +166,10 @@ class TrustFeeTransferReversalCascadeTest {
                   projectIdHolder[0] = projectId;
 
                   var customer =
-                      customerRepository.save(
+                      customerRepository.saveAndFlush(
                           TestCustomerFactory.createActiveCustomer(
                               "L70 Single Client", "l70_single@test.com", memberId));
+                  ownMatter(projectId, customer.getId());
                   customerIdHolder[0] = customer.getId();
 
                   // Fund the trust ledger
@@ -303,9 +306,10 @@ class TrustFeeTransferReversalCascadeTest {
                   insertProject(projectId, "L70 Multi Project");
 
                   var customer =
-                      customerRepository.save(
+                      customerRepository.saveAndFlush(
                           TestCustomerFactory.createActiveCustomer(
                               "L70 Multi Client", "l70_multi@test.com", memberId));
+                  ownMatter(projectId, customer.getId());
 
                   transactionService.recordDeposit(
                       trustAccountId,
@@ -690,11 +694,12 @@ class TrustFeeTransferReversalCascadeTest {
                   UUID projectId = UUID.randomUUID();
                   insertProject(projectId, label + " Project");
                   var customer =
-                      customerRepository.save(
+                      customerRepository.saveAndFlush(
                           TestCustomerFactory.createActiveCustomer(
                               label + " Client",
                               label.toLowerCase(Locale.ROOT) + "_ft@test.com",
                               memberId));
+                  ownMatter(projectId, customer.getId());
                   transactionService.recordDeposit(
                       trustAccountId,
                       new RecordDepositRequest(
@@ -754,7 +759,7 @@ class TrustFeeTransferReversalCascadeTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      customerRepository.save(
+                      customerRepository.saveAndFlush(
                           TestCustomerFactory.createActiveCustomer(
                               "L70 NoInv Client", "l70_noinv@test.com", memberId));
 
@@ -762,7 +767,7 @@ class TrustFeeTransferReversalCascadeTest {
                       trustAccountId,
                       new RecordDepositRequest(
                           customer.getId(),
-                          null,
+                          trustMatterOf(customer.getId()),
                           new BigDecimal("5000.00"),
                           "DEP-L70-NOINV",
                           "Funding",
@@ -773,7 +778,7 @@ class TrustFeeTransferReversalCascadeTest {
                           trustAccountId,
                           new TrustTransactionService.RecordPaymentRequest(
                               customer.getId(),
-                              null,
+                              trustMatterOf(customer.getId()),
                               new BigDecimal("1000.00"),
                               "PAY-L70-NOINV",
                               "Direct payment, no invoice",
@@ -819,9 +824,10 @@ class TrustFeeTransferReversalCascadeTest {
                   insertProject(projectId, "L70 Idempotent Project");
 
                   var customer =
-                      customerRepository.save(
+                      customerRepository.saveAndFlush(
                           TestCustomerFactory.createActiveCustomer(
                               "L70 Idem Client", "l70_idem@test.com", memberId));
+                  ownMatter(projectId, customer.getId());
 
                   UUID invoiceId = UUID.randomUUID();
                   invoiceIdHolder[0] = invoiceId;
@@ -910,6 +916,15 @@ class TrustFeeTransferReversalCascadeTest {
         .setParameter("id", projectId)
         .setParameter("name", name)
         .setParameter("memberId", memberId)
+        .executeUpdate();
+  }
+
+  /** G89-F28: the matter the client's trust money sits on must be the client's. */
+  private void ownMatter(UUID projectId, UUID customerId) {
+    entityManager
+        .createNativeQuery("UPDATE projects SET customer_id = :customerId WHERE id = :id")
+        .setParameter("customerId", customerId)
+        .setParameter("id", projectId)
         .executeUpdate();
   }
 
@@ -1009,5 +1024,21 @@ class TrustFeeTransferReversalCascadeTest {
             RequestScopes.CAPABILITIES,
             Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
         .run(action);
+  }
+
+  private final java.util.Map<UUID, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(UUID clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                id,
+                "Trust matter " + id,
+                memberId));
   }
 }

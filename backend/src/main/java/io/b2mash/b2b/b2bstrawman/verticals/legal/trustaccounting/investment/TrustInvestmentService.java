@@ -69,6 +69,9 @@ public class TrustInvestmentService {
 
   public record PlaceInvestmentRequest(
       @NotNull UUID clientId,
+      // G89-F28: the matter whose trust money is invested; the placement payment debits it and the
+      // withdrawal credits it back. Validated by TrustTransactionService (400 when absent).
+      UUID matterId,
       @NotBlank String institution,
       @NotBlank String accountNumber,
       @Positive BigDecimal principal,
@@ -138,7 +141,7 @@ public class TrustInvestmentService {
     var paymentRequest =
         new TrustTransactionService.RecordPaymentRequest(
             request.clientId(),
-            null, // no project for investments
+            request.matterId(),
             request.principal(),
             "INV-" + request.institution() + "-" + request.accountNumber(),
             "Trust investment placement at " + request.institution(),
@@ -247,18 +250,20 @@ public class TrustInvestmentService {
     var today = LocalDate.now(clock);
     var withdrawalAmount = investment.getPrincipal().add(investment.getInterestEarned());
 
-    // Create DEPOSIT transaction (immediately credits client ledger)
+    // Create DEPOSIT transaction (immediately credits client ledger) on the matter the placement
+    // payment debited (G89-F28)
     var depositRequest =
         new TrustTransactionService.RecordDepositRequest(
             investment.getCustomerId(),
-            null, // no project for investments
+            null, // the placement's matter, resolved by recordInvestmentWithdrawal
             withdrawalAmount,
             "INV-WD-" + investment.getInstitution() + "-" + investment.getAccountNumber(),
             "Trust investment withdrawal from " + investment.getInstitution(),
             today);
 
     var depositResponse =
-        transactionService.recordDeposit(investment.getTrustAccountId(), depositRequest);
+        transactionService.recordInvestmentWithdrawal(
+            investment.getTrustAccountId(), investment.getDepositTransactionId(), depositRequest);
 
     investment.setStatus("WITHDRAWN");
     investment.setWithdrawalDate(today);

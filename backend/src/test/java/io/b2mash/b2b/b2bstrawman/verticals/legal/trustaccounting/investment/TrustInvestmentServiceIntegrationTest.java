@@ -9,12 +9,14 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,10 +50,12 @@ class TrustInvestmentServiceIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustInvestmentService investmentService;
   @Autowired private TrustInvestmentRepository investmentRepository;
+  @Autowired private ProjectRepository projectRepository;
 
   private String tenantSchema;
   private UUID trustAccountId;
   private UUID customerId;
+  private UUID matterId;
   private UUID ownerMemberId;
 
   @BeforeAll
@@ -112,6 +116,15 @@ class TrustInvestmentServiceIntegrationTest {
             TestEntityHelper.createCustomer(
                 mockMvc, ownerJwt, "Investment Client Alpha", "invest_alpha@test.com"));
 
+    matterId =
+        TestTrustMatterHelper.openClientMatter(
+            tenantSchema,
+            transactionTemplate,
+            projectRepository,
+            customerId,
+            "Investment Matter Alpha",
+            ownerMemberId);
+
     // Deposit funds for the customer (100,000)
     createDeposit(
         trustAccountId,
@@ -136,13 +149,14 @@ class TrustInvestmentServiceIntegrationTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": %s,
                       "reference": "%s",
                       "description": "Test deposit",
                       "transactionDate": "%s"
                     }
                     """
-                        .formatted(custId, amount.toPlainString(), reference, date)))
+                        .formatted(custId, matterId, amount.toPlainString(), reference, date)))
         .andExpect(status().isCreated());
   }
 
@@ -159,6 +173,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "ABSA Bank",
                             "9012345678",
                             new BigDecimal("50000.00"),
@@ -193,6 +208,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "Nedbank",
                             "5551234567",
                             new BigDecimal("10000.00"),
@@ -234,6 +250,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "Standard Bank",
                             "7778889990",
                             new BigDecimal("5000.00"),
@@ -273,6 +290,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "FNB",
                             "1112223334",
                             new BigDecimal("2000.00"),
@@ -291,6 +309,7 @@ class TrustInvestmentServiceIntegrationTest {
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
                         customerId,
+                        matterId,
                         "Capitec",
                         "4445556667",
                         new BigDecimal("1000.00"),
@@ -327,6 +346,7 @@ class TrustInvestmentServiceIntegrationTest {
                                 trustAccountId,
                                 new TrustInvestmentService.PlaceInvestmentRequest(
                                     customerId,
+                                    matterId,
                                     "Investec",
                                     "9998887776",
                                     new BigDecimal("999999999.00"), // way more than balance
@@ -351,6 +371,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "Absa",
                             "3332221110",
                             new BigDecimal("1000.00"),
@@ -388,6 +409,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "Investec",
                             "4440001111",
                             new BigDecimal("3000.00"),
@@ -412,6 +434,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "Capitec",
                             "5550002222",
                             new BigDecimal("2000.00"),
@@ -439,6 +462,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "Standard Bank",
                             "6660003333",
                             new BigDecimal("1500.00"),
@@ -462,6 +486,7 @@ class TrustInvestmentServiceIntegrationTest {
                         trustAccountId,
                         new TrustInvestmentService.PlaceInvestmentRequest(
                             customerId,
+                            matterId,
                             "FNB",
                             "7770004444",
                             new BigDecimal("1000.00"),

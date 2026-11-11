@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
@@ -50,6 +51,7 @@ class InvestmentBasisInterestTest {
   private static final BigDecimal CONFIGURED_LPFF_SHARE = new BigDecimal("0.7500");
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -173,6 +175,7 @@ class InvestmentBasisInterestTest {
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
                         UUID.fromString(clientInstructionCustomerId),
+                        trustMatterOf(clientInstructionCustomerId),
                         "Investec",
                         "1110001111",
                         new BigDecimal("10000.00"),
@@ -191,6 +194,7 @@ class InvestmentBasisInterestTest {
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
                         UUID.fromString(firmDiscretionCustomerId),
+                        trustMatterOf(firmDiscretionCustomerId),
                         "ABSA",
                         "2220002222",
                         new BigDecimal("10000.00"),
@@ -209,6 +213,7 @@ class InvestmentBasisInterestTest {
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
                         UUID.fromString(mixedCustomerId),
+                        trustMatterOf(mixedCustomerId),
                         "Nedbank",
                         "3330003333",
                         new BigDecimal("5000.00"),
@@ -226,6 +231,7 @@ class InvestmentBasisInterestTest {
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
                         UUID.fromString(mixedCustomerId),
+                        trustMatterOf(mixedCustomerId),
                         "Standard Bank",
                         "4440004444",
                         new BigDecimal("5000.00"),
@@ -264,13 +270,19 @@ class InvestmentBasisInterestTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": %s,
                       "reference": "%s",
                       "description": "Test deposit",
                       "transactionDate": "%s"
                     }
                     """
-                        .formatted(custId, amount.toPlainString(), reference, date)))
+                        .formatted(
+                            custId,
+                            trustMatterOf(custId),
+                            amount.toPlainString(),
+                            reference,
+                            date)))
         .andExpect(status().isCreated());
   }
 
@@ -478,5 +490,21 @@ class InvestmentBasisInterestTest {
               alloc.getCustomerId())
           .isEqualByComparingTo(expectedLpff);
     }
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                UUID.fromString(id),
+                "Trust matter " + id,
+                ownerMemberId));
   }
 }

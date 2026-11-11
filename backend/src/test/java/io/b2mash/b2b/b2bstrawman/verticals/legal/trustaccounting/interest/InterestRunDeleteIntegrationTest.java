@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -48,6 +49,7 @@ class InterestRunDeleteIntegrationTest {
   private static final String MEMBER_SUBJECT = "user_int_del_member";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -138,13 +140,14 @@ class InterestRunDeleteIntegrationTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 50000.00,
                       "reference": "DEP-DEL-001",
                       "description": "Test deposit for interest-run delete tests",
                       "transactionDate": "2026-01-15"
                     }
                     """
-                        .formatted(customerId)))
+                        .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     mockMvc
@@ -294,5 +297,21 @@ class InterestRunDeleteIntegrationTest {
             delete("/api/interest-runs/" + UUID.randomUUID())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUBJECT)))
         .andExpect(status().isNotFound());
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                UUID.fromString(id),
+                "Trust matter " + id,
+                ownerMemberId));
   }
 }

@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.gates.TrustBalanceZeroGate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateLpffRateRequest;
@@ -78,6 +79,11 @@ class InterestMatterAllocationIntegrationTest {
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustTransactionService transactionService;
   @Autowired private TrustTransactionRepository transactionRepository;
+
+  @Autowired
+  private io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository customerProjectRepository;
+
+  @Autowired private jakarta.persistence.EntityManager entityManager;
   @Autowired private ClientLedgerCardRepository ledgerCardRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
@@ -513,32 +519,80 @@ class InterestMatterAllocationIntegrationTest {
         TestEntityHelper.createProject(mockMvc, TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB), name));
   }
 
+  /**
+   * {@code matter} null = a legacy client-level posting (recorded before G89-F28 made a matter
+   * mandatory; D6 keeps such rows): recorded on a throwaway matter of the client, then stripped of
+   * it, so the ledger card moves exactly as the pre-F28 service moved it.
+   */
   private void deposit(UUID account, UUID client, UUID matter, String amount, LocalDate date) {
     int n = ++counter;
-    as(
-        ownerId,
-        () ->
-            transactionService.recordDeposit(
-                account,
-                new RecordDepositRequest(
-                    client, matter, new BigDecimal(amount), "IMA-DEP-" + n, "Deposit", date)));
+    UUID posted = postingMatter(client, matter);
+    UUID id =
+        as(
+            ownerId,
+            () ->
+                transactionService
+                    .recordDeposit(
+                        account,
+                        new RecordDepositRequest(
+                            client,
+                            posted,
+                            new BigDecimal(amount),
+                            "IMA-DEP-" + n,
+                            "Deposit",
+                            date))
+                    .id());
+    legacyIfUnmattered(matter, id);
   }
 
   private UUID payment(UUID account, UUID client, UUID matter, String amount, LocalDate date) {
     int n = ++counter;
-    return as(
-        ownerId,
-        () ->
-            transactionService
-                .recordPayment(
-                    account,
-                    new RecordPaymentRequest(
-                        client, matter, new BigDecimal(amount), "IMA-PAY-" + n, "Payment", date))
-                .id());
+    UUID posted = postingMatter(client, matter);
+    UUID id =
+        as(
+            ownerId,
+            () ->
+                transactionService
+                    .recordPayment(
+                        account,
+                        new RecordPaymentRequest(
+                            client,
+                            posted,
+                            new BigDecimal(amount),
+                            "IMA-PAY-" + n,
+                            "Payment",
+                            date))
+                    .id());
+    legacyIfUnmattered(matter, id);
+    return id;
+  }
+
+  /** The matter to post on: {@code matter} linked to the client, or a throwaway one (legacy). */
+  private UUID postingMatter(UUID client, UUID matter) {
+    if (matter == null) {
+      return TestTrustMatterHelper.openClientMatter(
+          tenantSchema,
+          transactionTemplate,
+          projectRepository,
+          client,
+          "IMA legacy posting matter " + counter,
+          ownerId);
+    }
+    TestTrustMatterHelper.linkClientMatter(
+        tenantSchema, transactionTemplate, customerProjectRepository, client, matter, ownerId);
+    return matter;
+  }
+
+  private void legacyIfUnmattered(UUID matter, UUID transactionId) {
+    if (matter == null) {
+      TestTrustMatterHelper.stripMatter(
+          tenantSchema, transactionTemplate, entityManager, transactionId);
+    }
   }
 
   private UUID refund(UUID account, UUID client, UUID matter, BigDecimal amount) {
     int n = ++counter;
+    postingMatter(client, matter);
     return as(
         ownerId,
         () ->

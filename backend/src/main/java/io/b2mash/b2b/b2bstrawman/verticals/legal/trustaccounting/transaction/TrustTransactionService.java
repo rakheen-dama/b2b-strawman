@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
@@ -60,10 +62,20 @@ public class TrustTransactionService {
   public static final String INSUFFICIENT_MATTER_TRUST_BALANCE =
       "INSUFFICIENT_MATTER_TRUST_BALANCE";
 
+  /** ProblemDetail {@code code} of a client posting refused for want of a matter (G89-F28). */
+  public static final String MATTER_REQUIRED = "MATTER_REQUIRED";
+
+  /** ProblemDetail {@code code} of a client posting on a matter not linked to it (G89-F28). */
+  public static final String MATTER_NOT_LINKED_TO_CLIENT = "MATTER_NOT_LINKED_TO_CLIENT";
+
+  /** The refusal detail for a client trust posting without a matter (G89-F28, D36). */
+  static final String MATTER_REQUIRED_DETAIL = "A matter is required for client trust transactions";
+
   private final TrustTransactionRepository transactionRepository;
   private final ClientLedgerCardRepository ledgerCardRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
+  private final CustomerProjectRepository customerProjectRepository;
   private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
@@ -80,6 +92,7 @@ public class TrustTransactionService {
       ClientLedgerCardRepository ledgerCardRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
+      CustomerProjectRepository customerProjectRepository,
       ProjectRepository projectRepository,
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
@@ -94,6 +107,7 @@ public class TrustTransactionService {
     this.ledgerCardRepository = ledgerCardRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
+    this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
@@ -239,6 +253,40 @@ public class TrustTransactionService {
 
   @Transactional
   public TrustTransactionResponse recordDeposit(UUID trustAccountId, RecordDepositRequest request) {
+    return postDeposit(trustAccountId, request, true);
+  }
+
+  /**
+   * Credits a withdrawn trust investment back to the client: the deposit carries the matter the
+   * placement payment ({@code placementTransactionId}) debited, so the money returns to the matter
+   * it left (G89-F28). The matter is derived, not chosen, so it is not re-validated; a placement
+   * recorded before G89-F28 has no matter and its withdrawal mirrors it client-level (D6: no
+   * backfill of legacy rows).
+   */
+  @Transactional
+  public TrustTransactionResponse recordInvestmentWithdrawal(
+      UUID trustAccountId, UUID placementTransactionId, RecordDepositRequest request) {
+    UUID placementMatterId =
+        placementTransactionId == null
+            ? null
+            : transactionRepository
+                .findById(placementTransactionId)
+                .map(TrustTransaction::getProjectId)
+                .orElse(null);
+    return postDeposit(
+        trustAccountId,
+        new RecordDepositRequest(
+            request.clientId(),
+            placementMatterId,
+            request.amount(),
+            request.reference(),
+            request.description(),
+            request.transactionDate()),
+        false);
+  }
+
+  private TrustTransactionResponse postDeposit(
+      UUID trustAccountId, RecordDepositRequest request, boolean requireMatter) {
     moduleGuard.requireModule(MODULE_ID);
     validateAmount(request.amount());
     validateReference(request.reference());
@@ -257,6 +305,10 @@ public class TrustTransactionService {
             .findById(request.clientId())
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
+
+    if (requireMatter) {
+      requireClientMatter(customer, request.matterId());
+    }
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -358,6 +410,10 @@ public class TrustTransactionService {
         .findById(request.targetClientId())
         .orElseThrow(
             () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.targetClientId()));
+
+    // The money leaves the source client's cell on the matter, so the matter is the source's; the
+    // TRANSFER_IN leg credits the target on the same matter (co-clients on a shared matter).
+    requireClientMatter(sourceCustomer, request.matterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -541,6 +597,8 @@ public class TrustTransactionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
+    requireClientMatter(customer, request.matterId());
+
     var memberId = RequestScopes.requireMemberId();
 
     var transaction =
@@ -644,6 +702,17 @@ public class TrustTransactionService {
     var distinctProjectIds =
         invoiceLineRepository.findDistinctProjectIdsByInvoiceId(invoice.getId());
     UUID inferredProjectId = distinctProjectIds.size() == 1 ? distinctProjectIds.get(0) : null;
+    // G89-F28: a fee transfer is a client posting like any other and must land on a matter. The
+    // matter comes from the fee note (whose lines were matter-checked against the client when the
+    // fee note was built), so only its absence is refused here.
+    if (inferredProjectId == null) {
+      throw matterRequired(
+          "Fee note "
+              + (invoice.getInvoiceNumber() != null
+                  ? invoice.getInvoiceNumber()
+                  : invoice.getId().toString())
+              + " does not belong to a single matter, so the transfer has no matter to post to.");
+    }
 
     var transaction =
         new TrustTransaction(
@@ -717,6 +786,8 @@ public class TrustTransactionService {
             .findById(request.clientId())
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
+
+    requireClientMatter(customer, request.matterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -1449,6 +1520,45 @@ public class TrustTransactionService {
   }
 
   // --- Private Helpers ---
+
+  /**
+   * G89-F28 (D36): every new client trust posting names a matter linked to the client (directly,
+   * {@code projects.customer_id}, or through {@code customer_projects} — the client's matter list).
+   * A row without a matter never reaches the portal, whose trust view is per client and matter, so
+   * the client's portal balance would fall short of the firm ledger. Firm-level rows without a
+   * client (INTEREST_LPFF) and rows derived from an existing row (reversals, interest credits) do
+   * not pass through here.
+   */
+  private void requireClientMatter(Customer client, UUID matterId) {
+    if (matterId == null) {
+      throw matterRequired(null);
+    }
+    var matter =
+        projectRepository
+            .findById(matterId)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, matterId));
+    if (client.getId().equals(matter.getCustomerId())
+        || customerProjectRepository.existsByCustomerIdAndProjectId(client.getId(), matterId)) {
+      return;
+    }
+    var properties = new LinkedHashMap<String, Object>();
+    properties.put("code", MATTER_NOT_LINKED_TO_CLIENT);
+    properties.put("matterId", matterId);
+    throw InvalidStateException.withProperties(
+        "Matter not linked to client",
+        "Matter " + matter.getName() + " is not linked to client " + client.getName(),
+        properties);
+  }
+
+  private static InvalidStateException matterRequired(String reason) {
+    var properties = new LinkedHashMap<String, Object>();
+    properties.put("code", MATTER_REQUIRED);
+    if (reason != null) {
+      properties.put("reason", reason);
+    }
+    return InvalidStateException.withProperties(
+        "Matter required", MATTER_REQUIRED_DETAIL, properties);
+  }
 
   /**
    * G89-F12: a debit on a matter must be covered by this client's money on that matter in this

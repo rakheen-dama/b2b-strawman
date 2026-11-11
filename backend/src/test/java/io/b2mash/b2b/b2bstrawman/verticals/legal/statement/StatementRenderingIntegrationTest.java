@@ -244,13 +244,14 @@ class StatementRenderingIntegrationTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 50000.00,
                       "reference": "DEP/2026/001",
                       "description": "Initial RAF settlement deposit",
                       "transactionDate": "2026-04-01"
                     }
                     """
-                        .formatted(ids[0])))
+                        .formatted(ids[0], ids[1])))
         .andExpect(status().isCreated());
 
     // Security review (PR #1749): trust activity is printed only for a member holding VIEW_TRUST

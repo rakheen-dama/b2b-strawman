@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -55,6 +56,8 @@ class InterestPeriodGuardIntegrationTest {
   private static final String NOT_ENDED_TITLE = "Interest period has not ended";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -238,13 +241,14 @@ class InterestPeriodGuardIntegrationTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 100000.00,
                       "reference": "DEP-GUARD-%s",
                       "description": "Guard test deposit",
                       "transactionDate": "2025-01-15"
                     }
                     """
-                        .formatted(customerId, accountNumber)))
+                        .formatted(customerId, trustMatterOf(customerId), accountNumber)))
         .andExpect(status().isCreated());
 
     return new FundedAccount(accountId, rateId);
@@ -296,5 +300,21 @@ class InterestPeriodGuardIntegrationTest {
 
   private static JwtRequestPostProcessor ownerJwt() {
     return TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                customerRepository,
+                UUID.fromString(id),
+                "Trust matter " + id));
   }
 }

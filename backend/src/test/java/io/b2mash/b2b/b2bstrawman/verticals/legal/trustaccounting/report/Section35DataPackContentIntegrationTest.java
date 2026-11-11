@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -62,6 +63,7 @@ class Section35DataPackContentIntegrationTest {
   private static final String CLIENT = "Section35 Content Client";
 
   @Autowired private MockMvc mockMvc;
+  @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -126,13 +128,14 @@ class Section35DataPackContentIntegrationTest {
                     """
                     {
                       "clientId": "%s",
+                      "matterId": "%s",
                       "amount": 38019.15,
                       "reference": "DEP-S35-001",
                       "description": "Section 35 content deposit",
                       "transactionDate": "2025-06-01"
                     }
                     """
-                        .formatted(clientId)))
+                        .formatted(clientId, trustMatterOf(clientId))))
         .andExpect(status().isCreated());
 
     // G89-F50: two POSTED interest runs inside FY 2025/26, one calculated-but-unposted run, and one
@@ -333,5 +336,21 @@ class Section35DataPackContentIntegrationTest {
     @SuppressWarnings("unchecked")
     T value = (T) holder[0];
     return value;
+  }
+
+  private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();
+
+  /** G89-F28: a client's trust postings sit on a matter of its own (one per client). */
+  private UUID trustMatterOf(String clientId) {
+    return trustMatters.computeIfAbsent(
+        clientId,
+        id ->
+            TestTrustMatterHelper.openClientMatter(
+                tenantSchema,
+                transactionTemplate,
+                projectRepository,
+                UUID.fromString(id),
+                "Trust matter " + id,
+                memberId));
   }
 }

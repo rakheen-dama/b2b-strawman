@@ -1,0 +1,5 @@
+16
+app.jar
+lib
+    50598  11-11-2026 17:36   io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionService.class
+      733  11-11-2026 17:36   db/migration/global/V6__portal_trust_reference_200.sql

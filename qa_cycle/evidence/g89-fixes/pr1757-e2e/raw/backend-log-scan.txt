@@ -1,0 +1,64 @@
+===== G1-backend.log: JSON log level WARN/ERROR by logger | message (first 110 chars)
+  48 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica
+  48 WARN PDType1Font | Using fallback font LiberationSans for base font ZapfDingbats
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-BoldOblique
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-Oblique
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-Bold
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Courier
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Times-BoldItalic
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Italic
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Bold
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Roman
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-BoldOblique
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-Oblique
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-Bold
+  24 WARN PDType1Font | Using fallback font LiberationSans for base font Symbol
+  17 WARN InvoiceCreationService | Draft invoice for customer <uuid> created without a tax number — send will be blocked until the customer profi
+  12 WARN NotificationService | No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+  12 WARN GlobalExceptionHandler | Forbidden: path=/api/matters/<uuid>/time-summary/by-member, method=GET, reason=Per-member time breakdown is re
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManage
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManag
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfigu
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAu
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotatio
+   1 WARN CglibAopProxy | Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterB
+   1 WARN PdfConversionService | LibreOffice not found — PDF conversion will fall back to docx4j
+   1 WARN FileSystemFontProvider | 22 new fonts found, font cache will be re-built
+   1 WARN FileSystemFontProvider | Building on-disk font cache, this may take a while
+   1 WARN FileSystemFontProvider | Finished building on-disk font cache, found 22 fonts
+   1 WARN MaximumAllowableTagsMeterFilter | Reached the maximum number of 'uri' tags for 'http.server.requests'.
+   1 WARN GlobalExceptionHandler | Prerequisite check failed: 3 required field(s) missing for Fee note generation
+ERROR total=0
+PR-area (MATTER_REQUIRED|MATTER_NOT_LINKED|Matter required|Matter not linked|value too long|Portal trust sync failed|TrustLedgerPortalSync|portal_trust) WARN/ERROR=0
+===== G2-backend.log: JSON log level WARN/ERROR by logger | message (first 110 chars)
+   8 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica
+   8 WARN PDType1Font | Using fallback font LiberationSans for base font ZapfDingbats
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManage
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManag
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfigu
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAu
+   4 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker | Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotatio
+   4 WARN CglibAopProxy | Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterB
+   4 WARN PdfConversionService | LibreOffice not found — PDF conversion will fall back to docx4j
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-BoldOblique
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-Oblique
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Courier-Bold
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Courier
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Times-BoldItalic
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Italic
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Bold
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Times-Roman
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-Oblique
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Helvetica-Bold
+   4 WARN PDType1Font | Using fallback font LiberationSans for base font Symbol
+   3 WARN InvoiceCreationService | Draft invoice for customer <uuid> created without a tax number — send will be blocked until the customer profi
+   1 WARN FileSystemFontProvider | 22 new fonts found, font cache will be re-built
+   1 WARN FileSystemFontProvider | Building on-disk font cache, this may take a while
+   1 WARN FileSystemFontProvider | Finished building on-disk font cache, found 22 fonts
+   1 WARN NotificationService | No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+   1 WARN AuditAuthenticationEntryPoint | security.auth_failed: path=/api/clients, method=GET, reason=An error occurred while attempting to decode the J
+ERROR total=0
+PR-area (MATTER_REQUIRED|MATTER_NOT_LINKED|Matter required|Matter not linked|value too long|Portal trust sync failed|TrustLedgerPortalSync|portal_trust) WARN/ERROR=0

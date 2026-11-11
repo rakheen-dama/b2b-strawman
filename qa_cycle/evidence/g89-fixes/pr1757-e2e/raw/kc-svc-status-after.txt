@@ -1,0 +1,18 @@
+=== svc.sh status backend gateway frontend portal ===
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      47148    yes      yes      8080
+  gateway      47535    yes      yes      8443
+  frontend     47752    yes      yes      3000
+  portal       47857    yes      yes      3002
+
+
+Done.
+2026-11-11 20:03:54 SAST
+main checkout HEAD bd1a9518b; git status --porcelain:
+?? .arch-context-phase90-data.md
+?? .arch-rulings-phase90.md

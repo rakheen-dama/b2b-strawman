@@ -1,0 +1,1 @@
+{"detail":"A matter is required for client trust transactions","instance":"/api/trust-accounts/a08c57b6-b7aa-4308-b2d5-37c7764d8333/transactions/deposit","status":400,"title":"Matter required","code":"MATTER_REQUIRED"}

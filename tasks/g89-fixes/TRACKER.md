@@ -52,6 +52,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D37 | (2026-11-11) F28 + F36 ship together as **Batch L** (same family: trust rows not reaching the portal trust view; §7 cluster authorised). Each gets its own red test and commits. |
 | D38 | (2026-11-11) Amend legal-za 12.2 with D36: the R50 000 Moroka deposit names Matter = 'Estate Late Peter Moroka'; the field list drops 'Matter (Optional)'. Ships in PR #1757. |
 | D39 | (2026-11-11) Transfers: **add a required target matter** linked to the target client; TRANSFER_OUT posts on the source matter and TRANSFER_IN on the target matter. CodeRabbit Major plus a reviewer note on #1757. |
+| D40 | (2026-11-11) **G89-F86 is MEDIUM** (pre-existing): reversing a placement whose investment is still ACTIVE leaves a phantom ACTIVE investment on the s86 register and in the S35 pack. **Fold into #1757**: refuse reversal of any placement payment that has an investment (withdraw first). |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -431,3 +432,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - **CodeRabbit: 4 Majors.** Transfer target leg on the source matter → founder **D39**. Fee-transfer matter not re-checked against the client link. Withdrawal while the placement payment is unapproved credits a matter never debited. Investment dialog cannot scroll.
   - Fix round launched. The e2e gate running @b63284ef5 is an early read only; it re-runs on the final head.
   - Post-merge docs pass: 12.2's stale `TrustTransactionService.java:96-102` / `RecordDepositDialog.tsx:126-213` citations; steps 9.1–9.3 do not say the estate matter is created from the Moroka client.
+- 2026-11-11 ~20:30 — **PR #1757 fix round 1** @9a5168491 (red-first per item): D39 transfer target matter; fee-transfer matter link; withdrawal needs an APPROVED placement; security TOCTOU (withdraw vs reverse) fixed with placement-row → investment-row locks plus a two-thread race test; investment dialog scroll.
+  - 2× bound APPROVE @9a5168491. The backend reviewer confirmed the lock order is deadlock-free against the card lock.
+  - **Early-read e2e PASS @b63284ef5** (`pr1757-e2e/`): all suites match their baselines with empty diffs. F28 400s observed (`MATTER_REQUIRED`, `MATTER_NOT_LINKED_TO_CLIENT`). Firm ledger = portal read model = portal summary = 1907.00. F36: a 150-char reference reached the portal with no sync failure. Flyway 14/6.
+  - **G89-F86** found by the review → D40. Verify @9a5168491 stopped (superseded). **Fix round 2**: F86 plus a scroll fix for the Transfer dialog, which now has 9 fields.

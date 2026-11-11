@@ -1,0 +1,1 @@
+{"detail":"Matter Apex Annual Returns mwcej8xh0819 is not linked to client Acme Corp","instance":"/api/trust-accounts/a08c57b6-b7aa-4308-b2d5-37c7764d8333/transactions/deposit","status":400,"title":"Matter not linked to client","code":"MATTER_NOT_LINKED_TO_CLIENT","matterId":"cb647375-63f2-4325-8715-13e3943f7359"}

@@ -1,0 +1,7 @@
+== G1-lifecycle vs exit-rescore/L-lifecycle  expected=105 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=105 now=105  diff-lines=0
+== G1-depth-ii vs exit-rescore/G1-depth-ii  expected=40 unexpected=0 skipped=4 flaky=0 dnr=0  rows prev=44 now=44  diff-lines=0
+== G1-default vs exit-rescore/G1-default  expected=165 unexpected=0 skipped=14 flaky=0 dnr=0  rows prev=179 now=179  diff-lines=0
+== G2-90day vs exit-rescore/G2-90day  expected=13 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=13 now=13  diff-lines=0
+== G2-responsive vs exit-rescore/G2-responsive  expected=21 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=21 now=21  diff-lines=0
+== G2-isolation vs exit-rescore/G2-isolation  expected=2 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=2 now=2  diff-lines=0
+== G2-login-bare vs exit-rescore/G2-login-bare  expected=1 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=1 now=1  diff-lines=0

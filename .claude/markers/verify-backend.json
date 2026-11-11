@@ -1,7 +1,7 @@
 {
-  "commit": "d852bc4a7e43576532cc053537e80c439087f111",
-  "command": "caffeinate -is ./mvnw verify (worktree .claude/worktrees/g89-f, fix/g89-f-tooling-docs)",
+  "commit": "ecf9395a6bc7d4b494974b0620adf5804e866e76",
+  "command": "caffeinate -is ./mvnw verify (worktree .claude/worktrees/g89-j, fix/g89-j-raw-labels)",
   "exit": 0,
-  "ts": "2026-11-11T02:19:12Z",
-  "summary": "PR #1753 (G89 Batch F) @d852bc4a7: 6759 testcases / 0 failures / 0 errors / 26 skipped, BUILD SUCCESS 18:36 min. git diff d852bc4a7..9c7a58c4e -- backend is empty."
+  "ts": "2026-11-11T14:28:51Z",
+  "summary": "PR #1755 (G89 Batch J) @ecf9395a6: 6800 testcases / 0 failures / 0 errors / 26 skipped, BUILD SUCCESS 18:48. Head 1d2918ea8 = +1 test-only commit (exhaustive digest label guard); DigestInvoiceStatusLabelTest 8/0/0 and mutation-checked."
 }

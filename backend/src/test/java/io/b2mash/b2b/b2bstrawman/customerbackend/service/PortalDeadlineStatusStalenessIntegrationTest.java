@@ -40,9 +40,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * G89-F71 (candidate): the portal deadline {@code status} (UPCOMING / DUE_SOON / OVERDUE) is
- * derived once, at sync time ({@code DeadlinePortalSyncService#deriveStatus}), and nothing
- * re-derives it as the calendar moves. A court date (and a prescription) synced while more than 7
+ * G89-F71: the portal deadline {@code status} (UPCOMING / DUE_SOON / OVERDUE) used to be derived
+ * once, at sync time, and nothing re-derived it as the calendar moved. It is now derived at read
+ * time ({@code PortalDeadlineStatus}). A court date (and a prescription) synced while more than 7
  * days out should read DUE_SOON once inside the 7-day window and OVERDUE once past — on the
  * client-facing badge and through the {@code status} filter.
  *
@@ -53,7 +53,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Clock}, no extra Spring context cache key). The source deadlines are never touched after
  * creation.
  *
- * <p>The assertions state the CORRECT behaviour; on main they fail (the red test for the fix).
+ * <p>The assertions state the correct behaviour. They failed 8/8 before the fix (the red test).
  * SoftAssertions so every stale read is reported in one run.
  */
 @SpringBootTest
@@ -156,7 +156,10 @@ class PortalDeadlineStatusStalenessIntegrationTest {
     assertThat(courtAtD).as("court row at D").isNotNull();
     assertThat(trackerAtD).as("prescription row at D").isNotNull();
     assertThat(courtAtD.dueDate()).isEqualTo(due);
-    assertThat(trackerAtD.dueDate()).isEqualTo(due);
+    // The prescription's due date is what the GENERAL_3Y rule computes from the cause-of-action
+    // date. It equals `due` except when `due` is 29 Feb: minusYears(3) lands on 28 Feb and the
+    // rule gives 28 Feb (D+9), which still reads UPCOMING at D, DUE_SOON at D+5, OVERDUE at D+11.
+    assertThat(trackerAtD.dueDate()).isEqualTo(due.minusYears(3).plusYears(3));
     assertThat(courtAtD.status()).as("court status at D (10 days out)").isEqualTo("UPCOMING");
     assertThat(trackerAtD.status()).as("prescription status at D").isEqualTo("UPCOMING");
 

@@ -121,7 +121,7 @@ Also recorded (wording only, not filed): 72.1 "withdrawal" is a Payment (PR #173
 
 **Rulings applied (G89 Batch F, founder D3 2026-11-06).** All four mismatches were amended in the scenario files, each with a one-line justification citing the design proof as it stands on main after Batches A–E:
 - G89-F4 → `legal-za-90day-keycloak.md:273` "Comments" (`frontend/lib/constants/matter-tab-groups.ts:70`).
-- G89-F24 → `portal-client-90day-keycloak.md:194-195` (P-75.1 / P-75.2): open `/deadlines` directly, no nudge email for court dates / prescriptions, "Due soon" flag at ≤ 7 days (`PortalEmailNotificationChannel.java:48,201-202`, `FieldDateScannerJob.java:193`, `DeadlinePortalSyncService.java:78-79,527-528`). The handler line cited above as `:185` is now `:201-202`.
+- G89-F24 → `portal-client-90day-keycloak.md:194-195` (P-75.1 / P-75.2): open `/deadlines` directly, no nudge email for court dates / prescriptions, "Due soon" flag at ≤ 7 days (`PortalEmailNotificationChannel.java:48,201-202`, `FieldDateScannerJob.java:193`, `DeadlinePortalSyncService.java:78-79,527-528`). The handler line cited above as `:185` is now `:201-202`. Founder **D26** (2026-11-11) drops Day 75 from the dependent email lines — 0.D (`:60`) and exit checkpoint E.8 (`:249`) — and **D27** sets the Day 75 actor to Lerato Mthembu, whose Road Accident Fund matter carries the court dates and prescription (Sipho's matter has none; the 636B walk ran P-75.1 as Lerato).
 - G89-F25 → `portal-client-90day-keycloak.md:199` (P-75.6) removed (`deadline-detail-panel.tsx:121-171`, the panel's `<dl>`). Founder **D24** (2026-11-11) extends the ruling to the two lines that depended on 75.6: the Day 75 heading (`:190`, no longer "→ download related doc") and the "Download audit event recorded" checkpoint (`:203`, removed).
 - G89-F27 → `portal-client-90day-keycloak.md:98` (P-3.4): item "Submitted", request "In progress" (`RequestStatus.java:11-12`, `portal/lib/labels.ts:15` — was `:14`).
 
@@ -152,6 +152,8 @@ The three wording-only notes above were **not** amended (D3 authorises exactly t
 | scout | 6.2 §5a-row-4 annotation stale | recorded in §4 above (wording only, not filed) |
 
 ## 6. Exit arithmetic and E.3 / P-E.3 inputs
+
+> **Historical snapshot — the 636B exit as scored on 2026-11-06.** It is kept unchanged as the record of that gate. Current status: §1 (every HIGH and MEDIUM of the 27 ids closed by PRs #1745–#1752), §4 (F4/F24/F25/F27 ruled and amended, D3, D24, D26, D27) and §7 (ids filed since). The **exit re-score is pending** (G89 fix initiative, `tasks/g89-fixes/TRACKER.md` row 9).
 
 - Open register: **BLOCKER 0 · HIGH 3 · MEDIUM 6 · LOW 18** (27 ids).
 - Exit rule `$TASK:675` (0 HIGH + 0 MEDIUM open, every mismatch ruled): **FAIL** — 3 HIGH (F11, F12, F22) + 6 MEDIUM (F13, F14, F16, F17, F18, F23), all confirmed (0.R3, 0.R5); 4 scenario mismatches (F4, F24, F25, F27) await founder §6 rulings.
@@ -207,13 +209,14 @@ Ids filed during the G89 fix initiative (`tasks/g89-fixes/TRACKER.md`), after th
 | G89-F68 | LOW | product bug (ordering) | Fee-note lines for same-date time entries have no deterministic order (sort tie) — seen in the day-30 frame diff | `backend/…/invoice/UnbilledTimeService.java:200` (`ORDER BY p.name, te.date, m.name`) | backlog |
 | G89-F69 | LOW | product bug (PDF layout) | Section 35 PDF Receipts & Payments amounts wrap mid-number ("R 10 / 000,00"); 10 of 14 in the Batch E walk | `backend/…/verticals/legal/trustaccounting/report/TrustReportPackSeeder.java:1043` (amount cell), `:794` (no `nowrap`), `:41` (`PACK_VERSION = 3`) | follow-up PR (needs trust-reports v3 → v4; not in F) |
 | G89-F70 | LOW | product copy (raw labels) | (a) "REPORT EXPORTED" in the audit trail; (b) `comment.created` in the portal Your-actions feed; (c) `edited a comment on entity "entity"` in matter Activity; (d) "ORGANIZATION" in the templates table | (a) `reporting/ReportExportService.java:118,167` + `audit/AuditEventTypeRegistry.java:438-441`; (b) `portal/PortalActivityEventResponse.java:74-114` (default `:113`); (c) `activity/ActivityMessageFormatter.java:108-110`, `:486-506`; (d) `frontend/app/(app)/org/[slug]/settings/documents/_tabs/templates-content.tsx:199-200`, `frontend/components/audit/entity-type-labels.ts:114` | backlog |
+| G89-F71 | unrated — candidate (code read, not yet reproduced) | product bug (portal staleness) | Portal deadline `status` (UPCOMING / DUE_SOON / OVERDUE) is derived once at sync time and stored; nothing re-derives it as days pass (no scheduled refresh; the boot backfill runs once per tenant), so a deadline synced > 7 days out keeps reading "Upcoming" in the badge and the status filter as it nears and passes its due date. The list's urgency colour is computed client-side from the due date and stays correct. Raised by CodeRabbit on PR #1753 (P-75.2) | `backend/…/customerbackend/service/DeadlinePortalSyncService.java:373`, `:403`, `:522-530`; `PortalDeadlineBackfillRunner.java` (once per tenant, marker); `portal/components/deadlines/deadline-detail-panel.tsx:59-60`; `deadline-list.tsx:54-72` (colour) | open — reproduce first (exit re-score / follow-up) |
 
-**Tally (43 ids, G89-F28 … G89-F70).**
+**Tally (44 ids, G89-F28 … G89-F71).**
 - **Fixed: 25.** In #1745–#1752: 22 (F31, F39, F40, F41, F44, F47–F60, F62, F64, F65). In this PR: 3 (F46, F66, F67).
 - **By design: 1** (F61, D21).
-- **Open: 17.** Backlog 16 (F28, F29, F30, F32–F38, F42, F43, F45, F63, F68, F70); follow-up PR 1 (F69).
-- **By severity:** HIGH 5 (F52, F53, F54, F56, F58 — all fixed) · MEDIUM 3 (F39, F50, F51 — all fixed) · LOW 16 · unrated 19 (including F61, by design).
-- **Open by severity:** HIGH 0 · MEDIUM 0 · LOW 9 (F29, F30, F37, F43, F45, F63, F68, F69, F70) · unrated 8 (F28, F32–F36, F38, F42).
+- **Open: 18.** Backlog 16 (F28, F29, F30, F32–F38, F42, F43, F45, F63, F68, F70); follow-up PR 1 (F69); candidate to reproduce 1 (F71).
+- **By severity:** HIGH 5 (F52, F53, F54, F56, F58 — all fixed) · MEDIUM 3 (F39, F50, F51 — all fixed) · LOW 16 · unrated 20 (including F61, by design, and the F71 candidate).
+- **Open by severity:** HIGH 0 · MEDIUM 0 · LOW 9 (F29, F30, F37, F43, F45, F63, F68, F69, F70) · unrated 9 (F28, F32–F36, F38, F42, F71).
 - **Founder D25 (2026-11-11):** the trust-path ids F29, F30 and F37 are **LOW, backlog**. None corrupts a firm-side balance; each is a missing capability or a portal view that stays stale until the next trust event. The remaining unrated ids are backlog and outside the exit bar.
 
 Next free id: **G89-F71**.

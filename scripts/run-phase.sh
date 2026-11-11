@@ -264,7 +264,9 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   if grep -E "^\| \*\*${slice}\*\*.*\*\*Done\*\*" "$TASK_FILE" >/dev/null; then
     log "Slice ${slice} completed successfully (${SLICE_MINUTES}m)"
   else
-    if [[ "$CLAUDE_EXIT" -eq 124 || "$CLAUDE_EXIT" -eq 137 ]]; then
+    # 137 means a timeout only when the cap was actually reached (timeout -k escalated to SIGKILL);
+    # an earlier SIGKILL (e.g. OOM) is reported as the failure it is.
+    if [[ "$CLAUDE_EXIT" -eq 124 ]] || [[ "$CLAUDE_EXIT" -eq 137 && "$SLICE_DURATION" -ge "$SLICE_TIMEOUT" ]]; then
       log "ERROR: Slice ${slice} TIMED OUT after ${SLICE_MINUTES}m (limit: $((SLICE_TIMEOUT / 60))m)"
     else
       log "ERROR: Slice ${slice} did NOT complete (exit code: ${CLAUDE_EXIT}, duration: ${SLICE_MINUTES}m)"

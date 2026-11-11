@@ -1,0 +1,94 @@
+E2E Test Organization: Your weekly update
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ E2E Test Organization
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ Your weekly update
+ 
+ Hi IReq Client 91z8,
+ 
+
+ 
+ Here is your activity summary for the past
+ 7 days.
+ 
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+ Information requests
+ 
+ You have 1 open information request(s).
+ 
+
+ 
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ Open portal &rarr;
+ (http://localhost:3002/home?orgId=e2e-test-org)
+ 
+ 
+
+ 
+
+ 
+ Best,
+
+ E2E Test Organization
+ 
+
+ 
+ 
+ 
+ Unsubscribe from weekly digests
+ (http://localhost:3002/settings/notifications?unsubscribe=1&orgId=e2e-test-org)
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ E2E Test Organization

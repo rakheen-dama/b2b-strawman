@@ -1,0 +1,106 @@
+E2E Test Organization
+
+Statement of Account
+
+Reference: SOA-afa5309c-20261111
+
+Period: 13 August 2026 — 11 November 2026
+
+Generated: 11 November 2026
+
+
+
+To
+
+Sipho Ndlovu mwc84584f099
+
+12 Rivonia Road Sandton 2196 ZA
+
+
+
+Matter
+
+Matter: Ndlovu v RAF — Depth II mwc84584f099
+
+Opened: 11 November 2026
+
+
+
+Professional Fees
+
+               Fee
+ Date                    Description                         Hours   Rate        Amount
+               Earner
+
+ 11                      Drafted and served letter of
+               Alice
+ November                demand on the Road Accident         2       R2 500,00   R5 000,00
+               Owner
+ 2026                    Fund (mwc84584f099)
+
+
+Total fees (excl. VAT): R5 000,00
+
+VAT: R750,00
+
+Total fees (incl. VAT): R5 750,00
+
+
+
+Disbursements
+
+ Date                Category       Description         Supplier        Amount      VAT
+ 11 November      Deeds office   Deeds office           Deeds Office    R1 250,00   R0,00
+ 2026             fees           search fee             Pretoria
+
+
+Total disbursements: R1 250,00
+
+
+
+Trust Activity
+
+Opening balance: R0,00
+
+Deposits
+
+
+ Date               Reference           Description                            Amount
+
+ 11 November        DEP                 Client deposit — RAF claim
+                                                                               R5 000,00
+ 2026               /mwc84584f099       disbursements
+
+
+Payments
+
+
+ Date            Type      Reference            Description                    Amount
+
+ 11
+                           PAY/DEEDS            Deeds office search fee —
+ November        Payment                                                       R1 250,00
+                           /mwc84584f099        Deeds Office Pretoria
+ 2026
+
+
+Closing balance: R3 750,00
+
+
+
+Summary
+
+Fees billed in period: R0,00
+
+Disbursements billed in period: R0,00
+
+Previous balance owing: R0,00
+
+Payments received: R0,00
+
+Closing balance owing: R0,00
+
+Trust balance held: R3 750,00
+
+Unbilled work in progress (not yet billed): R6 250,00
+

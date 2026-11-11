@@ -1,0 +1,389 @@
+===== digest probe G1 2026-11-11T16:43:30+0200 tenant=tenant_7d218705360b orgId=e2e-test-org
+-- portal contacts (status|email):
+ACTIVE|contact@acme.example.com
+ACTIVE|sipho.ndlovu.mwc7zrdxc00a@example.com
+ACTIVE|apex.holdings.mwc7zrdxc00a@example.com
+ACTIVE|moroka.trust.mwc7zrdxc00a@example.com
+ACTIVE|quickcollect.mwc7zrdxc00a@example.com
+ACTIVE|sipho.ndlovu.mwc84584f099@example.com
+ACTIVE|khumalo.property.mwc84584f099@example.com
+ACTIVE|apex.holdings.mwc84584f099@example.com
+ACTIVE|testcust-8p03@example.com
+ACTIVE|lc-8qvv@example.com
+ACTIVE|docgen-8sny@example.com
+ACTIVE|testcust2-8p03@example.com
+ARCHIVED|anon-967652fd-0e61-4664-bcf6-2412d72d65ea@anonymized.invalid
+ACTIVE|prospect-guard-8qvv@example.com
+ACTIVE|prospect-inv-8qvv@example.com
+ARCHIVED|anon-12958452-cb66-4e43-8878-4213745436d2@anonymized.invalid
+ACTIVE|offboarded-guard-8qvv@example.com
+ACTIVE|skip-8qvv@example.com
+ACTIVE|profit-91b0@example.com
+ARCHIVED|anon-41f064db-1fe1-43bc-94a0-8d2447ba85c2@anonymized.invalid
+ACTIVE|ireq-91z8@example.com
+ACTIVE|arith-client-94aq@example.com
+ACTIVE|invcrud-client-94ob@example.com
+ACTIVE|invlife-client-94pc@example.com
+ACTIVE|cf-persist-9l5l@example.com
+ACTIVE|dsar-9n7o@example.com
+-- portal.portal_invoices issued in the 7-day lookback (number|status|total|currency|issue_date):
+INV-0001|SENT|8625.00|ZAR|2026-11-11
+INV-0002|PARTIALLY_PAID|8625.00|ZAR|2026-11-11
+INV-0003|SENT|5482.63|ZAR|2026-11-11
+INV-0004|PAID|40250.00|ZAR|2026-11-11
+INV-0005|SENT|4025.00|ZAR|2026-11-11
+INV-0006|PAID|1725.00|ZAR|2026-11-11
+-- mailpit 'Your weekly update' messages before: 0
+-- call: curl -s -X POST -H 'X-API-KEY: e2e-test-api-key' 'http://localhost:8081/internal/portal/digest/run-weekly?orgId=e2e-test-org'
+-- response: {"tenantsProcessed":1,"digestsSent":10,"skipped":13,"dryRun":false,"errors":[]} (at 2026-11-11T16:43:31+0200)
+-- mailpit 'Your weekly update' messages after: 10
+--- message dTTfBxRasjo2g6QjGoQgLM to=invlife-client-94pc@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:31Z
+  Text body, fee-note section:
+    |  Recent fee notes
+    |  
+    |  
+    |  
+    |  INV-0006
+    |  &mdash; 
+    |  Paid
+    |  
+    |  
+    |  R 1 725,00
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  Open portal &rarr;
+    |  (http://localhost:3002/home?orgId=e2e-test-org)
+    |  
+    |  
+    | 
+    |  
+    | 
+    |  
+    |  Best,
+    | 
+    |  E2E Test Organization
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  Unsubscribe from weekly digests
+    |  (http://localhost:3002/settings/notifications?unsubscribe=1&orgId=e2e-test-org)
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  E2E Test Organization
+  HTML fee-note rows (tags stripped):
+    row: INV-0006 — Paid R 1 725,00
+    rows=1
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message 4nkTtrsXFDXWDaYhW9g4YH to=ireq-91z8@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:31Z
+  Text body, fee-note section:
+  HTML fee-note rows (tags stripped):
+    rows=0
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message K7xeJEaE3Z5nSXJroxJonR to=apex.holdings.mwc84584f099@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:30Z
+  Text body, fee-note section:
+    |  Recent fee notes
+    |  
+    |  
+    |  
+    |  INV-0005
+    |  &mdash; 
+    |  Sent
+    |  
+    |  
+    |  R 4 025,00
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  Open portal &rarr;
+    |  (http://localhost:3002/home?orgId=e2e-test-org)
+    |  
+    |  
+    | 
+    |  
+    | 
+    |  
+    |  Best,
+    | 
+    |  E2E Test Organization
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  Unsubscribe from weekly digests
+    |  (http://localhost:3002/settings/notifications?unsubscribe=1&orgId=e2e-test-org)
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  E2E Test Organization
+  HTML fee-note rows (tags stripped):
+    row: INV-0005 — Sent R 4 025,00
+    rows=1
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message EGA2aYQ4dWHeG3YZyx6Q6V to=khumalo.property.mwc84584f099@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:30Z
+  Text body, fee-note section:
+  HTML fee-note rows (tags stripped):
+    rows=0
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message SKvweLca7m8AL7CNv65UiC to=sipho.ndlovu.mwc84584f099@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:30Z
+  Text body, fee-note section:
+  HTML fee-note rows (tags stripped):
+    rows=0
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message Zof26ygDbe4x4EjRbrbM6b to=quickcollect.mwc7zrdxc00a@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:30Z
+  Text body, fee-note section:
+  HTML fee-note rows (tags stripped):
+    rows=0
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message KxF3eUahALzNgR3mSowdqH to=moroka.trust.mwc7zrdxc00a@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:30Z
+  Text body, fee-note section:
+    |  Recent fee notes
+    |  
+    |  
+    |  
+    |  INV-0002
+    |  &mdash; 
+    |  Partially paid
+    |  
+    |  
+    |  R 8 625,00
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+  HTML fee-note rows (tags stripped):
+    row: INV-0002 — Partially paid R 8 625,00
+    rows=1
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message eVB6jWVgZwN27WfqsUgPsz to=apex.holdings.mwc7zrdxc00a@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:30Z
+  Text body, fee-note section:
+    |  Recent fee notes
+    |  
+    |  
+    |  
+    |  INV-0004
+    |  &mdash; 
+    |  Paid
+    |  
+    |  
+    |  R 40 250,00
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  Open portal &rarr;
+    |  (http://localhost:3002/home?orgId=e2e-test-org)
+    |  
+    |  
+    | 
+    |  
+    | 
+    |  
+    |  Best,
+    | 
+    |  E2E Test Organization
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  Unsubscribe from weekly digests
+    |  (http://localhost:3002/settings/notifications?unsubscribe=1&orgId=e2e-test-org)
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  E2E Test Organization
+  HTML fee-note rows (tags stripped):
+    row: INV-0004 — Paid R 40 250,00
+    rows=1
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message BuSWXMVrBvp6haLCCqLRYo to=sipho.ndlovu.mwc7zrdxc00a@example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:30Z
+  Text body, fee-note section:
+    |  Recent fee notes
+    |  
+    |  
+    |  
+    |  INV-0003
+    |  &mdash; 
+    |  Sent
+    |  
+    |  
+    |  R 5 482,63
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  Open portal &rarr;
+    |  (http://localhost:3002/home?orgId=e2e-test-org)
+    |  
+    |  
+    | 
+    |  
+    | 
+    |  
+    |  Best,
+    | 
+    |  E2E Test Organization
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  Unsubscribe from weekly digests
+    |  (http://localhost:3002/settings/notifications?unsubscribe=1&orgId=e2e-test-org)
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  
+    |  E2E Test Organization
+  HTML fee-note rows (tags stripped):
+    row: INV-0003 — Sent R 5 482,63
+    rows=1
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 
+--- message SAgA7oipdBsGB26JWCk8fA to=contact@acme.example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T14:43:30Z
+  Text body, fee-note section:
+    |  Recent fee notes
+    |  
+    |  
+    |  
+    |  INV-0001
+    |  &mdash; 
+    |  Sent
+    |  
+    |  
+    |  R 8 625,00
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+  HTML fee-note rows (tags stripped):
+    row: INV-0001 — Sent R 8 625,00
+    rows=1
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 

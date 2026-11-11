@@ -1,0 +1,49 @@
+===== digest probe G2 2026-11-11T17:02:44+0200 tenant=tenant_7d218705360b orgId=e2e-test-org
+-- portal contacts (status|email):
+ACTIVE|contact@acme.example.com
+-- portal.portal_invoices issued in the 7-day lookback (number|status|total|currency|issue_date):
+INV-0001|SENT|8625.00|ZAR|2026-11-11
+INV-0002|PARTIALLY_PAID|2300.00|ZAR|2026-11-11
+-- mailpit 'Your weekly update' messages before: 0
+-- call: curl -s -X POST -H 'X-API-KEY: e2e-test-api-key' 'http://localhost:8081/internal/portal/digest/run-weekly?orgId=e2e-test-org'
+-- response: {"tenantsProcessed":1,"digestsSent":1,"skipped":0,"dryRun":false,"errors":[]} (at 2026-11-11T17:02:44+0200)
+-- mailpit 'Your weekly update' messages after: 1
+--- message fzWPSXDpTobaupk9BsSPqX to=contact@acme.example.com subject=E2E Test Organization: Your weekly update date=2026-11-11T15:02:44Z
+  Text body, fee-note section:
+    |  Recent fee notes
+    |  
+    |  
+    |  
+    |  INV-0001
+    |  &mdash; 
+    |  Sent
+    |  
+    |  
+    |  R 8 625,00
+    |  
+    |  
+    | 
+    |  
+    |  
+    |  INV-0002
+    |  &mdash; 
+    |  Partially paid
+    |  
+    |  
+    |  R 2 300,00
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+    | 
+    |  
+    |  
+  HTML fee-note rows (tags stripped):
+    row: INV-0001 — Sent R 8 625,00
+    row: INV-0002 — Partially paid R 2 300,00
+    rows=2
+  raw-status/ZAR hits in HTML (PAID|SENT|PARTIALLY_PAID|APPROVED|DRAFT|VOID|ZAR): 

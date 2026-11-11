@@ -1,0 +1,29 @@
+===== SoA probe G1-after-lifecycle 2026-11-11T16:37:31+0200 tenant=tenant_7d218705360b
+saved SoA rows=1
+acf3427e-6819-40ca-93e0-1a051a64c71a|statement-of-account-website-redesign-2026-11-11.pdf|2026-11-11 14:34:18.618453+00|org/tenant_7d218705360b/generated/c438ec8e-eecb-4348-9dd0-5ecda282f5c1/statement-of-account-website-redesign-2026-11-11.pdf
+--- acf3427e-6819-40ca-93e0-1a051a64c71a statement-of-account-website-redesign-2026-11-11.pdf (2026-11-11 14:34:18.618453+00)
+context_snapshot transactionType values:      []
+context_snapshot transactionTypeLabel values: []
+pdf bytes=3297
+PDF text, Trust Activity section:
+    | Trust Activity
+    | Opening balance: R0,00
+    | 
+    | Deposits
+    | 
+    | 
+    |  Date          Reference                  Description             Amount
+    | 
+    | 
+    | Payments
+    | 
+    | 
+    |  Date        Type           Reference               Description     Amount
+    | 
+    | 
+    | Closing balance: R0,00
+    | 
+    | 
+    | 
+    | Summary
+raw-enum hits in PDF text (whole words PAYMENT|REFUND|DEPOSIT|FEE_TRANSFER|TRANSFER_OUT|DISBURSEMENT_PAYMENT|INTEREST_LPFF|REVERSAL): 0

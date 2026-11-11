@@ -1,0 +1,209 @@
+===== SoA probe G1-after-depth-ii 2026-11-11T16:39:46+0200 tenant=tenant_7d218705360b
+saved SoA rows=6
+acf3427e-6819-40ca-93e0-1a051a64c71a|statement-of-account-website-redesign-2026-11-11.pdf|2026-11-11 14:34:18.618453+00|org/tenant_7d218705360b/generated/c438ec8e-eecb-4348-9dd0-5ecda282f5c1/statement-of-account-website-redesign-2026-11-11.pdf
+6d324947-503c-498a-b235-d25b193973f5|statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf|2026-11-11 14:39:06.063047+00|org/tenant_7d218705360b/generated/072749ed-7b2f-4dd8-9c9d-6e04b1520400/statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf
+b1791d21-c6ff-47cd-aa56-3c283923ae8e|statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf|2026-11-11 14:39:09.389383+00|org/tenant_7d218705360b/generated/9dd268bc-2ebb-4779-a5a3-d2da8d37cf57/statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf
+ca43924a-8354-432d-b631-3837b68e8334|statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf|2026-11-11 14:39:16.628313+00|org/tenant_7d218705360b/generated/98ee2557-619b-4598-a654-f0d4e3a0f9d2/statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf
+00349fa9-a299-4d10-b003-77ed277fc30b|statement-of-account-apex-holdings-shareholders-agreement-review-mwc845-2026-11-11.pdf|2026-11-11 14:39:36.810632+00|org/tenant_7d218705360b/generated/d0b94f25-924b-47a6-831d-6946b61c7aef/statement-of-account-apex-holdings-shareholders-agreement-review-mwc845-2026-11-11.pdf
+f82869db-cc9f-4003-8f8b-e20d59e6682f|statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf|2026-11-11 14:39:42.586954+00|org/tenant_7d218705360b/generated/dd71201c-9825-497c-bb31-8054a63b4a9f/statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf
+--- acf3427e-6819-40ca-93e0-1a051a64c71a statement-of-account-website-redesign-2026-11-11.pdf (2026-11-11 14:34:18.618453+00)
+context_snapshot transactionType values:      []
+context_snapshot transactionTypeLabel values: []
+pdf bytes=3297
+PDF text, Trust Activity section:
+    | Trust Activity
+    | Opening balance: R0,00
+    | 
+    | Deposits
+    | 
+    | 
+    |  Date          Reference                  Description             Amount
+    | 
+    | 
+    | Payments
+    | 
+    | 
+    |  Date        Type           Reference               Description     Amount
+    | 
+    | 
+    | Closing balance: R0,00
+    | 
+    | 
+    | 
+    | Summary
+raw-enum hits in PDF text (whole words PAYMENT|REFUND|DEPOSIT|FEE_TRANSFER|TRANSFER_OUT|DISBURSEMENT_PAYMENT|INTEREST_LPFF|REVERSAL): 0
+--- 6d324947-503c-498a-b235-d25b193973f5 statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf (2026-11-11 14:39:06.063047+00)
+context_snapshot transactionType values:      []
+context_snapshot transactionTypeLabel values: []
+pdf bytes=5198
+PDF text, Trust Activity section:
+    | Trust Activity
+    | 
+    | Opening balance: R0,00
+    | 
+    | Deposits
+    | 
+    | 
+    |  Date                Reference               Description                              Amount
+    | 
+    |  11 November         DEP                     Client deposit — RAF claim
+    |                                                                                       R5 000,00
+    |  2026                /mwc84584f099           disbursements
+    | 
+    | 
+    | Payments
+    | 
+    | 
+    |  Date            Type           Reference              Description                    Amount
+    | 
+    |  11
+    |                                 PAY/DEEDS              Deeds office search fee —
+    |  November        Payment                                                              R1 250,00
+    |                                 /mwc84584f099          Deeds Office Pretoria
+    |  2026
+    | 
+    | 
+    | Closing balance: R3 750,00
+    | 
+    | 
+    | 
+    | Summary
+raw-enum hits in PDF text (whole words PAYMENT|REFUND|DEPOSIT|FEE_TRANSFER|TRANSFER_OUT|DISBURSEMENT_PAYMENT|INTEREST_LPFF|REVERSAL): 0
+--- b1791d21-c6ff-47cd-aa56-3c283923ae8e statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf (2026-11-11 14:39:09.389383+00)
+context_snapshot transactionType values:      []
+context_snapshot transactionTypeLabel values: []
+pdf bytes=5198
+PDF text, Trust Activity section:
+    | Trust Activity
+    | 
+    | Opening balance: R0,00
+    | 
+    | Deposits
+    | 
+    | 
+    |  Date                Reference               Description                              Amount
+    | 
+    |  11 November         DEP                     Client deposit — RAF claim
+    |                                                                                       R5 000,00
+    |  2026                /mwc84584f099           disbursements
+    | 
+    | 
+    | Payments
+    | 
+    | 
+    |  Date            Type           Reference              Description                    Amount
+    | 
+    |  11
+    |                                 PAY/DEEDS              Deeds office search fee —
+    |  November        Payment                                                              R1 250,00
+    |                                 /mwc84584f099          Deeds Office Pretoria
+    |  2026
+    | 
+    | 
+    | Closing balance: R3 750,00
+    | 
+    | 
+    | 
+    | Summary
+raw-enum hits in PDF text (whole words PAYMENT|REFUND|DEPOSIT|FEE_TRANSFER|TRANSFER_OUT|DISBURSEMENT_PAYMENT|INTEREST_LPFF|REVERSAL): 0
+--- ca43924a-8354-432d-b631-3837b68e8334 statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf (2026-11-11 14:39:16.628313+00)
+context_snapshot transactionType values:      []
+context_snapshot transactionTypeLabel values: []
+pdf bytes=4573
+PDF text, Trust Activity section:
+    | Trust Activity
+    | 
+    | Opening balance: R0,00
+    | 
+    | Deposits
+    | 
+    | 
+    |  Date               Reference           Description                            Amount
+    | 
+    |  11 November        DEP                 Client deposit — RAF claim
+    |                                                                                R5 000,00
+    |  2026               /mwc84584f099       disbursements
+    | 
+    | 
+    | Payments
+    | 
+    | 
+    |  Date            Type      Reference            Description                    Amount
+    | 
+    |  11
+    |                            PAY/DEEDS            Deeds office search fee —
+    |  November        Payment                                                       R1 250,00
+    |                            /mwc84584f099        Deeds Office Pretoria
+    |  2026
+    | 
+    | 
+    | Closing balance: R3 750,00
+    | 
+    | 
+    | 
+    | Summary
+raw-enum hits in PDF text (whole words PAYMENT|REFUND|DEPOSIT|FEE_TRANSFER|TRANSFER_OUT|DISBURSEMENT_PAYMENT|INTEREST_LPFF|REVERSAL): 0
+--- 00349fa9-a299-4d10-b003-77ed277fc30b statement-of-account-apex-holdings-shareholders-agreement-review-mwc845-2026-11-11.pdf (2026-11-11 14:39:36.810632+00)
+context_snapshot transactionType values:      []
+context_snapshot transactionTypeLabel values: []
+pdf bytes=3709
+PDF text, Trust Activity section:
+    | Trust Activity
+    | 
+    | Opening balance: R0,00
+    | 
+    | Deposits
+    | 
+    | 
+    |  Date            Reference                Description             Amount
+    | 
+    | 
+    | Payments
+    | 
+    | 
+    |  Date        Type            Reference              Description     Amount
+    | 
+    | 
+    | Closing balance: R0,00
+    | 
+    | 
+    | 
+    | Summary
+raw-enum hits in PDF text (whole words PAYMENT|REFUND|DEPOSIT|FEE_TRANSFER|TRANSFER_OUT|DISBURSEMENT_PAYMENT|INTEREST_LPFF|REVERSAL): 0
+--- f82869db-cc9f-4003-8f8b-e20d59e6682f statement-of-account-ndlovu-v-raf-depth-ii-mwc84584f099-2026-11-11.pdf (2026-11-11 14:39:42.586954+00)
+context_snapshot transactionType values:      []
+context_snapshot transactionTypeLabel values: []
+pdf bytes=4559
+PDF text, Trust Activity section:
+    | Trust Activity
+    | 
+    | Opening balance: R0,00
+    | 
+    | Deposits
+    | 
+    | 
+    |  Date               Reference           Description                            Amount
+    | 
+    |  11 November        DEP                 Client deposit — RAF claim
+    |                                                                                R5 000,00
+    |  2026               /mwc84584f099       disbursements
+    | 
+    | 
+    | Payments
+    | 
+    | 
+    |  Date            Type      Reference            Description                    Amount
+    | 
+    |  11
+    |                            PAY/DEEDS            Deeds office search fee —
+    |  November        Payment                                                       R1 250,00
+    |                            /mwc84584f099        Deeds Office Pretoria
+    |  2026
+    | 
+    | 
+    | Closing balance: R3 750,00
+    | 
+    | 
+    | 
+    | Summary
+raw-enum hits in PDF text (whole words PAYMENT|REFUND|DEPOSIT|FEE_TRANSFER|TRANSFER_OUT|DISBURSEMENT_PAYMENT|INTEREST_LPFF|REVERSAL): 0

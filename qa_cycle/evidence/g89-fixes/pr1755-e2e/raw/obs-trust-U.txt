@@ -1,0 +1,26 @@
+===== trust/SoA probe U 2026-11-11T17:04:45+0200 today(SA)=2026-11-11 tenant=tenant_7d218705360b
+tokens: alice=ok bob=ok
+trust account=6349278b-16a1-4b0f-924a-d310ebb1b725 matter=9af72646-1dfd-4293-85c7-29dc5ef028d6 customer=3e43f07e-917e-420a-a565-d05c4e0279f2 (Acme Corp)
+deposit 10000.00 -> http=201 id=774ff124-e549-4d53-96d3-5b8bade0da80 type=DEPOSIT status=RECORDED 
+refund 1500.00 -> http=201 id=f5363319-0f48-4dde-b47c-9d4553f02b70 type=REFUND status=AWAITING_APPROVAL 
+  approve (Bob) -> http=200 status=APPROVED 
+payment 2000.00 -> http=201 id=58dc9ccf-9af5-4d42-86fd-79f7c6b80020 type=PAYMENT status=AWAITING_APPROVAL 
+  approve (Bob) -> http=200 status=APPROVED 
+-- DB (read-only) trust_transactions on this matter:
+DEPOSIT|10000.00|RECORDED|GATE/DEP/1755
+REFUND|1500.00|APPROVED|GATE/REF/1755
+PAYMENT|2000.00|APPROVED|GATE/PAY/1755
+POST /api/matters/9af72646-1dfd-4293-85c7-29dc5ef028d6/statements {"periodStart":"2026-10-12","periodEnd":"2026-11-11"} -> http=201 id=0ff6d077-24c7-4792-aa64-01dba23706d5 containsTrustData=true
+-- htmlPreview Payments table rows (tags stripped):
+    row: Date Type Reference Description Amount
+    row: 11 November 2026 Refund GATE/REF/1755 Gate refund to client R1 500,00
+    row: 11 November 2026 Payment GATE/PAY/1755 Gate payment to sheriff R2 000,00
+-- htmlPreview Deposits table rows:
+    row: Date Reference Description Amount
+    row: 11 November 2026 GATE/DEP/1755 Gate deposit R10 000,00
+-- raw-enum hits in htmlPreview text: 
+-- trust-activity emails (Mailpit subject 'Trust account activity'):
+count=3
+  7LLt5c6Mn3q9jR3H6UsKoH to=contact@acme.example.com type-cell=11 Nov 2026 amount-line=R 2 000,00
+  2ngeyaAycPKSX3MN5Pbeva to=contact@acme.example.com type-cell=11 Nov 2026 amount-line=R 1 500,00
+  C4PXRoWvUWETuBQFGfmZLs to=contact@acme.example.com type-cell=11 Nov 2026 amount-line=R 10 000,00

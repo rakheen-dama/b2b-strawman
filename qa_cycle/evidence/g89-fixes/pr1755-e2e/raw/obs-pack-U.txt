@@ -1,0 +1,9 @@
+===== U before swap (main backend) 2026-11-11T17:04:20+0200
+backend image=sha256:242c2bdf6a485f315927a457bfe6dcbb0000b7f8fff08d661ef4b914c63e0fd3 wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp8-main/compose
+tenant=tenant_7d218705360b flyway tenant=14 global=5
+===== U after swap (PR backend) 2026-11-11T17:04:44+0200
+backend image=sha256:35ad7b70c16c41eab6690636615bd130b28039f9ef970e085d5040f78af51264 wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp8/compose
+postgres container created=2026-11-11T15:03:46.658443709Z (unchanged => same data)
+jar has TrustTransactionTypeLabels: /app/app.jar
+    15995  11-11-2026 14:33   template-packs/legal-za/pack.json
+     2555  11-11-2026 14:33   io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionTypeLabels.class

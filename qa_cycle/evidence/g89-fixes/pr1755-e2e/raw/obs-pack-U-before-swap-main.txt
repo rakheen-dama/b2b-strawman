@@ -1,0 +1,33 @@
+===== pack probe U-before-swap-main 2026-11-11T17:04:20+0200 tenant=tenant_7d218705360b
+-- pack_install (all rows)
+automation-common|AUTOMATION_TEMPLATE|4|2026-11-11 15:04:15.497424+00
+automation-legal-za|AUTOMATION_TEMPLATE|2|2026-11-11 15:04:15.537396+00
+common|DOCUMENT_TEMPLATE|4|2026-11-11 15:04:15.0702+00
+common-project|FIELD|3|2026-11-11 15:04:14.963671+00
+common-task|FIELD|2|2026-11-11 15:04:14.963671+00
+compliance-za|DOCUMENT_TEMPLATE|1|2026-11-11 15:04:15.110533+00
+conveyancing-intake-za|REQUEST|1|2026-11-11 15:04:15.467731+00
+conveyancing-za-clauses|CLAUSE|3|2026-11-11 15:04:15.195189+00
+conveyancing-za-project|FIELD|3|2026-11-11 15:04:14.963671+00
+fica-onboarding-pack|REQUEST|1|2026-11-11 15:04:15.467731+00
+legal-za|DOCUMENT_TEMPLATE|14|2026-11-11 15:04:15.131015+00
+legal-za-clauses|CLAUSE|3|2026-11-11 15:04:15.195189+00
+legal-za-customer|FIELD|2|2026-11-11 15:04:14.963671+00
+legal-za-liquidation-distribution|REQUEST|1|2026-11-11 15:04:15.467731+00
+legal-za-project|FIELD|3|2026-11-11 15:04:14.963671+00
+standard-clauses|CLAUSE|2|2026-11-11 15:04:15.195189+00
+standard-reports|REPORT|2|2026-11-11 15:04:15.419542+00
+trust-reports|REPORT|3|2026-11-11 15:04:15.443636+00
+-- pack_install legal-za document template pack_version: 14
+-- org_settings template pack status (legal-za):
+{"packId": "legal-za", "version": 14, "appliedAt": "2026-11-11T15:04:15.174017667Z"}
+-- document_templates statement-of-account
+legal-za|statement-of-account|content_hash=28e8e13a3bcfff9fa902da79a8517a0d35c0474c033bb09ec1b814a29d512700|updated=2026-11-11 15:04:15.141281+00|hasTypeLabelKey=false|hasRawTypeKey=true
+-- shipped v15 'to' hash: sha256:2d513fa18c853ba7a7c93a9786610f79e9dbf1b999bd6c652ead8e88fc67f384 ; v14 'to' hash: sha256:b49ceb09dd24aad3137163e648fcedd4c04495674d7ca57de00088ce784a3795
+-- backend log: legal-za / reconcile / pack lines
+   1 INFO Applied project-template pack legal-za-project-templates v4 for tenant tenant_7d218705360b
+   1 INFO Installed template pack legal-za with 18 templates for tenant tenant_7d218705360b
+   1 INFO No tenant schemas found — skipping pack reconciliation
+   1 INFO Reconciled default tax_rate name for tenant tenant_7d218705360b (profile=legal-za): 'Standard' -> 'VAT — Standard'
+   1 INFO Reconciled tax_label for tenant tenant_7d218705360b (profile=legal-za): VAT
+-- backend log WARN/ERROR mentioning reconcile/pack: 0

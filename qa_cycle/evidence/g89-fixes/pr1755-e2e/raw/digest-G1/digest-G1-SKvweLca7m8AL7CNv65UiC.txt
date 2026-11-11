@@ -1,0 +1,94 @@
+E2E Test Organization: Your weekly update
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ E2E Test Organization
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ Your weekly update
+ 
+ Hi Sipho Ndlovu mwc84584f099,
+ 
+
+ 
+ Here is your activity summary for the past
+ 7 days.
+ 
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+ Trust account activity
+ 
+ 2 transaction(s) recorded in your trust account.
+ 
+
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ Open portal &rarr;
+ (http://localhost:3002/home?orgId=e2e-test-org)
+ 
+ 
+
+ 
+
+ 
+ Best,
+
+ E2E Test Organization
+ 
+
+ 
+ 
+ 
+ Unsubscribe from weekly digests
+ (http://localhost:3002/settings/notifications?unsubscribe=1&orgId=e2e-test-org)
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ E2E Test Organization

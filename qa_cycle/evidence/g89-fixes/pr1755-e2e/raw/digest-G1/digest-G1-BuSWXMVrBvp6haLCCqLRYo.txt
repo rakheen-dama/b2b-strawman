@@ -1,0 +1,103 @@
+E2E Test Organization: Your weekly update
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ E2E Test Organization
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ Your weekly update
+ 
+ Hi Sipho Ndlovu mwc7zrdxc00a,
+ 
+
+ 
+ Here is your activity summary for the past
+ 7 days.
+ 
+
+ 
+ 
+ Recent fee notes
+ 
+ 
+ 
+ INV-0003
+ &mdash; 
+ Sent
+ 
+ 
+ R 5 482,63
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ Open portal &rarr;
+ (http://localhost:3002/home?orgId=e2e-test-org)
+ 
+ 
+
+ 
+
+ 
+ Best,
+
+ E2E Test Organization
+ 
+
+ 
+ 
+ 
+ Unsubscribe from weekly digests
+ (http://localhost:3002/settings/notifications?unsubscribe=1&orgId=e2e-test-org)
+ 
+
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ E2E Test Organization

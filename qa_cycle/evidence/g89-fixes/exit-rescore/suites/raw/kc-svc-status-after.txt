@@ -1,0 +1,21 @@
+KC svc status 2026-11-11T17:44:50+0200
+
+=== svc.sh status backend gateway frontend portal ===
+
+
+  SERVICE      PID      RUNNING  HEALTHY  PORT
+  -------      ---      -------  -------  ----
+  backend      75318    yes      yes      8080
+  gateway      75558    yes      yes      8443
+  frontend     75768    yes      yes      3000
+  portal       75911    yes      yes      3002
+
+
+Done.
+b2b-keycloak Up 2 weeks (healthy)
+b2b-localstack Up 3 weeks (healthy)
+b2b-postgres Up 3 weeks (healthy)
+b2b-mailpit Up 3 weeks (healthy)
+main checkout HEAD bd1a9518b; status:
+?? .arch-context-phase90-data.md
+?? .arch-rulings-phase90.md

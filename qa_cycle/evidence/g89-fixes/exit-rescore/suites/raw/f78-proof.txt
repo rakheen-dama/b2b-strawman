@@ -1,0 +1,22 @@
+G89 exit re-score: day-07-14-work-trust.spec.ts:78 "Bob: Log 120min on Sipho — letter of demand" (G1, 17:15:20–17:18:28 SAST)
+
+Assertion (spec l.92–95): Fees → Time tabpanel toContainText("Carol Member", 15 s) passed; toContainText("Bob Admin") (5 s) FAILED.
+Received: "From To Total Time 1h 30m Billable 1h 30m ... Contributors 1 Entries 1 ... By Member ..."  (Carol's 90 min only)
+
+Read-only DB check on stack G1 (e2e-postgres, tenant_7d218705360b), taken after the run:
+ duration_minutes |     name     |          created_at           | description
+              90 | Carol Member | 2026-11-11 15:16:17.879699+00 | Research case law — personal injury precedent
+             120 | Bob Admin    | 2026-11-11 15:16:20.624122+00 | Draft letter of demand to Road Accident Fund
+              45 | Carol Member | 2026-11-11 15:16:37.903009+00 | Collate medical records for the letter of dem
+=> Bob's entry WAS committed (17:16:20.6 SAST); the summary panel rendered without it -> stale summary read, not a lost write.
+
+Cascade (serial describe; skipped tests produce missing state downstream):
+ day-30-billing:175   Moroka fee note: unbilled "Select all entries" checkbox not found (Moroka 60-min entry test was skipped)
+ day-45-recon:132     no Motion court date (court-date creation test was skipped)
+ day-60-interest:97   Moroka avg-daily balance R 8 064,52 vs expected 7 790,32 (Moroka FEE_TRANSFER test was skipped)
+ day-90-review:95     run-state "morokaFeeNote" not recorded
+ day-90-review:326    "Fee note must be in APPROVED, SENT or PARTIALLY_PAID status, current status: DRAFT" (Sipho fee-note lifecycle skipped)
+ + 31 did-not-run.  Identical shape to #1754 G1 (68/6/31).
+
+Re-run once on fresh stack L (17:40:56–17:43:50 SAST): 105/0/0, per-test diff vs pr1755-e2e/raw/G1-lifecycle.tsv EMPTY.
+History: :78 failed in 2 of ~45 lifecycle runs across qa_cycle/evidence/g89-fixes (pr1754 G1 @80931ef69, this G1); every re-run passed.

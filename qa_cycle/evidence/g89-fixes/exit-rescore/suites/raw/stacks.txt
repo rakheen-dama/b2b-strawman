@@ -1,0 +1,215 @@
+===== stack G1 checks 2026-11-11T17:15:18+0200 =====
+build rc=0
+git HEAD 461fb99ec87eb0f5cd450d50f31e941b808a7f24
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-11 17:14:43 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-11 17:14:43 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 17:14:43 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 17:14:43 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-11 17:14:43 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-11 17:14:43 +0200 SAST
+/e2e-backend image=sha256:85d0d602da7537d69a7152c83f8076bd3991fa70be9d5b2064ae2c9be1c34a46 created=2026-11-11T15:14:43.615709222Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+/e2e-frontend image=sha256:87797a505c154806805136f093ace290c231c1c64d3634649bcf992b19bdf854 created=2026-11-11T15:14:43.805891014Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-11T15:14:43.467240597Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+cached-lines=45
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+G1-lifecycle writing-actual=0
+== G1-lifecycle accounting 2026-11-11T17:18:28+0200
+G1-lifecycle curated-doc-screenshots-written=9
+    documentation/screenshots/legal-vertical/bank-reconciliation-upload-step.png
+    documentation/screenshots/legal-vertical/client-ledger-balance.png
+    documentation/screenshots/legal-vertical/conflict-check-adverse-match.png
+    documentation/screenshots/legal-vertical/conflict-check-clear-result.png
+    documentation/screenshots/legal-vertical/fee-note-tariff-disbursement.png
+    documentation/screenshots/legal-vertical/litigation-template-action-items.png
+    documentation/screenshots/legal-vertical/prescription-tracker-days.png
+    documentation/screenshots/legal-vertical/trust-dashboard-overview.png
+    documentation/screenshots/legal-vertical/trust-deposit-form.png
+G1-lifecycle baseline-files-written(frontend+portal e2e/screenshots)=0
+G1-lifecycle writing-actual=0 snapshot-mentions=0
+G1-lifecycle git-dirty-paths=9 (tracked-modified=0)
+G1-lifecycle after-restore git-status-lines=0
+G1-depth-ii writing-actual=0
+== G1-depth-ii accounting 2026-11-11T17:20:19+0200
+G1-depth-ii curated-doc-screenshots-written=10
+    documentation/screenshots/legal-vertical/closure-letter-preview.png
+    documentation/screenshots/legal-vertical/conveyancing-matter-detail-custom-fields.png
+    documentation/screenshots/legal-vertical/disbursement-approval-dialog.png
+    documentation/screenshots/legal-vertical/disbursement-list-view.png
+    documentation/screenshots/legal-vertical/matter-closure-dialog-all-green.png
+    documentation/screenshots/legal-vertical/matter-closure-dialog-gate-report-failing.png
+    documentation/screenshots/legal-vertical/otp-acceptance-request.png
+    documentation/screenshots/legal-vertical/otp-document-with-clauses.png
+    documentation/screenshots/legal-vertical/statement-of-account-preview.png
+    documentation/screenshots/legal-vertical/trust-link-dialog.png
+G1-depth-ii baseline-files-written(frontend+portal e2e/screenshots)=0
+G1-depth-ii writing-actual=0 snapshot-mentions=0
+G1-depth-ii git-dirty-paths=10 (tracked-modified=0)
+G1-depth-ii after-restore git-status-lines=0
+G1-default writing-actual=0
+== G1-default accounting 2026-11-11T17:21:19+0200
+G1-default curated-doc-screenshots-written=0
+G1-default baseline-files-written(frontend+portal e2e/screenshots)=0
+G1-default writing-actual=0 snapshot-mentions=0
+G1-default git-dirty-paths=0 (tracked-modified=0)
+G1-default after-restore git-status-lines=0
+===== G1 projects after default
+Website Redesign|ACTIVE
+Ndlovu v RAF mwc9gg8gc932|ACTIVE
+Apex Shareholder Agreement mwc9gg8gc932|ACTIVE
+Estate Late Peter Moroka mwc9gg8gc932|ACTIVE
+QC Debt Recovery #1 mwc9gg8gc932|ACTIVE
+Ndlovu Property Dispute mwc9gg8gc932|ACTIVE
+Apex Annual Returns mwc9gg8gc932|ACTIVE
+Team spec mwc9k7vsbec6|ACTIVE
+Ndlovu v RAF — Depth II mwc9khq887bd|CLOSED
+Ndlovu — transition repro mwc9khq887bd|ACTIVE
+Khumalo Property Holdings — Erf 1234 Sandton Transfer mwc9khq887bd|ACTIVE
+Apex Holdings — Shareholders' Agreement Review mwc9khq887bd|CLOSED
+E2E closure override mveo|CLOSED
+DocGen Matter n0sr|ACTIVE
+Profit Matter n6k9|ACTIVE
+IReq Matter n8q7|ACTIVE
+Bell Matter nev5|ACTIVE
+Void Matter n9wq|ACTIVE
+Budget Test Project nioc|ACTIVE
+Task Test Project nk7m|ACTIVE
+Proj Renamed niue|ARCHIVED
+Time Test Project nkp1|ACTIVE
+Proj Internal niue|ACTIVE
+Tag Matter nwbq|ACTIVE
+E2E Test 1794410472789|ACTIVE
+===== G1 backend WARN/ERROR
+ERROR count=0
+===== stack G2 checks 2026-11-11T17:22:13+0200 =====
+build rc=0
+git HEAD 461fb99ec87eb0f5cd450d50f31e941b808a7f24
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-11 17:21:26 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-11 17:21:26 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-11 17:21:26 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 17:21:26 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 17:21:26 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-11 17:21:26 +0200 SAST
+/e2e-backend image=sha256:85d0d602da7537d69a7152c83f8076bd3991fa70be9d5b2064ae2c9be1c34a46 created=2026-11-11T15:21:26.108143463Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+/e2e-frontend image=sha256:87797a505c154806805136f093ace290c231c1c64d3634649bcf992b19bdf854 created=2026-11-11T15:21:26.180054047Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-11T15:21:26.032247963Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+cached-lines=50
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+G2-90day pre: tokens|age=1|5
+G2-90day writing-actual=0
+== G2-90day accounting 2026-11-11T17:22:42+0200
+G2-90day curated-doc-screenshots-written=0
+G2-90day baseline-files-written(frontend+portal e2e/screenshots)=0
+G2-90day writing-actual=0 snapshot-mentions=0
+G2-90day git-dirty-paths=0 (tracked-modified=0)
+G2-90day after-restore git-status-lines=0
+G2-90day Exchanged magic link=1
+spacing for before-G2-responsive: tokens|age-at-start=3|17 17:22:42
+token age now=333s 17:27:58
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 17:28:11
+:3002 free
+G2-responsive writing-actual=0
+== G2-responsive accounting 2026-11-11T17:28:30+0200
+G2-responsive curated-doc-screenshots-written=0
+G2-responsive baseline-files-written(frontend+portal e2e/screenshots)=0
+G2-responsive writing-actual=0 snapshot-mentions=0
+G2-responsive git-dirty-paths=0 (tracked-modified=0)
+G2-responsive after-restore git-status-lines=0
+G2-responsive Exchanged magic link=2
+spacing for before-G2-isolation: tokens|age-at-start=4|13 17:28:31
+token age now=330s 17:33:47
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 17:34:03
+:3002 free
+G2-isolation writing-actual=0
+== G2-isolation accounting 2026-11-11T17:34:06+0200
+G2-isolation curated-doc-screenshots-written=0
+G2-isolation baseline-files-written(frontend+portal e2e/screenshots)=0
+G2-isolation writing-actual=0 snapshot-mentions=0
+G2-isolation git-dirty-paths=0 (tracked-modified=0)
+G2-isolation after-restore git-status-lines=0
+G2-isolation Exchanged magic link=4
+spacing for before-G2-login-bare: tokens|age-at-start=6|1 17:34:07
+token age now=332s 17:39:38
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 17:39:51
+:3002 free
+G2-login-bare writing-actual=0
+== G2-login-bare accounting 2026-11-11T17:40:10+0200
+G2-login-bare curated-doc-screenshots-written=0
+G2-login-bare baseline-files-written(frontend+portal e2e/screenshots)=0
+G2-login-bare writing-actual=0 snapshot-mentions=0
+G2-login-bare git-dirty-paths=0 (tracked-modified=0)
+G2-login-bare after-restore git-status-lines=0
+G2-login-bare Exchanged magic link=5
+===== G2 backend WARN/ERROR
+ERROR count=0
+G2 final git-status-lines=0
+===== stack L checks 2026-11-11T17:40:54+0200 =====
+build rc=0
+git HEAD 461fb99ec87eb0f5cd450d50f31e941b808a7f24
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-11 17:40:20 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-11 17:40:20 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 17:40:20 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-11 17:40:20 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 17:40:20 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-11 17:40:20 +0200 SAST
+/e2e-backend image=sha256:85d0d602da7537d69a7152c83f8076bd3991fa70be9d5b2064ae2c9be1c34a46 created=2026-11-11T15:40:20.630168127Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+/e2e-frontend image=sha256:87797a505c154806805136f093ace290c231c1c64d3634649bcf992b19bdf854 created=2026-11-11T15:40:20.706616044Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-11T15:40:20.558465169Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-exit/compose
+cached-lines=50
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+L-lifecycle writing-actual=0
+== L-lifecycle accounting 2026-11-11T17:43:50+0200
+L-lifecycle curated-doc-screenshots-written=16
+    documentation/screenshots/legal-vertical/bank-reconciliation-upload-step.png
+    documentation/screenshots/legal-vertical/client-ledger-balance.png
+    documentation/screenshots/legal-vertical/conflict-check-adverse-match.png
+    documentation/screenshots/legal-vertical/conflict-check-clear-result.png
+    documentation/screenshots/legal-vertical/court-calendar-scheduled.png
+    documentation/screenshots/legal-vertical/fee-note-tariff-disbursement.png
+    documentation/screenshots/legal-vertical/interest-run-lpff-split.png
+    documentation/screenshots/legal-vertical/investment-s86-selection.png
+    documentation/screenshots/legal-vertical/litigation-template-action-items.png
+    documentation/screenshots/legal-vertical/prescription-tracker-days.png
+    documentation/screenshots/legal-vertical/profitability-per-matter.png
+    documentation/screenshots/legal-vertical/role-comparison-carol-alice.png
+    documentation/screenshots/legal-vertical/section-35-report.png
+    documentation/screenshots/legal-vertical/trust-dashboard-overview.png
+    documentation/screenshots/legal-vertical/trust-deposit-form.png
+    documentation/screenshots/legal-vertical/trust-fee-transfer.png
+L-lifecycle baseline-files-written(frontend+portal e2e/screenshots)=0
+L-lifecycle writing-actual=0 snapshot-mentions=0
+L-lifecycle git-dirty-paths=16 (tracked-modified=0)
+L-lifecycle after-restore git-status-lines=0

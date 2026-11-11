@@ -1,0 +1,42 @@
+KC svc stopped 2026-11-11T17:13:42+0200 (svc.sh stop frontend portal gateway backend, from main checkout)
+HEAD 461fb99ec87eb0f5cd450d50f31e941b808a7f24 2026-11-11T17:13:42+0200 dirty=0 E2E_VISUAL=unset load=29.39 19.43 15.68
+pnpm-install start 2026-11-11T17:13:42+0200 node=v20.11.1
+pnpm-install rc=0 end 2026-11-11T17:13:54+0200
+portal-vitest start 2026-11-11T17:13:54+0200 node=v20.11.1 envnode=v20.11.1
+portal-vitest rc=0 end 2026-11-11T17:14:04+0200
+dirty after install+vitest: 0
+before-G1 no foreign e2e stack 2026-11-11T17:14:04+0200
+stack-G1 launch 2026-11-11T17:14:04+0200
+stack-G1 rc=0 end 2026-11-11T17:15:18+0200
+G1-lifecycle start 2026-11-11T17:15:20+0200 node=v20.11.1 envnode=v20.11.1
+G1-lifecycle rc=1 end 2026-11-11T17:18:28+0200
+G1-lifecycle load-after=16.59 26.91 21.09
+G1-depth-ii start 2026-11-11T17:18:29+0200 node=v20.11.1 envnode=v20.11.1
+G1-depth-ii rc=0 end 2026-11-11T17:20:19+0200
+G1-depth-ii load-after=7.14 20.21 19.15
+G1-default start 2026-11-11T17:20:20+0200 node=v20.11.1 envnode=v20.11.1
+G1-default rc=0 end 2026-11-11T17:21:19+0200
+G1-default load-after=13.16 19.47 18.94
+G1-ALLDONE 2026-11-11T17:21:19+0200
+G2 HEAD 461fb99ec87eb0f5cd450d50f31e941b808a7f24 2026-11-11T17:21:19+0200 dirty=0 E2E_VISUAL=unset load=12.51 19.23 18.85
+before-G2 no foreign e2e stack 2026-11-11T17:21:20+0200
+stack-G2 launch 2026-11-11T17:21:20+0200
+stack-G2 rc=0 end 2026-11-11T17:22:13+0200
+G2-90day start 2026-11-11T17:22:16+0200 node=v20.11.1 envnode=v20.11.1
+G2-90day rc=0 end 2026-11-11T17:22:42+0200
+G2-responsive start 2026-11-11T17:28:13+0200 node=v20.11.1 envnode=v20.11.1
+G2-responsive rc=0 end 2026-11-11T17:28:30+0200
+G2-isolation start 2026-11-11T17:34:04+0200 node=v20.11.1 envnode=v20.11.1
+G2-isolation rc=0 end 2026-11-11T17:34:06+0200
+G2-login-bare start 2026-11-11T17:39:52+0200 node=v20.11.1 envnode=v20.11.1
+G2-login-bare rc=0 end 2026-11-11T17:40:09+0200
+G2-ALLDONE 2026-11-11T17:40:10+0200
+L HEAD 461fb99ec87eb0f5cd450d50f31e941b808a7f24 2026-11-11T17:40:13+0200 dirty=0 load=6.71 7.07 10.56
+before-L no foreign e2e stack 2026-11-11T17:40:14+0200
+stack-L launch 2026-11-11T17:40:14+0200
+stack-L rc=0 end 2026-11-11T17:40:54+0200
+L-lifecycle start 2026-11-11T17:40:56+0200 node=v20.11.1 envnode=v20.11.1
+L-lifecycle rc=0 end 2026-11-11T17:43:50+0200
+L-lifecycle load-after=9.32 8.97 10.66
+L-ALLDONE 2026-11-11T17:43:51+0200
+e2e-down rc=0 2026-11-11T17:44:10+0200 e2e-containers=0 volumes=0

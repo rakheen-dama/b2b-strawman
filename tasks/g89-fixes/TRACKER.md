@@ -45,6 +45,11 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D30 | (2026-11-11) W1-c1: legal-za 47.2 expects banking details on the fee-note PDF, but no step enters them. **Add a Day 0 banking-details step** (§6 amendment, small docs PR). |
 | D31 | (2026-11-11) W2-c1 (interest period ending **today** accepted; the F11 guard rejects only end > today, `InterestService.java:726-737`, the approved Batch B design) → **LOW, backlog**. |
 | D32 | (2026-11-11) The remaining exit-walk findings are LOW. **Fix the copy items now** in a small PR before closing the initiative: W2-c2 (weekly digest prints raw 'PAID' / 'ZAR 5335.00', `portal-weekly-digest.html:19,22-23`) and W2-c3 (client statement trust Type column prints 'PAYMENT' / 'REFUND', `statement-of-account.json:300`). W2-c4 (Overview task-% tile stale ≤1 min, not reproduced), G89-F72 (Plex body font) and F73 (invoice-lifecycle locator race) are LOW, backlog. |
+| D33 | (2026-11-11) Gate observations G89-F79–F85 (digest plain-text `&amp;mdash;`, lower-case `zar`, ISO digest dates, 'Interest credit' label, past-due deadlines outside the default window, EXPIRED tracker with no portal event, time-summary load flake) are **LOW, backlog**. |
+| D34 | (2026-11-11) **G89-F28 is MEDIUM: fix before exit.** Trust rows with no matter never reach the portal, so the client's portal balance can differ from the firm ledger (F22 symptom class); a no-matter deposit is possible in the UI (exit W2). |
+| D35 | (2026-11-11) **G89-F36 is MEDIUM: fix before exit** (a trust reference over 100 chars aborts that matter's portal sync). F32, F33, F34, F35, F38, F42 are **LOW, backlog**. |
+| D36 | (2026-11-11) F28 fix design: **require a matter** on client trust deposits, payments, refunds and transfers (backend validation + UI). This removes the no-matter bucket and the D5 unmattered interest line, and matches SA practice. |
+| D37 | (2026-11-11) F28 + F36 ship together as **Batch L** (same family: trust rows not reaching the portal trust view; §7 cluster authorised). Each gets its own red test and commits. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -63,7 +68,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 8 | F — tooling, docs, scenarios | F46 fonts, F66, F67 (opt-in compares), embedded-PG workdir, F1, F2, F3, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, dead `extractText(Document)`, file F28–F70 | BE(test infra) + FE + PT + DOC | PR #1753 → `be5b06ecb` | **MERGED** 2026-11-11 (tooling/docs; F46 + opt-in compares observed in the pre-merge e2e gate; F66 observed at the exit re-score if a run lands in 00:00–02:00) |
 | 8b | **I — G89-F71** portal deadline status stale (D29 MEDIUM) | F71 | BE | PR #1754 → `452ba3d7a` | **VERIFIED** (red→green integration test 8/8; runtime probe on the PR-head e2e stack: stored = API = rule for 8 deadlines, filter groups exact). Staleness over real days is not browser-observable on a single day. |
 | 8c | **J — raw-label copy** (D32) | W2-c2, W2-c3 | BE + legal-za v15 | PR #1755 → merged | **MERGED**: e2e-observed (SoA PDFs 'Payment'/'Refund'; digest 'Paid R 40 250,00'; v14→v15 reconcile on an upgrade stack) |
-| 8d | **K — Day 0 banking step** (D30, §6 docs) | W1-c1 | DOC | | OPEN |
+| 8d | **K — Day 0 banking step** (D30, §6 docs) | W1-c1 → G89-F78 | DOC | PR #1756 → `6547d2319` | **MERGED** (2× APPROVE, CodeRabbit 0 actionable) |
+| 8e | **L — trust rows to the portal** (D34–D37) | F28 (require matter), F36 (long reference) | BE + FE (+PT) | | OPEN |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
 
 ## Gap checklist
@@ -410,3 +416,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - Pre-merge e2e PASS @1d2918ea8 (`pr1755-e2e/`); legal-za v15 reconcile observed on an upgrade stack. The final-head delta is non-ZAR only, pinned by unit and GreenMail tests.
   - **Pre-existing LOW candidates noted, not filed as fixes:** digest plain-text part prints a literal `&amp;mdash;`; a lower-case `zar` would miss the ZAR checks in `formatAmount`; digest deadline dates are ISO; `ClientTrustStatementContext.typeLabel` reads 'Interest credit'.
   - The founder committed Phase 90 work in the main checkout during the gate; commit `90fc069de` also carried the interim J marker, which is harmless.
+- 2026-11-11 ~17:20 — **PR #1756 (Batch K) merged** as `6547d2319`: legal-za step 0.40 enters banking details (D30; register G89-F78). 2× APPROVE @8f10ed775; CodeRabbit REVIEWED, 0 actionable.
+- 2026-11-11 ~17:45 — **Final exit suites PASS on main `461fb99ec`** (`qa_cycle/evidence/g89-fixes/exit-rescore/suites/`), all fresh stacks.
+  - lifecycle 105/0/0 on the re-run (G1's first run hit the known F85 load flake: data saved, page lagged; same pattern at the #1754 gate); depth-ii 40/0/4; default 165/0/14.
+  - portal: vitest 284, 90-day 13/0/0, responsive 21/0/0, isolation 2/0/0, login-bare 1/0/0.
+  - Flyway 14/5; legal-za 15; trust-reports 3; 0 backend ERROR.
+- **Register re-rated** (founder D33–D35): the open never-rated ids were rated. **F28 and F36 are MEDIUM and open**, so the exit is not PASS yet; **Batch L** is next (D36 design, D37 bundle). All other open ids are LOW backlog (26). Register G89-F28 … F85; next free id **G89-F86**.

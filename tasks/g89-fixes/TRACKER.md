@@ -50,8 +50,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 5 | C2 — template packs & generation | F6, F26, 632A(a)(b)(c), 632C (+ SoA WIP row) | BE + FE | PR #1749 → `c38616dd5` | **VERIFIED** on KC (632A(a)(b)(c)/S1-67, F6, F26/S2-50, WIP). DEFERRED: 632C (needs a new payment, moved to the exit re-walk); VIEW_TRUST withheld (needs a custom role, moved to the Batch H walk) |
 | 5b | **H — document access control** | **F52, F53, F54, F56, F58 (all HIGH)**, F55, F59, F60 | BE + FE | PR #1750 → `4f3323525` | **VERIFIED** on KC: F52 lists and direct 403, F53/F54 404, C2 'Withheld'. F56/F58 DEFERRED (AI not configured on the KC dev stack; covered by backend stub-provider tests) → exit re-walk |
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 → `1d2b5d0e3` | **VERIFIED** on KC (F31, 634C, 634E(5), 634E(2) UI). 634E(1) (>50 comments) DEFERRED → exit re-walk (seed 52 comments via the UI with Playwright) |
-| 7 | E — layout, copy, small BE LOWs (+ F50 MEDIUM, F44, F47–F49, F57, F62, F64, F65) | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | | OPEN |
-| 8 | F — tooling, docs, scenarios | F1, F2, F3, screenshot compares opt-in, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, file F28/F29/F30 | FE + DOC | | OPEN |
+| 7 | E — layout, copy, small BE LOWs (+ F50 MEDIUM, F44, F47–F49, F57, F62, F64, F65) | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | PR #1752 → `6e510dc23` | **VERIFIED** on KC 2026-11-11 (20 PASS, 2 PARTIAL → F69/F44-exit, 1 DEFERRED → exit): `qa_cycle/evidence/g89-fixes/batch-E/` |
+| 8 | F — tooling, docs, scenarios | F46 fonts, F66, F67 (opt-in compares), embedded-PG workdir, F1, F2, F3, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, dead `extractText(Document)`, file F28–F70 | BE(test infra) + FE + PT + DOC | branch `fix/g89-f-tooling-docs` | IN PROGRESS (builder launched 2026-11-11) |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
 
 ## Gap checklist
@@ -348,3 +348,4 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
     - Carol restored to Member, SQL-verified.
     - Test refund rejected.
     - Kept: a 30-min time entry `c3ce8756…` on Lerato's RAF matter and an internal SoA draft `6cd4b8d9…`.
+- 2026-11-11 — **Batch F builder launched** in `.claude/worktrees/g89-f` (branch `fix/g89-f-tooling-docs` from `9c268e376`). Brief: `batch-F-brief.md` + HANDOFF 2026-11-11 notes (F66 locations; F68/F69/F70 to file; F69 is a separate trust-reports v3→v4 follow-up PR, not F).

@@ -39,7 +39,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -130,7 +129,12 @@ class TrustInvestmentPlacementGuardIntegrationTest {
 
     withdraw(placed.investmentId())
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Cannot withdraw investment"));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Cannot withdraw investment"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "The investment's placement payment must be approved before the investment can be withdrawn (placement payment status: AWAITING_APPROVAL)"));
 
     assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
@@ -142,7 +146,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-transactions/" + placed.placementId() + "/reject")
-                .with(approverJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"Not instructed\"}"))
         .andExpect(status().isOk());
@@ -151,7 +155,9 @@ class TrustInvestmentPlacementGuardIntegrationTest {
     // withdrawal before the placement-status check is reached
     withdraw(placed.investmentId())
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Invalid investment state"));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid investment state"))
+        .andExpect(jsonPath("$.detail").value("Investment must be ACTIVE or MATURED to withdraw"));
     assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
   }
 
@@ -181,11 +187,16 @@ class TrustInvestmentPlacementGuardIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-transactions/" + placed.placementId() + "/reverse")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"Placed in error\"}"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Cannot reverse transaction"));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Cannot reverse transaction"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This payment placed a trust investment (WITHDRAWN). Withdraw the investment instead of reversing its placement payment."));
 
     assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
@@ -206,17 +217,24 @@ class TrustInvestmentPlacementGuardIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-transactions/" + placed.placementId() + "/reverse")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"Placed in error\"}"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Cannot reverse transaction"));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Cannot reverse transaction"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This payment placed a trust investment (ACTIVE). Withdraw the investment instead of reversing its placement payment."));
 
     assertThat(cardBalance(placed.client())).isEqualByComparingTo("4000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("4000.00");
     String investment =
         mockMvc
-            .perform(get("/api/trust-investments/" + placed.investmentId()).with(ownerJwt()))
+            .perform(
+                get("/api/trust-investments/" + placed.investmentId())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -237,7 +255,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -251,7 +269,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts/" + trustAccountId + "/investments")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -277,14 +295,16 @@ class TrustInvestmentPlacementGuardIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-transactions/" + placementId + "/reject")
-                .with(approverJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"Not instructed\"}"))
         .andExpect(status().isOk());
 
     String investment =
         mockMvc
-            .perform(get("/api/trust-investments/" + investmentId).with(ownerJwt()))
+            .perform(
+                get("/api/trust-investments/" + investmentId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -308,7 +328,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
         mockMvc
             .perform(
                 get("/api/trust-accounts/" + trustAccountId + "/investments/maturing?daysAhead=30")
-                    .with(ownerJwt()))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -327,7 +347,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -340,7 +360,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts/" + trustAccountId + "/investments")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -362,13 +382,16 @@ class TrustInvestmentPlacementGuardIntegrationTest {
 
   private void approve(UUID transactionId) throws Exception {
     mockMvc
-        .perform(post("/api/trust-transactions/" + transactionId + "/approve").with(approverJwt()))
+        .perform(
+            post("/api/trust-transactions/" + transactionId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB)))
         .andExpect(status().isOk());
   }
 
   private ResultActions withdraw(UUID investmentId) throws Exception {
     return mockMvc.perform(
-        post("/api/trust-investments/" + investmentId + "/withdraw").with(ownerJwt()));
+        post("/api/trust-investments/" + investmentId + "/withdraw")
+            .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)));
   }
 
   private UUID newClient(String name) {
@@ -418,13 +441,5 @@ class TrustInvestmentPlacementGuardIntegrationTest {
             RequestScopes.CAPABILITIES,
             Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
         .call(action::get);
-  }
-
-  private static JwtRequestPostProcessor ownerJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB);
-  }
-
-  private static JwtRequestPostProcessor approverJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB);
   }
 }

@@ -39,7 +39,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -134,6 +133,8 @@ class TrustClientMatterRequiredIntegrationTest {
 
     postTrust("deposit", depositBody(client, null, "1000.00", "TCMR-DEP-NM"))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(jsonPath("$.detail").value(MATTER_REQUIRED));
 
     assertThat(as(() -> transactionRepository.findAll()))
@@ -162,6 +163,8 @@ class TrustClientMatterRequiredIntegrationTest {
     UUID client = fundedClient("No Matter Payment Client");
     postTrust("payment", depositBody(client, null, "100.00", "TCMR-PAY-NM"))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(jsonPath("$.detail").value(MATTER_REQUIRED));
   }
 
@@ -170,6 +173,8 @@ class TrustClientMatterRequiredIntegrationTest {
     UUID client = fundedClient("No Matter Refund Client");
     postTrust("refund", depositBody(client, null, "100.00", "TCMR-REF-NM"))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(jsonPath("$.detail").value(MATTER_REQUIRED));
   }
 
@@ -185,6 +190,8 @@ class TrustClientMatterRequiredIntegrationTest {
             """
                 .formatted(source, target, today))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(jsonPath("$.detail").value(MATTER_REQUIRED));
     assertThat(cardBalanceOrNull(target)).isNull();
   }
@@ -200,6 +207,8 @@ class TrustClientMatterRequiredIntegrationTest {
             """
                 .formatted(client, invoiceId))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(jsonPath("$.detail").value(MATTER_REQUIRED));
   }
 
@@ -248,7 +257,12 @@ class TrustClientMatterRequiredIntegrationTest {
             """
                 .formatted(client, invoiceId))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Matter not linked to client"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Matter Unlinked Fee Note Matter is not linked to client Unlinked Fee Note Client"))
         .andExpect(jsonPath("$.code").value("MATTER_NOT_LINKED_TO_CLIENT"));
   }
 
@@ -260,7 +274,12 @@ class TrustClientMatterRequiredIntegrationTest {
 
     postTrust("deposit", depositBody(client, othersMatter, "1000.00", "TCMR-DEP-UNLINKED"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Matter not linked to client"));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Matter not linked to client"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Matter Someone Else's Matter is not linked to client Unlinked Matter Client"));
     assertThat(cardBalanceOrNull(client)).isNull();
   }
 
@@ -270,7 +289,9 @@ class TrustClientMatterRequiredIntegrationTest {
     UUID coClient = newClient("Join Table Co-client");
     UUID matter = newMatter(owner, "Join Table Shared Matter");
     mockMvc
-        .perform(post("/api/clients/" + coClient + "/matters/" + matter).with(ownerJwt()))
+        .perform(
+            post("/api/clients/" + coClient + "/matters/" + matter)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)))
         .andExpect(status().isCreated());
 
     postTrust("deposit", depositBody(coClient, matter, "300.00", "TCMR-DEP-CO"))
@@ -286,10 +307,12 @@ class TrustClientMatterRequiredIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + trustAccountId + "/investments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(investmentBody(client, null)))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(jsonPath("$.detail").value(MATTER_REQUIRED));
   }
 
@@ -304,7 +327,7 @@ class TrustClientMatterRequiredIntegrationTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts/" + trustAccountId + "/investments")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(investmentBody(client, matter)))
             .andExpect(status().isCreated())
@@ -323,7 +346,9 @@ class TrustClientMatterRequiredIntegrationTest {
 
     String withdrawn =
         mockMvc
-            .perform(post("/api/trust-investments/" + investmentId + "/withdraw").with(ownerJwt()))
+            .perform(
+                post("/api/trust-investments/" + investmentId + "/withdraw")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -369,7 +394,7 @@ class TrustClientMatterRequiredIntegrationTest {
         mockMvc
             .perform(
                 post("/api/trust-transactions/" + legacyPaymentId + "/reverse")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"reason\": \"Paid in error\"}"))
             .andExpect(status().isCreated())
@@ -385,7 +410,7 @@ class TrustClientMatterRequiredIntegrationTest {
   private ResultActions postTrust(String path, String body) throws Exception {
     return mockMvc.perform(
         post("/api/trust-accounts/" + trustAccountId + "/transactions/" + path)
-            .with(ownerJwt())
+            .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));
   }
@@ -504,9 +529,5 @@ class TrustClientMatterRequiredIntegrationTest {
             RequestScopes.CAPABILITIES,
             Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
         .call(action::get);
-  }
-
-  private static JwtRequestPostProcessor ownerJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB);
   }
 }

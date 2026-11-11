@@ -38,7 +38,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -154,7 +153,12 @@ class TrustTransferTargetMatterIntegrationTest {
     // The target matter is the SOURCE's matter: not the target's
     transfer(source, sourceMatter, target, sourceMatter, "400.00")
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Matter not linked to client"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Matter Unlinked Target Source Matter is not linked to client Unlinked Target"))
         .andExpect(jsonPath("$.code").value("MATTER_NOT_LINKED_TO_CLIENT"));
 
     assertThat(cardBalance(source)).isEqualByComparingTo("1000.00");
@@ -171,6 +175,8 @@ class TrustTransferTargetMatterIntegrationTest {
 
     transfer(source, sourceMatter, target, null, "400.00")
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(
             jsonPath("$.detail").value("A matter is required for client trust transactions"));
     assertThat(cardBalanceOrNull(target)).isNull();
@@ -205,7 +211,7 @@ class TrustTransferTargetMatterIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-transactions/" + transferOutId + "/reverse")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"Transferred in error\"}"))
         .andExpect(status().isCreated());
@@ -245,7 +251,7 @@ class TrustTransferTargetMatterIntegrationTest {
         targetMatter == null ? "" : "\"targetMatterId\": \"%s\",".formatted(targetMatter);
     return mockMvc.perform(
         post("/api/trust-accounts/" + trustAccountId + "/transactions/transfer")
-            .with(ownerJwt())
+            .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
                 """
@@ -266,7 +272,7 @@ class TrustTransferTargetMatterIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -342,9 +348,5 @@ class TrustTransferTargetMatterIntegrationTest {
             RequestScopes.CAPABILITIES,
             Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
         .call(action::get);
-  }
-
-  private static JwtRequestPostProcessor ownerJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB);
   }
 }

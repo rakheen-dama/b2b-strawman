@@ -41,7 +41,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -146,7 +145,10 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
 
     assertThat(outcome.first())
         .as("the reversal of a placement with an investment (D40)")
-        .isInstanceOf(InvalidStateException.class);
+        .isInstanceOf(InvalidStateException.class)
+        .hasMessageContaining("Cannot reverse transaction")
+        .hasMessageContaining(
+            "Withdraw the investment instead of reversing its placement payment.");
     assertThat(outcome.second()).as("the withdrawal").isNull();
     assertCreditedOnce(placed);
   }
@@ -163,7 +165,9 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
     assertThat(outcome.first()).as("the withdrawal (committed first)").isNull();
     assertThat(outcome.second())
         .as("the reversal, checked after the withdrawal committed")
-        .isInstanceOf(InvalidStateException.class);
+        .isInstanceOf(InvalidStateException.class)
+        .hasMessageContaining("Cannot reverse transaction")
+        .hasMessageContaining("This payment placed a trust investment (WITHDRAWN).");
     assertCreditedOnce(placed);
   }
 
@@ -245,7 +249,7 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -258,7 +262,7 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts/" + trustAccountId + "/investments")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -328,9 +332,5 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
             RequestScopes.CAPABILITIES,
             Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
         .call(action::get);
-  }
-
-  private static JwtRequestPostProcessor ownerJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB);
   }
 }

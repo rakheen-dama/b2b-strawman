@@ -37,7 +37,9 @@ function assertSafeName(name: string, baseDir: string): string {
  * only when `E2E_VISUAL=1`. Without it a gate needs no capture-then-score stack pair, and
  * volatile frames cannot fail a functional run. Curated screenshots are always written.
  */
-export function visualComparesEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+export function visualComparesEnabled(
+  env: Readonly<Record<string, string | undefined>> = process.env
+): boolean {
   return env.E2E_VISUAL === "1";
 }
 

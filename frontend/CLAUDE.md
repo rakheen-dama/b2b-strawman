@@ -94,7 +94,7 @@ The frontend uses a "Signal Deck" design language — precise, information-forwa
 | Body / UI    | **IBM Plex Sans**  | `--font-sans`    | Paragraphs, buttons, labels, table text — engineered precision                       |
 | Code / Stats | **JetBrains Mono** | `--font-mono`    | Code blocks, KPI numbers, inline stats. Use `font-mono tabular-nums` for data        |
 
-All loaded via `next/font/google` in `app/layout.tsx`.
+All self-hosted via `next/font/local` in `app/layout.tsx` from the committed latin-subset woff2 files in `app/fonts/<family>/` (SIL OFL, `OFL.txt` beside each; G89-F46). Never use `next/font/google`: it downloads at build time and has broken CI and e2e builds offline. `__tests__/self-hosted-fonts.test.ts` guards this (portal twin in `portal/__tests__/`).
 
 ### Color System
 

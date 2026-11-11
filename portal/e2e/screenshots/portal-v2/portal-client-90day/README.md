@@ -2,6 +2,8 @@
 
 This directory holds the Playwright `toHaveScreenshot()` baseline PNGs for the **Portal Client-POV 90-Day** lifecycle (Phase 68 / Epic 500), captured at the `lg` viewport via `portal/playwright.portal.config.ts` (project `portal-client-90day`).
 
+> **Visual compares are opt-in (G89 Batch F, founder ruling 2026-11-03).** `playwright.portal.config.ts` sets `ignoreSnapshots` unless `E2E_VISUAL=1`, so every `toHaveScreenshot()` below is skipped by default and gates need no capture-then-score stack pair. Every capture (`--update-snapshots`) and verification command below therefore carries `E2E_VISUAL=1`; without it nothing is written or compared.
+
 ## Status
 
 **Empty placeholder.** Baselines are populated on the **first** Playwright run with `--update-snapshots`. Slice 500B (this PR) ships the directory + this README; baseline PNGs are deferred to a human-operator live-stack run because the lifecycle requires three vertical Keycloak tenants to be pre-provisioned (estimated 60+ minutes of firm-side `/qa-cycle-kc` runs before the portal lifecycle can begin).
@@ -73,7 +75,7 @@ PORTAL_CONTACT_EMAIL=zola.portal@example.com \
   PORTAL_ORG_SLUG=ledger-collective \
   BACKEND_URL=http://localhost:8080 \
   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
-  NODE_OPTIONS="" pnpm exec playwright test \
+  E2E_VISUAL=1 NODE_OPTIONS="" pnpm exec playwright test \
   --config=playwright.portal.config.ts \
   --project=portal-client-90day \
   --update-snapshots
@@ -83,7 +85,7 @@ PORTAL_CONTACT_EMAIL=thembi.portal@example.com \
   PORTAL_ORG_SLUG=keystone-consulting \
   BACKEND_URL=http://localhost:8080 \
   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
-  NODE_OPTIONS="" pnpm exec playwright test \
+  E2E_VISUAL=1 NODE_OPTIONS="" pnpm exec playwright test \
   --config=playwright.portal.config.ts \
   --project=portal-client-90day \
   --update-snapshots
@@ -93,7 +95,7 @@ PORTAL_CONTACT_EMAIL=sipho.portal@example.com \
   PORTAL_ORG_SLUG=mathebula-partners \
   BACKEND_URL=http://localhost:8080 \
   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
-  NODE_OPTIONS="" pnpm exec playwright test \
+  E2E_VISUAL=1 NODE_OPTIONS="" pnpm exec playwright test \
   --config=playwright.portal.config.ts \
   --project=portal-client-90day \
   --update-snapshots
@@ -112,13 +114,13 @@ Run **once** (any tenant) to confirm baselines hold:
 
 ```bash
 cd portal
-NODE_OPTIONS="" pnpm test:e2e:portal-client-90day
+E2E_VISUAL=1 NODE_OPTIONS="" pnpm test:e2e:portal-client-90day
 ```
 
 Or equivalently:
 
 ```bash
-NODE_OPTIONS="" pnpm exec playwright test \
+E2E_VISUAL=1 NODE_OPTIONS="" pnpm exec playwright test \
   --config=playwright.portal.config.ts \
   --project=portal-client-90day
 ```

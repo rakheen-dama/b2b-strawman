@@ -81,4 +81,4 @@ Capture each shot:
 
 Curated captures are **non-regression** — intended for human-readable artifacts (blog posts, sales decks, README walkthroughs, the demo cycle in `tech-evolution/`). They live in `documentation/screenshots/`.
 
-**Regression baselines are separate** — they live under `portal/e2e/screenshots/portal-v2/portal-client-90day/` and are managed by Playwright `--update-snapshots`. See `portal/e2e/screenshots/portal-v2/portal-client-90day/README.md` for the baseline-capture procedure.
+**Regression baselines are separate** — they live under `portal/e2e/screenshots/portal-v2/portal-client-90day/` and are managed by Playwright `--update-snapshots`, opt-in via `E2E_VISUAL=1` since G89 Batch F. See `portal/e2e/screenshots/portal-v2/portal-client-90day/README.md` for the baseline-capture procedure.

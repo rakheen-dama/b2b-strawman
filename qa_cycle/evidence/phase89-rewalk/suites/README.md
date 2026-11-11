@@ -74,6 +74,8 @@ How freshness was proven: each `e2e-down.sh` ran `docker compose down -v` ("Volu
 
 ## Procedure (why four stacks)
 
+> **Superseded for gates by G89 Batch F (2026-11-11).** Visual compares are opt-in: `frontend/e2e/helpers/screenshot.ts` runs `toHaveScreenshot()` only with `E2E_VISUAL=1`, and `portal/playwright.portal.config.ts` sets `ignoreSnapshots` without it (founder ruling 2026-11-03). A gate now runs each suite once on one fresh stack, with no capture stack and no `--update-snapshots`. The capture-then-score procedure below is needed only for an explicit `E2E_VISUAL=1` visual pass. **G89-F67** (flaky day-30 fee-note frames) therefore no longer affects gates.
+
 Screenshot baselines are not committed. A first run on a fresh worktree therefore fails every `toHaveScreenshot` with "snapshot doesn't exist, writing actual". The procedure used two stacks per screenshot-bearing group:
 
 1. **Capture.** Each screenshot-bearing group was first run on its own fresh stack with `--update-snapshots=all`: C1 for lifecycle → depth-ii, C2 for 90-day → responsive.

@@ -16,6 +16,8 @@ import { test, expect } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { openGroupedTab } from "../../helpers/grouped-tabs";
 import { api, apiOk, apiStatus } from "../../helpers/api";
+// SA business date (G89-F66): My Work and the product "today" are South African time.
+import { todayInSA } from "@b2mash/shared/date";
 import { SEED } from "../../helpers/seed";
 
 const ORG = "e2e-test-org";
@@ -247,7 +249,7 @@ test.describe.serial("PROJ-01: Project CRUD", () => {
     const res = await api(`/api/tasks/${taskId}/time-entries`, {
       method: "POST",
       body: {
-        date: new Date().toISOString().split("T")[0],
+        date: todayInSA(),
         durationMinutes: 30,
         billable: true,
         description: `Time Block Test ${RUN_ID}`,

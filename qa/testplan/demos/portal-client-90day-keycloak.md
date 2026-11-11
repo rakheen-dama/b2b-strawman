@@ -29,6 +29,7 @@
 | Role | Name | Portal-contact email | Tenant (org slug) | Profile |
 |---|---|---|---|---|
 | Client — Litigation (individual) | Sipho Dlamini | `sipho.portal@example.com` | `mathebula-partners` (or fixture `e2e-test-org`) | `legal-za` |
+| Client — Litigation, Road Accident Fund (individual) — Day 75 only | Lerato Mthembu | her client email as entered at legal-za 22.2 and recorded in 0.C (auto-provisioned; the 636B walk used `lerato.mthembu@email.co.za`) | `mathebula-partners` | `legal-za` |
 | Client — Deceased Estate (trust) | Moroka Family Trust | `moroka.portal@example.com` | `mathebula-partners` | `legal-za` |
 | Firm Owner (off-screen, creates state) | Thandi Mathebula / Naledi Phiri / Lindiwe Khumalo | firm-side only | respective tenant | — |
 
@@ -38,7 +39,7 @@
 
 | Tenant | Firm-side lifecycle already run | Produces |
 |---|---|---|
-| `mathebula-partners` (legal-za) | `legal-za-90day-keycloak.md` Days 0–21 minimum | Matter + info requests + trust deposit |
+| `mathebula-partners` (legal-za) | `legal-za-90day-keycloak.md` Days 0–23 minimum (Days 0–21 for Sipho; 22.4 creates Lerato's RAF matter and 23.3 its Case Management court date); **plus, for Day 75 only** — Firm-side, as Thandi or Bob, before the Day 75 sign-in: **Diary** → **New court date** → Matter = Lerato's RAF matter, Type = **Hearing**, Date = within 7 days of the walk date (e.g. today + 7), Court = "Gauteng High Court"; then **Diary** → **New prescription tracker** → Matter = the RAF matter, Prescription Type = **Delict (3 years)**, Cause of Action Date = the walk date + 20 days − 3 years | Matter + info requests + trust deposit; Lerato's RAF matter; A **Due soon** court date and a prescription on Lerato's `/deadlines` (75.1, 75.2) (G89 fix initiative D28 — prerequisite added, founder-authorised 2026-11-11: the scenarios create only the +45-day Case Management event (`legal-za-90day-keycloak.md:388`), so nothing is due within 7 days and no prescription exists; the 636B walk set up a Hearing at +7 and a Prescription at +20 the same way. Controls: `diary-page-client.tsx:400`, `:408`; `create-prescription-dialog.tsx:46-52`) |
 
 ## Demo wow moments (capture 📸 on clean pass)
 
@@ -57,7 +58,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.A** Confirm **portal** is running on `:3002`: `curl -sS http://localhost:3002/ -o /dev/null -w "%{http_code}\n"` returns `307` (the portal redirects `/` to `/home`); with `curl -sSL` the final code is `200`. Start via `bash compose/scripts/svc.sh start portal` if not. (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: `portal/middleware.ts:4-19` redirects `/` → `/home`)
 - [ ] **0.B** Confirm each of the three firm-side tenants has at least the minimum firm-side lifecycle slice run (see Prerequisites table above). Without this, portal pages render empty states and wow moments cannot be captured.
 - [ ] **0.C** Confirm each client has a portal contact: portal contacts are auto-provisioned from the client's email when the firm creates the client — there is no firm-side create control and no "Client contact" label — so record them with a read-only SELECT on `portal_contacts` (Sipho's is the client email from the 90-day file's 1.7) (Phase 89 decision 7 / G88-F37 — amended, not built, founder-authorised 2026-11-03: `PortalContactAutoProvisioner.java:42-46` provisions on `CustomerCreatedEvent`; no "Client contact" label in `frontend/`)
-- [ ] **0.D** Mailpit (`http://localhost:8025`) is reachable — Day 0, Day 7, Day 21, Day 75 all involve inspecting an email the portal user receives. (Phase 89 decision 7 / G88-F34 — dropped, founder-authorised 2026-11-03: Day 90's final digest does not exist; Day 85 inspects no email either — §5b row 20, the profile is read-only — matching E.8)
+- [ ] **0.D** Mailpit (`http://localhost:8025`) is reachable — Day 0, Day 7, Day 21 all involve inspecting an email the portal user receives. (G89 fix initiative D3 + D26 / G89-F24 — Day 75 dropped, founder-authorised 2026-11-11: no deadline-approaching nudge email exists for court dates or prescriptions, `PortalEmailNotificationChannel.java:48`, `:201-202` handle `FieldDateApproachingEvent` only) (Phase 89 decision 7 / G88-F34 — dropped, founder-authorised 2026-11-03: Day 90's final digest does not exist; Day 85 inspects no email either — §5b row 20, the profile is read-only — matching E.8)
 
 ---
 
@@ -95,7 +96,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **3.1** Navigate to `/home` → click the same pending info request opened on Day 0
 - [ ] **3.2** Choose a document (any PDF ≤ 2 MB) in the item's upload slot — nothing uploads yet; selecting the file only enables **Upload and submit** (the portal shows no upload progress) (Phase 89 decision 7 / G88-F37 — amended, not built, founder-authorised 2026-11-03: file input + disabled-until-chosen button, `requests/[id]/page.tsx:203-216`)
 - [ ] **3.3** (If the request has a free-text field) fill a short response: "ID copy attached as requested"
-- [ ] **3.4** Click **Upload and submit** (upload and submit are one action; the button reads "Uploading…" while it works, then the item reads **Submitted**) → verify info-request state transitions to **"Submitted"** or **"Awaiting review"** (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the click uploads then submits, `requests/[id]/page.tsx:140-167,209-216`)
+- [ ] **3.4** Click **Upload and submit** (upload and submit are one action; the button reads "Uploading…" while it works, then the item reads **Submitted**) → verify the item reads **"Submitted"** and the info request reads **"In progress"** (G89 fix initiative D3 / G89-F27 — wording amendment, founder-authorised 2026-11-06: the request lifecycle has no Submitted / Awaiting-review state — `IN_PROGRESS` = at least one item submitted, `backend/src/main/java/io/b2mash/b2b/b2bstrawman/informationrequest/RequestStatus.java:11-12`, labelled "In progress" at `portal/lib/labels.ts:15`) (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: the click uploads then submits, `requests/[id]/page.tsx:140-167,209-216`)
 - [ ] **3.5** Verify `/home` "Pending info requests" card no longer shows this request as pending (it may move into a "Recently submitted" sub-list)
 - [ ] **3.6** 📸 **Screenshot**: `day-03-info-request-submitted.png`
 
@@ -187,20 +188,20 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 75 — Deadline-approaching nudge → deadline detail → download related doc  `[legal-za]` (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: the portal has no mark-read control (ADR-363); 75.4–75.5 and the read-state checkpoint are removed; the deadline steps stay — court dates and prescriptions now sync to `/deadlines` (633B/633C))
+## Day 75 — Deadlines list (Due soon) → deadline detail  `[legal-za]` (G89 fix initiative D3 + D24 / G89-F24, G89-F25 — heading amended, founder-authorised 2026-11-06 / 2026-11-11: no nudge email for court dates or prescriptions (`PortalEmailNotificationChannel.java:48`, `:201-202` handle `FieldDateApproachingEvent` only) and no related-document download (`deadline-detail-panel.tsx:121-171`)) (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: the portal has no mark-read control (ADR-363); 75.4–75.5 and the read-state checkpoint are removed; the deadline steps stay — court dates and prescriptions now sync to `/deadlines` (633B/633C))
 
-**Actor**: Sipho (legal-za)
+**Actor**: Lerato Mthembu (legal-za, RAF matter — portal contact = her client email as recorded in 0.C, auto-provisioned from the client record; the 636B walk used `lerato.mthembu@email.co.za`) (G89 fix initiative D27 — actor amended, founder-authorised 2026-11-11: the court dates and prescription Day 75 lists belong to Lerato's Road Accident Fund matter — `legal-za-90day-keycloak.md:29` "court calendar entry"; Sipho's litigation matter has none; the 636B walk ran P-75.1 as Lerato, `qa_cycle/evidence/phase89-rewalk/steps/portal.md` S2-55)
 
-- [ ] **75.1** Open Mailpit → verify deadline-approaching nudge email (subject contains "deadline" or "due in 7 days" or "reminder")
-- [ ] **75.2** Click through → lands on `/deadlines` → the approaching deadline is highlighted / flagged
+- [ ] **75.1** Open `/deadlines` → the RAF court date and prescription are listed; no deadline-approaching nudge email is sent for them, so there is no email to open (G89 fix initiative D3 / G89-F24 — wording amendment, founder-authorised 2026-11-06: the portal deadline email is produced only for custom-field dates — `PortalEmailNotificationChannel.java:48,201-202` handles `FieldDateApproachingEvent` alone, published by `FieldDateScannerJob.java:193`)
+- [ ] **75.2** On `/deadlines`, the deadline due within 7 days carries the **Due soon** flag (G89 fix initiative D3 / G89-F24 — wording amendment, founder-authorised 2026-11-06: no nudge email to click through (see 75.1); `DeadlinePortalSyncService.java:78-79,527-528` flips a row to `DUE_SOON` at ≤ 7 days, labelled "Due soon" at `portal/lib/labels.ts:45`)
 - [ ] **75.3** Click into the deadline → the **Deadline details** panel shows Label (a court date reads "<type> — <court>", e.g. "Hearing — Gauteng High Court"; a prescription reads "Prescription deadline"), Due date, Status, Description (a court date's court reference only) and Source — never the judge / magistrate, the outcome or the firm's notes (Phase 89 decision 7 / §5b row 19 — sanitised copy, founder-authorised 2026-11-03: ADR-363 copy rule, `DeadlinePortalSyncService.java:433-460`; panel fields `deadline-detail-panel.tsx:124-172`)
 - [ ] **75.4** Removed — the portal has no control that marks a deadline nudge read (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: ADR-363 "No mark-read control"; `deadline-detail-panel.tsx:83-172` has none)
 - [ ] **75.5** Removed — with no mark-read there is no unread state to clear (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: see 75.4)
-- [ ] **75.6** Download the related document from the deadline detail view → PDF opens successfully
+- [ ] **75.6** Removed — the deadline detail view has no related document to download (G89 fix initiative D3 / G89-F25 — step removed, founder-authorised 2026-11-06: the **Deadline details** panel renders only Label, Due date, Status, Description and Source, `portal/components/deadlines/deadline-detail-panel.tsx:121-171`)
 - [ ] **75.7** 📸 **Screenshot**: `day-75-deadline-detail.png` (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: the frame shows the deadline detail, not a read state; `portal/e2e/tests/portal-client-90day/day-45-75.spec.ts:243`)
 
 **Day 75 checkpoints**
-- [ ] Download audit event recorded (firm-side audit log shows the portal contact accessed the doc)
+- [ ] Removed — download audit event (G89 fix initiative D24 / G89-F25 — checkpoint removed with 75.6, founder-authorised 2026-11-11: no document is downloaded on Day 75, so there is no download audit event to record; `portal/components/deadlines/deadline-detail-panel.tsx:121-171`)
 
 ---
 
@@ -246,7 +247,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **E.4** **Profile gating** verified — `/trust` is legal-za only, `/deadlines` is legal-za only; non-eligible profiles show empty state, NOT 500
 - [ ] **E.5** **Auth flow** — every portal interaction authenticated via magic-link → JWT (held in localStorage; the portal sets no auth cookie); zero Keycloak-form usage, zero firm-side user bleed-through (Phase 89 decision 7 / G88-F1 — wording amendment, founder-authorised 2026-11-03: `portal/lib/auth.ts:1-11`, ADR-077)
 - [ ] **E.6** **Terminology sweep** — zero firm-side vocabulary leaks on portal pages ("matter" / "project" / "engagement" consistent per tenant profile; no "customer" / "client" inversion)
-- [ ] **E.8** **Email linkage** — every email-driven checkpoint (Day 0, Day 7, Day 21, Day 75) successfully authenticates the follow-through click without re-login (Phase 89 decision 7 / G88-F34 — Day 90 dropped, founder-authorised 2026-11-03: no final digest email)
+- [ ] **E.8** **Email linkage** — every email-driven checkpoint (Day 0, Day 7, Day 21) successfully authenticates the follow-through click without re-login (G89 fix initiative D3 + D26 / G89-F24 — Day 75 dropped, founder-authorised 2026-11-11: Day 75 has no email, `PortalEmailNotificationChannel.java:48`, `:201-202` handle `FieldDateApproachingEvent` only) (Phase 89 decision 7 / G88-F34 — Day 90 dropped, founder-authorised 2026-11-03: no final digest email)
 - [ ] **E.9** **Payment flow** (Day 45) completes end-to-end through the mock payment gateway (local/keycloak profiles); receipt downloads cleanly — N/A on the e2e stack (no PSP; Payments mandate exemption) (Phase 88, register §5a row 17 — wording amendment, founder-authorised 2026-10-29: `MockPaymentGateway.java:34` is profile-gated to local/dev/keycloak/test; there are no sandbox PSP credentials)
 - [ ] **E.10** **Visual review** — the walker reviews every captured 📸 frame at the `lg` viewport for layout defects (no committed PNG baselines, no pixel-diff threshold) (Phase 89 decision 7 / P-E.10 — baseline reading retired, founder-authorised 2026-11-03: no baseline PNGs are committed)
 - [ ] **E.11** **Test suite gate** (mandatory — see master doc "Test suite gate" section):

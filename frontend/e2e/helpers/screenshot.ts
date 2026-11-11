@@ -13,7 +13,7 @@ const CURATED_DIR = path.resolve(
 );
 
 export interface ScreenshotOptions {
-  /** Save a curated screenshot for documentation (default: false = regression mode) */
+  /** Save a curated screenshot for documentation (default: false = regression mode, E2E_VISUAL=1 only) */
   curated?: boolean;
   /** Capture the full scrollable page (default: false) */
   fullPage?: boolean;
@@ -33,13 +33,26 @@ function assertSafeName(name: string, baseDir: string): string {
 }
 
 /**
+ * Baseline compares are opt-in (founder ruling 2026-11-03; G89-F67): `toHaveScreenshot()` runs
+ * only when `E2E_VISUAL=1`. Without it a gate needs no capture-then-score stack pair, and
+ * volatile frames cannot fail a functional run. Curated screenshots are always written.
+ */
+export function visualComparesEnabled(
+  env: Readonly<Record<string, string | undefined>> = process.env
+): boolean {
+  return env.E2E_VISUAL === "1";
+}
+
+/**
  * Capture a screenshot in one of two modes:
  *
- * **Regression mode** (default): Uses Playwright's `toHaveScreenshot()` to compare
- * against committed baselines. Baselines are stored in `e2e/screenshots/legal-lifecycle/`.
+ * **Regression mode** (default): with `E2E_VISUAL=1`, uses Playwright's `toHaveScreenshot()` to
+ * compare against baselines in `e2e/screenshots/legal-lifecycle/` (or `legal-depth-ii/`). Without
+ * the flag it is a no-op (see `visualComparesEnabled`).
  *
  * **Curated mode** (`curated: true`): Saves a standalone PNG to
- * `documentation/screenshots/legal-vertical/` for use in walkthroughs and blog posts.
+ * `documentation/screenshots/legal-vertical/` for use in walkthroughs and blog posts, with or
+ * without the flag.
  */
 export async function captureScreenshot(
   page: Page,
@@ -60,6 +73,7 @@ export async function captureScreenshot(
       writeFileSync(filePath, buffer);
     }
   } else {
+    if (!visualComparesEnabled()) return;
     // fullPage is only valid for page-level assertions, not locator assertions
     if (locator) {
       await expect(locator).toHaveScreenshot(`${name}.png`);

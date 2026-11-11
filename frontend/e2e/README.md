@@ -90,19 +90,29 @@ docker compose -f docker-compose.e2e.yml down -v
 
 The legal lifecycle test suite captures screenshots for two purposes:
 
-### Regression Baselines
+### Regression Baselines (opt-in: `E2E_VISUAL=1`)
 
-Visual regression tests use Playwright's `toHaveScreenshot()` to compare against committed
-baseline images. If the UI changes unexpectedly, the test fails with a diff.
+Visual regression compares are **opt-in** (founder ruling 2026-11-03, G89 Batch F). The
+regression-mode `captureScreenshot()` call runs Playwright's `toHaveScreenshot()` only when
+`E2E_VISUAL=1` is set; without it the call is a no-op and the spec is scored on its functional
+assertions alone. The portal does the same with `ignoreSnapshots` in
+`portal/playwright.portal.config.ts`.
 
-- **Directory:** `frontend/e2e/screenshots/legal-lifecycle/`
+- **Gates do not need capture-then-score.** A gate on a fresh stack runs each suite once,
+  without `--update-snapshots` and without `E2E_VISUAL`. "Snapshot doesn't exist, writing actual"
+  can no longer fail a gate, and the flaky day-30 fee-note frames (G89-F67) no longer affect one.
+- **Directory:** `frontend/e2e/screenshots/legal-lifecycle/` (depth-ii: `legal-depth-ii/`)
 - **Naming convention:** `day-{DD}-{feature}-{state}.png` (e.g., `day-00-dashboard-initial.png`)
-- **Committed to git:** Yes — baselines must be checked in so CI can compare against them
+- **Committed to git:** No — baselines are local. Excluded from the Docker build context
+  (`.dockerignore`, G89-F1).
 
-To update baselines after intentional UI changes:
+To run a visual pass, capture on one fresh stack and score on a second one (the 636A procedure,
+`qa_cycle/evidence/phase89-rewalk/suites/README.md` › "Procedure"), with the flag on both runs.
+Pass Playwright flags without `--` (see `env_pnpm_double_dash_playwright`):
 
 ```bash
-pnpm test:e2e:legal-lifecycle -- --update-snapshots
+E2E_VISUAL=1 pnpm test:e2e:legal-lifecycle --update-snapshots=all   # capture
+E2E_VISUAL=1 pnpm test:e2e:legal-lifecycle                          # score
 ```
 
 ### Curated Documentation Screenshots
@@ -134,7 +144,7 @@ The `captureScreenshot()` helper in `e2e/helpers/screenshot.ts` supports both mo
 ```typescript
 import { captureScreenshot } from "../../helpers/screenshot";
 
-// Regression baseline (default) — compared against committed snapshot
+// Regression baseline (default) — compared only when E2E_VISUAL=1, otherwise a no-op
 await captureScreenshot(page, "day-05-matter-list");
 
 // Curated documentation shot — saved to documentation/screenshots/

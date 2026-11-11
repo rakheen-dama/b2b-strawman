@@ -2,11 +2,9 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,30 +21,22 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.ObjectMapper;
 
-@ExtendWith(MockitoExtension.class)
 class DocumentTextExtractorServiceTest {
-
-  @Mock private StorageService storageService;
 
   private DocumentTextExtractorService service;
 
   @BeforeEach
   void setup() {
-    service = new DocumentTextExtractorService(storageService, new ObjectMapper());
+    service = new DocumentTextExtractorService(new ObjectMapper());
   }
 
   @Test
   void extractText_pdf_producesExpectedContent() throws IOException {
     byte[] pdfBytes = createTestPdf("Hello from PDF document");
     Document doc = createDocument("test.pdf", "application/pdf", "s3/test.pdf");
-    when(storageService.download("s3/test.pdf")).thenReturn(pdfBytes);
-
-    ExtractedText result = service.extractText(doc);
+    ExtractedText result = service.extractText(doc, pdfBytes);
 
     assertThat(result.content()).contains("Hello from PDF document");
     assertThat(result.characterCount()).isGreaterThan(0);
@@ -62,9 +52,7 @@ class DocumentTextExtractorServiceTest {
             "test.docx",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "s3/test.docx");
-    when(storageService.download("s3/test.docx")).thenReturn(docxBytes);
-
-    ExtractedText result = service.extractText(doc);
+    ExtractedText result = service.extractText(doc, docxBytes);
 
     assertThat(result.content()).contains("Hello from DOCX document");
     assertThat(result.characterCount()).isGreaterThan(0);
@@ -76,9 +64,7 @@ class DocumentTextExtractorServiceTest {
   void extractText_tiptapJson_traversesNestedNodes() throws IOException {
     byte[] jsonBytes = loadTestResource("ai/test-documents/test-tiptap.json");
     Document doc = createDocument("doc.json", "application/json", "s3/doc.json");
-    when(storageService.download("s3/doc.json")).thenReturn(jsonBytes);
-
-    ExtractedText result = service.extractText(doc);
+    ExtractedText result = service.extractText(doc, jsonBytes);
 
     assertThat(result.content()).contains("Test Heading");
     assertThat(result.content()).contains("Hello ");
@@ -104,9 +90,7 @@ class DocumentTextExtractorServiceTest {
               "long.docx",
               "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
               "s3/long.docx");
-      when(storageService.download("s3/long.docx")).thenReturn(docxBytes);
-
-      ExtractedText result = service.extractText(doc);
+      ExtractedText result = service.extractText(doc, docxBytes);
 
       assertThat(result.characterCount()).isEqualTo(102_400);
       assertThat(result.wasTruncated()).isTrue();
@@ -121,18 +105,15 @@ class DocumentTextExtractorServiceTest {
   void extractText_corruptedPdf_throwsInvalidStateException() {
     byte[] corruptBytes = "this is not a valid PDF".getBytes(StandardCharsets.UTF_8);
     Document doc = createDocument("corrupt.pdf", "application/pdf", "s3/corrupt.pdf");
-    when(storageService.download("s3/corrupt.pdf")).thenReturn(corruptBytes);
-
-    assertThatThrownBy(() -> service.extractText(doc)).isInstanceOf(InvalidStateException.class);
+    assertThatThrownBy(() -> service.extractText(doc, corruptBytes))
+        .isInstanceOf(InvalidStateException.class);
   }
 
   @Test
   void extractText_emptyDocument_returnsEmptyContent() throws IOException {
     byte[] emptyPdfBytes = createEmptyPdf();
     Document doc = createDocument("empty.pdf", "application/pdf", "s3/empty.pdf");
-    when(storageService.download("s3/empty.pdf")).thenReturn(emptyPdfBytes);
-
-    ExtractedText result = service.extractText(doc);
+    ExtractedText result = service.extractText(doc, emptyPdfBytes);
 
     assertThat(result.characterCount()).isGreaterThanOrEqualTo(0);
     assertThat(result.wasTruncated()).isFalse();

@@ -314,6 +314,14 @@
                     <argLine>@{argLine} -Xmx3g -Duser.timezone=${test.timezone}</argLine>
                     <forkedProcessExitTimeoutInSeconds>60</forkedProcessExitTimeoutInSeconds>
                     <shutdown>kill</shutdown>
+                    <systemPropertyVariables>
+                        <!-- G89 Batch F: zonky extracts the embedded-Postgres binaries (and keeps the
+                             test data directories, see EmbeddedPostgresDirectories) under target/,
+                             not $TMPDIR/embedded-pg, where the macOS nightly temp cleanup pruned
+                             share/postgresql/timezonesets mid-verify (lesson 2026-11-07). `mvn clean`
+                             removes it. -->
+                        <ot.epg.working-dir>${project.build.directory}/embedded-pg</ot.epg.working-dir>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>

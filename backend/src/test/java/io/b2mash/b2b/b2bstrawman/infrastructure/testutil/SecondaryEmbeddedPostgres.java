@@ -25,7 +25,7 @@ public final class SecondaryEmbeddedPostgres {
   private static EmbeddedPostgres startSecondaryPostgres() {
     try {
       EmbeddedPostgres pg =
-          EmbeddedPostgres.builder().setServerConfig("max_connections", "50").start();
+          EmbeddedPostgresDirectories.builder().setServerConfig("max_connections", "50").start();
       Runtime.getRuntime()
           .addShutdownHook(
               new Thread(

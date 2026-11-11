@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.testutil.EmbeddedPostgresDirectories;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.testutil.InMemoryStorageService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestAiConfiguration;
@@ -41,7 +42,8 @@ public class TestcontainersConfiguration {
   private static EmbeddedPostgres startEmbeddedPostgres() {
     try {
       EmbeddedPostgres pg =
-          EmbeddedPostgres.builder()
+          // Binaries + data directory under target/embedded-pg (EmbeddedPostgresDirectories).
+          EmbeddedPostgresDirectories.builder()
               // Singleton Postgres is shared across Spring's test-context cache (default max 32
               // contexts). Even with minimumIdle=0 below, worst-case concurrent load is dozens of
               // Hikari pools draining connections at once during context eviction/handover. 300

@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill;
 
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import org.apache.pdfbox.Loader;
@@ -22,24 +21,17 @@ public class DocumentTextExtractorService {
   private static final Logger log = LoggerFactory.getLogger(DocumentTextExtractorService.class);
   private static final int MAX_TEXT_LENGTH = 102_400; // 100KB
 
-  private final StorageService storageService;
   private final ObjectMapper objectMapper;
 
-  public DocumentTextExtractorService(StorageService storageService, ObjectMapper objectMapper) {
-    this.storageService = storageService;
+  public DocumentTextExtractorService(ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
   }
 
   /**
-   * Downloads the document and extracts its text. Performs no access check — a caller acting for a
-   * member reads the bytes through {@code DocumentService.getDocumentBytes} (matter + trust checks)
-   * and uses {@link #extractText(Document, byte[])}.
+   * Extracts the text of {@code document} from bytes the caller already read. Performs no access
+   * check and no download: a caller acting for a member reads the bytes through {@code
+   * DocumentService.getDocumentBytes} (matter + trust checks) first.
    */
-  public ExtractedText extractText(Document document) {
-    return extractText(document, storageService.download(document.getS3Key()));
-  }
-
-  /** Extracts the text of {@code document} from bytes the caller already read. */
   public ExtractedText extractText(Document document, byte[] bytes) {
     String contentType = document.getContentType();
 

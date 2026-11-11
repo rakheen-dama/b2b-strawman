@@ -55,7 +55,10 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <p>Each test holds one operation's transaction open (latch) after it has done its work, starts
  * the other operation on a second thread, gives it time to reach its checks, then commits the
- * first. Exactly one may succeed and the client must be credited once.
+ * first. Exactly one may succeed and the client must be credited once. Since G89-F86 (D40) the
+ * placement of an investment is never reversed, so the reversal is the refused side in both orders;
+ * the race now guards the withdrawal-first order, where the reversal must wait for the withdrawal's
+ * locks and see the investment.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -126,8 +129,14 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                     }));
   }
 
+  /**
+   * G89-F86 (D40) changed this case: a placement payment with an investment is never reversed, so
+   * the reversal attempted first is refused outright (and releases its placement lock at once); the
+   * withdrawal then succeeds. Still exactly one credit.
+   */
   @Test
-  void reversalInFlight_thenWithdrawal_onlyTheReversalSucceeds_creditedOnce() throws Exception {
+  void reversalAttemptFirst_thenWithdrawal_reversalRefused_withdrawalSucceeds_creditedOnce()
+      throws Exception {
     Placed placed = placeAndApprove("Reverse First");
 
     var outcome =
@@ -135,10 +144,10 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
             () -> transactionService.reverseTransaction(placed.placementId(), "Placed in error"),
             () -> investmentService.withdrawInvestment(placed.investmentId()));
 
-    assertThat(outcome.first()).as("the reversal (committed first)").isNull();
-    assertThat(outcome.second())
-        .as("the withdrawal, checked after the reversal committed")
+    assertThat(outcome.first())
+        .as("the reversal of a placement with an investment (D40)")
         .isInstanceOf(InvalidStateException.class);
+    assertThat(outcome.second()).as("the withdrawal").isNull();
     assertCreditedOnce(placed);
   }
 
@@ -193,7 +202,6 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                   }
                 });
     assertThat(firstDone.await(30, TimeUnit.SECONDS)).isTrue();
-    assertThat(firstError.get()).as("first operation").isNull();
 
     Thread secondThread =
         Thread.ofPlatform()

@@ -26,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
@@ -39,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -1233,21 +1235,24 @@ public class TrustTransactionService {
           "Cannot reverse transaction", "Transaction has already been reversed");
     }
 
-    // PR #1757 review: the placement payment of a withdrawn trust investment was already undone by
-    // the withdrawal deposit (it credited the client back on the placement's matter); reversing it
-    // as well would credit the client twice. Lock order as in TrustInvestmentService
-    // .withdrawInvestment — the placement row (locked above), then the investment row — so a
-    // concurrent withdrawal is either committed and seen here, or waits behind this reversal.
-    if ("PAYMENT".equals(original.getTransactionType())
-        && trustInvestmentRepository
-            .findByPlacementTransactionIdForUpdate(original.getId())
-            .filter(investment -> "WITHDRAWN".equals(investment.getStatus()))
-            .isPresent()) {
+    // G89-F86 (D40): a PAYMENT that placed a trust investment is never reversed, whatever the
+    // investment's status — the investment is withdrawn instead. While the investment is ACTIVE or
+    // MATURED a reversal would credit the client while the s86 register (and getMaturing, the
+    // Section 35 data pack) still shows the money invested, and the investment could never be
+    // withdrawn; once it is WITHDRAWN the withdrawal already returned the money, so a reversal
+    // would
+    // credit the client twice (PR #1757 review). Lock order as in TrustInvestmentService
+    // .withdrawInvestment — the placement row (locked above), then the investment row.
+    var placedInvestment =
+        "PAYMENT".equals(original.getTransactionType())
+            ? trustInvestmentRepository.findByPlacementTransactionIdForUpdate(original.getId())
+            : Optional.<TrustInvestment>empty();
+    if (placedInvestment.isPresent()) {
       throw new InvalidStateException(
           "Cannot reverse transaction",
-          "This payment placed a trust investment that has since been withdrawn; the withdrawal"
-              + " already returned the money to the client, so reversing the payment would credit"
-              + " the client twice");
+          "This payment placed a trust investment ("
+              + placedInvestment.get().getStatus()
+              + "). Withdraw the investment instead of reversing its placement payment.");
     }
 
     var memberId = RequestScopes.requireMemberId();

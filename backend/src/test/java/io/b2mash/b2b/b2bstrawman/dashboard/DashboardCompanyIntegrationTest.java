@@ -335,6 +335,36 @@ class DashboardCompanyIntegrationTest {
         .andExpect(jsonPath("$.previousPeriod.activeMatterCount").isNumber());
   }
 
+  // Window starting tomorrow: its previous period (today-30 .. today) holds the seeded billable
+  // time, so previousPeriod.billablePercent is a real number before redaction.
+
+  @Test
+  void kpiPreviousPeriodBillablePercentIsPresentForAdmin() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/dashboard/kpis")
+                .param("from", today.plusDays(1).toString())
+                .param("to", today.plusDays(31).toString())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.previousPeriod.billablePercent").isNumber());
+  }
+
+  @Test
+  void kpiPreviousPeriodFinancialsAreNullForNonAdmin() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/dashboard/kpis")
+                .param("from", today.plusDays(1).toString())
+                .param("to", today.plusDays(31).toString())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cdash_member1")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.previousPeriod.billablePercent").isEmpty())
+        .andExpect(jsonPath("$.previousPeriod.averageMarginPercent").isEmpty())
+        .andExpect(jsonPath("$.previousPeriod.activeMatterCount").isNumber())
+        .andExpect(jsonPath("$.previousPeriod.totalHoursLogged").isNumber());
+  }
+
   // --- Project Health List Tests ---
 
   @Test

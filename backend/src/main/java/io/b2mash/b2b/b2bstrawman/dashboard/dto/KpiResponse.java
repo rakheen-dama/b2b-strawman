@@ -16,9 +16,18 @@ public record KpiResponse(
     List<TrendPoint> trend,
     KpiValues previousPeriod) {
 
-  /** Returns a copy with financial fields (billablePercent, averageMarginPercent) set to null. */
+  /**
+   * Returns a copy with financial fields (billablePercent, averageMarginPercent) set to null — both
+   * the current-period fields and those of {@link #previousPeriod()}.
+   */
   public KpiResponse withFinancialsRedacted() {
     return new KpiResponse(
-        activeMatterCount, totalHoursLogged, null, overdueTaskCount, null, trend, previousPeriod);
+        activeMatterCount,
+        totalHoursLogged,
+        null,
+        overdueTaskCount,
+        null,
+        trend,
+        previousPeriod == null ? null : previousPeriod.withFinancialsRedacted());
   }
 }

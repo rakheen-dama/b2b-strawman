@@ -75,7 +75,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 8b | **I — G89-F71** portal deadline status stale (D29 MEDIUM) | F71 | BE | PR #1754 → `452ba3d7a` | **VERIFIED** (red→green integration test 8/8; runtime probe on the PR-head e2e stack: stored = API = rule for 8 deadlines, filter groups exact). Staleness over real days is not browser-observable on a single day. |
 | 8c | **J — raw-label copy** (D32) | W2-c2, W2-c3 | BE + legal-za v15 | PR #1755 → merged | **MERGED**: e2e-observed (SoA PDFs 'Payment'/'Refund'; digest 'Paid R 40 250,00'; v14→v15 reconcile on an upgrade stack) |
 | 8d | **K — Day 0 banking step** (D30, §6 docs) | W1-c1 → G89-F78 | DOC | PR #1756 → `6547d2319` | **MERGED** (2× APPROVE, CodeRabbit 0 actionable) |
-| 8e | **L — trust rows to the portal** (D34–D39) | F28 (require matter), F36 (long reference) | BE + FE + global V6 | PR #1757 | CodeRabbit fix round (D39 transfer target matter; fee-transfer link; withdrawal needs completed placement; dialog scroll) |
+| 8e | **L — trust rows to the portal** (D34–D43) | F28, F36, F86, F87 | BE + FE + global V6 + tenant V15 | PR #1757 → `af0a84925` | **MERGED**: final e2e observed every behaviour via API + SQL (`pr1757-e2e/final-d7ef98978/`); KC browser check pending |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
 
 ## Gap checklist
@@ -446,3 +446,4 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - 2× bound APPROVE @864af7343.
   - **Final e2e PASS @d7ef98978** (`pr1757-e2e/final-d7ef98978/`), Flyway 15/6. All observations held: F28 400s and ledger = portal = R 1 907,00; F36; D39 legs on each client's matter; withdrawal refused before approval; reject → CANCELLED and off the register; reversal refused; withdrawal credited once; 0 deadlocks.
   - First-run flakes at load 60–68 (concurrent verify): 2 with DB proof (F85 time-summary lag at a new site, `day-75-complex:224`, plus a knock-on); `invoice-lifecycle:112` (F73 family); `general-settings:65` (parallel settings tests overwrite each other's saves; new test-flake candidate **G89-F89**, LOW class). All passed on the fresh R1 re-run.
+- 2026-11-11 ~21:45 — **PR #1757 (Batch L) merged as `af0a84925`** (`--squash --match-head-commit 864af7343`). Next free migrations: **tenant V16, global V7**. **All HIGH and MEDIUM ids in the register are closed.** Remaining: a KC browser check of the L behaviours, then closure (register, defects doc, HANDOFF, memory).

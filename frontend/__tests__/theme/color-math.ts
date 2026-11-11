@@ -17,7 +17,7 @@ export interface Oklch {
   H: number; // degrees
   alpha: number;
 }
-export type Cvd = "protan" | "deutan" | "tritan";
+export type Cvd = "protan" | "deutan";
 export type TokenMap = Record<string, string>;
 
 const D2R = Math.PI / 180;
@@ -111,7 +111,8 @@ export function mixColors(space: "oklab" | "oklch", a: Oklch, b: Oklch, p: numbe
     const [L, x, y] = A.map((v, i) => v * p + B[i] * (1 - p));
     return { L, C: Math.hypot(x, y), H: normHue(Math.atan2(y, x) / D2R), alpha: 1 };
   }
-  // oklch: hue interpolated along the shorter arc (the CSS default)
+  // oklch: kept so a reintroduced `in oklch` soft token resolves as the browser does (and the
+  // soft-hue test fails loudly). Hue interpolated along the shorter arc (the CSS default).
   let h1 = a.H;
   let h2 = b.H;
   if (h2 - h1 > 180) h1 += 360;
@@ -203,11 +204,21 @@ export function hueDistance(a: number, b: number): number {
   return d > 180 ? 360 - d : d;
 }
 
-/** Hue spread of a ramp exactly as validate_palette.js measures it (max − min, wrapped at 180°). */
+/** Hue spread of a ramp: the smallest circular arc (degrees) that contains every hue. */
 export function hueSpread(hexes: string[]): number {
-  const hues = hexes.map(hexHue);
-  const spread = Math.max(...hues) - Math.min(...hues);
-  return spread > 180 ? 360 - spread : spread;
+  return hueArc(hexes.map(hexHue));
+}
+
+/** Smallest circular arc containing all `hues`: 360° minus the largest gap between neighbours
+ *  (the wraparound gap first + 360 − last included). [350, 10] → 20, not 340. */
+export function hueArc(hues: number[]): number {
+  if (hues.length < 2) return 0;
+  const sorted = hues.map(normHue).sort((x, y) => x - y);
+  let largestGap = sorted[0] + 360 - sorted[sorted.length - 1];
+  for (let i = 1; i < sorted.length; i++) {
+    largestGap = Math.max(largestGap, sorted[i] - sorted[i - 1]);
+  }
+  return 360 - largestGap;
 }
 
 // ---------- WCAG ----------
@@ -234,11 +245,6 @@ const MACHADO: Record<Cvd, number[][]> = {
     [0.367322, 0.860646, -0.227968],
     [0.280085, 0.672501, 0.047413],
     [-0.01182, 0.04294, 0.968881],
-  ],
-  tritan: [
-    [1.255528, -0.076749, -0.178779],
-    [-0.078411, 0.930809, 0.147602],
-    [0.004733, 0.691367, 0.3039],
   ],
 };
 
@@ -268,7 +274,7 @@ export const allPairs = (n: number): [number, number][] =>
     Array.from({ length: n - i - 1 }, (_, k) => [i, i + 1 + k] as [number, number])
   ).flat();
 
-/** min over pairs of min(protan, deutan) ΔE — the validator's CVD gate (tritan is report-only). */
+/** min over pairs of min(protan, deutan) ΔE — the validator's CVD gate (it reports tritan only). */
 export function worstCvd(palette: string[], pairs: [number, number][]): number {
   return Math.min(
     ...pairs.flatMap(([i, j]) =>

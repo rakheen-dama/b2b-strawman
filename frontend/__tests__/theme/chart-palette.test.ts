@@ -21,8 +21,8 @@ import {
 // Phase 90 / 637A (architecture §15.2.5, ADR-370): the Kazi categorical palette as validated on
 // 2026-11-11 with the dataviz skill's validate_palette.js (its maths ported in ./color-math.ts).
 // The `--chart-n` OKLCH values are read from packages/ui/styles/globals.css, converted to sRGB and
-// pinned to the validated hexes; the validator's gates are then re-run on them, so a retune either
-// keeps the validated palette or fails here.
+// pinned to the validated hexes; the validator's thresholds (the contract) are then re-run on them,
+// so a retune either keeps the validated palette or fails here.
 
 const { light, dark } = loadThemes();
 type Mode = "light" | "dark";
@@ -38,11 +38,6 @@ const PINNED: Record<Mode, string[]> = {
 };
 /** validate_palette.js lightness band per mode; chroma floor 0.10. */
 const BAND: Record<Mode, [number, number]> = { light: [0.43, 0.77], dark: [0.48, 0.67] };
-/** 2026-11-11 results (unrounded): worst adjacent CVD / normal ΔE; first-three all-pairs. */
-const RESULTS: Record<Mode, { cvd: number; normal: number; cvd3: number; normal3: number }> = {
-  light: { cvd: 12.3298, normal: 26.3641, cvd3: 12.3298, normal3: 18.9116 },
-  dark: { cvd: 13.6292, normal: 25.9987, cvd3: 13.6292, normal3: 17.4643 },
-};
 
 const slots = (vars: TokenMap): string[] =>
   [1, 2, 3, 4, 5].map((i) => tokenHex(`--chart-${i}`, vars));
@@ -77,26 +72,18 @@ for (const [mode, vars] of THEMES) {
       }
     });
 
-    it("worst adjacent CVD ΔE (protan/deutan) ≥ 8, matching the validated result", () => {
-      const d = worstCvd(palette, adjacentPairs(5));
-      expect(d).toBeGreaterThanOrEqual(8);
-      expect(d).toBeCloseTo(RESULTS[mode].cvd, 1);
+    it("worst adjacent CVD ΔE (protan/deutan) ≥ 8", () => {
+      expect(worstCvd(palette, adjacentPairs(5))).toBeGreaterThanOrEqual(8);
     });
 
-    it("worst adjacent normal-vision ΔE ≥ 15, matching the validated result", () => {
-      const d = worstNormal(palette, adjacentPairs(5));
-      expect(d).toBeGreaterThanOrEqual(15);
-      expect(d).toBeCloseTo(RESULTS[mode].normal, 1);
+    it("worst adjacent normal-vision ΔE ≥ 15", () => {
+      expect(worstNormal(palette, adjacentPairs(5))).toBeGreaterThanOrEqual(15);
     });
 
     it("the first three slots pass all-pairs (scatter-like forms)", () => {
       const three = palette.slice(0, 3);
-      const cvd = worstCvd(three, allPairs(3));
-      const normal = worstNormal(three, allPairs(3));
-      expect(cvd).toBeGreaterThanOrEqual(8);
-      expect(normal).toBeGreaterThanOrEqual(15);
-      expect(cvd).toBeCloseTo(RESULTS[mode].cvd3, 1);
-      expect(normal).toBeCloseTo(RESULTS[mode].normal3, 1);
+      expect(worstCvd(three, allPairs(3))).toBeGreaterThanOrEqual(8);
+      expect(worstNormal(three, allPairs(3))).toBeGreaterThanOrEqual(15);
     });
   });
 
@@ -117,6 +104,19 @@ for (const [mode, vars] of THEMES) {
 
 describe("lib/chart-theme.ts", () => {
   const SOURCE = fs.readFileSync(path.join(FRONTEND_ROOT, "lib/chart-theme.ts"), "utf8");
+  /** The colour roles only — non-colour keys (fontFamily, radii, dash arrays …) are out of scope. */
+  const COLOUR_ROLES: string[] = [
+    ...CHART_THEME.categorical,
+    ...CHART_THEME.sequential,
+    ...Object.values(CHART_THEME.aging),
+    ...Object.values(CHART_THEME.diverging),
+    ...Object.values(CHART_THEME.status),
+    CHART_THEME.grid.stroke,
+    CHART_THEME.axis,
+    CHART_THEME.tooltip.background,
+    CHART_THEME.tooltip.text,
+    CHART_THEME.tooltip.boxShadow,
+  ];
 
   it("contains no hex or rgb() colour literal", () => {
     expect(SOURCE).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
@@ -128,25 +128,14 @@ describe("lib/chart-theme.ts", () => {
   });
 
   it("every colour role is a single var(--…) reference", () => {
-    const roles: string[] = [
-      ...CHART_THEME.categorical,
-      ...CHART_THEME.sequential,
-      ...Object.values(CHART_THEME.aging),
-      ...Object.values(CHART_THEME.diverging),
-      ...Object.values(CHART_THEME.status),
-      CHART_THEME.grid.stroke,
-      CHART_THEME.axis,
-      CHART_THEME.tooltip.background,
-      CHART_THEME.tooltip.text,
-      CHART_THEME.tooltip.boxShadow,
-    ];
-    for (const value of roles) expect(value).toMatch(/^var\(--[a-z0-9-]+\)$/);
+    for (const value of COLOUR_ROLES) expect(value).toMatch(/^var\(--[a-z0-9-]+\)$/);
   });
 
-  it("every referenced token is defined in both themes", () => {
-    const names = [...SOURCE.matchAll(/var\((--[a-z0-9-]+)\)/g)].map((m) => m[1]);
-    // --font-mono is a Tailwind @theme font variable, not a colour token.
-    for (const name of names.filter((n) => n !== "--font-mono")) {
+  it("every colour token referenced (roles + the tooltip border) is defined in both themes", () => {
+    const names = [...COLOUR_ROLES, CHART_THEME.tooltip.border].flatMap((v) =>
+      [...v.matchAll(/var\((--[a-z0-9-]+)\)/g)].map((m) => m[1])
+    );
+    for (const name of names) {
       expect(light[name], `${name} (light)`).toBeDefined();
       expect(dark[name], `${name} (dark)`).toBeDefined();
     }

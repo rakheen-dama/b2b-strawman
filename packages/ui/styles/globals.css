@@ -13,16 +13,18 @@
  * :root (light) and .dark; the portal imports this file but never applies .dark.
  *
  * Kazi categorical chart slots — one hue per slot, stepped per theme; validated 2026-11-11
- * with the dataviz skill's validate_palette.js against the card surface
- * (light #fdfdff, dark #14171c; re-run 2026-11-12 against #fdfeff, the 99.6% card: same ΔE
- * results, all PASS, surface contrasts within 0.02):
+ * with the dataviz skill's validate_palette.js against the card surface (light #fdfeff =
+ * oklch(99.6% 0.002 260), dark #14171c), all PASS:
  *   light #009787 #e06623 #096acb #c8800d #894ed6 · dark #00aa99 #df6c32 #3986e4 #bd891c #9d6fe3
  *   lightness band + chroma floor PASS both modes; worst adjacent CVD ΔE 12.3 light (protan)
  *   / 13.6 dark (deutan) (target ≥ 8); worst adjacent normal-vision ΔE 26.4 / 26.0 (floor 15);
  *   every slot ≥ 3:1 on card; first three slots --pairs all: CVD 12.3 / 13.6, normal 18.9 / 17.5.
  * --aging-* passes --ordinal (light end 2.18:1 light / 2.60:1 dark); --seq-* monotone, ΔL ≥ 0.06.
  * Pinned by frontend/__tests__/theme/{token-contrast,chart-palette}.test.ts — a retune that
- * breaks AA or the palette checks fails vitest.
+ * breaks AA or the palette checks fails vitest. The per-token hex comments below record the
+ * 2026-11-11 validated values for reference; chart-palette.test.ts is authoritative.
+ * Retuned in 637A: light --background (was 94%), the -foreground status text tokens, and dark
+ * --popover (one step above cards) and --border.
  */
 
 @theme inline {
@@ -143,7 +145,7 @@
   --teal-600: oklch(62% 0.16 183);
 
   /* Surfaces — light: near-white canvas, cards one step up (border + faint shadow) */
-  --background: oklch(97.2% 0.004 260); /* † was 94% */
+  --background: oklch(97.2% 0.004 260);
   --foreground: var(--slate-900);
   --card: oklch(99.6% 0.002 260);
   --card-foreground: var(--slate-900);
@@ -206,10 +208,10 @@
   --warning-soft: color-mix(in oklab, var(--warning) 14%, var(--card));
   --danger-soft: color-mix(in oklab, var(--danger) 14%, var(--card));
   --info-soft: color-mix(in oklab, var(--info) 14%, var(--card));
-  --success-foreground: oklch(44% 0.12 150); /* † */
-  --warning-foreground: oklch(44% 0.09 75); /* † */
-  --danger-foreground: oklch(44% 0.14 27); /* † */
-  --info-foreground: oklch(44% 0.1 240); /* † */
+  --success-foreground: oklch(44% 0.12 150);
+  --warning-foreground: oklch(44% 0.09 75);
+  --danger-foreground: oklch(44% 0.14 27);
+  --info-foreground: oklch(44% 0.1 240);
 }
 
 .dark {
@@ -218,7 +220,7 @@
   --foreground: oklch(100% 0 0);
   --card: var(--slate-900);
   --card-foreground: oklch(100% 0 0);
-  --popover: oklch(23.5% 0.012 260); /* † one step above cards */
+  --popover: oklch(23.5% 0.012 260); /* one step above cards */
   --popover-foreground: oklch(100% 0 0);
   --primary: oklch(100% 0 0);
   --primary-foreground: var(--slate-950);
@@ -230,7 +232,7 @@
   --accent: var(--teal-500);
   --accent-foreground: oklch(100% 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(28.5% 0.014 260); /* † */
+  --border: oklch(28.5% 0.014 260);
   --input: oklch(28.5% 0.014 260);
   --ring: var(--teal-500);
 
@@ -265,10 +267,10 @@
   --warning-soft: color-mix(in oklab, var(--warning) 14%, var(--card));
   --danger-soft: color-mix(in oklab, var(--danger) 14%, var(--card));
   --info-soft: color-mix(in oklab, var(--info) 14%, var(--card));
-  --success-foreground: oklch(85% 0.12 150); /* † */
-  --warning-foreground: oklch(85% 0.12 80); /* † */
-  --danger-foreground: oklch(85% 0.08 25); /* † */
-  --info-foreground: oklch(85% 0.08 240); /* † */
+  --success-foreground: oklch(85% 0.12 150);
+  --warning-foreground: oklch(85% 0.12 80);
+  --danger-foreground: oklch(85% 0.08 25);
+  --info-foreground: oklch(85% 0.08 240);
 }
 
 @layer base {

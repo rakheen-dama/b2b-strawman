@@ -2,12 +2,13 @@
 import { describe, expect, it } from "vitest";
 import {
   contrastRatio,
-  hexChroma,
   hexHue,
+  hueArc,
   hueDistance,
   loadThemes,
   oklchToHex,
   parseOklch,
+  resolveColor,
   tokenHex,
   type TokenMap,
 } from "./color-math";
@@ -76,6 +77,14 @@ describe("colour-maths helper self-test", () => {
     // oklch(60% 0.12 183) is just outside sRGB; per-channel clip gives the doc's #009787.
     expect(oklchToHex(parseOklch("oklch(60% 0.12 183)")!)).toBe("#009787");
   });
+
+  it("hue arc wraps around 0°/360° and leaves a non-wrapping set unchanged", () => {
+    expect(hueArc([350, 10])).toBeCloseTo(20, 9);
+    expect(hueArc([10, 350, 0, 5])).toBeCloseTo(20, 9);
+    expect(hueArc([30, 50, 70])).toBeCloseTo(40, 9);
+    expect(hueArc([0, 180])).toBeCloseTo(180, 9);
+    expect(hueArc([42])).toBe(0);
+  });
 });
 
 describe("token definitions", () => {
@@ -133,8 +142,10 @@ for (const [mode, vars] of THEMES) {
     // blue/lavender. Mixing `in oklab` (637A ruling 2) keeps them within 26° (the dark card's own
     // slight blue cast accounts for the largest drift), so 30° separates the two.
     it.each(STATUSES)("--%s-soft keeps its status hue (within 30°)", (s) => {
+      // Chroma of the unquantised mix (not the 8-bit hex): dark --warning-soft sits at ≈0.010, the
+      // rounding noise floor, so the hex value would make a "not grey" guard flaky.
+      expect(resolveColor(`--${s}-soft`, vars).C).toBeGreaterThan(0.005);
       const soft = tokenHex(`--${s}-soft`, vars);
-      expect(hexChroma(soft)).toBeGreaterThan(0.01);
       expect(hueDistance(hexHue(soft), hexHue(tokenHex(`--${s}`, vars)))).toBeLessThanOrEqual(30);
     });
   });

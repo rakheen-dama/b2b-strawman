@@ -1,0 +1,22 @@
+===== stack G1 checks 2026-11-11T15:09:42+0200 =====
+build rc=1
+git HEAD 80931ef6940b633d926408c444ca740a0e54108d
+backend health: 
+frontend 000
+mock-idp 200
+mailpit 200
+e2e-mailpit axllent/mailpit:latest 2026-11-11 15:09:36 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 15:09:36 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 15:09:36 +0200 SAST
+/e2e-backend image=sha256:c0be72bbcc0adc490456b7469f3f5fdde168397ccc44f81ec3a96f7e2e4df3be created=2026-11-11T13:09:36.927895886Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp7/compose
+/e2e-frontend image=sha256:87797a505c154806805136f093ace290c231c1c64d3634649bcf992b19bdf854 created=2026-11-11T13:09:36.976339386Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp7/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-11T13:09:36.869723261Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp7/compose
+cached-lines=50
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Volume docteams-e2e_e2e_postgres_data  Removed
+tenant=Error response from daemon: container 447481c174ffa2a345ff784a5cc0ab847d73be51a2a19b12221ab3cf1f712c7f is not running
+tenant flyway: Error response from daemon: container 447481c174ffa2a345ff784a5cc0ab847d73be51a2a19b12221ab3cf1f712c7f is not running
+global flyway: Error response from daemon: container 447481c174ffa2a345ff784a5cc0ab847d73be51a2a19b12221ab3cf1f712c7f is not running
+projects:
+Error response from daemon: container 447481c174ffa2a345ff784a5cc0ab847d73be51a2a19b12221ab3cf1f712c7f is not running
+portal_deadline_view=Error response from daemon: container 447481c174ffa2a345ff784a5cc0ab847d73be51a2a19b12221ab3cf1f712c7f is not running

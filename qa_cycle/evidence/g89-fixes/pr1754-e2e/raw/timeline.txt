@@ -1,0 +1,54 @@
+HEAD 80931ef6940b633d926408c444ca740a0e54108d 2026-11-11T15:07:58+0200 dirty=0 E2E_VISUAL=unset
+pnpm-install start 2026-11-11T15:07:58+0200 node=v20.11.1
+pnpm-install rc=0 end 2026-11-11T15:08:13+0200
+portal-vitest start 2026-11-11T15:08:13+0200 node=v20.11.1 envnode=v20.11.1
+portal-vitest rc=0 end 2026-11-11T15:08:22+0200
+dirty after install+vitest: 0
+before-G1 no foreign e2e stack 2026-11-11T15:08:23+0200
+stack-G1 launch 2026-11-11T15:08:23+0200
+stack-G1 rc=1 end 2026-11-11T15:09:32+0200
+stack-G1 attempt1 FAILED rc=1; font-lines=0; retrying once 2026-11-11T15:09:32+0200
+stack-G1 attempt2 rc=1 end 2026-11-11T15:09:42+0200
+G1-STACKFAIL
+G1-ALLDONE-FAIL
+--- G1 attempts 1+2 failed: Docker VM disk full (raw/docker-disk-remediation.txt); disk freed; G1 relaunched 2026-11-11T15:11:07+0200
+HEAD 80931ef6940b633d926408c444ca740a0e54108d 2026-11-11T15:11:07+0200 dirty=0 E2E_VISUAL=unset
+pnpm-install start 2026-11-11T15:11:07+0200 node=v20.11.1
+pnpm-install rc=0 end 2026-11-11T15:11:08+0200
+portal-vitest start 2026-11-11T15:11:08+0200 node=v20.11.1 envnode=v20.11.1
+portal-vitest rc=0 end 2026-11-11T15:11:17+0200
+dirty after install+vitest: 0
+before-G1 no foreign e2e stack 2026-11-11T15:11:17+0200
+stack-G1 launch 2026-11-11T15:11:17+0200
+stack-G1 rc=0 end 2026-11-11T15:11:56+0200
+G1-lifecycle start 2026-11-11T15:11:58+0200 node=v20.11.1 envnode=v20.11.1
+G1-lifecycle rc=1 end 2026-11-11T15:15:10+0200
+G1-depth-ii start 2026-11-11T15:15:11+0200 node=v20.11.1 envnode=v20.11.1
+G1-depth-ii rc=0 end 2026-11-11T15:17:06+0200
+G1-default start 2026-11-11T15:17:08+0200 node=v20.11.1 envnode=v20.11.1
+G1-default rc=0 end 2026-11-11T15:18:22+0200
+G1-ALLDONE 2026-11-11T15:18:23+0200
+L HEAD 80931ef6940b633d926408c444ca740a0e54108d 2026-11-11T15:18:48+0200 dirty=0 load=15.41 19.86 18.41
+before-L no foreign e2e stack 2026-11-11T15:18:48+0200
+stack-L launch 2026-11-11T15:18:48+0200
+stack-L rc=0 end 2026-11-11T15:19:29+0200
+L-lifecycle start 2026-11-11T15:19:30+0200 node=v20.11.1 envnode=v20.11.1
+L-lifecycle rc=0 end 2026-11-11T15:22:31+0200
+L-lifecycle load-after=8.74 14.19 16.25
+L-ALLDONE 2026-11-11T15:22:32+0200
+G2 HEAD 80931ef6940b633d926408c444ca740a0e54108d 2026-11-11T15:23:04+0200 dirty=0 E2E_VISUAL=unset
+before-G2 no foreign e2e stack 2026-11-11T15:23:04+0200
+stack-G2 launch 2026-11-11T15:23:04+0200
+stack-G2 rc=0 end 2026-11-11T15:23:44+0200
+G2-90day start 2026-11-11T15:23:46+0200 node=v20.11.1 envnode=v20.11.1
+G2-90day rc=0 end 2026-11-11T15:24:10+0200
+G2-responsive start 2026-11-11T15:29:41+0200 node=v20.11.1 envnode=v20.11.1
+G2-responsive rc=0 end 2026-11-11T15:29:57+0200
+G2-isolation start 2026-11-11T15:35:33+0200 node=v20.11.1 envnode=v20.11.1
+G2-isolation rc=0 end 2026-11-11T15:35:35+0200
+G2-login-bare start 2026-11-11T15:41:21+0200 node=v20.11.1 envnode=v20.11.1
+G2-login-bare rc=0 end 2026-11-11T15:41:36+0200
+F71-probe start 2026-11-11T15:47:16+0200
+F71-probe end 2026-11-11T15:47:26+0200
+G2-ALLDONE 2026-11-11T15:47:26+0200
+e2e-down rc=0 2026-11-11T15:47:53+0200 e2e-containers=0 volumes=0

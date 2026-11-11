@@ -1,0 +1,72 @@
+===== deadline probe 2026-11-11T15:47:16+0200  today(SA)=2026-11-11  utc-date=2026-11-11  tenant=tenant_7d218705360b
+alice token: ok
+matter Website Redesign=57b6b32e-2c0e-4afb-b5ae-c6961c1f8a42
+portal_deadline_view rows before probe=0
+court date offset=-2 due=2026-11-09 -> http=201 id=4750055d-85d7-404b-8a71-d70ab97d31a0 
+court date offset=0 due=2026-11-11 -> http=201 id=0425891a-aab4-4d68-87ba-921637a8a830 
+court date offset=3 due=2026-11-14 -> http=201 id=7dfe36d7-c1f7-46f7-956d-6187d3b45eac 
+court date offset=7 due=2026-11-18 -> http=201 id=442b4ef8-33f5-415c-911e-aa994d65626e 
+court date offset=8 due=2026-11-19 -> http=201 id=e79b2c60-1904-4b00-9948-cf4299f6ec6c 
+court date offset=30 due=2026-12-11 -> http=201 id=0f13a8b5-5156-4725-9a54-b4833d90a380 
+prescription offset=-3 due=2026-11-08 (cause=2023-11-08) -> http=201 id=795b2606-2e14-4afb-b570-a921d3ba664b status=EXPIRED 
+prescription offset=5 due=2026-11-16 (cause=2023-11-16) -> http=201 id=0507d626-9a38-4216-8076-5e34b8f5276a status=WARNED 
+--- DB (read-only): select source_entity, id, due_date, status from portal.portal_deadline_view
+PRESCRIPTION_TRACKER|795b2606-2e14-4afb-b570-a921d3ba664b|2026-11-08|OVERDUE
+COURT_DATE|4750055d-85d7-404b-8a71-d70ab97d31a0|2026-11-09|OVERDUE
+COURT_DATE|0425891a-aab4-4d68-87ba-921637a8a830|2026-11-11|DUE_SOON
+COURT_DATE|7dfe36d7-c1f7-46f7-956d-6187d3b45eac|2026-11-14|DUE_SOON
+PRESCRIPTION_TRACKER|0507d626-9a38-4216-8076-5e34b8f5276a|2026-11-16|DUE_SOON
+COURT_DATE|442b4ef8-33f5-415c-911e-aa994d65626e|2026-11-18|DUE_SOON
+COURT_DATE|e79b2c60-1904-4b00-9948-cf4299f6ec6c|2026-11-19|UPCOMING
+COURT_DATE|0f13a8b5-5156-4725-9a54-b4833d90a380|2026-12-11|UPCOMING
+portal jwt: ok
+--- GET /portal/deadlines (default window) http=200
+COURT_DATE|0425891a-aab4-4d68-87ba-921637a8a830|2026-11-11|DUE_SOON
+COURT_DATE|7dfe36d7-c1f7-46f7-956d-6187d3b45eac|2026-11-14|DUE_SOON
+PRESCRIPTION_TRACKER|0507d626-9a38-4216-8076-5e34b8f5276a|2026-11-16|DUE_SOON
+COURT_DATE|442b4ef8-33f5-415c-911e-aa994d65626e|2026-11-18|DUE_SOON
+COURT_DATE|e79b2c60-1904-4b00-9948-cf4299f6ec6c|2026-11-19|UPCOMING
+COURT_DATE|0f13a8b5-5156-4725-9a54-b4833d90a380|2026-12-11|UPCOMING
+--- GET /portal/deadlines?from=2026-10-12&to=2027-01-10 http=200
+PRESCRIPTION_TRACKER|795b2606-2e14-4afb-b570-a921d3ba664b|2026-11-08|OVERDUE
+COURT_DATE|4750055d-85d7-404b-8a71-d70ab97d31a0|2026-11-09|OVERDUE
+COURT_DATE|0425891a-aab4-4d68-87ba-921637a8a830|2026-11-11|DUE_SOON
+COURT_DATE|7dfe36d7-c1f7-46f7-956d-6187d3b45eac|2026-11-14|DUE_SOON
+PRESCRIPTION_TRACKER|0507d626-9a38-4216-8076-5e34b8f5276a|2026-11-16|DUE_SOON
+COURT_DATE|442b4ef8-33f5-415c-911e-aa994d65626e|2026-11-18|DUE_SOON
+COURT_DATE|e79b2c60-1904-4b00-9948-cf4299f6ec6c|2026-11-19|UPCOMING
+COURT_DATE|0f13a8b5-5156-4725-9a54-b4833d90a380|2026-12-11|UPCOMING
+--- GET /portal/deadlines?from=2026-10-12&to=2027-01-10&status=OVERDUE http=200
+PRESCRIPTION_TRACKER|795b2606-2e14-4afb-b570-a921d3ba664b|2026-11-08|OVERDUE
+COURT_DATE|4750055d-85d7-404b-8a71-d70ab97d31a0|2026-11-09|OVERDUE
+--- GET /portal/deadlines?from=2026-10-12&to=2027-01-10&status=DUE_SOON http=200
+COURT_DATE|0425891a-aab4-4d68-87ba-921637a8a830|2026-11-11|DUE_SOON
+COURT_DATE|7dfe36d7-c1f7-46f7-956d-6187d3b45eac|2026-11-14|DUE_SOON
+PRESCRIPTION_TRACKER|0507d626-9a38-4216-8076-5e34b8f5276a|2026-11-16|DUE_SOON
+COURT_DATE|442b4ef8-33f5-415c-911e-aa994d65626e|2026-11-18|DUE_SOON
+--- GET /portal/deadlines?from=2026-10-12&to=2027-01-10&status=UPCOMING http=200
+COURT_DATE|e79b2c60-1904-4b00-9948-cf4299f6ec6c|2026-11-19|UPCOMING
+COURT_DATE|0f13a8b5-5156-4725-9a54-b4833d90a380|2026-12-11|UPCOMING
+--- GET /portal/deadlines?from=2026-10-12&to=2027-01-10&status=COMPLETED http=200
+--- per-row: stored(DB) vs API vs rule(due,today=2026-11-11)
+source                 due        stored    api       rule      verdict
+PRESCRIPTION_TRACKER   2026-11-08 OVERDUE   OVERDUE   OVERDUE   api==rule, api==stored
+COURT_DATE             2026-11-09 OVERDUE   OVERDUE   OVERDUE   api==rule, api==stored
+COURT_DATE             2026-11-11 DUE_SOON  DUE_SOON  DUE_SOON  api==rule, api==stored
+COURT_DATE             2026-11-14 DUE_SOON  DUE_SOON  DUE_SOON  api==rule, api==stored
+PRESCRIPTION_TRACKER   2026-11-16 DUE_SOON  DUE_SOON  DUE_SOON  api==rule, api==stored
+COURT_DATE             2026-11-18 DUE_SOON  DUE_SOON  DUE_SOON  api==rule, api==stored
+COURT_DATE             2026-11-19 UPCOMING  UPCOMING  UPCOMING  api==rule, api==stored
+COURT_DATE             2026-12-11 UPCOMING  UPCOMING  UPCOMING  api==rule, api==stored
+--- cleanup through the firm API
+cancel court date 4750055d-85d7-404b-8a71-d70ab97d31a0 -> 200
+cancel court date 0425891a-aab4-4d68-87ba-921637a8a830 -> 200
+cancel court date 7dfe36d7-c1f7-46f7-956d-6187d3b45eac -> 200
+cancel court date 442b4ef8-33f5-415c-911e-aa994d65626e -> 200
+cancel court date e79b2c60-1904-4b00-9948-cf4299f6ec6c -> 200
+cancel court date 0f13a8b5-5156-4725-9a54-b4833d90a380 -> 200
+interrupt tracker 795b2606-2e14-4afb-b570-a921d3ba664b -> 200
+interrupt tracker 0507d626-9a38-4216-8076-5e34b8f5276a -> 200
+portal_deadline_view rows after cleanup=0
+API after cleanup (wide window): []
+===== deadline probe end 2026-11-11T15:47:26+0200

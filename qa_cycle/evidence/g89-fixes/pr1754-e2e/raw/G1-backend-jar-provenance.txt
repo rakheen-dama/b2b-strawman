@@ -1,0 +1,6 @@
+===== G1 backend jar provenance 2026-11-11T15:12:23+0200
+stack-G1 relaunch: every backend layer CACHED; the cache was populated by attempt 1 (raw/stack-G1-diskfull-attempt1.log: COPY src src DONE, mvnw package BUILD SUCCESS 42.9s) from this worktree at 80931ef69 — the only failure there was e2e-postgres initdb (disk full).
+     5362  11-11-2026 13:08   io/b2mash/b2b/b2bstrawman/customerbackend/repository/PortalDeadlineViewRepository.class
+     7318  11-11-2026 13:08   io/b2mash/b2b/b2bstrawman/customerbackend/service/PortalDeadlineService.class
+     1676  11-11-2026 13:08   io/b2mash/b2b/b2bstrawman/customerbackend/model/PortalDeadlineStatus.class
+(PortalDeadlineStatus exists only at the PR head — it is a new file in 80931ef69)

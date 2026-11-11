@@ -710,9 +710,9 @@ public class TrustTransactionService {
     var distinctProjectIds =
         invoiceLineRepository.findDistinctProjectIdsByInvoiceId(invoice.getId());
     UUID inferredProjectId = distinctProjectIds.size() == 1 ? distinctProjectIds.get(0) : null;
-    // G89-F28: a fee transfer is a client posting like any other and must land on a matter. The
-    // matter comes from the fee note (whose lines were matter-checked against the client when the
-    // fee note was built), so only its absence is refused here.
+    // G89-F28: a fee transfer is a client posting like any other and must land on a matter of the
+    // client. The matter comes from the fee note: refused when the fee note has no single matter,
+    // and (PR #1757 review) when that matter is no longer linked to the client.
     if (inferredProjectId == null) {
       throw matterRequired(
           "Fee note "
@@ -721,6 +721,7 @@ public class TrustTransactionService {
                   : invoice.getId().toString())
               + " does not belong to a single matter, so the transfer has no matter to post to.");
     }
+    requireClientMatter(customer, inferredProjectId);
 
     var transaction =
         new TrustTransaction(

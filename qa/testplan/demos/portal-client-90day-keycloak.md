@@ -187,7 +187,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 75 — Deadline-approaching nudge → deadline detail → download related doc  `[legal-za]` (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: the portal has no mark-read control (ADR-363); 75.4–75.5 and the read-state checkpoint are removed; the deadline steps stay — court dates and prescriptions now sync to `/deadlines` (633B/633C))
+## Day 75 — Deadlines list (Due soon) → deadline detail  `[legal-za]` (G89 fix initiative D3 + D24 / G89-F24, G89-F25 — heading amended, founder-authorised 2026-11-06 / 2026-11-11: no nudge email for court dates or prescriptions (`PortalEmailNotificationChannel.java:48`, `:201-202` handle `FieldDateApproachingEvent` only) and no related-document download (`deadline-detail-panel.tsx:121-171`)) (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: the portal has no mark-read control (ADR-363); 75.4–75.5 and the read-state checkpoint are removed; the deadline steps stay — court dates and prescriptions now sync to `/deadlines` (633B/633C))
 
 **Actor**: Sipho (legal-za)
 
@@ -200,7 +200,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **75.7** 📸 **Screenshot**: `day-75-deadline-detail.png` (Phase 89 decision 7 / §5b row 19 — mark-read dropped, founder-authorised 2026-11-03: the frame shows the deadline detail, not a read state; `portal/e2e/tests/portal-client-90day/day-45-75.spec.ts:243`)
 
 **Day 75 checkpoints**
-- [ ] Download audit event recorded (firm-side audit log shows the portal contact accessed the doc)
+- [ ] Removed — download audit event (G89 fix initiative D24 / G89-F25 — checkpoint removed with 75.6, founder-authorised 2026-11-11: no document is downloaded on Day 75, so there is no download audit event to record; `portal/components/deadlines/deadline-detail-panel.tsx:121-171`)
 
 ---
 

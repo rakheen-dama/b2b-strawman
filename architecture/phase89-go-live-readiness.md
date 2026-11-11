@@ -502,7 +502,7 @@ One docs PR edits `qa/testplan/demos/legal-za-90day-keycloak.md` and `portal-cli
 
 ### 14.3.24 Exit gate (R-E7)
 
-After E1–E6: the three suites (E2E-LEGAL lifecycle + depth-ii, default, portal) on a fresh stack (`e2e-down && docker builder prune -f && e2e-up`), outside 00:00–02:00 SAST; a targeted Keycloak re-walk of the step ids against every gap closed by #1716–#1721 and E1–E5 plus every step amended in E6, in day order on a fresh tenant, G-D5 re-observed with a court date inside 14 days; register `qa_cycle/evidence/phase89-rewalk/gaps.md` with ids `G89-F1…`; deck re-shoot on a production build at 1440×900. Exit: 0 HIGH, 0 MEDIUM open; every mismatch ruled; suites at or above their current-main (post-#1720) baselines (lifecycle 102/0/2, default 160/0/17, depth-ii 39/0/4, portal 256 vitest + the day specs) with the un-fixme'd specs passing; a verify marker committed for every code PR.
+After E1–E6: the three suites (E2E-LEGAL lifecycle + depth-ii, default, portal) on a fresh stack (`e2e-down && docker builder prune -af && e2e-up`), outside 00:00–02:00 SAST; a targeted Keycloak re-walk of the step ids against every gap closed by #1716–#1721 and E1–E5 plus every step amended in E6, in day order on a fresh tenant, G-D5 re-observed with a court date inside 14 days; register `qa_cycle/evidence/phase89-rewalk/gaps.md` with ids `G89-F1…`; deck re-shoot on a production build at 1440×900. Exit: 0 HIGH, 0 MEDIUM open; every mismatch ruled; suites at or above their current-main (post-#1720) baselines (lifecycle 102/0/2, default 160/0/17, depth-ii 39/0/4, portal 256 vitest + the day specs) with the un-fixme'd specs passing; a verify marker committed for every code PR.
 
 ## 14.4 API Surface
 

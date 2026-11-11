@@ -138,7 +138,7 @@ export function RecordPaymentDialog({
               name="projectId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Matter (Optional)</FormLabel>
+                  <FormLabel>Matter</FormLabel>
                   <TrustMatterPicker
                     field={field}
                     customerId={customerId}

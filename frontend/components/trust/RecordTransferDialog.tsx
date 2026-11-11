@@ -126,9 +126,9 @@ export function RecordTransferDialog({ accountId, open, onOpenChange }: RecordTr
               name="projectId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Matter (Optional)</FormLabel>
+                  <FormLabel>Matter</FormLabel>
                   <FormControl>
-                    <Input placeholder="Matter UUID (optional)" {...field} />
+                    <Input placeholder="Matter UUID" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

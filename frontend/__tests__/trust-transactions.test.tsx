@@ -260,6 +260,7 @@ describe("Trust Transactions", () => {
           },
         ]}
         defaultCustomerId="550e8400-e29b-41d4-a716-446655440000"
+        defaultProjectId="770e8400-e29b-41d4-a716-446655440002"
       />
     );
 
@@ -290,10 +291,48 @@ describe("Trust Transactions", () => {
         "acc-1",
         expect.objectContaining({
           customerId: "550e8400-e29b-41d4-a716-446655440000",
+          projectId: "770e8400-e29b-41d4-a716-446655440002",
           reference: "DEP/2026/TEST",
         })
       );
     });
+  });
+
+  // G89-F28 (D36): a client deposit without a matter never reached the portal, so the matter is
+  // required — the dialog shows a field error under the Matter picker and does not submit.
+  it("refuses a deposit without a matter with a field error (G89-F28)", async () => {
+    mockRecordDeposit.mockClear();
+    render(
+      <RecordDepositDialog
+        accountId="acc-1"
+        slug="acme"
+        open={true}
+        onOpenChange={vi.fn()}
+        customers={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            name: "Sipho Dlamini",
+            email: "sipho@example.com",
+          },
+        ]}
+        defaultCustomerId="550e8400-e29b-41d4-a716-446655440000"
+      />
+    );
+
+    expect(screen.getByText("Matter")).toBeInTheDocument();
+    expect(screen.queryByText("Matter (Optional)")).toBeNull();
+
+    const amountInput = screen.getByPlaceholderText("0.00");
+    fireEvent.change(amountInput, { target: { value: "15000" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. DEP/2026/001"), {
+      target: { value: "DEP/2026/NO-MATTER" },
+    });
+    fireEvent.submit(amountInput.closest("form")!);
+
+    expect(
+      await screen.findByText("A matter is required for client trust transactions")
+    ).toBeInTheDocument();
+    expect(mockRecordDeposit).not.toHaveBeenCalled();
   });
 
   // OBS-1001: when no `defaultCustomerId` is supplied the customer trigger

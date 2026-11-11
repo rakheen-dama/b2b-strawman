@@ -371,9 +371,10 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     }
   );
 
-  it("placeInvestment sends clientId (never customerId) and a decimal rate", async () => {
+  it("placeInvestment sends clientId + matterId (never customerId/projectId) and a decimal rate", async () => {
     await placeInvestment("ta-1", {
       customerId: C,
+      projectId: M,
       institution: "ABSA",
       accountNumber: "INV-1",
       principal: 1000,
@@ -384,7 +385,10 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     const [path, body] = lastPost();
     expect(path).toBe("/api/trust-accounts/ta-1/investments");
     expect(body.clientId).toBe(C);
+    // G89-F28: the invested money's matter
+    expect(body.matterId).toBe(M);
     expect(body).not.toHaveProperty("customerId");
+    expect(body).not.toHaveProperty("projectId");
     expect(body.interestRate).toBeCloseTo(0.075);
   });
 

@@ -207,6 +207,12 @@ describe("Trust Investments & Reports", () => {
       target: { value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
     });
 
+    // G89-F28: the invested money's matter is required
+    const matterInput = screen.getByPlaceholderText("Matter UUID");
+    fireEvent.change(matterInput, {
+      target: { value: "b2c3d4e5-f6a7-4890-abcd-ef1234567890" },
+    });
+
     const institutionInput = screen.getByPlaceholderText("e.g. FNB Money Market");
     fireEvent.change(institutionInput, {
       target: { value: "ABSA Fixed Deposit" },
@@ -229,6 +235,7 @@ describe("Trust Investments & Reports", () => {
         "acc-1",
         expect.objectContaining({
           customerId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          projectId: "b2c3d4e5-f6a7-4890-abcd-ef1234567890",
           institution: "ABSA Fixed Deposit",
           accountNumber: "INV-999",
           principal: 100000,
@@ -236,6 +243,28 @@ describe("Trust Investments & Reports", () => {
         })
       );
     });
+  });
+
+  it("place investment dialog refuses a missing matter with a field error (G89-F28)", async () => {
+    render(
+      <PlaceInvestmentDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        onSuccess={vi.fn()}
+      />
+    );
+
+    const clientInput = screen.getByPlaceholderText("Client UUID");
+    fireEvent.change(clientInput, {
+      target: { value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
+    });
+    fireEvent.submit(clientInput.closest("form")!);
+
+    expect(
+      await screen.findByText("A matter is required for client trust transactions")
+    ).toBeInTheDocument();
+    expect(mockPlaceInvestment).not.toHaveBeenCalled();
   });
 
   it("maturity alert highlights investments maturing within 30 days", async () => {

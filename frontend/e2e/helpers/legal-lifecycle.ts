@@ -330,12 +330,13 @@ export function trustTransactionRow(page: Page, reference: string): Locator {
 }
 
 /**
- * Records a client trust deposit (Record Transaction → Record Deposit) and asserts its row lands
+ * Records a client trust deposit on the client's matter (Record Transaction → Record Deposit; the
+ * matter is required since G89-F28) and asserts its row lands
  * RECORDED — deposits never wait for approval; the approval path is the fee transfer (Day 30).
  */
 export async function recordTrustDeposit(
   page: Page,
-  opts: { client: string; matter?: string; amount: string; reference: string; description: string }
+  opts: { client: string; matter: string; amount: string; reference: string; description: string }
 ): Promise<void> {
   await openTrustTransactions(page);
   await page.getByTestId("record-transaction-button").click();
@@ -346,10 +347,9 @@ export async function recordTrustDeposit(
   await page
     .getByRole("option", { name: new RegExp(`^${escapeRegExp(opts.client)}(\\s|$)`) })
     .click();
-  if (opts.matter) {
-    await dialog.getByTestId("trust-deposit-matter-trigger").click();
-    await page.getByRole("option", { name: new RegExp(escapeRegExp(opts.matter)) }).click();
-  }
+  // G89-F28: a client deposit always names the client's matter (the portal trust view is per matter)
+  await dialog.getByTestId("trust-deposit-matter-trigger").click();
+  await page.getByRole("option", { name: new RegExp(escapeRegExp(opts.matter)) }).click();
   await dialog.getByLabel("Amount").fill(opts.amount);
   await dialog.getByLabel("Reference").fill(opts.reference);
   await dialog.getByLabel(/Description/).fill(opts.description);

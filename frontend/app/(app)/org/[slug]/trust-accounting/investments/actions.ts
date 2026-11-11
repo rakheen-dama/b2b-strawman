@@ -27,10 +27,12 @@ export async function placeInvestment(
 ): Promise<{ success: boolean; investment?: TrustInvestment; error?: string }> {
   try {
     // Backend stores interestRate as decimal (0.075 = 7.5%), form collects percentage
-    const { customerId, ...rest } = data;
+    const { customerId, projectId, ...rest } = data;
     const payload = {
       ...rest,
       clientId: customerId,
+      // G89-F28: the matter whose trust money is invested (required)
+      matterId: projectId,
       interestRate: data.interestRate / 100,
     };
     const investment = await api.post<TrustInvestment>(

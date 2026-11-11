@@ -209,7 +209,8 @@ class DeadlinePortalSyncServiceIntegrationTest {
 
     // Still exactly one row for this (source_entity, id) pair.
     var rows =
-        deadlineRepo.findByCustomer(customerId, LocalDate.now().minusDays(1), revisedDue, null);
+        deadlineRepo.findByCustomer(
+            customerId, LocalDate.now().minusDays(1), revisedDue, null, LocalDate.now());
     long matchCount = rows.stream().filter(r -> r.id().equals(filingId)).count();
     assertThat(matchCount).isEqualTo(1);
 
@@ -353,7 +354,11 @@ class DeadlinePortalSyncServiceIntegrationTest {
     // second upsert would have overwritten the first because both used customerId as the PK id.
     var rowsForCustomer =
         deadlineRepo.findByCustomer(
-            customerId, LocalDate.now().minusDays(1), LocalDate.now().plusDays(30), null);
+            customerId,
+            LocalDate.now().minusDays(1),
+            LocalDate.now().plusDays(30),
+            null,
+            LocalDate.now());
     long customFieldRows =
         rowsForCustomer.stream().filter(r -> "CUSTOM_FIELD_DATE".equals(r.sourceEntity())).count();
     assertThat(customFieldRows).isGreaterThanOrEqualTo(2);

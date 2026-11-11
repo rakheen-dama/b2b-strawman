@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.portal.notification;
 
 import io.b2mash.b2b.b2bstrawman.config.KaziTime;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineStatus;
 import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
@@ -63,8 +64,8 @@ public class PortalEmailNotificationChannel {
 
   private static final Logger log = LoggerFactory.getLogger(PortalEmailNotificationChannel.class);
 
-  /** Same ADR-256 window used by {@code DeadlinePortalSyncService}. */
-  private static final long DEADLINE_DUE_SOON_DAYS = 7;
+  /** The ADR-256 DUE_SOON window, owned by {@link PortalDeadlineStatus} (G89-F71). */
+  private static final long DEADLINE_DUE_SOON_DAYS = PortalDeadlineStatus.DUE_SOON_DAYS;
 
   /**
    * Date pattern for the trust-activity nudge email body. Matches the QA-fixture format used by

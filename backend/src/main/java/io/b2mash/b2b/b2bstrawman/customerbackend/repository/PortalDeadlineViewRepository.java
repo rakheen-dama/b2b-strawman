@@ -1,8 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.repository;
 
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineStatus;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineView;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -68,9 +70,17 @@ public class PortalDeadlineViewRepository {
    * — the {@code CAST(? AS ...) IS NULL} guard is required because Postgres parameter type
    * inference is ambiguous for untyped NULLs inside comparison predicates. Ordered by {@code
    * due_date ASC} with a stable tiebreak on {@code source_entity, id}.
+   *
+   * <p>The status filter matches the <b>effective</b> status on {@code today} (G89-F71), not the
+   * value stored at sync time: a stored {@code COMPLETED} / {@code CANCELLED} wins, otherwise the
+   * status is re-derived from {@code due_date} by the {@link PortalDeadlineStatus} rule (the
+   * DUE_SOON window is passed in as {@link PortalDeadlineStatus#dueSoonCutoff}, never hard-coded
+   * here). The returned rows still carry the stored status; readers that show it map it through
+   * {@link PortalDeadlineStatus#effective}.
    */
   public List<PortalDeadlineView> findByCustomer(
-      UUID customerId, LocalDate from, LocalDate to, String statusFilter) {
+      UUID customerId, LocalDate from, LocalDate to, String statusFilter, LocalDate today) {
+    Objects.requireNonNull(today, "today");
     return jdbc.sql(
             """
             SELECT id, source_entity, customer_id, matter_id, deadline_type, label,
@@ -79,10 +89,25 @@ public class PortalDeadlineViewRepository {
             WHERE customer_id = ?
               AND (CAST(? AS DATE) IS NULL OR due_date >= CAST(? AS DATE))
               AND (CAST(? AS DATE) IS NULL OR due_date <= CAST(? AS DATE))
-              AND (CAST(? AS VARCHAR) IS NULL OR status = CAST(? AS VARCHAR))
+              AND (CAST(? AS VARCHAR) IS NULL
+                   OR CASE
+                        WHEN status IN ('COMPLETED', 'CANCELLED') THEN status
+                        WHEN due_date < CAST(? AS DATE) THEN 'OVERDUE'
+                        WHEN due_date <= CAST(? AS DATE) THEN 'DUE_SOON'
+                        ELSE 'UPCOMING'
+                      END = CAST(? AS VARCHAR))
             ORDER BY due_date ASC, source_entity ASC, id ASC
             """)
-        .params(customerId, from, from, to, to, statusFilter, statusFilter)
+        .params(
+            customerId,
+            from,
+            from,
+            to,
+            to,
+            statusFilter,
+            today,
+            PortalDeadlineStatus.dueSoonCutoff(today),
+            statusFilter)
         .query(PortalDeadlineView.class)
         .list();
   }
@@ -90,7 +115,8 @@ public class PortalDeadlineViewRepository {
   /**
    * Returns a specific deadline row scoped to the given customer. Scoping prevents portal contacts
    * from reading another tenant's rows in the shared portal schema even when they guess a valid
-   * {@code (sourceEntity, id)} pair.
+   * {@code (sourceEntity, id)} pair. The row carries the status stored at sync time; map it through
+   * {@link PortalDeadlineStatus#effective} before showing it (G89-F71).
    */
   public Optional<PortalDeadlineView> findByCustomerIdAndSourceEntityAndId(
       UUID customerId, String sourceEntity, UUID id) {

@@ -1,0 +1,7 @@
+projects/project-time.spec.ts	88	1. Log time on task via UI	expected	passed
+projects/project-time.spec.ts	119	2. Edit time entry via API and verify	expected	passed
+projects/project-time.spec.ts	147	3. Delete time entry via API and verify	expected	passed
+projects/project-time.spec.ts	165	4. Time entry captures rate snapshot	expected	passed
+projects/project-time.spec.ts	190	5. Billable flag defaults to checked in UI	expected	passed
+projects/project-time.spec.ts	204	6. Mark time entry non-billable	expected	passed
+projects/project-time.spec.ts	238	7. My Work lists today's time entries	unexpected	failed

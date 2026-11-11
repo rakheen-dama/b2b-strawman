@@ -1,0 +1,29 @@
+before checkout HEAD 6f9f16e02990abbeb3e905315fd8605fad82f3d6 tracked-dirty=0 2026-11-11T01:35:22+0200
+HEAD 6fcd91abed3b801bdb122b9a20a25d6901166a74 2026-11-11T01:35:22+0200
+before-F no foreign e2e stack 2026-11-11T01:35:22+0200
+stack-F launch 2026-11-11T01:35:22+0200
+stack-F rc=0 end 2026-11-11T01:36:49+0200
+F-lifecycle-functional start 2026-11-11T01:36:50+0200 node=v20.11.1 envnode=v20.11.1
+F-lifecycle-functional rc=0 end 2026-11-11T01:39:46+0200
+F-depth-ii-functional start 2026-11-11T01:39:46+0200 node=v20.11.1 envnode=v20.11.1
+F-depth-ii-functional rc=0 end 2026-11-11T01:41:41+0200
+F-project-time start 2026-11-11T01:41:41+0200 node=v20.11.1 envnode=v20.11.1
+F-project-time rc=1 end 2026-11-11T01:41:54+0200
+F-DONE
+before-C no foreign e2e stack 2026-11-11T01:41:54+0200
+stack-C launch 2026-11-11T01:41:54+0200
+stack-C rc=0 end 2026-11-11T01:42:34+0200
+C-lifecycle start 2026-11-11T01:42:34+0200 node=v20.11.1 envnode=v20.11.1
+C-lifecycle rc=0 end 2026-11-11T01:45:37+0200
+C-depth-ii start 2026-11-11T01:45:37+0200 node=v20.11.1 envnode=v20.11.1
+C-depth-ii rc=0 end 2026-11-11T01:47:38+0200
+before-G no foreign e2e stack 2026-11-11T01:47:38+0200
+stack-G launch 2026-11-11T01:47:38+0200
+stack-G rc=0 end 2026-11-11T01:49:05+0200
+G-lifecycle start 2026-11-11T01:49:05+0200 node=v20.11.1 envnode=v20.11.1
+G-lifecycle rc=1 end 2026-11-11T01:51:37+0200
+G-depth-ii start 2026-11-11T01:51:37+0200 node=v20.11.1 envnode=v20.11.1
+G-depth-ii rc=0 end 2026-11-11T01:53:34+0200
+G-project-time start 2026-11-11T01:53:34+0200 node=v20.11.1 envnode=v20.11.1
+G-project-time rc=1 end 2026-11-11T01:53:47+0200
+PROBE-ALLDONE 2026-11-11T01:53:47+0200

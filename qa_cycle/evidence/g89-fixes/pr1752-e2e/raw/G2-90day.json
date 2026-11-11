@@ -1,0 +1,602 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/portal/playwright.portal.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/portal",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/portal/e2e/helpers/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/portal/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/portal/e2e/tests/responsive",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/portal/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "portal-client-90day",
+        "name": "portal-client-90day",
+        "testDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/portal/e2e/tests/portal-client-90day",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": {
+      "command": "NODE_OPTIONS= pnpm dev",
+      "url": "http://localhost:3002",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "env": {
+        "NODE_OPTIONS": "",
+        "NEXT_PUBLIC_PORTAL_API_URL": "http://localhost:8081"
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)",
+          "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+          "line": 62,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 0: Client lands on /home and sees the pending info requests and the sent fee note",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1081,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:33.011Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-c5176fc4f977e8fa7636",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 118,
+              "column": 7
+            },
+            {
+              "title": "Day 0: Client opens the new info request from Home and sees its upload slot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1781,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:34.719Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-d862cd15c2641b366737",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 140,
+              "column": 7
+            },
+            {
+              "title": "Day 3: Client uploads the document and submits the info request",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1203,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:36.507Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-746679f3b7df512d8f06",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 180,
+              "column": 7
+            },
+            {
+              "title": "Day 7: Diary dates page renders for the client (no portal-visible deadlines on the e2e tenant)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 683,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:37.715Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-18771cd6539d6a126e88",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 220,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 14–30 — Portal Client Lifecycle (Checkpoint 5)",
+          "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+          "line": 44,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 21 [legal-za]: Client follows the trust-activity email to the balance and the new deposit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1409,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:38.409Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6b88c1efb4bfdc5cc891-e37abff57176380ce246",
+              "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+              "line": 77,
+              "column": 7
+            },
+            {
+              "title": "Day 30 [legal-za]: Client downloads the receipt for a part payment on a fee note",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1951,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:39.986Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6b88c1efb4bfdc5cc891-9080aa10ae92ad8679f9",
+              "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+              "line": 149,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9)",
+          "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+          "line": 41,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 45: Client opens the seeded SENT fee note",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 599,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:41.948Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-08b212b9c9695f2572aa",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 60,
+              "column": 7
+            },
+            {
+              "title": "Day 45: SENT fee note offers no online payment without a PSP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 621,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:42.559Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-1feb8914c91b83e720bc",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 92,
+              "column": 7
+            },
+            {
+              "title": "Day 60 [legal-za]: Client downloads the Statement of Account from the matter page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1573,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:43.185Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-66d393a18a01cc5b102d",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 124,
+              "column": 7
+            },
+            {
+              "title": "Day 75 [legal-za]: Client sees the court date and the prescription on Diary dates, sanitised, until the firm removes them",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1011,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:44.765Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-e5dc4acfa4ca13db3cd7",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 181,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11)",
+          "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+          "line": 35,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 85: Profile shows the client's contact details (read-only)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 687,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:45.785Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-9bf202a8f9d4aeaca0a1",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 57,
+              "column": 7
+            },
+            {
+              "title": "Day 85: Notifications page shows the firm's bi-weekly digest cadence (read-only)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 739,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:46.482Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-ca5ab1ba739ea55bc380",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 86,
+              "column": 7
+            },
+            {
+              "title": "Day 90: Activity trail shows this run's submit and download",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 594,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:17:47.226Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-89683e593beca0e69654",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 110,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-10T23:17:28.355Z",
+    "duration": 19532.944,
+    "expected": 13,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

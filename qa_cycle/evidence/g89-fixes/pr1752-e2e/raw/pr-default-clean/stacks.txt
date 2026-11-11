@@ -1,0 +1,32 @@
+===== stack D checks 2026-11-11T02:03:26+0200 =====
+build rc=0
+git HEAD 6fcd91abed3b801bdb122b9a20a25d6901166a74
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-11 02:02:49 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-11 02:02:48 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-11 02:02:48 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 02:02:48 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-11 02:02:48 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 02:02:48 +0200 SAST
+/e2e-backend image=sha256:7fc4f588f6a82570ab53b87658787110645ec598854c9121edf7034851febc99 created=2026-11-11T00:02:48.834518172Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-frontend image=sha256:6c78ab2d74642aff3319aeab0dc98d880c2ea1ee7c5e12e718e89f83974bb747 created=2026-11-11T00:02:49.041384839Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-11T00:02:48.750455506Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+cached-lines=44
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+D-lifecycle-functional writing-actual=0
+D-depth-ii-functional writing-actual=0
+D-default writing-actual=0
+===== D time_entries from project-time spec: SAST=2026-11-11 02:09:22 UTC=2026-11-11 00:09:22
+2026-11-11|true|Rate snapshot test 2s0u|2026-11-11 00:09:03.089487+00
+2026-11-11|false|Non-billable entry 2s0u|2026-11-11 00:09:06.444804+00

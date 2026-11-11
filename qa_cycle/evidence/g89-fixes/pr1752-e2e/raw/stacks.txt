@@ -1,0 +1,212 @@
+===== stack C1 checks 2026-11-11T00:56:53+0200 =====
+build rc=0
+git HEAD 6f9f16e02990abbeb3e905315fd8605fad82f3d6
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-11 00:56:19 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-11 00:56:19 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 00:56:19 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-11 00:56:19 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-11 00:56:19 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 00:56:19 +0200 SAST
+/e2e-backend image=sha256:7fc4f588f6a82570ab53b87658787110645ec598854c9121edf7034851febc99 created=2026-11-10T22:56:19.656551465Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-frontend image=sha256:95f598caf83e6beed0d0118385f407b0550e97ebd381a1ad0ac223486ea04cae created=2026-11-10T22:56:19.748007007Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-10T22:56:19.607617048Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+cached-lines=39
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+===== stack G1 checks 2026-11-11T01:03:51+0200 =====
+build rc=0
+git HEAD 6f9f16e02990abbeb3e905315fd8605fad82f3d6
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-11 01:03:18 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-11 01:03:18 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-11 01:03:18 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 01:03:18 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-11 01:03:18 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 01:03:18 +0200 SAST
+/e2e-backend image=sha256:7fc4f588f6a82570ab53b87658787110645ec598854c9121edf7034851febc99 created=2026-11-10T23:03:18.188035048Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-frontend image=sha256:3238458127a95d024c2e7049a1be8a175777e4ef2319c308ab08fa0ab7873a5e created=2026-11-10T23:03:18.248131214Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-10T23:03:18.114059923Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+cached-lines=46
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+G1-lifecycle writing-actual=0
+===== G1 interest_runs after lifecycle 01:06:23
+{"id":"3352c23c-bd94-4f3d-9ffa-b263a6d640e8","trust_account_id":"afb99ac2-6660-4f4d-8d8d-bee10284d1d3","period_start":"2026-10-12","period_end":"2026-11-11","lpff_rate_id":"295ddba9-99d4-4f01-9b2a-e1eafc0ef995","total_interest":52.53,"total_lpff_share":26.27,"total_client_share":26.26,"status":"DRAFT","approved_by":null,"posted_at":null,"created_at":"2026-11-10T23:05:25.19322+00:00","updated_at":"2026-11-10T23:05:25.325768+00:00","created_by":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1"}
+===== G1 trust_reconciliations after lifecycle
+===== G1 trust audit events (deposit / interest credit) after lifecycle
+trust_deposit.recorded|trust_transaction|2026-11-10 23:05:02.776646+00|{"amount": "250000", "reference": "DEP/MOROKA/mwbar4dga08a", "actor_name": "Alice Owner", "project_id": "251eda25-e4af-4675-947d-cfe554d1c389", "customer_id": "9551efae-9514-4976-9f22-0cdc7111a931", "customer_name": "Mor
+trust_deposit.recorded|trust_transaction|2026-11-10 23:05:06.600015+00|{"amount": "45000", "reference": "DEP/QC/mwbar4dga08a", "actor_name": "Alice Owner", "project_id": "edef57d1-d5ec-487a-8924-7bb6002ae225", "customer_id": "554e3a42-5136-454a-80e9-7f91604f884c", "customer_name": "QuickCol
+===== G1 generated_documents after lifecycle
+fee-note-inv-0001-2026-11-11.pdf|false
+statement-of-account-website-redesign-2026-11-10.pdf|true
+G1-depth-ii writing-actual=0
+G1-default writing-actual=0
+===== G1 projects after default
+Website Redesign|ACTIVE
+Ndlovu v RAF mwbar4dga08a|ACTIVE
+Apex Shareholder Agreement mwbar4dga08a|ACTIVE
+Estate Late Peter Moroka mwbar4dga08a|ACTIVE
+QC Debt Recovery #1 mwbar4dga08a|ACTIVE
+Ndlovu Property Dispute mwbar4dga08a|ACTIVE
+Apex Annual Returns mwbar4dga08a|ACTIVE
+Team spec mwbau3ig6c37|ACTIVE
+Ndlovu v RAF — Depth II mwbauclw12ce|CLOSED
+Ndlovu — transition repro mwbauclw12ce|ACTIVE
+Khumalo Property Holdings — Erf 1234 Sandton Transfer mwbauclw12ce|ACTIVE
+Apex Holdings — Shareholders' Agreement Review mwbauclw12ce|CLOSED
+E2E closure override x7yu|CLOSED
+DocGen Matter xf7q|ACTIVE
+Profit Matter xmdu|ACTIVE
+IReq Matter xmq4|ACTIVE
+Bell Matter xufu|ACTIVE
+Void Matter xq0d|ACTIVE
+Budget Test Project xztm|ACTIVE
+Task Test Project y31u|ACTIVE
+Time Test Project y332|ACTIVE
+Proj Renamed y2xx|ARCHIVED
+Proj Internal y2xx|ACTIVE
+Tag Matter yhtl|ACTIVE
+E2E Test 1794352180774|ACTIVE
+===== G1 backend log scan (WARN|ERROR: reconcil|interest|section|statement|trust|audit|member)
+{"@timestamp":"2026-11-10T23:09:14.773353046Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Courier-BoldOblique","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.773804713Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Courier-Oblique","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.773913004Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Courier-Bold","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774002046Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Courier","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774097963Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Times-BoldItalic","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774185921Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Times-Italic","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774292338Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Times-Bold","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774373921Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Times-Roman","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774470463Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica-BoldOblique","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774625963Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica-Oblique","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774737004Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica-Bold","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774819796Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.774990338Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Symbol","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.775615671Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font ZapfDingbats","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.824674838Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:14.825017254Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9481"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font ZapfDingbats","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"167d6d8e-e4d5-4071-9a06-d9acf953931c","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:18.040891714Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.invoice.InvoiceCreationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9674"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Draft invoice for customer 3ad4e6ff-1060-462c-bc36-1ba11645d566 created without a tax number — send will be blocked until the customer profile is updated (warning code: tax_number_missing).","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"82d72a35-6bd0-44fe-ac8c-6038338a4634","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:19.874185840Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.invoice.InvoiceCreationService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9764"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Draft invoice for customer 3ad4e6ff-1060-462c-bc36-1ba11645d566 created without a tax number — send will be blocked until the customer profile is updated (warning code: tax_number_missing).","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"e9904ce5-fb10-40e7-8b89-2852b2f924fe","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:20.620758799Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9811"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Forbidden: path=/api/matters/4f395157-295c-40db-93dd-294706543eb5/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, and org owners","tenantId":"tenant_7d218705360b","userId":"user_e2e_carol","requestId":"c900c34a-a579-49fc-b9b2-769bb645ec10","memberId":"9a830e38-37de-4faf-83a4-6712d59a1505","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:23.470994967Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":1,"thread":{"name":"tomcat-handler-9972"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Forbidden: path=/api/matters/4f395157-295c-40db-93dd-294706543eb5/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, and org owners","tenantId":"tenant_7d218705360b","userId":"user_e2e_carol","requestId":"bda62675-7272-4d9d-97e1-5ffdd8905475","memberId":"9a830e38-37de-4faf-83a4-6712d59a1505","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:24.889142426Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10062"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Forbidden: path=/api/matters/4f395157-295c-40db-93dd-294706543eb5/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, and org owners","tenantId":"tenant_7d218705360b","userId":"user_e2e_carol","requestId":"dd9e229a-13ff-4dc9-ba61-9386779c9f40","memberId":"9a830e38-37de-4faf-83a4-6712d59a1505","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:27.685919219Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10223"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Forbidden: path=/api/matters/4f395157-295c-40db-93dd-294706543eb5/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, and org owners","tenantId":"tenant_7d218705360b","userId":"user_e2e_carol","requestId":"767bd6c9-8a94-4bb6-a3e3-772fb1aa95ad","memberId":"9a830e38-37de-4faf-83a4-6712d59a1505","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.579827555Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Courier-BoldOblique","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.580387847Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Courier-Oblique","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.580576597Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Courier-Bold","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.580822930Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Courier","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.581155513Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Times-BoldItalic","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.582517930Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Times-Italic","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.582746680Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Times-Bold","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.582851097Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Times-Roman","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.583142055Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica-BoldOblique","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.583288638Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica-Oblique","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.583449013Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica-Bold","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.583676930Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.583828138Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Symbol","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.583923138Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font ZapfDingbats","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.596886263Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font Helvetica","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:33.597094305Z","log":{"level":"WARN","logger":"org.apache.pdfbox.pdmodel.font.PDType1Font"},"process":{"pid":1,"thread":{"name":"tomcat-handler-10675"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Using fallback font LiberationSans for base font ZapfDingbats","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"43987f2b-e3db-4a2f-b313-2748536f1411","memberId":"44e248d3-1d60-4809-8e7c-8d86d7af8bb1","tags":["COMMONS-LOGGING"],"ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:44.007418796Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":1,"thread":{"name":"tomcat-handler-11311"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Forbidden: path=/api/matters/7f20c1de-06a6-4cd0-8f9e-6d5495927067/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, and org owners","tenantId":"tenant_7d218705360b","userId":"user_e2e_carol","requestId":"52b1b201-5a9e-4175-ab0b-6eed2fa2b5b7","memberId":"9a830e38-37de-4faf-83a4-6712d59a1505","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-10T23:09:47.287698380Z","log":{"level":"WARN","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":1,"thread":{"name":"tomcat-handler-11508"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Forbidden: path=/api/matters/7f20c1de-06a6-4cd0-8f9e-6d5495927067/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, and org owners","tenantId":"tenant_7d218705360b","userId":"user_e2e_carol","requestId":"a58e6cec-1284-4401-9ec8-75992bfe7065","memberId":"9a830e38-37de-4faf-83a4-6712d59a1505","ecs":{"version":"8.11"}}
+count=331
+all WARN/ERROR count=0
+===== stack C2 checks 2026-11-11T01:10:27+0200 =====
+build rc=0
+git HEAD 6f9f16e02990abbeb3e905315fd8605fad82f3d6
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-11 01:09:54 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-11 01:09:54 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 01:09:54 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-11 01:09:54 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 01:09:54 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-11 01:09:54 +0200 SAST
+/e2e-backend image=sha256:7fc4f588f6a82570ab53b87658787110645ec598854c9121edf7034851febc99 created=2026-11-10T23:09:54.191730675Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-frontend image=sha256:3238458127a95d024c2e7049a1be8a175777e4ef2319c308ab08fa0ab7873a5e created=2026-11-10T23:09:54.278026759Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-10T23:09:54.131677259Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+cached-lines=50
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+spacing for before-C2-responsive: tokens|age-at-start=3|17 01:10:54
+token age now=333s 01:16:10
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 01:16:24
+:3002 free
+===== stack G2 checks 2026-11-11T01:17:26+0200 =====
+build rc=0
+git HEAD 6f9f16e02990abbeb3e905315fd8605fad82f3d6
+backend health: {"groups":["liveness","readiness"],"status":"UP"}
+frontend 200
+mock-idp 200
+mailpit 200
+e2e-seed  |   E2E Boot-Seed Complete!
+e2e-frontend docteams-e2e-frontend 2026-11-11 01:16:53 +0200 SAST
+e2e-backend docteams-e2e-backend 2026-11-11 01:16:52 +0200 SAST
+e2e-localstack localstack/localstack:3 2026-11-11 01:16:52 +0200 SAST
+e2e-mock-idp docteams-e2e-mock-idp 2026-11-11 01:16:52 +0200 SAST
+e2e-postgres postgres:16-alpine 2026-11-11 01:16:52 +0200 SAST
+e2e-mailpit axllent/mailpit:latest 2026-11-11 01:16:52 +0200 SAST
+/e2e-backend image=sha256:7fc4f588f6a82570ab53b87658787110645ec598854c9121edf7034851febc99 created=2026-11-10T23:16:52.92580605Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-frontend image=sha256:3238458127a95d024c2e7049a1be8a175777e4ef2319c308ab08fa0ab7873a5e created=2026-11-10T23:16:53.0258768Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+/e2e-postgres image=sha256:7e7dbab8d3b431a20793a6d99cb5a6bc84e44914309917f1bf5589a7568cdefd created=2026-11-10T23:16:52.86385305Z wd=/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/compose
+cached-lines=50
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Volume docteams-e2e_e2e_postgres_data  Removed
+tenant=tenant_7d218705360b
+tenant flyway: 14|g89 contains trust data
+global flyway: 5|portal strip matter type suffix
+projects:
+Website Redesign|ACTIVE
+portal_deadline_view=0
+G2-90day pre: tokens|age=1|3
+G2-90day writing-actual=0
+== G2-90day post-checks 01:17:47
+portal_deadline_view=0
+== G2 trust audit events (deposit / interest credit) after 90day
+trust_deposit.recorded|trust_transaction|2026-11-10 23:17:38.521086+00|{"amount": "1500", "reference": "E2E-PORTAL-b8o24", "actor_name": "Alice Owner", "project_id": "db75ca9b-5e87-44bc-b44f-34107686e189", "customer_id": "da9ed08d-b2ac-4990-b1ba-b8544097be6a", "customer_name": "Acme Corp"}
+G2-90day Exchanged magic link=1
+REQ-0002|IN_PROGRESS|2026-11-10 23:17:33.278005+00
+REQ-0001|SENT|2026-11-10 23:17:24.030057+00
+spacing for before-G2-responsive: tokens|age-at-start=3|15 01:17:48
+token age now=332s 01:23:04
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 01:23:18
+:3002 free
+G2-responsive writing-actual=0
+G2-responsive Exchanged magic link=2
+spacing for before-G2-isolation: tokens|age-at-start=4|14 01:23:37
+token age now=331s 01:28:54
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 01:29:08
+:3002 free
+G2-isolation writing-actual=0
+G2-isolation Exchanged magic link=4
+spacing for before-G2-login-bare: tokens|age-at-start=6|0 01:29:10
+token age now=332s 01:34:42
+{"groups":["liveness","readiness"],"status":"UP"} backend restarted+healthy 01:34:56
+:3002 free
+G2-login-bare writing-actual=0
+G2-login-bare Exchanged magic link=5

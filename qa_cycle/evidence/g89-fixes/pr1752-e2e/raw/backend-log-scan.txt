@@ -1,0 +1,78 @@
+===== pr1752/G1-backend.log: WARN/ERROR by level|logger|message(100)
+  36 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font ZapfDingbats
+  36 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Roman
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Italic
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-BoldItalic
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Bold
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Symbol
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-Oblique
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-BoldOblique
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-Bold
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-Oblique
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-BoldOblique
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-Bold
+  18 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier
+  16 WARN|io.b2mash.b2b.b2bstrawman.invoice.InvoiceCreationService|Draft invoice for customer <uuid> created without a tax number — send 
+  12 WARN|io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler|Forbidden: path=/api/matters/<uuid>/time-summary/by-member, method=GET
+  11 WARN|io.b2mash.b2b.b2bstrawman.notification.NotificationService|No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigur
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.a
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.Authoriz
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerA
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthoriza
+   1 WARN|org.springframework.boot.micrometer.metrics.MaximumAllowableTagsMeterFilter|Reached the maximum number of 'uri' tags for 'http.server.requests'.
+   1 WARN|org.springframework.aop.framework.CglibAopProxy|Unable to proxy interface-implementing method [public final void org.springframework.web.filter.Gene
+===== rerun-lifecycle/F-backend.log: WARN/ERROR by level|logger|message(100)
+  34 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font ZapfDingbats
+  34 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Roman
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Italic
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-BoldItalic
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Bold
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Symbol
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-Oblique
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-BoldOblique
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-Bold
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-Oblique
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-BoldOblique
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-Bold
+  17 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier
+  10 WARN|io.b2mash.b2b.b2bstrawman.notification.NotificationService|No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+   9 WARN|io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler|Forbidden: path=/api/matters/<uuid>/time-summary/by-member, method=GET
+   4 WARN|io.b2mash.b2b.b2bstrawman.invoice.InvoiceCreationService|Draft invoice for customer <uuid> created without a tax number — send 
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigur
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.a
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.Authoriz
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerA
+   1 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthoriza
+   1 WARN|org.springframework.boot.micrometer.metrics.MaximumAllowableTagsMeterFilter|Reached the maximum number of 'uri' tags for 'http.server.requests'.
+   1 WARN|org.springframework.aop.framework.CglibAopProxy|Unable to proxy interface-implementing method [public final void org.springframework.web.filter.Gene
+===== pr1752/G2-backend.log: WARN/ERROR by level|logger|message(100)
+   8 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font ZapfDingbats
+   8 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica
+   4 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigur
+   4 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure
+   4 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.a
+   4 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.Authoriz
+   4 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerA
+   4 WARN|org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker|Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthoriza
+   4 WARN|org.springframework.aop.framework.CglibAopProxy|Unable to proxy interface-implementing method [public final void org.springframework.web.filter.Gene
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Roman
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Italic
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-BoldItalic
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Times-Bold
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Symbol
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-Oblique
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Helvetica-Bold
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-Oblique
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-BoldOblique
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier-Bold
+   4 WARN|org.apache.pdfbox.pdmodel.font.PDType1Font|Using fallback font LiberationSans for base font Courier
+   4 WARN|io.b2mash.b2b.b2bstrawman.template.PdfConversionService|LibreOffice not found — PDF conversion will fall back to docx4j
+   3 WARN|io.b2mash.b2b.b2bstrawman.invoice.InvoiceCreationService|Draft invoice for customer <uuid> created without a tax number — send 
+   1 WARN|org.apache.pdfbox.pdmodel.font.FileSystemFontProvider|Finished building on-disk font cache, found 22 fonts
+   1 WARN|org.apache.pdfbox.pdmodel.font.FileSystemFontProvider|Building on-disk font cache, this may take a while

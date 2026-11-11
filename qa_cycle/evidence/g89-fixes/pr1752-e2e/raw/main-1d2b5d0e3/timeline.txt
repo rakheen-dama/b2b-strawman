@@ -1,0 +1,12 @@
+HEAD 1d2b5d0e3b7add48ed78aadce2a73da9dd65ebcb 2026-11-11T01:54:11+0200 dirty=       0
+before-C no foreign e2e stack 2026-11-11T01:54:12+0200
+stack-C launch 2026-11-11T01:54:12+0200
+stack-C rc=0 end 2026-11-11T01:54:51+0200
+C-lifecycle start 2026-11-11T01:54:52+0200 node=v20.11.1 envnode=v20.11.1
+C-lifecycle rc=0 end 2026-11-11T01:57:54+0200
+before-G no foreign e2e stack 2026-11-11T01:57:54+0200
+stack-G launch 2026-11-11T01:57:54+0200
+stack-G rc=0 end 2026-11-11T01:59:19+0200
+G-lifecycle start 2026-11-11T01:59:20+0200 node=v20.11.1 envnode=v20.11.1
+G-lifecycle rc=1 end 2026-11-11T02:01:51+0200
+MAIN-ALLDONE 2026-11-11T02:01:52+0200 HEAD=6fcd91abe dirty=       0

@@ -1,0 +1,43 @@
+HEAD 6f9f16e02990abbeb3e905315fd8605fad82f3d6 2026-11-11T00:55:10+0200 dirty=       0
+portal-vitest start 2026-11-11T00:55:10+0200 node=v20.11.1 envnode=v20.11.1
+portal-vitest rc=0 end 2026-11-11T00:55:19+0200
+before-C1 no foreign e2e stack 2026-11-11T00:55:19+0200
+stack-C1 launch 2026-11-11T00:55:19+0200
+stack-C1 rc=0 end 2026-11-11T00:56:53+0200
+C1-lifecycle start 2026-11-11T00:56:53+0200 node=v20.11.1 envnode=v20.11.1
+C1-lifecycle rc=0 end 2026-11-11T00:59:57+0200
+C1-depth-ii start 2026-11-11T00:59:57+0200 node=v20.11.1 envnode=v20.11.1
+C1-depth-ii rc=1 end 2026-11-11T01:02:07+0200
+C1-ALLDONE
+before-G1 no foreign e2e stack 2026-11-11T01:02:08+0200
+stack-G1 launch 2026-11-11T01:02:08+0200
+stack-G1 rc=1 end 2026-11-11T01:02:29+0200
+stack-G1 attempt1 FAILED rc=1; font-lines=96; retrying once 2026-11-11T01:02:29+0200
+stack-G1 attempt2 rc=0 end 2026-11-11T01:03:51+0200
+G1-lifecycle start 2026-11-11T01:03:52+0200 node=v20.11.1 envnode=v20.11.1
+G1-lifecycle rc=1 end 2026-11-11T01:06:23+0200
+G1-depth-ii start 2026-11-11T01:06:23+0200 node=v20.11.1 envnode=v20.11.1
+G1-depth-ii rc=1 end 2026-11-11T01:08:36+0200
+G1-default start 2026-11-11T01:08:36+0200 node=v20.11.1 envnode=v20.11.1
+G1-default rc=1 end 2026-11-11T01:09:47+0200
+G1-ALLDONE
+before-C2 no foreign e2e stack 2026-11-11T01:09:48+0200
+stack-C2 launch 2026-11-11T01:09:48+0200
+stack-C2 rc=0 end 2026-11-11T01:10:27+0200
+C2-90day start 2026-11-11T01:10:28+0200 node=v20.11.1 envnode=v20.11.1
+C2-90day rc=0 end 2026-11-11T01:10:53+0200
+C2-responsive start 2026-11-11T01:16:24+0200 node=v20.11.1 envnode=v20.11.1
+C2-responsive rc=0 end 2026-11-11T01:16:46+0200
+C2-ALLDONE
+before-G2 no foreign e2e stack 2026-11-11T01:16:47+0200
+stack-G2 launch 2026-11-11T01:16:47+0200
+stack-G2 rc=0 end 2026-11-11T01:17:26+0200
+G2-90day start 2026-11-11T01:17:27+0200 node=v20.11.1 envnode=v20.11.1
+G2-90day rc=0 end 2026-11-11T01:17:47+0200
+G2-responsive start 2026-11-11T01:23:18+0200 node=v20.11.1 envnode=v20.11.1
+G2-responsive rc=0 end 2026-11-11T01:23:37+0200
+G2-isolation start 2026-11-11T01:29:08+0200 node=v20.11.1 envnode=v20.11.1
+G2-isolation rc=0 end 2026-11-11T01:29:10+0200
+G2-login-bare start 2026-11-11T01:34:56+0200 node=v20.11.1 envnode=v20.11.1
+G2-login-bare rc=0 end 2026-11-11T01:35:13+0200
+ALLDONE

@@ -1,0 +1,44 @@
+
+Running 7 tests using 1 worker
+
+  ✓  1 [chromium] › e2e/tests/projects/project-time.spec.ts:88:7 › PROJ-03: Time Entries › 1. Log time on task via UI (2.4s)
+  ✓  2 [chromium] › e2e/tests/projects/project-time.spec.ts:119:7 › PROJ-03: Time Entries › 2. Edit time entry via API and verify (1.4s)
+  ✓  3 [chromium] › e2e/tests/projects/project-time.spec.ts:147:7 › PROJ-03: Time Entries › 3. Delete time entry via API and verify (32ms)
+  ✓  4 [chromium] › e2e/tests/projects/project-time.spec.ts:165:7 › PROJ-03: Time Entries › 4. Time entry captures rate snapshot (22ms)
+  ✓  5 [chromium] › e2e/tests/projects/project-time.spec.ts:190:7 › PROJ-03: Time Entries › 5. Billable flag defaults to checked in UI (1.8s)
+  ✓  6 [chromium] › e2e/tests/projects/project-time.spec.ts:204:7 › PROJ-03: Time Entries › 6. Mark time entry non-billable (36ms)
+  ✘  7 [chromium] › e2e/tests/projects/project-time.spec.ts:238:7 › PROJ-03: Time Entries › 7. My Work lists today's time entries (5.5s)
+
+
+  1) [chromium] › e2e/tests/projects/project-time.spec.ts:238:7 › PROJ-03: Time Entries › 7. My Work lists today's time entries 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Time Test Project j13k — Non-billable entry j13k')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Time Test Project j13k — Non-billable entry j13k')[22m
+
+
+      245 |     await expect(
+      246 |       page.getByText(`${PROJECT_NAME} \u2014 Non-billable entry ${RUN_ID}`)
+    > 247 |     ).toBeVisible();
+          |       ^
+      248 |     await expect(
+      249 |       page.getByText(`${PROJECT_NAME} \u2014 Rate snapshot test ${RUN_ID}`)
+      250 |     ).toBeVisible();
+        at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/tests/projects/project-time.spec.ts:247:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/projects-project-time-PROJ-fe1bb--lists-today-s-time-entries-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/projects-project-time-PROJ-fe1bb--lists-today-s-time-entries-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/tests/projects/project-time.spec.ts:238:7 › PROJ-03: Time Entries › 7. My Work lists today's time entries 
+  6 passed (11.9s)

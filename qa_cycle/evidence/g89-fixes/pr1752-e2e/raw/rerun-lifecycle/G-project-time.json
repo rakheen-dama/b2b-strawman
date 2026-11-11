@@ -1,0 +1,363 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/playwright.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/tests",
+        "testIgnore": [
+          "**/keycloak/**",
+          "**/legal-lifecycle/**",
+          "**/legal-depth-ii/**",
+          "**/demo-full-90day.spec.ts",
+          "**/demo-recording.spec.ts"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 5,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "projects/project-time.spec.ts",
+      "file": "projects/project-time.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PROJ-03: Time Entries",
+          "file": "projects/project-time.spec.ts",
+          "line": 44,
+          "column": 15,
+          "specs": [
+            {
+              "title": "1. Log time on task via UI",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2412,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:53:36.088Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c2db893813ae488e916-5a70f1930ead4e780e08",
+              "file": "projects/project-time.spec.ts",
+              "line": 88,
+              "column": 7
+            },
+            {
+              "title": "2. Edit time entry via API and verify",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1444,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:53:38.735Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c2db893813ae488e916-23bd4ce9773a390dc6fb",
+              "file": "projects/project-time.spec.ts",
+              "line": 119,
+              "column": 7
+            },
+            {
+              "title": "3. Delete time entry via API and verify",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 32,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:53:40.184Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c2db893813ae488e916-a41bd2760f808f86ba5e",
+              "file": "projects/project-time.spec.ts",
+              "line": 147,
+              "column": 7
+            },
+            {
+              "title": "4. Time entry captures rate snapshot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 22,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:53:40.221Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c2db893813ae488e916-9ca95e2a5fdfa3d379c1",
+              "file": "projects/project-time.spec.ts",
+              "line": 165,
+              "column": 7
+            },
+            {
+              "title": "5. Billable flag defaults to checked in UI",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1765,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:53:40.247Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c2db893813ae488e916-73bec504c106b441861d",
+              "file": "projects/project-time.spec.ts",
+              "line": 190,
+              "column": 7
+            },
+            {
+              "title": "6. Mark time entry non-billable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 36,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:53:42.018Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8c2db893813ae488e916-7f7335d841ae40f52eb8",
+              "file": "projects/project-time.spec.ts",
+              "line": 204,
+              "column": 7
+            },
+            {
+              "title": "7. My Work lists today's time entries",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 5477,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Time Test Project j13k — Non-billable entry j13k')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Time Test Project j13k — Non-billable entry j13k')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Time Test Project j13k — Non-billable entry j13k')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Time Test Project j13k — Non-billable entry j13k')\u001b[22m\n\n    at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/tests/projects/project-time.spec.ts:247:7",
+                        "location": {
+                          "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/tests/projects/project-time.spec.ts",
+                          "column": 7,
+                          "line": 247
+                        },
+                        "snippet": "  245 |     await expect(\n  246 |       page.getByText(`${PROJECT_NAME} \\u2014 Non-billable entry ${RUN_ID}`)\n> 247 |     ).toBeVisible();\n      |       ^\n  248 |     await expect(\n  249 |       page.getByText(`${PROJECT_NAME} \\u2014 Rate snapshot test ${RUN_ID}`)\n  250 |     ).toBeVisible();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/tests/projects/project-time.spec.ts",
+                            "column": 7,
+                            "line": 247
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Time Test Project j13k — Non-billable entry j13k')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Time Test Project j13k — Non-billable entry j13k')\u001b[22m\n\n\n  245 |     await expect(\n  246 |       page.getByText(`${PROJECT_NAME} \\u2014 Non-billable entry ${RUN_ID}`)\n> 247 |     ).toBeVisible();\n      |       ^\n  248 |     await expect(\n  249 |       page.getByText(`${PROJECT_NAME} \\u2014 Rate snapshot test ${RUN_ID}`)\n  250 |     ).toBeVisible();\n    at /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/tests/projects/project-time.spec.ts:247:7"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-10T23:53:42.059Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/test-results/projects-project-time-PROJ-fe1bb--lists-today-s-time-entries-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/test-results/projects-project-time-PROJ-fe1bb--lists-today-s-time-entries-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/rakheendama/Projects/2026/b2b-strawman-g89-cp5/frontend/e2e/tests/projects/project-time.spec.ts",
+                        "column": 7,
+                        "line": 247
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "8c2db893813ae488e916-bcb2225abe6b74abb9c8",
+              "file": "projects/project-time.spec.ts",
+              "line": 238,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-10T23:53:35.718Z",
+    "duration": 11860.824,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

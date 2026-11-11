@@ -1,0 +1,7 @@
+e2e-down start 2026-11-11T02:09:48+0200
+
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+rc=0 end 2026-11-11T02:09:51+0200
+e2e containers:        0
+docteams-e2e volumes: 0

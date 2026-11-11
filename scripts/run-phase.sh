@@ -239,7 +239,9 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   # Unset CLAUDECODE to avoid nested session detection.
   # CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0: without it, -p stops background subagents 10 min
   # after the orchestrator's last turn and exits 0 mid-slice (614B). SLICE_TIMEOUT still bounds hangs.
-  if timeout "${SLICE_TIMEOUT}" env CLAUDECODE="" CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 \
+  # -k 120: a claude -p that ignores SIGTERM is SIGKILLed 2 min after the cap (634A lived 29 min
+  # past it); timeout then exits 137 instead of 124.
+  if timeout -k 120 "${SLICE_TIMEOUT}" env CLAUDECODE="" CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 \
     claude -p "/epic_v2 ${slice} auto-merge" \
     --dangerously-skip-permissions \
     --model opus \
@@ -262,7 +264,7 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   if grep -E "^\| \*\*${slice}\*\*.*\*\*Done\*\*" "$TASK_FILE" >/dev/null; then
     log "Slice ${slice} completed successfully (${SLICE_MINUTES}m)"
   else
-    if [[ "$CLAUDE_EXIT" -eq 124 ]]; then
+    if [[ "$CLAUDE_EXIT" -eq 124 || "$CLAUDE_EXIT" -eq 137 ]]; then
       log "ERROR: Slice ${slice} TIMED OUT after ${SLICE_MINUTES}m (limit: $((SLICE_TIMEOUT / 60))m)"
     else
       log "ERROR: Slice ${slice} did NOT complete (exit code: ${CLAUDE_EXIT}, duration: ${SLICE_MINUTES}m)"

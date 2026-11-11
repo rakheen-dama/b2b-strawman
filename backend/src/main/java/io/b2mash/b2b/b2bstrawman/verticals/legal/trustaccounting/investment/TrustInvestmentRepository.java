@@ -18,6 +18,9 @@ public interface TrustInvestmentRepository extends JpaRepository<TrustInvestment
 
   List<TrustInvestment> findByCustomerId(UUID customerId);
 
+  /** Whether the investment placed by this PAYMENT is in {@code status} (PR #1757 review). */
+  boolean existsByDepositTransactionIdAndStatus(UUID depositTransactionId, String status);
+
   List<TrustInvestment> findByTrustAccountIdAndCustomerId(UUID trustAccountId, UUID customerId);
 
   List<TrustInvestment> findByStatusAndMaturityDateBetween(

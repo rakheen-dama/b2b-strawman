@@ -74,6 +74,14 @@ class TrustInvestmentControllerTest {
         "invest_ctrl_member@test.com",
         "Invest Ctrl Member",
         "member");
+    // Approves placement payments (single-approval mode refuses self-approval)
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_invest_ctrl_approver",
+        "invest_ctrl_approver@test.com",
+        "Invest Ctrl Approver",
+        "owner");
 
     // Enable trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -293,6 +301,16 @@ class TrustInvestmentControllerTest {
 
     var investmentId =
         JsonPath.read(investResult.getResponse().getContentAsString(), "$.id").toString();
+
+    // PR #1757 review: only a completed (approved) placement can be withdrawn
+    var placementId =
+        JsonPath.read(investResult.getResponse().getContentAsString(), "$.depositTransactionId")
+            .toString();
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + placementId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_approver")))
+        .andExpect(status().isOk());
 
     // Withdraw
     mockMvc

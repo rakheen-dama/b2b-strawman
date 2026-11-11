@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -51,12 +52,14 @@ class TrustInvestmentServiceIntegrationTest {
   @Autowired private TrustInvestmentService investmentService;
   @Autowired private TrustInvestmentRepository investmentRepository;
   @Autowired private ProjectRepository projectRepository;
+  @Autowired private TrustTransactionService transactionService;
 
   private String tenantSchema;
   private UUID trustAccountId;
   private UUID customerId;
   private UUID matterId;
   private UUID ownerMemberId;
+  private UUID approverMemberId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -71,6 +74,15 @@ class TrustInvestmentServiceIntegrationTest {
                 "user_invest_owner",
                 "invest_owner@test.com",
                 "Investment Owner",
+                "owner"));
+    approverMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_invest_approver",
+                "invest_approver@test.com",
+                "Investment Approver",
                 "owner"));
 
     // Enable the trust_accounting module
@@ -135,6 +147,18 @@ class TrustInvestmentServiceIntegrationTest {
   }
 
   // --- Helper Methods ---
+
+  /** The placement PAYMENT approved by a second member (single mode refuses self-approval). */
+  private void approvePlacement(UUID placementTransactionId) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, approverMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .where(
+            RequestScopes.CAPABILITIES,
+            java.util.Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
+        .run(() -> transactionService.approveTransaction(placementTransactionId, approverMemberId));
+  }
 
   private void createDeposit(
       UUID accountId, String custId, BigDecimal amount, String reference, String date)
@@ -265,6 +289,9 @@ class TrustInvestmentServiceIntegrationTest {
         .where(RequestScopes.MEMBER_ID, ownerMemberId)
         .run(() -> investmentService.recordInterestEarned(placed.id(), new BigDecimal("250.00")));
 
+    // PR #1757 review: only a completed (approved) placement can be withdrawn
+    approvePlacement(placed.depositTransactionId());
+
     // Withdraw
     var withdrawn =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -380,6 +407,8 @@ class TrustInvestmentServiceIntegrationTest {
                             null,
                             null,
                             InvestmentBasis.FIRM_DISCRETION)));
+
+    approvePlacement(placed.depositTransactionId());
 
     // Withdraw first time — should succeed
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

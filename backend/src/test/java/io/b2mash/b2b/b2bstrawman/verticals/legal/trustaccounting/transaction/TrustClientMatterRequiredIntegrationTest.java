@@ -63,6 +63,7 @@ class TrustClientMatterRequiredIntegrationTest {
 
   private static final String ORG_ID = "org_trust_client_matter_required";
   private static final String OWNER_SUB = "user_tcmr_owner";
+  private static final String APPROVER_SUB = "user_tcmr_approver";
   private static final String MATTER_REQUIRED =
       "A matter is required for client trust transactions";
 
@@ -96,6 +97,9 @@ class TrustClientMatterRequiredIntegrationTest {
             .provisionTenant(ORG_ID, "Trust Client Matter Required Org", "legal-za")
             .schemaName();
     ownerId = UUID.fromString(TestMemberHelper.syncOwner(mockMvc, ORG_ID, "tcmr"));
+    // Approves placement payments (single-approval mode refuses self-approval)
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, APPROVER_SUB, "tcmr_approver@test.com", "TCMR Approver", "owner");
     today = LocalDate.now(clock);
     trustAccountId =
         as(
@@ -310,6 +314,12 @@ class TrustClientMatterRequiredIntegrationTest {
     UUID investmentId = UUID.fromString(JsonPath.read(placed, "$.id"));
     UUID placementId = UUID.fromString(JsonPath.read(placed, "$.depositTransactionId"));
     assertThat(projectOf(placementId)).isEqualTo(matter);
+    // Only a completed (approved) placement can be withdrawn (PR #1757 review)
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + placementId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB)))
+        .andExpect(status().isOk());
 
     String withdrawn =
         mockMvc

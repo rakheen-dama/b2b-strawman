@@ -26,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.persistence.EntityManager;
@@ -73,6 +74,7 @@ public class TrustTransactionService {
 
   private final TrustTransactionRepository transactionRepository;
   private final ClientLedgerCardRepository ledgerCardRepository;
+  private final TrustInvestmentRepository trustInvestmentRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
   private final CustomerProjectRepository customerProjectRepository;
@@ -90,6 +92,7 @@ public class TrustTransactionService {
   public TrustTransactionService(
       TrustTransactionRepository transactionRepository,
       ClientLedgerCardRepository ledgerCardRepository,
+      TrustInvestmentRepository trustInvestmentRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
       CustomerProjectRepository customerProjectRepository,
@@ -105,6 +108,7 @@ public class TrustTransactionService {
       Clock clock) {
     this.transactionRepository = transactionRepository;
     this.ledgerCardRepository = ledgerCardRepository;
+    this.trustInvestmentRepository = trustInvestmentRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
     this.customerProjectRepository = customerProjectRepository;
@@ -268,17 +272,27 @@ public class TrustTransactionService {
    * it left (G89-F28). The matter is derived, not chosen, so it is not re-validated; a placement
    * recorded before G89-F28 has no matter and its withdrawal mirrors it client-level (D6: no
    * backfill of legacy rows).
+   *
+   * <p>PR #1757 review: the withdrawal returns money the placement took, so the placement payment
+   * must be completed (APPROVED). While it awaits approval, once rejected, or once reversed, the
+   * client was never (or is no longer) debited and a withdrawal would create trust money.
    */
   @Transactional
   public TrustTransactionResponse recordInvestmentWithdrawal(
       UUID trustAccountId, UUID placementTransactionId, RecordDepositRequest request) {
-    UUID placementMatterId =
+    var placement =
         placementTransactionId == null
             ? null
-            : transactionRepository
-                .findById(placementTransactionId)
-                .map(TrustTransaction::getProjectId)
-                .orElse(null);
+            : transactionRepository.findById(placementTransactionId).orElse(null);
+    if (placement == null || !"APPROVED".equals(placement.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot withdraw investment",
+          "The investment's placement payment must be approved before the investment can be"
+              + " withdrawn (placement payment status: "
+              + (placement == null ? "missing" : placement.getStatus())
+              + ")");
+    }
+    UUID placementMatterId = placement.getProjectId();
     return postDeposit(
         trustAccountId,
         new RecordDepositRequest(
@@ -1204,6 +1218,19 @@ public class TrustTransactionService {
         || transactionRepository.existsByReversalOf(original.getId())) {
       throw new InvalidStateException(
           "Cannot reverse transaction", "Transaction has already been reversed");
+    }
+
+    // PR #1757 review: the placement payment of a withdrawn trust investment was already undone by
+    // the withdrawal deposit (it credited the client back on the placement's matter); reversing it
+    // as well would credit the client twice.
+    if ("PAYMENT".equals(original.getTransactionType())
+        && trustInvestmentRepository.existsByDepositTransactionIdAndStatus(
+            original.getId(), "WITHDRAWN")) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction",
+          "This payment placed a trust investment that has since been withdrawn; the withdrawal"
+              + " already returned the money to the client, so reversing the payment would credit"
+              + " the client twice");
     }
 
     var memberId = RequestScopes.requireMemberId();

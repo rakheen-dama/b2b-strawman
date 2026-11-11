@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -181,6 +182,39 @@ class TrustInvestmentPlacementGuardIntegrationTest {
 
     assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
+  }
+
+  /**
+   * G89-F86 (MEDIUM, D40): reversing the placement of a still-ACTIVE investment credited the client
+   * back while the investment stayed ACTIVE on the s86 register with no money behind it (and could
+   * never be withdrawn). A placement payment with an investment is never reversed — the investment
+   * is withdrawn instead.
+   */
+  @Test
+  void reversingAnActiveInvestmentsPlacement_rejected_investmentStaysActive_nothingCredited()
+      throws Exception {
+    Placed placed = place("Reversed While Active");
+    approve(placed.placementId());
+
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + placed.placementId() + "/reverse")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Placed in error\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Cannot reverse transaction"));
+
+    assertThat(cardBalance(placed.client())).isEqualByComparingTo("4000.00");
+    assertThat(matterBalance(placed.matter())).isEqualByComparingTo("4000.00");
+    String investment =
+        mockMvc
+            .perform(get("/api/trust-investments/" + placed.investmentId()).with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    assertThat((String) JsonPath.read(investment, "$.status")).isEqualTo("ACTIVE");
   }
 
   // --- helpers ---

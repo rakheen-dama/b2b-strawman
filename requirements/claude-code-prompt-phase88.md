@@ -234,5 +234,5 @@ Each unit lists: closes · root cause · the change · acceptance (observed) · 
 - One unit per epic; slices within a unit follow the register's dependency order (§3). HIGH and Phase-87-introduced units first: U12, U18, U1, U2, U3, U4, U14, U15, U11, then U5–U10, U13, U16, U17, U19, U20, U23, U24, then U21, U22, then the re-walk.
 - Every slice's PR body cites the register unit, the dossier section it worked from, the reproduction evidence (screenshot or log path), and the observed PASS after the fix. "Code looks right" is not PASS.
 - Agents may not edit `tasks/phase88-gap-register.md` §4 decisions or `qa/testplan/demos/*.md` beyond the §5 authorised list; new scenario mismatches are filed as gaps.
-- Backend verify through `backend/scripts/verify.sh`; before a Keycloak re-walk `./mvnw -q clean compile -DskipTests`, `docker builder prune -f` before `e2e-up.sh`, gate-grade E2E is `e2e-down && e2e-up`.
+- Backend verify through `backend/scripts/verify.sh`; before a Keycloak re-walk `./mvnw -q clean compile -DskipTests`, `docker builder prune -af` before `e2e-up.sh`, gate-grade E2E is `e2e-down && e2e-up`.
 - Follow `backend/CLAUDE.md` and `frontend/CLAUDE.md`; UI questions go to the `vercel:nextjs` / `vercel:shadcn` / `frontend-design` skills; browser-check every UI slice at 1024 and 1440 px.

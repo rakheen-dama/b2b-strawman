@@ -1545,7 +1545,7 @@ Rules: never `toFixed(2)` / `toPlainString()` / `"R%s"` for money — backend `V
 | Playwright: legal-lifecycle, legal-depth-ii, default, portal 90-day on `e2e-down && e2e-up`; **strict-assertion rule**: no `.isVisible().catch(...)`; every soft check is `expect(locator.first()).toBeVisible()` or a role locator; path-anchored filters only | observed | U22 and every UI slice |
 | Keycloak re-walks (mid-phase, end) with Playwright MCP in the browser, Mailpit for mail, DB read-only SELECTs for state; evidence under `qa_cycle/evidence/phase88-rewalk/` | exit | §13.10 |
 
-Verify commands per slice: backend `bash backend/scripts/verify.sh` (full); frontend `pnpm lint && pnpm format:check && pnpm build && pnpm test`; portal the same with `--dir portal`; before any Keycloak re-walk `./mvnw -q clean compile -DskipTests` and `docker builder prune -f` before `e2e-up.sh`.
+Verify commands per slice: backend `bash backend/scripts/verify.sh` (full); frontend `pnpm lint && pnpm format:check && pnpm build && pnpm test`; portal the same with `--dir portal`; before any Keycloak re-walk `./mvnw -q clean compile -DskipTests` and `docker builder prune -af` before `e2e-up.sh`.
 
 ## 13.9 Permission Model Summary
 

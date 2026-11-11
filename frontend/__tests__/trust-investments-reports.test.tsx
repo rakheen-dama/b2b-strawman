@@ -245,6 +245,27 @@ describe("Trust Investments & Reports", () => {
     });
   });
 
+  // PR #1757 review: the dialog is taller than short viewports (the Day 60 e2e had to submit with
+  // Enter because the button was off-screen), so its content scrolls like the repo's other tall
+  // dialogs (edit-customer-dialog, create-project-dialog).
+  it("place investment dialog scrolls at short viewport heights", () => {
+    render(
+      <PlaceInvestmentDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        onSuccess={vi.fn()}
+      />
+    );
+
+    // DialogContent puts its className on the panel inside the positioned (test id) element
+    const dialog = screen.getByTestId("place-investment-dialog");
+    expect(dialog.className).toContain("sm:max-w-lg");
+    const panel = dialog.firstElementChild as HTMLElement;
+    expect(panel.className).toContain("max-h-[90vh]");
+    expect(panel.className).toContain("overflow-y-auto");
+  });
+
   it("place investment dialog refuses a missing matter with a field error (G89-F28)", async () => {
     render(
       <PlaceInvestmentDialog

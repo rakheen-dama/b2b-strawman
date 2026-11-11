@@ -159,6 +159,30 @@ describe("KPIDashboard", () => {
     expect(screen.getByTestId("metric-card-tasks")).toBeInTheDocument();
   });
 
+  // G89-F7: four tiles fill one row of four (from xl) instead of leaving the 4th alone
+  it("lays four visible tiles out as one row of four, three tiles as three columns", async () => {
+    render(
+      await KPIDashboard({
+        ...defaultProps,
+        trustEnabled: true,
+        trustBalance: { state: "ok", data: { matterId: "proj-1", balance: 0, currency: "ZAR" } },
+        outstandingSummary: { state: "ok", data: SUMMARY },
+      })
+    );
+    const four = screen.getByTestId("metric-card-grid");
+    expect(four.querySelectorAll("[data-testid^='metric-card-']")).toHaveLength(4);
+    expect(four.className).toContain("xl:grid-cols-4");
+    expect(four.className).not.toContain("lg:grid-cols-3");
+    cleanup();
+
+    render(
+      await KPIDashboard({ ...defaultProps, outstandingSummary: { state: "ok", data: SUMMARY } })
+    );
+    const three = screen.getByTestId("metric-card-grid");
+    expect(three.querySelectorAll("[data-testid^='metric-card-']")).toHaveLength(3);
+    expect(three.className).toContain("lg:grid-cols-3");
+  });
+
   // Test 3: Hides budget card when no budget data
   it("hides budget card when budgetStatus is null", async () => {
     const jsx = await KPIDashboard(defaultProps);

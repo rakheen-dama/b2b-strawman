@@ -9,6 +9,7 @@ import {
   fetchLpffRates,
 } from "@/app/(app)/org/[slug]/trust-accounting/interest/actions";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
+import { isoDateInSA } from "@b2mash/shared/date";
 import {
   INTEREST_RUN_STATUS_LABELS,
   type InterestRun,
@@ -194,7 +195,10 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
                           className="py-3 pr-4 text-slate-600 dark:text-slate-400"
                           data-testid="run-posted-at"
                         >
-                          {run.postedAt ? formatLocalDate(run.postedAt.slice(0, 10)) : "—"}
+                          {/* the SA calendar date of the posting instant, not its UTC date (G89-F41) */}
+                          {run.postedAt
+                            ? formatLocalDate(isoDateInSA(new Date(run.postedAt)))
+                            : "—"}
                         </td>
                         <td className="py-3">
                           <InterestRunRowActions

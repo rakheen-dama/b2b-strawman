@@ -41,7 +41,8 @@ interface BackendMember {
   orgRole: string;
 }
 
-async function listMembersBff(): Promise<BffMember[]> {
+/** null when the request failed, so the caller can tell a failure from an empty org. */
+async function listMembersBff(): Promise<BffMember[] | null> {
   try {
     const raw = await api.get<BackendMember[]>("/api/members");
     return (raw ?? []).map((m) => ({
@@ -52,11 +53,12 @@ async function listMembersBff(): Promise<BffMember[]> {
     }));
   } catch (err: unknown) {
     console.error("Failed to list members:", err);
-    return [];
+    return null;
   }
 }
 
-export async function listMembers(): Promise<BffMember[]> {
+/** The org's members, or null when they could not be loaded. */
+export async function listMembers(): Promise<BffMember[] | null> {
   if (AUTH_MODE === "keycloak") {
     return listMembersBff();
   }

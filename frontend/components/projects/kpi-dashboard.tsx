@@ -237,6 +237,7 @@ export async function KPIDashboard({
       visible: outstandingSummary.state !== "absent",
     },
   ];
+  const visibleMetricCount = metricCards.filter((card) => card.visible).length;
 
   return (
     <div className="space-y-4">
@@ -327,8 +328,15 @@ export async function KPIDashboard({
         </details>
       )}
 
-      {/* Metric cards grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Metric cards grid. G89-F7: four tiles on three columns left the 4th alone on a row, so
+          four tiles take one row of four from xl (2×2 below); 3, 5 and 6 tiles keep three. */}
+      <div
+        data-testid="metric-card-grid"
+        className={cn(
+          "grid gap-4 md:grid-cols-2",
+          visibleMetricCount === 4 ? "xl:grid-cols-4" : "lg:grid-cols-3"
+        )}
+      >
         {metricCards.map((card) => (
           <MetricCard key={card.id} {...card} />
         ))}

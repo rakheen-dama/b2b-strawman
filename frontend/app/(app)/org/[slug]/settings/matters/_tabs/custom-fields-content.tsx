@@ -79,6 +79,8 @@ function GroupMemberList({ groupName, members }: GroupMemberListProps) {
 interface CustomFieldsContentProps {
   slug: string;
   fieldsByType: Record<EntityType, FieldDefinitionResponse[]>;
+  /** Names of inactive definitions that are still group members, by id (PR #1752 review). */
+  inactiveFieldNames?: Record<string, string>;
   groupsByType: Record<EntityType, FieldGroupResponse[]>;
   canManage: boolean;
 }
@@ -86,6 +88,7 @@ interface CustomFieldsContentProps {
 export function CustomFieldsContent({
   slug,
   fieldsByType,
+  inactiveFieldNames = {},
   groupsByType,
   canManage,
 }: CustomFieldsContentProps) {
@@ -217,7 +220,12 @@ export function CustomFieldsContent({
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="plain" size="icon" className="size-8">
+                              <Button
+                                variant="plain"
+                                size="icon"
+                                className="size-8"
+                                aria-label={`Actions for ${field.name}`}
+                              >
                                 <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -316,7 +324,12 @@ export function CustomFieldsContent({
                       {canManage && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="plain" size="icon" className="size-8">
+                            <Button
+                              variant="plain"
+                              size="icon"
+                              className="size-8"
+                              aria-label={`Actions for ${group.name}`}
+                            >
                               <MoreHorizontal className="size-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -327,6 +340,7 @@ export function CustomFieldsContent({
                               group={group}
                               availableFields={allFields}
                               initialFieldIds={group.fieldDefinitionIds}
+                              inactiveFieldNames={inactiveFieldNames}
                               allGroups={groupsByType[tab.value]}
                             >
                               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>

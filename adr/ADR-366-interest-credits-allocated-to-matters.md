@@ -50,7 +50,7 @@ Posting writes **one INTEREST_CREDIT per line**, carrying the line's matter, ref
 Founder rulings that bound the decision:
 
 - **D6** — no backfill. A run calculated before V12 has no lines and posts one unmattered credit as before.
-- **D7** — trust rows with no matter stay out of scope (G89-F28): the unmattered bucket remains a client-level credit.
+- **D7** — trust rows with no matter stay out of scope (G89-F28): the unmattered bucket remains a client-level credit. Such a credit is not projected to the portal either: the portal read-model is per matter (`hasPortalScope` needs a matter), so a client's portal balance excludes their unmattered interest until G89-F28 is decided.
 - **D8** — a matter closed before the run is still credited for the balance-days it held money.
 
 **Consequences**:

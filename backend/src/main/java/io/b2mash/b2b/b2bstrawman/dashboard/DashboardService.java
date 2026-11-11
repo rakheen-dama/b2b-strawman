@@ -32,6 +32,7 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.UnbilledWipResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UnbilledWipResponse.FeeEarnerWip;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UpcomingDeadline;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UtilizationSummary;
+import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjector;
@@ -75,6 +76,8 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * Service for computing project and org-level dashboard data including health scoring, task
@@ -355,6 +358,21 @@ public class DashboardService {
     List<MemberHoursEntry> result = computeProjectMemberHours(projectId, from, to);
     projectCache.put(key, result);
     return result;
+  }
+
+  /**
+   * G89-F5: a time entry created, edited or deleted on a matter makes that matter's cached reads
+   * (member hours behind the Overview "Hours logged" tile, health, task summary) stale, so drop
+   * every {@code tenant:project:{id}:*} key once the change commits rather than serving it until
+   * the one-minute TTL lapses.
+   */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+  public void evictMatterCacheOnTimeEntryChange(TimeEntryChangedEvent event) {
+    if (event.tenantId() == null || event.projectId() == null) {
+      return;
+    }
+    String prefix = event.tenantId() + ":project:" + event.projectId() + ":";
+    projectCache.asMap().keySet().removeIf(key -> key.startsWith(prefix));
   }
 
   // --- Personal dashboard endpoint (Epic 79A) ---

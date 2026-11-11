@@ -46,6 +46,8 @@ interface FieldGroupDialogProps {
   availableFields: FieldDefinitionResponse[];
   initialFieldIds?: string[];
   allGroups?: FieldGroupResponse[];
+  /** Names of member definitions that are inactive (so absent from availableFields), by id. */
+  inactiveFieldNames?: Record<string, string>;
   children: React.ReactNode;
 }
 
@@ -56,6 +58,7 @@ export function FieldGroupDialog({
   availableFields,
   initialFieldIds,
   allGroups = [],
+  inactiveFieldNames = {},
   children,
 }: FieldGroupDialogProps) {
   const isEditing = !!group;
@@ -162,7 +165,8 @@ export function FieldGroupDialog({
           sortOrder,
           fieldDefinitionIds: selectedFieldIds,
           autoApply,
-          dependsOn: dependsOn.length > 0 ? dependsOn : undefined,
+          // Always sent on update: [] clears the dependencies (null would leave them unchanged)
+          dependsOn,
         });
 
         if (result.success) {
@@ -257,7 +261,9 @@ export function FieldGroupDialog({
               value={slugField}
               onChange={(e) => setSlugField(e.target.value)}
               placeholder="Auto-generated from name if left blank"
-              pattern="^[a-z][a-z0-9_-]*$"
+              // "-" escaped: browsers compile pattern with the "v" flag, where a bare "-" at the
+              // end of a class is a syntax error (console error on every keystroke)
+              pattern="[a-z][a-z0-9_\-]*"
             />
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Auto-generated from name if left blank.
@@ -365,6 +371,7 @@ export function FieldGroupDialog({
                         <button
                           type="button"
                           onClick={() => removeDep(depId)}
+                          aria-label={`Remove ${dep.name}`}
                           className="ml-0.5 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600"
                         >
                           <X className="size-3" />
@@ -433,14 +440,24 @@ export function FieldGroupDialog({
             {selectedFieldIds.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {selectedFieldIds.map((fieldId) => {
-                  const field = availableFields.find((f) => f.id === fieldId);
-                  if (!field) return null;
+                  // A member whose definition is inactive is not offered in availableFields;
+                  // it is still listed so it can be removed (634A follow-up), under its own name
+                  // so two inactive members are told apart (PR #1752 review). With no name, the
+                  // id prefix keeps each label distinct.
+                  const activeName = availableFields.find((f) => f.id === fieldId)?.name;
+                  const inactiveName = inactiveFieldNames[fieldId];
+                  const fieldName =
+                    activeName ??
+                    (inactiveName
+                      ? `${inactiveName} (inactive)`
+                      : `Inactive field ${fieldId.slice(0, 8)}`);
                   return (
                     <Badge key={fieldId} variant="secondary" className="gap-1">
-                      {field.name}
+                      {fieldName}
                       <button
                         type="button"
                         onClick={() => removeField(fieldId)}
+                        aria-label={`Remove ${fieldName}`}
                         className="ml-0.5 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600"
                       >
                         <X className="size-3" />

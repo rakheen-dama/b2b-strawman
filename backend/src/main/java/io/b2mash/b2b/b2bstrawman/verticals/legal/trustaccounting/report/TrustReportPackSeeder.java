@@ -38,7 +38,11 @@ public class TrustReportPackSeeder {
 
   private static final Logger log = LoggerFactory.getLogger(TrustReportPackSeeder.class);
   static final String PACK_ID = "trust-reports";
-  static final int PACK_VERSION = 2;
+  static final int PACK_VERSION = 3;
+
+  /** The head {@code section-35-data-pack} template body hash (v3, G89-F48). */
+  private static final String SECTION_35_V3_HASH =
+      "sha256:9b18be3fa0d10d296b0fde65ab4e32f0d133fdc4dc2c681385ea19272bbd67e1";
 
   /** ADR-356 reconcile entity of this pack's rows ({@code key} = the report slug). */
   static final String REPORT_ENTITY = "report_definition";
@@ -68,6 +72,10 @@ public class TrustReportPackSeeder {
    * <p>v2 (G89-F18): the Section 35 data pack PDF prints each section's rows (label + amount) and
    * totals instead of only the section names and row counts. Column definitions are unchanged — the
    * query now fills the declared {@code label} / {@code amount} columns.
+   *
+   * <p>v3 (G89-F48): the Section 35 PDF prints each amount as rand ("R 38 019,15", "-R 1 250,00")
+   * instead of a raw decimal ("38019.15"). Cumulative chain (ADR-356): the v2 entry's {@code to} is
+   * re-pointed at the v3 head, and one entry moves the v2 body to the head.
    */
   static final List<PackReconcileEntry> RECONCILE =
       List.of(
@@ -75,7 +83,12 @@ public class TrustReportPackSeeder {
               "section-35-data-pack",
               "templateBody",
               "sha256:80af07498e6ad52e27de1794c56998c501f05dc4f9a31a3807ddabd904392603",
-              "sha256:6b70dd38153d35103916dfe479e40d2baa1d5647cf53b095e894011737d86c86"));
+              SECTION_35_V3_HASH),
+          entry(
+              "section-35-data-pack",
+              "templateBody",
+              "sha256:6b70dd38153d35103916dfe479e40d2baa1d5647cf53b095e894011737d86c86",
+              SECTION_35_V3_HASH));
 
   private final ReportDefinitionRepository reportDefinitionRepository;
   private final OrgSettingsRepository orgSettingsRepository;
@@ -1027,7 +1040,7 @@ public class TrustReportPackSeeder {
                   <tbody>
                       <tr th:each="row : ${rows}" th:if="${row['_section'] == section['sectionName']}" th:style="${row['_total'] != null} ? 'font-weight: 700;' : null">
                           <td th:text="${row['label']}"></td>
-                          <td class="text-right" th:text="${#numbers.formatDecimal(row['amount'], 1, 2)}"></td>
+                          <td class="text-right" th:with="amt=${row['amount']}" th:text="${amt lt 0 ? '-R ' + #numbers.formatDecimal(amt * -1, 1, 'WHITESPACE', 2, 'COMMA') : 'R ' + #numbers.formatDecimal(amt, 1, 'WHITESPACE', 2, 'COMMA')}"></td>
                       </tr>
                   </tbody>
               </table>

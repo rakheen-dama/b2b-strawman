@@ -690,6 +690,105 @@ class TrustTransactionControllerTest {
         .andExpect(jsonPath("$.status").value("APPROVED"));
   }
 
+  // --- PR #1752 review: amounts finer than a cent are refused before any balance logic ---
+
+  @Test
+  void postTransfer_fractionalCentAmount_returns400InvalidAmount_notInsufficientBalance()
+      throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner");
+    var sourceId =
+        TestEntityHelper.createCustomer(
+            mockMvc, ownerJwt, "Fractional Source Client", "fractional_source@test.com");
+    var targetId =
+        TestEntityHelper.createCustomer(
+            mockMvc, ownerJwt, "Fractional Target Client", "fractional_target@test.com");
+
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clientId": "%s",
+                      "amount": 100.00,
+                      "reference": "DEP-FRACTION-SETUP",
+                      "transactionDate": "2026-03-01"
+                    }
+                    """
+                        .formatted(sourceId)))
+        .andExpect(status().isCreated());
+
+    // 100.001 against a 100.00 balance: before the fix this was refused as "Insufficient trust
+    // balance" with both figures rendered as R 100,00.
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/transfer")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "sourceClientId": "%s",
+                      "targetClientId": "%s",
+                      "amount": 100.001,
+                      "reference": "XFER-FRACTION-001",
+                      "transactionDate": "2026-03-02"
+                    }
+                    """
+                        .formatted(sourceId, targetId)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid amount"))
+        .andExpect(jsonPath("$.detail").value("Amount must not have more than 2 decimal places"));
+  }
+
+  @Test
+  void postDeposit_fractionalCentAmount_returns400InvalidAmount() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clientId": "%s",
+                      "amount": 100.005,
+                      "reference": "DEP-FRACTION-001",
+                      "transactionDate": "2026-03-01"
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid amount"))
+        .andExpect(jsonPath("$.detail").value("Amount must not have more than 2 decimal places"));
+  }
+
+  @Test
+  void postDeposit_trailingZerosBeyondCents_isAccepted() throws Exception {
+    // 250.500 is a whole number of cents; only significant sub-cent digits are refused.
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clientId": "%s",
+                      "amount": 250.500,
+                      "reference": "DEP-TRAILING-ZERO-001",
+                      "transactionDate": "2026-03-01"
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.amount").value(250.50));
+  }
+
   // --- 442.5: Controller authorization tests ---
 
   @Test

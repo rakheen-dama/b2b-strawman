@@ -259,14 +259,14 @@ class PackReconciliationRunnerTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   assertThat(trustDefinitionSlugs()).hasSize(7).contains("section-35-data-pack");
-                  // G89-F18: the trust-reports pack ships at v2.
+                  // G89-F48: the trust-reports pack ships at v3.
                   assertThat(trustReportsStatus())
                       .singleElement()
                       .satisfies(
-                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(2));
+                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(3));
                   var row = packInstallRepository.findByPackId("trust-reports").orElseThrow();
                   assertThat(row.getPackType()).isEqualTo(PackType.REPORT);
-                  assertThat(row.getPackVersion()).isEqualTo("2");
+                  assertThat(row.getPackVersion()).isEqualTo("3");
                 }));
   }
 

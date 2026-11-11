@@ -177,10 +177,11 @@ export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHis
               <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Status
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+              {/* G89-F9: Provider / Method show from xl; below it the 7 columns overflowed */}
+              <th className="hidden px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase xl:table-cell dark:text-slate-400">
                 Provider
               </th>
-              <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+              <th className="hidden px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase xl:table-cell dark:text-slate-400">
                 Method
               </th>
               <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
@@ -200,6 +201,10 @@ export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHis
           <tbody>
             {events.map((event) => {
               const badge = STATUS_BADGE[event.status] ?? STATUS_BADGE.CREATED;
+              const providerLabel = PROVIDER_LABELS[event.providerSlug] ?? event.providerSlug;
+              const methodLabel = event.paymentMethod
+                ? (METHOD_LABELS[event.paymentMethod] ?? event.paymentMethod)
+                : "\u2014";
               return (
                 <tr
                   key={event.id}
@@ -208,16 +213,25 @@ export function PaymentEventHistory({ events, invoiceId, slug }: PaymentEventHis
                   <td className="px-3 py-2">
                     <Badge variant={badge.variant}>{badge.label}</Badge>
                   </td>
-                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
-                    {PROVIDER_LABELS[event.providerSlug] ?? event.providerSlug}
+                  <td className="hidden px-3 py-2 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
+                    {providerLabel}
                   </td>
-                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
-                    {event.paymentMethod
-                      ? (METHOD_LABELS[event.paymentMethod] ?? event.paymentMethod)
-                      : "\u2014"}
+                  <td className="hidden px-3 py-2 text-sm text-slate-600 xl:table-cell dark:text-slate-400">
+                    {methodLabel}
                   </td>
                   <td className="px-3 py-2 font-mono text-sm text-slate-600 dark:text-slate-400">
                     {event.paymentReference ?? "\u2014"}
+                    {/* Below xl the Provider / Method columns are hidden; they ride here */}
+                    <div
+                      className="mt-0.5 font-sans text-xs text-slate-500 xl:hidden dark:text-slate-400"
+                      data-testid="payment-provider-method-compact"
+                    >
+                      <span className="sr-only">Provider: </span>
+                      {providerLabel}
+                      <span aria-hidden="true">{" \u00b7 "}</span>
+                      <span className="sr-only">Method: </span>
+                      {methodLabel}
+                    </div>
                   </td>
                   <td className="px-3 py-2 text-right text-sm text-slate-900 dark:text-slate-100">
                     {formatCurrency(event.amount, event.currency)}

@@ -97,6 +97,15 @@ describe("DisbursementDetailClient write-off / undo", () => {
     expect(screen.queryByTestId("disbursement-restore-button")).not.toBeInTheDocument();
   });
 
+  it("G88-F27: a billed disbursement reads 'Billed · Yes', never 'Invoiced'", () => {
+    renderDetail(makeDisbursement({ invoiceLineId: "line-1", billingStatus: "BILLED" }));
+    const label = screen
+      .getAllByText("Billed")
+      .find((el) => el.nextElementSibling?.textContent === "Yes");
+    expect(label).toBeDefined();
+    expect(screen.queryByText(/invoiced/i)).not.toBeInTheDocument();
+  });
+
   it("write-off swaps in Undo, shows the reason and moves focus to Undo", async () => {
     const user = userEvent.setup();
     mockWriteOff.mockResolvedValue({ success: true, data: writtenOff });

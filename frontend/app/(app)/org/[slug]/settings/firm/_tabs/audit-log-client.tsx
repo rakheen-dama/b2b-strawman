@@ -1018,8 +1018,9 @@ function Row({ event, slug, expanded, onToggle }: RowProps) {
           <SeverityPill severity={event.severity} />
         </TableCell>
         <TableCell className="text-xs">
+          {/* The label only: the stored key is never user-visible (ADR-357, G-D10a); it stays
+              searchable through the Event-type filter (G-D10b ruling). */}
           <div className="font-medium text-slate-900 dark:text-slate-100">{event.label}</div>
-          <div className="font-mono text-[10px] text-slate-500">{event.eventType}</div>
         </TableCell>
         <TableCell>
           <ActorDisplay

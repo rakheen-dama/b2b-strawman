@@ -57,6 +57,21 @@ export async function renderCustomFieldsTab({ slug }: SettingsTabProps) {
     // Non-fatal: show empty state
   }
 
+  // Group members whose definition is inactive are absent from the (active-only) lists above.
+  // GET /api/field-definitions/{id} returns them regardless, so the group editor can name each one
+  // before it is removed (PR #1752 review). Usually none; failures leave the id-prefix fallback.
+  const activeIds = new Set(ENTITY_TYPES.flatMap((et) => fieldsByType[et].map((f) => f.id)));
+  const inactiveIds = [
+    ...new Set(ENTITY_TYPES.flatMap((et) => groupsByType[et].flatMap((g) => g.fieldDefinitionIds))),
+  ].filter((id) => !activeIds.has(id));
+  const inactiveFieldNames: Record<string, string> = {};
+  const inactive = await Promise.allSettled(
+    inactiveIds.map((id) => api.get<FieldDefinitionResponse>(`/api/field-definitions/${id}`))
+  );
+  inactive.forEach((r) => {
+    if (r.status === "fulfilled" && r.value) inactiveFieldNames[r.value.id] = r.value.name;
+  });
+
   return (
     <div className="space-y-8">
       <div>
@@ -73,6 +88,7 @@ export async function renderCustomFieldsTab({ slug }: SettingsTabProps) {
         slug={slug}
         fieldsByType={fieldsByType}
         groupsByType={groupsByType}
+        inactiveFieldNames={inactiveFieldNames}
         canManage={isAdmin}
       />
     </div>

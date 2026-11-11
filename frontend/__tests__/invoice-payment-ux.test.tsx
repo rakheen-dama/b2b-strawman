@@ -176,6 +176,27 @@ describe("PaymentEventHistory", () => {
     expect(screen.getAllByText("\u2014").length).toBeGreaterThanOrEqual(1);
   });
 
+  it("keeps provider and method readable below xl in a compact line (PR #1752 review)", () => {
+    render(
+      <PaymentEventHistory
+        events={[makePaymentEvent({ id: "pe-eft", providerSlug: "manual", paymentMethod: "EFT" })]}
+        invoiceId="inv-1"
+        slug="test-org"
+      />
+    );
+
+    const compact = screen.getByTestId("payment-provider-method-compact");
+    expect(compact).toHaveTextContent("Manual");
+    expect(compact).toHaveTextContent("EFT");
+    expect(compact).toHaveClass("xl:hidden");
+    // Below xl the Provider / Method headers are hidden, so each value carries its own
+    // screen-reader label (PR #1752 CodeRabbit review).
+    const srLabels = Array.from(compact.querySelectorAll(".sr-only")).map((el) =>
+      el.textContent?.trim()
+    );
+    expect(srLabels).toEqual(["Provider:", "Method:"]);
+  });
+
   it("shows empty state when no events", () => {
     render(<PaymentEventHistory events={[]} invoiceId="inv-1" slug="test-org" />);
 

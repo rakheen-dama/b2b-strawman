@@ -122,6 +122,12 @@ class TemplatePackSeederReconcileTest {
   static final List<String> V13_EDITED_KEYS =
       List.of("statement-of-account", "client-trust-statement", "trust-receipt");
 
+  /**
+   * Bodies re-edited in v14 (G89-F57: the SoA summary reads "Fees / Disbursements billed in
+   * period"), one v13 → shipped entry each, appended last.
+   */
+  static final List<String> V14_EDITED_KEYS = List.of("statement-of-account");
+
   private static final ObjectMapper JSON = new ObjectMapper();
 
   private final UUID installId = UUID.randomUUID();
@@ -173,7 +179,7 @@ class TemplatePackSeederReconcileTest {
    */
   @Test
   void shippedPack_reconcileBlock_takesEachPriorBodyToTheShippedBody() {
-    assertThat(shippedPack.version()).isEqualTo(13);
+    assertThat(shippedPack.version()).isEqualTo(14);
     var entries = PackReconcileEntry.parse(PACK_ID, shippedPack.reconcile());
     var expectedKeys = new ArrayList<>(RECONCILED_KEYS);
     expectedKeys.addAll(V9_EDITED_KEYS);
@@ -182,12 +188,14 @@ class TemplatePackSeederReconcileTest {
     expectedKeys.addAll(V11_LETTERHEAD_KEYS);
     expectedKeys.addAll(V11_REQUIRED_FIELDS_KEYS);
     expectedKeys.addAll(V13_EDITED_KEYS);
+    expectedKeys.addAll(V14_EDITED_KEYS);
     assertThat(entries).extracting(PackReconcileEntry::key).containsExactlyElementsOf(expectedKeys);
 
     int v9Start = RECONCILED_KEYS.size();
     int v10Start = v9Start + V9_EDITED_KEYS.size();
     int v11Start = v10Start + V10_EDITED_KEYS.size() + 1;
     int v13Start = v11Start + V11_LETTERHEAD_KEYS.size() + V11_REQUIRED_FIELDS_KEYS.size();
+    int v14Start = v13Start + V13_EDITED_KEYS.size();
     for (int i = 0; i < entries.size(); i++) {
       PackReconcileEntry entry = entries.get(i);
       assertThat(entry.entity()).as(entry.key()).isEqualTo("document_template");
@@ -214,9 +222,11 @@ class TemplatePackSeederReconcileTest {
         continue;
       }
       String prior =
-          i >= v13Start
-              ? "v12"
-              : i >= v11Start ? "v10" : i >= v10Start ? "v9" : i >= v9Start ? "v8" : "v7";
+          i >= v14Start
+              ? "v13"
+              : i >= v13Start
+                  ? "v12"
+                  : i >= v11Start ? "v10" : i >= v10Start ? "v9" : i >= v9Start ? "v8" : "v7";
       assertThat(entry.field()).as(entry.key()).isEqualTo("content");
       assertThat(entry.from())
           .as("%s from = sha256 of the %s body", entry.key(), prior)

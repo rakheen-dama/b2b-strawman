@@ -83,9 +83,11 @@ async function openAuditLogFilteredBy(page: Page, eventType: string) {
   await search.fill(eventType);
   await search.press("Enter");
   await expect(page).toHaveURL(new RegExp(`eventType=${escapeRegExp(eventType)}`));
+  // The list is server-filtered to exactly this event type (asserted via the URL above). Rows no
+  // longer print the raw event key under the label (G-D10a; key stays searchable per G-D10b), so
+  // the row is not matched on the key text.
   const row = page
     .locator('[data-testid^="audit-row-"]:not([data-testid^="audit-row-details-"])')
-    .filter({ hasText: eventType })
     .first();
   await expect(row).toBeVisible({ timeout: 15_000 });
   return row;

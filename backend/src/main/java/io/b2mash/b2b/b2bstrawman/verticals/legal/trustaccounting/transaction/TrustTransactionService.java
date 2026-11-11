@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentPosting;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
@@ -33,6 +34,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -50,6 +52,9 @@ public class TrustTransactionService {
   private static final Logger log = LoggerFactory.getLogger(TrustTransactionService.class);
 
   private static final String MODULE_ID = "trust_accounting";
+
+  /** Trust money is rand: refusal messages use the house en-ZA format (G89-F40). */
+  private static final Locale TRUST_LOCALE = VariableFormatter.resolveLocale("ZAR");
 
   /** ProblemDetail {@code code} of a debit refused by the matter sub-ledger guard (G89-F12). */
   public static final String INSUFFICIENT_MATTER_TRUST_BALANCE =
@@ -393,8 +398,10 @@ public class TrustTransactionService {
           "Insufficient trust balance",
           "Insufficient trust balance for "
               + sourceCustomer.getName()
-              + ". Available: R0.00, Requested: R"
-              + request.amount());
+              + ". Available: "
+              + rand(BigDecimal.ZERO)
+              + ", Requested: "
+              + rand(request.amount()));
     }
 
     if (sourceLedger.getBalance().compareTo(request.amount()) < 0) {
@@ -402,10 +409,10 @@ public class TrustTransactionService {
           "Insufficient trust balance",
           "Insufficient trust balance for "
               + sourceCustomer.getName()
-              + ". Available: R"
-              + sourceLedger.getBalance()
-              + ", Requested: R"
-              + request.amount());
+              + ". Available: "
+              + rand(sourceLedger.getBalance())
+              + ", Requested: "
+              + rand(request.amount()));
     }
 
     // A transfer on a matter moves the source client's money on that matter (G89-F12)
@@ -897,10 +904,10 @@ public class TrustTransactionService {
             "Insufficient trust balance",
             "Insufficient trust balance for "
                 + customer.getName()
-                + ". Available: R"
-                + availableBalance
-                + ", Requested: R"
-                + transaction.getAmount());
+                + ". Available: "
+                + rand(availableBalance)
+                + ", Requested: "
+                + rand(transaction.getAmount()));
       }
 
       // G89-F12: a debit on a matter (the fee transfer's matter is inferred from its fee note at
@@ -1335,10 +1342,10 @@ public class TrustTransactionService {
           "Insufficient trust balance",
           "Insufficient trust balance for "
               + targetCustomer.getName()
-              + ". Available: R"
-              + targetAvailable
-              + ", Requested: R"
-              + pairedTransferIn.getAmount());
+              + ". Available: "
+              + rand(targetAvailable)
+              + ", Requested: "
+              + rand(pairedTransferIn.getAmount()));
     }
     requireMatterCellCovers(
         pairedTransferIn.getTrustAccountId(),
@@ -1477,11 +1484,16 @@ public class TrustTransactionService {
             + matterName
             + " for "
             + clientName
-            + ". Available on matter: R"
-            + available
-            + ", Requested: R"
-            + amount,
+            + ". Available on matter: "
+            + rand(available)
+            + ", Requested: "
+            + rand(amount),
         properties);
+  }
+
+  /** A rand amount for a refusal message, in the house en-ZA format ("R10 055,21"; G89-F40). */
+  private static String rand(BigDecimal amount) {
+    return VariableFormatter.formatCurrencyText(amount, TRUST_LOCALE);
   }
 
   /**
@@ -1525,10 +1537,20 @@ public class TrustTransactionService {
     return ref;
   }
 
+  /**
+   * Every trust write path (deposit, transfer, payment, fee transfer, refund) runs this before any
+   * balance logic. Amounts are stored at cents ({@code numeric(15,2)}), so a sub-cent amount is
+   * refused rather than rounded on save or compared unrounded against a balance (PR #1752 review).
+   * Trailing zeros ({@code 250.500}) are a whole number of cents and pass.
+   */
   private void validateAmount(BigDecimal amount) {
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
       throw new InvalidStateException(
           "Invalid amount", "Amount must be a positive value, got: " + amount);
+    }
+    if (amount.stripTrailingZeros().scale() > 2) {
+      throw new InvalidStateException(
+          "Invalid amount", "Amount must not have more than 2 decimal places");
     }
   }
 

@@ -164,8 +164,9 @@ class TrustMatterDebitGuardIntegrationTest {
     assertThat((String) JsonPath.read(body, "$.detail"))
         .contains("636B Refund Matter")
         .contains("636B Refund Client")
-        .contains("Available on matter: R3750.00")
-        .contains("Requested: R3751.34");
+        // G89-F40: amounts in the house en-ZA money format (U+00A0 grouping), never raw.
+        .contains("Available on matter: R3\u00a0750,00")
+        .contains("Requested: R3\u00a0751,34");
 
     assertThat(statusOf(refundId)).isEqualTo("AWAITING_APPROVAL");
     assertThat(matterBalance(matter)).isEqualByComparingTo("3750.00");

@@ -4,31 +4,13 @@ import Link from "next/link";
 import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
 import { isOverdue, formatLocalDate, formatComplianceDate } from "@/lib/format";
-import type { DataRequestResponse, DataRequestStatus, DataRequestType } from "@/lib/types";
+import type { DataRequestResponse, DataRequestType } from "@/lib/types";
+import { STATUS_CONFIG, type BadgeVariant } from "@/lib/compliance/data-request-status";
 
 interface DataRequestTableProps {
   requests: DataRequestResponse[];
   slug: string;
 }
-
-export type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
-
-export interface StatusConfig {
-  label: string;
-  variant: BadgeVariant;
-  className?: string;
-}
-
-export const STATUS_CONFIG: Record<DataRequestStatus, StatusConfig> = {
-  RECEIVED: { label: "Received", variant: "neutral" },
-  IN_PROGRESS: {
-    label: "In Progress",
-    variant: "neutral",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  },
-  COMPLETED: { label: "Completed", variant: "success" },
-  REJECTED: { label: "Rejected", variant: "destructive" },
-};
 
 const TYPE_LABELS: Record<DataRequestType, string> = {
   ACCESS: "Access",

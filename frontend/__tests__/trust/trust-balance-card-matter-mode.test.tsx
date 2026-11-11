@@ -6,6 +6,13 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 
 vi.mock("server-only", () => ({}));
 
+// G89-F64: TrustBalanceCard reads VIEW_TRUST from the capability context; these tests render it
+// for a trust reader.
+vi.mock("@/lib/capabilities", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/capabilities")>()),
+  useCapabilities: () => ({ hasCapability: () => true }),
+}));
+
 vi.mock("swr", () => ({
   default: vi.fn(),
   useSWRConfig: () => ({ mutate: vi.fn() }),
@@ -82,7 +89,7 @@ const CLIENT_LEDGER = {
 };
 
 /** SWR responses by key prefix; the matter balance is the matter's sub-ledger (Overview tile). */
-function mockSwr(matterBalance: number) {
+function mockSwr(matterBalance: number, { ledgerFails = false } = {}) {
   vi.mocked(useSWR).mockImplementation(((key: string | null) => {
     const ok = (data: unknown) => ({
       data,
@@ -95,7 +102,9 @@ function mockSwr(matterBalance: number) {
       return ok([{ id: "acc-1", isPrimary: true, status: "ACTIVE" }]);
     }
     if (key && key.startsWith("trust-ledger-")) {
-      return ok(CLIENT_LEDGER);
+      return ledgerFails
+        ? { ...ok(undefined), error: new Error("ledger fetch failed") }
+        : ok(CLIENT_LEDGER);
     }
     if (key && key.startsWith("matter-trust-balance-")) {
       return ok({
@@ -168,5 +177,29 @@ describe("TrustBalanceCard — matter mode (G89-F14)", () => {
     expect(screen.queryByTestId("trust-balance-client-line")).toBeNull();
     const keys = vi.mocked(useSWR).mock.calls.map((call) => call[0]);
     expect(keys).not.toContain("matter-trust-balance-acme-proj-1");
+  });
+
+  it("a failed client-ledger fetch keeps the matter figure and drops only the client line", () => {
+    // PR #1746 review: in matter mode the client card is secondary, so its error must not blank
+    // the card.
+    mockSwr(3750, { ledgerFails: true });
+
+    render(
+      withTrustEnabled(<TrustBalanceCard customerId="cust-1" projectId="proj-1" slug="acme" />)
+    );
+
+    const primary = screen.getByTestId("trust-balance-primary");
+    expect(within(primary).getByText(/R[\s ]3[\s ,]750[,.]00/)).toBeInTheDocument();
+    expect(screen.queryByTestId("trust-balance-client-line")).toBeNull();
+    expect(screen.queryByText("Unable to load trust balance")).toBeNull();
+  });
+
+  it("client mode still reports a failed client-ledger fetch", () => {
+    mockSwr(3750, { ledgerFails: true });
+
+    render(withTrustEnabled(<TrustBalanceCard customerId="cust-1" slug="acme" />));
+
+    expect(screen.getByText("Unable to load trust balance")).toBeInTheDocument();
+    expect(screen.queryByTestId("trust-balance-primary")).toBeNull();
   });
 });

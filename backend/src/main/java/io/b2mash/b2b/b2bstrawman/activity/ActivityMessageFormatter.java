@@ -318,6 +318,8 @@ public class ActivityMessageFormatter {
       case "trust_payment.recorded" -> formatTrustRecorded(actorName, "a trust payment", details);
       case "trust_transfer.recorded" -> formatTrustRecorded(actorName, "a trust transfer", details);
       case "trust_refund.recorded" -> formatTrustRecorded(actorName, "a trust refund", details);
+      case "trust_interest_credit.recorded" ->
+          formatTrustRecorded(actorName, "a trust interest credit", details);
       case "trust_fee_transfer.recorded" ->
           "%s recorded a fee transfer%s from trust%s"
               .formatted(actorName, ofMoney(details, "amount"), ref(details, "reference"));
@@ -435,7 +437,8 @@ public class ActivityMessageFormatter {
     // Check for status change
     if (details.containsKey("status")) {
       Object statusVal = details.get("status");
-      String newStatus = extractNewValue(statusVal);
+      // G88-F24: the TaskStatus constant reads as its label (IN_PROGRESS → "In progress")
+      String newStatus = humanise(extractNewValue(statusVal));
       return "%s changed task \"%s\" status to %s".formatted(actorName, title, newStatus);
     }
     return "%s updated task \"%s\"".formatted(actorName, title);

@@ -255,6 +255,20 @@ class MatterTrustBalanceEndpointTest {
         .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
   }
 
+  /**
+   * G89-F64: the client Trust tab's first call. Without VIEW_TRUST it is a 403 ProblemDetail, never
+   * a 500 — the 500 the walk saw was the Next server action rethrowing this 403.
+   */
+  @Test
+  void trustAccountsList_withoutViewTrust_gets403NotA500() throws Exception {
+    mockMvc
+        .perform(get("/api/trust-accounts").with(TestJwtFactory.memberJwt(ORG_ID, NO_TRUST)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+  }
+
   @Test
   void trustModuleOff_still200WithZero() throws Exception {
     JsonNode body = getOk(matterOff, TestJwtFactory.ownerJwt(OFF_ORG_ID, OFF_OWNER));

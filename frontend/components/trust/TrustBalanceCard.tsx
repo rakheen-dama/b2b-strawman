@@ -19,6 +19,8 @@ import { RecordDepositDialog } from "@/components/trust/RecordDepositDialog";
 import { RecordPaymentDialog } from "@/components/trust/RecordPaymentDialog";
 import { RecordFeeTransferDialog } from "@/components/trust/RecordFeeTransferDialog";
 import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdown";
+import { TRUST_LOCKED_REASON } from "@/components/documents/trust-locked-download";
+import { useCapabilities } from "@/lib/capabilities";
 import {
   fetchMatterTrustBalance,
   fetchTrustAccounts,
@@ -60,10 +62,16 @@ export function TrustBalanceCard({
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [feeTransferOpen, setFeeTransferOpen] = useState(false);
   const { mutate: globalMutate } = useSWRConfig();
+  // G89-F64: every endpoint below needs VIEW_TRUST. Without it the server actions threw on the
+  // backend's 403 (a 500 to the browser) and the card then claimed no trust account existed.
+  const { hasCapability } = useCapabilities();
+  const canViewTrust = hasCapability("VIEW_TRUST");
+
+  // Fetch only with the trust module on and VIEW_TRUST held (else the backend answers 403)
+  const trustReadable = moduleEnabled && canViewTrust;
 
   // Fetch trust accounts to find primary if not provided
-  // Gate on module being enabled to avoid 403/500 errors for tenants without trust_accounting
-  const accountsCacheKey = moduleEnabled && !trustAccountId ? `trust-accounts-${slug}` : null;
+  const accountsCacheKey = trustReadable && !trustAccountId ? `trust-accounts-${slug}` : null;
   const { data: accounts, isLoading: accountsLoading } = useSWR<TrustAccount[]>(
     accountsCacheKey,
     () => fetchTrustAccounts()
@@ -75,9 +83,8 @@ export function TrustBalanceCard({
     accounts?.[0]?.id;
 
   // Fetch client ledger for this customer
-  // Gate on moduleEnabled to avoid 403/500 for tenants without trust_accounting
   const ledgerCacheKey =
-    moduleEnabled && resolvedAccountId
+    trustReadable && resolvedAccountId
       ? `trust-ledger-${slug}-${resolvedAccountId}-${customerId}`
       : null;
   const {
@@ -92,7 +99,7 @@ export function TrustBalanceCard({
   // sub-ledger — the same source as the closure gate and the Overview tile — not the client card.
   const isMatterMode = Boolean(projectId);
   const matterCacheKey =
-    moduleEnabled && projectId ? `matter-trust-balance-${slug}-${projectId}` : null;
+    trustReadable && projectId ? `matter-trust-balance-${slug}-${projectId}` : null;
   const {
     data: matterResult,
     isLoading: matterLoading,
@@ -111,7 +118,11 @@ export function TrustBalanceCard({
     : ledger?.balance;
 
   const isLoading = accountsLoading || ledgerLoading || matterLoading;
-  const loadError = Boolean(ledgerError) || matterError;
+  // The data states below render only once loading ends, and never without VIEW_TRUST
+  const settled = canViewTrust && !isLoading;
+  // In matter mode the client card only feeds the secondary line: its failure drops that line
+  // (rendered only when `ledger` is present) instead of blanking the card (PR #1746 review).
+  const loadError = isMatterMode ? matterError : Boolean(ledgerError);
 
   // Revalidate SWR caches after a successful transaction mutation
   const handleMutationSuccess = useCallback(() => {
@@ -137,6 +148,12 @@ export function TrustBalanceCard({
           </div>
         </CardHeader>
         <CardContent>
+          {!canViewTrust && (
+            <p className="text-muted-foreground text-sm" data-testid="trust-balance-locked">
+              {TRUST_LOCKED_REASON}
+            </p>
+          )}
+
           {isLoading && (
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <Loader2 className="size-4 animate-spin" />
@@ -144,26 +161,26 @@ export function TrustBalanceCard({
             </div>
           )}
 
-          {!isLoading && loadError && (
+          {settled && loadError && (
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <AlertTriangle className="size-4 text-slate-400" />
               Unable to load trust balance
             </div>
           )}
 
-          {!isLoading && !loadError && !resolvedAccountId && (
+          {settled && !loadError && !resolvedAccountId && (
             <p className="text-muted-foreground text-sm">
               No trust account configured. Set up a trust account in settings to track client funds.
             </p>
           )}
 
-          {!isLoading && !loadError && resolvedAccountId && primaryBalance === undefined && (
+          {settled && !loadError && resolvedAccountId && primaryBalance === undefined && (
             <p className="text-muted-foreground text-sm">
               No trust transactions recorded for this client yet.
             </p>
           )}
 
-          {!isLoading && !loadError && resolvedAccountId && primaryBalance !== undefined && (
+          {settled && !loadError && resolvedAccountId && primaryBalance !== undefined && (
             <div className="space-y-4">
               <div
                 className="text-3xl font-semibold text-slate-950 dark:text-slate-50"

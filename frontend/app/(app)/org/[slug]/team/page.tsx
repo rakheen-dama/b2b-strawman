@@ -15,14 +15,18 @@ export default async function TeamPage({ params }: { params: Promise<{ slug: str
 
   const billing = await api.get<BillingResponse>("/api/billing/subscription");
 
-  let roles: OrgRole[] = [];
-  if (isAdmin) {
-    try {
-      roles = await fetchOrgRoles();
-    } catch {
-      // Non-fatal — panel will show empty dropdown
-    }
+  // GET /api/org-roles is open to every member (backend OrgRoleController.listRoles has no
+  // capability gate), so the server reads it for everyone. Only admins receive the full roles
+  // (capabilities, for the panel and invite form); everyone else gets slug + name only, so a
+  // custom role's badge shows its name, not its slug (PR #1752 review).
+  let allRoles: OrgRole[] = [];
+  try {
+    allRoles = await fetchOrgRoles();
+  } catch {
+    // Non-fatal — panel shows an empty dropdown; badges fall back to the slug
   }
+  const roles: OrgRole[] = isAdmin ? allRoles : [];
+  const roleNames = allRoles.map(({ slug: roleSlug, name }) => ({ slug: roleSlug, name }));
 
   return (
     <div className="space-y-8">
@@ -51,7 +55,7 @@ export default async function TeamPage({ params }: { params: Promise<{ slug: str
       )}
 
       {/* Members / Pending Invitations tabs */}
-      <TeamTabs isAdmin={isAdmin} roles={roles} slug={slug} />
+      <TeamTabs isAdmin={isAdmin} roles={roles} roleNames={roleNames} slug={slug} />
     </div>
   );
 }

@@ -145,7 +145,12 @@ export function ReportResults({ response, isLoading, onPageChange }: ReportResul
                       {response.columns.map((col) => (
                         <TableCell
                           key={col.key}
-                          className={cn(isNumericType(col.type) && "text-right")}
+                          className={cn(
+                            isNumericType(col.type) && "text-right",
+                            // G89-F47: long text (e.g. Section 35 "INT-CREDIT-<uuid>…" items)
+                            // wraps inside a capped width instead of pushing Amount off-screen
+                            col.type === "string" && "max-w-[28rem] wrap-anywhere whitespace-normal"
+                          )}
                         >
                           {formatCellValue(row[col.key], col)}
                         </TableCell>

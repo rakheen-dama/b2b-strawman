@@ -77,8 +77,28 @@ class ActivityMessageFormatterTest {
                 "title", Map.of("from", "Fix login bug", "to", "Fix login bug"),
                 "status", Map.of("from", "OPEN", "to", "IN_PROGRESS")));
     var item = formatAll(event, actorMap(), emptyPortalContactMap());
+    // G88-F24: the status reads as its label, never the raw enum constant.
     assertThat(item.message())
-        .isEqualTo("Alice changed task \"Fix login bug\" status to IN_PROGRESS");
+        .isEqualTo("Alice changed task \"Fix login bug\" status to In progress");
+  }
+
+  @Test
+  void taskUpdatedStatus_rendersEachStatusAsItsLabel() {
+    Map<String, String> labels =
+        Map.of(
+            "OPEN", "Open", "IN_PROGRESS", "In progress", "DONE", "Done", "CANCELLED", "Cancelled");
+    labels.forEach(
+        (status, label) -> {
+          var event =
+              createEvent(
+                  "task.updated",
+                  "task",
+                  Map.of(
+                      "title", Map.of("from", "Brief", "to", "Brief"),
+                      "status", Map.of("from", "OPEN", "to", status)));
+          assertThat(formatAll(event, actorMap(), emptyPortalContactMap()).message())
+              .isEqualTo("Alice changed task \"Brief\" status to " + label);
+        });
   }
 
   @Test
@@ -1689,6 +1709,7 @@ class ActivityMessageFormatterTest {
           new String[] {"trust_transfer.recorded", "trust_transaction"},
           new String[] {"trust_fee_transfer.recorded", "trust_transaction"},
           new String[] {"trust_refund.recorded", "trust_transaction"},
+          new String[] {"trust_interest_credit.recorded", "trust_transaction"},
           new String[] {"trust_payment.approved", "trust_transaction"},
           new String[] {"trust_fee_transfer.approved", "trust_transaction"},
           new String[] {"trust_refund.approved", "trust_transaction"},

@@ -318,7 +318,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Day 9 — Deceased estate matter
 
-- [ ] **9.1** Create matter from template: **Deceased Estate Administration**
+- [ ] **9.1** On the **Moroka Family Trust** client detail, click **New Matter** and create the matter from template: **Deceased Estate Administration** — this links the matter to the client, as Sipho's 3.1 does (G89 fix initiative D38 + D42 — founder-authorised 2026-11-11: the 12.2 deposit's matter picker lists only the client's matters, `TrustEntityPickers.tsx:141` → `fetchCustomerProjects` → `GET /api/clients/{id}/matters`, `CustomerProjectService.listProjectsForCustomer`; a matter not linked to the client is refused, `TrustTransactionService.requireClientMatter`)
 - [ ] **9.2** Matter name: "Estate Late Peter Moroka"
 - [ ] **9.3** Work Type = **ESTATES** (inherited from the template)
 - [ ] **9.4** Verify the 9 template-instantiated tasks: "Obtain death certificate & will", "Report estate to Master of High Court", "Obtain Letters of Executorship", "Advertise for creditors (Gazette + local newspaper)", "Inventory of assets & liabilities", "Open estate bank account", "Prepare Liquidation & Distribution account", "Lodge L&D account with Master", "Distribute estate & file final account" (Post-86 coherence amendment, user-authorised 2026-10-19 — tasks/qa-scenario-amendments-post86.md §3.4: task names re-derived from project-template-packs/legal-za.json)

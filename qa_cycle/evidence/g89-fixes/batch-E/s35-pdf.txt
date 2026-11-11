@@ -1,0 +1,49 @@
+                                                                                                           Generated: 11 Nov 2026 02:16
+             Section 35 Data Pack
+               Financial Year: 2026-03-01 to 2027-02-28
+               Trust Receipts & Payments
+               ITEM                                                                                                       AMOUNT
+               2026-10-01 · DEP/LERATO-g89a · Lerato Mthembu (DEPOSIT)                                                        R 10
+                                                                                                                            000,00
+               2026-10-15 · DEP/LERATO-g89d · Lerato Mthembu (DEPOSIT)                                                         R 5
+                                                                                                                            000,00
+               2026-10-31 · INT-CREDIT-5724401a-30b4-47ca-b314-965c5c67abf1-e0f25d3f-f195-42fe-ba95-842e79de983d-          R 55,21
+               ec988df3 · Lerato Mthembu (INTEREST_CREDIT)
+               2026-11-05 · DEP/SIPHO-001 · Sipho Dlamini (DEPOSIT)                                                            R 5
+                                                                                                                            000,00
+               2026-11-05 · DEEDS/SIPHO-001 · Sipho Dlamini (PAYMENT)                                                          -R 1
+                                                                                                                            250,00
+               2026-11-05 · Initial fund for estate admin · Moroka Family Trust (DEPOSIT)                                     R 50
+                                                                                                                            000,00
+               2026-11-05 · PAY/MOROKA-001 · Moroka Family Trust (PAYMENT)                                                    -R 12
+                                                                                                                            000,00
+               2026-11-05 · REFUND/SIPHO-001 · Sipho Dlamini (REFUND)                                                          -R 3
+                                                                                                                            751,34
+               2026-11-06 · INT-CREDIT-9eb81568-a056-4d62-bf26-380615f66582-79546474-0f5b-4e2d-ade4-0263d70d3eeb ·           R 1,34
+               Sipho Dlamini (INTEREST_CREDIT)
+               2026-11-06 · INT-CREDIT-9eb81568-a056-4d62-bf26-380615f66582-bafd05f9-2a27-4d89-b004-60dea4ee1a55 ·         R 17,81
+               Moroka Family Trust (INTEREST_CREDIT)
+               2026-11-06 · CORR/G89-F12 · Sipho Dlamini (DEPOSIT)                                                           R 1,34
+               2026-11-07 · DEP2/LERATO-g89a · Lerato Mthembu (DEPOSIT)                                                        R 2
+                                                                                                                            000,00
+               2026-11-07 · REF/LERATO-g89a-exact · Lerato Mthembu (REFUND)                                                   -R 10
+                                                                                                                            055,21
+               Total                                                                                                          R 45
+                                                                                                                            019,15
+               Client Trust Balances
+               ITEM                                                                   AMOUNT
+               Moroka Family Trust                                                                                      R 38 017,81
+               Sipho Dlamini                                                                                                 R 1,34
+               Lerato Mthembu                                                                                            R 7 000,00
+               Total                                                                                                    R 45 019,15
+            Trust Reconciliation
+          No reconciliation found on or before financial year end
+            Interest Allocation
+            ITEM                                                                      AMOUNT
+            Lerato Mthembu · 2026-10-01 – 2026-10-31                                             R 55,21
+            Sipho Dlamini · 2026-11-05 – 2026-11-06                                               R 1,34
+            Moroka Family Trust · 2026-11-05 – 2026-11-06                                        R 17,81
+            Total                                                                                R 74,36
+            Client Ledger Statements
+          Per-client ledger statements must be generated individually using the 'client-ledger-statement' report with customer_id parameter
+                                                                                       Generated 11 Nov 2026 02:16

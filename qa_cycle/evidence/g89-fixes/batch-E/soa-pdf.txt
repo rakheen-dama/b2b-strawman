@@ -1,0 +1,54 @@
+            Mathebula & Partners
+            Statement of Account
+            Reference: SOA-e0f25d3f-20261111
+            Period: 1 October 2026 — 11 November 2026
+            Generated: 11 November 2026
+            To
+            Lerato Mthembu
+            3 Church Square Pretoria ZA
+            Matter
+            Matter: Lerato Mthembu — RAF Claim (MVA 2025-11-03)
+            Opened: 5 November 2026
+            Professional Fees
+             Date          Fee Earner   Description               Hours Rate        Amount
+             7 November    Thandi       G89 C2 verify — SoA       1      R2 500,00  R2 500,00
+             2026          Mathebula    unbilled WIP check
+             11            Thandi       G89-E QA F5 hours-
+             November      Mathebula    refresh check             0,5    R2 500,00  R1 250,00
+             2026
+            Total fees (excl. VAT): R3 750,00
+            VAT: R562,50
+            Total fees (incl. VAT): R4 312,50
+            Disbursements
+             Date       Category         Description         Supplier        Amount         VAT
+            Total disbursements: R0,00
+            Trust Activity
+            Opening balance: R0,00
+            Deposits
+             Date         Reference                                 Description          Amount
+             1 October                                              G89 Batch A verify 
+             2026         DEP/LERATO-g89a                           deposit on RAF       R10 000,00
+                                                                    matter
+             15                                                     G89 Batch D verify 
+             October      DEP/LERATO-g89d                           - back-dated         R5 000,00
+             2026                                                   deposit -g89d
+             31           INT-CREDIT-5724401a-30b4-47ca-b314-       Interest credit for 
+             October      965c5c67abf1-e0f25d3f-f195-42fe-ba95-     period 2026-10-01    R55,21
+             2026         842e79de983d-ec988df3                     to 2026-10-31
+             7                                                      G89 Batch A verify 
+             November     DEP2/LERATO-g89a                          deposit - no matter  R2 000,00
+             2026
+            Payments
+             Date          Type       Reference          Description                     Amount
+             7                        REF/LERATO-        G89 Batch A verify - exact 
+             November      REFUND g89a-exact             matter balance refund           R10 055,21
+             2026
+            Closing balance: R7 000,00
+            Summary
+      Fees billed in period: R0,00
+      Disbursements billed in period: R0,00
+      Previous balance owing: R0,00
+      Payments received: R0,00
+      Closing balance owing: R0,00
+      Trust balance held: R7 000,00
+      Unbilled work in progress (not yet billed): R3 750,00

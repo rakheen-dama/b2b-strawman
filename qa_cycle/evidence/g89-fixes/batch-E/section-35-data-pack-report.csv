@@ -1,0 +1,26 @@
+# Section 35 Data Pack
+# Generated: 2026-11-11T00:16:23.441660Z
+# Parameters: financial_year_end=2027-02-28, trust_account_id=435b4188-457a-41af-9da3-0c3aa66b18b0
+Section,Item,Amount
+Trust Receipts & Payments,2026-10-01 · DEP/LERATO-g89a · Lerato Mthembu (DEPOSIT),10000.00
+Trust Receipts & Payments,2026-10-15 · DEP/LERATO-g89d · Lerato Mthembu (DEPOSIT),5000.00
+Trust Receipts & Payments,2026-10-31 · INT-CREDIT-5724401a-30b4-47ca-b314-965c5c67abf1-e0f25d3f-f195-42fe-ba95-842e79de983d-ec988df3 · Lerato Mthembu (INTEREST_CREDIT),55.21
+Trust Receipts & Payments,2026-11-05 · DEP/SIPHO-001 · Sipho Dlamini (DEPOSIT),5000.00
+Trust Receipts & Payments,2026-11-05 · DEEDS/SIPHO-001 · Sipho Dlamini (PAYMENT),-1250.00
+Trust Receipts & Payments,2026-11-05 · Initial fund for estate admin · Moroka Family Trust (DEPOSIT),50000.00
+Trust Receipts & Payments,2026-11-05 · PAY/MOROKA-001 · Moroka Family Trust (PAYMENT),-12000.00
+Trust Receipts & Payments,2026-11-05 · REFUND/SIPHO-001 · Sipho Dlamini (REFUND),-3751.34
+Trust Receipts & Payments,2026-11-06 · INT-CREDIT-9eb81568-a056-4d62-bf26-380615f66582-79546474-0f5b-4e2d-ade4-0263d70d3eeb · Sipho Dlamini (INTEREST_CREDIT),1.34
+Trust Receipts & Payments,2026-11-06 · INT-CREDIT-9eb81568-a056-4d62-bf26-380615f66582-bafd05f9-2a27-4d89-b004-60dea4ee1a55 · Moroka Family Trust (INTEREST_CREDIT),17.81
+Trust Receipts & Payments,2026-11-06 · CORR/G89-F12 · Sipho Dlamini (DEPOSIT),1.34
+Trust Receipts & Payments,2026-11-07 · DEP2/LERATO-g89a · Lerato Mthembu (DEPOSIT),2000.00
+Trust Receipts & Payments,2026-11-07 · REF/LERATO-g89a-exact · Lerato Mthembu (REFUND),-10055.21
+Trust Receipts & Payments,Total,45019.15
+Client Trust Balances,Moroka Family Trust,38017.81
+Client Trust Balances,Sipho Dlamini,1.34
+Client Trust Balances,Lerato Mthembu,7000.00
+Client Trust Balances,Total,45019.15
+Interest Allocation,Lerato Mthembu · 2026-10-01 – 2026-10-31,55.21
+Interest Allocation,Sipho Dlamini · 2026-11-05 – 2026-11-06,1.34
+Interest Allocation,Moroka Family Trust · 2026-11-05 – 2026-11-06,17.81
+Interest Allocation,Total,74.36

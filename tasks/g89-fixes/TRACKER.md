@@ -70,9 +70,9 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [x] G89-F13 — ledger card totals exclude refunds/transfers (A) — VERIFIED 2026-11-07, PR #1746
 - [x] G89-F14 — matter Trust tab shows the client card (A) — VERIFIED 2026-11-07, PR #1746
 - [x] G89-F16 — closure SoA counts the written-off disbursement (C1) — VERIFIED 2026-11-07, PR #1748
-- [ ] G89-F17 — reconciliation list fails to load (E)
+- [x] G89-F17 — reconciliation list fails to load (E) — VERIFIED 2026-11-11, PR #1752
 - [x] G89-F18 — Section 35 data pack is hollow (C1) — VERIFIED 2026-11-07, PR #1748
-- [ ] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM
+- [x] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM — VERIFIED 2026-11-11, PR #1752
 - [x] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (C2 / PR #1749, D17) — MEDIUM — VERIFIED 2026-11-08 (Batch H walk: 'Withheld' for Carol)
 - [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
@@ -322,3 +322,29 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - KC check is due once the e2e agent restores the KC stack.
 - New candidate **G89-F68 (LOW)**: fee-note lines for same-date time entries have no deterministic order (sort tie). Seen in the day-30 frame diff → backlog / Batch F register.
 - Deferred from E (need a decision): 634A (Slug read-only on edit; card menu reopens after dialog close; 212 px cards at 1024); raw amounts in the interest-posted notification; sentence-casing the ~20 Title Case audit labels; sr-only spacing nit in PaymentEventHistory.
+- 2026-11-11 ~03:40 — **Batch E VERIFIED on KC**: 20 PASS, 2 PARTIAL, 1 DEFERRED (`qa_cycle/evidence/g89-fixes/batch-E/`). The orchestrator read the F17 and F50 screenshots.
+  - **Exit-bar MEDIUMs:**
+    - **F17:** the list loads, with an empty state.
+    - **F50:** the October and November runs are both listed, total R 74,36.
+    - **All MEDIUMs are now verified closed.**
+  - **Other PASS items:**
+    - F7, F8 (1440), F9, F15, F47: layout
+    - F5: hours update without a reload
+    - F41, F40, F57, F20, F49
+    - G-D10a/b
+    - G88-F27a/b, G88-F24, G88-F2
+    - F65, F64: no 500; "Trust details are not available"
+  - **PARTIAL:**
+    - **F48:** money is rand-formatted, but in the S35 PDF Receipts & Payments table 10 of 14 amounts wrap mid-number ("R 10 / 000,00"). New LOW **G89-F69**: nowrap the amount cell or use an NBSP thousands separator. Needs a trust-reports pack bump v3→v4.
+    - **F44:** deposit events show on the portal. The interest-credit event only fires on runs posted after the fix, and both existing runs predate it. → Observe in the exit re-walk; the fresh tenant posts interest after the fix.
+  - **DEFERRED:** G88-M9 (both fee notes paid) → exit re-walk.
+  - **Side findings, candidate G89-F70 (LOW, raw labels):**
+    - "REPORT EXPORTED" in the audit trail;
+    - `comment.created` in the portal Your-actions feed;
+    - 'edited a comment on entity "entity"' in matter Activity;
+    - "ORGANIZATION" entity type in the templates table.
+  - **F8 note:** at 1024 the templates table still scrolls internally (666 px in 440 px).
+  - **Data:**
+    - Carol restored to Member, SQL-verified.
+    - Test refund rejected.
+    - Kept: a 30-min time entry `c3ce8756…` on Lerato's RAF matter and an internal SoA draft `6cd4b8d9…`.

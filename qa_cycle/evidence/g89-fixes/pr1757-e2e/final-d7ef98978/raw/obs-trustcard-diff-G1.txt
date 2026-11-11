@@ -1,0 +1,16 @@
+===== G1 trust card difference characterisation (read-only) 2026-11-11T20:59:18+0200
+-- trust_transactions by type|status|customer null?|sum:
+DEPOSIT|RECORDED|has_customer=true|n=6|sum=302027.00
+FEE_TRANSFER|APPROVED|has_customer=true|n=1|sum=8500.00
+FEE_TRANSFER|AWAITING_APPROVAL|has_customer=true|n=1|sum=500.00
+INTEREST_CREDIT|RECORDED|has_customer=true|n=2|sum=25.50
+INTEREST_LPFF|RECORDED|has_customer=false|n=1|sum=25.52
+PAYMENT|APPROVED|has_customer=true|n=2|sum=1370.00
+PAYMENT|AWAITING_APPROVAL|has_customer=true|n=2|sum=230000.00
+PAYMENT|REJECTED|has_customer=true|n=1|sum=100.00
+TRANSFER_IN|RECORDED|has_customer=true|n=1|sum=250.00
+TRANSFER_OUT|RECORDED|has_customer=true|n=1|sum=250.00
+-- interest rows:
+INTEREST_CREDIT|4.00|RECORDED|INT-CREDIT-d1b5522f-9443-4fda-b87b-1c9f3c6cfae6-d266cd5b-939b-40d9-9ed9-0e2fc0e2a145-844928bd
+INTEREST_CREDIT|21.50|RECORDED|INT-CREDIT-d1b5522f-9443-4fda-b87b-1c9f3c6cfae6-a673e862-83c0-4f11-92e0-8224df6c6fb8-c8760076
+INTEREST_LPFF|25.52|RECORDED|INT-LPFF-d1b5522f-9443-4fda-b87b-1c9f3c6cfae6

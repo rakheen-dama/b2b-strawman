@@ -1,0 +1,38 @@
+===== G1 failure evidence — read-only SQL on the live G1 stack (tenant_7d218705360b), 2026-11-11 20:58–20:59 SAST,
+      before R1 replaced the stack. Transcribed from the console output of the queries run at the time.
+
+--- (A) G1-lifecycle day-75-complex.spec.ts:224 "Alice: Log 360min on Moroka estate matter" (failed 20:53–20:54 SAST)
+Assertion (spec l.237): Fees → Time tabpanel toContainText(/Prepare Liquidation & Distribution account\s*6h/), 15 s
+Received: "...Total Time1h ... Entries1 By Task ... Report estate to Master of High Court1h1h1 ..."  (only the earlier 1h entry)
+SQL: select te.duration_minutes, te.billable, t.title, p.name, te.created_at (SAST), te.date
+     from time_entries te join tasks t on t.id=te.task_id join projects p on p.id=t.project_id where p.name ilike '%moroka%'
+   60 | t | Report estate to Master of High Court      | Estate Late Peter Moroka mwch5m1q0874 | 2026-11-11 20:52:16.031 | 2026-11-11
+  360 | t | Prepare Liquidation & Distribution account | Estate Late Peter Moroka mwch5m1q0874 | 2026-11-11 20:53:45.330 | 2026-11-11
+=> the 360-minute entry WAS saved (20:53:45 SAST); the time-summary panel did not show it (F85 mechanism: time summary lags under load).
+Cascade (serial describe): day-75 :243 and :270 skipped -> "Create 2nd Commercial matter for Apex (annual returns)" never ran ->
+day-90-review.spec.ts:83 "Matters list shows the lifecycle's six matters" failed: link 'Apex Annual Returns mwch5m1q0874' not found;
+the rest of that serial describe (10 tests) skipped.
+Load average after the run: 61.84 60.08 41.51 (concurrent full Maven verify in .claude/worktrees/g89-l).
+
+--- (B) G1-default invoices/invoice-lifecycle.spec.ts:112 "APPROVED -> SENT" (failed ~20:57 SAST)
+Assertion (spec l.122): button 'Record Payment' visible within 15 s after clicking 'Send fee note' — element not found.
+SQL audit_events (event_type ilike 'invoice%'), invoice 4be0bcee-cba6-46ad-b544-6a4e3b5edd81:
+  20:57:04.773 invoice.created | 20:57:04.882 invoice.updated | 20:57:06.641 invoice.approved | 20:57:08.999 invoice.sent
+SQL invoices: INV-0006 | SENT | updated 20:57:09
+=> the send WAS persisted (SENT in DB at 20:57:09); the page did not re-render the SENT header within 15 s
+   (Next 16.2.6 lost-React-ping class; F73 is the same spec family at :88). Cascade: 6 serial tests skipped.
+
+--- (C) G1-default settings/general-settings.spec.ts:65 "Update brand colour" (failed ~20:57:45 SAST)
+Assertion (spec l.73): after save + reload, 'Brand Color' toHaveValue('#1a8f6e') — received '#1B3A4B'.
+SQL audit_events (org_settings*), SAST:
+  20:57:34 org_settings.updated {"brand_color": "#1a8f6e", ...}      <- this test's save landed
+  20:57:45 org_settings.updated {"brand_color": "#1B3A4B", ...}      <- whole-form saves from other settings tests
+  20:57:46 org_settings.updated {"brand_color": "#1B3A4B", ...}         (parallel workers, form loaded before 20:57:34)
+  20:57:47 org_settings.updated {"brand_color": "#1B3A4B", ...}
+SQL org_settings: brand_color=#1B3A4B updated_at 20:57:47
+=> the save WAS persisted, then overwritten by concurrent whole-form saves of shared org settings before the reload read it
+   (test-isolation race on shared org state, widened by load: 68.00 59.18 44.53 after the run).
+
+--- Re-run (rule 1): fresh stack R1 (same image IDs as G1), 21:00:22–21:04:56 SAST:
+  R1-lifecycle 105/0/0, R1-default 165/0/14 — per-test diff vs the early-read gate EMPTY for both (raw/per-test-diff-R1.txt).
+  Rule 2 (main reproduction) not triggered: no failure persisted.

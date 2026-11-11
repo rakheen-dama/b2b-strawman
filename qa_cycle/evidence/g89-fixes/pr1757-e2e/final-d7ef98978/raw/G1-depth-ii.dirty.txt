@@ -1,0 +1,10 @@
+?? documentation/screenshots/legal-vertical/closure-letter-preview.png
+?? documentation/screenshots/legal-vertical/conveyancing-matter-detail-custom-fields.png
+?? documentation/screenshots/legal-vertical/disbursement-approval-dialog.png
+?? documentation/screenshots/legal-vertical/disbursement-list-view.png
+?? documentation/screenshots/legal-vertical/matter-closure-dialog-all-green.png
+?? documentation/screenshots/legal-vertical/matter-closure-dialog-gate-report-failing.png
+?? documentation/screenshots/legal-vertical/otp-acceptance-request.png
+?? documentation/screenshots/legal-vertical/otp-document-with-clauses.png
+?? documentation/screenshots/legal-vertical/statement-of-account-preview.png
+?? documentation/screenshots/legal-vertical/trust-link-dialog.png

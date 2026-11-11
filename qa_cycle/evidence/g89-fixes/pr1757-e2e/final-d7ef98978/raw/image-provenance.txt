@@ -1,0 +1,9 @@
+===== image provenance G1 2026-11-11T20:51:08+0200
+frontend .next files containing "Source client's matter UUID" (D39, new since b63284ef5): 2
+frontend .next files containing "targetMatterId": 2
+backend jar V15 entry:     23703  11-11-2026 18:49   io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/TrustInvestmentService.class
+     1202  11-11-2026 18:49   db/migration/tenant/V15__g89_trust_investment_cancelled.sql
+stack log: COPY src / BUILD SUCCESS lines: 3
+#65 [backend builder  7/10] COPY src src
+#65 [backend builder  7/10] COPY src src
+#69 57.47 [INFO] BUILD SUCCESS

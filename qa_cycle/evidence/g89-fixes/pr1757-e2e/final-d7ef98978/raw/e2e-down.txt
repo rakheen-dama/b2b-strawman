@@ -1,0 +1,19 @@
+===== e2e-down 2026-11-11T21:24:16+0200 from /Users/rakheendama/Projects/2026/b2b-strawman-g89-cp10
+ Container e2e-mock-idp  Stopped
+ Container e2e-mock-idp  Removing
+ Container e2e-mock-idp  Removed
+ Container e2e-localstack  Stopped
+ Container e2e-localstack  Removing
+ Container e2e-localstack  Removed
+ Network docteams-e2e_e2e-network  Removing
+ Volume docteams-e2e_e2e_postgres_data  Removing
+ Volume docteams-e2e_e2e_localstack_data  Removing
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Network docteams-e2e_e2e-network  Removed
+
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+rc=0
+e2e-* containers left=0
+docteams-e2e_* volumes left=0

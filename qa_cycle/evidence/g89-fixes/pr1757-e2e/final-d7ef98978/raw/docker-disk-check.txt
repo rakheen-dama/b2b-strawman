@@ -1,0 +1,11 @@
+===== Docker VM disk check 2026-11-11T20:48:18+0200
+Filesystem                Size      Used Available Use% Mounted on
+overlay                  58.4G     24.5G     30.9G  44% /
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          43        7         11.77GB   8.649GB (73%)
+Containers      8         8         172.3MB   0B (0%)
+Local Volumes   27        6         1.203GB   908.7MB (75%)
+Build Cache     225       0         8.79GB    8.79GB
+decision: 30.9G free -> no prune
+===== Docker VM disk after gate 2026-11-11T21:25:26+0200
+overlay                  58.4G     25.4G     30.0G  46% /

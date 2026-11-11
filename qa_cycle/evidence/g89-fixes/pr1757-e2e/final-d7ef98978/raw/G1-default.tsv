@@ -1,0 +1,179 @@
+admin-audit-30day/admin-audit-lifecycle.spec.ts	33	Audit Log page renders for Owner with default view	skipped	skipped
+admin-audit-30day/admin-audit-lifecycle.spec.ts	52	Security preset renders for Owner (emission gap acknowledged)	skipped	skipped
+admin-audit-30day/admin-audit-lifecycle.spec.ts	70	Financial approvals preset surfaces trust_transaction.approved row	skipped	skipped
+admin-audit-30day/admin-audit-lifecycle.spec.ts	88	Override row surfaces on Audit Log + matter detail + dashboard widget	skipped	skipped
+admin-audit-30day/admin-audit-lifecycle.spec.ts	108	Customer detail Audit tab renders for Admin and is scope-correct	skipped	skipped
+admin-audit-30day/admin-audit-lifecycle.spec.ts	125	PDF export succeeds and emits audit.export.generated row	skipped	skipped
+admin-audit-30day/admin-audit-lifecycle.spec.ts	143	DSAR pack ships audit-trail/events.csv scoped to the subject	skipped	skipped
+admin-audit-30day/admin-audit-lifecycle.spec.ts	159	Wide window fails gracefully; narrowed window succeeds	skipped	skipped
+audit-log/audit-log-smoke.spec.ts	19	apply Sensitive preset shows events or empty-state	expected	passed
+audit-log/matter-closure-audit-tab.spec.ts	52	override row surfaces matter.closure.override_used CRITICAL event with justification	expected	passed
+auth/auth-change-password.spec.ts	35	keycloak: Account & Security renders the branded change-password page and returns to app	skipped	skipped
+auth/auth-expiry.spec.ts	19	expired session lands on branded /sign-in?reason=expired with reason banner	expected	passed
+auth/auth-expiry.spec.ts	39	return-to round-trips the original destination after re-login	expected	passed
+auth/auth-logout.spec.ts	17	logout lands on the branded /signed-out page with a 'Sign in again' CTA	expected	passed
+auth/rbac-capabilities.spec.ts	8	Owner can access all settings pages	expected	passed
+auth/rbac-capabilities.spec.ts	18	Admin can access general settings	expected	passed
+auth/rbac-capabilities.spec.ts	24	Member sees permission denied on profitability	expected	passed
+auth/rbac-capabilities.spec.ts	31	Member sees permission denied on reports	expected	passed
+auth/rbac-capabilities.spec.ts	37	Member sees permission denied on customers	expected	passed
+auth/rbac-capabilities.spec.ts	44	Member sees permission denied on roles settings	expected	passed
+auth/rbac-capabilities.spec.ts	50	Member can access My Work	expected	passed
+auth/rbac-capabilities.spec.ts	56	Member can access Projects	expected	passed
+automations/automation-crud.spec.ts	83	View seeded automation rules	expected	passed
+automations/automation-crud.spec.ts	93	Disable automation rule	expected	passed
+automations/automation-crud.spec.ts	99	Enable automation rule	expected	passed
+automations/automation-crud.spec.ts	105	View execution history	expected	passed
+automations/automation-triggers.spec.ts	41	Each installed rule shows its trigger type	expected	passed
+automations/automation-triggers.spec.ts	53	Execution Log filters by every installed rule	expected	passed
+automations/automation-triggers.spec.ts	63	Execution Log filters by execution status	expected	passed
+compliance/compliance-overview.spec.ts	21	Compliance dashboard loads	expected	passed
+compliance/compliance-overview.spec.ts	43	Compliance requests list	expected	passed
+customers/customer-crud.spec.ts	54	Create customer with required fields	expected	passed
+customers/customer-crud.spec.ts	84	Create customer with custom fields (step 2)	expected	passed
+customers/customer-crud.spec.ts	112	Edit customer name	expected	passed
+customers/customer-crud.spec.ts	145	Search customer list	expected	passed
+customers/customer-crud.spec.ts	168	Client list renders rows	expected	passed
+customers/customer-data-protection.spec.ts	47	Download customer data export	expected	passed
+customers/customer-data-protection.spec.ts	77	Anonymize customer preview shows entity counts	expected	passed
+customers/customer-data-protection.spec.ts	108	Execute anonymization	expected	passed
+customers/customer-data-protection.spec.ts	150	ANONYMIZED customer is read-only	expected	passed
+customers/customer-data-protection.spec.ts	165	Cannot transition out of ANONYMIZED via API	expected	passed
+customers/customer-lifecycle.spec.ts	50	New customer defaults to PROSPECT	expected	passed
+customers/customer-lifecycle.spec.ts	66	PROSPECT -> ONBOARDING	expected	passed
+customers/customer-lifecycle.spec.ts	85	ONBOARDING -> ACTIVE (via checklist completion)	expected	passed
+customers/customer-lifecycle.spec.ts	92	PROSPECT blocked from creating project	expected	passed
+customers/customer-lifecycle.spec.ts	113	Fee note blocked for a client without a billing address	expected	passed
+customers/customer-lifecycle.spec.ts	135	ACTIVE -> DORMANT	expected	passed
+customers/customer-lifecycle.spec.ts	157	DORMANT -> OFFBOARDING	skipped	skipped
+customers/customer-lifecycle.spec.ts	178	OFFBOARDING -> OFFBOARDED	skipped	skipped
+customers/customer-lifecycle.spec.ts	199	OFFBOARDED blocked from project creation	expected	passed
+customers/customer-lifecycle.spec.ts	223	Invalid: PROSPECT -> ACTIVE (skip) rejected via API	expected	passed
+documents/document-generation.spec.ts	78	Preview shows resolved variables	expected	passed
+documents/document-generation.spec.ts	87	Generate document from template on the matter page	expected	passed
+documents/document-generation.spec.ts	103	Generate a document from the client page	expected	passed
+documents/document-generation.spec.ts	120	Download PDF	expected	passed
+documents/document-generation.spec.ts	134	Generated documents list	expected	passed
+documents/template-management.spec.ts	77	Template list shows seeded templates	expected	passed
+documents/template-management.spec.ts	88	Create new template	expected	passed
+documents/template-management.spec.ts	120	Clone template	expected	passed
+documents/template-management.spec.ts	143	Edit template content	expected	passed
+finance/profitability.spec.ts	63	Page loads with data	expected	passed
+finance/profitability.spec.ts	71	Project profitability view	expected	passed
+finance/profitability.spec.ts	85	Customer profitability view	expected	passed
+finance/profitability.spec.ts	93	Utilization metrics	expected	passed
+finance/reports.spec.ts	48	Reports hub loads	expected	passed
+finance/reports.spec.ts	59	Run a report with parameters	expected	passed
+finance/reports.spec.ts	70	Export report to CSV	expected	passed
+information-requests/information-request-crud.spec.ts	70	View information requests list	expected	passed
+information-requests/information-request-crud.spec.ts	83	Create information request from a request template	expected	passed
+information-requests/information-request-crud.spec.ts	116	Send information request	expected	passed
+information-requests/information-request-crud.spec.ts	137	Sent request detail shows the portal contact and requested items	expected	passed
+information-requests/information-request-crud.spec.ts	156	Track completion status	expected	passed
+invoices/billing-runs.spec.ts	25	Billing runs page loads	expected	passed
+invoices/billing-runs.spec.ts	34	New billing run wizard	expected	passed
+invoices/invoice-arithmetic.spec.ts	62	Single line: 3h x R450	expected	passed
+invoices/invoice-arithmetic.spec.ts	74	Multiple lines: (2 x R500) + (1 x R1,500)	expected	passed
+invoices/invoice-arithmetic.spec.ts	91	Rounding: non-terminating decimal (1.5h x R333.33)	expected	passed
+invoices/invoice-arithmetic.spec.ts	105	Zero quantity line	expected	passed
+invoices/invoice-arithmetic.spec.ts	124	Fractional quantity: 0.25h x R1,200	expected	passed
+invoices/invoice-arithmetic.spec.ts	134	Rate snapshot immutability	expected	passed
+invoices/invoice-crud.spec.ts	74	Draft created via the API opens as a Draft	expected	passed
+invoices/invoice-crud.spec.ts	82	Add line item to draft	expected	passed
+invoices/invoice-crud.spec.ts	98	Edit line item on draft	expected	passed
+invoices/invoice-crud.spec.ts	127	Remove line item from draft	expected	passed
+invoices/invoice-crud.spec.ts	146	Draft invoice shows correct totals	expected	passed
+invoices/invoice-lifecycle.spec.ts	88	DRAFT -> APPROVED	expected	passed
+invoices/invoice-lifecycle.spec.ts	112	APPROVED -> SENT	unexpected	failed
+invoices/invoice-lifecycle.spec.ts	131	SENT -> PAID (record payment)	skipped	skipped
+invoices/invoice-lifecycle.spec.ts	192	VOID a sent invoice	skipped	skipped
+invoices/invoice-lifecycle.spec.ts	205	VOID releases time entries	skipped	skipped
+invoices/invoice-lifecycle.spec.ts	229	Cannot edit approved invoice	skipped	skipped
+invoices/invoice-lifecycle.spec.ts	251	Cannot skip DRAFT -> SENT	skipped	skipped
+invoices/invoice-lifecycle.spec.ts	262	Cannot transition PAID -> VOID	skipped	skipped
+navigation/command-palette.spec.ts	41	Cmd+K opens palette	expected	passed
+navigation/command-palette.spec.ts	46	Search navigates to page	expected	passed
+navigation/command-palette.spec.ts	58	Escape closes palette	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Home page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	My work page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Diary page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Matters page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Clients page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	FICA & compliance page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Fee notes page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Profitability page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Reports page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Team page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Notifications page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	33	Settings page loads	expected	passed
+navigation/sidebar-navigation.spec.ts	75	six zones in order with 28 items in order	expected	passed
+notifications/notification-bell.spec.ts	68	Bell shows unread count	expected	passed
+notifications/notification-bell.spec.ts	76	Click bell opens dropdown	expected	passed
+notifications/notification-bell.spec.ts	89	Mark notification as read	expected	passed
+notifications/notification-bell.spec.ts	110	Navigate to notifications page	expected	passed
+notifications/notification-bell.spec.ts	123	Mark all as read	expected	passed
+notifications/notification-preferences.spec.ts	91	View preference categories	expected	passed
+notifications/notification-preferences.spec.ts	106	Enable email for a category	expected	passed
+notifications/notification-preferences.spec.ts	111	Disable email for a category	expected	passed
+portal/portal-data-isolation.spec.ts	36	Kgosi sees only Kgosi matters via API	skipped	skipped
+portal/portal-data-isolation.spec.ts	48	Portal JWT blocked from org API	skipped	skipped
+projects/project-budget.spec.ts	83	1. View budget tab on project	expected	passed
+projects/project-budget.spec.ts	93	2. Set project budget via API and verify in UI	expected	passed
+projects/project-budget.spec.ts	123	3. Budget shows usage after logging time	expected	passed
+projects/project-crud.spec.ts	38	1. Create project with customer	expected	passed
+projects/project-crud.spec.ts	73	2. Create project without customer (internal)	expected	passed
+projects/project-crud.spec.ts	96	3. Edit project name	expected	passed
+projects/project-crud.spec.ts	124	4. Project detail tabs load	expected	passed
+projects/project-crud.spec.ts	159	4b. Legacy expenses URL redirects to the Disbursements tab	expected	passed
+projects/project-crud.spec.ts	180	5. Archive project (Complete then Archive)	expected	passed
+projects/project-crud.spec.ts	233	6. Archived project blocks task creation	expected	passed
+projects/project-crud.spec.ts	247	7. Archived project blocks time logging via API	expected	passed
+projects/project-tasks.spec.ts	105	1. Create task on project via UI	expected	passed
+projects/project-tasks.spec.ts	135	2. Edit task title via API and verify in UI	expected	passed
+projects/project-tasks.spec.ts	163	3. Change task status: OPEN -> IN_PROGRESS	expected	passed
+projects/project-tasks.spec.ts	189	4. Change task status: IN_PROGRESS -> DONE	expected	passed
+projects/project-tasks.spec.ts	204	5. Reopen completed task	expected	passed
+projects/project-tasks.spec.ts	216	6. Cancel task	expected	passed
+projects/project-tasks.spec.ts	230	7. Assign member to task	expected	passed
+projects/project-tasks.spec.ts	277	8. Comment notification deep-links to the comment in the task sheet (G88-M6)	expected	passed
+projects/project-tasks.spec.ts	322	9. Matter comment notification deep-links to the highlighted comment on the Comments tab (B7)	expected	passed
+projects/project-time.spec.ts	90	1. Log time on task via UI	expected	passed
+projects/project-time.spec.ts	121	2. Edit time entry via API and verify	expected	passed
+projects/project-time.spec.ts	149	3. Delete time entry via API and verify	expected	passed
+projects/project-time.spec.ts	167	4. Time entry captures rate snapshot	expected	passed
+projects/project-time.spec.ts	192	5. Billable flag defaults to checked in UI	expected	passed
+projects/project-time.spec.ts	206	6. Mark time entry non-billable	expected	passed
+projects/project-time.spec.ts	240	7. My Work lists today's time entries	expected	passed
+settings/custom-fields.spec.ts	34	View custom field definitions	expected	passed
+settings/custom-fields.spec.ts	43	Create text custom field	expected	passed
+settings/custom-fields.spec.ts	64	Custom field appears on entity form	expected	passed
+settings/custom-fields.spec.ts	88	Custom field value persists	expected	passed
+settings/data-protection-settings.spec.ts	93	View data protection tab	expected	passed
+settings/data-protection-settings.spec.ts	99	Set jurisdiction to South Africa	expected	passed
+settings/data-protection-settings.spec.ts	108	Set information officer	expected	passed
+settings/data-protection-settings.spec.ts	126	View retention policies	expected	passed
+settings/data-protection-settings.spec.ts	133	Edit retention period	expected	passed
+settings/data-protection-settings.spec.ts	150	View processing register	expected	passed
+settings/data-protection-settings.spec.ts	156	Generate PAIA manual	expected	passed
+settings/data-protection-settings.spec.ts	169	View DSAR list	expected	passed
+settings/data-protection-settings.spec.ts	179	Create DSAR	expected	passed
+settings/general-settings.spec.ts	60	View org name and currency	expected	passed
+settings/general-settings.spec.ts	65	Update brand colour	unexpected	failed
+settings/general-settings.spec.ts	78	Update document footer	expected	passed
+settings/packs.spec.ts	105	Seeded legal-za pack is installed and its templates are present	expected	passed
+settings/packs.spec.ts	138	Uninstall blocked when template edited, edit block cleared after revert	expected	passed
+settings/rate-cards.spec.ts	7	Rates page loads without crash (AvatarCircle regression)	expected	passed
+settings/rate-cards.spec.ts	21	Rates page loads for Admin	expected	passed
+settings/rate-cards.spec.ts	32	Member sees permission denied on rates	expected	passed
+settings/roles-capabilities.spec.ts	31	View roles list	expected	passed
+settings/roles-capabilities.spec.ts	39	View system role cards and the capability reference	expected	passed
+settings/roles-capabilities.spec.ts	53	Create, edit and delete a custom role	skipped	skipped
+settings/tags.spec.ts	33	View tags	expected	passed
+settings/tags.spec.ts	39	Create tag	expected	passed
+settings/tags.spec.ts	57	Apply tag to entity	expected	passed
+settings/tax-settings.spec.ts	34	View tax rates	expected	passed
+settings/tax-settings.spec.ts	44	Create tax rate	expected	passed
+settings/tax-settings.spec.ts	61	Tax applies to invoices	expected	passed
+smoke.spec.ts	4	mock login redirects to dashboard	expected	passed
+smoke.spec.ts	11	owner can create a project	expected	passed
+smoke.spec.ts	27	member cannot access admin settings	expected	passed

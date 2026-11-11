@@ -1,0 +1,24 @@
+===== D39 transfer probe G1 2026-11-11T20:57:55+0200 today(SA)=2026-11-11 tenant=tenant_7d218705360b TA=656633a6-639f-45e9-b4ba-aad909812782
+tokens alice=ok bob=ok
+client A=d0d7649a-8a1b-4ffd-a491-df27942537f7 (Acme Corp) matter A=1537ad8a-7edd-45d1-8e95-8b220bd46295 (Website Redesign)
+client B=fb4da198-4a03-4102-9b30-c2b76c394b2b (Apex Holdings mwch5m1q0874) matter B=c582c32a-301b-4e89-9301-25fa7313fe2f (Apex Shareholder Agreement mwch5m1q0874 / projects.customer_id=fb4da198-4a03-4102-9b30-c2b76c394b2b) portal contact=apex.holdings.mwch5m1q0874@example.com
+unlinked target matter for B=1537ad8a-7edd-45d1-8e95-8b220bd46295 (Website Redesign / client Acme Corp); customer_projects links to B=0
+portal jwt B=ok
+BEFORE: firm ledger A=1907.00 B=0 | portal read model B=0 | portal API /portal/trust/summary B=0
+(4a) transfer A->B, target matter not linked to B -> http=400
+{"title":"Matter not linked to client","status":400,"detail":"Matter Website Redesign is not linked to client Apex Holdings mwch5m1q0874","code":"MATTER_NOT_LINKED_TO_CLIENT","matterId":"1537ad8a-7edd-45d1-8e95-8b220bd46295"}
+trust_transactions count before=13 after-refusal=13; GATE/D39/UNLINKED rows=0
+(4b) transfer A/matterA -> B/matterB R250 -> http=201
+{"id":"dd7c5993-06a0-44d5-9a94-225eb3f2d4fe","transactionType":"TRANSFER_OUT","status":"RECORDED","amount":250.00,"customerId":null,"matterId":"1537ad8a-7edd-45d1-8e95-8b220bd46295","projectId":null}
+{"id":"95e6ded9-560b-4ec0-b969-ba63e96d04ca","transactionType":"TRANSFER_IN","status":"RECORDED","amount":250.00,"customerId":null,"matterId":"c582c32a-301b-4e89-9301-25fa7313fe2f","projectId":null}
+-- DB (read-only) firm rows for the transfer (type|amount|status|customer|project):
+TRANSFER_OUT|250.00|RECORDED|customer_id=d0d7649a-8a1b-4ffd-a491-df27942537f7 (Acme Corp)|project_id=1537ad8a-7edd-45d1-8e95-8b220bd46295 (Website Redesign)|project.customer_id=d0d7649a-8a1b-4ffd-a491-df27942537f7
+TRANSFER_IN|250.00|RECORDED|customer_id=fb4da198-4a03-4102-9b30-c2b76c394b2b (Apex Holdings mwch5m1q0874)|project_id=c582c32a-301b-4e89-9301-25fa7313fe2f (Apex Shareholder Agreement mwch5m1q0874)|project.customer_id=fb4da198-4a03-4102-9b30-c2b76c394b2b
+-- legs on their own client's matter: 2/2
+-- DB (read-only) portal.portal_trust_transaction rows for the transfer:
+TRANSFER_IN|250.00|customer=fb4da198-4a03-4102-9b30-c2b76c394b2b|matter=c582c32a-301b-4e89-9301-25fa7313fe2f|running=250.00
+TRANSFER_OUT|250.00|customer=d0d7649a-8a1b-4ffd-a491-df27942537f7|matter=1537ad8a-7edd-45d1-8e95-8b220bd46295|running=1657.00
+{"matterName":"Apex Shareholder Agreement mwch5m1q0874","matterId":"c582c32a-301b-4e89-9301-25fa7313fe2f","currentBalance":250.00}
+AFTER: firm ledger A=1657.00 B=250.00 | portal read model B=250.00 | portal API B=250.00
+deltas: A=-250.00 B-firm=250.00 B-portal-API=250.00
+portal API B matter txns GATE/D39: [{"transactionType":"TRANSFER_IN","amount":250.00,"runningBalance":250.00}]

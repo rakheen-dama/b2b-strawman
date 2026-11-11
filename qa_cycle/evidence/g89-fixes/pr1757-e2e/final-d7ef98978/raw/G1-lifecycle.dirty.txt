@@ -1,0 +1,15 @@
+?? documentation/screenshots/legal-vertical/bank-reconciliation-upload-step.png
+?? documentation/screenshots/legal-vertical/client-ledger-balance.png
+?? documentation/screenshots/legal-vertical/conflict-check-adverse-match.png
+?? documentation/screenshots/legal-vertical/conflict-check-clear-result.png
+?? documentation/screenshots/legal-vertical/court-calendar-scheduled.png
+?? documentation/screenshots/legal-vertical/fee-note-tariff-disbursement.png
+?? documentation/screenshots/legal-vertical/interest-run-lpff-split.png
+?? documentation/screenshots/legal-vertical/investment-s86-selection.png
+?? documentation/screenshots/legal-vertical/litigation-template-action-items.png
+?? documentation/screenshots/legal-vertical/prescription-tracker-days.png
+?? documentation/screenshots/legal-vertical/profitability-per-matter.png
+?? documentation/screenshots/legal-vertical/role-comparison-carol-alice.png
+?? documentation/screenshots/legal-vertical/trust-dashboard-overview.png
+?? documentation/screenshots/legal-vertical/trust-deposit-form.png
+?? documentation/screenshots/legal-vertical/trust-fee-transfer.png

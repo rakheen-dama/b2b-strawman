@@ -1,0 +1,33 @@
+===== investment probe G1 2026-11-11T20:58:03+0200 today(SA)=2026-11-11 tenant=tenant_7d218705360b TA=656633a6-639f-45e9-b4ba-aad909812782 client=d0d7649a-8a1b-4ffd-a491-df27942537f7 matter=1537ad8a-7edd-45d1-8e95-8b220bd46295
+tokens alice=ok bob=ok
+approval mode: require_dual_approval=false threshold=NULL
+BEFORE: trust card={"cashbookBalance":292156.98,"clientLedgerTotal":292182.50,"difference":-25.52,"pendingApprovalCount":3} | firm ledger A=1657.00 | matter trust-balance={"matterId":"1537ad8a-7edd-45d1-8e95-8b220bd46295","balance":1657.00,"currency":"ZAR"}
+(5a) place INV1 (GATE-F87-REJ, R100) -> http=201 id=1b0e3fe2-cb8b-43b2-a75f-8253b9b2ae29 placement=0af6c530-e54a-432f-9c90-31e02b7d46c4
+{"id":"1b0e3fe2-cb8b-43b2-a75f-8253b9b2ae29","status":"ACTIVE","principal":100.00,"depositTransactionId":"0af6c530-e54a-432f-9c90-31e02b7d46c4"}
+   DB: ACTIVE|principal=100.00|placement=0af6c530-e54a-432f-9c90-31e02b7d46c4 PAYMENT AWAITING_APPROVAL project=1537ad8a-7edd-45d1-8e95-8b220bd46295|withdrawal_tx=NULL
+   trust card after place: {"cashbookBalance":292156.98,"clientLedgerTotal":292182.50,"difference":-25.52,"pendingApprovalCount":4}
+(5b) withdraw INV1 while placement AWAITING_APPROVAL -> http=400
+{"title":"Cannot withdraw investment","status":400,"detail":"The investment's placement payment must be approved before the investment can be withdrawn (placement payment status: AWAITING_APPROVAL)"}
+   DB: ACTIVE|principal=100.00|placement=0af6c530-e54a-432f-9c90-31e02b7d46c4 PAYMENT AWAITING_APPROVAL project=1537ad8a-7edd-45d1-8e95-8b220bd46295|withdrawal_tx=NULL
+(5c) reject placement 0af6c530-e54a-432f-9c90-31e02b7d46c4 (Bob) -> http=200
+{"id":"0af6c530-e54a-432f-9c90-31e02b7d46c4","transactionType":"PAYMENT","status":"REJECTED","rejectionReason":"PR 1757 final gate: reject the placement"}
+   DB: CANCELLED|principal=100.00|placement=0af6c530-e54a-432f-9c90-31e02b7d46c4 PAYMENT REJECTED project=1537ad8a-7edd-45d1-8e95-8b220bd46295|withdrawal_tx=NULL
+   register (default, no status filter): http=200 rows=2 rows-with-accountNumber=GATE-F87-REJ: 0 statuses={"ACTIVE":2} summary={"totalPrincipal":230000.00,"totalInterestEarned":0.00,"activeCount":2,"totalCount":2}
+   register (status=CANCELLED):        http=200 rows=1 rows-with-accountNumber=GATE-F87-REJ: 1 statuses={"CANCELLED":1} summary={"totalPrincipal":100.00,"totalInterestEarned":0.00,"activeCount":0,"totalCount":1}
+   AFTER REJECT: trust card={"cashbookBalance":292156.98,"clientLedgerTotal":292182.50,"difference":-25.52,"pendingApprovalCount":3} | firm ledger A=1657.00 | matter trust-balance={"matterId":"1537ad8a-7edd-45d1-8e95-8b220bd46295","balance":1657.00,"currency":"ZAR"}
+   trust card unchanged vs BEFORE: YES | ledger unchanged: YES | matter balance unchanged: YES
+   GET investments list: http=200 INV1 status=CANCELLED
+(5d) place INV2 (GATE-F87-APR, R120) -> http=201 id=c1be6ac6-c426-4332-aa4e-0459915ce633 placement=11a15218-f333-4498-b80c-53185987d986
+   approve placement (Bob) -> http=200 {"status":"APPROVED","approvedBy":"6ba53581-78e4-4707-abc8-a95f8de831ea","secondApprovedBy":null}
+   DB: ACTIVE|principal=120.00|placement=11a15218-f333-4498-b80c-53185987d986 PAYMENT APPROVED project=1537ad8a-7edd-45d1-8e95-8b220bd46295|withdrawal_tx=NULL
+   firm ledger A after approval=1537.00 (before=1657.00)
+   reverse approved placement 11a15218-f333-4498-b80c-53185987d986 -> http=400
+{"title":"Cannot reverse transaction","status":400,"detail":"This payment placed a trust investment (ACTIVE). Withdraw the investment instead of reversing its placement payment."}
+   reversal rows for the placement=0 placement status=APPROVED
+(5e) withdraw INV2 -> http=200
+{"id":"c1be6ac6-c426-4332-aa4e-0459915ce633","status":"WITHDRAWN","withdrawalAmount":120.00,"withdrawalDate":"2026-11-11","withdrawalTransactionId":"9fa297e7-33e0-4451-ba57-8e813ff30886"}
+   DB: WITHDRAWN|principal=120.00|placement=11a15218-f333-4498-b80c-53185987d986 PAYMENT APPROVED project=1537ad8a-7edd-45d1-8e95-8b220bd46295|withdrawal_tx=9fa297e7-33e0-4451-ba57-8e813ff30886
+   withdrawal DEPOSIT rows (reference INV-WD-Gate Bank-GATE-F87-APR): 1 rows; DEPOSIT 120.00 RECORDED project=1537ad8a-7edd-45d1-8e95-8b220bd46295
+   FINAL: trust card={"cashbookBalance":292156.98,"clientLedgerTotal":292182.50,"difference":-25.52,"pendingApprovalCount":3} | firm ledger A=1657.00 (before=1657.00, after approval=1537.00) | matter trust-balance={"matterId":"1537ad8a-7edd-45d1-8e95-8b220bd46295","balance":1657.00,"currency":"ZAR"}
+   matter credited once: ledger back to BEFORE=YES
+   register (default) INV2: http=200 rows=3 rows-with-accountNumber=GATE-F87-APR: 1 statuses={"ACTIVE":2,"WITHDRAWN":1} summary={"totalPrincipal":230120.00,"totalInterestEarned":0.00,"activeCount":2,"totalCount":3}

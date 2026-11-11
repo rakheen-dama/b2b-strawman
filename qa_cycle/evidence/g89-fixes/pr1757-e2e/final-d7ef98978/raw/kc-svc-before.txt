@@ -1,0 +1,4 @@
+KC svc stop 2026-11-11T20:48:18+0200 20:45:37 SAST from main checkout: svc.sh stop frontend portal gateway backend -> all four stopped; ports 8080/8443/3000/3002 free
+main checkout HEAD bd1a9518b status:
+?? .arch-context-phase90-data.md
+?? .arch-rulings-phase90.md

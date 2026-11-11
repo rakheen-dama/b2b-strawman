@@ -1,0 +1,38 @@
+===== F28/F36 probe G1 2026-11-11T20:57:47+0200 today(SA)=2026-11-11 tenant=tenant_7d218705360b
+token alice=ok
+trust accounts=Mathebula & Partners Trust Account=656633a6-639f-45e9-b4ba-aad909812782
+using TA=656633a6-639f-45e9-b4ba-aad909812782
+client=d0d7649a-8a1b-4ffd-a491-df27942537f7 (Acme Corp)
+client matter=1537ad8a-7edd-45d1-8e95-8b220bd46295 (Website Redesign; projects.customer_id=d0d7649a-8a1b-4ffd-a491-df27942537f7)
+unlinked matter=1872e736-b271-47ba-96bd-6e33a134b611 (Apex Holdings — Shareholders' Agreement Review mwcha9270fcb / client Apex Holdings mwcha9270fcb); customer_projects link to client=0
+(2a) deposit, no matterId -> http=400
+{"title":"Matter required","status":400,"detail":"A matter is required for client trust transactions","code":"MATTER_REQUIRED","reason":null}
+(2b) deposit, unlinked matterId -> http=400
+{"title":"Matter not linked to client","status":400,"detail":"Matter Apex Holdings — Shareholders' Agreement Review mwcha9270fcb is not linked to client Acme Corp","code":"MATTER_NOT_LINKED_TO_CLIENT","matterId":"1872e736-b271-47ba-96bd-6e33a134b611"}
+trust_transactions count before=11 after-refusals=11; GATE/NOMATTER|GATE/UNLINKED rows=0
+(3) deposit, client matter -> http=201 id=018ebc0a-33d2-4f55-a095-cb8f3d37d899
+{"id":"018ebc0a-33d2-4f55-a095-cb8f3d37d899","transactionType":"DEPOSIT","status":"RECORDED","amount":1757.00,"projectId":null,"matterId":"1537ad8a-7edd-45d1-8e95-8b220bd46295","customerId":null,"clientId":"d0d7649a-8a1b-4ffd-a491-df27942537f7","reference":"GATE/DEP/1757"}
+REF150 length=150
+(4) deposit, 150-char reference -> http=201 id=de174243-cbdf-44f3-99bf-a02049e1c7a7
+{"id":"de174243-cbdf-44f3-99bf-a02049e1c7a7","transactionType":"DEPOSIT","status":"RECORDED","amount":150.00,"refLen":150}
+-- DB (read-only) firm trust_transactions for these ids:
+018ebc0a-33d2-4f55-a095-cb8f3d37d899|DEPOSIT|1757.00|RECORDED|1537ad8a-7edd-45d1-8e95-8b220bd46295|reflen=13
+de174243-cbdf-44f3-99bf-a02049e1c7a7|DEPOSIT|150.00|RECORDED|1537ad8a-7edd-45d1-8e95-8b220bd46295|reflen=150
+-- DB (read-only) portal.portal_trust_transaction for these ids:
+018ebc0a-33d2-4f55-a095-cb8f3d37d899|DEPOSIT|1757.00|1757.00|matter=1537ad8a-7edd-45d1-8e95-8b220bd46295|reflen=13|full-match=false
+de174243-cbdf-44f3-99bf-a02049e1c7a7|DEPOSIT|150.00|1907.00|matter=1537ad8a-7edd-45d1-8e95-8b220bd46295|reflen=150|full-match=true
+-- DB (read-only) portal.portal_trust_balance for the client:
+1537ad8a-7edd-45d1-8e95-8b220bd46295|1907.00|2026-11-11 18:57:48.935834+00
+portal balance sum=1907.00
+-- firm client ledger (API) per trust account:
+  account 656633a6-639f-45e9-b4ba-aad909812782 -> http=200 balance=1907.00
+firm client ledger sum=1907.00
+-- DB (read-only) firm unmattered rows for the client: 0
+-- portal API (magic-link JWT for the client contact):
+contact=contact@acme.example.com
+portal jwt=ok
+{"matterName":"Website Redesign","matterId":"1537ad8a-7edd-45d1-8e95-8b220bd46295","currentBalance":1907.00}
+portal API summary sum=1907.00
+portal API matter txns containing GATE/: [{"transactionType":"DEPOSIT","amount":150.00,"runningBalance":1907.00,"refLen":150},{"transactionType":"DEPOSIT","amount":1757.00,"runningBalance":1757.00,"refLen":13}]
+-- backend log scan:
+  'value too long'=0 'Portal trust sync failed'=0 MATTER_REQUIRED/NOT_LINKED log lines=0

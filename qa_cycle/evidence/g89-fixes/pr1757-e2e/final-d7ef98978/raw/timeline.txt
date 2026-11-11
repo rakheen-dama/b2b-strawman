@@ -1,0 +1,49 @@
+HEAD d7ef98978b15fc4a25261aeccdfbd77c712a2500 2026-11-11T20:48:19+0200 dirty=0 E2E_VISUAL=unset load=40.22 26.46 21.54
+pnpm-install start 2026-11-11T20:48:19+0200 node=v20.11.1
+pnpm-install rc=0 end 2026-11-11T20:48:28+0200
+portal-vitest start 2026-11-11T20:48:28+0200 node=v20.11.1 envnode=v20.11.1
+portal-vitest rc=0 end 2026-11-11T20:48:41+0200
+dirty after install+vitest: 0
+before-G1 no foreign e2e stack 2026-11-11T20:48:41+0200
+stack-G1 launch 2026-11-11T20:48:41+0200
+stack-G1 rc=0 end 2026-11-11T20:50:49+0200
+G1-lifecycle start 2026-11-11T20:50:51+0200 node=v20.11.1 envnode=v20.11.1
+G1-lifecycle rc=1 end 2026-11-11T20:54:27+0200
+G1-lifecycle load-after=61.84 60.08 41.51
+G1-depth-ii start 2026-11-11T20:54:28+0200 node=v20.11.1 envnode=v20.11.1
+G1-depth-ii rc=0 end 2026-11-11T20:56:31+0200
+G1-depth-ii load-after=36.91 51.06 40.45
+G1-default start 2026-11-11T20:56:33+0200 node=v20.11.1 envnode=v20.11.1
+G1-default rc=1 end 2026-11-11T20:57:47+0200
+G1-default load-after=68.00 59.18 44.53
+G1 f28-probe start 2026-11-11T20:57:47+0200
+G1 f28-probe end 2026-11-11T20:57:55+0200
+G1 d39-probe start 2026-11-11T20:57:55+0200
+G1 d39-probe end 2026-11-11T20:58:03+0200
+G1 inv-probe start 2026-11-11T20:58:03+0200
+G1 inv-probe end 2026-11-11T20:58:05+0200
+G1-ALLDONE 2026-11-11T20:58:05+0200
+R1 HEAD d7ef98978b15fc4a25261aeccdfbd77c712a2500 2026-11-11T20:59:37+0200 dirty=0 E2E_VISUAL=unset load=40.49 52.44 43.69
+before-R1 no foreign e2e stack 2026-11-11T20:59:37+0200
+stack-R1 launch 2026-11-11T20:59:37+0200
+stack-R1 rc=0 end 2026-11-11T21:00:20+0200
+R1-lifecycle start 2026-11-11T21:00:22+0200 node=v20.11.1 envnode=v20.11.1
+R1-lifecycle rc=0 end 2026-11-11T21:03:38+0200
+R1-lifecycle load-after=13.76 33.31 37.55
+R1-default start 2026-11-11T21:03:40+0200 node=v20.11.1 envnode=v20.11.1
+R1-default rc=0 end 2026-11-11T21:04:56+0200
+R1-default load-after=22.26 31.48 36.47
+R1-ALLDONE 2026-11-11T21:04:57+0200
+G2 HEAD d7ef98978b15fc4a25261aeccdfbd77c712a2500 2026-11-11T21:05:16+0200 dirty=0 E2E_VISUAL=unset load=19.66 30.35 35.95
+before-G2 no foreign e2e stack 2026-11-11T21:05:17+0200
+stack-G2 launch 2026-11-11T21:05:17+0200
+stack-G2 rc=0 end 2026-11-11T21:05:58+0200
+G2-90day start 2026-11-11T21:06:00+0200 node=v20.11.1 envnode=v20.11.1
+G2-90day rc=0 end 2026-11-11T21:06:29+0200
+G2-responsive start 2026-11-11T21:11:59+0200 node=v20.11.1 envnode=v20.11.1
+G2-responsive rc=0 end 2026-11-11T21:12:15+0200
+G2-isolation start 2026-11-11T21:17:51+0200 node=v20.11.1 envnode=v20.11.1
+G2-isolation rc=0 end 2026-11-11T21:17:53+0200
+G2-login-bare start 2026-11-11T21:23:38+0200 node=v20.11.1 envnode=v20.11.1
+G2-login-bare rc=0 end 2026-11-11T21:23:57+0200
+G2-ALLDONE 2026-11-11T21:23:57+0200

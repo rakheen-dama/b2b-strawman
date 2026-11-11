@@ -1,0 +1,1 @@
+{"detail":"The investment's placement payment must be approved before the investment can be withdrawn (placement payment status: AWAITING_APPROVAL)","instance":"/api/trust-investments/1b0e3fe2-cb8b-43b2-a75f-8253b9b2ae29/withdraw","status":400,"title":"Cannot withdraw investment"}

@@ -54,6 +54,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D39 | (2026-11-11) Transfers: **add a required target matter** linked to the target client; TRANSFER_OUT posts on the source matter and TRANSFER_IN on the target matter. CodeRabbit Major plus a reviewer note on #1757. |
 | D40 | (2026-11-11) **G89-F86 is MEDIUM** (pre-existing): reversing a placement whose investment is still ACTIVE leaves a phantom ACTIVE investment on the s86 register and in the S35 pack. **Fold into #1757**: refuse reversal of any placement payment that has an investment (withdraw first). |
 | D41 | (2026-11-11) **G89-F87 is MEDIUM** (pre-existing, F86 class): rejecting an AWAITING_APPROVAL placement payment leaves its investment ACTIVE on the s86 register and in the S35 pack. **Fold into #1757**. Orchestrator design: on reject, the investment becomes `CANCELLED` (tenant V15 widens `chk_trust_invest_status`), and readers exclude or label it. |
+| D42 | (2026-11-11) Amend legal-za step 9.1 under D38: create the estate matter from the Moroka client record, so the 12.2 matter picker lists it. Raised by CodeRabbit on #1757. |
+| D43 | (2026-11-11) **G89-F88 is LOW, backlog**: a fee transfer re-checks the client-matter link only at record time, not at approval. A join-table unlink during a pending approval could still debit on that matter. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -439,3 +441,8 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - **G89-F86** found by the review → D40. Verify @9a5168491 stopped (superseded). **Fix round 2**: F86 plus a scroll fix for the Transfer dialog, which now has 9 fields.
 - 2026-11-11 ~20:35 — **PR #1757 fix round 2** @2266744d8: F86 (refuse reversal of any placement payment that has an investment); Transfer dialog scroll. 2× bound APPROVE @2266744d8.
   - The backend reviewer found **G89-F87** → D41. Verify @2266744d8 stopped (superseded). **Fix round 3** launched; it needs tenant **V15**.
+- 2026-11-11 ~21:25 — **PR #1757 final gates.** Rounds 3 (F87, D41, tenant **V15** CANCELLED) and 4 (test conventions, D42 step 9.1; D43 F88 LOW).
+  - **Full verify @d7ef98978: 6823/0/0/26.** Final head `864af7343` adds tests and docs only; the changed classes and architecture pass 51/0.
+  - 2× bound APPROVE @864af7343.
+  - **Final e2e PASS @d7ef98978** (`pr1757-e2e/final-d7ef98978/`), Flyway 15/6. All observations held: F28 400s and ledger = portal = R 1 907,00; F36; D39 legs on each client's matter; withdrawal refused before approval; reject → CANCELLED and off the register; reversal refused; withdrawal credited once; 0 deadlocks.
+  - First-run flakes at load 60–68 (concurrent verify): 2 with DB proof (F85 time-summary lag at a new site, `day-75-complex:224`, plus a knock-on); `invoice-lifecycle:112` (F73 family); `general-settings:65` (parallel settings tests overwrite each other's saves; new test-flake candidate **G89-F89**, LOW class). All passed on the fresh R1 re-run.

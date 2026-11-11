@@ -1,0 +1,1 @@
+{"detail":"This payment placed a trust investment (ACTIVE). Withdraw the investment instead of reversing its placement payment.","instance":"/api/trust-transactions/11a15218-f333-4498-b80c-53185987d986/reverse","status":400,"title":"Cannot reverse transaction"}

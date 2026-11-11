@@ -1,0 +1,30 @@
+===== Flyway probe G1-end 2026-11-11T20:58:05+0200 tenant=tenant_7d218705360b
+-- global (public.flyway_schema_history), success rows:
+1|1|baseline|true
+2|2|portal contact directory|true
+3|3|portal backfill markers|true
+4|4|portal trust transaction date|true
+5|5|portal strip matter type suffix|true
+6|6|portal trust reference 200|true
+-- tenant (tenant_7d218705360b.flyway_schema_history), success rows:
+1|1|baseline|true
+2|2|add project template work type|true
+3|3|normalise work types|true
+4|4|phase88 demo ready|true
+5|5|phase88 acceptance decline|true
+6|6|phase88 audit customer index|true
+7|7|phase88 letterhead|true
+8|8|phase88 retention comment attachments|true
+9|9|phase88 comment attachments|true
+10|10|phase89 go live|true
+11|11|phase89 comment notification id|true
+12|12|g89 interest matter allocation|true
+13|13|g89 strip matter type suffix|true
+14|14|g89 contains trust data|true
+15|15|g89 trust investment cancelled|true
+-- portal.portal_trust_transaction.reference type:
+description character varying(140)
+reference character varying(200)
+transaction_type character varying(20)
+-- tenant chk_trust_invest_status:
+chk_trust_invest_status CHECK (((status)::text = ANY ((ARRAY['ACTIVE'::character varying, 'MATURED'::character varying, 'WITHDRAWN'::character varying, 'CANCELLED'::character varying])::text[])))

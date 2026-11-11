@@ -1,0 +1,69 @@
+== G1-lifecycle vs early-read/G1-lifecycle  expected=91 unexpected=2 skipped=12 flaky=0 dnr=0  rows prev=105 now=105  diff-lines=40
+75c75
+< day-75-complex.spec.ts	Alice: Create 2nd Commercial matter for Apex (annual returns)	expected	passed
+---
+> day-75-complex.spec.ts	Alice: Create 2nd Commercial matter for Apex (annual returns)	skipped	skipped
+77c77
+< day-75-complex.spec.ts	Alice: Log 360min on Moroka estate matter	expected	passed
+---
+> day-75-complex.spec.ts	Alice: Log 360min on Moroka estate matter	unexpected	failed
+79c79
+< day-75-complex.spec.ts	Alice: Send information request to Moroka (beneficiary details)	expected	passed
+---
+> day-75-complex.spec.ts	Alice: Send information request to Moroka (beneficiary details)	skipped	skipped
+84,87c84,87
+< day-90-review.spec.ts	Alice: Compliance overview page	expected	passed
+< day-90-review.spec.ts	Alice: Fee notes list shows the run's five fee notes	expected	passed
+< day-90-review.spec.ts	Alice: Generate Section 35 Data Pack report	expected	passed
+< day-90-review.spec.ts	Alice: Generate an engagement letter for Sipho's matter	expected	passed
+---
+> day-90-review.spec.ts	Alice: Compliance overview page	skipped	skipped
+> day-90-review.spec.ts	Alice: Fee notes list shows the run's five fee notes	skipped	skipped
+> day-90-review.spec.ts	Alice: Generate Section 35 Data Pack report	skipped	skipped
+> day-90-review.spec.ts	Alice: Generate an engagement letter for Sipho's matter	skipped	skipped
+89,91c89,91
+< day-90-review.spec.ts	Alice: Home shows the owner dashboard	expected	passed
+< day-90-review.spec.ts	Alice: Matters list shows the lifecycle's six matters	expected	passed
+< day-90-review.spec.ts	Alice: Profitability report — revenue, cost and margin columns for this month's matters	expected	passed
+---
+> day-90-review.spec.ts	Alice: Home shows the owner dashboard	skipped	skipped
+> day-90-review.spec.ts	Alice: Matters list shows the lifecycle's six matters	unexpected	failed
+> day-90-review.spec.ts	Alice: Profitability report — revenue, cost and margin columns for this month's matters	skipped	skipped
+93,96c93,96
+< day-90-review.spec.ts	Alice: Sipho's diary shows the POSTPONED motion, its rescheduled SCHEDULED date and the prescription tracker	expected	passed
+< day-90-review.spec.ts	Alice: Trust reports — Client Trust Balances	expected	passed
+< day-90-review.spec.ts	Alice: Trust reports — Investment Register with s86 basis	expected	passed
+< day-90-review.spec.ts	Alice: Trust reports — Receipts & Payments	expected	passed
+---
+> day-90-review.spec.ts	Alice: Sipho's diary shows the POSTPONED motion, its rescheduled SCHEDULED date and the prescription tracker	skipped	skipped
+> day-90-review.spec.ts	Alice: Trust reports — Client Trust Balances	skipped	skipped
+> day-90-review.spec.ts	Alice: Trust reports — Investment Register with s86 basis	skipped	skipped
+> day-90-review.spec.ts	Alice: Trust reports — Receipts & Payments	skipped	skipped
+== G1-depth-ii vs early-read/G1-depth-ii  expected=40 unexpected=0 skipped=4 flaky=0 dnr=0  rows prev=44 now=44  diff-lines=0
+== G1-default vs early-read/G1-default  expected=157 unexpected=2 skipped=20 flaky=0 dnr=0  rows prev=179 now=179  diff-lines=22
+86,89c86,89
+< invoices/invoice-lifecycle.spec.ts	APPROVED -> SENT	expected	passed
+< invoices/invoice-lifecycle.spec.ts	Cannot edit approved invoice	expected	passed
+< invoices/invoice-lifecycle.spec.ts	Cannot skip DRAFT -> SENT	expected	passed
+< invoices/invoice-lifecycle.spec.ts	Cannot transition PAID -> VOID	expected	passed
+---
+> invoices/invoice-lifecycle.spec.ts	APPROVED -> SENT	unexpected	failed
+> invoices/invoice-lifecycle.spec.ts	Cannot edit approved invoice	skipped	skipped
+> invoices/invoice-lifecycle.spec.ts	Cannot skip DRAFT -> SENT	skipped	skipped
+> invoices/invoice-lifecycle.spec.ts	Cannot transition PAID -> VOID	skipped	skipped
+91,93c91,93
+< invoices/invoice-lifecycle.spec.ts	SENT -> PAID (record payment)	expected	passed
+< invoices/invoice-lifecycle.spec.ts	VOID a sent invoice	expected	passed
+< invoices/invoice-lifecycle.spec.ts	VOID releases time entries	expected	passed
+---
+> invoices/invoice-lifecycle.spec.ts	SENT -> PAID (record payment)	skipped	skipped
+> invoices/invoice-lifecycle.spec.ts	VOID a sent invoice	skipped	skipped
+> invoices/invoice-lifecycle.spec.ts	VOID releases time entries	skipped	skipped
+160c160
+< settings/general-settings.spec.ts	Update brand colour	expected	passed
+---
+> settings/general-settings.spec.ts	Update brand colour	unexpected	failed
+== G2-90day vs early-read/G2-90day  expected=13 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=13 now=13  diff-lines=0
+== G2-responsive vs early-read/G2-responsive  expected=21 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=21 now=21  diff-lines=0
+== G2-isolation vs early-read/G2-isolation  expected=2 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=2 now=2  diff-lines=0
+== G2-login-bare vs early-read/G2-login-bare  expected=1 unexpected=0 skipped=0 flaky=0 dnr=0  rows prev=1 now=1  diff-lines=0

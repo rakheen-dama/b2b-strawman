@@ -337,7 +337,7 @@ class InterestMatterAllocationIntegrationTest {
     }
 
     // Two credits on the shared matter with distinct references (reference-based bank matching),
-    // each within the portal read-model's reference varchar(100)
+    // each within the portal read-model's reference varchar(200) (global V6, G89-F36)
     var references =
         allocations.stream()
             .map(a -> transaction(a.lines().getFirst().trustTransactionId()).getReference())

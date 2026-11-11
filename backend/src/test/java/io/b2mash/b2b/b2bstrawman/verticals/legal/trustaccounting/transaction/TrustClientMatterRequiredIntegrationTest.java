@@ -199,6 +199,55 @@ class TrustClientMatterRequiredIntegrationTest {
         .andExpect(jsonPath("$.detail").value(MATTER_REQUIRED));
   }
 
+  /**
+   * PR #1757 review (CodeRabbit): the fee transfer's matter comes from the fee note, and it must
+   * still be a matter of the client when the transfer is recorded — not only non-null.
+   */
+  @Test
+  void feeTransfer_feeNoteMatterNoLongerLinkedToClient_rejected400() throws Exception {
+    UUID client = newClient("Unlinked Fee Note Client");
+    UUID matter = newMatter(client, "Unlinked Fee Note Matter");
+    postTrust("deposit", depositBody(client, matter, "1000.00", "TCMR-DEP-FTUL"))
+        .andExpect(status().isCreated());
+    UUID invoiceId = sentFeeNoteWithoutMatterLines(client, "100.00");
+    as(
+        () ->
+            transactionTemplate.execute(
+                tx -> {
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoice_lines (id, invoice_id, project_id, line_type,
+                              description, quantity, unit_price, amount, sort_order, tax_exempt,
+                              created_at, updated_at)
+                          VALUES (gen_random_uuid(), :invoiceId, :projectId, 'TIME',
+                              'Legal services', 1, 100.00, 100.00, 0, false, now(), now())
+                          """)
+                      .setParameter("invoiceId", invoiceId)
+                      .setParameter("projectId", matter)
+                      .executeUpdate();
+                  // The matter is then unlinked from the client
+                  entityManager
+                      .createNativeQuery("UPDATE projects SET customer_id = NULL WHERE id = :id")
+                      .setParameter("id", matter)
+                      .executeUpdate();
+                  return entityManager
+                      .createNativeQuery("DELETE FROM customer_projects WHERE project_id = :id")
+                      .setParameter("id", matter)
+                      .executeUpdate();
+                }));
+
+    postTrust(
+            "fee-transfer",
+            """
+            {"clientId": "%s", "invoiceId": "%s", "amount": 100.00, "reference": "TCMR-FT-UL"}
+            """
+                .formatted(client, invoiceId))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Matter not linked to client"))
+        .andExpect(jsonPath("$.code").value("MATTER_NOT_LINKED_TO_CLIENT"));
+  }
+
   @Test
   void deposit_matterNotLinkedToClient_rejected400() throws Exception {
     UUID client = newClient("Unlinked Matter Client");

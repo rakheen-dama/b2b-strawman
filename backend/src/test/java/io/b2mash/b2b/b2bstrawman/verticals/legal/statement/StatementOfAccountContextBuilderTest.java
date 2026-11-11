@@ -811,10 +811,21 @@ class StatementOfAccountContextBuilderTest {
             LocalDate.of(2026, 4, 9),
             "POSTED",
             BigDecimal.ZERO);
+    var refund =
+        new ClientLedgerService.LedgerStatementLine(
+            UUID.randomUUID(),
+            "REFUND",
+            new BigDecimal("100.00"),
+            "REF-002",
+            "Refund to client",
+            LocalDate.of(2026, 4, 10),
+            "POSTED",
+            BigDecimal.ZERO);
     when(clientLedgerService.getClientLedgerStatement(
             customerId, trustAccountId, periodStart, periodEnd))
         .thenReturn(
-            new LedgerStatementResponse(BigDecimal.ZERO, BigDecimal.ZERO, List.of(dep, pay)));
+            new LedgerStatementResponse(
+                BigDecimal.ZERO, BigDecimal.ZERO, List.of(dep, pay, refund)));
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
@@ -857,14 +868,19 @@ class StatementOfAccountContextBuilderTest {
         // template keys `transactionDate` and `transactionType`. The previous TrustTxDto used
         // `date` / `type`, so each row's date and type cells rendered as empty <td></td> blocks
         // even when the data was populated. Asserting the rendered date strings (as formatted
-        // by VariableFormatter in the legal-za locale: "d MMMM yyyy") and the literal PAYMENT
-        // type pin the column-key alignment so the regression cannot return silently.
+        // by VariableFormatter in the legal-za locale: "d MMMM yyyy") and the payment type
+        // label pin the column-key alignment so the regression cannot return silently.
         .as("Render must include the trust deposit transactionDate (column key alignment)")
         .contains("7 April 2026")
         .as("Render must include the trust payment transactionDate (column key alignment)")
         .contains("9 April 2026")
-        .as("Render must include the trust payment transactionType (column key alignment)")
-        .contains("PAYMENT");
+        // G89 W2-c3: the client-facing Type column prints the portal trust labels, never the
+        // stored enum ("PAYMENT" / "REFUND").
+        .as("W2-c3: the Payments Type column prints the client-facing label")
+        .contains("<td>Payment</td>")
+        .contains("<td>Refund</td>")
+        .doesNotContain("<td>PAYMENT</td>")
+        .doesNotContain("<td>REFUND</td>");
   }
 
   /**
@@ -927,6 +943,9 @@ class StatementOfAccountContextBuilderTest {
         .as("Payment row must expose transactionType (template column key) — not `type`.")
         .containsKey("transactionType");
     assertThat(payments.get(0).get("transactionType")).isEqualTo("PAYMENT");
+    // G89 W2-c3: the label the SoA Type column binds, beside the raw type.
+    assertThat(deposits.get(0)).containsEntry("transactionTypeLabel", "Deposit");
+    assertThat(payments.get(0)).containsEntry("transactionTypeLabel", "Payment");
   }
 
   // ---------- GAP-L-95: VAT applied on fees aggregate ----------

@@ -17,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -40,6 +41,35 @@ import org.springframework.stereotype.Component;
 public class PortalDigestContentAssembler {
 
   private static final Logger log = LoggerFactory.getLogger(PortalDigestContentAssembler.class);
+
+  /**
+   * G89 W2-c2: client-facing fee-note status labels for the digest's "Recent fee notes" rows. Same
+   * copy as the portal fee-note badge ({@code portal/components/invoice-status-badge.tsx}
+   * INVOICE_STATUS_LABELS) the digest links to, so the client reads one vocabulary.
+   */
+  private static final Map<String, String> INVOICE_STATUS_LABELS =
+      Map.of(
+          "DRAFT", "Draft",
+          "APPROVED", "Approved",
+          "SENT", "Sent",
+          "PARTIALLY_PAID", "Partially paid",
+          "PAID", "Paid",
+          "VOID", "Void");
+
+  /**
+   * One "Recent fee notes" row as the digest prints it: the status as its client-facing label and
+   * the total in the house money format ({@code "R 5 335,00"}, as the trust-activity email), never
+   * the raw enum or {@code "ZAR 5335.00"}.
+   */
+  public record DigestInvoiceLine(String invoiceNumber, String statusLabel, String totalFormatted) {
+
+    static DigestInvoiceLine of(PortalInvoiceView invoice) {
+      return new DigestInvoiceLine(
+          invoice.invoiceNumber(),
+          invoiceStatusLabel(invoice.status()),
+          PortalEmailNotificationChannel.formatAmount(invoice.total(), invoice.currency()));
+    }
+  }
 
   private final PortalContactRepository portalContactRepository;
   private final PortalReadModelRepository portalReadModelRepository;
@@ -130,7 +160,7 @@ public class PortalDigestContentAssembler {
     Map<String, Object> bundle = new HashMap<>();
     bundle.put("contactName", contact.getDisplayName());
     bundle.put("lookbackDays", lookbackDays);
-    bundle.put("recentInvoices", recentInvoices);
+    bundle.put("recentInvoices", recentInvoices.stream().map(DigestInvoiceLine::of).toList());
     bundle.put("pendingAcceptances", pendingAcceptances);
     bundle.put("pendingRequests", pendingRequests);
     bundle.put("recentTrustTransactions", recentTrustTransactions);
@@ -141,5 +171,21 @@ public class PortalDigestContentAssembler {
     bundle.put("hasTrustActivity", !recentTrustTransactions.isEmpty());
     bundle.put("hasDeadlines", !upcomingDeadlines.isEmpty());
     return bundle;
+  }
+
+  /**
+   * The client-facing label for a fee-note status; an unmapped value falls back to sentence case
+   * ({@code "SOME_STATUS"} → {@code "Some status"}), never the raw enum. Null/blank → empty.
+   */
+  static String invoiceStatusLabel(String status) {
+    if (status == null || status.isBlank()) {
+      return "";
+    }
+    String label = INVOICE_STATUS_LABELS.get(status);
+    if (label != null) {
+      return label;
+    }
+    String text = status.trim().replace('_', ' ').toLowerCase(Locale.ROOT);
+    return Character.toUpperCase(text.charAt(0)) + text.substring(1);
   }
 }

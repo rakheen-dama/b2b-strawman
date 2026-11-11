@@ -485,7 +485,7 @@ public class PortalEmailNotificationChannel {
    * separator, comma decimal separator — rather than trusting {@code
    * NumberFormat.getCurrencyInstance(locale)} or {@code DecimalFormatSymbols.getInstance(locale)}.
    */
-  private static String formatAmount(BigDecimal amount, String currencyCode) {
+  static String formatAmount(BigDecimal amount, String currencyCode) {
     if (amount == null) {
       return null;
     }

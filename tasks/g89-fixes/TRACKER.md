@@ -53,6 +53,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | D38 | (2026-11-11) Amend legal-za 12.2 with D36: the R50 000 Moroka deposit names Matter = 'Estate Late Peter Moroka'; the field list drops 'Matter (Optional)'. Ships in PR #1757. |
 | D39 | (2026-11-11) Transfers: **add a required target matter** linked to the target client; TRANSFER_OUT posts on the source matter and TRANSFER_IN on the target matter. CodeRabbit Major plus a reviewer note on #1757. |
 | D40 | (2026-11-11) **G89-F86 is MEDIUM** (pre-existing): reversing a placement whose investment is still ACTIVE leaves a phantom ACTIVE investment on the s86 register and in the S35 pack. **Fold into #1757**: refuse reversal of any placement payment that has an investment (withdraw first). |
+| D41 | (2026-11-11) **G89-F87 is MEDIUM** (pre-existing, F86 class): rejecting an AWAITING_APPROVAL placement payment leaves its investment ACTIVE on the s86 register and in the S35 pack. **Fold into #1757**. Orchestrator design: on reject, the investment becomes `CANCELLED` (tenant V15 widens `chk_trust_invest_status`), and readers exclude or label it. |
 | D12 | F26: pack JSON edit **plus** a tenant data migration (next free after A) and a portal re-sync. F6: fix **every** Attorneys Act / s78 reference (clause, AI skill prompts, marketing, javadoc) to the Legal Practice Act, with founder wording sign-off. |
 
 ## Batches
@@ -436,3 +437,5 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - 2× bound APPROVE @9a5168491. The backend reviewer confirmed the lock order is deadlock-free against the card lock.
   - **Early-read e2e PASS @b63284ef5** (`pr1757-e2e/`): all suites match their baselines with empty diffs. F28 400s observed (`MATTER_REQUIRED`, `MATTER_NOT_LINKED_TO_CLIENT`). Firm ledger = portal read model = portal summary = 1907.00. F36: a 150-char reference reached the portal with no sync failure. Flyway 14/6.
   - **G89-F86** found by the review → D40. Verify @9a5168491 stopped (superseded). **Fix round 2**: F86 plus a scroll fix for the Transfer dialog, which now has 9 fields.
+- 2026-11-11 ~20:35 — **PR #1757 fix round 2** @2266744d8: F86 (refuse reversal of any placement payment that has an investment); Transfer dialog scroll. 2× bound APPROVE @2266744d8.
+  - The backend reviewer found **G89-F87** → D41. Verify @2266744d8 stopped (superseded). **Fix round 3** launched; it needs tenant **V15**.

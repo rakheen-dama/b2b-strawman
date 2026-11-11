@@ -61,7 +61,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 | 6 | G — comments | 634E(1)(2)(3)(5), 634C, **G89-F31** (reproduced) | BE + FE | PR #1751 → `1d2b5d0e3` | **VERIFIED** on KC (F31, 634C, 634E(5), 634E(2) UI). 634E(1) (>50 comments) DEFERRED → exit re-walk (seed 52 comments via the UI with Playwright) |
 | 7 | E — layout, copy, small BE LOWs (+ F50 MEDIUM, F44, F47–F49, F57, F62, F64, F65) | F5, F7, F8, F9, F15, F17, F20, G-D10a, G88-F27 (both meanings), G88-M9, G88-F24, G88-F2, 634A | BE + FE | PR #1752 → `6e510dc23` | **VERIFIED** on KC 2026-11-11 (20 PASS, 2 PARTIAL → F69/F44-exit, 1 DEFERRED → exit): `qa_cycle/evidence/g89-fixes/batch-E/` |
 | 8 | F — tooling, docs, scenarios | F46 fonts, F66, F67 (opt-in compares), embedded-PG workdir, F1, F2, F3, run-phase `timeout -k`, §6 amendments F4/F24/F25/F27, BASELINE.md next-free, dead `extractText(Document)`, file F28–F70 | BE(test infra) + FE + PT + DOC | PR #1753 → `be5b06ecb` | **MERGED** 2026-11-11 (tooling/docs; F46 + opt-in compares observed in the pre-merge e2e gate; F66 observed at the exit re-score if a run lands in 00:00–02:00) |
-| 8b | **I — G89-F71** portal deadline status stale (D29 MEDIUM) | F71 | BE | PR #1754 | gates running (verify, 2 reviews, CodeRabbit, pre-merge e2e) |
+| 8b | **I — G89-F71** portal deadline status stale (D29 MEDIUM) | F71 | BE | PR #1754 → `452ba3d7a` | **VERIFIED** (red→green integration test 8/8; runtime probe on the PR-head e2e stack: stored = API = rule for 8 deadlines, filter groups exact). Staleness over real days is not browser-observable on a single day. |
 | 8c | **J — raw-label copy** (D32) | W2-c2, W2-c3 | BE (+pack bump) | | OPEN (after I) |
 | 8d | **K — Day 0 banking step** (D30, §6 docs) | W1-c1 | DOC | | OPEN |
 | 9 | Exit re-score | fresh-stack suites + KC re-walk | — | | OPEN |
@@ -85,6 +85,7 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
 - [x] G89-F17 — reconciliation list fails to load (E) — VERIFIED 2026-11-11, PR #1752
 - [x] G89-F18 — Section 35 data pack is hollow (C1) — VERIFIED 2026-11-07, PR #1748
 - [x] G89-F50 — Section 35 interest allocation lists only the latest run in the FY (E, D14) — MEDIUM — VERIFIED 2026-11-11, PR #1752
+- [x] G89-F71 — portal deadline status never re-derived (I, D29) — MEDIUM — VERIFIED 2026-11-11, PR #1754
 - [x] G89-F51 — Statements tab shows stored trust balance to users without VIEW_TRUST (C2 / PR #1749, D17) — MEDIUM — VERIFIED 2026-11-08 (Batch H walk: 'Withheld' for Carol)
 - [x] G89-F23 — portal feed announces internal-draft documents (D) — VERIFIED 2026-11-07, PR #1747
 - [x] G89-F39 — portal trust statement shows recorded date (D, D13) — VERIFIED 2026-11-07, PR #1747
@@ -394,3 +395,10 @@ Fixes every defect from the Phase 89 exit gate (`tasks/defects-2026-11-06-phase8
   - The orchestrator read the F22 portal and S35 F50 screenshots. Evidence committed as `c695537c7`.
   - **Walk tally: 21 PASS, 0 FAIL, 0 PARTIAL, 0 DEFERRED, 1 N/A.** The exit bar is still open on **F71 (MEDIUM, D29)** until #1754 merges and is observed.
 - 2026-11-11 ~15:00 — **PR #1754 (Batch I, F71) opened** @80931ef69: red `66724e3e2` (8/8 on base) → fix (read-time derivation; `PortalDeadlineStatus`; SQL CASE filter; no migration); targeted 379/0/0/0. Full verify and 2 bound reviews launched.
+- 2026-11-11 16:0x — **PR #1754 (Batch I, F71) merged as `452ba3d7a`** (`--squash --match-head-commit 389085d49`).
+  - Gates: full verify @80931ef69 6782/0/0/26; final head `389085d49` adds a test-only commit (leap-day precondition, CodeRabbit), with the 3 deadline-status classes 23/0/0.
+  - Pre-merge e2e PASS @80931ef69 (`pr1754-e2e/`). Docker VM disk was full: the agent pruned untagged images and build cache older than 72 h (14.5 GB).
+  - 2× bound APPROVE @389085d49. CodeRabbit: 1 Minor fixed and resolved; nothing new on the final head.
+  - **All HIGH and MEDIUM ids, F71 included, are now closed.**
+  - Flake candidate from the gate: `day-07-14-work-trust:78`, the matter time summary lagging a just-saved entry under heavy load (F5 area). It did not persist on the re-run → note only.
+  - The main checkout now carries the founder's in-progress Phase 90 architecture work. The KC stack runs from it at `1bf85f0b1` (pre-#1754); leave it alone.

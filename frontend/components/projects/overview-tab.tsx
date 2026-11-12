@@ -2,9 +2,11 @@ import { KPIDashboard } from "@/components/projects/kpi-dashboard";
 import type { SetupStep } from "@/components/setup/types";
 import type { WidgetResult } from "@/lib/dashboard-home";
 import type {
+  BudgetStatusResponse,
   MatterSetupStatus,
   FicaStatus,
   MatterTrustBalance,
+  MatterUpcomingDeadline,
   OutstandingSummary,
 } from "@/lib/types";
 
@@ -25,6 +27,10 @@ interface OverviewTabProps {
   outstandingSummary: WidgetResult<OutstandingSummary>;
   trustBalance: WidgetResult<MatterTrustBalance>;
   projectDueDate?: string | null;
+  /** Read once by the page and passed through to KPIDashboard (641B). */
+  upcomingDeadlines: MatterUpcomingDeadline[];
+  /** Read once by the page (shared with the Budget tab) and passed through (641B). */
+  budget: BudgetStatusResponse | null;
 }
 
 export async function OverviewTab({
@@ -44,6 +50,8 @@ export async function OverviewTab({
   outstandingSummary,
   trustBalance,
   projectDueDate,
+  upcomingDeadlines,
+  budget,
 }: OverviewTabProps) {
   return (
     <KPIDashboard
@@ -63,6 +71,8 @@ export async function OverviewTab({
       outstandingSummary={outstandingSummary}
       trustBalance={trustBalance}
       projectDueDate={projectDueDate}
+      upcomingDeadlines={upcomingDeadlines}
+      budget={budget}
     />
   );
 }

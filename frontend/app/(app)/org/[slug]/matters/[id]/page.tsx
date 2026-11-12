@@ -1,64 +1,13 @@
-import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
+import { getAuthContext } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { isModuleEnabledServer } from "@/lib/api/settings";
-import {
-  api,
-  handleApiError,
-  getFieldDefinitions,
-  getFieldGroups,
-  getGroupMembers,
-  getTags,
-  getTemplates,
-  getViews,
-} from "@/lib/api";
-import {
-  getMatter,
-  getMatterBudget,
-  getMatterProfitability,
-  getMatterSetupStatus,
-  getMatterTags,
-  getMatterTimeSummary,
-  getMatterTimeSummaryByMember,
-  getMatterTimeSummaryByTask,
-  listMatterClients,
-  listMatterDocuments,
-  listMatterMembers,
-  listMatterTasks,
-} from "@/lib/api/matters";
-import { getClientFicaStatus } from "@/lib/api/clients";
-import { fetchOutstandingSummaryAction } from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
-import { fetchMatterTrustBalance } from "@/app/(app)/org/[slug]/trust-accounting/actions";
-import { hasCapability, type WidgetResult } from "@/lib/dashboard-home";
-import type {
-  OrgMember,
-  Matter,
-  Client,
-  Document,
-  MatterMember,
-  Task,
-  MatterTimeSummary,
-  MemberTimeSummary,
-  TaskTimeSummary,
-  BillingRate,
-  OrgSettings,
-  BudgetStatusResponse,
-  MatterProfitabilityResponse,
-  FieldDefinitionResponse,
-  FieldGroupResponse,
-  FieldGroupMemberResponse,
-  TagResponse,
-  TemplateListResponse,
-  SavedViewResponse,
-  MatterTrustBalance,
-  OutstandingSummary,
-} from "@/lib/types";
+import { handleApiError } from "@/lib/api";
+import { getMatter } from "@/lib/api/matters";
+import type { CreateSavedViewRequest, Matter } from "@/lib/types";
 import { MatterHeaderCard } from "@/components/projects/matter-header-card";
 import { MatterDetailsTab } from "@/components/projects/matter-details-tab";
 import { MatterFieldsTab } from "@/components/projects/matter-fields-tab";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { CorrespondenceList } from "@/components/correspondence/correspondence-list";
-import { getProjectCorrespondence } from "@/lib/api/correspondence";
-import type { CorrespondenceListItem } from "@/lib/api/correspondence";
 import { TaskListPanel } from "@/components/tasks/task-list-panel";
 import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import { ActivityFeed } from "@/components/activity/activity-feed";
@@ -73,15 +22,8 @@ import { ProjectFinancialsTab } from "@/components/profitability/project-financi
 import { OverviewTab } from "@/components/projects/overview-tab";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { CommentSectionClient } from "@/components/comments/comment-section-client";
-import {
-  getProjectRequests,
-  type InformationRequestResponse,
-} from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
-import { getAiProfile } from "@/lib/api/ai";
-import type { MatterSetupStatus, FicaStatus } from "@/lib/types";
-import type { SetupStep } from "@/components/setup/types";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { OverflowActionsMenu } from "@/components/projects/overflow-actions-menu";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
@@ -91,8 +33,8 @@ import { ProjectStatementsTab } from "@/components/legal/project-statements-tab"
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { RecordRecentItem } from "@/components/record-recent-item";
 import { createSavedViewAction } from "./view-actions";
-import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
-import { HEADER_FIELD_SLUGS, buildHeaderFields } from "@/lib/constants/header-field-slugs";
+import { buildMatterHeroTiles, loadMatterHeroData, upcomingDeadlineRows } from "./hero-tiles";
+import { loadMatterPageData } from "./matter-page-data";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -122,308 +64,61 @@ export default async function ProjectDetailPage({
   const isCurrentLead = project.matterRole === "lead";
   const canManage = isAdmin || isCurrentLead;
 
-  // Setup guidance data (Epic 112A)
-  let setupStatus: MatterSetupStatus | null = null;
-  try {
-    setupStatus = await getMatterSetupStatus(id);
-  } catch {
-    // Non-fatal: setup guidance cards will not render if fetch fails
-  }
-
-  // Map setup status to steps
-  const setupSteps: SetupStep[] = setupStatus
-    ? [
-        {
-          label: "Client assigned",
-          complete: setupStatus.clientAssigned,
-          actionHref: `?tab=clients`,
-        },
-        {
-          label: "Billing rate configured",
-          complete: setupStatus.rateCardConfigured,
-          actionHref: `?tab=rates`,
-          permissionRequired: true,
-        },
-        {
-          label: "Fee estimate set",
-          complete: setupStatus.budgetConfigured,
-          actionHref: `?tab=budget`,
-        },
-        {
-          label: "Team members added",
-          complete: setupStatus.teamAssigned,
-          actionHref: `?tab=team`,
-        },
-        {
-          label:
-            setupStatus.requiredFields.total === 0
-              ? "No required fields defined"
-              : `Required fields filled (${setupStatus.requiredFields.filled}/${setupStatus.requiredFields.total})`,
-          complete:
-            setupStatus.requiredFields.total === 0 ||
-            setupStatus.requiredFields.filled === setupStatus.requiredFields.total,
-          actionHref: "?tab=fields",
-        },
-      ]
-    : [];
-
-  // AI configuration status — needed for contract review button in documents tab
-  const canExecuteAi = caps.capabilities.includes("AI_EXECUTE");
-  const canReviewGates = caps.capabilities.includes("AI_REVIEW");
-  let isAiConfigured = false;
-  if (caps.capabilities.includes("AI_MANAGE")) {
-    try {
-      const aiProfile = await getAiProfile();
-      isAiConfigured = aiProfile.coldStartCompleted;
-    } catch {
-      // Non-fatal: panel will show disabled state
-    }
-  } else if (canExecuteAi) {
-    // MEMBER with AI_EXECUTE: they wouldn't have this capability without setup being done
-    isAiConfigured = true;
-  }
-
-  let documents: Document[] = [];
-  try {
-    documents = await listMatterDocuments(id);
-  } catch {
-    // Non-fatal: show empty documents list if fetch fails
-  }
-
-  let correspondence: CorrespondenceListItem[] = [];
-  try {
-    correspondence = (await getProjectCorrespondence(id, { size: 50 })).content;
-  } catch {
-    // Non-fatal: show empty correspondence list if fetch fails
-  }
-
-  let members: MatterMember[] = [];
-  try {
-    members = await listMatterMembers(id);
-  } catch {
-    // Non-fatal: show empty members list if fetch fails
-  }
-
-  let tasks: Task[] = [];
-  try {
-    tasks = await listMatterTasks(id);
-  } catch {
-    // Non-fatal: show empty tasks list if fetch fails
-  }
-
-  let customers: Client[] = [];
-  try {
-    customers = await listMatterClients(id);
-  } catch {
-    // Non-fatal: show empty customers list if fetch fails
-  }
-
-  // Fetch information requests for the Requests tab (only if project has customers)
-  let projectRequests: InformationRequestResponse[] = [];
-  if (customers.length > 0) {
-    try {
-      projectRequests = await getProjectRequests(id);
-    } catch {
-      // Non-fatal: requests tab will show empty state
-    }
-  }
-
-  // FICA onboarding status for the matter's primary customer (GAP-L-46).
-  // Surfaces on the Overview tab as a small status tile. Fetch is
-  // non-fatal — when the endpoint is unreachable or the profile
-  // doesn't carry a FICA template pack, the card renders a soft
-  // "Status unavailable" state rather than breaking the page.
-  let ficaStatus: FicaStatus | null = null;
-  if (customers.length > 0) {
-    try {
-      ficaStatus = await getClientFicaStatus(customers[0].id);
-    } catch {
-      ficaStatus = null;
-    }
-  }
-
-  // Time summary data for the "Time" tab
-  let timeSummary: MatterTimeSummary = {
-    billableMinutes: 0,
-    nonBillableMinutes: 0,
-    totalMinutes: 0,
-    contributorCount: 0,
-    entryCount: 0,
-  };
-  let timeSummaryByTask: TaskTimeSummary[] = [];
-  let timeSummaryByMember: MemberTimeSummary[] | null = null;
-  try {
-    const [summaryRes, byTaskRes, byMemberRes] = await Promise.all([
-      getMatterTimeSummary(id),
-      getMatterTimeSummaryByTask(id),
-      getMatterTimeSummaryByMember(id).catch(() => null),
-    ]);
-    timeSummary = summaryRes;
-    timeSummaryByTask = byTaskRes;
-    timeSummaryByMember = byMemberRes;
-  } catch {
-    // Non-fatal: show empty time summary if fetch fails
-  }
-
-  // Overview money tiles (Phase 89 §14.3.18, G88-M13): the trust module from the org's enabled
-  // modules; each read only for callers holding its capability — otherwise "absent" (tile hidden).
-  const trustEnabled = await isModuleEnabledServer("trust_accounting");
-  const absent = { state: "absent" } as const;
-  const [outstandingSummary, matterTrustBalance] = await Promise.all([
-    hasCapability(caps, "FINANCIAL_VISIBILITY")
-      ? fetchOutstandingSummaryAction(id)
-      : Promise.resolve<WidgetResult<OutstandingSummary>>(absent),
-    trustEnabled && hasCapability(caps, "VIEW_TRUST")
-      ? fetchMatterTrustBalance(id)
-      : Promise.resolve<WidgetResult<MatterTrustBalance>>(absent),
+  // Loaders (641B, §15.3.5): the tab-panel reads (./matter-page-data) and the hero reads
+  // (./hero-tiles — trust, outstanding, unbilled WIP, court dates, and the budget the Budget and
+  // Overview tabs share, so budget and deadlines are each read once). Independent → in parallel.
+  const [data, hero] = await Promise.all([
+    loadMatterPageData({ id, project, caps, canManage }),
+    loadMatterHeroData(id, caps),
   ]);
+  const {
+    setupStatus,
+    setupSteps,
+    canExecuteAi,
+    canReviewGates,
+    isAiConfigured,
+    documents,
+    correspondence,
+    members,
+    tasks,
+    customers,
+    projectRequests,
+    ficaStatus,
+    timeSummary,
+    timeSummaryByTask,
+    timeSummaryByMember,
+    projectBillingRates,
+    defaultCurrency,
+    projectProfitability,
+    currentMemberId,
+    projectFieldDefs,
+    projectFieldGroups,
+    projectGroupMembers,
+    headerFields,
+    taskFieldDefs,
+    taskFieldGroups,
+    taskGroupMembers,
+    savedTaskViews,
+    projectTags,
+    allTags,
+    projectTemplates,
+  } = data;
+  const {
+    trustEnabled,
+    outstandingSummary,
+    trustBalance: matterTrustBalance,
+    budget: budgetStatus,
+  } = hero;
 
-  // Billing rates + settings for the "Rates" tab (only fetched for users who can manage)
-  let projectBillingRates: BillingRate[] = [];
-  let defaultCurrency = "USD";
-  if (canManage) {
-    try {
-      const [ratesRes, settingsRes] = await Promise.all([
-        api.get<{ content: BillingRate[] }>(`/api/billing-rates?matterId=${id}`),
-        api.get<OrgSettings>("/api/settings").catch(() => null),
-      ]);
-      projectBillingRates = ratesRes?.content ?? [];
-      if (settingsRes?.defaultCurrency) {
-        defaultCurrency = settingsRes.defaultCurrency;
-      }
-    } catch {
-      // Non-fatal: show empty rates tab if fetch fails
-    }
-  }
-
-  // Budget status for the "Budget" tab
-  let budgetStatus: BudgetStatusResponse | null = null;
-  try {
-    budgetStatus = await getMatterBudget(id);
-  } catch {
-    // Non-fatal: 404 means no budget set, other errors show empty state
-  }
-
-  // Matter profitability for the "Financials" tab (lead/admin/owner)
-  let projectProfitability: MatterProfitabilityResponse | null = null;
-  if (canManage) {
-    try {
-      projectProfitability = await getMatterProfitability(id);
-    } catch {
-      // Non-fatal: show empty state in financials tab
-    }
-  }
-
-  // Resolve current user's backend member ID for "My Tasks" filter and claim/release actions.
-  // Match current user email against org members list from the backend.
-  let currentMemberId: string | null = null;
-  try {
-    const [email, orgMembers] = await Promise.all([
-      getCurrentUserEmail(),
-      api.get<OrgMember[]>("/api/members"),
-    ]);
-    if (email) {
-      const match = orgMembers.find((m) => m.email === email);
-      if (match) currentMemberId = match.id;
-    }
-  } catch {
-    // Non-fatal: "My Tasks" filter won't work without member ID
-  }
-
-  // Custom field definitions and groups for the Custom Fields section
-  let projectFieldDefs: FieldDefinitionResponse[] = [];
-  let projectFieldGroups: FieldGroupResponse[] = [];
-  const projectGroupMembers: Record<string, FieldGroupMemberResponse[]> = {};
-  try {
-    const [defs, groups] = await Promise.all([
-      getFieldDefinitions("PROJECT"),
-      getFieldGroups("PROJECT"),
-    ]);
-    projectFieldDefs = defs.filter((d) => !PROMOTED_PROJECT_SLUGS.has(d.slug));
-    projectFieldGroups = groups;
-
-    // Fetch members for each applied group
-    const appliedGroups = project.appliedFieldGroups ?? [];
-    if (appliedGroups.length > 0) {
-      const memberResults = await Promise.allSettled(
-        appliedGroups.map((gId) => getGroupMembers(gId))
-      );
-      memberResults.forEach((result, i) => {
-        if (result.status === "fulfilled") {
-          projectGroupMembers[appliedGroups[i]] = result.value;
-        }
-      });
-    }
-  } catch {
-    // Non-fatal: custom fields section won't render
-  }
-
-  // Header facts strip (G-B9): header slugs are not promoted, so they survive the filter above;
-  // without definitions the strip still renders, labelled by slug.
-  const headerFields = buildHeaderFields(
-    HEADER_FIELD_SLUGS.PROJECT,
-    project.customFields,
-    projectFieldDefs
-  );
-
-  // Custom field definitions for tasks (for TaskDetailSheet)
-  let taskFieldDefs: FieldDefinitionResponse[] = [];
-  let taskFieldGroups: FieldGroupResponse[] = [];
-  const taskGroupMembers: Record<string, FieldGroupMemberResponse[]> = {};
-  try {
-    const [defs, groups] = await Promise.all([getFieldDefinitions("TASK"), getFieldGroups("TASK")]);
-    taskFieldDefs = defs.filter((d) => !PROMOTED_TASK_SLUGS.has(d.slug));
-    taskFieldGroups = groups;
-
-    // Pre-fetch members for all active TASK field groups
-    const activeGroupIds = groups.filter((g) => g.active).map((g) => g.id);
-    if (activeGroupIds.length > 0) {
-      const memberResults = await Promise.allSettled(
-        activeGroupIds.map((gId) => getGroupMembers(gId))
-      );
-      memberResults.forEach((result, i) => {
-        if (result.status === "fulfilled") {
-          taskGroupMembers[activeGroupIds[i]] = result.value;
-        }
-      });
-    }
-  } catch {
-    // Non-fatal: custom fields section won't render in task sheet
-  }
-
-  // Saved views for TASK entity type (for ViewSelectorClient in TaskListPanel)
-  let savedTaskViews: SavedViewResponse[] = [];
-  try {
-    savedTaskViews = await getViews("TASK");
-  } catch {
-    // Non-fatal: view selector won't show saved views
-  }
+  // Hero subtitle fee earner: the matter's earliest lead — the matters list's "Fee earner" rule.
+  const feeEarner = members
+    .filter((m) => m.matterRole === "lead")
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
 
   // Inline server action for creating task views
-  async function handleCreateTaskView(req: import("@/lib/types").CreateSavedViewRequest) {
+  async function handleCreateTaskView(req: CreateSavedViewRequest) {
     "use server";
     return createSavedViewAction(slug, req);
-  }
-
-  // Tags for the Tags section
-  let projectTags: TagResponse[] = [];
-  let allTags: TagResponse[] = [];
-  try {
-    const [entityTags, orgTags] = await Promise.all([getMatterTags(id), getTags()]);
-    projectTags = entityTags;
-    allTags = orgTags;
-  } catch {
-    // Non-fatal: tags section will show empty state
-  }
-
-  // Document templates for the "Generate Document" dropdown (only for users who can manage)
-  let projectTemplates: TemplateListResponse[] = [];
-  if (canManage) {
-    try {
-      projectTemplates = await getTemplates(undefined, "PROJECT");
-    } catch {
-      // Non-fatal: hide generate button if template fetch fails
-    }
   }
 
   return (
@@ -438,7 +133,7 @@ export default async function ProjectDetailPage({
       <div className="flex items-center justify-between">
         <Link
           href={`/org/${slug}/matters`}
-          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center text-sm transition-colors"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Matters
@@ -464,7 +159,7 @@ export default async function ProjectDetailPage({
         />
       </div>
 
-      {/* Matter header card — name, status, work type, client, lifecycle actions */}
+      {/* Matter hero (DetailHero, 641B) — name, status, client, lifecycle actions, KPI tiles */}
       <MatterHeaderCard
         projectId={id}
         projectName={project.name}
@@ -476,6 +171,9 @@ export default async function ProjectDetailPage({
         slug={slug}
         isAdmin={isAdmin}
         headerFields={headerFields}
+        feeEarnerName={feeEarner?.name ?? null}
+        openedAt={project.createdAt}
+        tiles={buildMatterHeroTiles(hero)}
       />
 
       {/* Tabbed Content */}
@@ -536,6 +234,8 @@ export default async function ProjectDetailPage({
             outstandingSummary={outstandingSummary}
             trustBalance={matterTrustBalance}
             projectDueDate={project.dueDate ?? null}
+            budget={budgetStatus}
+            upcomingDeadlines={upcomingDeadlineRows(hero)}
           />
         }
         documentsPanel={

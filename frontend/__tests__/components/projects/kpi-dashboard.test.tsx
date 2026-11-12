@@ -8,8 +8,10 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-// Mock the matters API module (kpi-dashboard reads health, member hours, budget and deadlines
-// directly from lib/api/matters since Phase 87 610C) — inline values to avoid hoisting issues
+// Mock the matters API module — inline values to avoid hoisting issues. KPIDashboard reads only
+// health and member hours itself; budget and upcoming deadlines are props since 641B (the page reads
+// each once). The factory deliberately has NO getMatterBudget / getMatterUpcomingDeadlines: a
+// regression that calls either again fails with "No ... export is defined on the mock".
 vi.mock("@/lib/api/matters", () => ({
   getMatterHealth: vi.fn().mockResolvedValue({
     healthStatus: "AT_RISK",
@@ -30,8 +32,6 @@ vi.mock("@/lib/api/matters", () => ({
     { memberId: "m1", memberName: "Alice", totalHours: 20, billableHours: 18 },
     { memberId: "m2", memberName: "Bob", totalHours: 15, billableHours: 12 },
   ]),
-  getMatterBudget: vi.fn().mockResolvedValue(null),
-  getMatterUpcomingDeadlines: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/lib/date-utils", () => ({
@@ -98,6 +98,7 @@ vi.mock("@/lib/utils", () => ({
 }));
 
 import { KPIDashboard } from "@/components/projects/kpi-dashboard";
+import type { BudgetStatusResponse, MatterUpcomingDeadline } from "@/lib/types";
 
 const ABSENT = { state: "absent" } as const;
 
@@ -128,7 +129,32 @@ const defaultProps = {
   outstandingSummary: ABSENT,
   trustBalance: ABSENT,
   projectDueDate: null,
+  upcomingDeadlines: [] as MatterUpcomingDeadline[],
+  budget: null as BudgetStatusResponse | null,
 };
+
+const BUDGET: BudgetStatusResponse = {
+  matterId: "proj-1",
+  budgetHours: 100,
+  budgetAmount: null,
+  budgetCurrency: null,
+  alertThresholdPct: 80,
+  notes: null,
+  hoursConsumed: 80,
+  hoursRemaining: 20,
+  hoursConsumedPct: 80,
+  amountConsumed: 0,
+  amountRemaining: 0,
+  amountConsumedPct: 0,
+  hoursStatus: "AT_RISK",
+  amountStatus: "ON_TRACK",
+  overallStatus: "AT_RISK",
+};
+
+const DEADLINES: MatterUpcomingDeadline[] = [
+  { type: "COURT", date: "2026-12-01", description: "Pre-trial conference", status: "SCHEDULED" },
+  { type: "COURT", date: "2027-01-15", description: "Trial", status: "SCHEDULED" },
+];
 
 describe("KPIDashboard", () => {
   beforeEach(() => {
@@ -184,11 +210,22 @@ describe("KPIDashboard", () => {
   });
 
   // Test 3: Hides budget card when no budget data
-  it("hides budget card when budgetStatus is null", async () => {
+  it("hides budget card when the budget prop is null", async () => {
     const jsx = await KPIDashboard(defaultProps);
     render(jsx);
 
     expect(screen.queryByTestId("metric-card-budget")).not.toBeInTheDocument();
+  });
+
+  // 641B: the budget comes from the page's single read, not a second fetch here
+  it("renders the fee-estimate tile from the budget prop", async () => {
+    render(await KPIDashboard({ ...defaultProps, budget: BUDGET }));
+
+    expect(screen.getByTestId("metric-card-budget")).toHaveTextContent("80%");
+    expect(screen.getByRole("link", { name: /Fee estimate consumed/i })).toHaveAttribute(
+      "href",
+      "?tab=budget"
+    );
   });
 
   // Test 4: Hides trust card when trustEnabled is false
@@ -289,7 +326,14 @@ describe("KPIDashboard", () => {
     const jsx = await KPIDashboard(defaultProps);
     render(jsx);
 
-    expect(screen.getByTestId("matter-upcoming-deadlines-tile")).toBeInTheDocument();
+    expect(screen.getByTestId("matter-upcoming-deadlines-tile")).toHaveTextContent("0 deadlines");
+  });
+
+  // 641B: the deadlines come from the page's single read (lifted out of this component)
+  it("passes the upcomingDeadlines prop straight to the deadlines tile", async () => {
+    render(await KPIDashboard({ ...defaultProps, upcomingDeadlines: DEADLINES }));
+
+    expect(screen.getByTestId("matter-upcoming-deadlines-tile")).toHaveTextContent("2 deadlines");
   });
 
   // Test 6: Setup bar hidden when all steps complete

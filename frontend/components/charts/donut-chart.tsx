@@ -42,7 +42,10 @@ interface DonutChartProps extends ChartCardSlots {
   /** Caller-formatted centre figure, e.g. "38.5h". */
   centerValue?: React.ReactNode;
   centerLabel?: React.ReactNode;
-  /** Defaults to true at two or more segments; false when the caller lists the segments itself. */
+  /**
+   * The legend row below the ring (default true, even for one segment — a ring with no name is
+   * unreadable). False when the caller lists the segments itself (e.g. a footer list).
+   */
   showLegend?: boolean;
   /**
    * Segment names beside the ring at 2–4 segments (default true). False when the caller renders
@@ -129,7 +132,7 @@ export function DonutChart({
   const config: ChartConfig = Object.fromEntries(
     rows.map((row) => [row.key, { label: row.label }])
   );
-  const legend = showLegend ?? rows.length >= 2;
+  const legend = showLegend ?? true;
   const nameLabels = directLabels && rows.length >= 2 && rows.length <= MAX_DIRECT_LABELS;
   const fmt = (value: number) => formatChartValue(value, format, currency);
 

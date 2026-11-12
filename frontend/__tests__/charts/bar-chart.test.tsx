@@ -1,64 +1,140 @@
 import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BarChartPreset } from "@/components/charts/bar-chart";
 import { formatChartValue } from "@/lib/chart-format";
 
-vi.mock("recharts", () => ({
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="responsive-container">{children}</div>
-  ),
-  BarChart: ({
-    children,
-    data,
-    layout,
-  }: {
-    children: React.ReactNode;
-    data: unknown[];
-    layout?: string;
-  }) => (
-    <div data-testid="bar-chart" data-rows={JSON.stringify(data)} data-layout={layout}>
-      {children}
-    </div>
-  ),
-  Bar: ({
-    dataKey,
-    fill,
-    stackId,
-    children,
-  }: {
-    dataKey: string;
-    fill?: string;
-    stackId?: string;
-    children?: React.ReactNode;
-  }) => (
-    <div data-testid={`bar-${dataKey}`} data-fill={fill} data-stack={stackId}>
-      {children}
-    </div>
-  ),
-  CartesianGrid: () => null,
-  XAxis: () => null,
-  YAxis: () => null,
-  LabelList: ({
-    content,
-  }: {
-    content?: React.ReactElement<{ text?: string; targetIndex?: number }>;
-  }) =>
-    content ? (
-      <div
-        data-testid="name-label"
-        data-text={content.props.text}
-        data-target={content.props.targetIndex}
-      />
-    ) : (
-      <div data-testid="label-list" />
+// `mode.real` switches every mocked export to the real recharts for the un-mocked smoke renders
+// (same technique as the donut test).
+const mode = vi.hoisted(() => ({ real: false }));
+vi.mock("recharts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("recharts")>();
+  const pick = <P extends object>(
+    name: keyof typeof actual,
+    fake: (props: P) => React.ReactNode
+  ) => {
+    const Real = actual[name] as unknown as React.ComponentType<P>;
+    function Switch(props: P) {
+      return mode.real ? <Real {...props} /> : fake(props);
+    }
+    Switch.displayName = `Mock${String(name)}`;
+    return Switch;
+  };
+  return {
+    ...actual,
+    ResponsiveContainer: pick(
+      "ResponsiveContainer",
+      ({ children }: { children: React.ReactNode }) => (
+        <div data-testid="responsive-container">{children}</div>
+      )
     ),
-  ReferenceLine: () => <div data-testid="reference-line" />,
-  Tooltip: () => null,
-  Legend: () => <div data-testid="legend" />,
-}));
+    BarChart: pick(
+      "BarChart",
+      ({
+        children,
+        data,
+        layout,
+      }: {
+        children: React.ReactNode;
+        data: unknown[];
+        layout?: string;
+      }) => (
+        <div data-testid="bar-chart" data-rows={JSON.stringify(data)} data-layout={layout}>
+          {children}
+        </div>
+      )
+    ),
+    Bar: pick(
+      "Bar",
+      ({
+        dataKey,
+        fill,
+        stackId,
+        children,
+      }: {
+        dataKey: string;
+        fill?: string;
+        stackId?: string;
+        children?: React.ReactNode;
+      }) => (
+        <div data-testid={`bar-${dataKey}`} data-fill={fill} data-stack={stackId}>
+          {children}
+        </div>
+      )
+    ),
+    CartesianGrid: pick("CartesianGrid", () => null),
+    XAxis: pick("XAxis", () => null),
+    YAxis: pick("YAxis", () => null),
+    LabelList: pick(
+      "LabelList",
+      ({ content }: { content?: React.ReactElement<{ text?: string; targetIndex?: number }> }) =>
+        content ? (
+          <div
+            data-testid="name-label"
+            data-text={content.props.text}
+            data-target={content.props.targetIndex}
+          />
+        ) : (
+          <div data-testid="label-list" />
+        )
+    ),
+    ReferenceLine: pick("ReferenceLine", () => <div data-testid="reference-line" />),
+    Tooltip: pick("Tooltip", () => null),
+    Legend: pick("Legend", () => <div data-testid="legend" />),
+  };
+});
 
+/**
+ * The real recharts: happy-dom has no layout, so a fixed 480×240 box (a 24px legend row) and a
+ * silent observer; and
+ * reduced motion, so bars draw at their final size (recharts hides labels while animating).
+ */
+function withRealRecharts() {
+  mode.real = true;
+  vi.spyOn(window, "matchMedia").mockImplementation(
+    (query: string) =>
+      ({
+        matches: query === "(prefers-reduced-motion: reduce)",
+        media: query,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }) as unknown as MediaQueryList
+  );
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+    this: HTMLElement
+  ) {
+    // The legend row is measured too: give it a row's height, not the whole box.
+    const height = this.closest(".recharts-legend-wrapper") ? 24 : 240;
+    return {
+      width: 480,
+      height,
+      top: 0,
+      left: 0,
+      right: 480,
+      bottom: height,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    };
+  });
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+  );
+}
+
+beforeEach(() => {
+  mode.real = false;
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 afterEach(() => cleanup());
 
 function chartRows(): Array<Record<string, unknown>> {
@@ -257,6 +333,125 @@ describe("BarChartPreset", () => {
     const table = screen.getByRole("table");
     expect(within(table).getAllByRole("rowheader")).toHaveLength(7);
     expect(within(table).getByRole("rowheader", { name: "E7" })).toBeInTheDocument();
+  });
+
+  it("stays ready with the table reachable when truncation leaves only empty bars", async () => {
+    const user = userEvent.setup();
+    const data = [
+      ...Array.from({ length: 4 }, (_, i) => ({ earner: `E${i + 1}`, util: null })),
+      { earner: "E5", util: 30 },
+    ];
+    render(
+      <BarChartPreset
+        title="Utilization"
+        data={data}
+        categoryKey="earner"
+        series={[{ key: "util", label: "Utilization" }]}
+        format="percent"
+        maxBars={4}
+      />
+    );
+
+    expect(screen.getByRole("figure", { name: "Utilization" })).toHaveAttribute(
+      "data-state",
+      "ready"
+    );
+    expect(document.querySelector('[data-slot="empty-state"]')).toBeNull();
+    expect(screen.getByText("+1 more in the table")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "View as table" }));
+    const table = screen.getByRole("table");
+    expect(within(table).getByRole("rowheader", { name: "E5" })).toBeInTheDocument();
+    expect(
+      within(table).getByRole("cell", { name: formatChartValue(30, "percent") })
+    ).toBeInTheDocument();
+  });
+
+  it("targets each series' own last valued bar for its name label", () => {
+    render(
+      <BarChartPreset
+        title="Gaps"
+        data={[
+          { month: "Sep", billed: 10, collected: null },
+          { month: "Oct", billed: 12, collected: 11 },
+          { month: "Nov", billed: 9, collected: null },
+        ]}
+        categoryKey="month"
+        series={[
+          { key: "billed", label: "Billed" },
+          { key: "collected", label: "Collected" },
+        ]}
+        layout="grouped"
+        format="currency"
+      />
+    );
+
+    // Grouped bars: recharts indexes labels over the drawn bars, so Collected's only bar is 0.
+    expect(screen.getAllByTestId("name-label").map((l) => l.getAttribute("data-target"))).toEqual([
+      "2",
+      "0",
+    ]);
+  });
+
+  it("renders series-name labels with the real recharts, despite a missing earlier value", async () => {
+    withRealRecharts();
+    render(
+      <BarChartPreset
+        title="Real columns"
+        data={[
+          { month: "Sep", billed: 10, collected: null },
+          { month: "Oct", billed: 12, collected: 11 },
+          { month: "Nov", billed: 9, collected: 7 },
+        ]}
+        categoryKey="month"
+        series={[
+          { key: "billed", label: "Billed" },
+          { key: "collected", label: "Collected" },
+        ]}
+        layout="grouped"
+        format="currency"
+      />
+    );
+
+    const figure = screen.getByRole("figure", { name: "Real columns" });
+    // Collected draws two bars (Sep has no value): five rectangles in all.
+    await waitFor(() => expect(figure.querySelectorAll(".recharts-bar-rectangle")).toHaveLength(5));
+    await waitFor(() => {
+      const texts = Array.from(figure.querySelectorAll("svg.recharts-surface text")).map(
+        (t) => t.textContent
+      );
+      expect(texts).toContain("Billed");
+      expect(texts).toContain("Collected");
+    });
+  });
+
+  it("places a negative horizontal grouped bar's label beyond its negative end", async () => {
+    withRealRecharts();
+    render(
+      <BarChartPreset
+        title="Real ranking"
+        data={[
+          { matter: "A", fees: 10, writeoff: 4 },
+          { matter: "B", fees: 12, writeoff: -6 },
+        ]}
+        categoryKey="matter"
+        series={[
+          { key: "fees", label: "Fees" },
+          { key: "writeoff", label: "Write-off" },
+        ]}
+        orientation="horizontal"
+        layout="grouped"
+        format="count"
+      />
+    );
+
+    const figure = screen.getByRole("figure", { name: "Real ranking" });
+    const label = (name: string) =>
+      Array.from(figure.querySelectorAll("svg.recharts-surface text")).find(
+        (t) => t.textContent === name
+      );
+    await waitFor(() => expect(label("Write-off")).toBeDefined());
+    expect(label("Write-off")).toHaveAttribute("text-anchor", "end");
+    expect(label("Fees")).toHaveAttribute("text-anchor", "start");
   });
 
   it("renders loading, empty and error states without the chart", () => {

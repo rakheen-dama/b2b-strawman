@@ -1,9 +1,42 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { renderToString } from "react-dom/server";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ChartTableToggle } from "@/components/charts/chart-table-toggle";
+import { ChartTableToggle, usePrefersReducedMotion } from "@/components/charts/chart-table-toggle";
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+function MotionProbe() {
+  return <span data-testid="motion">{String(usePrefersReducedMotion())}</span>;
+}
+
+function mockReducedMotion(reduce: boolean) {
+  vi.spyOn(window, "matchMedia").mockImplementation(
+    (query: string) =>
+      ({
+        matches: reduce && query === "(prefers-reduced-motion: reduce)",
+        media: query,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }) as unknown as MediaQueryList
+  );
+}
+
+describe("usePrefersReducedMotion", () => {
+  it("assumes reduced motion on the server, before the preference is known", () => {
+    mockReducedMotion(false);
+    expect(renderToString(<MotionProbe />)).toContain(">true<");
+  });
+
+  it("reads the live preference on the client", () => {
+    mockReducedMotion(false);
+    render(<MotionProbe />);
+    expect(screen.getByTestId("motion")).toHaveTextContent("false");
+  });
+});
 
 const columns = [
   { key: "month", label: "Month" },

@@ -30,14 +30,21 @@ function getReducedMotion(): boolean {
   return typeof window.matchMedia === "function" && window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }
 
+/** Until the preference is known (server render, hydration) assume reduced motion. */
+function getServerReducedMotion(): boolean {
+  return true;
+}
+
 /**
  * `prefers-reduced-motion: reduce`, hydration-safe: the server snapshot and the hydrating client
- * render both read `false`, then React re-renders with the real preference (and on every change).
+ * render both read `true` (animation off — a reduced-motion user never gets an animated first
+ * frame, and the server HTML draws the final chart), then React re-renders with the real
+ * preference (and on every change). A client-only mount reads the real preference at once.
  * Used instead of `motion/react`'s `useReducedMotion`, which seeds `useState` with `null` on the
  * server and the live preference on the client, and never updates.
  */
 export function usePrefersReducedMotion(): boolean {
-  return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false);
+  return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, getServerReducedMotion);
 }
 
 export interface ChartTableColumn {

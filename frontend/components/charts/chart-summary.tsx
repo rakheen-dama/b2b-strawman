@@ -65,6 +65,15 @@ function toNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Whether any row holds a finite value for any series — the presets' ready-vs-empty test. Pass
+ * the full (pre-fold) data: a non-additive truncation can leave only empty bars or series on the
+ * chart while the table still holds the values, and the table must stay reachable.
+ */
+export function hasFiniteValue(rows: ChartRow[], series: ChartSeries[]): boolean {
+  return rows.some((row) => series.some((s) => toNumber(row[s.key]) !== null));
+}
+
 /** Sum of the non-null numbers, or null when every value is missing. */
 function sumOrNull(values: unknown[]): number | null {
   let total: number | null = null;

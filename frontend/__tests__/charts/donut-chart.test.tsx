@@ -195,6 +195,27 @@ describe("DonutChart (kit)", () => {
     expect(screen.getByTestId("pie")).toHaveAttribute("data-direct-labels", "false");
   });
 
+  it("names a single segment in the legend by default", () => {
+    const { rerender } = render(
+      <DonutChart
+        title="One area"
+        segments={[{ key: "a", label: "Conveyancing", value: 30 }]}
+        format="hours"
+      />
+    );
+    expect(document.querySelector('[data-slot="chart-legend"]')).toHaveTextContent("Conveyancing");
+
+    rerender(
+      <DonutChart
+        title="One area"
+        segments={[{ key: "a", label: "Conveyancing", value: 30 }]}
+        format="hours"
+        showLegend={false}
+      />
+    );
+    expect(document.querySelector('[data-slot="chart-legend"]')).toBeNull();
+  });
+
   it("shows a skeleton at chart height while loading", () => {
     render(
       <DonutChart title="Loading donut" segments={segments} format="hours" loading height={160} />

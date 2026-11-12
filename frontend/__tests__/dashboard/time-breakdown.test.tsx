@@ -104,6 +104,24 @@ describe("TimeBreakdown", () => {
     expect(screen.getByText("No time logged this period.")).toBeInTheDocument();
   });
 
+  it("renders the same empty state when every matter has zero hours", () => {
+    render(
+      <TimeBreakdown
+        data={[
+          { matterId: "p1", matterName: "Website Redesign", hours: 0, percent: 0 },
+          { matterId: "p2", matterName: "Mobile App", hours: 0, percent: 0 },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("figure", { name: "Time Breakdown" })).toHaveAttribute(
+      "data-state",
+      "empty"
+    );
+    expect(screen.getByText("No time logged this period.")).toBeInTheDocument();
+    expect(screen.queryByTestId("pie-chart")).toBeNull();
+  });
+
   it("renders error state when data is null", () => {
     render(<TimeBreakdown data={null} />);
 

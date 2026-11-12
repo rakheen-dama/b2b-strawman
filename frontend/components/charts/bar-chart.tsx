@@ -19,6 +19,7 @@ import {
   chartState,
   foldBars,
   foldSeries,
+  hasFiniteValue,
   isAdditive,
   moreLabel,
   seriesColor,
@@ -68,7 +69,7 @@ type LabelPlacement = "margin" | "tip" | "above";
 interface SeriesNameLabelProps {
   /** Series label drawn beside its mark. */
   text: string;
-  /** Category index whose mark carries the label. */
+  /** Index (recharts' LabelList index, see `labelTarget`) of the mark that carries the label. */
   targetIndex: number;
   /**
    * margin: columns — in the right margin at the bar's value end (grouped) or segment middle
@@ -85,6 +86,25 @@ interface SeriesNameLabelProps {
   parentViewBox?: { width?: number };
 }
 
+/**
+ * The LabelList index of the mark that carries a series' name: its last category with a value
+ * (the first for "above"). recharts indexes a Bar's LabelList over the rectangles it draws: a
+ * grouped bar with no value draws no rectangle, so the index counts only valued categories; a
+ * stacked bar draws every category (a missing value stacks as zero), so it is the row index.
+ * -1 when the series has no value at all (no label).
+ */
+function labelTarget(
+  rows: ChartRow[],
+  key: string,
+  placement: LabelPlacement,
+  stacked: boolean
+): number {
+  const valued = rows.flatMap((row, index) => (Number.isFinite(row[key]) ? [index] : []));
+  if (valued.length === 0) return -1;
+  if (!stacked) return valued.length - 1;
+  return placement === "above" ? valued[0] : valued[valued.length - 1];
+}
+
 /** LabelList `content`: the series name on one category's mark only (selective direct label). */
 function SeriesNameLabel({
   text,
@@ -99,7 +119,7 @@ function SeriesNameLabel({
   if (index !== targetIndex || !viewBox) return null;
   const { x = 0, y = 0, width = 0, height = 0 } = viewBox;
   const textWidth = text.length * LABEL_CHAR_PX;
-  let position: { x: number; y: number; anchor: "start" | "middle" } | null = null;
+  let position: { x: number; y: number; anchor: "start" | "middle" | "end" } | null = null;
 
   if (placement === "margin") {
     if (parentViewBox?.width === undefined || textWidth > rightMargin - LABEL_GAP) return null;
@@ -109,7 +129,12 @@ function SeriesNameLabel({
       anchor: "start",
     };
   } else if (placement === "tip") {
-    position = { x: Math.max(x, x + width) + LABEL_GAP, y: y + height / 2, anchor: "start" };
+    // Beyond the signed value end: a negative bar has a negative width and grows leftwards.
+    const end = x + width;
+    position =
+      width < 0
+        ? { x: end - LABEL_GAP, y: y + height / 2, anchor: "end" }
+        : { x: end + LABEL_GAP, y: y + height / 2, anchor: "start" };
   } else {
     // Interior segment with no free end: label above it, or not at all (dataviz: never clip).
     if (textWidth > Math.abs(width)) return null;
@@ -169,8 +194,9 @@ export function BarChartPreset({
   // so the table keeps every row and series the chart leaves off.
   const additive = isAdditive(format);
   const hiddenCount = additive ? 0 : data.length - rows.length;
-  const hasValue = rows.some((row) => series.some((s) => typeof row[s.key] === "number"));
-  const state = chartState({ loading, error, hasValue });
+  // Ready vs empty from the full data: a truncation that leaves only empty bars must not hide
+  // the table that still holds the values.
+  const state = chartState({ loading, error, hasValue: hasFiniteValue(data, drawnInput) });
 
   // Diverging: each row carries its own fill (recharts reads `fill` off the datum).
   const chartRows: ChartRow[] = diverging
@@ -189,11 +215,11 @@ export function BarChartPreset({
   const config: ChartConfig = Object.fromEntries(series.map((s) => [s.key, { label: s.label }]));
   const showLegend = series.length >= 2;
   // One series: compact value labels (the title names the series). 2–4: series-name labels on one
-  // category (the last; the first for horizontal stacks, whose labels sit above the top bar).
+  // category per series (its last valued one; the first for horizontal stacks, whose labels sit
+  // above the top bar).
   const valueLabels = series.length === 1;
   const nameLabels = series.length >= 2 && series.length <= MAX_DIRECT_LABELS;
   const placement: LabelPlacement = !horizontal ? "margin" : stacked ? "above" : "tip";
-  const labelIndex = placement === "above" ? 0 : rows.length - 1;
   const longestName = Math.max(0, ...series.map((s) => s.label.length));
   const rightMargin =
     nameLabels && placement !== "above"
@@ -333,7 +359,7 @@ export function BarChartPreset({
                   content={
                     <SeriesNameLabel
                       text={s.label}
-                      targetIndex={labelIndex}
+                      targetIndex={labelTarget(rows, s.key, placement, stacked)}
                       placement={placement}
                       stacked={stacked}
                       rightMargin={rightMargin}

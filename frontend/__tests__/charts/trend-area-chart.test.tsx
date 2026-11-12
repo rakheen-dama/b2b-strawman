@@ -1,45 +1,121 @@
 import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TrendAreaChart } from "@/components/charts/trend-area-chart";
 import { formatChartValue } from "@/lib/chart-format";
 
-vi.mock("recharts", () => ({
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="responsive-container">{children}</div>
-  ),
-  AreaChart: ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
-    <div data-testid="area-chart" data-rows={JSON.stringify(data)}>
-      {children}
-    </div>
-  ),
-  Area: ({
-    dataKey,
-    stroke,
-    strokeDasharray,
-    isAnimationActive,
-  }: {
-    dataKey: string;
-    stroke?: string;
-    strokeDasharray?: string;
-    isAnimationActive?: boolean;
-  }) => (
-    <div
-      data-testid={`area-${dataKey}`}
-      data-stroke={stroke}
-      data-dash={strokeDasharray}
-      data-animate={String(isAnimationActive)}
-    />
-  ),
-  CartesianGrid: () => null,
-  XAxis: () => null,
-  YAxis: () => null,
-  LabelList: () => null,
-  Tooltip: () => null,
-  Legend: () => <div data-testid="legend" />,
-}));
+// `mode.real` switches every mocked export to the real recharts for the un-mocked smoke renders
+// (same technique as the donut test).
+const mode = vi.hoisted(() => ({ real: false }));
+vi.mock("recharts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("recharts")>();
+  const pick = <P extends object>(
+    name: keyof typeof actual,
+    fake: (props: P) => React.ReactNode
+  ) => {
+    const Real = actual[name] as unknown as React.ComponentType<P>;
+    function Switch(props: P) {
+      return mode.real ? <Real {...props} /> : fake(props);
+    }
+    Switch.displayName = `Mock${String(name)}`;
+    return Switch;
+  };
+  return {
+    ...actual,
+    ResponsiveContainer: pick(
+      "ResponsiveContainer",
+      ({ children }: { children: React.ReactNode }) => (
+        <div data-testid="responsive-container">{children}</div>
+      )
+    ),
+    AreaChart: pick(
+      "AreaChart",
+      ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
+        <div data-testid="area-chart" data-rows={JSON.stringify(data)}>
+          {children}
+        </div>
+      )
+    ),
+    Area: pick(
+      "Area",
+      ({
+        dataKey,
+        stroke,
+        strokeDasharray,
+        isAnimationActive,
+      }: {
+        dataKey: string;
+        stroke?: string;
+        strokeDasharray?: string;
+        isAnimationActive?: boolean;
+      }) => (
+        <div
+          data-testid={`area-${dataKey}`}
+          data-stroke={stroke}
+          data-dash={strokeDasharray}
+          data-animate={String(isAnimationActive)}
+        />
+      )
+    ),
+    CartesianGrid: pick("CartesianGrid", () => null),
+    XAxis: pick("XAxis", () => null),
+    YAxis: pick("YAxis", () => null),
+    LabelList: pick("LabelList", () => null),
+    Tooltip: pick("Tooltip", () => null),
+    Legend: pick("Legend", () => <div data-testid="legend" />),
+  };
+});
 
+/**
+ * The real recharts: happy-dom has no layout, so a fixed 480×240 box (a 24px legend row) and a
+ * silent observer; and reduced motion, so areas draw at their final shape (recharts hides labels
+ * while animating).
+ */
+function withRealRecharts() {
+  mode.real = true;
+  vi.spyOn(window, "matchMedia").mockImplementation(
+    (query: string) =>
+      ({
+        matches: query === "(prefers-reduced-motion: reduce)",
+        media: query,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }) as unknown as MediaQueryList
+  );
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+    this: HTMLElement
+  ) {
+    const height = this.closest(".recharts-legend-wrapper") ? 24 : 240;
+    return {
+      width: 480,
+      height,
+      top: 0,
+      left: 0,
+      right: 480,
+      bottom: height,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    };
+  });
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+  );
+}
+
+beforeEach(() => {
+  mode.real = false;
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 afterEach(() => cleanup());
 
 const balance = [
@@ -157,6 +233,139 @@ describe("TrendAreaChart", () => {
       .getAllByRole("columnheader")
       .map((h) => h.textContent);
     expect(headers).toEqual(["Month", ...series.map((s) => s.label)]);
+  });
+
+  it("stays ready with the table reachable when truncation leaves only empty series", async () => {
+    const user = userEvent.setup();
+    const series = Array.from({ length: 6 }, (_, i) => ({ key: `s${i}`, label: `Earner ${i}` }));
+    const data = [{ month: "Nov", s0: null, s1: null, s2: null, s3: null, s4: null, s5: 30 }];
+    render(
+      <TrendAreaChart
+        title="Sparse utilization"
+        data={data}
+        xKey="month"
+        series={series}
+        format="percent"
+      />
+    );
+
+    expect(screen.getByRole("figure", { name: "Sparse utilization" })).toHaveAttribute(
+      "data-state",
+      "ready"
+    );
+    await user.click(screen.getByRole("button", { name: "View as table" }));
+    expect(
+      within(screen.getByRole("table")).getByRole("cell", {
+        name: formatChartValue(30, "percent"),
+      })
+    ).toBeInTheDocument();
+  });
+
+  it("treats NaN and Infinity as no value", () => {
+    render(
+      <TrendAreaChart
+        title="Not finite"
+        data={[
+          { month: "Oct", trust: Number.NaN },
+          { month: "Nov", trust: Number.POSITIVE_INFINITY },
+        ]}
+        xKey="month"
+        series={[{ key: "trust", label: "Trust" }]}
+        format="currency"
+      />
+    );
+
+    expect(screen.getByRole("figure", { name: "Not finite" })).toHaveAttribute(
+      "data-state",
+      "empty"
+    );
+  });
+
+  it("labels a single incomplete period (to date) though it cannot be dashed", async () => {
+    const user = userEvent.setup();
+    render(
+      <TrendAreaChart
+        title="First month"
+        data={[{ month: "Nov 2026", trust: 5000 }]}
+        xKey="month"
+        series={[{ key: "trust", label: "Trust" }]}
+        format="currency"
+        partialLastPoint
+      />
+    );
+
+    expect(screen.queryByTestId("area-trust__partial")).toBeNull();
+    expect(document.querySelector('[data-slot="chart-summary"]')?.textContent).toContain(
+      "in Nov 2026 (to date)"
+    );
+    await user.click(screen.getByRole("button", { name: "View as table" }));
+    expect(
+      within(screen.getByRole("table")).getByRole("rowheader", { name: "Nov 2026 (to date)" })
+    ).toBeInTheDocument();
+  });
+
+  it("dots a lone point and an isolated point between gaps (real recharts)", async () => {
+    withRealRecharts();
+    const { rerender } = render(
+      <TrendAreaChart
+        title="Lone point"
+        data={[{ month: "Nov", trust: 5 }]}
+        xKey="month"
+        series={[{ key: "trust", label: "Trust" }]}
+        format="count"
+      />
+    );
+    const dots = () => document.querySelectorAll(".recharts-area-dots circle");
+    await waitFor(() => expect(dots()).toHaveLength(1));
+
+    rerender(
+      <TrendAreaChart
+        title="Lone point"
+        data={[
+          { month: "Aug", trust: 5 },
+          { month: "Sep", trust: null },
+          { month: "Oct", trust: 7 },
+          { month: "Nov", trust: 8 },
+        ]}
+        xKey="month"
+        series={[{ key: "trust", label: "Trust" }]}
+        format="count"
+      />
+    );
+    // Aug has no valued neighbour; Oct–Nov draw a line.
+    await waitFor(() => expect(dots()).toHaveLength(1));
+  });
+
+  it("puts a line-end label at the series' last valued point, never at y = 0 (real recharts)", async () => {
+    withRealRecharts();
+    render(
+      <TrendAreaChart
+        title="Two lines"
+        data={[
+          { month: "Sep", fees: 10, disb: 4 },
+          { month: "Oct", fees: 12, disb: 6 },
+          { month: "Nov", fees: 11, disb: null },
+        ]}
+        xKey="month"
+        series={[
+          { key: "fees", label: "Fees" },
+          { key: "disb", label: "Disbursements" },
+        ]}
+        format="count"
+      />
+    );
+
+    const label = (name: string) =>
+      Array.from(document.querySelectorAll("svg.recharts-surface text")).find(
+        (t) => t.textContent === name
+      );
+    await waitFor(() => expect(label("Disbursements")).toBeDefined());
+    expect(label("Fees")).toBeDefined();
+    expect(Number(label("Disbursements")?.getAttribute("y"))).toBeGreaterThan(0);
+    // Oct, not Nov: left of the Fees label at the Nov end.
+    expect(Number(label("Disbursements")?.getAttribute("x"))).toBeLessThan(
+      Number(label("Fees")?.getAttribute("x"))
+    );
   });
 
   it("shows a skeleton at chart height while loading", () => {

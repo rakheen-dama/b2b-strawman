@@ -19,6 +19,7 @@ import { ChartCard, type ChartCardSlots } from "./chart-card";
 import {
   chartState,
   foldSeries,
+  hasFiniteValue,
   isAdditive,
   seriesColor,
   seriesTable,
@@ -48,7 +49,7 @@ interface TrendAreaChartProps extends ChartCardSlots {
   series: ChartSeries[];
   format: ChartValueKind;
   currency?: string;
-  /** The last x is incomplete: drawn dashed and labelled "(to date)". */
+  /** The last x is incomplete: labelled "(to date)" and, from two points on, drawn dashed. */
   partialLastPoint?: boolean;
   /** Chart area height in px. */
   height?: number;
@@ -57,16 +58,20 @@ interface TrendAreaChartProps extends ChartCardSlots {
 interface EndLabelProps {
   /** Series label drawn at the line end. */
   text: string;
+  /** Row index of the series' last valued point (`lastValuedIndex`). */
   lastIndex: number;
-  // Injected by recharts' LabelList.
+  // Injected by recharts' LabelList (one entry per row; a missing value arrives as y = 0).
   x?: number | string;
   y?: number | string;
   index?: number;
+  value?: unknown;
 }
 
-/** LabelList `content`: the series label beside the last point only (direct labelling). */
-function EndLabel({ text, lastIndex, x, y, index }: EndLabelProps) {
-  if (index !== lastIndex || x === undefined || y === undefined) return null;
+/** LabelList `content`: the series label beside its last valued point only (direct labelling). */
+function EndLabel({ text, lastIndex, x, y, index, value }: EndLabelProps) {
+  if (index !== lastIndex || !Number.isFinite(value) || x === undefined || y === undefined) {
+    return null;
+  }
   return (
     <text
       x={Number(x) + 8}
@@ -78,6 +83,36 @@ function EndLabel({ text, lastIndex, x, y, index }: EndLabelProps) {
       {text}
     </text>
   );
+}
+
+/** Row index of the last finite value of `key`, or -1. */
+function lastValuedIndex(rows: ChartRow[], key: string): number {
+  return rows.map((row) => Number.isFinite(row[key])).lastIndexOf(true);
+}
+
+/**
+ * Row indices of `key`'s isolated values (no valued neighbour): an area draws no path through a
+ * lone point, so these get a dot. (recharts already dots a series of exactly one point.)
+ */
+function isolatedIndices(rows: ChartRow[], key: string): Set<number> {
+  const valued = (index: number) => Number.isFinite(rows[index]?.[key]);
+  const isolated = new Set<number>();
+  rows.forEach((_, index) => {
+    if (valued(index) && !valued(index - 1) && !valued(index + 1)) isolated.add(index);
+  });
+  return isolated;
+}
+
+/** Area `dot`: the theme default (none), plus a dot on each of `indices`. */
+function isolatedDot(indices: Set<number>, color: string) {
+  if (indices.size === 0) return CHART_THEME.area.dot;
+  function IsolatedDot({ index, cx, cy }: { index?: number; cx?: number; cy?: number }) {
+    if (index === undefined || !indices.has(index) || cx === undefined || cy === undefined) {
+      return null;
+    }
+    return <circle cx={cx} cy={cy} r={3} fill={color} stroke={color} />;
+  }
+  return IsolatedDot;
 }
 
 export function TrendAreaChart({
@@ -103,15 +138,18 @@ export function TrendAreaChart({
   const gradientId = `trend-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   const { rows, series } = foldSeries(data, inputSeries, format);
-  const hasValue = rows.some((row) => series.some((s) => typeof row[s.key] === "number"));
-  const state = chartState({ loading, error, hasValue });
+  // Ready vs empty from the full data: a non-additive truncation that leaves only empty series on
+  // the chart must not hide the table that still holds the values.
+  const state = chartState({ loading, error, hasValue: hasFiniteValue(data, inputSeries) });
 
   const lastIndex = rows.length - 1;
+  // "(to date)" labels the last x whenever it is incomplete; the dashed segment needs two points.
+  const toDate = partialLastPoint && rows.length >= 1;
   const partial = partialLastPoint && rows.length >= 2;
   const lastX = String(rows[lastIndex]?.[xKey] ?? "");
   const xAt = (row: ChartRow, index: number) => {
     const x = String(row[xKey] ?? "");
-    return partial && index === lastIndex ? toDateLabel(x) : x;
+    return toDate && index === lastIndex ? toDateLabel(x) : x;
   };
 
   // Partial last point: the solid series stops one point early and a dashed companion series
@@ -162,7 +200,7 @@ export function TrendAreaChart({
               series,
               format,
               currency,
-              partialLastPoint: partial,
+              partialLastPoint: toDate,
             })
           : undefined
       }
@@ -231,7 +269,7 @@ export function TrendAreaChart({
                   payload={payload}
                   label={props.label}
                   labelFormatter={(value) =>
-                    partial && props.label === lastX ? toDateLabel(String(value)) : value
+                    toDate && props.label === lastX ? toDateLabel(String(value)) : value
                   }
                   valueFormatter={(value) => fmt(Number(value))}
                 />
@@ -239,51 +277,67 @@ export function TrendAreaChart({
             }}
           />
           {showLegend ? <ChartLegend content={<ChartLegendContent />} /> : null}
-          {series.map((s, index) => (
-            <Area
-              key={s.key}
-              dataKey={s.key}
-              name={s.label}
-              type={CHART_THEME.area.type}
-              stroke={seriesColor(s, index)}
-              strokeWidth={2}
-              fill={`url(#${gradientId}-${index})`}
-              dot={CHART_THEME.area.dot}
-              activeDot={CHART_THEME.area.activeDot}
-              isAnimationActive={!reduceMotion}
-            >
-              {directLabels && !partial ? (
-                <LabelList
-                  dataKey={s.key}
-                  content={<EndLabel text={s.label} lastIndex={lastIndex} />}
-                />
-              ) : null}
-            </Area>
-          ))}
+          {series.map((s, index) => {
+            // Isolation is judged on the unsplit rows: with a dashed last period, the solid series
+            // dots every isolated point but the last, which its dashed companion draws.
+            const isolated = isolatedIndices(rows, s.key);
+            const solidDots = partial
+              ? new Set([...isolated].filter((i) => i !== lastIndex))
+              : isolated;
+            return (
+              <Area
+                key={s.key}
+                dataKey={s.key}
+                name={s.label}
+                type={CHART_THEME.area.type}
+                stroke={seriesColor(s, index)}
+                strokeWidth={2}
+                fill={`url(#${gradientId}-${index})`}
+                dot={isolatedDot(solidDots, seriesColor(s, index))}
+                activeDot={CHART_THEME.area.activeDot}
+                isAnimationActive={!reduceMotion}
+              >
+                {directLabels && !partial ? (
+                  <LabelList
+                    dataKey={s.key}
+                    content={<EndLabel text={s.label} lastIndex={lastValuedIndex(rows, s.key)} />}
+                  />
+                ) : null}
+              </Area>
+            );
+          })}
           {partial
-            ? series.map((s, index) => (
-                <Area
-                  key={`${s.key}${PARTIAL_SUFFIX}`}
-                  dataKey={`${s.key}${PARTIAL_SUFFIX}`}
-                  name={s.label}
-                  type={CHART_THEME.area.type}
-                  stroke={seriesColor(s, index)}
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                  fill="none"
-                  legendType="none"
-                  dot={CHART_THEME.area.dot}
-                  activeDot={CHART_THEME.area.activeDot}
-                  isAnimationActive={!reduceMotion}
-                >
-                  {directLabels ? (
-                    <LabelList
-                      dataKey={`${s.key}${PARTIAL_SUFFIX}`}
-                      content={<EndLabel text={s.label} lastIndex={lastIndex} />}
-                    />
-                  ) : null}
-                </Area>
-              ))
+            ? series.map((s, index) => {
+                const key = `${s.key}${PARTIAL_SUFFIX}`;
+                const lastDot = isolatedIndices(rows, s.key).has(lastIndex)
+                  ? new Set([lastIndex])
+                  : new Set<number>();
+                return (
+                  <Area
+                    key={key}
+                    dataKey={key}
+                    name={s.label}
+                    type={CHART_THEME.area.type}
+                    stroke={seriesColor(s, index)}
+                    strokeWidth={2}
+                    strokeDasharray="4 4"
+                    fill="none"
+                    legendType="none"
+                    dot={isolatedDot(lastDot, seriesColor(s, index))}
+                    activeDot={CHART_THEME.area.activeDot}
+                    isAnimationActive={!reduceMotion}
+                  >
+                    {directLabels ? (
+                      <LabelList
+                        dataKey={key}
+                        content={
+                          <EndLabel text={s.label} lastIndex={lastValuedIndex(chartRows, key)} />
+                        }
+                      />
+                    ) : null}
+                  </Area>
+                );
+              })
             : null}
         </AreaChart>
       </ChartContainer>

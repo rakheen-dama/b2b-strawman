@@ -17,7 +17,9 @@ interface TimeBreakdownProps {
 // No "use client": no hooks or handlers here — the kit DonutChart is the client boundary and
 // every prop it receives is serializable.
 export function TimeBreakdown({ data }: TimeBreakdownProps) {
-  if (!data || data.length === 0) {
+  // Matters with no hours (all zero) are no time logged: the same empty state as no matters,
+  // rather than the chart's generic one with the matter list hidden.
+  if (!data || !data.some((item) => item.hours > 0)) {
     return (
       <DonutChart
         title={TITLE}

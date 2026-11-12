@@ -4,12 +4,16 @@
 // tab-bar position, money strings on the default tab and console errors/warnings, records what
 // each user sees on the Clients list, and probes (GET only) the backend reads the 642B hero will
 // source, as each user, to record their shape and status codes. Writes obs-before.json (compact).
-// Run: node obs-before.cjs   (nvm node v20; @playwright/test from the main checkout's frontend)
+// Run: node obs-before.cjs   (nvm node v20; @playwright/test from this repo's frontend, or $PW_PATH)
 const path = require("path");
 const fs = require("fs");
-const { chromium } = require(
-  "/Users/rakheendama/Projects/2026/b2b-strawman/frontend/node_modules/@playwright/test"
-);
+// @playwright/test: $PW_PATH if set, else resolved from this repo's frontend/ (after `pnpm install`).
+const PW_PATH =
+  process.env.PW_PATH ||
+  require.resolve("@playwright/test", {
+    paths: [path.resolve(__dirname, "../../../../../frontend")],
+  });
+const { chromium } = require(PW_PATH);
 
 const BASE = "http://localhost:3001";
 const API = "http://localhost:8081";

@@ -11,7 +11,7 @@ Captured 2026-11-12, final run started 19:37:35Z, against the e2e mock-auth stac
 
 ## Data created through the UI (second-currency fee note)
 
-`setup-usd-feenote.cjs` drives Alice through the UI one stage at a time, so a re-run never duplicates data. There was no SQL and no REST write. These are the four rows it created:
+`setup-usd-feenote.cjs` drives Alice through the UI one stage at a time. There was no SQL and no REST write. Running the stages separately does not prevent duplicates: no stage checks for existing records, so each creation stage must run at most once, and before retrying a failed stage the operator must inspect the existing data (UI, or a read-only SELECT) to see whether its record was already created. These are the four rows it created:
 
 | stage | UI path | result |
 |---|---|---|
@@ -33,7 +33,7 @@ Captured 2026-11-12, final run started 19:37:35Z, against the e2e mock-auth stac
 1. The `rate` stage failed after submit on a strict-mode locator: Radix popovers also carry `role=dialog`. The rate had already been created; read-only SELECT confirmed it. Dialogs are now located by `[data-slot=dialog-content]`.
 2. The `feenote` stage waited for a redirect to the draft that never comes. The dialog closes and the page stays on `?tab=invoices`. The draft had already been created. The stage now waits for the dialog to close.
 
-Neither stage was re-run, because a re-run would duplicate the data. The `task`, `time` and `send` stages ran with the committed code.
+Neither stage was re-run, because a re-run would duplicate the data (in both cases the record had already been created, as noted above). The `task` and `send` stages ran with the committed code. The `time` stage ran with a fixed 2.5 s wait that only logged the rate preview; after review it was changed to wait (bounded, 15 s) for the USD 100/hour client-override preview and fail the stage otherwise. That version has not been run, because re-running `time` would log a second entry.
 
 **These rows stay on the stack:** the USD rate override, the task, the 1h USD time entry and INV-0003. The after-capture (642.10) can reuse Acme as the foreign-currency client without setting it up again.
 

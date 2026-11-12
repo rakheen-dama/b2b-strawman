@@ -83,6 +83,14 @@ async function readPrimaryLedger(clientId: string): Promise<ClientTrustBalance |
   }
 }
 
+/**
+ * Open matters is never omitted (spec 642.7 / R1): every role can list matters, so a 403/404 that
+ * settle() turned into "absent" is a failed read → state "error", not a dropped tile.
+ */
+function neverAbsent<T>(result: WidgetResult<T>): WidgetResult<T> {
+  return result.state === "absent" ? { state: "error" } : result;
+}
+
 function presentOnly<T>(result: WidgetResult<T | null>): WidgetResult<T> {
   if (result.state !== "ok") return result;
   return result.data === null ? ABSENT : { state: "ok", data: result.data };
@@ -108,7 +116,12 @@ export async function loadClientHeroData(
     ),
     settle(true, "client FICA status", () => getClientFicaStatus(clientId)),
   ]);
-  return { openMatterCount, debtor, trustBalance: presentOnly(trust), ficaStatus };
+  return {
+    openMatterCount: neverAbsent(openMatterCount),
+    debtor,
+    trustBalance: presentOnly(trust),
+    ficaStatus,
+  };
 }
 
 /** The Chase-history card: the debtor detail, or null (hidden) when not fetched / failed (as before). */
@@ -124,7 +137,10 @@ function exclusionText(excluded: number): string {
  * Default-currency rows only — never a cross-currency sum (rulings §6); the rest are counted. One
  * hint line (compact tile): the exclusion caveat when any row was skipped, else the overdue count.
  */
-function outstandingTile(detail: DebtorDetailResponse, currency: string) {
+function outstandingTile(
+  detail: DebtorDetailResponse,
+  currency: string
+): { value: ReactNode; hint?: ReactNode } {
   const rows = detail.outstandingInvoices.filter((row) => row.currency === currency);
   const excluded = detail.outstandingInvoices.length - rows.length;
   const total = rows.reduce((sum, row) => sum + row.balanceDue, 0);
@@ -144,6 +160,16 @@ const FICA_ICON: Record<FicaOnboardingStatus, { icon: LucideIcon; className: str
 };
 
 /** Label + icon, never colour alone (ADR-373 / ADR-370); the icon is decorative. */
+/** No default currency (the settings read failed) → the currency rule can't apply → "error". */
+function outstandingResult(
+  debtor: WidgetResult<DebtorDetailResponse>,
+  currency: string | null
+): WidgetResult<{ value: ReactNode; hint?: ReactNode }> {
+  if (debtor.state !== "ok") return debtor;
+  if (currency === null) return { state: "error" };
+  return { state: "ok", data: outstandingTile(debtor.data, currency) };
+}
+
 function ficaTile(fica: FicaStatus): { value: ReactNode; hint?: ReactNode } {
   const status: FicaOnboardingStatus = fica.status in FICA_ICON ? fica.status : "NOT_STARTED";
   const { icon, className } = FICA_ICON[status];
@@ -171,8 +197,6 @@ export function buildClientHeroTiles(
   defaultCurrency: string | null
 ): HeroTile[] {
   const L = CLIENT_HERO_TILE_LABELS;
-  const debtor: WidgetResult<DebtorDetailResponse> =
-    defaultCurrency === null && data.debtor.state === "ok" ? { state: "error" } : data.debtor;
   return [
     tileFrom("openMatters", L.openMatters, data.openMatterCount, (count) => ({
       value: String(count),
@@ -181,8 +205,11 @@ export function buildClientHeroTiles(
       value: formatCurrency(trust.balance, defaultCurrency ?? undefined),
       hint: trust.accountName,
     })),
-    tileFrom("outstanding", L.outstanding, debtor, (detail) =>
-      outstandingTile(detail, defaultCurrency as string)
+    tileFrom(
+      "outstanding",
+      L.outstanding,
+      outstandingResult(data.debtor, defaultCurrency),
+      (tile) => tile
     ),
     tileFrom("fica", L.fica, data.ficaStatus, ficaTile),
   ].filter((tile): tile is HeroTile => tile !== null);

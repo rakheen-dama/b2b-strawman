@@ -187,6 +187,21 @@ describe("client hero tiles (642B)", () => {
     });
   });
 
+  describe("Open matters is never omitted (642.7 / R1)", () => {
+    it.each([403, 404])("matters read %s → present with state error", async (status) => {
+      mockMatterRows.mockRejectedValue(new MockApiError(status, "denied"));
+      const tiles = await tilesFor(MEMBER);
+
+      expect(ids(tiles)[0]).toBe("openMatters");
+      expect(tile(tiles, "openMatters")).toEqual({
+        id: "openMatters",
+        label: "Open matters",
+        value: null,
+        state: "error",
+      });
+    });
+  });
+
   describe("Outstanding (default currency only — rulings §6, R3)", () => {
     it("mixed currency: sums the default-currency rows only and notes the excluded one", async () => {
       const tiles = await tilesFor(ADMIN);

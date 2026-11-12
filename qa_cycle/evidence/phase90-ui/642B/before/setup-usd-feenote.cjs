@@ -1,15 +1,23 @@
 // 642B observe-first setup (task 642.6): create a second-currency (USD) fee note for Acme Corp
 // THROUGH THE UI on the e2e mock-auth stack (frontend :3001) as Alice (owner). No SQL, no REST.
-// Stages are run one at a time so a re-run never duplicates data:
+// Stages are run one at a time, but that does not make a re-run safe: no stage checks for existing
+// records, so re-running a creation stage (rate, task, time, feenote) creates a duplicate. Run each
+// creation stage at most once, and before retrying a failed stage inspect the stack (UI, or a
+// read-only SELECT) to see whether its record was already created.
 //   node setup-usd-feenote.cjs rate     — Acme client page → Fees › Tariffs → Add Override (Alice, USD 100/h)
 //   node setup-usd-feenote.cjs task     — Website Redesign matter → Tasks → New Task
 //   node setup-usd-feenote.cjs time     — task row → Log Time 1h (rate preview must say USD)
 //   node setup-usd-feenote.cjs feenote  — Acme → Fees › Fee notes → New fee note, currency USD → Create Draft
 //   node setup-usd-feenote.cjs send     — fee note detail → Approve → Send fee note
 // Step screenshots go to /tmp/642b-setup (not committed).
-const { chromium } = require(
-  "/Users/rakheendama/Projects/2026/b2b-strawman/frontend/node_modules/@playwright/test"
-);
+const path = require("path");
+// @playwright/test: $PW_PATH if set, else resolved from this repo's frontend/ (after `pnpm install`).
+const PW_PATH =
+  process.env.PW_PATH ||
+  require.resolve("@playwright/test", {
+    paths: [path.resolve(__dirname, "../../../../../frontend")],
+  });
+const { chromium, expect } = require(PW_PATH);
 
 const BASE = "http://localhost:3001";
 const SLUG = "e2e-test-org";
@@ -69,9 +77,20 @@ async function stageTime(page) {
   const dlg = page.locator('[data-slot="dialog-content"]');
   await dlg.locator("#time-hours").fill("1");
   await dlg.locator("#time-description").fill("642B second-currency probe");
-  await page.waitForTimeout(2500); // debounced rate resolution
-  const preview = await dlg.getByTestId("rate-preview").innerText().catch(() => "(no rate-preview)");
-  console.log("rate preview:", preview.replace(/\s+/g, " "));
+  // The debounced rate resolution must land on the USD 100/hour client override before logging;
+  // anything else (no preview, ZAR, the "no billing rate" banner) fails the stage, nothing logged.
+  const preview = dlg.getByTestId("rate-preview");
+  try {
+    await expect(preview).toContainText(/Billing rate:\s*US\$\s*100[,.]00\s*\/hr\s*\(client override\)/, {
+      timeout: 15000,
+    });
+  } catch (e) {
+    const text = await preview.innerText().catch(() => "(no rate-preview)");
+    throw new Error(`rate preview is not the USD 100/hour override: "${text.replace(/\s+/g, " ")}"`, {
+      cause: e,
+    });
+  }
+  console.log("rate preview:", (await preview.innerText()).replace(/\s+/g, " "));
   await shot(page, "1-filled");
   await dlg.getByRole("button", { name: /^Log Time$/ }).click();
   await dlg.waitFor({ state: "hidden", timeout: 20000 });

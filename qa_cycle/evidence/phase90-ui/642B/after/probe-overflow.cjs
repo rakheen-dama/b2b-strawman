@@ -64,11 +64,29 @@ async function diagnose(page) {
       actionsShrinkable: (() => {
         const a = card && card.querySelector('[data-slot="detail-hero-actions"]');
         if (!a) return null;
+        const had = a.classList.contains("shrink-0"); // post-fix builds no longer carry it
         a.classList.remove("shrink-0");
         const ar = a.getBoundingClientRect();
         const out = { heroScrollWidth: card.scrollWidth, actionsRight: Math.round(ar.right), scrollWidthTabBarHidden: withHidden('[role="tablist"]') };
-        a.classList.add("shrink-0");
+        if (had) a.classList.add("shrink-0");
         return out;
+      })(),
+      // Post-fix: where the actions sit relative to the h1, as served (`asServed`) and with the
+      // pre-fix `shrink-0` re-added in the live DOM only (`withShrink0`, i.e. the before layout).
+      actionsLayout: (() => {
+        const a = card && card.querySelector('[data-slot="detail-hero-actions"]');
+        const h = card && card.querySelector("h1");
+        if (!a || !h) return null;
+        const m = () => {
+          const ar = a.getBoundingClientRect(), hr = h.getBoundingClientRect(), c = card.getBoundingClientRect();
+          return { h1Top: Math.round(hr.top), actionsTop: Math.round(ar.top), actionsLeft: Math.round(ar.left), actionsRight: Math.round(ar.right), actionsH: Math.round(ar.height), heroH: Math.round(c.height), heroScrollWidth: card.scrollWidth, scrollWidth: sw() };
+        };
+        const had = a.classList.contains("shrink-0");
+        const asServed = m();
+        a.classList.add("shrink-0");
+        const withShrink0 = m();
+        if (!had) a.classList.remove("shrink-0");
+        return { servedHasShrink0: had, asServed, withShrink0 };
       })(),
     };
   });
@@ -83,13 +101,25 @@ async function diagnose(page) {
   await page.getByRole("button", { name: "Sign In" }).click();
   await page.waitForURL(/\/org\/e2e-test-org\/dashboard/, { timeout: 60000 });
   await page.evaluate(() => localStorage.setItem("kazi-theme", "light"));
-  for (const [w, h] of [[390, 844], [768, 1024]]) {
+  // VIEWPORTS="390x844,768x1024,1024x768,1440x900" to widen; PAGE_KEYS="client,matter" to narrow;
+  // COMPACT=1 drops the outer/leaves lists; SHOTS=<prefix> screenshots the client hero per viewport.
+  const VPS = (process.env.VIEWPORTS || "390x844,768x1024").split(",").map((v) => v.split("x").map(Number));
+  const KEYS = process.env.PAGE_KEYS ? process.env.PAGE_KEYS.split(",") : Object.keys(PAGES);
+  for (const [w, h] of VPS) {
     await page.setViewportSize({ width: w, height: h });
-    for (const [key, p] of Object.entries(PAGES)) {
-      await page.goto(`${BASE}${p}`, { waitUntil: "load", timeout: 90000 });
+    for (const key of KEYS) {
+      await page.goto(`${BASE}${PAGES[key]}`, { waitUntil: "load", timeout: 90000 });
       await page.locator("h1").first().waitFor({ state: "visible", timeout: 60000 }).catch(() => {});
       await page.waitForTimeout(2500);
-      console.log(JSON.stringify({ viewport: `${w}x${h}`, page: key, ...(await diagnose(page)) }));
+      const d = await diagnose(page);
+      if (process.env.COMPACT) {
+        d.outer = d.outer.map((o) => `${o.el} ${o.left}->${o.right}`);
+        delete d.leaves;
+      }
+      console.log(JSON.stringify({ viewport: `${w}x${h}`, page: key, ...d }));
+      if (process.env.SHOTS && key === "client") {
+        await page.locator('[data-testid="client-header-card"]').screenshot({ path: path.join(__dirname, `${process.env.SHOTS}-${w}-light.png`) });
+      }
     }
   }
   await browser.close();

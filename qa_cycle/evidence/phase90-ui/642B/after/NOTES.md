@@ -204,3 +204,49 @@ The page went from **756 → 380 (< 550 ✓)**. For reference, the extracted `cl
 | A4 | `client-context` "2 matters" (all linked) sits next to Open matters "1" (Alice / rich). | Information. Before F4 wording, which the slice left as is. |
 
 Before F3 (dead smart action) and F5 (member 403s) still occur and are unchanged. No defect was found in the four tiles' values, gating, ordering or foreign-currency rule.
+
+## Post-fix re-probe (detail-hero shrink-0 removed)
+
+Fix: `acf20f6cf`. `frontend/components/shared/detail-hero.tsx` changes the actions wrapper from `className="flex shrink-0 flex-wrap items-center gap-2"` to `className="flex flex-wrap items-center gap-2"`. Nothing else changed.
+
+The e2e frontend was rebuilt from the worktree (`e2e-rebuild.sh frontend`, exit 0; no down, up or reseed). The served SSR and client chunks contain `detail-hero-actions",className:"flex flex-wrap items-center gap-2"`, so the container runs the new code.
+
+Probe: `probe-overflow.cjs` with `VIEWPORTS=390x844,768x1024,1024x768,1440x900 PAGE_KEYS=client,matter COMPACT=1 SHOTS=postfix-alice-rich`, signed in as Alice, light theme. Output is in `probe-overflow-postfix.out.txt`.
+
+Changes to the probe:
+- `actionsShrinkable` now restores `shrink-0` only if the served DOM had it.
+- New `actionsLayout` block. It measures the h1 and actions rects as served (`asServed`), then again with `shrink-0` re-added in the live DOM only (`withShrink0`, which is the pre-fix layout).
+
+| viewport | page | hero w | hero scrollWidth | fits? | page scrollWidth | page scrollWidth, tab bar hidden | remaining overflow |
+|---|---|---|---|---|---|---|---|
+| 390×844 | client | 358 | **356** (was 395) | **yes** | 515 | **390** | tab bar only (`tab-group-compliance` 349→441, `tab-group-activity` 465→515). **642C, predates this PR** |
+| 390×844 | matter | 326 | 362 | no (unchanged) | 609 | 609 | `detail-hero-actions` 53→395: its child `header-lifecycle-actions` (`matter-header-card.tsx:120`, `flex shrink-0 items-center`, no wrap) sets a 342 px min-content. Also the page-level Generate Document / Statement div 104→609 and the tab bar. **Predates this PR; matter actions go to 644B, the tab bar to 642C** |
+| 768×1024 | client | 464 | 462 | yes | 779 | **768** | tab bar only (`tab-group-activity` 729→779). **642C, predates this PR** |
+| 768×1024 | matter | 432 | 430 | yes | 873 | 873 | page-level Generate Document / Statement div 368→873, outside the hero (hero hidden: still 873). **644B, predates this PR** |
+| 1024×768 | client | 720 | 718 | yes | 1024 | 1024 | none |
+| 1024×768 | matter | 672 | 670 | yes | 1024 | 1024 | none |
+| 1440×900 | client | 1136 | 1134 | yes | 1440 | 1440 | none |
+| 1440×900 | matter | 1088 | 1086 | yes | 1440 | 1440 | none |
+
+Client 390 in detail:
+- Post-fix, the actions run x 37→353 at 72 px tall. They wrap onto two lines inside the card: "Activate Client" on one line, then "Generate Document" and "⋯".
+- With `shrink-0` re-added, the actions run x 37→412 at 32 px tall and the hero scrollWidth goes back to 395. That reproduces the A1 defect.
+- The hero height goes from 511 (pre-fix, matching `obs-after.json` `headerCardRect.h` 511) to 551, because of the extra actions line.
+
+**At 1024 and 1440 the actions do not move.** In every row below, `asServed` and `withShrink0` are identical in every field (h1 top, actions top/left/right/height, hero height):
+
+| viewport | page | h1 top | actions top | actions x | hero h (post-fix) | hero h before (`obs-after.json` headerCardRect.h) |
+|---|---|---|---|---|---|---|
+| 1440×900 | client | 157 | **157** (identity row) | 1020→1395 | 305 | 305 |
+| 1440×900 | matter | 189 | **189** (identity row) | 1029→1371 | 246 | n/a |
+| 1024×768 | client | 157 | 322 (own line, same as before) | 301→676 | 463 | 463 |
+| 1024×768 | matter | 189 | 295 (own line, same as before) | 325→667 | 404 | n/a |
+
+At 768 the actions rects are also identical with and without `shrink-0`, for both pages.
+
+Screenshots (hero card only):
+- `postfix-alice-rich-1440-light.png`: actions on the identity row, same as `alice-rich-1440-light.png`.
+- `postfix-alice-rich-390-light.png`: actions wrap inside the card.
+- `postfix-alice-rich-768-light.png` and `postfix-alice-rich-1024-light.png`: captured as a by-product.
+
+Updated A1 status: **fixed on the client page.** The matter page at 390 is neither better nor worse, because its own non-wrapping `header-lifecycle-actions` predates this PR (→ 644B). A2 (tab bar overflow at 390 and 768) is unchanged (→ 642C).

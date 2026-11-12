@@ -305,3 +305,5 @@ The first row top is 94, under the `th` bottom at 104, so rows scroll beneath th
 Final `git status --short` (worktree): `?? qa_cycle/evidence/phase90-ui/642A/`
 
 > **Orchestrator note (evidence trim, merge-hook 300-file cap):** the final-code run's `final/pristine/` (25 parity-replay screenshots, matching `./pristine/`; `final/after-pristine.json` + `final/parity-pristine.txt` kept) and `final/shots-pristine/` (24 probe screenshots, same modes as `final/shots-rich/`; `final/probe-pristine.json` kept) were not committed.
+
+> **Orchestrator note (compact JSON):** the 13 `*.json` evidence files are stored as compact single-line JSON (`json.dumps(separators=(",", ":"))`), each proven equal to the pretty-printed original by `json.load` comparison. The merge-gate hook classifies a PR via `gh pr diff --name-only`, which GitHub refuses for diffs over 20,000 lines (HTTP 406). The pretty-printed files put this PR at +33k lines. Pretty-print locally with `python3 -m json.tool <file>`; `compare-642a.py` reads either form.

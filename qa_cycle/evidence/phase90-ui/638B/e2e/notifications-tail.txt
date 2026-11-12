@@ -1,0 +1,8 @@
+
+  ✓  1 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:68:7 › NOTIF-01: Notification Bell › Bell shows unread count (396ms)
+  ✓  2 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:76:7 › NOTIF-01: Notification Bell › Click bell opens dropdown (458ms)
+  ✓  3 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:89:7 › NOTIF-01: Notification Bell › Mark notification as read (489ms)
+  ✓  4 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:110:7 › NOTIF-01: Notification Bell › Navigate to notifications page (266ms)
+  ✓  5 [chromium] › e2e/tests/notifications/notification-bell.spec.ts:123:7 › NOTIF-01: Notification Bell › Mark all as read (488ms)
+
+  5 passed (3.0s)

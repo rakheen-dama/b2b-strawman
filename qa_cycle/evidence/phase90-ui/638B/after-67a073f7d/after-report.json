@@ -1,0 +1,2207 @@
+{
+  "head": "67a073f7d",
+  "branch": "worktree-epic-638B",
+  "capturedAt": "2026-11-12T05:00:14.115Z",
+  "paletteKey": "Meta+k",
+  "captures": [
+    {
+      "file": "header-1024-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 736,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 768,
+        "height": 2287,
+        "bottom": 2351
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2351,
+      "innerHeight": 768,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 669,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "console": [],
+      "hydrationMessages": [],
+      "noOverlapAtScroll0": true
+    },
+    {
+      "file": "header-1024-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "theme": "dark",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 736,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(17.0059 -0.560075 -5.14781)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(0 0 0 / 0.5) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.204999 -0.00191223 -0.0108276 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 768,
+        "height": 2287,
+        "bottom": 2351
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2351,
+      "innerHeight": 768,
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(2.214 -0.134699 -1.01047)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 669,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "console": [],
+      "hydrationMessages": [],
+      "noOverlapAtScroll0": true
+    },
+    {
+      "file": "header-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 2336
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 1085,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "console": [],
+      "hydrationMessages": [],
+      "noOverlapAtScroll0": true,
+      "tabOrderFromToggle": [
+        {
+          "tag": "button",
+          "name": "Toggle menu",
+          "href": null,
+          "inHeader": true
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization",
+          "href": "/org/e2e-test-org/dashboard",
+          "inHeader": true
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K",
+          "href": null,
+          "inHeader": true
+        },
+        {
+          "tag": "button",
+          "name": "Notifications",
+          "href": null,
+          "inHeader": true
+        },
+        {
+          "tag": "button",
+          "name": "AO",
+          "href": null,
+          "inHeader": true
+        },
+        {
+          "tag": "a",
+          "name": "Open diary",
+          "href": "/org/e2e-test-org/diary?view=day",
+          "inHeader": false
+        },
+        {
+          "tag": "a",
+          "name": "Open unbilled work",
+          "href": "/org/e2e-test-org/invoices/unbilled",
+          "inHeader": false
+        },
+        {
+          "tag": "a",
+          "name": "Open collections",
+          "href": "/org/e2e-test-org/invoices/collections",
+          "inHeader": false
+        },
+        {
+          "tag": "a",
+          "name": "Open reconciliation",
+          "href": "/org/e2e-test-org/trust-accounting/reconciliation",
+          "inHeader": false
+        },
+        {
+          "tag": "a",
+          "name": "View all",
+          "href": "/org/e2e-test-org/clients?view=system:fica-outstanding",
+          "inHeader": false
+        }
+      ]
+    },
+    {
+      "file": "header-1440-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(17.0059 -0.560075 -5.14781)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(0 0 0 / 0.5) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.204999 -0.00191223 -0.0108276 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 2336
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(2.214 -0.134699 -1.01047)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 1085,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "console": [],
+      "hydrationMessages": [],
+      "noOverlapAtScroll0": true,
+      "tabOrderFromToggle": [
+        {
+          "tag": "button",
+          "name": "Toggle menu",
+          "href": null,
+          "inHeader": true
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization",
+          "href": "/org/e2e-test-org/dashboard",
+          "inHeader": true
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K",
+          "href": null,
+          "inHeader": true
+        },
+        {
+          "tag": "button",
+          "name": "Notifications",
+          "href": null,
+          "inHeader": true
+        },
+        {
+          "tag": "button",
+          "name": "AO",
+          "href": null,
+          "inHeader": true
+        },
+        {
+          "tag": "a",
+          "name": "Open diary",
+          "href": "/org/e2e-test-org/diary?view=day",
+          "inHeader": false
+        },
+        {
+          "tag": "a",
+          "name": "Open unbilled work",
+          "href": "/org/e2e-test-org/invoices/unbilled",
+          "inHeader": false
+        },
+        {
+          "tag": "a",
+          "name": "Open collections",
+          "href": "/org/e2e-test-org/invoices/collections",
+          "inHeader": false
+        },
+        {
+          "tag": "a",
+          "name": "Open reconciliation",
+          "href": "/org/e2e-test-org/trust-accounting/reconciliation",
+          "inHeader": false
+        },
+        {
+          "tag": "a",
+          "name": "View all",
+          "href": "/org/e2e-test-org/clients?view=system:fica-outstanding",
+          "inHeader": false
+        }
+      ]
+    },
+    {
+      "file": "header-scrolled-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": -1372,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 900
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": -1348
+      },
+      "h1Top": -1348,
+      "subscriptionBanner": null,
+      "scrollY": 1436,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 1085,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "headerBoxBeforeScroll": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "scrollRequested": "max",
+      "console": [],
+      "hydrationMessages": [],
+      "headerYDeltaFromScroll0": 0,
+      "headerHitTest": [
+        {
+          "x": 848,
+          "y": 36,
+          "inHeader": true,
+          "tag": "header"
+        },
+        {
+          "x": 312,
+          "y": 36,
+          "inHeader": true,
+          "tag": "button"
+        }
+      ],
+      "contentBeneathHeader": {
+        "mainTop": -1372,
+        "headerBottom": 64,
+        "mainScrolledUnderHeader": true
+      }
+    },
+    {
+      "file": "header-scrolled-1440-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(17.0059 -0.560075 -5.14781)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(0 0 0 / 0.5) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.204999 -0.00191223 -0.0108276 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": -1372,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 900
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": -1348
+      },
+      "h1Top": -1348,
+      "subscriptionBanner": null,
+      "scrollY": 1436,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(2.214 -0.134699 -1.01047)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 1085,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "headerBoxBeforeScroll": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "scrollRequested": "max",
+      "console": [],
+      "hydrationMessages": [],
+      "headerYDeltaFromScroll0": 0,
+      "headerHitTest": [
+        {
+          "x": 848,
+          "y": 36,
+          "inHeader": true,
+          "tag": "header"
+        },
+        {
+          "x": 312,
+          "y": 36,
+          "inHeader": true,
+          "tag": "button"
+        }
+      ],
+      "contentBeneathHeader": {
+        "mainTop": -1372,
+        "headerBottom": 64,
+        "mainScrolledUnderHeader": true
+      }
+    },
+    {
+      "file": "palette-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 2336
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 0,
+      "searchButtonRegexNames": [],
+      "searchCommandKExact": 0,
+      "bannerSearchCount": 0,
+      "toggleMenuCount": 0,
+      "dialogCount": 1,
+      "paletteOpened": true,
+      "paletteDialog": {
+        "box": {
+          "x": 464,
+          "y": 257,
+          "width": 512,
+          "height": 387
+        },
+        "dialogBg": "rgba(0, 0, 0, 0)",
+        "dialogRadius": "0px",
+        "dialogShadow": "none",
+        "surfaces": [
+          {
+            "tag": "div",
+            "cls": "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] dura",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "shadow": "none",
+            "box": {
+              "x": 464,
+              "y": 257,
+              "width": 512,
+              "height": 387
+            }
+          },
+          {
+            "tag": "div",
+            "cls": "grid gap-4 rounded-xl border overflow-hidden p-0 bg-popover shadow-(--shadow-overlay)",
+            "bg": "lab(100 0 0)",
+            "radius": "12px",
+            "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+            "box": {
+              "x": 464,
+              "y": 257,
+              "width": 512,
+              "height": 387
+            }
+          }
+        ],
+        "ariaLabel": null,
+        "inputPlaceholder": "Search pages, settings...",
+        "groupHeadings": [
+          {
+            "text": "Pages",
+            "textTransform": "uppercase",
+            "fontSize": "11px",
+            "letterSpacing": "0.55px"
+          },
+          {
+            "text": "Settings",
+            "textTransform": "uppercase",
+            "fontSize": "11px",
+            "letterSpacing": "0.55px"
+          }
+        ],
+        "hintFooter": {
+          "exists": true,
+          "ariaHidden": "true",
+          "insideListbox": false,
+          "text": "↑↓↵Esc",
+          "kbds": [
+            "↑",
+            "↓",
+            "↵",
+            "Esc"
+          ],
+          "nonKbdText": "",
+          "onlyGlyphs": true
+        },
+        "optionCount": 60
+      },
+      "console": [],
+      "hydrationMessages": [],
+      "metaKSecondPressClosed": true,
+      "metaKReopened": true,
+      "escClosed": true
+    },
+    {
+      "file": "palette-1440-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(17.0059 -0.560075 -5.14781)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(0 0 0 / 0.5) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.204999 -0.00191223 -0.0108276 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 2336
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(2.214 -0.134699 -1.01047)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 0,
+      "searchButtonRegexNames": [],
+      "searchCommandKExact": 0,
+      "bannerSearchCount": 0,
+      "toggleMenuCount": 0,
+      "dialogCount": 1,
+      "paletteOpened": true,
+      "paletteDialog": {
+        "box": {
+          "x": 464,
+          "y": 257,
+          "width": 512,
+          "height": 387
+        },
+        "dialogBg": "rgba(0, 0, 0, 0)",
+        "dialogRadius": "0px",
+        "dialogShadow": "none",
+        "surfaces": [
+          {
+            "tag": "div",
+            "cls": "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] dura",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "shadow": "none",
+            "box": {
+              "x": 464,
+              "y": 257,
+              "width": 512,
+              "height": 387
+            }
+          },
+          {
+            "tag": "div",
+            "cls": "grid gap-4 rounded-xl border overflow-hidden p-0 bg-popover shadow-(--shadow-overlay)",
+            "bg": "lab(11.2132 -0.472777 -4.4093)",
+            "radius": "12px",
+            "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(0 0 0 / 0.5) 0px 8px 24px 0px",
+            "box": {
+              "x": 464,
+              "y": 257,
+              "width": 512,
+              "height": 387
+            }
+          }
+        ],
+        "ariaLabel": null,
+        "inputPlaceholder": "Search pages, settings...",
+        "groupHeadings": [
+          {
+            "text": "Pages",
+            "textTransform": "uppercase",
+            "fontSize": "11px",
+            "letterSpacing": "0.55px"
+          },
+          {
+            "text": "Settings",
+            "textTransform": "uppercase",
+            "fontSize": "11px",
+            "letterSpacing": "0.55px"
+          }
+        ],
+        "hintFooter": {
+          "exists": true,
+          "ariaHidden": "true",
+          "insideListbox": false,
+          "text": "↑↓↵Esc",
+          "kbds": [
+            "↑",
+            "↓",
+            "↵",
+            "Esc"
+          ],
+          "nonKbdText": "",
+          "onlyGlyphs": true
+        },
+        "optionCount": 60
+      },
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "palette-search-button-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 2336
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 0,
+      "searchButtonRegexNames": [],
+      "searchCommandKExact": 0,
+      "bannerSearchCount": 0,
+      "toggleMenuCount": 0,
+      "dialogCount": 1,
+      "headerSearchButtonCount": 1,
+      "headerSearchButton": {
+        "ariaKeyshortcuts": "Meta+K Control+K",
+        "text": "Search⌘K",
+        "box": {
+          "x": 1085,
+          "y": 20,
+          "width": 127,
+          "height": 32
+        }
+      },
+      "paletteOpened": true,
+      "paletteDialog": {
+        "box": {
+          "x": 464,
+          "y": 257,
+          "width": 512,
+          "height": 387
+        },
+        "dialogBg": "rgba(0, 0, 0, 0)",
+        "dialogRadius": "0px",
+        "dialogShadow": "none",
+        "surfaces": [
+          {
+            "tag": "div",
+            "cls": "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] dura",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "shadow": "none",
+            "box": {
+              "x": 464,
+              "y": 257,
+              "width": 512,
+              "height": 387
+            }
+          },
+          {
+            "tag": "div",
+            "cls": "grid gap-4 rounded-xl border overflow-hidden p-0 bg-popover shadow-(--shadow-overlay)",
+            "bg": "lab(100 0 0)",
+            "radius": "12px",
+            "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+            "box": {
+              "x": 464,
+              "y": 257,
+              "width": 512,
+              "height": 387
+            }
+          }
+        ],
+        "ariaLabel": null,
+        "inputPlaceholder": "Search pages, settings...",
+        "groupHeadings": [
+          {
+            "text": "Pages",
+            "textTransform": "uppercase",
+            "fontSize": "11px",
+            "letterSpacing": "0.55px"
+          },
+          {
+            "text": "Settings",
+            "textTransform": "uppercase",
+            "fontSize": "11px",
+            "letterSpacing": "0.55px"
+          }
+        ],
+        "hintFooter": {
+          "exists": true,
+          "ariaHidden": "true",
+          "insideListbox": false,
+          "text": "↑↓↵Esc",
+          "kbds": [
+            "↑",
+            "↓",
+            "↵",
+            "Esc"
+          ],
+          "nonKbdText": "",
+          "onlyGlyphs": true
+        },
+        "optionCount": 60
+      },
+      "console": [],
+      "hydrationMessages": [],
+      "escClosed": true,
+      "focusAfterEsc": "BODY"
+    },
+    {
+      "file": "mobile-390-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 8,
+        "y": 8,
+        "width": 374,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 0,
+        "y": 64,
+        "width": 390,
+        "height": 3321,
+        "bottom": 3385
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 3385,
+      "innerHeight": 844,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 1,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 140,
+            "y": 20,
+            "width": 34,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 1,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "console": [],
+      "hydrationMessages": [],
+      "noOverlapAtScroll0": true,
+      "headerOverflowsViewport": {
+        "headerScrollWidth": 372,
+        "headerClientWidth": 372,
+        "docScrollWidth": 390,
+        "controlsOutside": []
+      },
+      "mobileHeaderSearchVisible": true
+    },
+    {
+      "file": "mobile-390-palette-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 8,
+        "y": 8,
+        "width": 374,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 0,
+        "y": 64,
+        "width": 390,
+        "height": 3321,
+        "bottom": 3385
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 3385,
+      "innerHeight": 844,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 0,
+      "searchButtonRegexNames": [],
+      "searchCommandKExact": 0,
+      "bannerSearchCount": 0,
+      "toggleMenuCount": 0,
+      "dialogCount": 1,
+      "paletteOpened": true,
+      "paletteDialog": {
+        "box": {
+          "x": 16,
+          "y": 229,
+          "width": 358,
+          "height": 387
+        },
+        "dialogBg": "rgba(0, 0, 0, 0)",
+        "dialogRadius": "0px",
+        "dialogShadow": "none",
+        "surfaces": [
+          {
+            "tag": "div",
+            "cls": "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] dura",
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "0px",
+            "shadow": "none",
+            "box": {
+              "x": 16,
+              "y": 229,
+              "width": 358,
+              "height": 387
+            }
+          },
+          {
+            "tag": "div",
+            "cls": "grid gap-4 rounded-xl border overflow-hidden p-0 bg-popover shadow-(--shadow-overlay)",
+            "bg": "lab(100 0 0)",
+            "radius": "12px",
+            "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+            "box": {
+              "x": 16,
+              "y": 229,
+              "width": 358,
+              "height": 387
+            }
+          }
+        ],
+        "ariaLabel": null,
+        "inputPlaceholder": "Search pages, settings...",
+        "groupHeadings": [
+          {
+            "text": "Pages",
+            "textTransform": "uppercase",
+            "fontSize": "11px",
+            "letterSpacing": "0.55px"
+          },
+          {
+            "text": "Settings",
+            "textTransform": "uppercase",
+            "fontSize": "11px",
+            "letterSpacing": "0.55px"
+          }
+        ],
+        "hintFooter": {
+          "exists": true,
+          "ariaHidden": "true",
+          "insideListbox": false,
+          "text": "↑↓↵Esc",
+          "kbds": [
+            "↑",
+            "↓",
+            "↵",
+            "Esc"
+          ],
+          "nonKbdText": "",
+          "onlyGlyphs": true
+        },
+        "optionCount": 60
+      },
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "mobile-390-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "dark",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 8,
+        "y": 8,
+        "width": 374,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(17.0059 -0.560075 -5.14781)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(0 0 0 / 0.5) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.204999 -0.00191223 -0.0108276 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 0,
+        "y": 64,
+        "width": 390,
+        "height": 3321,
+        "bottom": 3385
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 3385,
+      "innerHeight": 844,
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(2.214 -0.134699 -1.01047)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 1,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 140,
+            "y": 20,
+            "width": 34,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 1,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "console": [],
+      "hydrationMessages": [],
+      "noOverlapAtScroll0": true,
+      "headerOverflowsViewport": {
+        "headerScrollWidth": 372,
+        "headerClientWidth": 372,
+        "docScrollWidth": 390,
+        "controlsOutside": []
+      }
+    },
+    {
+      "file": "user-menu-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        },
+        {
+          "tag": "button",
+          "name": "Light"
+        },
+        {
+          "tag": "button",
+          "name": "Dark"
+        },
+        {
+          "tag": "button",
+          "name": "System"
+        },
+        {
+          "tag": "button",
+          "name": "Sign out"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 2336
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 1085,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "userMenuTriggerVia": "header button with initials text",
+      "userMenuTriggerText": "AO",
+      "themeLabelVisible": true,
+      "themeRadios": [
+        {
+          "name": "Light",
+          "checked": "true"
+        },
+        {
+          "name": "Dark",
+          "checked": "false"
+        },
+        {
+          "name": "System",
+          "checked": "false"
+        }
+      ],
+      "userMenuPanel": {
+        "box": {
+          "x": 1155,
+          "y": 60,
+          "width": 256,
+          "height": 170
+        },
+        "extendsBelowHeader": true,
+        "hitTestBottomInPanel": true
+      },
+      "console": [],
+      "hydrationMessages": [],
+      "htmlClassBeforeDark": "light",
+      "htmlClassAfterDark": "dark",
+      "kaziThemeAfterDark": "dark",
+      "themeSwitchedViaHeader": true,
+      "headerBgAfterSwitch": "oklab(0.204999 -0.00191223 -0.0108276 / 0.9)"
+    },
+    {
+      "file": "user-menu-1440-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(17.0059 -0.560075 -5.14781)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(0 0 0 / 0.5) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.204999 -0.00191223 -0.0108276 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        },
+        {
+          "tag": "button",
+          "name": "Light"
+        },
+        {
+          "tag": "button",
+          "name": "Dark"
+        },
+        {
+          "tag": "button",
+          "name": "System"
+        },
+        {
+          "tag": "button",
+          "name": "Sign out"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": 64,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 2336
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": 88
+      },
+      "h1Top": 88,
+      "subscriptionBanner": null,
+      "scrollY": 0,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(2.214 -0.134699 -1.01047)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 1085,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 0,
+      "userMenuTriggerVia": "header button with initials text",
+      "userMenuTriggerText": "AO",
+      "themeLabelVisible": true,
+      "themeRadios": [
+        {
+          "name": "Light",
+          "checked": "false"
+        },
+        {
+          "name": "Dark",
+          "checked": "true"
+        },
+        {
+          "name": "System",
+          "checked": "false"
+        }
+      ],
+      "userMenuPanel": {
+        "box": {
+          "x": 1155,
+          "y": 60,
+          "width": 256,
+          "height": 170
+        },
+        "extendsBelowHeader": true,
+        "hitTestBottomInPanel": true
+      },
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "bell-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "headerCount": 1,
+      "headerTag": "header",
+      "headerRole": "banner (implicit)",
+      "headerInsideMain": false,
+      "headerBox": {
+        "x": 272,
+        "y": 8,
+        "width": 1152,
+        "height": 56,
+        "bottom": 64
+      },
+      "headerPosition": "sticky",
+      "headerTop": "8px",
+      "headerZIndex": "30",
+      "headerBorderRadius": "12px",
+      "headerBorder": "1px solid lab(90.1146 -0.418961 -2.99051)",
+      "headerBoxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.12) 0px 8px 24px 0px",
+      "headerBackground": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "headerBackdropFilter": "blur(12px)",
+      "headerOverflow": "visible",
+      "headerClass": "bg-card/90 sticky top-2 z-30 mx-2 mt-2 flex h-(--app-header-height) items-center gap-2 rounded-xl border px-2 shadow-(--shadow-overlay) backdrop-blur-md md:mx-4 md:gap-3 md:px-3",
+      "headerControls": [
+        {
+          "tag": "button",
+          "name": "Toggle menu"
+        },
+        {
+          "tag": "a",
+          "name": "E2E Test Organization"
+        },
+        {
+          "tag": "button",
+          "name": "Search, Command K"
+        },
+        {
+          "tag": "button",
+          "name": "Notifications"
+        },
+        {
+          "tag": "button",
+          "name": "Mark all read"
+        },
+        {
+          "tag": "button",
+          "name": "Matter closed (override used)3 minutes ago"
+        },
+        {
+          "tag": "button",
+          "name": "Matter closed3 minutes ago"
+        },
+        {
+          "tag": "button",
+          "name": "Complete onboarding: Apex Holdings mwd2rgdlba963 minutes ago"
+        },
+        {
+          "tag": "button",
+          "name": "Complete onboarding: Khumalo Property Holdings mwd2rgdlba964"
+        },
+        {
+          "tag": "button",
+          "name": "Trust payment requires approval4 minutes ago"
+        },
+        {
+          "tag": "button",
+          "name": "Complete onboarding: Sipho Ndlovu mwd2rgdlba964 minutes ago"
+        },
+        {
+          "tag": "button",
+          "name": "Trust fee transfer requires approval5 minutes ago"
+        },
+        {
+          "tag": "button",
+          "name": "Trust payment requires approval5 minutes ago"
+        },
+        {
+          "tag": "button",
+          "name": "Trust payment requires approval5 minutes ago"
+        },
+        {
+          "tag": "button",
+          "name": "Interest run posted5 minutes ago"
+        },
+        {
+          "tag": "a",
+          "name": "View all notifications"
+        },
+        {
+          "tag": "button",
+          "name": "AO"
+        }
+      ],
+      "mainBox": {
+        "x": 256,
+        "y": -1372,
+        "width": 1184,
+        "height": 2272,
+        "bottom": 900
+      },
+      "mainFirstContent": {
+        "tag": "h1",
+        "text": "Home",
+        "top": -1348
+      },
+      "h1Top": -1348,
+      "subscriptionBanner": null,
+      "scrollY": 1436,
+      "scrollHeight": 2336,
+      "innerHeight": 900,
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainCount": 1,
+      "h1": "Home",
+      "bodyBackground": "lab(96.7396 -0.214994 -1.49846)",
+      "searchButtonExact": 0,
+      "searchButtonRegex": 2,
+      "searchButtonRegexNames": [
+        {
+          "name": "Search, Command K",
+          "inHeader": false,
+          "inSidebar": true,
+          "visible": true,
+          "box": {
+            "x": 8,
+            "y": 106,
+            "width": 239,
+            "height": 32
+          }
+        },
+        {
+          "name": "Search, Command K",
+          "inHeader": true,
+          "inSidebar": false,
+          "visible": true,
+          "box": {
+            "x": 1085,
+            "y": 20,
+            "width": 127,
+            "height": 32
+          }
+        }
+      ],
+      "searchCommandKExact": 2,
+      "bannerSearchCount": 1,
+      "toggleMenuCount": 1,
+      "dialogCount": 1,
+      "bellDropdown": {
+        "found": true,
+        "box": {
+          "x": 930,
+          "y": 56,
+          "width": 322,
+          "height": 400,
+          "bottom": 456
+        },
+        "headerBottom": 64,
+        "extendsBelowHeader": true,
+        "zIndex": "50",
+        "hitTests": [
+          {
+            "x": 1091,
+            "y": 256,
+            "inDropdown": true,
+            "hitTag": "p"
+          },
+          {
+            "x": 950,
+            "y": 446,
+            "inDropdown": true,
+            "hitTag": "a"
+          },
+          {
+            "x": 1232,
+            "y": 446,
+            "inDropdown": true,
+            "hitTag": "a"
+          }
+        ],
+        "allPointsInDropdown": true,
+        "text": "NotificationsMark all readMatter closed (override used)3 minutes agoMatter closed3 minutes agoComplete onboarding: Apex "
+      },
+      "console": [],
+      "hydrationMessages": []
+    }
+  ],
+  "darkTokenCheck": {
+    "light": {
+      "headerBg": "oklab(0.995998 -0.000357062 -0.00194627 / 0.9)",
+      "vars": {
+        "card": "lab(99.5299% -.108749 -.749981)",
+        "popover": "lab(100% 0 0)",
+        "shadowOverlay": "0 8px 24px lab(2.214% -.134699 -1.01047/.12)",
+        "htmlClass": "light"
+      },
+      "paletteSurfaces": [
+        {
+          "cls": "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=close",
+          "bg": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "cls": "grid gap-4 rounded-xl border overflow-hidden p-0 bg-popover shadow-(--shadow-ove",
+          "bg": "lab(100 0 0)"
+        }
+      ]
+    },
+    "dark": {
+      "headerBg": "oklab(0.204999 -0.00191223 -0.0108276 / 0.9)",
+      "vars": {
+        "card": "lab(7.73948% -.41344 -4.03315)",
+        "popover": "lab(11.2132% -.472777 -4.4093)",
+        "shadowOverlay": "0 8px 24px lab(0% 0 0/.5)",
+        "htmlClass": "dark"
+      },
+      "paletteSurfaces": [
+        {
+          "cls": "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=close",
+          "bg": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "cls": "grid gap-4 rounded-xl border overflow-hidden p-0 bg-popover shadow-(--shadow-ove",
+          "bg": "lab(11.2132 -0.472777 -4.4093)"
+        }
+      ]
+    },
+    "headerBgDiffers": true,
+    "paletteBgDiffers": true
+  }
+}

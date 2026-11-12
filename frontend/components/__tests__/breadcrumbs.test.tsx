@@ -429,7 +429,7 @@ describe("Breadcrumbs", () => {
       );
       const chevrons = nav.querySelectorAll("svg");
       const lastChevron = chevrons[chevrons.length - 1];
-      expect(lastChevron).toHaveClass("text-slate-400", "hidden", "sm:block");
+      expect(lastChevron).toHaveClass("hidden", "sm:block");
     });
 
     it("falls back to the generic label once the publisher unmounts", () => {

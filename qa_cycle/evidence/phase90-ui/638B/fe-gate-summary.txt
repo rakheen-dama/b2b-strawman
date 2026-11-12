@@ -1,0 +1,41 @@
+Slice 638B — FE-GATE (builder), 2026-11-12, worktree-epic-638B, base origin/main 9d7d2b62e
+All commands: SHELL=/bin/bash NODE_OPTIONS="" /opt/homebrew/bin/pnpm <step>, run in frontend/ after `rm -rf .next`
+(install: `pnpm install --frozen-lockfile` at worktree root -> exit 0, /tmp/install-638B.log)
+
+step          exit  log
+lint          0     /tmp/lint-638B.log   (0 errors, 78 pre-existing warnings; none in the slice's files)
+typecheck     0     /tmp/typecheck-638B.log
+format:check  0     /tmp/format-638B.log ("All matched files use Prettier code style!")
+test          0     /tmp/vitest-638B.log
+build         0     /tmp/build-638B.log  ("Compiled successfully")
+
+vitest summary:
+ Test Files  459 passed (459)
+      Tests  3904 passed | 2 skipped (3906)
+baseline (638A): 458 files, 3899 passed / 2 skipped -> +1 file (components/__tests__/app-header.test.tsx), +5 cases
+
+DARK-AUDIT (dark: lines / occurrences), before -> after:
+  app/(app)/org/[slug]/layout.tsx        1/2 -> 0/0
+  components/breadcrumbs.tsx             4/6 -> 0/0
+  components/command-palette-dialog.tsx  0/0 -> 0/0
+  components/shell/app-header.tsx        new -> 0/0
+  bg-white / text-slate-9xx / border-slate / #hex / any slate: 0/3/1/0/6 -> all 0
+
+E2E-LEGAL, navigation, SEL-COMPAT before/after runs, OBS: orchestrator-owned (pending).
+
+--- Fix-cycle run (review findings), 2026-11-12, worktree-epic-638B, on top of d1893e6f4 ---
+Changes: palette hint footer glyph-only (removed "Navigate"/"Open"/"Close" words; <kbd> ↑ ↓ / ↵ / Esc kept,
+aria-hidden, outside </CommandList>); app-header.test.tsx afterEach expires the sidebar_state cookie.
+All commands: SHELL=/bin/bash NODE_OPTIONS="" /opt/homebrew/bin/pnpm <step>, run in frontend/ after `rm -rf .next`
+(prettier --write on the two changed files first -> unchanged)
+
+step          exit  log
+lint          0     /tmp/lint-638B-fix.log      (0 errors, 78 pre-existing warnings)
+typecheck     0     /tmp/typecheck-638B-fix.log
+format:check  0     /tmp/format-638B-fix.log    ("All matched files use Prettier code style!")
+test          0     /tmp/vitest-638B-fix.log
+build         0     /tmp/build-638B-fix.log     ("Compiled successfully")
+
+vitest summary:
+ Test Files  459 passed (459)
+      Tests  3904 passed | 2 skipped (3906)

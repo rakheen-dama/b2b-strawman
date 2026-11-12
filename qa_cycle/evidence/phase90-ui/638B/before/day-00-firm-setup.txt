@@ -1,0 +1,29 @@
+SEL-COMPAT before-run — day-00-firm-setup.spec.ts
+Stack: E2E mock-auth (frontend :3001, backend :8081) built fresh from main @ 9d7d2b62e
+Specs run from worktree-epic-638B/frontend (e2e/ identical to main: PR edits no spec)
+Command: E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" npx playwright test --config e2e/playwright.legal-lifecycle.config.ts e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts --reporter=list
+Exit code: 0
+Result: 16 passed, 0 failed, 0 skipped (14.0s)
+
+--- log ---
+
+Running 16 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:92:7 › Day 0 — Firm Setup › Alice: Home loads after login (1.0s)
+  ✓   2 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:102:7 › Day 0 — Firm Setup › Alice: Legal-za profile active — sidebar shows legal terms (423ms)
+  ✓   3 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:119:7 › Day 0 — Firm Setup › Alice: Settings — currency is ZAR (521ms)
+  ✓   4 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:127:7 › Day 0 — Firm Setup › Alice: Settings — set brand colour #1B3A4B (1.0s)
+  ✓   5 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:143:7 › Day 0 — Firm Setup › Alice: Settings — rate cards page loads (372ms)
+  ✓   6 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:150:7 › Day 0 — Firm Setup › Alice: Settings — create billing rates Alice R2,500, Bob R1,200, Carol R550 (1.9s)
+  ✓   7 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:159:7 › Day 0 — Firm Setup › Alice: Settings — create cost rates for Alice R1000, Bob R500, Carol R200 (2.5s)
+  ✓   8 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:171:7 › Day 0 — Firm Setup › Alice: Settings — tax rates page loads (342ms)
+  ✓   9 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:178:7 › Day 0 — Firm Setup › Alice: Settings — VAT 15% is seeded as the default tax rate (337ms)
+  ✓  10 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:193:7 › Day 0 — Firm Setup › Alice: Team page shows Alice, Bob, Carol (530ms)
+  ✓  11 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:202:7 › Day 0 — Firm Setup › Alice: Custom fields — SA Legal matter fields loaded (case number, court, opposing party) (510ms)
+  ✓  12 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:221:7 › Day 0 — Firm Setup › Alice: 6 legal matter templates listed (394ms)
+  ✓  13 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:242:7 › Day 0 — Firm Setup › Alice: Trust account — Mathebula & Partners Trust Account (GENERAL, Standard Bank) exists (844ms)
+  ✓  14 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:262:7 › Day 0 — Firm Setup › Alice: LPFF rate 6.5% — added on Trust › Interest, listed on the trust settings tab (1.5s)
+  ✓  15 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:303:7 › Day 0 — Firm Setup › Alice: Legal modules enabled (trust, court, conflict, tariff) (449ms)
+  ✓  16 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:324:7 › Day 0 — Firm Setup › Alice: Capture dashboard with legal navigation (346ms)
+
+  16 passed (14.0s)

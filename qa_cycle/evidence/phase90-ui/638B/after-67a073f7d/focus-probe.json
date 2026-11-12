@@ -1,0 +1,78 @@
+{
+  "head": "67a073f7d",
+  "capturedAt": "2026-11-12T05:01:51.582Z",
+  "cases": [
+    {
+      "label": "header Search click",
+      "whileOpen": {
+        "tag": "input",
+        "name": "",
+        "inHeader": false
+      },
+      "focusRightAfterClose": {
+        "tag": "body",
+        "name": "((a,b,c,d,e,f,g,h)=>{let i=document.docu",
+        "inHeader": false
+      },
+      "focusAfter800ms": {
+        "tag": "body",
+        "name": "((a,b,c,d,e,f,g,h)=>{let i=document.docu",
+        "inHeader": false
+      }
+    },
+    {
+      "label": "sidebar pill click",
+      "whileOpen": {
+        "tag": "input",
+        "name": "",
+        "inHeader": false
+      },
+      "focusRightAfterClose": {
+        "tag": "body",
+        "name": "((a,b,c,d,e,f,g,h)=>{let i=document.docu",
+        "inHeader": false
+      },
+      "focusAfter800ms": {
+        "tag": "body",
+        "name": "((a,b,c,d,e,f,g,h)=>{let i=document.docu",
+        "inHeader": false
+      }
+    },
+    {
+      "label": "header Search keyboard (focus + Enter)",
+      "whileOpen": {
+        "tag": "input",
+        "name": "",
+        "inHeader": false
+      },
+      "focusRightAfterClose": {
+        "tag": "body",
+        "name": "((a,b,c,d,e,f,g,h)=>{let i=document.docu",
+        "inHeader": false
+      },
+      "focusAfter800ms": {
+        "tag": "body",
+        "name": "((a,b,c,d,e,f,g,h)=>{let i=document.docu",
+        "inHeader": false
+      }
+    },
+    {
+      "label": "Meta+k with Notifications focused",
+      "whileOpen": {
+        "tag": "input",
+        "name": "",
+        "inHeader": false
+      },
+      "focusRightAfterClose": {
+        "tag": "body",
+        "name": "((a,b,c,d,e,f,g,h)=>{let i=document.docu",
+        "inHeader": false
+      },
+      "focusAfter800ms": {
+        "tag": "body",
+        "name": "((a,b,c,d,e,f,g,h)=>{let i=document.docu",
+        "inHeader": false
+      }
+    }
+  ]
+}

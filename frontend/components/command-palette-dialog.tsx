@@ -17,6 +17,12 @@ import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useRecentItems } from "@/components/recent-items-provider";
 
+// Group headings match the sidebar zone labels; twMerge replaces CommandGroup's text-xs.
+const GROUP_CLASS =
+  "[&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider";
+const KBD_CLASS =
+  "bg-muted text-muted-foreground inline-flex h-5 min-w-5 items-center justify-center rounded px-1 font-mono text-[10px] font-medium";
+
 interface CommandPaletteDialogProps {
   slug: string;
   open: boolean;
@@ -58,12 +64,15 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
       onOpenChange={onOpenChange}
       title="Command Palette"
       description="Search pages and settings"
+      // Lands on DialogContent's inner div (already rounded-xl); `shadow-(--…)` form so twMerge
+      // replaces shadow-lg (the `shadow-[var(--…)]` form does not merge). Popover = one step above cards in dark.
+      className="bg-popover shadow-(--shadow-overlay)"
     >
       <CommandInput placeholder="Search pages, settings..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         {recentItems.length > 0 && (
-          <CommandGroup heading="Recent">
+          <CommandGroup heading="Recent" className={GROUP_CLASS}>
             {recentItems.map((item) => (
               <CommandItem
                 key={`recent:${item.href}`}
@@ -76,7 +85,7 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
             ))}
           </CommandGroup>
         )}
-        <CommandGroup heading="Pages">
+        <CommandGroup heading="Pages" className={GROUP_CLASS}>
           {pages.map((item) => (
             <CommandItem
               key={item.label}
@@ -88,7 +97,7 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
             </CommandItem>
           ))}
         </CommandGroup>
-        <CommandGroup heading="Settings">
+        <CommandGroup heading="Settings" className={GROUP_CLASS}>
           {settings.map((entry) => (
             <CommandItem
               key={entry.key}
@@ -102,6 +111,22 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
           ))}
         </CommandGroup>
       </CommandList>
+      {/* Keyboard hints — outside the listbox (option text is asserted exactly) and hidden from AT. */}
+      <div
+        aria-hidden="true"
+        className="text-muted-foreground flex items-center gap-4 border-t px-3 py-2 text-xs"
+      >
+        <span className="flex items-center gap-1.5">
+          <kbd className={KBD_CLASS}>↑</kbd>
+          <kbd className={KBD_CLASS}>↓</kbd>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <kbd className={KBD_CLASS}>↵</kbd>
+        </span>
+        <span className="ml-auto flex items-center gap-1.5">
+          <kbd className={KBD_CLASS}>Esc</kbd>
+        </span>
+      </div>
     </CommandDialog>
   );
 }

@@ -140,7 +140,7 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
   if (segments.length === 0) return null;
 
   return (
-    // min-w-0: the nav sits in the fixed-height (h-14) header beside the bell and avatar, so a long
+    // min-w-0: the nav sits in the fixed-height (`--app-header-height`) header beside the bell and avatar, so a long
     // published entity name must not wrap the header or push them — the nav shrinks and the last
     // crumb truncates, with the full name in its title. Below `sm` only the last crumb shows: on a
     // phone the org root and middle crumbs cannot shrink and would draw under the org switcher.
@@ -148,7 +148,7 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
       {/* Org name as root link (falls back to slug) */}
       <Link
         href={`/org/${slug}/dashboard`}
-        className="hidden text-slate-600 transition-colors hover:text-slate-900 sm:inline dark:text-slate-400 dark:hover:text-white"
+        className="text-muted-foreground hover:text-foreground hidden transition-colors sm:inline"
       >
         {orgName ?? slug}
       </Link>
@@ -179,21 +179,21 @@ export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
             }
           >
             <ChevronRight
-              className={cn("h-3.5 w-3.5 shrink-0 text-slate-400", isLast && "hidden sm:block")}
+              className={cn(
+                "text-muted-foreground/60 h-3.5 w-3.5 shrink-0",
+                isLast && "hidden sm:block"
+              )}
             />
             {isLast ? (
-              <span
-                title={label}
-                className="max-w-md truncate font-medium text-slate-900 dark:text-white"
-              >
+              <span title={label} className="text-foreground max-w-md truncate font-medium">
                 {label}
               </span>
             ) : !isLinkableBreadcrumbPrefix(prefixSegments) ? (
-              <span className="text-slate-500 dark:text-slate-400">{label}</span>
+              <span className="text-muted-foreground">{label}</span>
             ) : (
               <Link
                 href={href}
-                className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 {label}
               </Link>

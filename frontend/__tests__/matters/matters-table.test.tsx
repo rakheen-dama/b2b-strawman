@@ -10,6 +10,7 @@ import {
   resolveViewSelection,
 } from "@/lib/constants/system-views";
 import { buildMatterListParams, defaultMatterColumns, type MatterSort } from "@/lib/matters-list";
+import { formatDate } from "@/lib/format";
 import type { MatterListRow } from "@/lib/types";
 
 const mockPush = vi.fn();
@@ -480,33 +481,6 @@ describe("MattersDataTable — table controls", () => {
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
   });
-
-  it("takes only serializable props from the server page (RSC boundary, OQ #19)", () => {
-    const props = serializableProps(
-      [
-        row({
-          tags: [
-            {
-              id: "t1",
-              name: "Urgent",
-              slug: "urgent",
-              color: "#0d9488",
-              createdAt: "2026-05-01T08:00:00Z",
-              updatedAt: "2026-05-01T08:00:00Z",
-            },
-          ],
-        }),
-      ],
-      {
-        query: { view: "system:dormant" },
-      }
-    );
-    const containsFunction = (value: unknown): boolean =>
-      typeof value === "function" ||
-      (typeof value === "object" && value !== null && Object.values(value).some(containsFunction));
-    expect(containsFunction(props)).toBe(false);
-    expect(JSON.parse(JSON.stringify(props))).toEqual(props);
-  });
 });
 
 describe("MattersDataTable — CSV export", () => {
@@ -552,6 +526,79 @@ describe("MattersDataTable — CSV export", () => {
         "Reference,Matter,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary"
       );
       expect(mockPush).not.toHaveBeenCalled();
+    } finally {
+      await stub.restore();
+    }
+  });
+});
+
+describe("MattersDataTable — Opened date across time zones", () => {
+  // 01:30 SAST on 2 May; still 1 May in UTC (the SSR server) and in New York.
+  const LATE_INSTANT = "2026-05-01T23:30:00Z";
+
+  /** Moves the process zone (Date and Intl follow), guarding against a vacuous stub. */
+  function inZone(zone: string) {
+    vi.stubEnv("TZ", zone);
+    expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(zone);
+  }
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("a zone-less format would differ by viewer (the stub is not vacuous)", () => {
+    inZone("UTC");
+    expect(formatDate(LATE_INSTANT)).toBe("1 May 2026");
+    inZone("Pacific/Kiritimati");
+    expect(formatDate(LATE_INSTANT)).toBe("2 May 2026");
+  });
+
+  it.each(["UTC", "America/New_York", "Africa/Johannesburg", "Pacific/Kiritimati"])(
+    "cell and CSV show the South African date under TZ=%s",
+    async (zone) => {
+      inZone(zone);
+      const user = userEvent.setup();
+      const stub = stubDownload();
+      try {
+        renderTable([row({ createdAt: LATE_INSTANT })], {
+          columns: ["name", "createdAt"],
+          hideLowPriorityColumns: false,
+        });
+        expect(cellText("Opened")).toBe("2 May 2026");
+
+        await user.click(screen.getByRole("button", { name: "Export CSV" }));
+        const [, first] = (await blobText(stub.captured.blobs[0]))
+          .slice(CSV_BOM.length)
+          .split("\r\n");
+        expect(first).toBe("RAF claim — Ndlovu,2 May 2026");
+      } finally {
+        await stub.restore();
+      }
+    }
+  );
+});
+
+describe("MattersDataTable — custom-field CSV values", () => {
+  it("numbers export as numbers (no formula guard); text keeps the guard", async () => {
+    const user = userEvent.setup();
+    const stub = stubDownload();
+    try {
+      renderTable(
+        [
+          row({ customFields: { claim: -42, rate: 1250.5, note: "=SUM(A1)", ref: "-42" } }),
+          row({ id: "m2", name: "Second matter", customFields: {} }),
+        ],
+        { columns: ["name", "cf:claim", "cf:rate", "cf:note", "cf:ref"] }
+      );
+      expect(cellText("claim")).toBe("-42");
+
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      const [header, first, second] = (await blobText(stub.captured.blobs[0]))
+        .slice(CSV_BOM.length)
+        .split("\r\n");
+      expect(header).toBe("Matter,claim,rate,note,ref");
+      // NUMBER fields arrive as JSON numbers (CustomFieldValidator.validateNumber); a text field
+      // that merely looks numeric stays text and keeps the OWASP guard.
+      expect(first).toBe("RAF claim — Ndlovu,-42,1250.5,'=SUM(A1),'-42");
+      expect(second).toBe("Second matter,,,,");
     } finally {
       await stub.restore();
     }

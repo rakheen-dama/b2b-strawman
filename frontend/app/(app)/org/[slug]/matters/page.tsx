@@ -258,7 +258,7 @@ export default async function MattersPage({
               <p className="text-muted-foreground text-sm">No matters match this view.</p>
               <Link
                 href={`/org/${slug}/matters`}
-                className="mt-2 inline-block text-sm font-medium text-teal-600 hover:underline"
+                className="text-primary mt-2 inline-block text-sm font-medium underline-offset-4 hover:underline"
               >
                 Clear filters
               </Link>

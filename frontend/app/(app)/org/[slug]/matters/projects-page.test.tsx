@@ -90,6 +90,20 @@ vi.mock("@/lib/capabilities", () => ({
   }),
 }));
 
+// OQ #19: capture the props the server page hands MattersDataTable (a client component) while
+// still rendering the real table, so the RSC-boundary guard below inspects what the page passes.
+const tableProps = vi.hoisted(() => [] as Record<string, unknown>[]);
+vi.mock("@/components/matters/matters-table", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/matters/matters-table")>();
+  return {
+    ...actual,
+    MattersDataTable: (props: React.ComponentProps<typeof actual.MattersDataTable>) => {
+      tableProps.push(props as unknown as Record<string, unknown>);
+      return <actual.MattersDataTable {...props} />;
+    },
+  };
+});
+
 // Import page after mocks are set up
 import ProjectsPage from "./page";
 import { getTags, getViews } from "@/lib/api";
@@ -190,6 +204,7 @@ afterEach(() => cleanup());
 
 beforeEach(() => {
   vi.clearAllMocks();
+  tableProps.length = 0;
 });
 
 describe("ProjectsPage", () => {
@@ -519,6 +534,63 @@ describe("ProjectsPage", () => {
         "/org/acme/matters"
       );
     });
+
+    // Pre-rendered ReactNode slots may hold elements (their `type` is a component function, which
+    // React serialises as a client reference or server output); every other prop must be data.
+    const NODE_SLOTS = new Set(["toolbar", "empty", "footer"]);
+
+    /** Paths of values the RSC boundary cannot carry: functions, and elements outside a slot. */
+    function unserializablePaths(value: unknown, path: string, inSlot: boolean): string[] {
+      if (typeof value === "function") return [path];
+      if (React.isValidElement(value)) return inSlot ? [] : [path];
+      if (Array.isArray(value)) {
+        return value.flatMap((item, i) => unserializablePaths(item, `${path}[${i}]`, inSlot));
+      }
+      if (typeof value === "object" && value !== null) {
+        return Object.entries(value).flatMap(([key, item]) =>
+          unserializablePaths(item, `${path}.${key}`, inSlot)
+        );
+      }
+      return [];
+    }
+
+    it.each([
+      ["default view with rows", {}, [makeProject({ customFields: { court: "Gauteng" } })]],
+      ["saved view", { view: SAVED_VIEW_ID }, [makeProject()]],
+      ["filtered empty", { search: "zzz" }, [makeProject({ name: "RAF claim" })]],
+      ["first-run empty", {}, []],
+    ])(
+      "passes MattersDataTable only serializable props (RSC boundary, OQ #19): %s",
+      async (_, query, rows) => {
+        asAdmin();
+        vi.mocked(getTags).mockResolvedValueOnce([tag]);
+        vi.mocked(getViews).mockResolvedValueOnce([savedView]);
+        mockApiGet.mockResolvedValue(rows);
+
+        render(
+          await ProjectsPage({
+            params,
+            searchParams: Promise.resolve(query as Record<string, string>),
+          })
+        );
+
+        expect(tableProps).toHaveLength(1);
+        const props = tableProps[0];
+        // Non-vacuous: the page really passed the data props and the slots.
+        expect(props).toEqual(
+          expect.objectContaining({
+            slug: "acme",
+            rows: expect.any(Array),
+            sort: expect.any(Object),
+          })
+        );
+        expect(props.empty).toBeTruthy();
+        const offending = Object.entries(props).flatMap(([key, item]) =>
+          unserializablePaths(item, key, NODE_SLOTS.has(key))
+        );
+        expect(offending).toEqual([]);
+      }
+    );
 
     it("shows the tag filters sheet on the default view only (F-3)", async () => {
       asAdmin();

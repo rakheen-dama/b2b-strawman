@@ -13,7 +13,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Badge } from "@b2mash/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
-import { DateCell, EmptyCell, MoneyCell, StatusBadgeCell } from "@/components/data-table/cells";
+import { EmptyCell, MoneyCell, StatusBadgeCell } from "@/components/data-table/cells";
 import {
   defineColumns,
   type DataTableColumn,
@@ -21,7 +21,7 @@ import {
 } from "@/components/data-table/define-columns";
 import { DiaryKindIcon, DIARY_KIND_SINGULAR } from "@/components/diary/diary-event-row";
 import { DIARY_KINDS, type DiaryKind } from "@/app/(app)/org/[slug]/diary/diary-types";
-import { formatDate, formatLocalDate } from "@/lib/format";
+import { formatDateInSA, formatLocalDate } from "@/lib/format";
 import {
   CUSTOM_FIELD_COLUMN_PREFIX,
   formatCustomFieldCell,
@@ -69,6 +69,21 @@ function isDiaryKind(value: string | null): value is DiaryKind {
 /** The "—" placeholder (or an empty string) is an empty CSV field. */
 function nullIfDash(text: string): string | null {
   return text === "—" || text === "" ? null : text;
+}
+
+/**
+ * Opened date, cell and CSV alike, on the South African calendar: this module renders on the UTC
+ * SSR server and then in the viewer's browser, so a zone-less format would hydrate a different day
+ * near midnight and export a viewer-dependent date.
+ */
+function openedDate(row: MatterListRow): string {
+  return formatDateInSA(row.createdAt);
+}
+
+/** CSV value of a custom field: NUMBER values stay numbers (no formula guard); the rest as shown. */
+function customFieldCsv(value: unknown): string | number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  return nullIfDash(formatCustomFieldCell(value));
 }
 
 function matterCell(slug: string, column: MatterColumnId, row: MatterListRow): ReactNode {
@@ -154,8 +169,10 @@ function matterCell(slug: string, column: MatterColumnId, row: MatterListRow): R
         row.status
       );
     }
-    case "createdAt":
-      return <DateCell value={row.createdAt} />;
+    case "createdAt": {
+      const text = openedDate(row);
+      return text ? <span>{text}</span> : <EmptyCell />;
+    }
     case "unbilled": {
       const text = formatUnbilled(row.unbilledMinutes, row.unbilledValue, row.currency);
       return text === "—" ? <EmptyCell /> : text;
@@ -194,7 +211,7 @@ function matterCsv(column: MatterColumnId, row: MatterListRow): string | number 
     case "status":
       return STATUS_BADGE[row.status]?.label ?? row.status;
     case "createdAt":
-      return formatDate(row.createdAt) || null;
+      return openedDate(row) || null;
     case "unbilled":
       return nullIfDash(formatUnbilled(row.unbilledMinutes, row.unbilledValue, row.currency));
     case "trustBalance":
@@ -228,7 +245,7 @@ export function buildMatterColumns({
         id: column,
         meta: {
           label: customFieldNames[fieldSlug] ?? fieldSlug,
-          csv: (row) => nullIfDash(formatCustomFieldCell(row.customFields?.[fieldSlug])),
+          csv: (row) => customFieldCsv(row.customFields?.[fieldSlug]),
         },
         cell: ({ row }) => {
           const text = formatCustomFieldCell(row.original.customFields?.[fieldSlug]);

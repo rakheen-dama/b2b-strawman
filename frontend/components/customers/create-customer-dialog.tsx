@@ -305,129 +305,133 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
           {/* Step 1: Base fields */}
           {step === 1 && (
             <Form {...form}>
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Client name" maxLength={255} autoFocus {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="customerType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type</FormLabel>
-                      <FormControl>
-                        <select
-                          value={field.value}
-                          onChange={field.onChange}
-                          className={nativeSelectClassName}
-                        >
-                          {CUSTOMER_TYPES.map((ct) => (
-                            <option key={ct.value} value={ct.value}>
-                              {ct.label}
-                            </option>
-                          ))}
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="client@example.com"
-                          maxLength={255}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Phone <span className="text-muted-foreground font-normal">(optional)</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="tel"
-                          placeholder="+1 (555) 000-0000"
-                          maxLength={50}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="taxNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Tax Number{" "}
-                        <span className="text-muted-foreground font-normal">
-                          {entityTypeValue === "INDIVIDUAL"
-                            ? "(auto-filled from ID Number; editable)"
-                            : "(required to send a fee note; collectable later)"}
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g. VAT or tax registration number"
-                          maxLength={100}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Notes <span className="text-muted-foreground font-normal">(optional)</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Any additional notes about this client..."
-                          maxLength={2000}
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Client name" maxLength={255} autoFocus {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="customerType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type</FormLabel>
+                        <FormControl>
+                          <select
+                            value={field.value}
+                            onChange={field.onChange}
+                            className={nativeSelectClassName}
+                          >
+                            {CUSTOMER_TYPES.map((ct) => (
+                              <option key={ct.value} value={ct.value}>
+                                {ct.label}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="client@example.com"
+                            maxLength={255}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Phone{" "}
+                          <span className="text-muted-foreground font-normal">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="tel"
+                            placeholder="+1 (555) 000-0000"
+                            maxLength={50}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="taxNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Tax Number{" "}
+                          <span className="text-muted-foreground font-normal">
+                            {entityTypeValue === "INDIVIDUAL"
+                              ? "(auto-filled from ID Number; editable)"
+                              : "(required to send a fee note; collectable later)"}
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g. VAT or tax registration number"
+                            maxLength={100}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Notes{" "}
+                          <span className="text-muted-foreground font-normal">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Any additional notes about this client..."
+                            maxLength={2000}
+                            rows={3}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {/* Address Section */}
-                <div className="border-t pt-4">
-                  <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                <div className="space-y-4">
+                  <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                     Address
                   </h3>
                   <div className="space-y-4">
@@ -539,8 +543,8 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 </div>
 
                 {/* Contact Section */}
-                <div className="border-t pt-4">
-                  <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                <div className="space-y-4">
+                  <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                     Contact
                   </h3>
                   <div className="space-y-4">
@@ -587,8 +591,8 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 </div>
 
                 {/* Business Details Section */}
-                <div className="border-t pt-4">
-                  <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                <div className="space-y-4">
+                  <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                     Business Details
                   </h3>
                   <div className="space-y-4">
@@ -652,14 +656,14 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
           {step === 2 && (
             <div className="space-y-4">
               {isLoadingFields ? (
-                <div className="flex items-center gap-2 py-4 text-sm text-slate-500">
+                <div className="text-muted-foreground flex items-center gap-2 py-4 text-sm">
                   <Loader2 className="size-4 animate-spin" />
                   Loading fields...
                 </div>
               ) : fetchError ? (
                 <p className="text-destructive text-sm">{fetchError}</p>
               ) : filteredIntakeGroups.length === 0 ? (
-                <p className="text-sm text-slate-500">No additional fields required.</p>
+                <p className="text-muted-foreground text-sm">No additional fields required.</p>
               ) : (
                 <IntakeFieldsSection
                   groups={filteredIntakeGroups}
@@ -672,7 +676,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 <div className="pt-1">
                   <button
                     type="button"
-                    className="text-xs text-slate-500 underline hover:text-slate-700"
+                    className="text-muted-foreground hover:text-foreground text-xs underline"
                     onClick={handleSubmit}
                     disabled={isSubmitting}
                   >
@@ -686,7 +690,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
           {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="border-border border-t pt-4">
           {step === 1 ? (
             <>
               <Button

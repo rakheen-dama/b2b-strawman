@@ -2,15 +2,15 @@
 
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { Card } from "@b2mash/ui/card";
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { KycStatusBadge } from "@/components/customers/kyc-status-badge";
 import type { KycSummary } from "@/components/customers/kyc-status-badge";
 import { XeroContactBadge } from "@/components/customers/XeroContactBadge";
 import { ClientOverflowMenu } from "@/components/customers/client-overflow-menu";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
+import { DetailHero, type HeroTile } from "@/components/shared/detail-hero";
 import { HeaderFactsStrip } from "@/components/shared/header-facts-strip";
-import { formatDate } from "@/lib/format";
+import { formatDateInSA } from "@/lib/format";
 import type { HeaderField } from "@/lib/constants/header-field-slugs";
 import type { Client, ClientStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
 
@@ -81,8 +81,20 @@ export interface ClientHeaderCardProps {
   onSummariseActivity?: () => void;
   /** ID / passport number fact (HEADER_FIELD_SLUGS.CUSTOMER, Phase 88 G-B9). */
   headerFields?: HeaderField[];
+  /**
+   * The hero KPI strip, built server-side by `clients/[id]/hero-tiles.ts` (ADR-373). Gated tiles
+   * are already omitted; values are pre-formatted, so nothing here re-reads or re-gates.
+   */
+  tiles?: HeroTile[];
 }
 
+/**
+ * The client page hero (Phase 90 642B, ADR-373): name, status badges, contact, facts, actions and
+ * the KPI tiles, composed on the shared DetailHero. Keeps every test id the e2e suites rely on
+ * (`client-header-card`, `client-name`, `customer-status-badge`, `lifecycle-badge`,
+ * `client-contact`, `client-context`, `client-header-fields`, `client-header-actions`,
+ * `smart-primary-action`). Clients have no number, so there is no identifier chip.
+ */
 export function ClientHeaderCard({
   customerId,
   customerName,
@@ -106,6 +118,7 @@ export function ClientHeaderCard({
   onPrimaryAction,
   onSummariseActivity,
   headerFields = [],
+  tiles,
 }: ClientHeaderCardProps) {
   const statusBadge = STATUS_BADGE[customerStatus];
   // The record status (Active / Archived) and the lifecycle status share a row; an ACTIVE record
@@ -117,61 +130,54 @@ export function ClientHeaderCard({
   const showGenerateDocument = isAdmin && templates.length > 0 && !isAnonymized;
 
   return (
-    <Card className="p-5" data-testid="client-header-card">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-2">
-          {/* Row 1 — Name */}
-          <h1
-            className="font-display line-clamp-2 text-xl font-semibold text-slate-950 dark:text-slate-50"
-            title={customerName}
-            data-testid="client-name"
-          >
-            {customerName}
-          </h1>
-
-          {/* Row 2 — Badges */}
-          <div className="flex flex-wrap items-center gap-2">
-            {showRecordBadge && (
-              <Badge variant={statusBadge.variant} data-testid="customer-status-badge">
-                {statusBadge.label}
-              </Badge>
-            )}
-            {lifecycleStatus && (
-              <span data-testid="lifecycle-badge">
-                <LifecycleStatusBadge status={lifecycleStatus} />
-              </span>
-            )}
-            {kycSummary && <KycStatusBadge summary={kycSummary} />}
-            {xeroConnected && <XeroContactBadge customerId={customerId} slug={slug} />}
-          </div>
-
+    <DetailHero
+      data-testid="client-header-card"
+      titleTestId="client-name"
+      title={customerName}
+      status={
+        <>
+          {showRecordBadge && (
+            <Badge variant={statusBadge.variant} data-testid="customer-status-badge">
+              {statusBadge.label}
+            </Badge>
+          )}
+          {lifecycleStatus && (
+            <span data-testid="lifecycle-badge">
+              <LifecycleStatusBadge status={lifecycleStatus} />
+            </span>
+          )}
+          {kycSummary && <KycStatusBadge summary={kycSummary} />}
+          {xeroConnected && <XeroContactBadge customerId={customerId} slug={slug} />}
+        </>
+      }
+      subtitle={
+        email || phone ? (
+          <p data-testid="client-contact">
+            {email}
+            {email && phone && " · "}
+            {phone}
+          </p>
+        ) : undefined
+      }
+      facts={
+        <>
           <HeaderFactsStrip
             fields={headerFields}
             testId="client-header-fields"
             itemTestIdPrefix="client-header-field"
           />
-
-          {/* Row 3 — Contact */}
-          {(email || phone) && (
-            <p className="text-sm text-slate-600 dark:text-slate-400" data-testid="client-contact">
-              {email}
-              {email && phone && " · "}
-              {phone}
-            </p>
-          )}
-
-          {/* Row 4 — Context */}
+          {/* Instants render on the SA calendar so SSR (UTC) and the browser agree (641A F2). */}
           <p className="text-muted-foreground text-sm" data-testid="client-context">
             {lifecycleStatusChangedAt && (
-              <>Since {formatDate(lifecycleStatusChangedAt)} &middot; </>
+              <>Since {formatDateInSA(lifecycleStatusChangedAt)} &middot; </>
             )}
             {linkedProjectCount} {linkedProjectCount === 1 ? "matter" : "matters"}
           </p>
-        </div>
-
-        {/* Row 5 — Actions */}
+        </>
+      }
+      actions={
         <div
-          className="flex flex-wrap items-center justify-end gap-2 self-end sm:self-auto"
+          className="flex flex-wrap items-center justify-end gap-2"
           data-testid="client-header-actions"
         >
           {smartAction && (
@@ -215,7 +221,8 @@ export function ClientHeaderCard({
             onSummariseActivity={onSummariseActivity}
           />
         </div>
-      </div>
-    </Card>
+      }
+      tiles={tiles}
+    />
   );
 }

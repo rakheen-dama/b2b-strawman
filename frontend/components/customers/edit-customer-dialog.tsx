@@ -191,108 +191,111 @@ export function EditCustomerDialog({
           <DialogDescription>Update client information.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input maxLength={255} autoFocus {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="customerType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Type <span className="text-muted-foreground font-normal">(not editable)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <select
-                      value={field.value}
-                      onChange={field.onChange}
-                      disabled
-                      className={`${nativeSelectClassName} disabled:cursor-not-allowed disabled:opacity-60`}
-                    >
-                      {CUSTOMER_TYPES.map((ct) => (
-                        <option key={ct.value} value={ct.value}>
-                          {ct.label}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" maxLength={255} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Phone <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="tel" maxLength={50} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="idNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    ID Number <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input maxLength={100} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Notes <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea maxLength={2000} rows={3} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input maxLength={255} autoFocus {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="customerType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Type <span className="text-muted-foreground font-normal">(not editable)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <select
+                        value={field.value}
+                        onChange={field.onChange}
+                        disabled
+                        className={`${nativeSelectClassName} disabled:cursor-not-allowed disabled:opacity-60`}
+                      >
+                        {CUSTOMER_TYPES.map((ct) => (
+                          <option key={ct.value} value={ct.value}>
+                            {ct.label}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" maxLength={255} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Phone <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="tel" maxLength={50} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="idNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      ID Number{" "}
+                      <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input maxLength={100} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Notes <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea maxLength={2000} rows={3} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Address Section */}
-            <div className="border-t pt-4">
-              <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <div className="space-y-4">
+              <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Address
               </h3>
               <div className="space-y-4">
@@ -407,8 +410,8 @@ export function EditCustomerDialog({
             </div>
 
             {/* Contact Section */}
-            <div className="border-t pt-4">
-              <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <div className="space-y-4">
+              <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Contact
               </h3>
               <div className="space-y-4">
@@ -455,8 +458,8 @@ export function EditCustomerDialog({
             </div>
 
             {/* Business Details Section */}
-            <div className="border-t pt-4">
-              <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <div className="space-y-4">
+              <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Business Details
               </h3>
               <div className="space-y-4">
@@ -535,7 +538,7 @@ export function EditCustomerDialog({
             </div>
 
             {error && <p className="text-destructive text-sm">{error}</p>}
-            <DialogFooter>
+            <DialogFooter className="border-border border-t pt-4">
               <Button
                 type="button"
                 variant="plain"

@@ -1,49 +1,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import {
-  api,
-  handleApiError,
-  getFieldDefinitions,
-  getFieldGroups,
-  getGroupMembers,
-  getTags,
-  getTemplates,
-} from "@/lib/api";
-import {
-  getClient,
-  getClientProfitability,
-  getClientReadiness,
-  getClientTags,
-  getClientUnbilledSummary,
-  listClientMatters,
-} from "@/lib/api/clients";
-import type {
-  Client,
-  ClientReadiness,
-  UnbilledTimeSummary,
-  TemplateReadiness,
-  Document,
-  Matter,
-  BillingRate,
-  OrgMember,
-  OrgSettings,
-  ClientProfitabilityResponse,
-  OrgProfitabilityResponse,
-  InvoiceResponse,
-  FieldDefinitionResponse,
-  FieldGroupResponse,
-  FieldGroupMemberResponse,
-  TagResponse,
-  TemplateListResponse,
-  ChecklistInstanceResponse,
-  ChecklistTemplateResponse,
-} from "@/lib/types";
-import type { SetupStep, ContextGroup } from "@/components/setup/types";
-import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
-import {
-  HEADER_FIELD_SLUGS,
-  buildHeaderFields,
-  clientHeaderFieldValues,
-} from "@/lib/constants/header-field-slugs";
+import { api, handleApiError } from "@/lib/api";
+import { getClient } from "@/lib/api/clients";
+import type { Client, OrgSettings } from "@/lib/types";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
@@ -52,7 +10,6 @@ import { ClientDetailsTab } from "@/components/customers/client-details-tab";
 import { CollectionsExemptionToggle } from "@/components/customers/collections-exemption-toggle";
 import { CollectionsHistoryTable } from "@/components/collections/collections-history-table";
 import { CollectionsHistoryPagination } from "@/components/collections/collections-history-pagination";
-import { getDebtorDetail, type DebtorDetailResponse } from "@/lib/api/collections";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { ClientFieldsTab } from "@/components/customers/client-fields-tab";
 import { ClientTagsTab } from "@/components/customers/client-tags-tab";
@@ -63,27 +20,17 @@ import { CustomerFinancialsTab } from "@/components/profitability/customer-finan
 import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-tab";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
-import type { KycSummary } from "@/components/customers/kyc-status-badge";
 import { ActionCard } from "@/components/setup";
-import { fetchTemplateReadiness } from "@/lib/api/setup-status";
-import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
-import type { KycIntegrationStatus } from "@/lib/types";
-import {
-  getCustomerRequests,
-  type InformationRequestResponse,
-} from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
-import { isXeroConnected } from "@/lib/api/integrations";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
-import { checkPrerequisites } from "@/lib/prerequisites";
-import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 import { formatCurrencySafe } from "@/lib/format";
 import { FicaVerificationPanel } from "@/components/ai/fica-verification-panel";
-import { getAiProfile } from "@/lib/api/ai";
-import { ArrowLeft, ArrowRight, UserCheck, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { RecordRecentItem } from "@/components/record-recent-item";
+import { buildClientHeroTiles, chaseHistory, loadClientHeroData } from "./hero-tiles";
+import { loadClientPageData } from "./client-page-data";
 
 export default async function CustomerDetailPage({
   params,
@@ -100,391 +47,67 @@ export default async function CustomerDetailPage({
   const isAdmin = caps.isAdmin || caps.isOwner;
   const isOwner = caps.isOwner;
 
-  // Chase-history ledger (591C.2). The customer detail page is visible to plain
-  // members without INVOICING, so gate the fetch — the section is hidden rather
-  // than erroring when the viewer can't see collections data.
-  const canViewCollections =
-    caps.isAdmin || caps.isOwner || caps.capabilities.includes("INVOICING");
-  let debtorDetail: DebtorDetailResponse | null = null;
-  if (canViewCollections) {
-    try {
-      debtorDetail = await getDebtorDetail(id, { page: chasePageNum });
-    } catch {
-      // Non-fatal: chase-history section is hidden if the fetch fails
-    }
-  }
-
+  // Org settings drive currency + module gates for the tabs and the hero. One read, started beside
+  // getClient and never rejecting, so a failing admin-only fetch can't suppress module-gated UI.
+  const settingsPromise = api.get<OrgSettings>("/api/settings").catch(() => null);
   let customer: Client;
   try {
     customer = await getClient(id);
   } catch (error) {
     handleApiError(error);
   }
+  const orgSettings = await settingsPromise;
 
-  let linkedProjects: Matter[] = [];
-  try {
-    linkedProjects = await listClientMatters(id);
-  } catch {
-    // Non-fatal: show empty projects list if fetch fails
-  }
-
-  let customerDocuments: Document[] = [];
-  try {
-    customerDocuments = await api.get<Document[]>(`/api/documents?scope=CUSTOMER&customerId=${id}`);
-  } catch {
-    // Non-fatal: show empty documents list if fetch fails
-  }
-
-  // Org settings drive currency + module gates for both admin and non-admin
-  // surfaces (e.g. the conflict-check button gate). Fetched independently so a
-  // failing admin-only fetch can't suppress module-gated UI.
-  const orgSettings = await api.get<OrgSettings>("/api/settings").catch(() => null);
-  const defaultCurrency = orgSettings?.defaultCurrency ?? "USD";
-  const enabledModules: string[] = orgSettings?.enabledModules ?? [];
-
-  // Billing rates + org members for the "Rates" tab (admin/owner only)
-  let customerBillingRates: BillingRate[] = [];
-  let orgMembers: OrgMember[] = [];
-  let customerProfitability: ClientProfitabilityResponse | null = null;
-  let projectBreakdown: OrgProfitabilityResponse | null = null;
-  let customerInvoices: InvoiceResponse[] = [];
-  if (isAdmin) {
-    try {
-      const [ratesRes, membersRes, profitabilityRes, breakdownRes, invoicesRes] = await Promise.all(
-        [
-          api.get<{ content: BillingRate[] }>(`/api/billing-rates?clientId=${id}`),
-          api.get<OrgMember[]>("/api/members"),
-          getClientProfitability(id).catch(() => null),
-          // D4 (Phase 87): backend /api/reports/profitability still takes customerId (ReportController:66) — do not rename until the backend moves.
-          api
-            .get<OrgProfitabilityResponse>(`/api/reports/profitability?customerId=${id}`)
-            .catch(() => null),
-          api
-            .get<InvoiceResponse[]>(`/api/invoices?clientId=${id}`)
-            .catch(() => [] as InvoiceResponse[]),
-        ]
-      );
-      customerBillingRates = ratesRes?.content ?? [];
-      orgMembers = membersRes;
-      customerProfitability = profitabilityRes;
-      projectBreakdown = breakdownRes;
-      customerInvoices = invoicesRes ?? [];
-    } catch {
-      // Non-fatal: show empty rates/financials/invoices tab if fetch fails
-    }
-  }
-
-  // Custom field definitions and groups for the Custom Fields section
-  let customerFieldDefs: FieldDefinitionResponse[] = [];
-  let customerFieldGroups: FieldGroupResponse[] = [];
-  const customerGroupMembers: Record<string, FieldGroupMemberResponse[]> = {};
-  try {
-    const [defs, groups] = await Promise.all([
-      getFieldDefinitions("CUSTOMER"),
-      getFieldGroups("CUSTOMER"),
-    ]);
-    // Filter out promoted field slugs — they are rendered as first-class
-    // form fields (Epic 463) and should not appear in the custom field section.
-    customerFieldDefs = defs.filter((d) => !PROMOTED_CUSTOMER_SLUGS.has(d.slug));
-    customerFieldGroups = groups;
-
-    // Fetch members for each applied group
-    const appliedGroups = customer.appliedFieldGroups ?? [];
-    if (appliedGroups.length > 0) {
-      const memberResults = await Promise.allSettled(
-        appliedGroups.map((gId) => getGroupMembers(gId))
-      );
-      memberResults.forEach((result, i) => {
-        if (result.status === "fulfilled") {
-          customerGroupMembers[appliedGroups[i]] = result.value;
-        }
-      });
-    }
-  } catch {
-    // Non-fatal: custom fields section won't render
-  }
-
-  // Header facts strip (G-B9): the ID shows the structural idNumber first (what the Edit dialog
-  // writes and the conflict check matches), falling back to the legacy id_passport_number custom field.
-  const headerFields = buildHeaderFields(
-    HEADER_FIELD_SLUGS.CUSTOMER,
-    clientHeaderFieldValues(customer.customFields, customer.idNumber),
-    customerFieldDefs
-  );
-
-  // Tags for the Tags section
-  let customerTags: TagResponse[] = [];
-  let allTags: TagResponse[] = [];
-  try {
-    const [entityTags, orgTags] = await Promise.all([getClientTags(id), getTags()]);
-    customerTags = entityTags;
-    allTags = orgTags;
-  } catch {
-    // Non-fatal: tags section will show empty state
-  }
-
-  // Document templates for the "Generate Document" dropdown (admin only)
-  let customerTemplates: TemplateListResponse[] = [];
-  if (isAdmin) {
-    try {
-      customerTemplates = await getTemplates(undefined, "CUSTOMER");
-    } catch {
-      // Non-fatal: hide generate button if template fetch fails
-    }
-  }
-
-  // Checklist instances for the Onboarding tab
-  let checklistInstances: ChecklistInstanceResponse[] = [];
-  try {
-    checklistInstances = await getCustomerChecklists(id);
-  } catch {
-    // Non-fatal: onboarding tab won't show if fetch fails
-  }
-
-  // Checklist templates for the "Manually Add" selector (admin only)
-  let checklistTemplates: ChecklistTemplateResponse[] = [];
-  if (isAdmin) {
-    try {
-      checklistTemplates = await getChecklistTemplates();
-    } catch {
-      // Non-fatal: hide add button if template fetch fails
-    }
-  }
-
-  // Fetch KYC integration status
-  let kycStatus: KycIntegrationStatus = { configured: false, provider: null };
-  try {
-    kycStatus = await api.get<KycIntegrationStatus>("/api/integrations/kyc/status");
-  } catch {
-    // Non-fatal: KYC verification buttons won't show
-  }
-
-  const xeroConnected = await isXeroConnected();
-
-  // Derive a customer-level KYC summary from existing checklist data so the
-  // header can surface a status badge without an extra round-trip. Walks
-  // checklist items looking for a verification provider; collapses to one of
-  // verified / pending / unverified.
-  const kycSummary: KycSummary | null = (() => {
-    if (!kycStatus.configured) return null;
-    let latestVerified: { verifiedAt: string | null; provider: string } | null = null;
-    let hasPending = false;
-    for (const inst of checklistInstances) {
-      for (const item of inst.items ?? []) {
-        // A VERIFIED item without a verifiedAt timestamp is still verified —
-        // don't demote it to "pending". The badge tolerates a null timestamp.
-        if (item.verificationStatus === "VERIFIED" && item.verificationProvider) {
-          const itemVerifiedAt = item.verifiedAt ?? null;
-          const isNewer =
-            !latestVerified ||
-            (itemVerifiedAt &&
-              (latestVerified.verifiedAt === null || itemVerifiedAt > latestVerified.verifiedAt));
-          if (isNewer) {
-            latestVerified = {
-              verifiedAt: itemVerifiedAt,
-              provider: item.verificationProvider,
-            };
-          }
-        } else if (item.verificationProvider) {
-          hasPending = true;
-        }
-      }
-    }
-    if (latestVerified) {
-      return {
-        state: "verified",
-        provider: latestVerified.provider,
-        verifiedAt: latestVerified.verifiedAt,
-      };
-    }
-    if (hasPending) {
-      return { state: "pending" };
-    }
-    return { state: "unverified" };
-  })();
-
-  // Fetch information requests for the Requests tab
-  let customerRequests: InformationRequestResponse[] = [];
-  try {
-    customerRequests = await getCustomerRequests(id);
-  } catch {
-    // Non-fatal: requests tab will show empty state
-  }
-
-  // Build template name lookup for the onboarding panel
-  const checklistTemplateNames: Record<string, string> = {};
-  for (const t of checklistTemplates) {
-    checklistTemplateNames[t.id] = t.name;
-  }
-
-  const showOnboardingTab =
-    customer.lifecycleStatus === "ONBOARDING" || checklistInstances.length > 0;
-
-  // Setup guidance data (Epic 113A)
-  let customerReadiness: ClientReadiness | null = null;
-  let customerUnbilledSummary: UnbilledTimeSummary | null = null;
-  let customerTemplateReadiness: TemplateReadiness[] = [];
-  try {
-    const [readinessRes, unbilledRes, templateReadinessRes] = await Promise.all([
-      getClientReadiness(id),
-      getClientUnbilledSummary(id),
-      fetchTemplateReadiness("CUSTOMER", id),
-    ]);
-    customerReadiness = readinessRes;
-    customerUnbilledSummary = unbilledRes;
-    customerTemplateReadiness = templateReadinessRes;
-  } catch {
-    // Non-fatal: setup guidance cards will not render if fetch fails
-  }
-
-  // Activation prerequisite check for ONBOARDING customers (Task 248.4)
-  let activationPrerequisites: PrerequisiteCheck | null = null;
-  if (customer.lifecycleStatus === "ONBOARDING") {
-    try {
-      activationPrerequisites = await checkPrerequisites("LIFECYCLE_ACTIVATION", "CUSTOMER", id);
-    } catch {
-      // Non-fatal: activation blockers won't show if check fails
-    }
-  }
-
-  const activationBlockers: string[] =
-    activationPrerequisites && !activationPrerequisites.passed
-      ? activationPrerequisites.violations.map((v) => v.message)
-      : [];
-
-  // AI FICA panel prerequisites
-  const hasDocuments = customerDocuments.length > 0;
-  const hasPendingChecklistItems = checklistInstances.some((inst) =>
-    (inst.items ?? []).some((item) => item.status === "PENDING")
-  );
-  let isAiConfigured = false;
-  if (caps.capabilities.includes("AI_MANAGE")) {
-    // OWNER/ADMIN can check profile directly
-    try {
-      const aiProfile = await getAiProfile();
-      isAiConfigured = aiProfile.coldStartCompleted;
-    } catch {
-      // Non-fatal: panel will show disabled state
-    }
-  } else if (caps.capabilities.includes("AI_EXECUTE")) {
-    // MEMBER with AI_EXECUTE: they wouldn't have this capability without setup being done
-    isAiConfigured = true;
-  }
-
-  // Map customer readiness to setup steps
-  const customerSetupSteps: SetupStep[] = customerReadiness
-    ? [
-        {
-          label: "Matters linked",
-          complete: customerReadiness.hasLinkedMatters,
-          actionHref: `?tab=matters`,
-        },
-        {
-          label:
-            customerReadiness.checklistProgress === null
-              ? "No onboarding checklist"
-              : `Onboarding checklist (${customerReadiness.checklistProgress.completed}/${customerReadiness.checklistProgress.total})`,
-          complete:
-            customerReadiness.checklistProgress === null ||
-            customerReadiness.checklistProgress.completed ===
-              customerReadiness.checklistProgress.total,
-          actionHref: showOnboardingTab ? `?tab=onboarding` : undefined,
-        },
-        {
-          label:
-            (customerReadiness.requiredFields?.total ?? 0) === 0
-              ? "No required fields defined"
-              : `Required fields filled (${customerReadiness.requiredFields?.filled ?? 0}/${customerReadiness.requiredFields?.total ?? 0})`,
-          complete:
-            (customerReadiness.requiredFields?.total ?? 0) === 0 ||
-            (customerReadiness.requiredFields?.filled ?? 0) ===
-              (customerReadiness.requiredFields?.total ?? 0),
-          actionHref: "#custom-fields",
-        },
-      ]
-    : [];
-
-  // Compute readiness percentage from steps
-  const completedStepCount = customerSetupSteps.filter((s) => s.complete).length;
-  const customerReadinessPercentage =
-    customerSetupSteps.length === 0
-      ? 100
-      : Math.round((completedStepCount / customerSetupSteps.length) * 100);
-  const customerReadinessComplete =
-    customerSetupSteps.length === 0 || customerSetupSteps.every((s) => s.complete);
-
-  // Build context groups from required fields for expandable display (Epic 251B)
-  const contextGroups: ContextGroup[] =
-    customerReadiness && (customerReadiness.requiredFields?.fields?.length ?? 0) > 0
-      ? [
-          {
-            contextLabel: "Required Fields",
-            filled: customerReadiness.requiredFields?.filled ?? 0,
-            total: customerReadiness.requiredFields?.total ?? 0,
-            fields: (customerReadiness.requiredFields?.fields ?? []).map((f) => ({
-              name: f.name,
-              slug: f.slug,
-              filled: f.filled,
-            })),
-          },
-        ]
-      : [];
-
-  // Lifecycle action prompt (Epic 113A)
-  const lifecycleActionPrompt: {
-    icon: typeof ArrowRight;
-    title: string;
-    description: string;
-    actionLabel: string;
-    targetStatus: "ONBOARDING" | "ACTIVE";
-  } | null =
-    isAdmin && customer.lifecycleStatus && customer.status === "ACTIVE"
-      ? customer.lifecycleStatus === "PROSPECT"
-        ? {
-            icon: ArrowRight,
-            title: "Ready to start onboarding?",
-            description: "Move this client to Onboarding to begin compliance checklists.",
-            actionLabel: "Start Onboarding",
-            targetStatus: "ONBOARDING",
-          }
-        : customer.lifecycleStatus === "ONBOARDING" &&
-            (customerReadiness?.checklistProgress == null ||
-              customerReadiness.checklistProgress.total === 0 ||
-              (customerReadiness.checklistProgress.completed ===
-                customerReadiness.checklistProgress.total &&
-                customerReadiness.checklistProgress.total > 0))
-          ? {
-              icon: UserCheck,
-              title:
-                customerReadiness?.checklistProgress != null &&
-                customerReadiness.checklistProgress.total > 0
-                  ? "All items verified — Activate Client"
-                  : "Ready to activate",
-              description:
-                customerReadiness?.checklistProgress != null &&
-                customerReadiness.checklistProgress.total > 0
-                  ? "Onboarding checklist is complete. This client is ready to be activated."
-                  : "No onboarding checklist assigned. This client is ready to be activated.",
-              actionLabel: "Activate Client",
-              targetStatus: "ACTIVE",
-            }
-          : null
-      : null;
-
-  // Pre-compute promoted field values for ClientFieldsTab
-  const promotedFieldValues: Record<string, unknown> = {};
-  if (customer.entityType) {
-    promotedFieldValues["acct_entity_type"] = customer.entityType;
-    promotedFieldValues["client_type"] = customer.entityType;
-  }
-  if (customer.taxNumber) {
-    promotedFieldValues["tax_number"] = customer.taxNumber;
-    promotedFieldValues["vat_number"] = customer.taxNumber;
-  }
-  if (customer.registrationNumber) {
-    promotedFieldValues["acct_company_registration_number"] = customer.registrationNumber;
-    promotedFieldValues["registration_number"] = customer.registrationNumber;
-  }
+  // Loaders (642B, §15.3.5): the tab-panel reads (./client-page-data) and the hero reads
+  // (./hero-tiles — open matters, debtor detail, trust pair, FICA; the debtor detail is shared
+  // with the Chase-history card). Each read once; the two loaders run in parallel.
+  const [data, hero] = await Promise.all([
+    loadClientPageData({ id, customer, caps, orgSettings }),
+    loadClientHeroData(id, caps, {
+      trustEnabled: (orgSettings?.enabledModules ?? []).includes("trust_accounting"),
+      chasePage: chasePageNum,
+    }),
+  ]);
+  const debtorDetail = chaseHistory(hero);
+  const {
+    linkedProjects,
+    customerDocuments,
+    defaultCurrency,
+    enabledModules,
+    customerBillingRates,
+    orgMembers,
+    customerProfitability,
+    projectBreakdown,
+    customerInvoices,
+    customerFieldDefs,
+    customerFieldGroups,
+    customerGroupMembers,
+    headerFields,
+    customerTags,
+    allTags,
+    customerTemplates,
+    checklistInstances,
+    checklistTemplates,
+    kycStatus,
+    xeroConnected,
+    kycSummary,
+    customerRequests,
+    checklistTemplateNames,
+    showOnboardingTab,
+    customerReadiness,
+    customerUnbilledSummary,
+    customerTemplateReadiness,
+    activationBlockers,
+    hasDocuments,
+    hasPendingChecklistItems,
+    isAiConfigured,
+    customerSetupSteps,
+    customerReadinessPercentage,
+    customerReadinessComplete,
+    contextGroups,
+    lifecycleActionPrompt,
+    promotedFieldValues,
+  } = data;
 
   return (
     <div className="space-y-6">
@@ -493,7 +116,7 @@ export default async function CustomerDetailPage({
       <div>
         <Link
           href={`/org/${slug}/clients`}
-          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="text-muted-foreground hover:text-foreground inline-flex items-center text-sm transition-colors"
         >
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Clients
@@ -524,16 +147,17 @@ export default async function CustomerDetailPage({
           customer={customer}
           targetLifecycleStatus={lifecycleActionPrompt?.targetStatus ?? null}
           headerFields={headerFields}
+          tiles={buildClientHeroTiles(hero, orgSettings?.defaultCurrency ?? null)}
         />
       </div>
 
       {/* Anonymized Info Banner */}
       {customer.lifecycleStatus === "ANONYMIZED" && (
-        <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
-          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-slate-500 dark:text-slate-400" />
-          <div className="text-sm text-slate-700 dark:text-slate-300">
+        <div className="border-border bg-muted flex items-start gap-3 rounded-lg border p-4">
+          <ShieldCheck className="text-muted-foreground mt-0.5 size-5 shrink-0" />
+          <div className="text-foreground text-sm">
             <p className="font-medium">Client data anonymized</p>
-            <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+            <p className="text-muted-foreground mt-0.5">
               This client&apos;s personal data has been anonymized. All identifying information has
               been removed.
             </p>

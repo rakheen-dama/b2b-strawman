@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import {
   CLIENT_TYPE_LABEL,
   CUSTOM_FIELD_COLUMN_PREFIX,
+  FICA_STATUS_LABEL,
   UNSORTABLE_CLIENT_COLUMNS,
   clientColumnLabel,
   formatCustomFieldCell,
@@ -33,7 +34,7 @@ import {
   isClientColumnId,
   type ClientColumnId,
 } from "@/lib/clients-list";
-import type { ClientListRow, FicaOnboardingStatus } from "@/lib/types";
+import type { ClientListRow } from "@/lib/types";
 import { ClientRowActions } from "./client-row-actions";
 
 const NUMERIC_COLUMNS = new Set<ClientColumnId>(["openMatterCount", "outstanding", "trustBalance"]);
@@ -68,12 +69,6 @@ const LOW_PRIORITY_COLUMN_CLASS: Partial<Record<ClientColumnId, string>> = {
  * pushing the row menu out of view.
  */
 const CLIENT_CELL_CLASS = "w-full max-w-0";
-
-const FICA_LABEL: Record<FicaOnboardingStatus, string> = {
-  DONE: "Done",
-  IN_PROGRESS: "In progress",
-  NOT_STARTED: "Not started",
-};
 
 /**
  * A multi-word header breaks after its first word ("Outstanding / fee notes"): two short lines
@@ -255,7 +250,7 @@ function clientCsv(column: ClientColumnId, row: ClientListRow): string | number 
     case "lifecycleStatus":
       return row.lifecycleStatus ? lifecycleStatusLabel(row.lifecycleStatus) : null;
     case "ficaStatus": {
-      const label = FICA_LABEL[row.ficaStatus] ?? FICA_LABEL.NOT_STARTED;
+      const label = FICA_STATUS_LABEL[row.ficaStatus] ?? FICA_STATUS_LABEL.NOT_STARTED;
       const verified = ficaVerified(row);
       return verified ? `${label} · ${verified}` : label;
     }

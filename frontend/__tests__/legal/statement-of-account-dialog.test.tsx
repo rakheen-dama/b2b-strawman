@@ -56,6 +56,7 @@ import { OrgProfileProvider } from "@/lib/org-profile";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { toast } from "sonner";
 import type { StatementResponse } from "@/lib/api/statement-of-account";
+import { inZone } from "@/__tests__/helpers/time-zone";
 
 afterEach(() => {
   cleanup();
@@ -63,11 +64,6 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-/** Moves the process zone to `zone`, guarding against a vacuous stub (631B pattern). */
-function inZone(zone: string) {
-  vi.stubEnv("TZ", zone);
-  expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(zone);
-}
 beforeEach(() => {
   vi.clearAllMocks();
   // Freeze the clock so date-default assertions are deterministic. Individual

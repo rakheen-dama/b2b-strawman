@@ -12,6 +12,8 @@ import {
 import { buildMatterListParams, defaultMatterColumns, type MatterSort } from "@/lib/matters-list";
 import { formatDate } from "@/lib/format";
 import type { MatterListRow } from "@/lib/types";
+import { blobText, stubDownload } from "@/__tests__/helpers/csv-download";
+import { inZone } from "@/__tests__/helpers/time-zone";
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -103,38 +105,6 @@ function renderTable(rows: MatterListRow[], opts: RenderOptions = {}) {
       footer={opts.footer}
     />
   );
-}
-
-/** Captures the CSV Blob and the download name of each "Export CSV" click (639C pattern). */
-function stubDownload() {
-  const captured: { blobs: Blob[]; downloads: string[] } = { blobs: [], downloads: [] };
-  const originalCreate = URL.createObjectURL;
-  const originalRevoke = URL.revokeObjectURL;
-  URL.createObjectURL = vi.fn((blob: Blob) => {
-    captured.blobs.push(blob);
-    return "blob:mock";
-  }) as typeof URL.createObjectURL;
-  URL.revokeObjectURL = vi.fn();
-  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
-    this: HTMLAnchorElement
-  ) {
-    captured.downloads.push(this.download);
-  });
-  return {
-    captured,
-    /** Waits one task first so the deferred `revokeObjectURL` still hits the mock. */
-    async restore() {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      URL.createObjectURL = originalCreate;
-      URL.revokeObjectURL = originalRevoke;
-    },
-  };
-}
-
-async function blobText(blob: Blob | undefined): Promise<string> {
-  if (!blob) throw new Error("no CSV blob was created");
-  // ignoreBOM keeps a leading BOM in the decoded text so the test can assert it.
-  return new TextDecoder("utf-8", { ignoreBOM: true }).decode(await blob.arrayBuffer());
 }
 
 beforeEach(() => vi.clearAllMocks());
@@ -535,12 +505,6 @@ describe("MattersDataTable — CSV export", () => {
 describe("MattersDataTable — Opened date across time zones", () => {
   // 01:30 SAST on 2 May; still 1 May in UTC (the SSR server) and in New York.
   const LATE_INSTANT = "2026-05-01T23:30:00Z";
-
-  /** Moves the process zone (Date and Intl follow), guarding against a vacuous stub. */
-  function inZone(zone: string) {
-    vi.stubEnv("TZ", zone);
-    expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(zone);
-  }
 
   afterEach(() => vi.unstubAllEnvs());
 

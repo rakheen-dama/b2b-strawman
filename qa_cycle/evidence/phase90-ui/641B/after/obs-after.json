@@ -1,0 +1,5754 @@
+{
+  "loads": [
+    {
+      "user": "alice",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1024x768",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-rich-1024-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 672,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundClose MatterComplete MatterUnbilled WIPR 0,000,0h · 0 entriesTrust balanceR 0,00OutstandingR 5 482,630 overdueNext court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 0,00",
+            "hint": "0,0h · 0 entries",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 371,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 371,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 5 482,63",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 481,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 481,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r2c1",
+          "Next court date@r2c2"
+        ],
+        "gridShape": "2 col x 2 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 5 482,63Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1024x768",
+      "theme": "dark",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-rich-1024-dark.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "dark",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 672,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundClose MatterComplete MatterUnbilled WIPR 0,000,0h · 0 entriesTrust balanceR 0,00OutstandingR 5 482,630 overdueNext court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 0,00",
+            "hint": "0,0h · 0 entries",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 371,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 371,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 5 482,63",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 481,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 481,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r2c1",
+          "Next court date@r2c2"
+        ],
+        "gridShape": "2 col x 2 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 5 482,63Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1440x900",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-rich-1440-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundClose MatterComplete MatterUnbilled WIPR 0,000,0h · 0 entriesTrust balanceR 0,00OutstandingR 5 482,630 overdueNext court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 0,00",
+            "hint": "0,0h · 0 entries",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 323,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 590,
+              "y": 323,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 5 482,63",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 323,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 1119,
+              "y": 323,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r1c3",
+          "Next court date@r1c4"
+        ],
+        "gridShape": "4 col x 1 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 5 482,63Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-rich-1440-dark.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "dark",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundClose MatterComplete MatterUnbilled WIPR 0,000,0h · 0 entriesTrust balanceR 0,00OutstandingR 5 482,630 overdueNext court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 0,00",
+            "hint": "0,0h · 0 entries",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 323,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 590,
+              "y": 323,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 5 482,63",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 323,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 1119,
+              "y": 323,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r1c3",
+          "Next court date@r1c4"
+        ],
+        "gridShape": "4 col x 1 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 5 482,63Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1280x800",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-rich-1280-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 928,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundClose MatterComplete MatterUnbilled WIPR 0,000,0h · 0 entriesTrust balanceR 0,00OutstandingR 5 482,630 overdueNext court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 0,00",
+            "hint": "0,0h · 0 entries",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 323,
+              "w": 213,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 187,
+              "cw": 187,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 550,
+              "y": 323,
+              "w": 213,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 5 482,63",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 774,
+              "y": 323,
+              "w": 213,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 187,
+              "cw": 187,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 999,
+              "y": 323,
+              "w": 213,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 187,
+              "cw": 187,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r1c3",
+          "Next court date@r1c4"
+        ],
+        "gridShape": "4 col x 1 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 5 482,63Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "estate",
+      "matterId": "a9245382-b2c3-4150-9c97-cb8f58f17bfd",
+      "viewport": "1440x900",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-estate-1440-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/a9245382-b2c3-4150-9c97-cb8f58f17bfd",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Estate Late Peter Moroka mwdrhfyu3ef3ActiveESTATESMoroka Family Trust mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Close MatterComplete MatterUnbilled WIPR 15 000,006,0h · 1 entryTrust balanceR 241 521,50OutstandingR 125,000 overdueNext court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Estate Late Peter Moroka mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Estate Late Peter Moroka mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveESTATES",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Moroka Family Trust mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 15 000,00",
+            "hint": "6,0h · 1 entry",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 241 521,50",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 590,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 130,
+              "cw": 130,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 130,
+              "cw": 130,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 125,00",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 86,
+              "cw": 86,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 86,
+              "cw": 86,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 1119,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r1c3",
+          "Next court date@r1c4"
+        ],
+        "gridShape": "4 col x 1 row",
+        "healthHeader": "HealthyClient: Moroka Family Trust mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "7.0hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "22%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 241 521,50Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 125,00Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "estate",
+      "matterId": "a9245382-b2c3-4150-9c97-cb8f58f17bfd",
+      "viewport": "1024x768",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-estate-1024-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/a9245382-b2c3-4150-9c97-cb8f58f17bfd",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 672,
+        "headerCardText": "Estate Late Peter Moroka mwdrhfyu3ef3ActiveESTATESMoroka Family Trust mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Close MatterComplete MatterUnbilled WIPR 15 000,006,0h · 1 entryTrust balanceR 241 521,50OutstandingR 125,000 overdueNext court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Estate Late Peter Moroka mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Estate Late Peter Moroka mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveESTATES",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Moroka Family Trust mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 15 000,00",
+            "hint": "6,0h · 1 entry",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 343,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 241 521,50",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 343,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 130,
+              "cw": 130,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 130,
+              "cw": 130,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 125,00",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 453,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 86,
+              "cw": 86,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 86,
+              "cw": 86,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 453,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r2c1",
+          "Next court date@r2c2"
+        ],
+        "gridShape": "2 col x 2 row",
+        "healthHeader": "HealthyClient: Moroka Family Trust mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "7.0hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "22%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 241 521,50Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 125,00Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "closed",
+      "matterId": "9eb0f749-a1b7-4565-b28b-c509f0a2a56f",
+      "viewport": "1440x900",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-closed-1440-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/9eb0f749-a1b7-4565-b28b-c509f0a2a56f",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Ndlovu v RAF — Depth II mwdrm1q38f4bClosedLITIGATIONSipho Ndlovu mwdrm1q38f4b·Alice Owner·Opened 12 Nov 2026Reopen MatterUnbilled WIPR 5 000,002,0h · 1 entryTrust balanceR 3 750,00OutstandingR 0,000 overdueNext court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF — Depth II mwdrm1q38f4b"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF — Depth II mwdrm1q38f4b",
+        "identifier": null,
+        "statusBlock": "ClosedLITIGATION",
+        "statusBadge": "Closed",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrm1q38f4b·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Reopen Matter",
+            "testid": "reopen-matter-btn",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 5 000,00",
+            "hint": "2,0h · 1 entry",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 3 750,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 590,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 0,00",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 79,
+              "cw": 79,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 79,
+              "cw": 79,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 1119,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r1c3",
+          "Next court date@r1c4"
+        ],
+        "gridShape": "4 col x 1 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrm1q38f4b",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "2.0hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 3 750,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 0,00Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "shared",
+      "matterId": "a3b0ec9e-903f-46a8-a6ba-df650ddc6823",
+      "viewport": "1440x900",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-shared-1440-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/a3b0ec9e-903f-46a8-a6ba-df650ddc6823",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Budget Test Project fzfyActiveInternal Matter·Alice Owner·Opened 12 Nov 2026Close MatterComplete MatterUnbilled WIPR 0,000,0h · 0 entriesTrust balanceR 0,00OutstandingR 0,000 overdueNext court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Budget Test Project fzfy"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Budget Test Project fzfy",
+        "identifier": null,
+        "statusBlock": "Active",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Internal Matter·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 0,00",
+            "hint": "0,0h · 0 entries",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 590,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 0,00",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 79,
+              "cw": 79,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 79,
+              "cw": 79,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 1119,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r1c3",
+          "Next court date@r1c4"
+        ],
+        "gridShape": "4 col x 1 row",
+        "healthHeader": "Healthy",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-budget",
+            "text": "2%Fee estimate consumed"
+          },
+          {
+            "testid": "metric-card-hours",
+            "text": "2.0hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 0,00Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "shared",
+      "matterId": "a3b0ec9e-903f-46a8-a6ba-df650ddc6823",
+      "viewport": "1024x768",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-shared-1024-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/a3b0ec9e-903f-46a8-a6ba-df650ddc6823",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 672,
+        "headerCardText": "Budget Test Project fzfyActiveInternal Matter·Alice Owner·Opened 12 Nov 2026Close MatterComplete MatterUnbilled WIPR 0,000,0h · 0 entriesTrust balanceR 0,00OutstandingR 0,000 overdueNext court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Budget Test Project fzfy"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Budget Test Project fzfy",
+        "identifier": null,
+        "statusBlock": "Active",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Internal Matter·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 0,00",
+            "hint": "0,0h · 0 entries",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 343,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 343,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 0,00",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 453,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 79,
+              "cw": 79,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 79,
+              "cw": 79,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 453,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r2c1",
+          "Next court date@r2c2"
+        ],
+        "gridShape": "2 col x 2 row",
+        "healthHeader": "Healthy",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-budget",
+            "text": "2%Fee estimate consumed"
+          },
+          {
+            "testid": "metric-card-hours",
+            "text": "2.0hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 0,00Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "alice",
+      "matter": "website",
+      "matterId": "58604884-c735-4d92-a2cd-a01599ee124e",
+      "viewport": "1440x900",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "alice-website-1440-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/58604884-c735-4d92-a2cd-a01599ee124e",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Website RedesignActiveAcme Corp·Alice Owner·Opened 12 Nov 2026Close MatterComplete MatterUnbilled WIPR 0,000,0h · 0 entriesTrust balanceR 0,00OutstandingR 8 625,000 overdueNext court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Website Redesign"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Website Redesign",
+        "identifier": null,
+        "statusBlock": "Active",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Acme Corp·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [
+          {
+            "text": "Close Matter",
+            "testid": "close-matter-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "Complete Matter",
+            "testid": "complete-project-btn",
+            "ariaLabel": null
+          },
+          {
+            "text": "",
+            "testid": "project-overflow-menu",
+            "ariaLabel": null
+          }
+        ],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-4",
+        "tileCount": 4,
+        "tiles": [
+          {
+            "label": "Unbilled WIP",
+            "value": "R 0,00",
+            "hint": "0,0h · 0 entries",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 83,
+              "cw": 83,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 590,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Outstanding",
+            "value": "R 8 625,00",
+            "hint": "0 overdue",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 108,
+              "cw": 108,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 1119,
+              "y": 295,
+              "w": 253,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 227,
+              "cw": 227,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Unbilled WIP@r1c1",
+          "Trust balance@r1c2",
+          "Outstanding@r1c3",
+          "Next court date@r1c4"
+        ],
+        "gridShape": "4 col x 1 row",
+        "healthHeader": "UnknownClient: Acme CorpNo tasks created yet",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "0.0hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          },
+          {
+            "testid": "metric-card-invoices",
+            "text": "R 8 625,00Outstanding fee notes"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "carol",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1024x768",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "carol-rich-1024-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 672,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundTrust balanceR 0,00Next court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-2",
+        "tileCount": 2,
+        "tiles": [
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 323,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 323,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Trust balance@r1c1",
+          "Next court date@r1c2"
+        ],
+        "gridShape": "2 col x 1 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "carol",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1024x768",
+      "theme": "dark",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "carol-rich-1024-dark.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "dark",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 672,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundTrust balanceR 0,00Next court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-2",
+        "tileCount": 2,
+        "tiles": [
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 323,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 323,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Trust balance@r1c1",
+          "Next court date@r1c2"
+        ],
+        "gridShape": "2 col x 1 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "carol",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1440x900",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "carol-rich-1440-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundTrust balanceR 0,00Next court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-2",
+        "tileCount": 2,
+        "tiles": [
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 323,
+              "w": 517,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 323,
+              "w": 517,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 491,
+              "cw": 491,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Trust balance@r1c1",
+          "Next court date@r1c2"
+        ],
+        "gridShape": "2 col x 1 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "carol",
+      "matter": "rich",
+      "matterId": "f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+      "viewport": "1440x900",
+      "theme": "dark",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "carol-rich-1440-dark.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d",
+        "htmlClass": "dark",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Ndlovu v RAF mwdrhfyu3ef3ActiveLITIGATIONSipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026Case no.2026/12345·CourtGauteng Division, Pretoria·Opposing PartyRoad Accident FundTrust balanceR 0,00Next court date11 Jan 2027Gauteng Division, Pretoria",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Ndlovu v RAF mwdrhfyu3ef3"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Ndlovu v RAF mwdrhfyu3ef3",
+        "identifier": null,
+        "statusBlock": "ActiveLITIGATION",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Sipho Ndlovu mwdrhfyu3ef3·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": true,
+        "headerFieldsInsideCard": true,
+        "headerFields": [
+          {
+            "testid": "matter-header-field-case_number",
+            "dt": "Case no.",
+            "dd": "2026/12345"
+          },
+          {
+            "testid": "matter-header-field-court_name",
+            "dt": "·Court",
+            "dd": "Gauteng Division, Pretoria"
+          },
+          {
+            "testid": "matter-header-field-opposing_party",
+            "dt": "·Opposing Party",
+            "dd": "Road Accident Fund"
+          }
+        ],
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-2",
+        "tileCount": 2,
+        "tiles": [
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 323,
+              "w": 517,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "11 Jan 2027",
+            "hint": "Gauteng Division, Pretoria",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 323,
+              "w": 517,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 491,
+              "cw": 491,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 119,
+              "cw": 119,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Trust balance@r1c1",
+          "Next court date@r1c2"
+        ],
+        "gridShape": "2 col x 1 row",
+        "healthHeader": "HealthyClient: Sipho Ndlovu mwdrhfyu3ef3",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "5.3hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesCourtGauteng Division, PretoriaDec 12CourtGauteng Division, PretoriaJan 11",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "carol",
+      "matter": "internal",
+      "matterId": "fbfb09aa-9a06-4571-9147-fe3b8f52b5cf",
+      "viewport": "1440x900",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "carol-internal-1440-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/fbfb09aa-9a06-4571-9147-fe3b8f52b5cf",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Time Test Project fzfwActiveInternal Matter·Alice Owner·Opened 12 Nov 2026Trust balanceR 0,00Next court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Time Test Project fzfw"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Time Test Project fzfw",
+        "identifier": null,
+        "statusBlock": "Active",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Internal Matter·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-2",
+        "tileCount": 2,
+        "tiles": [
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 295,
+              "w": 517,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 295,
+              "w": 517,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 491,
+              "cw": 491,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Trust balance@r1c1",
+          "Next court date@r1c2"
+        ],
+        "gridShape": "2 col x 1 row",
+        "healthHeader": "Healthy",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "1.5hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "carol",
+      "matter": "internal",
+      "matterId": "fbfb09aa-9a06-4571-9147-fe3b8f52b5cf",
+      "viewport": "1024x768",
+      "theme": "dark",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "carol-internal-1024-dark.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/fbfb09aa-9a06-4571-9147-fe3b8f52b5cf",
+        "htmlClass": "dark",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 672,
+        "headerCardText": "Time Test Project fzfwActiveInternal Matter·Alice Owner·Opened 12 Nov 2026Trust balanceR 0,00Next court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Time Test Project fzfw"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Time Test Project fzfw",
+        "identifier": null,
+        "statusBlock": "Active",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Internal Matter·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-2",
+        "tileCount": 2,
+        "tiles": [
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 295,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 295,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              },
+              "value": {
+                "fg": "255,255,255",
+                "bg": "20,23,28",
+                "ratio": 17.96
+              },
+              "hint": {
+                "fg": "152,159,170",
+                "bg": "20,23,28",
+                "ratio": 6.74
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Trust balance@r1c1",
+          "Next court date@r1c2"
+        ],
+        "gridShape": "2 col x 1 row",
+        "healthHeader": "Healthy",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-hours",
+            "text": "1.5hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "carol",
+      "matter": "shared",
+      "matterId": "a3b0ec9e-903f-46a8-a6ba-df650ddc6823",
+      "viewport": "1440x900",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "carol-shared-1440-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/a3b0ec9e-903f-46a8-a6ba-df650ddc6823",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 1088,
+        "headerCardText": "Budget Test Project fzfyActiveInternal Matter·Alice Owner·Opened 12 Nov 2026Trust balanceR 0,00Next court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Budget Test Project fzfy"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Budget Test Project fzfy",
+        "identifier": null,
+        "statusBlock": "Active",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Internal Matter·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-2",
+        "tileCount": 2,
+        "tiles": [
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 295,
+              "w": 517,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 854,
+              "y": 295,
+              "w": 517,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 491,
+              "cw": 491,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Trust balance@r1c1",
+          "Next court date@r1c2"
+        ],
+        "gridShape": "2 col x 1 row",
+        "healthHeader": "Healthy",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-budget",
+            "text": "2%Fee estimate consumed"
+          },
+          {
+            "testid": "metric-card-hours",
+            "text": "2.0hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    },
+    {
+      "user": "carol",
+      "matter": "shared",
+      "matterId": "a3b0ec9e-903f-46a8-a6ba-df650ddc6823",
+      "viewport": "1024x768",
+      "theme": "light",
+      "httpStatus": 200,
+      "h1ok": true,
+      "file": "carol-shared-1024-light.png",
+      "facts": {
+        "url": "/org/e2e-test-org/matters/a3b0ec9e-903f-46a8-a6ba-df650ddc6823",
+        "htmlClass": "light",
+        "docOverflowX": false,
+        "headerCardPresent": true,
+        "headerCardSlot": "detail-hero",
+        "headerCardWidth": 672,
+        "headerCardText": "Budget Test Project fzfyActiveInternal Matter·Alice Owner·Opened 12 Nov 2026Trust balanceR 0,00Next court date—Not availableNone scheduled",
+        "headerAboveTabs": true,
+        "h1Count": 1,
+        "h1s": [
+          {
+            "testid": "matter-name",
+            "text": "Budget Test Project fzfy"
+          }
+        ],
+        "matterNameInMain": true,
+        "matterName": "Budget Test Project fzfy",
+        "identifier": null,
+        "statusBlock": "Active",
+        "statusBadge": "Active",
+        "closedAt": null,
+        "subtitle": "Internal Matter·Alice Owner·Opened 12 Nov 2026",
+        "headerFieldsPresent": false,
+        "headerFieldsInsideCard": false,
+        "headerFields": null,
+        "lifecycleActionsPresent": true,
+        "lifecycleButtons": [],
+        "stripClass": "grid gap-3 grid-cols-2 @3xl:grid-cols-2",
+        "tileCount": 2,
+        "tiles": [
+          {
+            "label": "Trust balance",
+            "value": "R 0,00",
+            "hint": null,
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 325,
+              "y": 295,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "hintOverflow": null,
+            "labelOverflow": {
+              "sw": 87,
+              "cw": 87,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": null
+            }
+          },
+          {
+            "label": "Next court date",
+            "value": "—Not available",
+            "hint": "None scheduled",
+            "errorText": null,
+            "hintHasIcon": false,
+            "variant": "compact",
+            "state": "ready",
+            "role": "group",
+            "labelledBy": true,
+            "isLink": false,
+            "box": {
+              "x": 646,
+              "y": 295,
+              "w": 309,
+              "h": 98
+            },
+            "valueOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "hintOverflow": {
+              "sw": 283,
+              "cw": 283,
+              "overflow": false
+            },
+            "labelOverflow": {
+              "sw": 100,
+              "cw": 100,
+              "overflow": false
+            },
+            "valueClass": "text-foreground font-mono font-semibold tabular-nums text-lg",
+            "contrast": {
+              "label": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              },
+              "value": {
+                "fg": "20,23,28",
+                "bg": "253,254,255",
+                "ratio": 17.79
+              },
+              "hint": {
+                "fg": "77,84,95",
+                "bg": "253,254,255",
+                "ratio": 7.57
+              }
+            }
+          }
+        ],
+        "grid": [
+          "Trust balance@r1c1",
+          "Next court date@r1c2"
+        ],
+        "gridShape": "2 col x 1 row",
+        "healthHeader": "Healthy",
+        "metricGridPresent": true,
+        "metricCards": [
+          {
+            "testid": "metric-card-budget",
+            "text": "2%Fee estimate consumed"
+          },
+          {
+            "testid": "metric-card-hours",
+            "text": "2.0hHours logged"
+          },
+          {
+            "testid": "metric-card-tasks",
+            "text": "0%Task completion"
+          },
+          {
+            "testid": "metric-card-trust",
+            "text": "R 0,00Trust balance"
+          }
+        ],
+        "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+        "tabs": [
+          {
+            "text": "Details",
+            "selected": "false"
+          },
+          {
+            "text": "Overview",
+            "selected": "true"
+          },
+          {
+            "text": "Work",
+            "selected": "false"
+          },
+          {
+            "text": "Fees",
+            "selected": "false"
+          },
+          {
+            "text": "Client",
+            "selected": "false"
+          },
+          {
+            "text": "Diary",
+            "selected": "false"
+          },
+          {
+            "text": "Activity",
+            "selected": "false"
+          }
+        ]
+      },
+      "console": [],
+      "hydrationWarnings": 0
+    }
+  ],
+  "tabs": [
+    {
+      "tab": "Details > Details",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=details",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Details · Details",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Details > Custom fields",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=fields",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Details · Custom fields",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Details > Team",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=team",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Details · Team",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Overview",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=overview",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Overview",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Work > Tasks",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=tasks",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Work · Tasks",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Work > Documents",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=documents",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Work · Documents",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Work > Correspondence",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=correspondence",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Work · Correspondence",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Work > Generated documents",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=generated",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Work · Generated documents",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Fees > Time recording",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=time",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Fees · Time recording",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Fees > Disbursements",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=disbursements",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Fees · Disbursements",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Fees > Fee estimate",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=budget",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Fees · Fee estimate",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Fees > Tariffs",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=rates",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Fees · Tariffs",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Fees > Financials",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=financials",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Fees · Financials",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Fees > Statements of account",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=statements",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Fees · Statements of account",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Fees > Trust",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=trust",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Fees · Trust",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Client > Clients",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=clients",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Client · Clients",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Client > Information requests",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=requests",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Client · Information requests",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Client > Comments",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=comments",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Client · Comments",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Client > Adverse parties",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=adverse-parties",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Client · Adverse parties",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Diary",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=court-dates",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Diary",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Activity > Activity",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=activity",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Activity · Activity",
+      "h1Count": 1,
+      "console": []
+    },
+    {
+      "tab": "Activity > Audit trail",
+      "url": "/org/e2e-test-org/matters/f04aaa84-880f-41c0-8a0d-1cd67dbdf99d?tab=audit",
+      "headerPresent": true,
+      "headerVisible": true,
+      "tileCount": 4,
+      "headerAboveTabs": true,
+      "selectedTab": "Activity · Audit trail",
+      "h1Count": 1,
+      "console": []
+    }
+  ],
+  "dialogs": [
+    {
+      "dialog": "create",
+      "theme": "light",
+      "title": "Create Matter",
+      "description": "Add a new matter to your organization.",
+      "headings": [
+        "Create Matter"
+      ],
+      "labels": [
+        "Name",
+        "Description (optional)",
+        "Due Date (optional)",
+        "Client (optional)",
+        "Reference Number (optional)",
+        "Priority (optional)",
+        "Work Type (optional)"
+      ],
+      "buttons": [
+        "Cancel",
+        "Create Matter",
+        "Close"
+      ],
+      "footer": "CancelCreate Matter",
+      "box": {
+        "x": 256,
+        "y": 38,
+        "w": 512,
+        "h": 691
+      },
+      "scroller": {
+        "sh": 939,
+        "ch": 689,
+        "scrollTop": 0,
+        "scrollable": true
+      },
+      "sectionHeadings": [
+        "Matter details",
+        "Classification"
+      ],
+      "footerTop": 901,
+      "footerVisibleWithoutScroll": false,
+      "footerBorderTop": "1px",
+      "vh": 768,
+      "console": []
+    },
+    {
+      "dialog": "create",
+      "theme": "light",
+      "afterWheel": true,
+      "title": "Create Matter",
+      "description": "Add a new matter to your organization.",
+      "headings": [
+        "Create Matter"
+      ],
+      "labels": [
+        "Name",
+        "Description (optional)",
+        "Due Date (optional)",
+        "Client (optional)",
+        "Reference Number (optional)",
+        "Priority (optional)",
+        "Work Type (optional)"
+      ],
+      "buttons": [
+        "Cancel",
+        "Create Matter",
+        "Close"
+      ],
+      "footer": "CancelCreate Matter",
+      "box": {
+        "x": 256,
+        "y": 38,
+        "w": 512,
+        "h": 691
+      },
+      "scroller": {
+        "sh": 939,
+        "ch": 689,
+        "scrollTop": 250,
+        "scrollable": true
+      },
+      "sectionHeadings": [
+        "Matter details",
+        "Classification"
+      ],
+      "footerTop": 651,
+      "footerVisibleWithoutScroll": true,
+      "footerBorderTop": "1px",
+      "vh": 768
+    },
+    {
+      "dialog": "edit",
+      "theme": "light",
+      "title": "Edit Matter",
+      "description": "Update your matter's details.",
+      "headings": [
+        "Edit Matter"
+      ],
+      "labels": [
+        "Name",
+        "Description (optional)",
+        "Due Date (optional)",
+        "Client (optional)",
+        "Reference Number (optional)",
+        "Priority (optional)",
+        "Work Type (optional)"
+      ],
+      "buttons": [
+        "Cancel",
+        "Save Changes",
+        "Close"
+      ],
+      "footer": "CancelSave Changes",
+      "box": {
+        "x": 256,
+        "y": 38,
+        "w": 512,
+        "h": 691
+      },
+      "scroller": {
+        "sh": 789,
+        "ch": 689,
+        "scrollTop": 0,
+        "scrollable": true
+      },
+      "sectionHeadings": [
+        "Matter details",
+        "Classification"
+      ],
+      "footerTop": 751,
+      "footerVisibleWithoutScroll": false,
+      "footerBorderTop": "1px",
+      "vh": 768,
+      "console": []
+    },
+    {
+      "dialog": "edit",
+      "theme": "light",
+      "afterWheel": true,
+      "title": "Edit Matter",
+      "description": "Update your matter's details.",
+      "headings": [
+        "Edit Matter"
+      ],
+      "labels": [
+        "Name",
+        "Description (optional)",
+        "Due Date (optional)",
+        "Client (optional)",
+        "Reference Number (optional)",
+        "Priority (optional)",
+        "Work Type (optional)"
+      ],
+      "buttons": [
+        "Cancel",
+        "Save Changes",
+        "Close"
+      ],
+      "footer": "CancelSave Changes",
+      "box": {
+        "x": 256,
+        "y": 38,
+        "w": 512,
+        "h": 691
+      },
+      "scroller": {
+        "sh": 789,
+        "ch": 689,
+        "scrollTop": 100,
+        "scrollable": true
+      },
+      "sectionHeadings": [
+        "Matter details",
+        "Classification"
+      ],
+      "footerTop": 651,
+      "footerVisibleWithoutScroll": true,
+      "footerBorderTop": "1px",
+      "vh": 768
+    },
+    {
+      "dialog": "create",
+      "theme": "dark",
+      "title": "Create Matter",
+      "description": "Add a new matter to your organization.",
+      "headings": [
+        "Create Matter"
+      ],
+      "labels": [
+        "Name",
+        "Description (optional)",
+        "Due Date (optional)",
+        "Client (optional)",
+        "Reference Number (optional)",
+        "Priority (optional)",
+        "Work Type (optional)"
+      ],
+      "buttons": [
+        "Cancel",
+        "Create Matter",
+        "Close"
+      ],
+      "footer": "CancelCreate Matter",
+      "box": {
+        "x": 256,
+        "y": 38,
+        "w": 512,
+        "h": 691
+      },
+      "scroller": {
+        "sh": 939,
+        "ch": 689,
+        "scrollTop": 0,
+        "scrollable": true
+      },
+      "sectionHeadings": [
+        "Matter details",
+        "Classification"
+      ],
+      "footerTop": 901,
+      "footerVisibleWithoutScroll": false,
+      "footerBorderTop": "1px",
+      "vh": 768,
+      "console": []
+    },
+    {
+      "dialog": "create",
+      "theme": "dark",
+      "afterWheel": true,
+      "title": "Create Matter",
+      "description": "Add a new matter to your organization.",
+      "headings": [
+        "Create Matter"
+      ],
+      "labels": [
+        "Name",
+        "Description (optional)",
+        "Due Date (optional)",
+        "Client (optional)",
+        "Reference Number (optional)",
+        "Priority (optional)",
+        "Work Type (optional)"
+      ],
+      "buttons": [
+        "Cancel",
+        "Create Matter",
+        "Close"
+      ],
+      "footer": "CancelCreate Matter",
+      "box": {
+        "x": 256,
+        "y": 38,
+        "w": 512,
+        "h": 691
+      },
+      "scroller": {
+        "sh": 939,
+        "ch": 689,
+        "scrollTop": 250,
+        "scrollable": true
+      },
+      "sectionHeadings": [
+        "Matter details",
+        "Classification"
+      ],
+      "footerTop": 651,
+      "footerVisibleWithoutScroll": true,
+      "footerBorderTop": "1px",
+      "vh": 768
+    },
+    {
+      "dialog": "edit",
+      "theme": "dark",
+      "title": "Edit Matter",
+      "description": "Update your matter's details.",
+      "headings": [
+        "Edit Matter"
+      ],
+      "labels": [
+        "Name",
+        "Description (optional)",
+        "Due Date (optional)",
+        "Client (optional)",
+        "Reference Number (optional)",
+        "Priority (optional)",
+        "Work Type (optional)"
+      ],
+      "buttons": [
+        "Cancel",
+        "Save Changes",
+        "Close"
+      ],
+      "footer": "CancelSave Changes",
+      "box": {
+        "x": 256,
+        "y": 38,
+        "w": 512,
+        "h": 691
+      },
+      "scroller": {
+        "sh": 789,
+        "ch": 689,
+        "scrollTop": 0,
+        "scrollable": true
+      },
+      "sectionHeadings": [
+        "Matter details",
+        "Classification"
+      ],
+      "footerTop": 751,
+      "footerVisibleWithoutScroll": false,
+      "footerBorderTop": "1px",
+      "vh": 768,
+      "console": []
+    },
+    {
+      "dialog": "edit",
+      "theme": "dark",
+      "afterWheel": true,
+      "title": "Edit Matter",
+      "description": "Update your matter's details.",
+      "headings": [
+        "Edit Matter"
+      ],
+      "labels": [
+        "Name",
+        "Description (optional)",
+        "Due Date (optional)",
+        "Client (optional)",
+        "Reference Number (optional)",
+        "Priority (optional)",
+        "Work Type (optional)"
+      ],
+      "buttons": [
+        "Cancel",
+        "Save Changes",
+        "Close"
+      ],
+      "footer": "CancelSave Changes",
+      "box": {
+        "x": 256,
+        "y": 38,
+        "w": 512,
+        "h": 691
+      },
+      "scroller": {
+        "sh": 789,
+        "ch": 689,
+        "scrollTop": 100,
+        "scrollable": true
+      },
+      "sectionHeadings": [
+        "Matter details",
+        "Classification"
+      ],
+      "footerTop": 651,
+      "footerVisibleWithoutScroll": true,
+      "footerBorderTop": "1px",
+      "vh": 768
+    }
+  ],
+  "tabShot": "alice-rich-1440-light-tab-time-recording.png"
+}

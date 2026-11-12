@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { DebtorsWidget } from "@/components/dashboard/debtors-widget";
+import { formatCurrency } from "@/lib/format";
 import type { DebtorResponse, PaginatedDebtorsResponse } from "@/lib/api/collections";
 
 vi.mock("next/link", () => ({
@@ -55,20 +56,30 @@ describe("DebtorsWidget", () => {
     expect(within(list).getByText(/48\s?250/)).toBeInTheDocument();
     expect(within(list).getByText("45 days overdue")).toBeInTheDocument();
     expect(within(list).getByText("Not yet overdue")).toBeInTheDocument();
-    expect(within(list).getAllByTestId("micro-stacked-bar")).toHaveLength(2);
+    expect(within(list).getAllByRole("img")).toHaveLength(2);
+    expect(
+      within(list).getByRole("img", {
+        name: "Aging of Naidoo Attorneys Trust's outstanding fees",
+      })
+    ).toBeInTheDocument();
   });
 
-  it("aging is never colour-only: segment titles, a text legend, and a hidden per-row breakdown", () => {
+  it("aging is never colour-only: each meter's description states every bucket, plus a text legend", () => {
     render(<DebtorsWidget slug="acme" data={DATA} />);
 
-    const firstBar = screen.getAllByTestId("micro-stacked-bar")[0];
-    const titles = within(firstBar)
-      .getAllByTestId("segment")
-      .map((s) => s.getAttribute("title"));
-    expect(titles).toEqual(["Current: 2000", "30 days: 3000", "60 days: 5000", "90+ days: 0"]);
+    const firstMeter = screen.getByRole("img", {
+      name: "Aging of Naidoo Attorneys Trust's outstanding fees",
+    });
+    const breakdown = ["Current", "30 days", "60 days", "90+ days"]
+      .map((label, i) => `${label} ${formatCurrency([2000, 3000, 5000, 0][i], "ZAR")}`)
+      .join(", ");
+    expect(firstMeter).toHaveAccessibleDescription(breakdown);
+    // The row says its breakdown once (the meter's summary), not twice. A function matcher, because
+    // a string matcher is not whitespace-normalised and en-ZA currency uses non-breaking spaces.
+    const row = firstMeter.closest("li")!;
+    expect(within(row).getAllByText((_, el) => el?.textContent === breakdown)).toHaveLength(1);
     const legend = screen.getByRole("list", { name: "Aging legend" });
     expect(legend.textContent).toBe("Current30 days60 days90+ days");
-    expect(screen.getAllByText(/^Current R/)[0]).toHaveClass("sr-only");
   });
 
   it("links to collections", () => {

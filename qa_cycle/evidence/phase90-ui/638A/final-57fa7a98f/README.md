@@ -135,3 +135,18 @@ Every clause sheet in this probe closed with dialog count 0. The console showed 
 - Scripts: `obs.cjs`, `obs-probe.cjs`, `obs-probe2.cjs`, `obs-probe3.cjs` (copies, diff above); `obs-probe4-f1.cjs` (new).
 - Data: `obs-report.json`, `obs-probe-report.json`, `obs-probe2-report.json`, `obs-probe3-report.json`, `obs-probe4-f1-report.json`; `script-diff.txt`; stdout logs `probe2.log`, `probe3.log`, `probe4.log`. The `obs.cjs` and `obs-probe.cjs` stdout was read in the terminal and not saved; their JSON reports hold the same data.
 - PNGs: the same 21 names as the first OBS: `shell-{1024,1440}-{light,dark}-{expanded,collapsed}.png`, `rail-1440-collapsed-bottom.png`, `rail-tooltip-{hover,focus}.png`, `keyboard-zone-toggle.png`, `tiptap-meta-b.png`, `tiptap-ctrl-b-mac.png`, `mobile-390-{closed,sheet}-{light,dark}.png`, `mobile-390-sheet-scrolled-light.png`, `mobile-390-after-nav.png`, `matters-1440-light.png`. Plus 6 new: `f1-{mac,win-np,win-cdp}-{editor,body}-ctrl-b.png`.
+
+## Orchestrator probe 5: active bar (D8) and separator inset (D15)
+
+`obs-probe5-bar-separators.cjs` → `obs-probe5-report.json`, `bar-separators-1440-{light,dark}-{expanded,collapsed}.png`. Run at 1440×900 on the same stack, `57fa7a98f`.
+
+| Check | light / expanded | light / collapsed | dark / expanded | dark / collapsed |
+|---|---|---|---|---|
+| Active item (`aria-current="page"`) | Home, `data-active=true` | Home | Home | Home |
+| `::before` bar background vs resolved `var(--teal-500)` | equal, `lab(69.32 -52.28 -5.24)`, 2px | equal | equal | equal |
+| Visible separators in the sidebar container / all inside it | 10 / yes (widths 223, 239 in a 256 container) | 9 / yes (15, 31 in a 48 rail) | 10 / yes | 9 / yes |
+| Console errors and warnings | 0 | 0 | 0 | 0 |
+
+D8 (teal `--sidebar-primary` bar) and D15 (inset separators, none overflowing the rail): **PASS**.
+
+Note on the console. The first version of this probe navigated a second time immediately after the login redirect, which aborted the dashboard's in-flight mock `userinfo` fetch. Three of the four runs then logged `MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch`. The probe now waits for `load` + `h1` + 1.5 s before navigating again (commented `v2` in the script), and the message no longer appears (0 in all four runs). The message came from the harness, not the product. The OBS scripts above, which wait for readiness, never logged it.

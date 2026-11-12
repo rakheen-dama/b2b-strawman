@@ -21,7 +21,7 @@ No spec edited; no role or test id changed.
 
 ## OBS — light only (dark is not reachable until 637B)
 
-Driven in a real headless Chromium by `obs.cjs` / `portal-obs.cjs` (Playwright library, fresh browser context). The Playwright **MCP** browser profile was held by another live Claude session on this machine, so the MCP tools could not launch. The scripts do the same thing the MCP would: navigate, screenshot, and read computed styles plus console. Raw output: `obs-report.json`, `portal/obs-report.json`.
+Driven in a real headless Chromium by `obs.cjs` / `portal-obs.cjs` (Playwright library, fresh browser context). The Playwright **MCP** browser profile was held by another live Claude session on this machine, so the MCP tools could not launch. The scripts do the same thing the MCP would: navigate, screenshot, and read computed styles plus console. Raw output: `obs-report.json`, `portal/obs-report.json`. The committed scripts are byte-for-byte the ones executed (absolute paths kept on purpose — provenance, not a reusable tool). Page readiness: every one of the 9 entries in the two reports carries the page's `h1` (`Home`, `Matters`, `Trust Accounting`; portal `Home`, `Trust statement`, `Fee notes`), so no observation silently timed out. `e2e-up exit 0` is recorded in both `e2e/summary.txt` files, so both suite runs were against a freshly built stack.
 
 **Console: 0 errors, 0 warnings, 0 hydration warnings** on all 9 page loads.
 

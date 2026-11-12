@@ -201,4 +201,83 @@ describe("EmptyState", () => {
     const fallbackLink = links.find((l) => l.getAttribute("href") === "/fallback");
     expect(fallbackLink).toBeUndefined();
   });
+
+  it("default variant (explicit) keeps the icon tile, h2 title, description and actions", () => {
+    const { container } = render(
+      <EmptyState
+        variant="default"
+        icon={FolderOpen}
+        title="No matters yet"
+        description="Open your first matter."
+        actionLabel="New matter"
+        actionHref="/matters/new"
+      />
+    );
+
+    const root = container.querySelector('[data-slot="empty-state"]');
+    expect(root).toHaveAttribute("data-variant", "default");
+    const iconTile = container.querySelector('[data-slot="empty-state-icon"]');
+    expect(iconTile).toBeInTheDocument();
+    expect(iconTile?.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByRole("heading", { level: 2, name: "No matters yet" })).toBeInTheDocument();
+    expect(screen.getByText("Open your first matter.").tagName).toBe("P");
+    expect(screen.getByRole("link", { name: "New matter" })).toHaveAttribute(
+      "href",
+      "/matters/new"
+    );
+  });
+
+  it("compact variant keeps the icon tile, h2 title, description and onAction button", async () => {
+    const user = userEvent.setup();
+    const handleAction = vi.fn();
+    const { container } = render(
+      <EmptyState
+        variant="compact"
+        icon={Receipt}
+        title="No fee notes in this period"
+        description="Change the range to see more."
+        actionLabel="Reset range"
+        onAction={handleAction}
+      />
+    );
+
+    expect(container.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "compact"
+    );
+    expect(container.querySelector('[data-slot="empty-state-icon"]')).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "No fee notes in this period" })
+    ).toBeInTheDocument();
+    expect(screen.getByText("Change the range to see more.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Reset range" }));
+    expect(handleAction).toHaveBeenCalledTimes(1);
+  });
+
+  it("inline variant renders one line with no heading, keeping actions and links", () => {
+    const { container } = render(
+      <EmptyState
+        variant="inline"
+        icon={ClipboardList}
+        title="No tasks"
+        description="Nothing assigned to this matter."
+        action={<button type="button">Add task</button>}
+        secondaryLink={{ label: "Task help", href: "https://docs.example.com/tasks" }}
+      />
+    );
+
+    expect(container.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "inline"
+    );
+    expect(screen.queryByRole("heading")).toBeNull();
+    expect(container.querySelector('[data-slot="empty-state-icon"]')).toBeNull();
+    expect(screen.getByText("No tasks").tagName).toBe("P");
+    expect(screen.getByText("Nothing assigned to this matter.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add task" })).toBeInTheDocument();
+    const help = screen.getByRole("link", { name: "Task help" });
+    expect(help).toHaveAttribute("target", "_blank");
+    expect(help).toHaveAttribute("rel", "noopener noreferrer");
+    expect(help).toHaveClass("text-teal-600");
+  });
 });

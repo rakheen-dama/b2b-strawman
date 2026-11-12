@@ -5,4 +5,6 @@ export * from "./label";
 export * from "./separator";
 export * from "./skeleton";
 export * from "./badge";
+export * from "./page-header";
+export * from "./stat-card";
 export { cn } from "./cn";

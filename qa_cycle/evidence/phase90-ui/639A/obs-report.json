@@ -1,0 +1,531 @@
+{
+  "capturedAt": "2026-11-12T05:43:56.987Z",
+  "report": [
+    {
+      "name": "settings-tags",
+      "what": "empty settings list",
+      "theme": "light",
+      "w": 1024,
+      "h": 768,
+      "url": "/org/e2e-test-org/settings/matters?tab=tags",
+      "file": "settings-tags-1024-light.png",
+      "h1": "Tags",
+      "h1Count": 1,
+      "htmlClass": "light",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No tags yet",
+          "actions": [
+            "Create tag"
+          ]
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(95.1124 -0.267148 -1.87211)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(7.73948 -0.41344 -4.03315)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(35.5441 -0.826195 -7.36533)"
+      },
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "settings-tags",
+      "what": "empty settings list",
+      "theme": "light",
+      "w": 1440,
+      "h": 900,
+      "url": "/org/e2e-test-org/settings/matters?tab=tags",
+      "file": "settings-tags-1440-light.png",
+      "h1": "Tags",
+      "h1Count": 1,
+      "htmlClass": "light",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No tags yet",
+          "actions": [
+            "Create tag"
+          ]
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(95.1124 -0.267148 -1.87211)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(7.73948 -0.41344 -4.03315)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(35.5441 -0.826195 -7.36533)"
+      },
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "my-work",
+      "what": "empty page-level lists",
+      "theme": "light",
+      "w": 1024,
+      "h": 768,
+      "url": "/org/e2e-test-org/my-work",
+      "file": "my-work-1024-light.png",
+      "h1": "My Work",
+      "h1Count": 1,
+      "htmlClass": "light",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No tasks assigned to you",
+          "actions": [
+            "Browse matters"
+          ]
+        },
+        {
+          "variant": "default",
+          "title": "No time recordings yet",
+          "actions": []
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(95.1124 -0.267148 -1.87211)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(7.73948 -0.41344 -4.03315)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(35.5441 -0.826195 -7.36533)"
+      },
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "my-work",
+      "what": "empty page-level lists",
+      "theme": "light",
+      "w": 1440,
+      "h": 900,
+      "url": "/org/e2e-test-org/my-work",
+      "file": "my-work-1440-light.png",
+      "h1": "My Work",
+      "h1Count": 1,
+      "htmlClass": "light",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No tasks assigned to you",
+          "actions": [
+            "Browse matters"
+          ]
+        },
+        {
+          "variant": "default",
+          "title": "No time recordings yet",
+          "actions": []
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(95.1124 -0.267148 -1.87211)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(7.73948 -0.41344 -4.03315)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(35.5441 -0.826195 -7.36533)"
+      },
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "profitability",
+      "what": "empty report",
+      "theme": "light",
+      "w": 1024,
+      "h": 768,
+      "url": "/org/e2e-test-org/reports/profitability",
+      "file": "profitability-1024-light.png",
+      "h1": "Profitability",
+      "h1Count": 1,
+      "htmlClass": "light",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No profitability data yet",
+          "actions": [
+            "Go to rate settings"
+          ]
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(95.1124 -0.267148 -1.87211)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(7.73948 -0.41344 -4.03315)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(35.5441 -0.826195 -7.36533)"
+      },
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "profitability",
+      "what": "empty report",
+      "theme": "light",
+      "w": 1440,
+      "h": 900,
+      "url": "/org/e2e-test-org/reports/profitability",
+      "file": "profitability-1440-light.png",
+      "h1": "Profitability",
+      "h1Count": 1,
+      "htmlClass": "light",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No profitability data yet",
+          "actions": [
+            "Go to rate settings"
+          ]
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(95.1124 -0.267148 -1.87211)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(7.73948 -0.41344 -4.03315)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(35.5441 -0.826195 -7.36533)"
+      },
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "settings-tags",
+      "what": "empty settings list",
+      "theme": "dark",
+      "w": 1024,
+      "h": 768,
+      "url": "/org/e2e-test-org/settings/matters?tab=tags",
+      "file": "settings-tags-1024-dark.png",
+      "h1": "Tags",
+      "h1Count": 1,
+      "htmlClass": "dark",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No tags yet",
+          "actions": [
+            "Create tag"
+          ]
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(14.1047 -0.539318 -5.13909)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(100 0 0)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(65.1376 -0.85035 -6.67907)"
+      },
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "console": [
+        "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+      ],
+      "hydrationMessages": []
+    },
+    {
+      "name": "settings-tags",
+      "what": "empty settings list",
+      "theme": "dark",
+      "w": 1440,
+      "h": 900,
+      "url": "/org/e2e-test-org/settings/matters?tab=tags",
+      "file": "settings-tags-1440-dark.png",
+      "h1": "Tags",
+      "h1Count": 1,
+      "htmlClass": "dark",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No tags yet",
+          "actions": [
+            "Create tag"
+          ]
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(14.1047 -0.539318 -5.13909)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(100 0 0)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(65.1376 -0.85035 -6.67907)"
+      },
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "my-work",
+      "what": "empty page-level lists",
+      "theme": "dark",
+      "w": 1024,
+      "h": 768,
+      "url": "/org/e2e-test-org/my-work",
+      "file": "my-work-1024-dark.png",
+      "h1": "My Work",
+      "h1Count": 1,
+      "htmlClass": "dark",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No tasks assigned to you",
+          "actions": [
+            "Browse matters"
+          ]
+        },
+        {
+          "variant": "default",
+          "title": "No time recordings yet",
+          "actions": []
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(14.1047 -0.539318 -5.13909)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(100 0 0)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(65.1376 -0.85035 -6.67907)"
+      },
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "my-work",
+      "what": "empty page-level lists",
+      "theme": "dark",
+      "w": 1440,
+      "h": 900,
+      "url": "/org/e2e-test-org/my-work",
+      "file": "my-work-1440-dark.png",
+      "h1": "My Work",
+      "h1Count": 1,
+      "htmlClass": "dark",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No tasks assigned to you",
+          "actions": [
+            "Browse matters"
+          ]
+        },
+        {
+          "variant": "default",
+          "title": "No time recordings yet",
+          "actions": []
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(14.1047 -0.539318 -5.13909)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(100 0 0)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(65.1376 -0.85035 -6.67907)"
+      },
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "profitability",
+      "what": "empty report",
+      "theme": "dark",
+      "w": 1024,
+      "h": 768,
+      "url": "/org/e2e-test-org/reports/profitability",
+      "file": "profitability-1024-dark.png",
+      "h1": "Profitability",
+      "h1Count": 1,
+      "htmlClass": "dark",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No profitability data yet",
+          "actions": [
+            "Go to rate settings"
+          ]
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(14.1047 -0.539318 -5.13909)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(100 0 0)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(65.1376 -0.85035 -6.67907)"
+      },
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "name": "profitability",
+      "what": "empty report",
+      "theme": "dark",
+      "w": 1440,
+      "h": 900,
+      "url": "/org/e2e-test-org/reports/profitability",
+      "file": "profitability-1440-dark.png",
+      "h1": "Profitability",
+      "h1Count": 1,
+      "htmlClass": "dark",
+      "emptyStates": [
+        {
+          "variant": "default",
+          "title": "No profitability data yet",
+          "actions": [
+            "Go to rate settings"
+          ]
+        }
+      ],
+      "iconTile": {
+        "w": 48,
+        "h": 48,
+        "bg": "lab(14.1047 -0.539318 -5.13909)",
+        "radius": "8px"
+      },
+      "iconSvgAriaHidden": "true",
+      "title": {
+        "tag": "h2",
+        "font": "sora",
+        "weight": "600",
+        "size": "18px",
+        "color": "lab(100 0 0)"
+      },
+      "description": {
+        "maxWidth": "448px",
+        "color": "lab(65.1376 -0.85035 -6.67907)"
+      },
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "console": [],
+      "hydrationMessages": []
+    }
+  ]
+}

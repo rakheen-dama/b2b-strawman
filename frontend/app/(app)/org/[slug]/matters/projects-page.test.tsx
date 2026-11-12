@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
-import type { MatterListRow } from "@/lib/types";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import type { MatterListRow, SavedViewResponse, TagResponse } from "@/lib/types";
 
 // Mock server-only before any imports that pull it in
 vi.mock("server-only", () => ({}));
@@ -92,7 +92,7 @@ vi.mock("@/lib/capabilities", () => ({
 
 // Import page after mocks are set up
 import ProjectsPage from "./page";
-import { getViews } from "@/lib/api";
+import { getTags, getViews } from "@/lib/api";
 
 // Mock NewFromTemplateDialog (client component with hooks)
 vi.mock("@/components/templates/NewFromTemplateDialog", () => ({
@@ -114,6 +114,11 @@ vi.mock("@/components/projects/project-status-filter", () => ({
   ProjectStatusFilter: () => <div data-testid="project-status-filter" />,
 }));
 
+// Mock MatterFiltersSheet (client sheet with hooks); only its presence matters here
+vi.mock("@/components/matters/matter-filters-sheet", () => ({
+  MatterFiltersSheet: () => <button data-testid="matter-filters-trigger">Filters</button>,
+}));
+
 // Mock view-actions
 vi.mock("./view-actions", () => ({
   createSavedViewAction: vi.fn(),
@@ -128,7 +133,7 @@ vi.mock("@/components/projects/create-project-dialog", () => ({
   ),
 }));
 
-// Mock next/link
+// Mock next/link — `scroll` / `prefetch` are next/link props, not DOM attributes: drop them.
 vi.mock("next/link", () => ({
   default: ({
     children,
@@ -138,11 +143,16 @@ vi.mock("next/link", () => ({
     children: React.ReactNode;
     href: string;
     [key: string]: unknown;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
+  }) => {
+    const anchorProps = { ...props };
+    delete anchorProps.scroll;
+    delete anchorProps.prefetch;
+    return (
+      <a href={href} {...anchorProps}>
+        {children}
+      </a>
+    );
+  },
 }));
 
 // 615C: GET /api/matters returns the dense MatterListRow projection
@@ -402,6 +412,130 @@ describe("ProjectsPage", () => {
 
       expect(screen.getByText("No matters match this view.")).toBeInTheDocument();
       expect(screen.queryByText("No matters yet")).not.toBeInTheDocument();
+    });
+  });
+
+  // 641A: the list composes PageHeader + MattersDataTable (toolbar / empty / footer slots).
+  describe("page composition", () => {
+    const asAdmin = () =>
+      mockAuth.mockResolvedValue({
+        orgId: "org_1",
+        orgSlug: "acme",
+        userId: "user_1",
+        orgRole: "org:admin",
+      });
+
+    const SAVED_VIEW_ID = "22222222-2222-2222-2222-222222222222";
+    const savedView: SavedViewResponse = {
+      id: SAVED_VIEW_ID,
+      entityType: "PROJECT",
+      name: "Mine",
+      filters: {},
+      columns: null,
+      shared: false,
+      createdBy: "user_1",
+      sortOrder: 0,
+      createdAt: "2026-10-01T00:00:00Z",
+      updatedAt: "2026-10-01T00:00:00Z",
+    };
+    const tag: TagResponse = {
+      id: "t1",
+      name: "Urgent",
+      slug: "urgent",
+      color: null,
+      createdAt: "2026-10-01T00:00:00Z",
+      updatedAt: "2026-10-01T00:00:00Z",
+    };
+
+    it("renders a single h1 'Matters' in the page header with the create action", async () => {
+      asAdmin();
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      const jsx = await ProjectsPage({ params, searchParams });
+      render(jsx);
+
+      const headings = screen.getAllByRole("heading", { level: 1 });
+      expect(headings).toHaveLength(1);
+      expect(headings[0]).toHaveTextContent("Matters");
+      const header = screen.getByTestId("page-header");
+      expect(header).toContainElement(headings[0]);
+      expect(within(header).getByTestId("create-project-dialog")).toBeInTheDocument();
+    });
+
+    it("shows the matter count as the page header description", async () => {
+      asAdmin();
+      mockApiGet.mockResolvedValue([makeProject(), makeProject({ id: "proj-2" })]);
+
+      const jsx = await ProjectsPage({ params, searchParams });
+      render(jsx);
+
+      expect(within(screen.getByTestId("page-header")).getByText("2 matters")).toBeInTheDocument();
+    });
+
+    it("renders the Columns and Export CSV controls and the matters-table testid on the table", async () => {
+      asAdmin();
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      const jsx = await ProjectsPage({ params, searchParams });
+      render(jsx);
+
+      expect(screen.getByRole("button", { name: "Columns" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Export CSV" })).toBeInTheDocument();
+      expect(screen.getByTestId("matters-table").tagName).toBe("TABLE");
+    });
+
+    it.each([
+      ["unfiltered", {}],
+      ["filtered", { search: "zzz" }],
+    ])("keeps the toolbar on an empty list (%s), with no table or footer", async (_, query) => {
+      asAdmin();
+      mockApiGet.mockResolvedValue([]);
+
+      const jsx = await ProjectsPage({
+        params,
+        searchParams: Promise.resolve(query as Record<string, string>),
+      });
+      render(jsx);
+
+      expect(screen.getByTestId("view-selector-client")).toBeInTheDocument();
+      expect(screen.getByTestId("project-status-filter")).toBeInTheDocument();
+      expect(screen.queryByRole("table")).toBeNull();
+      expect(screen.queryByTestId("matters-footer")).toBeNull();
+    });
+
+    it("the filtered empty state links back to the unfiltered list", async () => {
+      asAdmin();
+      mockApiGet.mockResolvedValue([makeProject({ name: "RAF claim" })]);
+
+      const jsx = await ProjectsPage({
+        params,
+        searchParams: Promise.resolve({ search: "zzz" }),
+      });
+      render(jsx);
+
+      expect(screen.getByText("No matters match this view.")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Clear filters" })).toHaveAttribute(
+        "href",
+        "/org/acme/matters"
+      );
+    });
+
+    it("shows the tag filters sheet on the default view only (F-3)", async () => {
+      asAdmin();
+      vi.mocked(getTags).mockResolvedValueOnce([tag]);
+      mockApiGet.mockResolvedValue([makeProject()]);
+
+      render(await ProjectsPage({ params, searchParams }));
+      expect(screen.getByTestId("matter-filters-trigger")).toBeInTheDocument();
+      cleanup();
+
+      vi.mocked(getTags).mockResolvedValueOnce([tag]);
+      vi.mocked(getViews).mockResolvedValueOnce([savedView]);
+      render(
+        await ProjectsPage({ params, searchParams: Promise.resolve({ view: SAVED_VIEW_ID }) })
+      );
+      expect(screen.getByTestId("matter-row")).toBeInTheDocument();
+      expect(screen.queryByTestId("matter-filters-trigger")).toBeNull();
     });
   });
 

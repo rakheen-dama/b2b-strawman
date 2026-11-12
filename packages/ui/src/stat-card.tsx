@@ -24,7 +24,11 @@ interface StatCardProps {
   value: React.ReactNode | null;
   state?: StatCardState;
   delta?: StatCardDelta;
-  /** Slot (the frontend passes <SparklineTrend>); wrapped aria-hidden; not rendered in compact. */
+  /**
+   * Slot (the frontend passes <SparklineTrend>). Not hidden from assistive tech: the slot's content
+   * owns its semantics (SparklineTrend = role="img" + name + sr summary, ADR-370). Not rendered in
+   * compact, loading, redacted or error.
+   */
   sparkline?: React.ReactNode;
   /** Decorative; wrapped aria-hidden. */
   icon?: React.ReactNode;
@@ -220,7 +224,7 @@ function StatCard({
       ) : null}
 
       {ready && !compact && sparkline ? (
-        <div aria-hidden="true" data-slot="stat-card-sparkline" className="mt-3">
+        <div data-slot="stat-card-sparkline" className="mt-3">
           {sparkline}
         </div>
       ) : null}

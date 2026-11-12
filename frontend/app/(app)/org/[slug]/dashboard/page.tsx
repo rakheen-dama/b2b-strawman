@@ -24,6 +24,7 @@ import { DashboardHeader } from "./dashboard-header";
 import { ReturnToHandler } from "@/components/auth/return-to-handler";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
 import { HomeDiaryWidget } from "@/components/dashboard/home-diary-widget";
+import { KpiRow } from "@/components/dashboard/kpi-row";
 import { MyTasksWidget } from "@/components/dashboard/my-tasks-widget";
 import { UnbilledWipWidget } from "@/components/dashboard/unbilled-wip-widget";
 import { DebtorsWidget } from "@/components/dashboard/debtors-widget";
@@ -125,6 +126,10 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
 
   function renderWidget(widget: HomeWidget): ReactNode {
     switch (widget) {
+      case "kpis":
+        return (
+          <KpiRow result={data.kpis} to={today} seesFinancials={caps.isAdmin || caps.isOwner} />
+        );
       case "diary":
         return <HomeDiaryWidget slug={slug} today={today} diaryEvents={data.diary} />;
       case "tasks":

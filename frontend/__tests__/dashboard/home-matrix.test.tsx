@@ -5,7 +5,8 @@ import type { HomePlan } from "@/lib/dashboard-home";
 
 // Phase 87 614B — Home renders the §12.6.3 widget matrix per audience: fee earner, bookkeeper /
 // admin, owner. Present or absent, never greyed; the fan-out (mocked here, tested in
-// dashboard-actions.test.ts) is only asked for what will render.
+// dashboard-actions.test.ts) is only asked for what will render. Phase 90 640A (§15.3.4): firm and
+// owner open on a KPI row (today → money → risk → activity); fee earners get none (B2).
 
 vi.mock("server-only", () => ({}));
 
@@ -102,6 +103,13 @@ const FEE_EARNER_CAPS = {
 };
 const ADMIN_CAPS = { capabilities: [], role: "Admin", isAdmin: true, isOwner: false };
 const OWNER_CAPS = { capabilities: [], role: "Owner", isAdmin: false, isOwner: true };
+/** A custom role with FINANCIAL_VISIBILITY but not admin/owner — the KPI endpoint redacts by role. */
+const FV_CAPS = {
+  capabilities: ["FINANCIAL_VISIBILITY"],
+  role: "Bookkeeper",
+  isAdmin: false,
+  isOwner: false,
+};
 
 const WIP_FULL = {
   asOf: "2026-10-21",
@@ -143,6 +151,26 @@ const TRUST = {
 };
 const FICA = { outstandingCount: 0, totalActiveClients: 3, clients: [], limit: 5 };
 const DEBTORS = { content: [], page: { totalElements: 0, totalPages: 0, size: 5, number: 0 } };
+const KPIS = {
+  activeMatterCount: 14,
+  totalHoursLogged: 42.5,
+  billablePercent: 62.5,
+  overdueTaskCount: 3,
+  averageMarginPercent: null,
+  trend: [{ period: "2026-W42", value: 12 }],
+  previousPeriod: {
+    activeMatterCount: 12,
+    totalHoursLogged: 34,
+    billablePercent: 58,
+    overdueTaskCount: 5,
+    averageMarginPercent: null,
+  },
+};
+const KPIS_REDACTED = {
+  ...KPIS,
+  billablePercent: null,
+  previousPeriod: { ...KPIS.previousPeriod, billablePercent: null },
+};
 
 const ok = <T,>(data: T) => ({ state: "ok" as const, data });
 const ABSENT = { state: "absent" as const };
@@ -150,6 +178,7 @@ const ABSENT = { state: "absent" as const };
 /** What the fan-out returns for a plan — only the planned reads come back loaded. */
 function dataFor(plan: HomePlan): HomeWidgetData {
   return {
+    kpis: plan.kpis ? ok(KPIS) : ABSENT,
     diary: [],
     tasks: plan.tasks ? ok({ assigned: [], unassigned: [] }) : ABSENT,
     unbilledWip: plan.unbilledWip
@@ -201,6 +230,10 @@ describe("Home widget matrix (614B)", () => {
     expect(screen.getByTestId("home-diary-widget")).toBeInTheDocument();
     expect(screen.getByTestId("my-tasks-widget")).toBeInTheDocument();
     expect(screen.getByTestId("matter-health-panel")).toBeInTheDocument();
+    // B2 — the KPI endpoint is firm-wide, so a fee earner gets no KPI row (and no read).
+    expect(screen.queryByTestId("home-cell-kpis")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Hours logged" })).not.toBeInTheDocument();
+    expect(plannedWith().kpis).toBe(false);
     for (const absent of [
       "trust-position-widget",
       "debtors-widget",
@@ -233,16 +266,26 @@ describe("Home widget matrix (614B)", () => {
     expect(within(card).getByRole("link", { name: "Open timesheet" })).toBeInTheDocument();
   });
 
-  it("bookkeeper / admin: WIP + debtors + trust → diary + FICA → activity + sensitive", async () => {
+  it("bookkeeper / admin: KPIs → diary → WIP + debtors + trust → FICA + sensitive → activity", async () => {
     mockCaps.mockResolvedValue(ADMIN_CAPS);
     await renderHome();
 
     expect(screen.getByTestId("home-page")).toHaveAttribute("data-audience", "firm");
     expect(cellRows()).toEqual([
+      ["kpis"],
+      ["diary"],
       ["unbilledWip", "debtors", "trustPosition"],
-      ["diary", "ficaOutstanding"],
-      ["activity", "sensitive"],
+      ["ficaOutstanding", "sensitive"],
+      ["activity"],
     ]);
+    const kpis = screen.getByTestId("home-cell-kpis");
+    expect(within(kpis).getByText("Last 30 days")).toBeInTheDocument();
+    expect(within(kpis).getAllByRole("group")).toHaveLength(4);
+    expect(within(kpis).getByRole("group", { name: "Billable %" })).toHaveAttribute(
+      "data-state",
+      "ready"
+    );
+    expect(plannedWith().kpis).toBe(true);
     expect(
       within(screen.getByTestId("unbilled-wip-widget")).getByText("Unbilled WIP")
     ).toBeVisible();
@@ -255,23 +298,26 @@ describe("Home widget matrix (614B)", () => {
     expect(plannedWith().diaryScope).toBe("firm");
   });
 
-  it("owner: diary + WIP → debtors + trust → FICA + health + activity + sensitive", async () => {
+  it("owner: KPIs → diary → WIP + debtors + trust → FICA + health + sensitive → activity", async () => {
     mockCaps.mockResolvedValue(OWNER_CAPS);
     await renderHome();
 
     expect(screen.getByTestId("home-page")).toHaveAttribute("data-audience", "owner");
     expect(cellRows()).toEqual([
-      ["diary", "unbilledWip"],
-      ["debtors", "trustPosition"],
-      ["ficaOutstanding", "matterHealth", "activity", "sensitive"],
+      ["kpis"],
+      ["diary"],
+      ["unbilledWip", "debtors", "trustPosition"],
+      ["ficaOutstanding", "matterHealth", "sensitive"],
+      ["activity"],
     ]);
-    expect(screen.getByTestId("home-cell-diary")).toHaveClass("lg:col-span-6");
-    expect(screen.getByTestId("home-cell-sensitive")).toHaveClass("lg:col-span-6");
+    expect(screen.getByTestId("home-cell-kpis")).toHaveClass("lg:col-span-12");
+    expect(screen.getByTestId("home-cell-diary")).toHaveClass("lg:col-span-12");
+    expect(screen.getByTestId("home-cell-sensitive")).toHaveClass("lg:col-span-4");
     expect(screen.getByTestId("home-cell-sensitive")).not.toHaveClass("xl:col-span-3");
     expect(screen.getByTestId("matter-health-panel")).toBeInTheDocument();
   });
 
-  it("no trust account (404 → absent): the trust card drops out and debtors takes the row", async () => {
+  it("no trust account (404 → absent): the trust card drops out and WIP + debtors share the row", async () => {
     mockCaps.mockResolvedValue(OWNER_CAPS);
     mockFetchHome.mockImplementation(async (plan: HomePlan) => ({
       ...dataFor(plan),
@@ -280,8 +326,8 @@ describe("Home widget matrix (614B)", () => {
     await renderHome();
 
     expect(screen.queryByTestId("trust-position-widget")).not.toBeInTheDocument();
-    expect(cellRows()[1]).toEqual(["debtors"]);
-    expect(screen.getByTestId("home-cell-debtors")).toHaveClass("lg:col-span-12");
+    expect(cellRows()[2]).toEqual(["unbilledWip", "debtors"]);
+    expect(screen.getByTestId("home-cell-debtors")).toHaveClass("lg:col-span-6");
   });
 
   it("trust module off: trust is neither fetched nor rendered", async () => {
@@ -304,6 +350,49 @@ describe("Home widget matrix (614B)", () => {
     expect(
       within(screen.getByTestId("debtors-widget")).getByText(/could not be loaded/)
     ).toBeInTheDocument();
+  });
+
+  it("custom role with FINANCIAL_VISIBILITY: firm audience, Billable % redacted with hint, no delta", async () => {
+    mockCaps.mockResolvedValue(FV_CAPS);
+    mockFetchHome.mockImplementation(async (plan: HomePlan) => ({
+      ...dataFor(plan),
+      kpis: ok(KPIS_REDACTED),
+    }));
+    await renderHome();
+
+    expect(screen.getByTestId("home-page")).toHaveAttribute("data-audience", "firm");
+    const billable = within(screen.getByTestId("home-cell-kpis")).getByRole("group", {
+      name: "Billable %",
+    });
+    expect(billable).toHaveAttribute("data-state", "redacted");
+    expect(within(billable).getByText("Visible to admins and owners")).toBeInTheDocument();
+    expect(billable.querySelector('[data-slot="stat-card-delta"]')).toBeNull();
+  });
+
+  it("a failed KPI read → four error tiles; the rest of Home still renders", async () => {
+    mockCaps.mockResolvedValue(OWNER_CAPS);
+    mockFetchHome.mockImplementation(async (plan: HomePlan) => ({
+      ...dataFor(plan),
+      kpis: { state: "error" as const },
+    }));
+    await renderHome();
+
+    const kpis = screen.getByTestId("home-cell-kpis");
+    expect(within(kpis).getAllByRole("status")).toHaveLength(4);
+    expect(screen.getByTestId("home-diary-widget")).toBeInTheDocument();
+    expect(screen.getByTestId("debtors-widget")).toBeInTheDocument();
+  });
+
+  it("a KPI read that came back absent (403/404) drops the KPI row", async () => {
+    mockCaps.mockResolvedValue(ADMIN_CAPS);
+    mockFetchHome.mockImplementation(async (plan: HomePlan) => ({
+      ...dataFor(plan),
+      kpis: ABSENT,
+    }));
+    await renderHome();
+
+    expect(screen.queryByTestId("home-cell-kpis")).not.toBeInTheDocument();
+    expect(cellRows()[0]).toEqual(["diary"]);
   });
 
   it("while the workspace is provisioning (capabilities 403) shows the setting-up state", async () => {

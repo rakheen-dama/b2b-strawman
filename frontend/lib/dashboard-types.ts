@@ -5,6 +5,34 @@ export interface TrendPoint {
   value: number;
 }
 
+// Firm KPI row (Phase 90 640A, arch §15.3.4) — mirrors backend dashboard/dto/{KpiValues,KpiResponse}.
+
+/** KPI values for one window (`previousPeriod` = the equal-length window before `from`). */
+export interface KpiValues {
+  /** Point-in-time — no delta. */
+  activeMatterCount: number;
+  totalHoursLogged: number;
+  /**
+   * null when redacted (caller not admin/owner by role — current AND previous period, P1) or no
+   * hours logged in the window.
+   */
+  billablePercent: number | null;
+  /** Point-in-time — no delta. */
+  overdueTaskCount: number;
+  /** Always null at HEAD (R1) — never rendered. */
+  averageMarginPercent: number | null;
+}
+
+/** GET /api/dashboard/kpis?from&to (yyyy-MM-dd; firm-wide for every caller). */
+export interface KpiResponse extends KpiValues {
+  /**
+   * Hours per period ending at `to`, sparse (no row for a period with no time). A ≤ 90-day window
+   * is weekly: `period` = ISO week "IYYY-Www" — zero-fill with `zeroFillTrend` (lib/kpi.ts).
+   */
+  trend: TrendPoint[];
+  previousPeriod: KpiValues | null;
+}
+
 export interface MatterHealth {
   matterId: string;
   matterName: string;

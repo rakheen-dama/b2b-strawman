@@ -1,0 +1,6 @@
+/Users/rakheendama/Projects/2026/worktree-epic-640A/frontend/e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:51:/** Home inside the app shell's <main> (a second, hidden `home-page` node renders outside it). */
+/Users/rakheendama/Projects/2026/worktree-epic-640A/frontend/e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:53:  return page.locator("#main-content").getByTestId("home-page");
+/Users/rakheendama/Projects/2026/worktree-epic-640A/frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:221:    const home = page.locator("#main-content").getByTestId("home-page");
+/Users/rakheendama/Projects/2026/worktree-epic-640A/frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:223:    await expect(home).toHaveAttribute("data-audience", "owner");
+/Users/rakheendama/Projects/2026/worktree-epic-640A/frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:224:    await expect.poll(() => home.locator('[data-testid^="home-cell-"]').count()).toBeGreaterThan(0);
+/Users/rakheendama/Projects/2026/worktree-epic-640A/frontend/e2e/tests/legal-lifecycle/day-90-review.spec.ts:395:    await expect(page.locator("#main-content").getByTestId("home-page")).toBeVisible({

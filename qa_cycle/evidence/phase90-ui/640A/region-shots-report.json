@@ -1,0 +1,330 @@
+{
+  "capturedAt": "2026-11-12T10:43:52.189Z",
+  "head": "d78ce3ce5",
+  "regions": [
+    {
+      "tag": "alice-1024-light",
+      "shots": {
+        "money": {
+          "file": "row-money-alice-1024-light.png",
+          "cells": [
+            {
+              "cell": "home-cell-unbilledWip",
+              "w": 352,
+              "x": 280,
+              "y": 618
+            },
+            {
+              "cell": "home-cell-debtors",
+              "w": 352,
+              "x": 648,
+              "y": 618
+            },
+            {
+              "cell": "home-cell-trustPosition",
+              "w": 720,
+              "x": 280,
+              "y": 1059
+            }
+          ]
+        },
+        "risk": {
+          "file": "row-risk-alice-1024-light.png",
+          "cells": [
+            {
+              "cell": "home-cell-ficaOutstanding",
+              "w": 352,
+              "x": 280,
+              "y": 1339
+            },
+            {
+              "cell": "home-cell-matterHealth",
+              "w": 352,
+              "x": 648,
+              "y": 1339
+            },
+            {
+              "cell": "home-cell-sensitive",
+              "w": 720,
+              "x": 280,
+              "y": 2061
+            }
+          ]
+        }
+      },
+      "console": []
+    },
+    {
+      "tag": "alice-1440-light",
+      "shots": {
+        "money": {
+          "file": "row-money-alice-1440-light.png",
+          "cells": [
+            {
+              "cell": "home-cell-unbilledWip",
+              "w": 560,
+              "x": 280,
+              "y": 504
+            },
+            {
+              "cell": "home-cell-debtors",
+              "w": 560,
+              "x": 856,
+              "y": 504
+            },
+            {
+              "cell": "home-cell-trustPosition",
+              "w": 1136,
+              "x": 280,
+              "y": 945
+            }
+          ]
+        },
+        "risk": {
+          "file": "row-risk-alice-1440-light.png",
+          "cells": [
+            {
+              "cell": "home-cell-ficaOutstanding",
+              "w": 560,
+              "x": 280,
+              "y": 1225
+            },
+            {
+              "cell": "home-cell-matterHealth",
+              "w": 560,
+              "x": 856,
+              "y": 1225
+            },
+            {
+              "cell": "home-cell-sensitive",
+              "w": 1136,
+              "x": 280,
+              "y": 1947
+            }
+          ]
+        }
+      },
+      "console": []
+    },
+    {
+      "tag": "alice-1024-dark",
+      "shots": {
+        "money": {
+          "file": "row-money-alice-1024-dark.png",
+          "cells": [
+            {
+              "cell": "home-cell-unbilledWip",
+              "w": 352,
+              "x": 280,
+              "y": 618
+            },
+            {
+              "cell": "home-cell-debtors",
+              "w": 352,
+              "x": 648,
+              "y": 618
+            },
+            {
+              "cell": "home-cell-trustPosition",
+              "w": 720,
+              "x": 280,
+              "y": 1059
+            }
+          ]
+        },
+        "risk": {
+          "file": "row-risk-alice-1024-dark.png",
+          "cells": [
+            {
+              "cell": "home-cell-ficaOutstanding",
+              "w": 352,
+              "x": 280,
+              "y": 1339
+            },
+            {
+              "cell": "home-cell-matterHealth",
+              "w": 352,
+              "x": 648,
+              "y": 1339
+            },
+            {
+              "cell": "home-cell-sensitive",
+              "w": 720,
+              "x": 280,
+              "y": 2061
+            }
+          ]
+        }
+      },
+      "console": []
+    },
+    {
+      "tag": "alice-1440-dark",
+      "shots": {
+        "money": {
+          "file": "row-money-alice-1440-dark.png",
+          "cells": [
+            {
+              "cell": "home-cell-unbilledWip",
+              "w": 560,
+              "x": 280,
+              "y": 504
+            },
+            {
+              "cell": "home-cell-debtors",
+              "w": 560,
+              "x": 856,
+              "y": 504
+            },
+            {
+              "cell": "home-cell-trustPosition",
+              "w": 1136,
+              "x": 280,
+              "y": 945
+            }
+          ]
+        },
+        "risk": {
+          "file": "row-risk-alice-1440-dark.png",
+          "cells": [
+            {
+              "cell": "home-cell-ficaOutstanding",
+              "w": 560,
+              "x": 280,
+              "y": 1225
+            },
+            {
+              "cell": "home-cell-matterHealth",
+              "w": 560,
+              "x": 856,
+              "y": 1225
+            },
+            {
+              "cell": "home-cell-sensitive",
+              "w": 1136,
+              "x": 280,
+              "y": 1947
+            }
+          ]
+        }
+      },
+      "console": []
+    },
+    {
+      "tag": "bob-1024-light",
+      "shots": {
+        "money": {
+          "file": "row-money-bob-1024-light.png",
+          "cells": [
+            {
+              "cell": "home-cell-unbilledWip",
+              "w": 352,
+              "x": 280,
+              "y": 618
+            },
+            {
+              "cell": "home-cell-debtors",
+              "w": 352,
+              "x": 648,
+              "y": 618
+            },
+            {
+              "cell": "home-cell-trustPosition",
+              "w": 720,
+              "x": 280,
+              "y": 1059
+            }
+          ]
+        }
+      },
+      "console": []
+    },
+    {
+      "tag": "bob-1440-light",
+      "shots": {
+        "money": {
+          "file": "row-money-bob-1440-light.png",
+          "cells": [
+            {
+              "cell": "home-cell-unbilledWip",
+              "w": 560,
+              "x": 280,
+              "y": 504
+            },
+            {
+              "cell": "home-cell-debtors",
+              "w": 560,
+              "x": 856,
+              "y": 504
+            },
+            {
+              "cell": "home-cell-trustPosition",
+              "w": 1136,
+              "x": 280,
+              "y": 945
+            }
+          ]
+        }
+      },
+      "console": []
+    },
+    {
+      "tag": "bob-1024-dark",
+      "shots": {
+        "money": {
+          "file": "row-money-bob-1024-dark.png",
+          "cells": [
+            {
+              "cell": "home-cell-unbilledWip",
+              "w": 352,
+              "x": 280,
+              "y": 618
+            },
+            {
+              "cell": "home-cell-debtors",
+              "w": 352,
+              "x": 648,
+              "y": 618
+            },
+            {
+              "cell": "home-cell-trustPosition",
+              "w": 720,
+              "x": 280,
+              "y": 1059
+            }
+          ]
+        }
+      },
+      "console": []
+    },
+    {
+      "tag": "bob-1440-dark",
+      "shots": {
+        "money": {
+          "file": "row-money-bob-1440-dark.png",
+          "cells": [
+            {
+              "cell": "home-cell-unbilledWip",
+              "w": 560,
+              "x": 280,
+              "y": 504
+            },
+            {
+              "cell": "home-cell-debtors",
+              "w": 560,
+              "x": 856,
+              "y": 504
+            },
+            {
+              "cell": "home-cell-trustPosition",
+              "w": 1136,
+              "x": 280,
+              "y": 945
+            }
+          ]
+        }
+      },
+      "console": []
+    }
+  ]
+}

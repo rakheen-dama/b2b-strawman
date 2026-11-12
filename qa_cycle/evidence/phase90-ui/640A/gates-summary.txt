@@ -1,0 +1,19 @@
+640A gates (PR #1767, branch phase90/40A-home-kpi-row)
+
+FE-GATE @d78ce3ce5 (orchestrator, node v20.11.1, NODE_OPTIONS="", rm -rf .next):
+  lint 0 / typecheck 0 / format:check 0 / vitest 471 files, 4085 passed, 2 skipped / build 0
+  (baseline 639D: 470 files, 4070/2; +15 cases)
+PORTAL-GATE @d78ce3ce5 (packages/ui/src/stat-card.tsx changed):
+  lint 0 / typecheck 0 / format:check 0 / vitest 51 files, 284 passed / build 0
+Builder FE-GATE @41c860fb8: 471 files, 4084/2, all exits 0; portal 284.
+
+E2E-LEGAL, fresh stack (e2e-down, docker builder prune -f, e2e-up), PLAYWRIGHT_BASE_URL=http://localhost:3001:
+  @41c860fb8: legal-lifecycle 105 passed (2.9m); legal-depth-ii 40 passed / 4 skipped (1.9m)
+  @d78ce3ce5: legal-lifecycle 105 passed (3.0m); legal-depth-ii 40 passed / 4 skipped (1.9m)
+  = 639D baseline (105 + 40/4). Tails: e2e/*-summary.txt (pre-fix tails suffixed -41c860fb8).
+  Note: a first lifecycle attempt without PLAYWRIGHT_BASE_URL hit the KC dev frontend on :3000
+  (redirect to :8180), 0 passed / 13 failed / 92 not run, no data written — harness env, re-run as above.
+
+OBS: before/ (main e0e399b24 stack, 640.1), pre-fix-41c860fb8/ (found the three-cell row squeeze,
+fixed in d78ce3ce5), top level = after-OBS on d78ce3ce5 (17 captures; obs-summary.md incl.
+"Primitive observation (639A, 639D)" and "Fix verification (d78ce3ce5)").

@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 import DashboardLoading from "@/app/(app)/org/[slug]/dashboard/loading";
+import { KPI_TILE_LABELS } from "@/components/dashboard/kpi-row";
 
 afterEach(() => {
   cleanup();
@@ -11,15 +12,12 @@ describe("Home loading skeleton (640C)", () => {
   it("draws the KPI row as four StatCards in their loading state", () => {
     render(<DashboardLoading />);
 
+    // Labels and order come from KpiRow's own source, so the skeleton can't drift from it.
     const tiles = screen.getAllByRole("group");
-    expect(tiles.map((tile) => tile.getAttribute("aria-busy"))).toEqual([
-      "true",
-      "true",
-      "true",
-      "true",
-    ]);
-    for (const name of ["Active matters", "Hours logged", "Billable %", "Overdue tasks"]) {
-      expect(screen.getByRole("group", { name })).toHaveAttribute("data-state", "loading");
+    expect(KPI_TILE_LABELS.map((name) => screen.getByRole("group", { name }))).toEqual(tiles);
+    for (const tile of tiles) {
+      expect(tile).toHaveAttribute("aria-busy", "true");
+      expect(tile).toHaveAttribute("data-state", "loading");
     }
   });
 

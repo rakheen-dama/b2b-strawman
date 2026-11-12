@@ -13,12 +13,12 @@ import { fetchHomeWidgets } from "@/lib/dashboard-home-fetch";
 import {
   absentWidgets,
   buildHomePlan,
-  rowSpanClass,
+  HOME_ROW_CLASS,
+  homeCellClass,
   withoutAbsent,
   type HomeWidget,
   type WidgetResult,
 } from "@/lib/dashboard-home";
-import { cn } from "@/lib/utils";
 import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
 import { DashboardHeader } from "./dashboard-header";
 import { ReturnToHandler } from "@/components/auth/return-to-handler";
@@ -177,12 +177,12 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
       <DashboardHeader />
 
       {rows.map((row) => (
-        <div key={row.join("+")} className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div key={row.join("+")} className={HOME_ROW_CLASS}>
           {row.map((widget) => (
             <div
               key={widget}
               data-testid={`home-cell-${widget}`}
-              className={cn(rowSpanClass(row.length), "flex min-w-0 flex-col [&>*]:flex-1")}
+              className={homeCellClass(row.length)}
             >
               {renderWidget(widget)}
             </div>

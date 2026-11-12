@@ -1,90 +1,46 @@
 import { Skeleton } from "@b2mash/ui/skeleton";
-import { StatCard, type StatCardDelta } from "@b2mash/ui/stat-card";
+import { KpiRowSkeleton } from "@/components/dashboard/kpi-row";
 import { WidgetCard } from "@/components/dashboard/widget-parts";
-import { rowSpanClass } from "@/lib/dashboard-home";
-import { cn } from "@/lib/utils";
+import { HOME_ROW_CLASS, OWNER_HOME_ROWS, homeCellClass } from "@/lib/dashboard-home";
 import { DashboardHeader } from "./dashboard-header";
 
-// Home's loading state (Phase 90 640C, §15.10 E4C): the same wrappers as page.tsx (root
-// `space-y-6`, 12-column rows, `rowSpanClass` cells) so skeleton → content does not shift. It
-// cannot know the audience (no props, no data), so it draws the owner rows — firm differs only in
-// row 4, below the fold; a fee earner has no KPI row, so their diary moves up on load. No
-// test ids: e2e waits on `home-page` / `home-cell-*`, which only the loaded page renders.
+// Home's loading state (Phase 90 640C, §15.10 E4C): the page's own row/cell classes, KPI row frame
+// and owner layout (all imported, not copied) so skeleton → content does not shift. It cannot know
+// the audience (no props, no data), so it draws the owner rows — firm differs only in row 4, below
+// the fold; a fee earner has no KPI row, so their diary moves up on load. No test ids: e2e waits on
+// `home-page` / `home-cell-*`, which only the loaded page renders.
 
-/** Mirrors kpi-row.tsx PERIOD_LABEL / TILE_LABELS (not exported — keep in step). */
-const PERIOD_LABEL = "Last 30 days";
+type OwnerWidget = (typeof OWNER_HOME_ROWS)[number][number];
+type SkeletonWidget = Exclude<OwnerWidget, "kpis">;
 
-/** Any non-undefined delta makes StatCard draw its delta skeleton (the steady-state anatomy). */
-const LOADING_DELTA: StatCardDelta = {
-  change: 0,
-  unit: "percent",
-  polarity: "up-is-good",
-  comparisonLabel: "previous 30 days",
-};
-
-interface CellSkeleton {
-  key: string;
-  /** Content height (the WidgetCard chrome around it is 86px); fixed so the row cannot jump. */
-  contentClassName: string;
-}
+/** WidgetCard's chrome around its content (padding, title row, gap), measured at 1440. */
+const WIDGET_CHROME_PX = 86;
 
 /**
- * AUDIENCE_ROWS.owner after the KPI row (lib/dashboard-home.ts). Content heights are the
- * empty-tenant widgets at 1440 (cell − 86px chrome); a widget with rows is taller once loaded.
+ * Each owner widget's cell height for an empty tenant at 1440 (a widget with rows is taller once
+ * loaded). Keyed by the owner rows' literal type: a widget added there won't compile until it has
+ * an entry here.
  */
-const ROWS: ReadonlyArray<ReadonlyArray<CellSkeleton>> = [
-  [{ key: "diary", contentClassName: "h-5" }],
-  [
-    { key: "unbilledWip", contentClassName: "h-[164px]" },
-    { key: "debtors", contentClassName: "h-[164px]" },
-    { key: "trustPosition", contentClassName: "h-[162px]" },
-  ],
-  [
-    { key: "ficaOutstanding", contentClassName: "h-[176px]" },
-    { key: "matterHealth", contentClassName: "h-[176px]" },
-    { key: "sensitive", contentClassName: "h-[219px]" },
-  ],
-  [{ key: "activity", contentClassName: "h-[260px]" }],
-];
+const CELL_HEIGHT_PX: Record<SkeletonWidget, number> = {
+  diary: 106,
+  unbilledWip: 250,
+  debtors: 250,
+  trustPosition: 248,
+  ficaOutstanding: 262,
+  matterHealth: 262,
+  sensitive: 305,
+  activity: 346,
+};
 
-const CELL_CLASS = "flex min-w-0 flex-col [&>*]:flex-1";
-
-function KpiRowSkeleton() {
-  return (
-    <div className="@container flex flex-col gap-2">
-      <p className="text-muted-foreground text-xs font-medium">{PERIOD_LABEL}</p>
-      {/* 2×2 below @3xl, 4×1 at @3xl — as KpiRow. */}
-      <div className="grid grid-cols-2 gap-4 @3xl:grid-cols-4">
-        <StatCard label="Active matters" value={null} state="loading" className="h-full" />
-        <StatCard
-          label="Hours logged"
-          value={null}
-          state="loading"
-          delta={LOADING_DELTA}
-          // StatCard draws no sparkline slot while loading: hold the 40px SparklineTrend's place.
-          footer={<Skeleton className="h-10 w-full" />}
-          className="h-full"
-        />
-        <StatCard
-          label="Billable %"
-          value={null}
-          state="loading"
-          delta={{ ...LOADING_DELTA, unit: "points" }}
-          className="h-full"
-        />
-        <StatCard label="Overdue tasks" value={null} state="loading" className="h-full" />
-      </div>
-    </div>
-  );
-}
-
-function WidgetSkeleton({ cell }: { cell: CellSkeleton }) {
+function WidgetSkeleton({ widget }: { widget: SkeletonWidget }) {
+  // Fixed content height so the row cannot jump.
+  const height = CELL_HEIGHT_PX[widget] - WIDGET_CHROME_PX;
   return (
     <WidgetCard title={<Skeleton className="h-5 w-28" />}>
-      {cell.key === "diary" ? (
-        <Skeleton className={cn(cell.contentClassName, "w-48")} />
+      {widget === "diary" ? (
+        <Skeleton className="w-48" style={{ height }} />
       ) : (
-        <div className={cn("flex flex-col gap-3", cell.contentClassName)}>
+        <div className="flex flex-col gap-3" style={{ height }}>
           <Skeleton className="h-8 w-28" />
           <Skeleton className="min-h-0 flex-1" />
         </div>
@@ -93,25 +49,18 @@ function WidgetSkeleton({ cell }: { cell: CellSkeleton }) {
   );
 }
 
+const ROWS: ReadonlyArray<ReadonlyArray<OwnerWidget>> = OWNER_HOME_ROWS;
+
 export default function DashboardLoading() {
   return (
     <div className="space-y-6" aria-busy="true">
       <DashboardHeader />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <div className={cn(rowSpanClass(1), CELL_CLASS)}>
-          <KpiRowSkeleton />
-        </div>
-      </div>
-
       {ROWS.map((row) => (
-        <div
-          key={row.map((cell) => cell.key).join("+")}
-          className="grid grid-cols-1 gap-4 lg:grid-cols-12"
-        >
-          {row.map((cell) => (
-            <div key={cell.key} className={cn(rowSpanClass(row.length), CELL_CLASS)}>
-              <WidgetSkeleton cell={cell} />
+        <div key={row.join("+")} className={HOME_ROW_CLASS}>
+          {row.map((widget) => (
+            <div key={widget} className={homeCellClass(row.length)}>
+              {widget === "kpis" ? <KpiRowSkeleton /> : <WidgetSkeleton widget={widget} />}
             </div>
           ))}
         </div>

@@ -124,7 +124,20 @@ export function WeeklyTimeSummary({ initialSummary, initialFrom }: WeeklyTimeSum
  * so a zero part keeps its colour. The two figure tiles are its legend (swatch + label, never
  * colour alone); the meter's sr summary states the same formatDuration text the tiles show.
  */
+/**
+ * The meter's parts in draw order. StackedMeter's categorical palette gives part i the colour
+ * --chart-(i+1), so each part carries that slot's swatch class — the legend reads it from here.
+ */
+const WEEK_PARTS = {
+  billable: { label: "Billable", swatch: "bg-chart-1" },
+  nonBillable: { label: "Non-billable", swatch: "bg-chart-2" },
+} as const;
+
 function WeekTotals({ summary }: { summary: MyWorkTimeSummary }) {
+  const minutes: Record<keyof typeof WEEK_PARTS, number> = {
+    billable: summary.billableMinutes,
+    nonBillable: summary.nonBillableMinutes,
+  };
   return (
     <div className="mt-4 space-y-4">
       {/* Stat Cards: Total, Billable, Non-billable */}
@@ -139,27 +152,22 @@ function WeekTotals({ summary }: { summary: MyWorkTimeSummary }) {
         <StackedMeter
           palette="categorical"
           label="Billable vs non-billable time"
-          segments={[
-            {
-              key: "billable",
-              label: "Billable",
-              value: summary.billableMinutes,
-              valueText: formatDuration(summary.billableMinutes),
-            },
-            {
-              key: "nonBillable",
-              label: "Non-billable",
-              value: summary.nonBillableMinutes,
-              valueText: formatDuration(summary.nonBillableMinutes),
-            },
-          ]}
+          segments={(Object.keys(WEEK_PARTS) as Array<keyof typeof WEEK_PARTS>).map((key) => ({
+            key,
+            label: WEEK_PARTS[key].label,
+            value: minutes[key],
+            valueText: formatDuration(minutes[key]),
+          }))}
         />
 
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-muted/50 rounded-md px-4 py-3">
             <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
-              <span aria-hidden="true" className="bg-chart-1 inline-block size-2 rounded-full" />
-              Billable
+              <span
+                aria-hidden="true"
+                className={cn(WEEK_PARTS.billable.swatch, "inline-block size-2 rounded-full")}
+              />
+              {WEEK_PARTS.billable.label}
             </p>
             <p className="font-display text-foreground text-xl">
               {formatDuration(summary.billableMinutes)}
@@ -167,8 +175,11 @@ function WeekTotals({ summary }: { summary: MyWorkTimeSummary }) {
           </div>
           <div className="bg-muted/50 rounded-md px-4 py-3">
             <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
-              <span aria-hidden="true" className="bg-chart-2 inline-block size-2 rounded-full" />
-              Non-billable
+              <span
+                aria-hidden="true"
+                className={cn(WEEK_PARTS.nonBillable.swatch, "inline-block size-2 rounded-full")}
+              />
+              {WEEK_PARTS.nonBillable.label}
             </p>
             <p className="font-display text-muted-foreground text-xl">
               {formatDuration(summary.nonBillableMinutes)}
@@ -190,7 +201,10 @@ function WeekTotals({ summary }: { summary: MyWorkTimeSummary }) {
                   <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
                     <span
                       aria-hidden="true"
-                      className="bg-chart-1 inline-block size-1.5 rounded-full"
+                      className={cn(
+                        WEEK_PARTS.billable.swatch,
+                        "inline-block size-1.5 rounded-full"
+                      )}
                     />
                     <span className="sr-only">Billable: </span>
                     {formatDuration(project.billableMinutes)}

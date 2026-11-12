@@ -1,0 +1,7 @@
+639A E2E-LEGAL — fresh stack built from worktree-epic-639A @ bc7233bf8
+  bash compose/scripts/e2e-down.sh && docker builder prune -f && bash compose/scripts/e2e-up.sh  → exit=0
+  (cd frontend; E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001, node v20.11.1)
+legal-lifecycle : 105 passed (2.9m)   [baseline 105 passed]   exit 0
+legal-depth-ii  : 40 passed (1.8m), 4 skipped   [baseline 40 passed / 4 skipped — the 4 are the opt-in null-prefetch probes]   exit 0
+Both ≥ baseline. No spec edited — no role changed.
+Follow-up commit f265fc609 changes only frontend/__tests__/{empty-state,components/ui/stat-card}.test.* and a comment in frontend/lib/chart-format.ts — no rendered code, so the app under test is unchanged.

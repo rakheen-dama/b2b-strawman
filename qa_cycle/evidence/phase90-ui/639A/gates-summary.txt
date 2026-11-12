@@ -1,0 +1,20 @@
+639A gates — orchestrator re-run on bc7233bf8 (PR #1763), worktree-epic-639A, Node v20.11.1 (CI pins node 20)
+
+FE-GATE  (cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build)
+  exit 0 — lint 0 errors; typecheck ok; prettier "All matched files use Prettier code style!";
+  vitest Test Files 464 passed (464), Tests 3963 passed | 2 skipped (3965)   [638B baseline 3904 / 2 → +59 new]
+  next build ok
+PORTAL-GATE (cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build)
+  exit 0 — vitest Test Files 51 passed (51), Tests 284 passed (284)   [baseline 284]
+
+Triage note (not a pass-through): a first orchestrator re-run at 05:42Z failed (FE 29 failures in
+__tests__/components/theme/theme-script.test.tsx; portal 12 in lib/__tests__/auth.test.ts + layout.test.tsx).
+Root cause: that shell prefixed PATH with /opt/homebrew/bin, so pnpm ran under Homebrew node v26.0.0, whose
+built-in experimental Web Storage ("localStorage is not available because --localstorage-file was not provided")
+shadows happy-dom's window.localStorage → "Cannot read properties of undefined (reading 'setItem')".
+None of the failing files is in the 639A diff. Re-run on the default nvm node v20.11.1 (the CI version,
+.github/workflows/ci.yml:78) → green above. Builder's own run (node 20) had the same totals.
+
+Fix-cycle re-run on f265fc609 (tests + one comment; review findings CodeRabbit nit / Architecture Medium), node v20.11.1:
+FE-GATE exit 0 — vitest Test Files 464 passed (464), Tests 3975 passed | 2 skipped (3977) (+12 parity/behavioural cases); build ok.
+PORTAL-GATE not re-run: f265fc609 touches no file under packages/ or portal/ (git diff --stat bc7233bf8..f265fc609 = 3 frontend files) → portal gate @bc7233bf8 stands.

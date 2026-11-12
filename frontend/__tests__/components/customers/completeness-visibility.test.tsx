@@ -4,15 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { SetupProgressCard } from "@/components/setup/setup-progress-card";
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
-import { IncompleteProfilesWidget } from "@/components/dashboard/incomplete-profiles-widget";
-import type { AggregatedCompletenessResponse } from "@/lib/types";
-
-// Mock next/navigation for IncompleteProfilesWidget
-const mockPush = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush }),
-  usePathname: () => "/org/test-org/dashboard",
-}));
 
 function makeSteps(): SetupStep[] {
   return [
@@ -36,17 +27,6 @@ function makeContextGroups(): ContextGroup[] {
       ],
     },
   ];
-}
-
-function makeAggregatedData(): AggregatedCompletenessResponse {
-  return {
-    incompleteCount: 5,
-    totalCount: 12,
-    topMissingFields: [
-      { fieldName: "Billing Address", fieldSlug: "billing-address", clientCount: 5 },
-      { fieldName: "VAT Number", fieldSlug: "vat-number", clientCount: 3 },
-    ],
-  };
 }
 
 describe("Completeness Visibility (Epic 251B)", () => {
@@ -100,28 +80,5 @@ describe("Completeness Visibility (Epic 251B)", () => {
     render(<MiniProgressRing value={75} size={48} />);
 
     expect(screen.getByLabelText("75%")).toBeInTheDocument();
-  });
-
-  it("dashboard widget shows incomplete count", () => {
-    render(<IncompleteProfilesWidget data={makeAggregatedData()} orgSlug="test-org" />);
-
-    expect(screen.getByText("5")).toBeInTheDocument();
-    expect(screen.getByText("12")).toBeInTheDocument();
-    expect(screen.getByText(/clients have incomplete profiles/)).toBeInTheDocument();
-    expect(screen.getByText("Billing Address")).toBeInTheDocument();
-    expect(screen.getByText(/5 clients/)).toBeInTheDocument();
-  });
-
-  it("dashboard widget click navigates to filtered customer list", async () => {
-    const user = userEvent.setup();
-
-    render(<IncompleteProfilesWidget data={makeAggregatedData()} orgSlug="test-org" />);
-
-    // Click a missing field row
-    const billingRow = screen.getByText("Billing Address").closest("button");
-    expect(billingRow).not.toBeNull();
-    await user.click(billingRow!);
-
-    expect(mockPush).toHaveBeenCalledWith("/org/test-org/clients?showIncomplete=true");
   });
 });

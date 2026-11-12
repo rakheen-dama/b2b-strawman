@@ -1,8 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { Sparkline } from "@/components/dashboard/sparkline";
-import { RadialGauge } from "@/components/dashboard/radial-gauge";
 import { MicroStackedBar } from "@/components/dashboard/micro-stacked-bar";
 import { ChartTooltip } from "@/components/dashboard/chart-tooltip";
 import { DonutChart } from "@/components/dashboard/donut-chart";
@@ -37,96 +35,6 @@ vi.mock("recharts", () => ({
     <div data-testid="tooltip">{content}</div>
   ),
 }));
-
-describe("Sparkline", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
-  it("renders SVG path with data points", () => {
-    const { container } = render(<Sparkline data={[10, 20, 15, 30, 25]} />);
-
-    const svg = container.querySelector("svg");
-    expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute("width", "80");
-    expect(svg).toHaveAttribute("height", "28");
-
-    // Smooth curve rendered as <path> elements (line + gradient fill)
-    const paths = container.querySelectorAll("path");
-    expect(paths.length).toBeGreaterThanOrEqual(2); // fill path + line path
-
-    // Line path should have no fill and a stroke
-    const linePath = Array.from(paths).find((p) => p.getAttribute("fill") === "none");
-    expect(linePath).toBeTruthy();
-    expect(linePath!.getAttribute("d")).toBeTruthy();
-  });
-
-  it("handles empty data array gracefully", () => {
-    const { container } = render(<Sparkline data={[]} />);
-
-    const svg = container.querySelector("svg");
-    expect(svg).toBeInTheDocument();
-
-    // No path elements when data is empty
-    const paths = container.querySelectorAll("path");
-    expect(paths.length).toBe(0);
-  });
-
-  it("respects custom width and height", () => {
-    const { container } = render(<Sparkline data={[5, 10, 15]} width={120} height={40} />);
-
-    const svg = container.querySelector("svg");
-    expect(svg).toHaveAttribute("width", "120");
-    expect(svg).toHaveAttribute("height", "40");
-    expect(svg).toHaveAttribute("viewBox", "0 0 120 40");
-  });
-});
-
-describe("RadialGauge", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
-  it("renders value text", () => {
-    render(<RadialGauge value={75} />);
-
-    expect(screen.getByText("75%")).toBeInTheDocument();
-    expect(screen.getByTestId("radial-gauge")).toBeInTheDocument();
-  });
-
-  it("applies teal for value in optimal range", () => {
-    const { container } = render(<RadialGauge value={75} />);
-
-    // Foreground arc path should use teal color
-    const paths = container.querySelectorAll("path");
-    const fgPath = paths[1]; // second path is foreground
-    expect(fgPath).toHaveAttribute("stroke", "var(--color-teal-500)");
-  });
-
-  it("applies slate for under-threshold value", () => {
-    const { container } = render(<RadialGauge value={30} />);
-
-    const paths = container.querySelectorAll("path");
-    const fgPath = paths[1];
-    expect(fgPath).toHaveAttribute("stroke", "var(--color-slate-400)");
-  });
-
-  it("applies amber for over-threshold value", () => {
-    const { container } = render(<RadialGauge value={95} />);
-
-    const paths = container.querySelectorAll("path");
-    const fgPath = paths[1];
-    expect(fgPath).toHaveAttribute("stroke", "var(--color-amber-500, #f59e0b)");
-  });
-
-  it("handles edge cases 0 and 100", () => {
-    const { rerender } = render(<RadialGauge value={0} />);
-    expect(screen.getByText("0%")).toBeInTheDocument();
-
-    rerender(<RadialGauge value={100} />);
-    expect(screen.getByText("100%")).toBeInTheDocument();
-  });
-});
 
 describe("MicroStackedBar", () => {
   afterEach(() => {

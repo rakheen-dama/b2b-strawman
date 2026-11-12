@@ -8,6 +8,10 @@ vi.stubEnv("NEXT_PUBLIC_GATEWAY_URL", "http://localhost:8443");
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
+vi.mock("next-themes", () => ({
+  useTheme: () => ({ theme: "light", resolvedTheme: "light", setTheme: vi.fn(), themes: [] }),
+}));
+
 import { UserMenuBff, getChangePasswordUrl } from "@/components/auth/user-menu-bff";
 
 const defaultBffResponse = {
@@ -47,6 +51,28 @@ describe("UserMenuBff", () => {
 
     expect(screen.getByText("Alice Smith")).toBeInTheDocument();
     expect(screen.getByText("alice@example.com")).toBeInTheDocument();
+  });
+
+  it("renders a Theme section with the toggle between Account & Security and Sign out", async () => {
+    render(<UserMenuBff />);
+
+    await waitFor(() => {
+      expect(screen.getByText("AS")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("AS"));
+
+    expect(screen.getByText("Theme")).toBeInTheDocument();
+    const group = screen.getByRole("group", { name: "Theme" });
+    expect(screen.getAllByRole("radio").map((r) => r.textContent)).toEqual([
+      "Light",
+      "Dark",
+      "System",
+    ]);
+    const account = screen.getByRole("button", { name: "Account & Security" });
+    const signOut = screen.getByRole("button", { name: "Sign out" });
+    expect(account.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(group.compareDocumentPosition(signOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("renders sign-out button that fetches CSRF and submits form POST", async () => {

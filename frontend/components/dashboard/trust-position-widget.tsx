@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Badge } from "@b2mash/ui/badge";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type { TrustPositionResponse } from "@/lib/dashboard-types";
 import {
+  StatusBadge,
   WIDGET_LINK_CLASS,
+  WidgetCard,
   WidgetErrorLine,
   WidgetHeadline,
 } from "@/components/dashboard/widget-parts";
@@ -35,60 +36,61 @@ function lastReconciliationText(data: TrustPositionResponse): string {
 export function TrustPositionWidget({ slug, data }: TrustPositionWidgetProps) {
   const balanced = data ? isBalanced(data.difference) : false;
   return (
-    <Card data-testid="trust-position-widget" className="gap-4">
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">Trust position</CardTitle>
-        <CardAction>
-          <Link href={`/org/${slug}/trust-accounting/reconciliation`} className={WIDGET_LINK_CLASS}>
-            Open reconciliation
-          </Link>
-        </CardAction>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {data === null ? (
-          <WidgetErrorLine subject="The trust position" />
-        ) : (
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <WidgetHeadline testId="trust-position-headline">
-                {formatCurrency(balanced ? 0 : data.difference)}
-              </WidgetHeadline>
-              {balanced ? (
-                <Badge variant="success">Balanced</Badge>
-              ) : (
-                <Badge variant="warning">Difference {formatCurrency(data.difference)}</Badge>
-              )}
-            </div>
-            <p className="truncate text-xs text-slate-500">
-              {data.accountName}
-              {data.bankName && <span className="text-slate-400">, {data.bankName}</span>}
-            </p>
-            <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-xs">
-              <dt className="text-slate-500">Bank cashbook</dt>
-              <dd className="text-right font-mono text-sm font-medium text-slate-900 tabular-nums dark:text-slate-100">
-                {formatCurrency(data.cashbookBalance)}
-              </dd>
-              <dt className="text-slate-500">Client ledgers</dt>
-              <dd className="text-right font-mono text-sm font-medium text-slate-900 tabular-nums dark:text-slate-100">
-                {formatCurrency(data.clientLedgerTotal)}
-              </dd>
-              <dt className="text-slate-500">Last reconciliation</dt>
-              <dd className="text-right text-slate-700 dark:text-slate-300">
-                {lastReconciliationText(data)}
-              </dd>
-              <dt className="text-slate-500">Awaiting approval</dt>
-              <dd className="text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-                {data.pendingApprovalCount}
-              </dd>
-            </dl>
-            {data.accounts.length > 1 && (
-              <p className="text-xs text-slate-400">
-                Primary of {data.accounts.length} trust accounts
-              </p>
+    <WidgetCard
+      data-testid="trust-position-widget"
+      title="Trust position"
+      action={
+        <Link href={`/org/${slug}/trust-accounting/reconciliation`} className={WIDGET_LINK_CLASS}>
+          Open reconciliation
+        </Link>
+      }
+      contentProps={{ className: "space-y-3" }}
+    >
+      {data === null ? (
+        <WidgetErrorLine subject="The trust position" />
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <WidgetHeadline testId="trust-position-headline">
+              {formatCurrency(balanced ? 0 : data.difference)}
+            </WidgetHeadline>
+            {balanced ? (
+              <StatusBadge tone="success" icon={<CheckCircle2 />}>
+                Balanced
+              </StatusBadge>
+            ) : (
+              <StatusBadge tone="warning" icon={<AlertTriangle />}>
+                Difference {formatCurrency(data.difference)}
+              </StatusBadge>
             )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+          <p className="text-muted-foreground truncate text-xs">
+            {data.accountName}
+            {data.bankName && <>, {data.bankName}</>}
+          </p>
+          <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-xs">
+            <dt className="text-muted-foreground">Bank cashbook</dt>
+            <dd className="text-foreground text-right font-mono text-sm font-medium tabular-nums">
+              {formatCurrency(data.cashbookBalance)}
+            </dd>
+            <dt className="text-muted-foreground">Client ledgers</dt>
+            <dd className="text-foreground text-right font-mono text-sm font-medium tabular-nums">
+              {formatCurrency(data.clientLedgerTotal)}
+            </dd>
+            <dt className="text-muted-foreground">Last reconciliation</dt>
+            <dd className="text-foreground text-right">{lastReconciliationText(data)}</dd>
+            <dt className="text-muted-foreground">Awaiting approval</dt>
+            <dd className="text-foreground text-right font-mono tabular-nums">
+              {data.pendingApprovalCount}
+            </dd>
+          </dl>
+          {data.accounts.length > 1 && (
+            <p className="text-muted-foreground text-xs">
+              Primary of {data.accounts.length} trust accounts
+            </p>
+          )}
+        </>
+      )}
+    </WidgetCard>
   );
 }

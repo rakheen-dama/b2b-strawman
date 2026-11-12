@@ -11,11 +11,16 @@ describe("RecentActivityWidget", () => {
   it("renders null state message when items is null", () => {
     render(<RecentActivityWidget items={null} orgSlug="acme" />);
     expect(screen.getByText("Unable to load activity. Please try again.")).toBeInTheDocument();
+    // One shell for all three states (640B): the widget testid is present while loading failed.
+    expect(screen.getByTestId("recent-activity-widget")).toHaveTextContent("Recent Activity");
   });
 
   it("renders empty state message when items is empty", () => {
     render(<RecentActivityWidget items={[]} orgSlug="acme" />);
-    expect(screen.getByText("No recent activity")).toBeInTheDocument();
+    expect(
+      screen.getByText("No recent activity").closest('[data-slot="empty-state"]')
+    ).toHaveAttribute("data-variant", "compact");
+    expect(screen.getByTestId("recent-activity-widget")).toHaveTextContent("Recent Activity");
   });
 
   it("empty-state copy says the team works on matters (GAP-MINOR-Copy-Projects)", () => {

@@ -1,0 +1,3482 @@
+{
+  "seeded-alice-1024-light": {
+    "audience": "owner",
+    "htmlClass": "light",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 288,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 8 Hours logged 19,3h First week 0,0h, latest week 19,3h, peak 19,3h in week 6 of 6. Billable % 100,0% Overdue tasks 0",
+        "truncated": [],
+        "title": null,
+        "minContrast": 7.05,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 98
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 98
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 480,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 2.64,
+        "lowContrast": [
+          {
+            "text": "Nothing in the diary today",
+            "contrast": 2.64,
+            "fg": "lab(65.1376 -0.85035 -6.67907)",
+            "fontSize": "14px"
+          }
+        ],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 720,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 280,
+        "y": 610,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 452,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work R 19 425,00 10h 30m of unbilled time R 0 R 8 k R 16 k Alice Owner Bob Admin Carol Member R 15 k R 3,6 k R 825 Unbilled WIP: 3 bars; highest Alice Owner R 15 000,00, lowest Carol Member R 825,00. View as table Disbursements not yet billed R 0,00",
+        "truncated": [],
+        "title": {
+          "text": "Unbilled WIP",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "unbilled-wip-widget",
+            "w": 352,
+            "h": 452
+          },
+          {
+            "tag": "div",
+            "slot": "chart-card",
+            "testid": null,
+            "w": 310,
+            "h": 180
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 106,
+        "extra": {
+          "hasChart": true,
+          "variant": "firm",
+          "svg": {
+            "w": 310,
+            "h": 136,
+            "left": 301,
+            "right": 611
+          },
+          "widgetRect": {
+            "left": 280,
+            "right": 632
+          },
+          "yTicks": [
+            {
+              "text": "Alice Owner",
+              "left": 339,
+              "right": 407,
+              "clippedLeft": false
+            },
+            {
+              "text": "Bob Admin",
+              "left": 346,
+              "right": 407,
+              "clippedLeft": false
+            },
+            {
+              "text": "Carol Member",
+              "left": 327,
+              "right": 407,
+              "clippedLeft": false
+            }
+          ],
+          "valueLabels": [
+            {
+              "text": "R 15 k",
+              "left": 552,
+              "right": 586,
+              "clippedRight": false
+            },
+            {
+              "text": "R 3,6 k",
+              "left": 456,
+              "right": 495,
+              "clippedRight": false
+            },
+            {
+              "text": "R 825",
+              "left": 433,
+              "right": 466,
+              "clippedRight": false
+            }
+          ],
+          "bars": [
+            {
+              "w": 126,
+              "h": 24
+            },
+            {
+              "w": 30,
+              "h": 24
+            },
+            {
+              "w": 7,
+              "h": 24
+            }
+          ],
+          "xTicks": [
+            {
+              "text": "R 0",
+              "left": 412,
+              "right": 430,
+              "clipped": false
+            },
+            {
+              "text": "R 8 k",
+              "left": 474,
+              "right": 502,
+              "clipped": false
+            },
+            {
+              "text": "R 16 k",
+              "left": 538,
+              "right": 572,
+              "clipped": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "x": 648,
+        "y": 610,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 452,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 4 clients owe fees Acme Corp R 8 625,00 Not yet overdue Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdh3m4lf4d0 R 7 982,63 45 days overdue Current R 5 482,63, 30 days R 0,00, 60 days R 2 500,00, 90+ days R 0,00 Apex Holdings mwdh3m4lf4d0 R 3 750,00 60 days overdue Current R 0,00, 30 days R 0,00, 60 days R 3 750,00, 90+ days R 0,00 Moroka Family Trust mwdh3m4lf4d0 R 125,00 Not yet overdue Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": [
+          {
+            "text": "Moroka Family Trust mwdh3m4lf4d0",
+            "sw": 235,
+            "cw": 215
+          }
+        ],
+        "title": {
+          "text": "Debtors",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "debtors-widget",
+            "w": 352,
+            "h": 452
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 25,
+        "extra": null
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "x": 280,
+        "y": 1078,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 248,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation -R 25,52 Difference -R 25,52 Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 286 499,98 Client ledgers R 286 525,50 Last reconciliation Never reconciled Awaiting approval 3",
+        "truncated": [],
+        "title": {
+          "text": "Trust position",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "trust-position-widget",
+            "w": 720,
+            "h": 248
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "x": 280,
+        "y": 1350,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 577,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance 3 of 5 active clients without completed FICA Apex Holdings mwdh3m4lf4d0 Not started 0 days Moroka Family Trust mwdh3m4lf4d0 In progress 0 days QuickCollect Services mwdh3m4lf4d0 Not started 0 days Incomplete profiles",
+        "truncated": [
+          {
+            "text": "Apex Holdings mwdh3m4lf4d0",
+            "sw": 199,
+            "cw": 116
+          },
+          {
+            "text": "Moroka Family Trust mwdh3m4lf4d0",
+            "sw": 235,
+            "cw": 117
+          },
+          {
+            "text": "QuickCollect Services mwdh3m4lf4d0",
+            "sw": 247,
+            "cw": 116
+          }
+        ],
+        "title": {
+          "text": "FICA outstanding",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "fica-outstanding-widget",
+            "w": 352,
+            "h": 577
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 320,
+        "extra": null
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 648,
+        "y": 1350,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 577,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS TASKS Team spec mwdh75ji4fe0 Healthy 0/9 Apex Annual Returns mwdh3m4lf4d0 Apex Holdings mwdh3m4lf4d0 Healthy 0/9 Ndlovu Property Dispute mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 0/9 QC Debt Recovery #1 mwdh3m4lf4d0 QuickCollect Services mwdh3m4lf4d0 Healthy 0/9 Apex Shareholder Agreement mwdh3m4lf4d0 Apex Holdings mwdh3m4lf4d0 Healthy 0/9 Ndlovu v RAF mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 0/9 Estate Late Peter Moroka mwdh3m4lf4d0 Moroka Family Trust mwdh3m4lf4d0 Healthy 2/9 Website Redesign Acme Corp Unknown 0/0 View all matt",
+        "truncated": [
+          {
+            "text": "Apex Annual Returns mwdh3m4lf4d0",
+            "sw": 246,
+            "cw": 182
+          },
+          {
+            "text": "Ndlovu Property Dispute mwdh3m4lf4d0",
+            "sw": 270,
+            "cw": 182
+          },
+          {
+            "text": "QC Debt Recovery #1 mwdh3m4lf4d0",
+            "sw": 249,
+            "cw": 182
+          },
+          {
+            "text": "QuickCollect Services mwdh3m4lf4d0",
+            "sw": 200,
+            "cw": 182
+          },
+          {
+            "text": "Apex Shareholder Agreement mwdh3m4lf4d0",
+            "sw": 302,
+            "cw": 182
+          },
+          {
+            "text": "Ndlovu v RAF mwdh3m4lf4d0",
+            "sw": 196,
+            "cw": 182
+          },
+          {
+            "text": "Estate Late Peter Moroka mwdh3m4lf4d0",
+            "sw": 274,
+            "cw": 182
+          },
+          {
+            "text": "Moroka Family Trust mwdh3m4lf4d0",
+            "sw": 191,
+            "cw": 182
+          }
+        ],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "button.inline-flex items-center justify-center whitespace-nowrap font-medium transition"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 352,
+            "h": 577
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "containerWidth": 350,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 182
+            },
+            "Status": {
+              "visible": true,
+              "w": 48
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": false,
+              "w": 0
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 8,
+          "truncatedNames": 6,
+          "rows": [
+            {
+              "name": "Team spec mwdh75ji4fe0",
+              "nameTruncated": false,
+              "nameW": 182,
+              "nameSW": 182,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Apex Annual Returns mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 246,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Ndlovu Property Dispute mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 270,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "QC Debt Recovery #1 mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 249,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Apex Shareholder Agreement mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 302,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Ndlovu v RAF mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 196,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Estate Late Peter Moroka mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 274,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Website Redesign",
+              "nameTruncated": false,
+              "nameW": 182,
+              "nameSW": 182,
+              "badgeTone": "neutral",
+              "badgeW": 20,
+              "labelText": "Unknown",
+              "labelSrOnly": true
+            }
+          ]
+        }
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "x": 280,
+        "y": 1943,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 305,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 7 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": [],
+        "title": {
+          "text": "Sensitive eventsLast 7 days",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "sensitive-events-widget",
+            "w": 720,
+            "h": 305
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 280,
+        "y": 2272,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 670,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\" 3 minutes ago BA Bob Admin logged 3h on task \"Execution -- warrant / attachment\" 3 minutes ago AO Alice Owner sent fee note INV-0005 3 minutes ago AO Alice Owner approved fee note INV-0005 3 minutes ago AO Alice Owner created a draft fee note 3 minutes ago AO Alice Owner logged 1h on task \"Post-execution -- filing & compliance\" 3 minutes ago CM Carol Member removed a member from the matter team 5 minutes ago CM Carol Member added a member to the matter team 5 minutes ago BA Bob Admin made a team member th",
+        "truncated": [
+          {
+            "text": "Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdh3m4lf4d0-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\"",
+            "sw": 903,
+            "cw": 536
+          }
+        ],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 720,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "seeded-alice-1024-dark": {
+    "audience": "owner",
+    "htmlClass": "dark",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 288,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 8 Hours logged 19,3h First week 0,0h, latest week 19,3h, peak 19,3h in week 6 of 6. Billable % 100,0% Overdue tasks 0",
+        "truncated": [],
+        "title": null,
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 98
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 98
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 480,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 720,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 280,
+        "y": 610,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 452,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work R 19 425,00 10h 30m of unbilled time R 0 R 8 k R 16 k Alice Owner Bob Admin Carol Member R 15 k R 3,6 k R 825 Unbilled WIP: 3 bars; highest Alice Owner R 15 000,00, lowest Carol Member R 825,00. View as table Disbursements not yet billed R 0,00",
+        "truncated": [],
+        "title": {
+          "text": "Unbilled WIP",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "unbilled-wip-widget",
+            "w": 352,
+            "h": 452
+          },
+          {
+            "tag": "div",
+            "slot": "chart-card",
+            "testid": null,
+            "w": 310,
+            "h": 180
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 106,
+        "extra": {
+          "hasChart": true,
+          "variant": "firm",
+          "svg": {
+            "w": 310,
+            "h": 136,
+            "left": 301,
+            "right": 611
+          },
+          "widgetRect": {
+            "left": 280,
+            "right": 632
+          },
+          "yTicks": [
+            {
+              "text": "Alice Owner",
+              "left": 339,
+              "right": 407,
+              "clippedLeft": false
+            },
+            {
+              "text": "Bob Admin",
+              "left": 346,
+              "right": 407,
+              "clippedLeft": false
+            },
+            {
+              "text": "Carol Member",
+              "left": 327,
+              "right": 407,
+              "clippedLeft": false
+            }
+          ],
+          "valueLabels": [
+            {
+              "text": "R 15 k",
+              "left": 552,
+              "right": 586,
+              "clippedRight": false
+            },
+            {
+              "text": "R 3,6 k",
+              "left": 456,
+              "right": 495,
+              "clippedRight": false
+            },
+            {
+              "text": "R 825",
+              "left": 433,
+              "right": 466,
+              "clippedRight": false
+            }
+          ],
+          "bars": [
+            {
+              "w": 126,
+              "h": 24
+            },
+            {
+              "w": 30,
+              "h": 24
+            },
+            {
+              "w": 7,
+              "h": 24
+            }
+          ],
+          "xTicks": [
+            {
+              "text": "R 0",
+              "left": 412,
+              "right": 430,
+              "clipped": false
+            },
+            {
+              "text": "R 8 k",
+              "left": 474,
+              "right": 502,
+              "clipped": false
+            },
+            {
+              "text": "R 16 k",
+              "left": 538,
+              "right": 572,
+              "clipped": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "x": 648,
+        "y": 610,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 452,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 4 clients owe fees Acme Corp R 8 625,00 Not yet overdue Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdh3m4lf4d0 R 7 982,63 45 days overdue Current R 5 482,63, 30 days R 0,00, 60 days R 2 500,00, 90+ days R 0,00 Apex Holdings mwdh3m4lf4d0 R 3 750,00 60 days overdue Current R 0,00, 30 days R 0,00, 60 days R 3 750,00, 90+ days R 0,00 Moroka Family Trust mwdh3m4lf4d0 R 125,00 Not yet overdue Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": [
+          {
+            "text": "Moroka Family Trust mwdh3m4lf4d0",
+            "sw": 235,
+            "cw": 215
+          }
+        ],
+        "title": {
+          "text": "Debtors",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "debtors-widget",
+            "w": 352,
+            "h": 452
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 25,
+        "extra": null
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "x": 280,
+        "y": 1078,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 248,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation -R 25,52 Difference -R 25,52 Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 286 499,98 Client ledgers R 286 525,50 Last reconciliation Never reconciled Awaiting approval 3",
+        "truncated": [],
+        "title": {
+          "text": "Trust position",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "trust-position-widget",
+            "w": 720,
+            "h": 248
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "x": 280,
+        "y": 1350,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 577,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance 3 of 5 active clients without completed FICA Apex Holdings mwdh3m4lf4d0 Not started 0 days Moroka Family Trust mwdh3m4lf4d0 In progress 0 days QuickCollect Services mwdh3m4lf4d0 Not started 0 days Incomplete profiles",
+        "truncated": [
+          {
+            "text": "Apex Holdings mwdh3m4lf4d0",
+            "sw": 199,
+            "cw": 116
+          },
+          {
+            "text": "Moroka Family Trust mwdh3m4lf4d0",
+            "sw": 235,
+            "cw": 117
+          },
+          {
+            "text": "QuickCollect Services mwdh3m4lf4d0",
+            "sw": 247,
+            "cw": 116
+          }
+        ],
+        "title": {
+          "text": "FICA outstanding",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "fica-outstanding-widget",
+            "w": 352,
+            "h": 577
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 320,
+        "extra": null
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 648,
+        "y": 1350,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 577,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS TASKS Team spec mwdh75ji4fe0 Healthy 0/9 Apex Annual Returns mwdh3m4lf4d0 Apex Holdings mwdh3m4lf4d0 Healthy 0/9 Ndlovu Property Dispute mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 0/9 QC Debt Recovery #1 mwdh3m4lf4d0 QuickCollect Services mwdh3m4lf4d0 Healthy 0/9 Apex Shareholder Agreement mwdh3m4lf4d0 Apex Holdings mwdh3m4lf4d0 Healthy 0/9 Ndlovu v RAF mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 0/9 Estate Late Peter Moroka mwdh3m4lf4d0 Moroka Family Trust mwdh3m4lf4d0 Healthy 2/9 Website Redesign Acme Corp Unknown 0/0 View all matt",
+        "truncated": [
+          {
+            "text": "Apex Annual Returns mwdh3m4lf4d0",
+            "sw": 246,
+            "cw": 182
+          },
+          {
+            "text": "Ndlovu Property Dispute mwdh3m4lf4d0",
+            "sw": 270,
+            "cw": 182
+          },
+          {
+            "text": "QC Debt Recovery #1 mwdh3m4lf4d0",
+            "sw": 249,
+            "cw": 182
+          },
+          {
+            "text": "QuickCollect Services mwdh3m4lf4d0",
+            "sw": 200,
+            "cw": 182
+          },
+          {
+            "text": "Apex Shareholder Agreement mwdh3m4lf4d0",
+            "sw": 302,
+            "cw": 182
+          },
+          {
+            "text": "Ndlovu v RAF mwdh3m4lf4d0",
+            "sw": 196,
+            "cw": 182
+          },
+          {
+            "text": "Estate Late Peter Moroka mwdh3m4lf4d0",
+            "sw": 274,
+            "cw": 182
+          },
+          {
+            "text": "Moroka Family Trust mwdh3m4lf4d0",
+            "sw": 191,
+            "cw": 182
+          }
+        ],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 352,
+            "h": 577
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "containerWidth": 350,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 182
+            },
+            "Status": {
+              "visible": true,
+              "w": 48
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": false,
+              "w": 0
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 8,
+          "truncatedNames": 6,
+          "rows": [
+            {
+              "name": "Team spec mwdh75ji4fe0",
+              "nameTruncated": false,
+              "nameW": 182,
+              "nameSW": 182,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Apex Annual Returns mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 246,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Ndlovu Property Dispute mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 270,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "QC Debt Recovery #1 mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 249,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Apex Shareholder Agreement mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 302,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Ndlovu v RAF mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 196,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Estate Late Peter Moroka mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 274,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Website Redesign",
+              "nameTruncated": false,
+              "nameW": 182,
+              "nameSW": 182,
+              "badgeTone": "neutral",
+              "badgeW": 20,
+              "labelText": "Unknown",
+              "labelSrOnly": true
+            }
+          ]
+        }
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "x": 280,
+        "y": 1943,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 305,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 7 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": [],
+        "title": {
+          "text": "Sensitive eventsLast 7 days",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "sensitive-events-widget",
+            "w": 720,
+            "h": 305
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 280,
+        "y": 2272,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 670,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\" 3 minutes ago BA Bob Admin logged 3h on task \"Execution -- warrant / attachment\" 3 minutes ago AO Alice Owner sent fee note INV-0005 3 minutes ago AO Alice Owner approved fee note INV-0005 3 minutes ago AO Alice Owner created a draft fee note 3 minutes ago AO Alice Owner logged 1h on task \"Post-execution -- filing & compliance\" 3 minutes ago CM Carol Member removed a member from the matter team 5 minutes ago CM Carol Member added a member to the matter team 5 minutes ago BA Bob Admin made a team member th",
+        "truncated": [
+          {
+            "text": "Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdh3m4lf4d0-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\"",
+            "sw": 903,
+            "cw": 536
+          }
+        ],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 720,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "seeded-alice-1440-light": {
+    "audience": "owner",
+    "htmlClass": "light",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 174,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 8 Hours logged 19,3h First week 0,0h, latest week 19,3h, peak 19,3h in week 6 of 6. Billable % 100,0% Overdue tasks 0",
+        "truncated": [],
+        "title": null,
+        "minContrast": 7.05,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 366,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 2.64,
+        "lowContrast": [
+          {
+            "text": "Nothing in the diary today",
+            "contrast": 2.64,
+            "fg": "lab(65.1376 -0.85035 -6.67907)",
+            "fontSize": "14px"
+          }
+        ],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 1136,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 280,
+        "y": 496,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 452,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work R 19 425,00 10h 30m of unbilled time R 0 R 4 k R 8 k R 12 k R 16 k Alice Owner Bob Admin Carol Member R 15 k R 3,6 k R 825 Unbilled WIP: 3 bars; highest Alice Owner R 15 000,00, lowest Carol Member R 825,00. View as table Disbursements not yet billed R 0,00",
+        "truncated": [],
+        "title": {
+          "text": "Unbilled WIP",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "unbilled-wip-widget",
+            "w": 560,
+            "h": 452
+          },
+          {
+            "tag": "div",
+            "slot": "chart-card",
+            "testid": null,
+            "w": 518,
+            "h": 180
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 106,
+        "extra": {
+          "hasChart": true,
+          "variant": "firm",
+          "svg": {
+            "w": 518,
+            "h": 136,
+            "left": 301,
+            "right": 819
+          },
+          "widgetRect": {
+            "left": 280,
+            "right": 840
+          },
+          "yTicks": [
+            {
+              "text": "Alice Owner",
+              "left": 339,
+              "right": 407,
+              "clippedLeft": false
+            },
+            {
+              "text": "Bob Admin",
+              "left": 346,
+              "right": 407,
+              "clippedLeft": false
+            },
+            {
+              "text": "Carol Member",
+              "left": 327,
+              "right": 407,
+              "clippedLeft": false
+            }
+          ],
+          "valueLabels": [
+            {
+              "text": "R 15 k",
+              "left": 747,
+              "right": 781,
+              "clippedRight": false
+            },
+            {
+              "text": "R 3,6 k",
+              "left": 503,
+              "right": 542,
+              "clippedRight": false
+            },
+            {
+              "text": "R 825",
+              "left": 444,
+              "right": 477,
+              "clippedRight": false
+            }
+          ],
+          "bars": [
+            {
+              "w": 321,
+              "h": 24
+            },
+            {
+              "w": 77,
+              "h": 24
+            },
+            {
+              "w": 18,
+              "h": 24
+            }
+          ],
+          "xTicks": [
+            {
+              "text": "R 0",
+              "left": 412,
+              "right": 430,
+              "clipped": false
+            },
+            {
+              "text": "R 4 k",
+              "left": 492,
+              "right": 521,
+              "clipped": false
+            },
+            {
+              "text": "R 8 k",
+              "left": 578,
+              "right": 606,
+              "clipped": false
+            },
+            {
+              "text": "R 12 k",
+              "left": 661,
+              "right": 694,
+              "clipped": false
+            },
+            {
+              "text": "R 16 k",
+              "left": 746,
+              "right": 780,
+              "clipped": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "x": 856,
+        "y": 496,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 452,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 4 clients owe fees Acme Corp R 8 625,00 Not yet overdue Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdh3m4lf4d0 R 7 982,63 45 days overdue Current R 5 482,63, 30 days R 0,00, 60 days R 2 500,00, 90+ days R 0,00 Apex Holdings mwdh3m4lf4d0 R 3 750,00 60 days overdue Current R 0,00, 30 days R 0,00, 60 days R 3 750,00, 90+ days R 0,00 Moroka Family Trust mwdh3m4lf4d0 R 125,00 Not yet overdue Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": [],
+        "title": {
+          "text": "Debtors",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "debtors-widget",
+            "w": 560,
+            "h": 452
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 25,
+        "extra": null
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "x": 280,
+        "y": 964,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 248,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation -R 25,52 Difference -R 25,52 Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 286 499,98 Client ledgers R 286 525,50 Last reconciliation Never reconciled Awaiting approval 3",
+        "truncated": [],
+        "title": {
+          "text": "Trust position",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "trust-position-widget",
+            "w": 1136,
+            "h": 248
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "x": 280,
+        "y": 1236,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 577,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance 3 of 5 active clients without completed FICA Apex Holdings mwdh3m4lf4d0 Not started 0 days Moroka Family Trust mwdh3m4lf4d0 In progress 0 days QuickCollect Services mwdh3m4lf4d0 Not started 0 days Incomplete profiles",
+        "truncated": [],
+        "title": {
+          "text": "FICA outstanding",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "fica-outstanding-widget",
+            "w": 560,
+            "h": 577
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 320,
+        "extra": null
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 856,
+        "y": 1236,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 577,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS HOURS TASKS Team spec mwdh75ji4fe0 Healthy 0h 0/9 Apex Annual Returns mwdh3m4lf4d0 Apex Holdings mwdh3m4lf4d0 Healthy 0h 0/9 Ndlovu Property Dispute mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 0h 0/9 QC Debt Recovery #1 mwdh3m4lf4d0 QuickCollect Services mwdh3m4lf4d0 Healthy 1.0h 0/9 Apex Shareholder Agreement mwdh3m4lf4d0 Apex Holdings mwdh3m4lf4d0 Healthy 1.5h 0/9 Ndlovu v RAF mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 9.8h 0/9 Estate Late Peter Moroka mwdh3m4lf4d0 Moroka Family Trust mwdh3m4lf4d0 Healthy 7.0h 2/9 Website Redesign ",
+        "truncated": [
+          {
+            "text": "Apex Shareholder Agreement mwdh3m4lf4d0",
+            "sw": 302,
+            "cw": 286
+          }
+        ],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 6.22,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "button.inline-flex items-center justify-center whitespace-nowrap font-medium transition"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 560,
+            "h": 577
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "containerWidth": 558,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 286
+            },
+            "Status": {
+              "visible": true,
+              "w": 96
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": true,
+              "w": 48
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 8,
+          "truncatedNames": 1,
+          "rows": [
+            {
+              "name": "Team spec mwdh75ji4fe0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Apex Annual Returns mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Ndlovu Property Dispute mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "QC Debt Recovery #1 mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Apex Shareholder Agreement mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 286,
+              "nameSW": 302,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Ndlovu v RAF mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Estate Late Peter Moroka mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Website Redesign",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "neutral",
+              "badgeW": 86,
+              "labelText": "Unknown",
+              "labelSrOnly": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "x": 280,
+        "y": 1829,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 305,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 7 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": [],
+        "title": {
+          "text": "Sensitive eventsLast 7 days",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "sensitive-events-widget",
+            "w": 1136,
+            "h": 305
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 280,
+        "y": 2158,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 670,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\" 3 minutes ago BA Bob Admin logged 3h on task \"Execution -- warrant / attachment\" 3 minutes ago AO Alice Owner sent fee note INV-0005 3 minutes ago AO Alice Owner approved fee note INV-0005 3 minutes ago AO Alice Owner created a draft fee note 4 minutes ago AO Alice Owner logged 1h on task \"Post-execution -- filing & compliance\" 4 minutes ago CM Carol Member removed a member from the matter team 5 minutes ago CM Carol Member added a member to the matter team 5 minutes ago BA Bob Admin made a team member th",
+        "truncated": [],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 1136,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "seeded-alice-1440-dark": {
+    "audience": "owner",
+    "htmlClass": "dark",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 174,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 8 Hours logged 19,3h First week 0,0h, latest week 19,3h, peak 19,3h in week 6 of 6. Billable % 100,0% Overdue tasks 0",
+        "truncated": [],
+        "title": null,
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 366,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 1136,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 280,
+        "y": 496,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 452,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work R 19 425,00 10h 30m of unbilled time R 0 R 4 k R 8 k R 12 k R 16 k Alice Owner Bob Admin Carol Member R 15 k R 3,6 k R 825 Unbilled WIP: 3 bars; highest Alice Owner R 15 000,00, lowest Carol Member R 825,00. View as table Disbursements not yet billed R 0,00",
+        "truncated": [],
+        "title": {
+          "text": "Unbilled WIP",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "unbilled-wip-widget",
+            "w": 560,
+            "h": 452
+          },
+          {
+            "tag": "div",
+            "slot": "chart-card",
+            "testid": null,
+            "w": 518,
+            "h": 180
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 106,
+        "extra": {
+          "hasChart": true,
+          "variant": "firm",
+          "svg": {
+            "w": 518,
+            "h": 136,
+            "left": 301,
+            "right": 819
+          },
+          "widgetRect": {
+            "left": 280,
+            "right": 840
+          },
+          "yTicks": [
+            {
+              "text": "Alice Owner",
+              "left": 339,
+              "right": 407,
+              "clippedLeft": false
+            },
+            {
+              "text": "Bob Admin",
+              "left": 346,
+              "right": 407,
+              "clippedLeft": false
+            },
+            {
+              "text": "Carol Member",
+              "left": 327,
+              "right": 407,
+              "clippedLeft": false
+            }
+          ],
+          "valueLabels": [
+            {
+              "text": "R 15 k",
+              "left": 747,
+              "right": 781,
+              "clippedRight": false
+            },
+            {
+              "text": "R 3,6 k",
+              "left": 503,
+              "right": 542,
+              "clippedRight": false
+            },
+            {
+              "text": "R 825",
+              "left": 444,
+              "right": 477,
+              "clippedRight": false
+            }
+          ],
+          "bars": [
+            {
+              "w": 321,
+              "h": 24
+            },
+            {
+              "w": 77,
+              "h": 24
+            },
+            {
+              "w": 18,
+              "h": 24
+            }
+          ],
+          "xTicks": [
+            {
+              "text": "R 0",
+              "left": 412,
+              "right": 430,
+              "clipped": false
+            },
+            {
+              "text": "R 4 k",
+              "left": 492,
+              "right": 521,
+              "clipped": false
+            },
+            {
+              "text": "R 8 k",
+              "left": 578,
+              "right": 606,
+              "clipped": false
+            },
+            {
+              "text": "R 12 k",
+              "left": 661,
+              "right": 694,
+              "clipped": false
+            },
+            {
+              "text": "R 16 k",
+              "left": 746,
+              "right": 780,
+              "clipped": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "x": 856,
+        "y": 496,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 452,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 4 clients owe fees Acme Corp R 8 625,00 Not yet overdue Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdh3m4lf4d0 R 7 982,63 45 days overdue Current R 5 482,63, 30 days R 0,00, 60 days R 2 500,00, 90+ days R 0,00 Apex Holdings mwdh3m4lf4d0 R 3 750,00 60 days overdue Current R 0,00, 30 days R 0,00, 60 days R 3 750,00, 90+ days R 0,00 Moroka Family Trust mwdh3m4lf4d0 R 125,00 Not yet overdue Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": [],
+        "title": {
+          "text": "Debtors",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "debtors-widget",
+            "w": 560,
+            "h": 452
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 25,
+        "extra": null
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "x": 280,
+        "y": 964,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 248,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation -R 25,52 Difference -R 25,52 Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 286 499,98 Client ledgers R 286 525,50 Last reconciliation Never reconciled Awaiting approval 3",
+        "truncated": [],
+        "title": {
+          "text": "Trust position",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "trust-position-widget",
+            "w": 1136,
+            "h": 248
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "x": 280,
+        "y": 1236,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 577,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance 3 of 5 active clients without completed FICA Apex Holdings mwdh3m4lf4d0 Not started 0 days Moroka Family Trust mwdh3m4lf4d0 In progress 0 days QuickCollect Services mwdh3m4lf4d0 Not started 0 days Incomplete profiles",
+        "truncated": [],
+        "title": {
+          "text": "FICA outstanding",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "fica-outstanding-widget",
+            "w": 560,
+            "h": 577
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 320,
+        "extra": null
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 856,
+        "y": 1236,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 577,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS HOURS TASKS Team spec mwdh75ji4fe0 Healthy 0h 0/9 Apex Annual Returns mwdh3m4lf4d0 Apex Holdings mwdh3m4lf4d0 Healthy 0h 0/9 Ndlovu Property Dispute mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 0h 0/9 QC Debt Recovery #1 mwdh3m4lf4d0 QuickCollect Services mwdh3m4lf4d0 Healthy 1.0h 0/9 Apex Shareholder Agreement mwdh3m4lf4d0 Apex Holdings mwdh3m4lf4d0 Healthy 1.5h 0/9 Ndlovu v RAF mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 9.8h 0/9 Estate Late Peter Moroka mwdh3m4lf4d0 Moroka Family Trust mwdh3m4lf4d0 Healthy 7.0h 2/9 Website Redesign ",
+        "truncated": [
+          {
+            "text": "Apex Shareholder Agreement mwdh3m4lf4d0",
+            "sw": 302,
+            "cw": 286
+          }
+        ],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 5.84,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 560,
+            "h": 577
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "containerWidth": 558,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 286
+            },
+            "Status": {
+              "visible": true,
+              "w": 96
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": true,
+              "w": 48
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 8,
+          "truncatedNames": 1,
+          "rows": [
+            {
+              "name": "Team spec mwdh75ji4fe0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Apex Annual Returns mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Ndlovu Property Dispute mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "QC Debt Recovery #1 mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Apex Shareholder Agreement mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 286,
+              "nameSW": 302,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Ndlovu v RAF mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Estate Late Peter Moroka mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Website Redesign",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "neutral",
+              "badgeW": 86,
+              "labelText": "Unknown",
+              "labelSrOnly": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "x": 280,
+        "y": 1829,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 305,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 7 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": [],
+        "title": {
+          "text": "Sensitive eventsLast 7 days",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "sensitive-events-widget",
+            "w": 1136,
+            "h": 305
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 280,
+        "y": 2158,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 670,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\" 3 minutes ago BA Bob Admin logged 3h on task \"Execution -- warrant / attachment\" 4 minutes ago AO Alice Owner sent fee note INV-0005 4 minutes ago AO Alice Owner approved fee note INV-0005 4 minutes ago AO Alice Owner created a draft fee note 4 minutes ago AO Alice Owner logged 1h on task \"Post-execution -- filing & compliance\" 4 minutes ago CM Carol Member removed a member from the matter team 5 minutes ago CM Carol Member added a member to the matter team 5 minutes ago BA Bob Admin made a team member th",
+        "truncated": [],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 1136,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "seeded-carol-1024-light": {
+    "audience": "feeEarner",
+    "htmlClass": "light",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 2.64,
+        "lowContrast": [
+          {
+            "text": "Nothing in the diary today",
+            "contrast": 2.64,
+            "fg": "lab(65.1376 -0.85035 -6.67907)",
+            "fontSize": "14px"
+          }
+        ],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 720,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "x": 280,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 250,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": [],
+        "title": {
+          "text": "My tasks",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "my-tasks-widget",
+            "w": 352,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 648,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time 1h 30m Billable time not yet on a fee note, oldest from 12 Nov 2026 Open timesheet",
+        "truncated": [],
+        "title": null,
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 250
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 105,
+        "extra": {
+          "hasChart": false,
+          "variant": "personal"
+        }
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 280,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 670,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS TASKS Team spec mwdh75ji4fe0 Healthy 0/9 Ndlovu v RAF mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 0/9 View all matters →",
+        "truncated": [
+          {
+            "text": "Ndlovu v RAF mwdh3m4lf4d0",
+            "sw": 196,
+            "cw": 182
+          }
+        ],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "button.inline-flex items-center justify-center whitespace-nowrap font-medium transition"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 352,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 405,
+        "extra": {
+          "containerWidth": 350,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 182
+            },
+            "Status": {
+              "visible": true,
+              "w": 48
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": false,
+              "w": 0
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 2,
+          "truncatedNames": 1,
+          "rows": [
+            {
+              "name": "Team spec mwdh75ji4fe0",
+              "nameTruncated": false,
+              "nameW": 182,
+              "nameSW": 182,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Ndlovu v RAF mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 196,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            }
+          ]
+        }
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 648,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 670,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\" 4 minutes ago BA Bob Admin logged 3h on task \"Execution -- warrant / attachment\" 4 minutes ago CM Carol Member removed a member from the matter team 5 minutes ago CM Carol Member added a member to the matter team 5 minutes ago BA Bob Admin made a team member the matter lead 5 minutes ago BA Bob Admin changed a matter team member's role to member 5 minutes ago AO Alice Owner added a member to the matter team 5 minutes ago AO Alice Owner opened the matter from template \"Litigation (Personal Injury / General",
+        "truncated": [
+          {
+            "text": "Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\"",
+            "sw": 417,
+            "cw": 168
+          },
+          {
+            "text": "Bob Admin logged 3h on task \"Execution -- warrant / attachment\"",
+            "sw": 372,
+            "cw": 168
+          },
+          {
+            "text": "Carol Member removed a member from the matter team",
+            "sw": 315,
+            "cw": 168
+          },
+          {
+            "text": "Carol Member added a member to the matter team",
+            "sw": 287,
+            "cw": 168
+          },
+          {
+            "text": "Bob Admin made a team member the matter lead",
+            "sw": 277,
+            "cw": 168
+          },
+          {
+            "text": "Bob Admin changed a matter team member's role to member",
+            "sw": 345,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner added a member to the matter team",
+            "sw": 275,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner opened the matter from template \"Litigation (Personal Injury / General)\"",
+            "sw": 476,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdh3m4lf4d0)",
+            "sw": 493,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdh3m4lf4d0-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\"",
+            "sw": 903,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner linked adverse party \"Road Accident Fund\" to the matter",
+            "sw": 391,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner created a draft fee note",
+            "sw": 205,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner logged 1h on task \"Issue summons / combined summons\"",
+            "sw": 397,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner started tracking prescription (prescribes 13 September 2029)",
+            "sw": 420,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner sent fee note INV-0003",
+            "sw": 205,
+            "cw": 168
+          }
+        ],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 352,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "seeded-carol-1024-dark": {
+    "audience": "feeEarner",
+    "htmlClass": "dark",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 720,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "x": 280,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 250,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": [],
+        "title": {
+          "text": "My tasks",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "my-tasks-widget",
+            "w": 352,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 648,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time 1h 30m Billable time not yet on a fee note, oldest from 12 Nov 2026 Open timesheet",
+        "truncated": [],
+        "title": null,
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 250
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 105,
+        "extra": {
+          "hasChart": false,
+          "variant": "personal"
+        }
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 280,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 670,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS TASKS Team spec mwdh75ji4fe0 Healthy 0/9 Ndlovu v RAF mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 0/9 View all matters →",
+        "truncated": [
+          {
+            "text": "Ndlovu v RAF mwdh3m4lf4d0",
+            "sw": 196,
+            "cw": 182
+          }
+        ],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 352,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 405,
+        "extra": {
+          "containerWidth": 350,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 182
+            },
+            "Status": {
+              "visible": true,
+              "w": 48
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": false,
+              "w": 0
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 2,
+          "truncatedNames": 1,
+          "rows": [
+            {
+              "name": "Team spec mwdh75ji4fe0",
+              "nameTruncated": false,
+              "nameW": 182,
+              "nameSW": 182,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            },
+            {
+              "name": "Ndlovu v RAF mwdh3m4lf4d0",
+              "nameTruncated": true,
+              "nameW": 182,
+              "nameSW": 196,
+              "badgeTone": "success",
+              "badgeW": 20,
+              "labelText": "Healthy",
+              "labelSrOnly": true
+            }
+          ]
+        }
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 648,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 670,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\" 4 minutes ago BA Bob Admin logged 3h on task \"Execution -- warrant / attachment\" 4 minutes ago CM Carol Member removed a member from the matter team 5 minutes ago CM Carol Member added a member to the matter team 5 minutes ago BA Bob Admin made a team member the matter lead 5 minutes ago BA Bob Admin changed a matter team member's role to member 5 minutes ago AO Alice Owner added a member to the matter team 6 minutes ago AO Alice Owner opened the matter from template \"Litigation (Personal Injury / General",
+        "truncated": [
+          {
+            "text": "Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\"",
+            "sw": 417,
+            "cw": 168
+          },
+          {
+            "text": "Bob Admin logged 3h on task \"Execution -- warrant / attachment\"",
+            "sw": 372,
+            "cw": 168
+          },
+          {
+            "text": "Carol Member removed a member from the matter team",
+            "sw": 315,
+            "cw": 168
+          },
+          {
+            "text": "Carol Member added a member to the matter team",
+            "sw": 287,
+            "cw": 168
+          },
+          {
+            "text": "Bob Admin made a team member the matter lead",
+            "sw": 277,
+            "cw": 168
+          },
+          {
+            "text": "Bob Admin changed a matter team member's role to member",
+            "sw": 345,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner added a member to the matter team",
+            "sw": 275,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner opened the matter from template \"Litigation (Personal Injury / General)\"",
+            "sw": 476,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdh3m4lf4d0)",
+            "sw": 493,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdh3m4lf4d0-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\"",
+            "sw": 903,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner linked adverse party \"Road Accident Fund\" to the matter",
+            "sw": 391,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner created a draft fee note",
+            "sw": 205,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner logged 1h on task \"Issue summons / combined summons\"",
+            "sw": 397,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner started tracking prescription (prescribes 13 September 2029)",
+            "sw": 420,
+            "cw": 168
+          },
+          {
+            "text": "Alice Owner sent fee note INV-0003",
+            "sw": 205,
+            "cw": 168
+          }
+        ],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 352,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "seeded-carol-1440-light": {
+    "audience": "feeEarner",
+    "htmlClass": "light",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 2.64,
+        "lowContrast": [
+          {
+            "text": "Nothing in the diary today",
+            "contrast": 2.64,
+            "fg": "lab(65.1376 -0.85035 -6.67907)",
+            "fontSize": "14px"
+          }
+        ],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 1136,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "x": 280,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": [],
+        "title": {
+          "text": "My tasks",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "my-tasks-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 856,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time 1h 30m Billable time not yet on a fee note, oldest from 12 Nov 2026 Open timesheet",
+        "truncated": [],
+        "title": null,
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 121,
+        "extra": {
+          "hasChart": false,
+          "variant": "personal"
+        }
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 280,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 670,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS HOURS TASKS Team spec mwdh75ji4fe0 Healthy 0h 0/9 Ndlovu v RAF mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 9.8h 0/9 View all matters →",
+        "truncated": [],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 6.22,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80",
+          "button.inline-flex items-center justify-center whitespace-nowrap font-medium transition"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 560,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 405,
+        "extra": {
+          "containerWidth": 558,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 286
+            },
+            "Status": {
+              "visible": true,
+              "w": 96
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": true,
+              "w": 48
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 2,
+          "truncatedNames": 0,
+          "rows": [
+            {
+              "name": "Team spec mwdh75ji4fe0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Ndlovu v RAF mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 856,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 670,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\" 4 minutes ago BA Bob Admin logged 3h on task \"Execution -- warrant / attachment\" 4 minutes ago CM Carol Member removed a member from the matter team 6 minutes ago CM Carol Member added a member to the matter team 6 minutes ago BA Bob Admin made a team member the matter lead 6 minutes ago BA Bob Admin changed a matter team member's role to member 6 minutes ago AO Alice Owner added a member to the matter team 6 minutes ago AO Alice Owner opened the matter from template \"Litigation (Personal Injury / General",
+        "truncated": [
+          {
+            "text": "Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\"",
+            "sw": 417,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner opened the matter from template \"Litigation (Personal Injury / General)\"",
+            "sw": 476,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdh3m4lf4d0)",
+            "sw": 493,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdh3m4lf4d0-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\"",
+            "sw": 903,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner linked adverse party \"Road Accident Fund\" to the matter",
+            "sw": 391,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner logged 1h on task \"Issue summons / combined summons\"",
+            "sw": 397,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner started tracking prescription (prescribes 13 September 2029)",
+            "sw": 420,
+            "cw": 376
+          }
+        ],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 7.57,
+        "lowContrast": [],
+        "whiteSurfaces": [
+          "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+        ],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 560,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "seeded-carol-1440-dark": {
+    "audience": "feeEarner",
+    "htmlClass": "dark",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 1136,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "x": 280,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": [],
+        "title": {
+          "text": "My tasks",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "my-tasks-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 856,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time 1h 30m Billable time not yet on a fee note, oldest from 12 Nov 2026 Open timesheet",
+        "truncated": [],
+        "title": null,
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 121,
+        "extra": {
+          "hasChart": false,
+          "variant": "personal"
+        }
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 280,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 670,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS HOURS TASKS Team spec mwdh75ji4fe0 Healthy 0h 0/9 Ndlovu v RAF mwdh3m4lf4d0 Sipho Ndlovu mwdh3m4lf4d0 Healthy 9.8h 0/9 View all matters →",
+        "truncated": [],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 560,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 405,
+        "extra": {
+          "containerWidth": 558,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 286
+            },
+            "Status": {
+              "visible": true,
+              "w": 96
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": true,
+              "w": 48
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 2,
+          "truncatedNames": 0,
+          "rows": [
+            {
+              "name": "Team spec mwdh75ji4fe0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            },
+            {
+              "name": "Ndlovu v RAF mwdh3m4lf4d0",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "success",
+              "badgeW": 76,
+              "labelText": "Healthy",
+              "labelSrOnly": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 856,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 670,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\" 4 minutes ago BA Bob Admin logged 3h on task \"Execution -- warrant / attachment\" 4 minutes ago CM Carol Member removed a member from the matter team 6 minutes ago CM Carol Member added a member to the matter team 6 minutes ago BA Bob Admin made a team member the matter lead 6 minutes ago BA Bob Admin changed a matter team member's role to member 6 minutes ago AO Alice Owner added a member to the matter team 6 minutes ago AO Alice Owner opened the matter from template \"Litigation (Personal Injury / General",
+        "truncated": [
+          {
+            "text": "Carol Member logged 1h 30m on task \"Execution -- warrant / attachment\"",
+            "sw": 417,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner opened the matter from template \"Litigation (Personal Injury / General)\"",
+            "sw": 476,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdh3m4lf4d0)",
+            "sw": 493,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdh3m4lf4d0-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\"",
+            "sw": 903,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner linked adverse party \"Road Accident Fund\" to the matter",
+            "sw": 391,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner logged 1h on task \"Issue summons / combined summons\"",
+            "sw": 397,
+            "cw": 376
+          },
+          {
+            "text": "Alice Owner started tracking prescription (prescribes 13 September 2029)",
+            "sw": 420,
+            "cw": 376
+          }
+        ],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 6.74,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 560,
+            "h": 670
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  }
+}

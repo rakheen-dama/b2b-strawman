@@ -1,0 +1,78 @@
+{
+ "1024-light": {
+  "tabsToChart": 28,
+  "keyboard": {
+   "tag": "svg",
+   "cls": "recharts-surface",
+   "focusVisible": true,
+   "outline": "solid 2px lab(52.8717 -45.7819 -2.8493)",
+   "outlineOffset": "2px",
+   "boxShadow": "none"
+  },
+  "mouseClick": {
+   "tag": "svg",
+   "cls": "recharts-surface",
+   "focusVisible": false,
+   "outline": "none 5px oklab(0.579996 -0.129818 -0.00679168 / 0.5)",
+   "outlineOffset": "0px",
+   "boxShadow": "none"
+  }
+ },
+ "1024-dark": {
+  "tabsToChart": 28,
+  "keyboard": {
+   "tag": "svg",
+   "cls": "recharts-surface",
+   "focusVisible": true,
+   "outline": "solid 2px lab(69.3224 -52.2772 -5.23559)",
+   "outlineOffset": "2px",
+   "boxShadow": "none"
+  },
+  "mouseClick": {
+   "tag": "svg",
+   "cls": "recharts-surface",
+   "focusVisible": false,
+   "outline": "none 5px oklab(0.719994 -0.149426 -0.0130581 / 0.5)",
+   "outlineOffset": "0px",
+   "boxShadow": "none"
+  }
+ },
+ "1440-light": {
+  "tabsToChart": 28,
+  "keyboard": {
+   "tag": "svg",
+   "cls": "recharts-surface",
+   "focusVisible": true,
+   "outline": "solid 2px lab(52.8717 -45.7819 -2.8493)",
+   "outlineOffset": "2px",
+   "boxShadow": "none"
+  },
+  "mouseClick": {
+   "tag": "svg",
+   "cls": "recharts-surface",
+   "focusVisible": false,
+   "outline": "none 5px oklab(0.579996 -0.129818 -0.00679168 / 0.5)",
+   "outlineOffset": "0px",
+   "boxShadow": "none"
+  }
+ },
+ "1440-dark": {
+  "tabsToChart": 28,
+  "keyboard": {
+   "tag": "svg",
+   "cls": "recharts-surface",
+   "focusVisible": true,
+   "outline": "solid 2px lab(69.3224 -52.2772 -5.23559)",
+   "outlineOffset": "2px",
+   "boxShadow": "none"
+  },
+  "mouseClick": {
+   "tag": "svg",
+   "cls": "recharts-surface",
+   "focusVisible": false,
+   "outline": "none 5px oklab(0.719994 -0.149426 -0.0130581 / 0.5)",
+   "outlineOffset": "0px",
+   "boxShadow": "none"
+  }
+ }
+}

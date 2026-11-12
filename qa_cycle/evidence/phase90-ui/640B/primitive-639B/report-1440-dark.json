@@ -1,0 +1,155 @@
+{
+  "fullPageArtifact": {
+    "settled": [
+      321,
+      77,
+      18
+    ],
+    "rightAfterFullPage": [
+      34,
+      8,
+      2
+    ],
+    "after3s": [
+      321,
+      77,
+      18
+    ]
+  },
+  "a_hover": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Alice Owner Unbilled WIP R 15 000,00"
+  },
+  "a_afterMouseOut": {
+    "present": true,
+    "visibility": "hidden",
+    "text": ""
+  },
+  "b_tabsToChart": 28,
+  "b_focused": {
+    "inChart": true,
+    "inWidget": true,
+    "tag": "svg",
+    "cls": "recharts-surface",
+    "role": "application",
+    "label": "R 0R 4 kR 8 kR 12 kR 16 kAlice OwnerBob AdminCarol MemberR 1"
+  },
+  "b_onFocus": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Alice Owner Unbilled WIP R 15 000,00"
+  },
+  "b_arrowRight": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Alice Owner Unbilled WIP R 15 000,00"
+  },
+  "b_arrowRight2": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Alice Owner Unbilled WIP R 15 000,00"
+  },
+  "b_arrowLeft": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Bob Admin Unbilled WIP R 3 600,00"
+  },
+  "b_focusRing": {
+    "outline": "none 5px oklab(0.719994 -0.149426 -0.0130581 / 0.5)",
+    "boxShadow": "none"
+  },
+  "d_figureNamedCount": 1,
+  "d_srSummary": [
+    "Unbilled WIP: 3 bars; highest Alice Owner R 15 000,00, lowest Carol Member R 825,00."
+  ],
+  "c_tablesBefore": 0,
+  "c_tablesAfter": 1,
+  "c_tablesInPage": 1,
+  "c_toggleLabelAfter": "Hide table",
+  "c_tableText": "Unbilled WIP\nFEE EARNER\tUNBILLED WIP\nAlice Owner\tR 15 000,00\nBob Admin\tR 3 600,00\nCarol Member\tR 825,00",
+  "interactiveConsole": [],
+  "e": {
+    "skeletonSample": {
+      "t": 2181,
+      "skeleton": true,
+      "chart": false,
+      "widgetH": 451.5,
+      "wipChartH": 180,
+      "skeletonH": 180,
+      "cellH": 451.5,
+      "widgetTop": 498,
+      "nextCellTop": 498
+    },
+    "loaded": {
+      "t": 10535,
+      "skeleton": false,
+      "chart": true,
+      "widgetH": 451.5,
+      "wipChartH": 180,
+      "skeletonH": null,
+      "cellH": 451.5,
+      "widgetTop": 496,
+      "nextCellTop": 496
+    },
+    "heightDelta": 0,
+    "wipChartDelta": 0,
+    "samplesWithSkeleton": 71,
+    "firstAndLastSamples": [
+      {
+        "t": 2181,
+        "skeleton": true,
+        "chart": false,
+        "widgetH": 451.5,
+        "wipChartH": 180,
+        "skeletonH": 180,
+        "cellH": 451.5,
+        "widgetTop": 498,
+        "nextCellTop": 498
+      },
+      {
+        "t": 6526,
+        "skeleton": false,
+        "chart": true,
+        "widgetH": 451.5,
+        "wipChartH": 180,
+        "skeletonH": null,
+        "cellH": 451.5,
+        "widgetTop": 496,
+        "nextCellTop": 496
+      }
+    ],
+    "layoutShifts": [
+      {
+        "value": 0.003280430178125536,
+        "hadRecentInput": false,
+        "sources": [
+          {
+            "node": "DIV.flex flex-col gap-0 p-0",
+            "prev": {
+              "y": 802,
+              "h": 98
+            },
+            "cur": {
+              "y": 741,
+              "h": 159
+            }
+          },
+          {
+            "node": "DIV.ml-auto flex shrink-0 items-center gap-2",
+            "prev": {
+              "y": 20,
+              "h": 32
+            },
+            "cur": {
+              "y": 19,
+              "h": 34
+            }
+          }
+        ]
+      }
+    ],
+    "cls": 0.003280430178125536
+  },
+  "throttledConsole": []
+}

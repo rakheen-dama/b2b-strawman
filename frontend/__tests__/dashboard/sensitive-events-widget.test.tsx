@@ -133,12 +133,24 @@ describe("SensitiveEventsWidget", () => {
 
     // INFO pill must not be rendered.
     expect(screen.queryByTestId("sensitive-count-INFO")).not.toBeInTheDocument();
+
+    // Severity = token + icon + the uppercase label; same pill contract as the audit log.
+    const pill = (el: HTMLElement) => el.querySelector('[data-testid="severity-pill"]');
+    expect(pill(notice)).toHaveAttribute("data-severity", "NOTICE");
+    expect(pill(notice)).toHaveAttribute("data-tone", "info");
+    expect(pill(warning)).toHaveAttribute("data-tone", "warning");
+    expect(pill(critical)).toHaveAttribute("data-tone", "danger");
+    expect(pill(critical)).toHaveTextContent("CRITICAL");
   });
 
   it("shows the empty state when there are zero recent CRITICAL/WARNING events", () => {
     render(withCaps(<SensitiveEventsWidget orgSlug="acme" facets={[]} recent={[]} />));
 
-    expect(screen.getByTestId("sensitive-events-empty")).toBeInTheDocument();
+    const empty = screen.getByTestId("sensitive-events-empty");
+    expect(empty.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "compact"
+    );
     expect(screen.getByText("No sensitive events in the last 7 days.")).toBeInTheDocument();
   });
 

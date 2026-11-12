@@ -1,0 +1,72 @@
+{
+  "fullPageArtifact": {
+    "settled": [
+      126,
+      30,
+      7
+    ],
+    "rightAfterFullPage": [
+      28,
+      7,
+      2
+    ],
+    "after3s": [
+      126,
+      30,
+      7
+    ]
+  },
+  "a_hover": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Alice Owner Unbilled WIP R 15 000,00"
+  },
+  "a_afterMouseOut": {
+    "present": true,
+    "visibility": "hidden",
+    "text": ""
+  },
+  "b_tabsToChart": 28,
+  "b_focused": {
+    "inChart": true,
+    "inWidget": true,
+    "tag": "svg",
+    "cls": "recharts-surface",
+    "role": "application",
+    "label": "R 0R 8 kR 16 kAlice OwnerBob AdminCarol MemberR 15 kR 3,6 kR"
+  },
+  "b_onFocus": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Alice Owner Unbilled WIP R 15 000,00"
+  },
+  "b_arrowRight": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Alice Owner Unbilled WIP R 15 000,00"
+  },
+  "b_arrowRight2": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Alice Owner Unbilled WIP R 15 000,00"
+  },
+  "b_arrowLeft": {
+    "present": true,
+    "visibility": "visible",
+    "text": "Bob Admin Unbilled WIP R 3 600,00"
+  },
+  "b_focusRing": {
+    "outline": "none 5px oklab(0.719994 -0.149426 -0.0130581 / 0.5)",
+    "boxShadow": "none"
+  },
+  "d_figureNamedCount": 1,
+  "d_srSummary": [
+    "Unbilled WIP: 3 bars; highest Alice Owner R 15 000,00, lowest Carol Member R 825,00."
+  ],
+  "c_tablesBefore": 0,
+  "c_tablesAfter": 1,
+  "c_tablesInPage": 1,
+  "c_toggleLabelAfter": "Hide table",
+  "c_tableText": "Unbilled WIP\nFEE EARNER\tUNBILLED WIP\nAlice Owner\tR 15 000,00\nBob Admin\tR 3 600,00\nCarol Member\tR 825,00",
+  "interactiveConsole": []
+}

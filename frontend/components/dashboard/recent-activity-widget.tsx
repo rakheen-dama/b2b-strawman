@@ -11,10 +11,10 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { RelativeDate } from "@/components/ui/relative-date";
+import { WidgetCard } from "@/components/dashboard/widget-parts";
 import type { CrossMatterActivityItem } from "@/lib/dashboard-types";
 
 interface RecentActivityWidgetProps {
@@ -47,85 +47,73 @@ function getInitials(name: string | null | undefined): string {
 }
 
 export function RecentActivityWidget({ items, orgSlug: _orgSlug }: RecentActivityWidgetProps) {
+  // One shell for all three states (640B): same title style and testid whether loaded or not.
   if (items === null) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm italic">
-            Unable to load activity. Please try again.
-          </p>
-        </CardContent>
-      </Card>
+      <WidgetCard data-testid="recent-activity-widget" title="Recent Activity">
+        <p className="text-muted-foreground text-sm italic">
+          Unable to load activity. Please try again.
+        </p>
+      </WidgetCard>
     );
   }
 
   if (items.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <EmptyState
-            icon={Activity}
-            title="No recent activity"
-            description="Activity will appear as your team works on matters."
-          />
-        </CardContent>
-      </Card>
+      <WidgetCard data-testid="recent-activity-widget" title="Recent Activity">
+        <EmptyState
+          variant="compact"
+          icon={Activity}
+          title="No recent activity"
+          description="Activity will appear as your team works on matters."
+        />
+      </WidgetCard>
     );
   }
 
   return (
-    <Card data-testid="recent-activity-widget">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-0 pt-0">
-        {items.map((item, idx) => {
-          const Icon = getEventIcon(item.eventType);
-          return (
-            <div
-              key={item.eventId}
-              className={cn(
-                "flex items-center gap-2 rounded-md px-2 py-1.5",
-                idx % 2 === 1 && "bg-slate-50/50 dark:bg-slate-900/50"
-              )}
-            >
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                {getInitials(item.actorName)}
-              </span>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <Icon className="size-3 shrink-0 text-slate-400 dark:text-slate-500" />
-                  <p className="truncate text-xs text-slate-700 dark:text-slate-300">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-              <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
-                <RelativeDate iso={item.occurredAt} />
-              </span>
-            </div>
-          );
-        })}
-      </CardContent>
-      <CardFooter className="pt-0">
+    <WidgetCard
+      data-testid="recent-activity-widget"
+      title="Recent Activity"
+      footer={
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 text-xs text-slate-500"
+          className="text-muted-foreground h-7 text-xs"
           onClick={() => {
             /* Future: link to full activity view */
           }}
         >
           View all activity &rarr;
         </Button>
-      </CardFooter>
-    </Card>
+      }
+    >
+      {items.map((item, idx) => {
+        const Icon = getEventIcon(item.eventType);
+        return (
+          <div
+            key={item.eventId}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-2 py-1.5",
+              idx % 2 === 1 && "bg-muted/50"
+            )}
+          >
+            <span className="bg-muted text-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-medium">
+              {getInitials(item.actorName)}
+            </span>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <Icon className="text-muted-foreground size-3 shrink-0" />
+                <p className="text-foreground truncate text-xs">{item.description}</p>
+              </div>
+            </div>
+            <span className="text-muted-foreground shrink-0 text-[10px]">
+              <RelativeDate iso={item.occurredAt} />
+            </span>
+          </div>
+        );
+      })}
+    </WidgetCard>
   );
 }

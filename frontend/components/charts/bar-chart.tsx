@@ -63,6 +63,8 @@ interface BarChartPresetProps extends ChartCardSlots {
   maxBars?: number;
   /** Chart area height in px. */
   height?: number;
+  /** No visible header — the caller's card carries the title (see ChartCard). Default off. */
+  hideHeader?: boolean;
 }
 
 type LabelPlacement = "margin" | "tip" | "above";
@@ -177,6 +179,7 @@ export function BarChartPreset({
   footer,
   className,
   "data-testid": testId,
+  hideHeader = false,
 }: BarChartPresetProps) {
   const reduceMotion = usePrefersReducedMotion();
 
@@ -272,6 +275,7 @@ export function BarChartPreset({
       footer={footer}
       className={className}
       data-testid={testId}
+      hideHeader={hideHeader}
       toggle={<ChartTableToggle caption={title} columns={table.columns} rows={table.rows} />}
     >
       <ChartContainer config={config} className="aspect-auto w-full" style={{ height }}>

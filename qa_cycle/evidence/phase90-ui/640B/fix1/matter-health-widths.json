@@ -1,0 +1,450 @@
+{
+ "alice-1024-light": {
+  "containerContentBox": 310,
+  "columnsVisible": [
+   "Matter",
+   "Status",
+   "Tasks"
+  ],
+  "colWidths": {
+   "Matter": 182,
+   "Status": 48,
+   "Progress": 0,
+   "Hours": 0,
+   "Tasks": 48
+  },
+  "rowCount": 5,
+  "truncated": 4,
+  "statusLabel": "sr-only",
+  "rows": [
+   {
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdi302oedb6",
+    "nameW": 182,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu v RAF — Depth II mwdi302oedb6",
+    "nameW": 182,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Apex Holdings — Shareholders' Agreement Review mwdi302oedb6",
+    "nameW": 182,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu — transition repro mwdi302oedb6",
+    "nameW": 182,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Website Redesign",
+    "nameW": 182,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   }
+  ]
+ },
+ "alice-1024-dark": {
+  "containerContentBox": 310,
+  "columnsVisible": [
+   "Matter",
+   "Status",
+   "Tasks"
+  ],
+  "colWidths": {
+   "Matter": 182,
+   "Status": 48,
+   "Progress": 0,
+   "Hours": 0,
+   "Tasks": 48
+  },
+  "rowCount": 5,
+  "truncated": 4,
+  "statusLabel": "sr-only",
+  "rows": [
+   {
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdi302oedb6",
+    "nameW": 182,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu v RAF — Depth II mwdi302oedb6",
+    "nameW": 182,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Apex Holdings — Shareholders' Agreement Review mwdi302oedb6",
+    "nameW": 182,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu — transition repro mwdi302oedb6",
+    "nameW": 182,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Website Redesign",
+    "nameW": 182,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   }
+  ]
+ },
+ "alice-1280-light": {
+  "containerContentBox": 438,
+  "columnsVisible": [
+   "Matter",
+   "Status",
+   "Tasks"
+  ],
+  "colWidths": {
+   "Matter": 310,
+   "Status": 48,
+   "Progress": 0,
+   "Hours": 0,
+   "Tasks": 48
+  },
+  "rowCount": 5,
+  "truncated": 2,
+  "statusLabel": "sr-only",
+  "rows": [
+   {
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdi302oedb6",
+    "nameW": 310,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu v RAF — Depth II mwdi302oedb6",
+    "nameW": 310,
+    "truncated": false,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Apex Holdings — Shareholders' Agreement Review mwdi302oedb6",
+    "nameW": 310,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu — transition repro mwdi302oedb6",
+    "nameW": 310,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Website Redesign",
+    "nameW": 310,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   }
+  ]
+ },
+ "alice-1280-dark": {
+  "containerContentBox": 438,
+  "columnsVisible": [
+   "Matter",
+   "Status",
+   "Tasks"
+  ],
+  "colWidths": {
+   "Matter": 310,
+   "Status": 48,
+   "Progress": 0,
+   "Hours": 0,
+   "Tasks": 48
+  },
+  "rowCount": 5,
+  "truncated": 2,
+  "statusLabel": "sr-only",
+  "rows": [
+   {
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdi302oedb6",
+    "nameW": 310,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu v RAF — Depth II mwdi302oedb6",
+    "nameW": 310,
+    "truncated": false,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Apex Holdings — Shareholders' Agreement Review mwdi302oedb6",
+    "nameW": 310,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu — transition repro mwdi302oedb6",
+    "nameW": 310,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Website Redesign",
+    "nameW": 310,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   }
+  ]
+ },
+ "alice-1440-light": {
+  "containerContentBox": 518,
+  "columnsVisible": [
+   "Matter",
+   "Status",
+   "Progress",
+   "Hours",
+   "Tasks"
+  ],
+  "colWidths": {
+   "Matter": 246,
+   "Status": 48,
+   "Progress": 80,
+   "Hours": 48,
+   "Tasks": 48
+  },
+  "rowCount": 5,
+  "truncated": 4,
+  "statusLabel": "sr-only",
+  "rows": [
+   {
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdi302oedb6",
+    "nameW": 246,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu v RAF — Depth II mwdi302oedb6",
+    "nameW": 246,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Apex Holdings — Shareholders' Agreement Review mwdi302oedb6",
+    "nameW": 246,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu — transition repro mwdi302oedb6",
+    "nameW": 246,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Website Redesign",
+    "nameW": 246,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   }
+  ]
+ },
+ "alice-1440-dark": {
+  "containerContentBox": 518,
+  "columnsVisible": [
+   "Matter",
+   "Status",
+   "Progress",
+   "Hours",
+   "Tasks"
+  ],
+  "colWidths": {
+   "Matter": 246,
+   "Status": 48,
+   "Progress": 80,
+   "Hours": 48,
+   "Tasks": 48
+  },
+  "rowCount": 5,
+  "truncated": 4,
+  "statusLabel": "sr-only",
+  "rows": [
+   {
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdi302oedb6",
+    "nameW": 246,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu v RAF — Depth II mwdi302oedb6",
+    "nameW": 246,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Apex Holdings — Shareholders' Agreement Review mwdi302oedb6",
+    "nameW": 246,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu — transition repro mwdi302oedb6",
+    "nameW": 246,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Website Redesign",
+    "nameW": 246,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   }
+  ]
+ },
+ "alice-1920-light": {
+  "containerContentBox": 358,
+  "columnsVisible": [
+   "Matter",
+   "Status",
+   "Tasks"
+  ],
+  "colWidths": {
+   "Matter": 230,
+   "Status": 48,
+   "Progress": 0,
+   "Hours": 0,
+   "Tasks": 48
+  },
+  "rowCount": 5,
+  "truncated": 4,
+  "statusLabel": "sr-only",
+  "rows": [
+   {
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdi302oedb6",
+    "nameW": 230,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu v RAF — Depth II mwdi302oedb6",
+    "nameW": 230,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Apex Holdings — Shareholders' Agreement Review mwdi302oedb6",
+    "nameW": 230,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu — transition repro mwdi302oedb6",
+    "nameW": 230,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Website Redesign",
+    "nameW": 230,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   }
+  ]
+ },
+ "alice-1920-dark": {
+  "containerContentBox": 358,
+  "columnsVisible": [
+   "Matter",
+   "Status",
+   "Tasks"
+  ],
+  "colWidths": {
+   "Matter": 230,
+   "Status": 48,
+   "Progress": 0,
+   "Hours": 0,
+   "Tasks": 48
+  },
+  "rowCount": 5,
+  "truncated": 4,
+  "statusLabel": "sr-only",
+  "rows": [
+   {
+    "name": "Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdi302oedb6",
+    "nameW": 230,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu v RAF — Depth II mwdi302oedb6",
+    "nameW": 230,
+    "truncated": true,
+    "label": "Healthy",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Apex Holdings — Shareholders' Agreement Review mwdi302oedb6",
+    "nameW": 230,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Ndlovu — transition repro mwdi302oedb6",
+    "nameW": 230,
+    "truncated": true,
+    "label": "Unknown",
+    "labelSrOnly": true
+   },
+   {
+    "name": "Website Redesign",
+    "nameW": 230,
+    "truncated": false,
+    "label": "Unknown",
+    "labelSrOnly": true
+   }
+  ]
+ },
+ "carol-1920-light": {
+  "containerContentBox": 566,
+  "empty": "Matter Health No matters yet Create a matter to start tracking health status."
+ }
+}

@@ -1,0 +1,336 @@
+{
+  "seeded-alice-1440-light": {
+    "audience": "owner",
+    "htmlClass": "light",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 174,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 7 Hours logged 13,8h First week 0,0h, latest week 13,8h, peak 13,8h in week 6 of 6. Billable % 100,0% Overdue tasks 0",
+        "truncated": []
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 114,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": []
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 364,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work R 16 250,00 6h 30m of unbilled time Alice Owner Oldest from 12 Nov 2026 6h 30m R 16 250,00 Disbursements not yet billed R 0,00",
+        "truncated": []
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 364,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 3 clients owe fees Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdfydfyb528 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Moroka Family Trust mwdfydfyb528 Not yet overdue R 125,00 Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": []
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 256,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation -R 25,52 Difference -R 25,52 Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 286 499,98 Client ledgers R 286 525,50 Last reconciliation Never reconciled Awaiting approval 3",
+        "truncated": []
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 577,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance 3 of 5 active clients without completed FICA Apex Holdings mwdfydfyb528 Not started 0 days Moroka Family Trust mwdfydfyb528 In progress 0 days QuickCollect Services mwdfydfyb528 Not started 0 days Incomplete profiles",
+        "truncated": []
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 577,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate Matter Status PROGRESS HOURS TASKS Apex Annual Returns mwdfydfyb528 Apex Holdings mwdfydfyb528 0% 0h 0/9 Ndlovu Property Dispute mwdfydfyb528 Sipho Ndlovu mwdfydfyb528 0% 0h 0/9 QC Debt Recovery #1 mwdfydfyb528 QuickCollect Services mwdfydfyb528 0% 1.0h 0/9 Apex Shareholder Agreement mwdfydfyb528 Apex Holdings mwdfydfyb528 0% 30m 0/9 Ndlovu v RAF mwdfydfyb528 Sipho Ndlovu mwdfydfyb528 0% 5.3h 0/9 Estate Late Peter Moroka mwdfydfyb528 Moroka Family Trust mwdfydfyb528 22% 7.0h 2/9 Website Redesign Acme Corp 0% 0h 0/0 View all matters →",
+        "truncated": [
+          "Apex Annual Returns mwdfydfyb528",
+          "Ndlovu Property Dispute mwdfydfyb528",
+          "QC Debt Recovery #1 mwdfydfyb528",
+          "Apex Shareholder Agreement mwdfydfyb528",
+          "Estate Late Peter Moroka mwdfydfyb528"
+        ]
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 209,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 5 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": []
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 702,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity AO Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdfydfyb528) just now AO Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdfydfyb528-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\" just now AO Alice Owner opened the matter from template \"Commercial (Corporate & Contract)\" 1 minute ago AO Alice Owner logged 6h on task \"Prepare Liquidation & Distribution account\" 1 minute ago AO Alice Owner completed task \"Open estate bank account\" 1 minute ago AO Alice Owner claimed task \"Open estate bank account\" 1 minute ago AO",
+        "truncated": []
+      }
+    ]
+  },
+  "seeded-alice-1440-dark": {
+    "audience": "owner",
+    "htmlClass": "dark",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 174,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 7 Hours logged 13,8h First week 0,0h, latest week 13,8h, peak 13,8h in week 6 of 6. Billable % 100,0% Overdue tasks 0",
+        "truncated": []
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 114,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": []
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 364,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work R 16 250,00 6h 30m of unbilled time Alice Owner Oldest from 12 Nov 2026 6h 30m R 16 250,00 Disbursements not yet billed R 0,00",
+        "truncated": []
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 364,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 3 clients owe fees Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdfydfyb528 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Moroka Family Trust mwdfydfyb528 Not yet overdue R 125,00 Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": []
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 256,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation -R 25,52 Difference -R 25,52 Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 286 499,98 Client ledgers R 286 525,50 Last reconciliation Never reconciled Awaiting approval 3",
+        "truncated": []
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 577,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance 3 of 5 active clients without completed FICA Apex Holdings mwdfydfyb528 Not started 0 days Moroka Family Trust mwdfydfyb528 In progress 0 days QuickCollect Services mwdfydfyb528 Not started 0 days Incomplete profiles",
+        "truncated": []
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 577,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate Matter Status PROGRESS HOURS TASKS Apex Annual Returns mwdfydfyb528 Apex Holdings mwdfydfyb528 0% 0h 0/9 Ndlovu Property Dispute mwdfydfyb528 Sipho Ndlovu mwdfydfyb528 0% 0h 0/9 QC Debt Recovery #1 mwdfydfyb528 QuickCollect Services mwdfydfyb528 0% 1.0h 0/9 Apex Shareholder Agreement mwdfydfyb528 Apex Holdings mwdfydfyb528 0% 30m 0/9 Ndlovu v RAF mwdfydfyb528 Sipho Ndlovu mwdfydfyb528 0% 5.3h 0/9 Estate Late Peter Moroka mwdfydfyb528 Moroka Family Trust mwdfydfyb528 22% 7.0h 2/9 Website Redesign Acme Corp 0% 0h 0/0 View all matters →",
+        "truncated": [
+          "Apex Annual Returns mwdfydfyb528",
+          "Ndlovu Property Dispute mwdfydfyb528",
+          "QC Debt Recovery #1 mwdfydfyb528",
+          "Apex Shareholder Agreement mwdfydfyb528",
+          "Estate Late Peter Moroka mwdfydfyb528"
+        ]
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 209,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 5 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": []
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 702,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity AO Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdfydfyb528) just now AO Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdfydfyb528-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\" 1 minute ago AO Alice Owner opened the matter from template \"Commercial (Corporate & Contract)\" 1 minute ago AO Alice Owner logged 6h on task \"Prepare Liquidation & Distribution account\" 1 minute ago AO Alice Owner completed task \"Open estate bank account\" 1 minute ago AO Alice Owner claimed task \"Open estate bank account\" 1 minute ag",
+        "truncated": []
+      }
+    ]
+  },
+  "seeded-carol-1440-light": {
+    "audience": "feeEarner",
+    "htmlClass": "light",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 114,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": []
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 114,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": []
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 114,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time Open timesheet No unbilled time. Billable time you record stays here until it is on a fee note.",
+        "truncated": []
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 702,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate Matter Status PROGRESS HOURS TASKS Team spec mwdg1znd92c0 0% 0h 0/9 Ndlovu v RAF mwdfydfyb528 Sipho Ndlovu mwdfydfyb528 0% 5.3h 0/9 View all matters →",
+        "truncated": []
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 702,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member removed a member from the matter team just now CM Carol Member added a member to the matter team just now BA Bob Admin made a team member the matter lead just now BA Bob Admin changed a matter team member's role to member just now AO Alice Owner added a member to the matter team just now AO Alice Owner opened the matter from template \"Litigation (Personal Injury / General)\" just now AO Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdfydfyb528) 1 minute ago AO Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdfyd",
+        "truncated": [
+          "Alice Owner opened the matter from template \"Litigation (Personal Injury / General)\"",
+          "Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdfydfyb528)",
+          "Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdfydfyb528-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\"",
+          "Alice Owner linked adverse party \"Road Accident Fund\" to the matter",
+          "Alice Owner logged 1h on task \"Issue summons / combined summons\"",
+          "Alice Owner started tracking prescription (prescribes 13 September 2029)"
+        ]
+      }
+    ]
+  },
+  "seeded-carol-1440-dark": {
+    "audience": "feeEarner",
+    "htmlClass": "dark",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 114,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": []
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 114,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": []
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 114,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time Open timesheet No unbilled time. Billable time you record stays here until it is on a fee note.",
+        "truncated": []
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 702,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate Matter Status PROGRESS HOURS TASKS Team spec mwdg1znd92c0 0% 0h 0/9 Ndlovu v RAF mwdfydfyb528 Sipho Ndlovu mwdfydfyb528 0% 5.3h 0/9 View all matters →",
+        "truncated": []
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 702,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity CM Carol Member removed a member from the matter team just now CM Carol Member added a member to the matter team just now BA Bob Admin made a team member the matter lead just now BA Bob Admin changed a matter team member's role to member just now AO Alice Owner added a member to the matter team just now AO Alice Owner opened the matter from template \"Litigation (Personal Injury / General)\" just now AO Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdfydfyb528) 1 minute ago AO Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdfyd",
+        "truncated": [
+          "Alice Owner opened the matter from template \"Litigation (Personal Injury / General)\"",
+          "Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwdfydfyb528)",
+          "Alice Owner generated document \"engagement-letter-litigation-ndlovu-v-raf-mwdfydfyb528-2026-11-12.pdf\" from template \"Engagement Letter — Litigation\"",
+          "Alice Owner linked adverse party \"Road Accident Fund\" to the matter",
+          "Alice Owner logged 1h on task \"Issue summons / combined summons\"",
+          "Alice Owner started tracking prescription (prescribes 13 September 2029)"
+        ]
+      }
+    ]
+  }
+}

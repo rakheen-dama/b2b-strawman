@@ -43,6 +43,11 @@ interface ChartCardProps extends Omit<ChartCardSlots, "loading" | "error"> {
   toggle?: React.ReactNode;
   /** The chart (ready state). */
   children: React.ReactNode;
+  /**
+   * Renders no header: the caller's own card shows the title (640B Unbilled WIP). The figure keeps
+   * its accessible name (`aria-label={title}`). Default off.
+   */
+  hideHeader?: boolean;
 }
 
 export function ChartCard({
@@ -60,6 +65,7 @@ export function ChartCard({
   className,
   "data-testid": testId,
   children,
+  hideHeader = false,
 }: ChartCardProps) {
   return (
     <Card
@@ -71,10 +77,12 @@ export function ChartCard({
       data-testid={testId}
       className={cn("gap-4 py-5", className)}
     >
-      <CardHeader className="px-5">
-        <CardTitle className="text-foreground">{title}</CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
-      </CardHeader>
+      {hideHeader ? null : (
+        <CardHeader className="px-5">
+          <CardTitle className="text-foreground">{title}</CardTitle>
+          {description ? <CardDescription>{description}</CardDescription> : null}
+        </CardHeader>
+      )}
       <CardContent className="px-5">
         {state === "loading" ? (
           <Skeleton className="w-full" style={{ height }} />

@@ -171,6 +171,29 @@ describe("BarChartPreset", () => {
     expect(screen.queryByTestId("name-label")).toBeNull();
   });
 
+  it("shows its title as the header by default; hideHeader keeps only the figure's name (640B)", () => {
+    const props = {
+      title: "WIP by fee earner",
+      data: wip,
+      categoryKey: "earner",
+      series: [{ key: "wip", label: "WIP" }],
+      format: "currency" as const,
+    };
+    render(<BarChartPreset {...props} />);
+    expect(screen.getByText("WIP by fee earner")).toBeInTheDocument();
+    expect(document.querySelector('[data-slot="card-header"]')).not.toBeNull();
+    cleanup();
+
+    render(<BarChartPreset {...props} hideHeader />);
+    const figure = screen.getByRole("figure", { name: "WIP by fee earner" });
+    expect(figure.querySelector('[data-slot="card-header"]')).toBeNull();
+    expect(screen.queryByText("WIP by fee earner")).toBeNull();
+    expect(figure.querySelector('[data-slot="chart-summary"]')?.textContent).toMatch(
+      /^WIP by fee earner: 3 bars;/
+    );
+    expect(within(figure).getByRole("button", { name: "View as table" })).toBeInTheDocument();
+  });
+
   it("folds categories beyond maxBars into one Other bar", () => {
     const data = Array.from({ length: 12 }, (_, i) => ({ earner: `E${i + 1}`, hours: i + 1 }));
     render(

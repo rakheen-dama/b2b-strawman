@@ -16,6 +16,7 @@ import {
  * `palette="ordinal-aging"` draws them in this order. Never colour alone: each row's meter has an
  * accessible name and a visually hidden breakdown of every bucket, and the card a text legend.
  */
+// Legend dots read `color`; StackedMeter colours by index — keep in step with ordinal-aging.
 const BUCKETS: ReadonlyArray<{ key: keyof DebtorBuckets; label: string; color: string }> = [
   { key: "current", label: "Current", color: CHART_THEME.aging.current },
   { key: "d30", label: "30 days", color: CHART_THEME.aging.d30 },

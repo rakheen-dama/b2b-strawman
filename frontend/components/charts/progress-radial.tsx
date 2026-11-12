@@ -2,6 +2,7 @@
 // Server-safe (no "use client"); the caller supplies the label. role="img" + aria-label on the
 // <svg>; the sr-only summary is a sibling (children of role="img" are presentational).
 import { useId } from "react";
+import { CHART_THEME } from "@/lib/chart-theme";
 import { cn } from "@/lib/utils";
 
 export type ProgressRadialTone = "success" | "warning" | "danger" | "info";
@@ -21,7 +22,7 @@ interface ProgressRadialProps {
   className?: string;
 }
 
-export function clampPercent(value: number): number {
+function clampPercent(value: number): number {
   return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
 }
 
@@ -33,8 +34,8 @@ export function ProgressRadial({ value, label, tone, size = 32, className }: Pro
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
-  const fill = tone ? `var(--${tone})` : "var(--chart-1)";
-  const track = tone ? `var(--${tone}-soft)` : "var(--muted)";
+  const fill = tone ? CHART_THEME.status[tone] : CHART_THEME.categorical[0];
+  const track = tone ? CHART_THEME.statusSoft[tone] : CHART_THEME.track;
 
   return (
     <span data-slot="progress-radial" className={cn("inline-flex", className)}>

@@ -19,9 +19,16 @@ export interface StackedMeterSegment {
 export type StackedMeterPalette = "ordinal-aging" | "categorical";
 
 interface StackedMeterProps {
-  /** Drawn in the given order; a segment keeps its colour slot when another is zero. */
+  /**
+   * Drawn in the given order; a segment keeps its colour slot when another is zero. Segments past
+   * the palette's length (5th+ aging, 6th+ categorical) silently reuse its last colour — fold the
+   * extras into one "Other" part instead.
+   */
   segments: StackedMeterSegment[];
-  /** "ordinal-aging": ≤ 4 ordered buckets (current → 90+); "categorical": ≤ 5 named parts. */
+  /**
+   * "ordinal-aging": ≤ 4 ordered buckets (current → 90+); "categorical": ≤ 5 named parts. Extra
+   * segments are clamped to the last colour of the ramp, not cycled.
+   */
   palette: StackedMeterPalette;
   /** Accessible name of the meter. */
   label: string;
@@ -82,7 +89,12 @@ export function StackedMeter({
           className="block"
           data-empty={drawn.length === 0 ? "true" : undefined}
         >
-          <rect data-slot="stacked-meter-track" width="100%" height={height} fill="var(--muted)" />
+          <rect
+            data-slot="stacked-meter-track"
+            width="100%"
+            height={height}
+            fill={CHART_THEME.track}
+          />
           {drawn.map(({ segment, x, width, colour }) => (
             <rect
               key={segment.key}
@@ -104,7 +116,7 @@ export function StackedMeter({
               x2={`${x}%`}
               y1={0}
               y2={height}
-              stroke="var(--card)"
+              stroke={CHART_THEME.surface}
               strokeWidth={2}
             />
           ))}

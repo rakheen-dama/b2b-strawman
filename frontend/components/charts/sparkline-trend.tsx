@@ -3,6 +3,7 @@
 // cannot shift layout. The caller writes the sr summary (first, last and peak points, formatted) —
 // the preset formats nothing. role="img" + aria-label on the <svg>; the summary is a sibling.
 import { useId } from "react";
+import { CHART_THEME } from "@/lib/chart-theme";
 import { cn } from "@/lib/utils";
 
 interface SparklineTrendProps {
@@ -20,6 +21,8 @@ interface SparklineTrendProps {
 const W = 100;
 /** Keeps the 2px stroke inside the box at the min and max. */
 const PAD = 3;
+/** Slot 1 (teal) — a single-series trend takes the first categorical slot. */
+const ACCENT = CHART_THEME.categorical[0];
 
 export function SparklineTrend({
   values,
@@ -69,7 +72,7 @@ export function SparklineTrend({
             x2={W}
             y1={height / 2}
             y2={height / 2}
-            stroke="var(--border)"
+            stroke={CHART_THEME.grid.stroke}
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
           />
@@ -78,14 +81,14 @@ export function SparklineTrend({
             <path
               data-slot="sparkline-trend-area"
               d={`${line} L${W},${height} L0,${height} Z`}
-              fill="var(--chart-1)"
+              fill={ACCENT}
               fillOpacity={0.1}
             />
             <path
               data-slot="sparkline-trend-line"
               d={line}
               fill="none"
-              stroke="var(--chart-1)"
+              stroke={ACCENT}
               strokeWidth={2}
               strokeLinejoin="round"
               strokeLinecap="round"

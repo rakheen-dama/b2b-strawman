@@ -1,6 +1,6 @@
 /**
  * One access rule for every navigation surface (Phase 87 S9, 616E, ADR-341 §12.7.3): the sidebar
- * zones (components/nav-zone.tsx), the command palette, the settings rail and, through
+ * zones (components/shell/app-sidebar.tsx), the command palette, the settings rail and, through
  * lib/settings-nav.ts, the settings family pages' tab strips. A nav entry and a settings tab
  * carry the same three gates, so they cannot disagree. Pure TypeScript (no React, no "use client"):
  * the server family-page seam (components/settings/settings-family-page.tsx) uses it too.

@@ -2,6 +2,7 @@
 
 import { useAuthUser } from "@/lib/auth/client";
 import { getInitials as getBffInitials } from "@/components/auth/user-menu-bff";
+import { SidebarSeparator } from "@/components/ui/sidebar";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
@@ -49,14 +50,14 @@ function UserFooterUI({
 }) {
   return (
     <>
-      <div className="mx-4 border-t border-white/10" />
-      <div className="flex items-center gap-3 px-4 py-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-medium text-white">
+      <SidebarSeparator className="mx-4" />
+      <div className="flex items-center gap-3 px-4 py-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+        <div className="bg-sidebar-accent text-sidebar-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-medium">
           {initials}
         </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white">{name}</p>
-          <p className="truncate text-xs text-white/60">{email}</p>
+        <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+          <p className="text-sidebar-foreground truncate text-sm font-medium">{name}</p>
+          <p className="text-sidebar-foreground/60 truncate text-xs">{email}</p>
         </div>
       </div>
     </>

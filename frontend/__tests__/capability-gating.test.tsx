@@ -24,7 +24,7 @@ vi.mock("@/components/sidebar-user-footer", () => ({
   SidebarUserFooter: () => <div data-testid="sidebar-user-footer" />,
 }));
 
-// Mock command-palette-provider — DesktopSidebar calls useCommandPalette()
+// Mock command-palette-provider — AppSidebar calls useCommandPalette()
 vi.mock("@/components/command-palette-provider", () => ({
   useCommandPalette: vi.fn(() => ({ open: false, setOpen: vi.fn() })),
   CommandPaletteProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -32,7 +32,8 @@ vi.mock("@/components/command-palette-provider", () => ({
 
 import { CapabilityProvider, RequiresCapability } from "@/lib/capabilities";
 import { OrgProfileProvider } from "@/lib/org-profile";
-import { DesktopSidebar } from "@/components/desktop-sidebar";
+import { AppSidebar } from "@/components/shell/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 afterEach(() => {
   cleanup();
@@ -48,7 +49,9 @@ describe("Sidebar capability gating", () => {
           isAdmin={false}
           isOwner={false}
         >
-          <DesktopSidebar slug="test-org" />
+          <SidebarProvider>
+            <AppSidebar slug="test-org" />
+          </SidebarProvider>
         </CapabilityProvider>
       </OrgProfileProvider>
     );
@@ -66,7 +69,9 @@ describe("Sidebar capability gating", () => {
           isAdmin={false}
           isOwner={false}
         >
-          <DesktopSidebar slug="test-org" />
+          <SidebarProvider>
+            <AppSidebar slug="test-org" />
+          </SidebarProvider>
         </CapabilityProvider>
       </OrgProfileProvider>
     );
@@ -86,7 +91,9 @@ describe("Sidebar capability gating", () => {
         terminologyNamespace={null}
       >
         <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
-          <DesktopSidebar slug="test-org" />
+          <SidebarProvider>
+            <AppSidebar slug="test-org" />
+          </SidebarProvider>
         </CapabilityProvider>
       </OrgProfileProvider>
     );

@@ -1,10 +1,11 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuthContext, getCurrentUserInfo } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
 import { getSubscription } from "@/lib/actions/subscription";
-import { DesktopSidebar } from "@/components/desktop-sidebar";
-import { MobileSidebar } from "@/components/mobile-sidebar";
+import { AppSidebar } from "@/components/shell/app-sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SubscriptionBanner } from "@/components/billing/subscription-banner";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -41,6 +42,10 @@ export default async function OrgLayout({
   if (orgSlug !== slug) {
     redirect(`/org/${orgSlug}/dashboard`);
   }
+
+  // The shadcn sidebar's collapse cookie (SIDEBAR_COOKIE_NAME in components/ui/sidebar.tsx), read
+  // server-side so first paint has the right width. No cookie = expanded.
+  const sidebarState = (await cookies()).get("sidebar_state")?.value;
 
   const [capResult, settingsResult, userInfoResult, billingResult] = await Promise.allSettled([
     fetchMyCapabilities(),
@@ -120,8 +125,8 @@ export default async function OrgLayout({
               <Breadcrumbs> and the page {children} sit inside it. */}
           <BreadcrumbLabelProvider>
             <CommandPaletteProvider slug={slug}>
-              <div className="flex min-h-screen">
-                <DesktopSidebar
+              <SidebarProvider defaultOpen={sidebarState !== "false"}>
+                <AppSidebar
                   slug={slug}
                   orgName={orgName}
                   groups={groups}
@@ -134,36 +139,26 @@ export default async function OrgLayout({
                     min-content width, so a wide table or tab strip used to widen this column and
                     the whole document (1440px viewport: 1519px) instead of scrolling in its own
                     box. */}
-                <div className="flex min-w-0 flex-1 flex-col">
+                <SidebarInset className="min-w-0">
                   <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
-                    <MobileSidebar
-                      slug={slug}
-                      orgName={orgName}
-                      groups={groups}
-                      userName={userInfo.name}
-                      userEmail={userInfo.email}
-                      brandColor={brandColor}
-                      logoUrl={logoUrl}
-                    />
+                    {/* Collapses the desktop rail / opens the mobile Sheet ("Toggle menu"). */}
+                    <SidebarTrigger />
                     <Breadcrumbs slug={slug} orgName={orgName} />
                     <div className="ml-auto flex items-center gap-3">
                       <AuthHeaderControls />
                       <NotificationBell orgSlug={slug} />
                     </div>
                   </header>
-                  <main
-                    id="main-content"
-                    className="bg-background min-w-0 flex-1 dark:bg-slate-950"
-                  >
+                  <main id="main-content" className="bg-background min-w-0 flex-1">
                     <SubscriptionProvider billingResponse={billingData}>
                       <SubscriptionBanner billingResponse={billingData} slug={slug} />
-                      <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
+                      <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
                         <ErrorBoundary>{children}</ErrorBoundary>
                       </div>
                     </SubscriptionProvider>
                   </main>
-                </div>
-              </div>
+                </SidebarInset>
+              </SidebarProvider>
             </CommandPaletteProvider>
           </BreadcrumbLabelProvider>
         </RecentItemsProvider>

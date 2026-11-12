@@ -1,5 +1,5 @@
 import { Card } from "@b2mash/ui/card";
-import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
+import { ProgressRadial } from "@/components/charts/progress-radial";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import type { MatterHealthMetrics } from "@/lib/dashboard-types";
 import type { MemberHoursEntry } from "@/lib/dashboard-types";
@@ -34,7 +34,7 @@ export function OverviewMetricsStrip({
       <Card className="px-4 py-3">
         <span className="text-muted-foreground text-sm">Tasks</span>
         <div className="mt-1 flex items-center gap-2">
-          <MiniProgressRing value={completionPercent} size={32} />
+          <ProgressRadial value={completionPercent} label="Task completion" size={32} />
           <div>
             <span className="text-lg font-bold tabular-nums">
               {tasksDone}/{totalTasks}

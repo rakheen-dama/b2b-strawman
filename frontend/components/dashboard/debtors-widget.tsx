@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import { MicroStackedBar } from "@/components/dashboard/micro-stacked-bar";
+import { StackedMeter } from "@/components/charts/stacked-meter";
+import { CHART_THEME } from "@/lib/chart-theme";
 import { formatCurrency } from "@/lib/format";
 import type { DebtorBuckets, PaginatedDebtorsResponse } from "@/lib/api/collections";
 import {
@@ -11,14 +12,16 @@ import {
 
 /**
  * Aging buckets, current → 90+ days. Ordered, so they take the one-hue ordinal `--aging-*` ramp
- * (ADR-370) — not the categorical slots, not status colours ("current" is not "good"). Never colour
- * alone: each segment has a title, each row a visually hidden breakdown, and the card a text legend.
+ * (ADR-370) — not the categorical slots, not status colours ("current" is not "good"); the meter's
+ * `palette="ordinal-aging"` draws them in this order. Never colour alone: each row's meter has an
+ * accessible name and a visually hidden breakdown of every bucket, and the card a text legend.
  */
+// Legend dots read `color`; StackedMeter colours by index — keep in step with ordinal-aging.
 const BUCKETS: ReadonlyArray<{ key: keyof DebtorBuckets; label: string; color: string }> = [
-  { key: "current", label: "Current", color: "var(--aging-current)" },
-  { key: "d30", label: "30 days", color: "var(--aging-d30)" },
-  { key: "d60", label: "60 days", color: "var(--aging-d60)" },
-  { key: "d90plus", label: "90+ days", color: "var(--aging-d90plus)" },
+  { key: "current", label: "Current", color: CHART_THEME.aging.current },
+  { key: "d30", label: "30 days", color: CHART_THEME.aging.d30 },
+  { key: "d60", label: "60 days", color: CHART_THEME.aging.d60 },
+  { key: "d90plus", label: "90+ days", color: CHART_THEME.aging.d90plus },
 ];
 
 interface DebtorsWidgetProps {
@@ -78,19 +81,17 @@ export function DebtorsWidget({ slug, data }: DebtorsWidgetProps) {
                       {formatCurrency(debtor.outstandingTotal, debtor.currency)}
                     </span>
                   </div>
-                  <MicroStackedBar
+                  <StackedMeter
+                    palette="ordinal-aging"
                     height={6}
+                    label={`Aging of ${debtor.clientName}'s outstanding fees`}
                     segments={BUCKETS.map((b) => ({
-                      value: debtor.buckets[b.key],
-                      color: b.color,
+                      key: b.key,
                       label: b.label,
+                      value: debtor.buckets[b.key],
+                      valueText: formatCurrency(debtor.buckets[b.key], debtor.currency),
                     }))}
                   />
-                  <span className="sr-only">
-                    {BUCKETS.map(
-                      (b) => `${b.label} ${formatCurrency(debtor.buckets[b.key], debtor.currency)}`
-                    ).join(", ")}
-                  </span>
                 </li>
               ))}
             </ul>

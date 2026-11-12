@@ -44,6 +44,17 @@ export const CHART_THEME = {
     danger: "var(--danger)",
     info: "var(--info)",
   },
+  /** Soft tint of each status colour — the track behind a status-toned ring/meter. */
+  statusSoft: {
+    success: "var(--success-soft)",
+    warning: "var(--warning-soft)",
+    danger: "var(--danger-soft)",
+    info: "var(--info-soft)",
+  },
+  /** Neutral unfilled track behind a meter or progress ring. */
+  track: "var(--muted)",
+  /** The card surface — the spacer gap drawn between touching parts. */
+  surface: "var(--card)",
 
   /** Recessive grid lines. */
   grid: { stroke: "var(--border)", strokeDasharray: "3 3" },

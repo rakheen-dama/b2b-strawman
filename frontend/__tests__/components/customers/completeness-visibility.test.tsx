@@ -3,7 +3,6 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SetupProgressCard } from "@/components/setup/setup-progress-card";
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
-import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 
 function makeSteps(): SetupStep[] {
   return [
@@ -74,11 +73,5 @@ describe("Completeness Visibility (Epic 251B)", () => {
     expect(screen.getByText("Tax Reference")).toBeInTheDocument();
     // Filled fields should NOT appear in the expanded list
     expect(screen.queryByText("Company Name")).not.toBeInTheDocument();
-  });
-
-  it("completeness ring shows percentage via aria-label", () => {
-    render(<MiniProgressRing value={75} size={48} />);
-
-    expect(screen.getByLabelText("75%")).toBeInTheDocument();
   });
 });

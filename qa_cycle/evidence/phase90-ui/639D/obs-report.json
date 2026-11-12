@@ -1,0 +1,662 @@
+{
+  "capturedAt": "2026-11-12T09:26:47.116Z",
+  "head": "faa96b0a8",
+  "report": [
+    {
+      "theme": "light",
+      "w": 1024,
+      "h": 768,
+      "widgetCountAtFirstSight": 1,
+      "widgetCountAfterSettle": 1,
+      "htmlClass": "light",
+      "cssVars": {
+        "--aging-current": "lab(71.5003% 29.0552 39.0238)",
+        "--aging-d30": "lab(60.7096% 39.7123 49.1403)",
+        "--aging-d60": "lab(49.9259% 48.5735 55.9144)",
+        "--aging-d90plus": "lab(39.5537% 44.3848 44.6032)",
+        "--success": "lab(55.4741% -45.4549 30.1606)",
+        "--warning": "lab(70.8468% 20.2319 68.534)",
+        "--danger": "lab(49.1862% 66.0919 46.2066)",
+        "--muted": "lab(95.1124% -.267148 -1.87211)",
+        "--card": "lab(99.5299% -.108749 -.749981)"
+      },
+      "headline": "4",
+      "widgetText": "Debtors Open collections 4 clients owe fees Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdbuk4l1d77 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Apex Holdings mwdbydzhf7ea Not yet overdue R 4 025,00 Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Moroka F",
+      "widgetBox": {
+        "w": 352,
+        "h": 425
+      },
+      "widgetOverflowX": false,
+      "meterCount": 4,
+      "meters": [
+        {
+          "ariaLabel": "Aging of Acme Corp's outstanding fees",
+          "describedById": "_S_1_",
+          "describedByText": "Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 286,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(95.1124 -0.267148 -1.87211)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(71.5003 29.0552 39.0238)",
+              "title": "Current: R 8 625,00"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Sipho Ndlovu mwdbuk4l1d77's outstanding fees",
+          "describedById": "_S_2_",
+          "describedByText": "Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 286,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(95.1124 -0.267148 -1.87211)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(71.5003 29.0552 39.0238)",
+              "title": "Current: R 5 482,63"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Apex Holdings mwdbydzhf7ea's outstanding fees",
+          "describedById": "_S_3_",
+          "describedByText": "Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 286,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(95.1124 -0.267148 -1.87211)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(71.5003 29.0552 39.0238)",
+              "title": "Current: R 4 025,00"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Moroka Family Trust mwdbuk4l1d77's outstanding fees",
+          "describedById": "_S_4_",
+          "describedByText": "Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 286,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(95.1124 -0.267148 -1.87211)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(71.5003 29.0552 39.0238)",
+              "title": "Current: R 125,00"
+            }
+          ],
+          "gaps": []
+        }
+      ],
+      "legendItems": [
+        {
+          "text": "Current",
+          "dot": true,
+          "dotBg": "lab(71.5003 29.0552 39.0238)"
+        },
+        {
+          "text": "30 days",
+          "dot": true,
+          "dotBg": "lab(60.7096 39.7123 49.1403)"
+        },
+        {
+          "text": "60 days",
+          "dot": true,
+          "dotBg": "lab(49.9259 48.5735 55.9144)"
+        },
+        {
+          "text": "90+ days",
+          "dot": true,
+          "dotBg": "lab(39.5537 44.3848 44.6032)"
+        }
+      ],
+      "rows": [
+        "Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Sipho Ndlovu mwdbuk4l1d77 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Apex Holdings mwdbydzhf7ea Not yet overdue R 4 025,00 Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Moroka Family Trust mwdbuk4l1d77 Not yet overdue R 125,00 Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00"
+      ],
+      "console": [
+        "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+      ],
+      "hydrationMessages": []
+    },
+    {
+      "theme": "light",
+      "w": 1440,
+      "h": 900,
+      "widgetCountAtFirstSight": 1,
+      "widgetCountAfterSettle": 1,
+      "htmlClass": "light",
+      "cssVars": {
+        "--aging-current": "lab(71.5003% 29.0552 39.0238)",
+        "--aging-d30": "lab(60.7096% 39.7123 49.1403)",
+        "--aging-d60": "lab(49.9259% 48.5735 55.9144)",
+        "--aging-d90plus": "lab(39.5537% 44.3848 44.6032)",
+        "--success": "lab(55.4741% -45.4549 30.1606)",
+        "--warning": "lab(70.8468% 20.2319 68.534)",
+        "--danger": "lab(49.1862% 66.0919 46.2066)",
+        "--muted": "lab(95.1124% -.267148 -1.87211)",
+        "--card": "lab(99.5299% -.108749 -.749981)"
+      },
+      "headline": "4",
+      "widgetText": "Debtors Open collections 4 clients owe fees Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdbuk4l1d77 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Apex Holdings mwdbydzhf7ea Not yet overdue R 4 025,00 Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Moroka F",
+      "widgetBox": {
+        "w": 560,
+        "h": 425
+      },
+      "widgetOverflowX": false,
+      "meterCount": 4,
+      "meters": [
+        {
+          "ariaLabel": "Aging of Acme Corp's outstanding fees",
+          "describedById": "_S_1_",
+          "describedByText": "Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 494,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(95.1124 -0.267148 -1.87211)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(71.5003 29.0552 39.0238)",
+              "title": "Current: R 8 625,00"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Sipho Ndlovu mwdbuk4l1d77's outstanding fees",
+          "describedById": "_S_2_",
+          "describedByText": "Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 494,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(95.1124 -0.267148 -1.87211)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(71.5003 29.0552 39.0238)",
+              "title": "Current: R 5 482,63"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Apex Holdings mwdbydzhf7ea's outstanding fees",
+          "describedById": "_S_3_",
+          "describedByText": "Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 494,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(95.1124 -0.267148 -1.87211)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(71.5003 29.0552 39.0238)",
+              "title": "Current: R 4 025,00"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Moroka Family Trust mwdbuk4l1d77's outstanding fees",
+          "describedById": "_S_4_",
+          "describedByText": "Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 494,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(95.1124 -0.267148 -1.87211)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(71.5003 29.0552 39.0238)",
+              "title": "Current: R 125,00"
+            }
+          ],
+          "gaps": []
+        }
+      ],
+      "legendItems": [
+        {
+          "text": "Current",
+          "dot": true,
+          "dotBg": "lab(71.5003 29.0552 39.0238)"
+        },
+        {
+          "text": "30 days",
+          "dot": true,
+          "dotBg": "lab(60.7096 39.7123 49.1403)"
+        },
+        {
+          "text": "60 days",
+          "dot": true,
+          "dotBg": "lab(49.9259 48.5735 55.9144)"
+        },
+        {
+          "text": "90+ days",
+          "dot": true,
+          "dotBg": "lab(39.5537 44.3848 44.6032)"
+        }
+      ],
+      "rows": [
+        "Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Sipho Ndlovu mwdbuk4l1d77 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Apex Holdings mwdbydzhf7ea Not yet overdue R 4 025,00 Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Moroka Family Trust mwdbuk4l1d77 Not yet overdue R 125,00 Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00"
+      ],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "theme": "dark",
+      "w": 1024,
+      "h": 768,
+      "widgetCountAtFirstSight": 2,
+      "widgetCountAfterSettle": 1,
+      "htmlClass": "dark",
+      "cssVars": {
+        "--aging-current": "lab(38.7388% 34.1526 35.483)",
+        "--aging-d30": "lab(51.3263% 41.5406 48.1869)",
+        "--aging-d60": "lab(64.3062% 36.2047 45.2853)",
+        "--aging-d90plus": "lab(77.4803% 22.8781 32.4904)",
+        "--success": "lab(67.0945% -45.2256 29.7459)",
+        "--warning": "lab(76.8535% 14.2022 61.9688)",
+        "--danger": "lab(61.0965% 56.6147 33.1618)",
+        "--muted": "lab(14.1047% -.539318 -5.13909)",
+        "--card": "lab(7.73948% -.41344 -4.03315)"
+      },
+      "headline": "4",
+      "widgetText": "Debtors Open collections 4 clients owe fees Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdbuk4l1d77 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Apex Holdings mwdbydzhf7ea Not yet overdue R 4 025,00 Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Moroka F",
+      "widgetBox": {
+        "w": 352,
+        "h": 425
+      },
+      "widgetOverflowX": false,
+      "meterCount": 4,
+      "meters": [
+        {
+          "ariaLabel": "Aging of Acme Corp's outstanding fees",
+          "describedById": "_S_1_",
+          "describedByText": "Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 286,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(14.1047 -0.539318 -5.13909)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(38.7388 34.1526 35.483)",
+              "title": "Current: R 8 625,00"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Sipho Ndlovu mwdbuk4l1d77's outstanding fees",
+          "describedById": "_S_2_",
+          "describedByText": "Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 286,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(14.1047 -0.539318 -5.13909)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(38.7388 34.1526 35.483)",
+              "title": "Current: R 5 482,63"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Apex Holdings mwdbydzhf7ea's outstanding fees",
+          "describedById": "_S_3_",
+          "describedByText": "Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 286,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(14.1047 -0.539318 -5.13909)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(38.7388 34.1526 35.483)",
+              "title": "Current: R 4 025,00"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Moroka Family Trust mwdbuk4l1d77's outstanding fees",
+          "describedById": "_S_4_",
+          "describedByText": "Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 286,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(14.1047 -0.539318 -5.13909)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(38.7388 34.1526 35.483)",
+              "title": "Current: R 125,00"
+            }
+          ],
+          "gaps": []
+        }
+      ],
+      "legendItems": [
+        {
+          "text": "Current",
+          "dot": true,
+          "dotBg": "lab(38.7388 34.1526 35.483)"
+        },
+        {
+          "text": "30 days",
+          "dot": true,
+          "dotBg": "lab(51.3263 41.5406 48.1869)"
+        },
+        {
+          "text": "60 days",
+          "dot": true,
+          "dotBg": "lab(64.3062 36.2047 45.2853)"
+        },
+        {
+          "text": "90+ days",
+          "dot": true,
+          "dotBg": "lab(77.4803 22.8781 32.4904)"
+        }
+      ],
+      "rows": [
+        "Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Sipho Ndlovu mwdbuk4l1d77 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Apex Holdings mwdbydzhf7ea Not yet overdue R 4 025,00 Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Moroka Family Trust mwdbuk4l1d77 Not yet overdue R 125,00 Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00"
+      ],
+      "console": [
+        "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+      ],
+      "hydrationMessages": []
+    },
+    {
+      "theme": "dark",
+      "w": 1440,
+      "h": 900,
+      "widgetCountAtFirstSight": 2,
+      "widgetCountAfterSettle": 1,
+      "htmlClass": "dark",
+      "cssVars": {
+        "--aging-current": "lab(38.7388% 34.1526 35.483)",
+        "--aging-d30": "lab(51.3263% 41.5406 48.1869)",
+        "--aging-d60": "lab(64.3062% 36.2047 45.2853)",
+        "--aging-d90plus": "lab(77.4803% 22.8781 32.4904)",
+        "--success": "lab(67.0945% -45.2256 29.7459)",
+        "--warning": "lab(76.8535% 14.2022 61.9688)",
+        "--danger": "lab(61.0965% 56.6147 33.1618)",
+        "--muted": "lab(14.1047% -.539318 -5.13909)",
+        "--card": "lab(7.73948% -.41344 -4.03315)"
+      },
+      "headline": "4",
+      "widgetText": "Debtors Open collections 4 clients owe fees Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Sipho Ndlovu mwdbuk4l1d77 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Apex Holdings mwdbydzhf7ea Not yet overdue R 4 025,00 Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Moroka F",
+      "widgetBox": {
+        "w": 560,
+        "h": 425
+      },
+      "widgetOverflowX": false,
+      "meterCount": 4,
+      "meters": [
+        {
+          "ariaLabel": "Aging of Acme Corp's outstanding fees",
+          "describedById": "_S_1_",
+          "describedByText": "Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 494,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(14.1047 -0.539318 -5.13909)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(38.7388 34.1526 35.483)",
+              "title": "Current: R 8 625,00"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Sipho Ndlovu mwdbuk4l1d77's outstanding fees",
+          "describedById": "_S_2_",
+          "describedByText": "Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 494,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(14.1047 -0.539318 -5.13909)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(38.7388 34.1526 35.483)",
+              "title": "Current: R 5 482,63"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Apex Holdings mwdbydzhf7ea's outstanding fees",
+          "describedById": "_S_3_",
+          "describedByText": "Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 494,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(14.1047 -0.539318 -5.13909)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(38.7388 34.1526 35.483)",
+              "title": "Current: R 4 025,00"
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "ariaLabel": "Aging of Moroka Family Trust mwdbuk4l1d77's outstanding fees",
+          "describedById": "_S_4_",
+          "describedByText": "Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+          "describedByIsSrOnly": true,
+          "dataEmpty": null,
+          "box": {
+            "w": 494,
+            "h": 6
+          },
+          "track": {
+            "fillAttr": "var(--muted)",
+            "fillComputed": "lab(14.1047 -0.539318 -5.13909)"
+          },
+          "segments": [
+            {
+              "key": "current",
+              "x": "0%",
+              "width": "100%",
+              "fillAttr": "var(--aging-current)",
+              "fillComputed": "lab(38.7388 34.1526 35.483)",
+              "title": "Current: R 125,00"
+            }
+          ],
+          "gaps": []
+        }
+      ],
+      "legendItems": [
+        {
+          "text": "Current",
+          "dot": true,
+          "dotBg": "lab(38.7388 34.1526 35.483)"
+        },
+        {
+          "text": "30 days",
+          "dot": true,
+          "dotBg": "lab(51.3263 41.5406 48.1869)"
+        },
+        {
+          "text": "60 days",
+          "dot": true,
+          "dotBg": "lab(64.3062 36.2047 45.2853)"
+        },
+        {
+          "text": "90+ days",
+          "dot": true,
+          "dotBg": "lab(77.4803 22.8781 32.4904)"
+        }
+      ],
+      "rows": [
+        "Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Sipho Ndlovu mwdbuk4l1d77 Not yet overdue R 5 482,63 Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Apex Holdings mwdbydzhf7ea Not yet overdue R 4 025,00 Current R 4 025,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+        "Moroka Family Trust mwdbuk4l1d77 Not yet overdue R 125,00 Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00"
+      ],
+      "console": [],
+      "hydrationMessages": []
+    }
+  ]
+}

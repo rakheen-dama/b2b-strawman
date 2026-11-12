@@ -1,7 +1,7 @@
 {
-  "commit": "874ba8df5f5b8f53f619694090b5d01b0a8d6211",
-  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-637A, phase90/37A-tokens-palette, after pnpm install --frozen-lockfile)",
+  "commit": "bc7233bf824552f6f2bcd5235caad8b32c64e7b9",
+  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-639A, phase90/39A-pageheader-statcard-hero, node v20.11.1, NODE_OPTIONS='' SHELL=/bin/bash)",
   "exit": 0,
-  "ts": "2026-11-11T22:34:34Z",
-  "summary": "PR #1759 (Phase 90 637A) @874ba8df5: PORTAL-GATE (lint, typecheck, format:check, test, build) exit 0 — 51 files, 284 passed (284)"
+  "ts": "2026-11-12T05:45:43Z",
+  "summary": "PR #1763 (Phase 90 639A) @bc7233bf8 (last packages/ui + portal-affecting commit; f265fc609 frontend tests/comment only, 72c687815 evidence only): PORTAL-GATE exit 0 — 51 files, 284 passed (284); portal /home observed at 1024 light"
 }

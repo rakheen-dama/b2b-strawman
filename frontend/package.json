@@ -28,6 +28,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@formatjs/intl-numberformat": "^9.3.3",
     "@hookform/resolvers": "^5.2.2",
+    "@tanstack/react-table": "8.21.3",
     "@tiptap/core": "^3.22.5",
     "@tiptap/extension-link": "^3.22.5",
     "@tiptap/extension-placeholder": "^3.22.5",

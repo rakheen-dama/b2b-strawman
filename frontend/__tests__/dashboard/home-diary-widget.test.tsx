@@ -68,6 +68,26 @@ describe("HomeDiaryWidget", () => {
     expect(screen.getByTestId("todays-diary-overdue")).toHaveTextContent("1 overdue");
   });
 
+  it("goes two-column at @4xl only with ≥ 4 visible rows (640A)", () => {
+    const events = (n: number) =>
+      Array.from({ length: n }, (_, i) => makeEvent({ id: `t${i}`, title: `Row ${i}` }));
+    const list = () => within(screen.getByTestId("todays-diary")).getByRole("list");
+
+    for (const n of [1, 2, 3]) {
+      render(<HomeDiaryWidget slug="acme" today={TODAY} diaryEvents={events(n)} />);
+      expect(list()).toHaveAttribute("data-columns", "1");
+      expect(list()).not.toHaveClass("@4xl:columns-2");
+      cleanup();
+    }
+    for (const n of [4, 5, 7]) {
+      render(<HomeDiaryWidget slug="acme" today={TODAY} diaryEvents={events(n)} />);
+      expect(list()).toHaveAttribute("data-columns", "2");
+      expect(list()).toHaveClass("@4xl:columns-2");
+      expect(within(list()).getAllByRole("listitem")).toHaveLength(Math.min(n, 5));
+      cleanup();
+    }
+  });
+
   it("an unidentified member gets the distinct message, never the firm's diary", () => {
     render(<HomeDiaryWidget slug="acme" today={TODAY} diaryEvents="unidentified" />);
 

@@ -29,13 +29,10 @@ export function HomeDiaryWidget({ slug, today, diaryEvents }: HomeDiaryWidgetPro
           </Link>
         </CardAction>
       </CardHeader>
-      {/* Full-width row on firm/owner Home (640A): two columns once the card is @4xl (56rem) wide,
-          so the list doesn't stretch; reading order flows down column 1, then column 2. */}
-      <CardContent
-        data-testid="todays-diary"
-        className="@container min-w-0 @4xl:[&>ul]:columns-2 @4xl:[&>ul]:gap-x-8 [&>ul>li]:break-inside-avoid"
-      >
-        <TodaysDiaryList slug={slug} today={today} diaryEvents={diaryEvents} />
+      {/* Full-width row on firm/owner Home (640A): the list goes two-column once the card is @4xl
+          (56rem) wide and holds ≥ 4 rows, so it doesn't stretch; fewer rows stay one column. */}
+      <CardContent data-testid="todays-diary" className="@container min-w-0">
+        <TodaysDiaryList slug={slug} today={today} diaryEvents={diaryEvents} twoColumnsWhenWide />
       </CardContent>
     </Card>
   );

@@ -165,6 +165,10 @@ describe("TodaysAgenda", () => {
       "href",
       "/org/acme/diary?view=day"
     );
+    // My work's agenda column never goes two-column — that's Home's full-width card only (640A).
+    const list = within(screen.getByTestId("todays-diary")).getByRole("list");
+    expect(list).not.toHaveAttribute("data-columns");
+    expect(list).not.toHaveClass("@4xl:columns-2");
   });
 
   it("fails soft when the diary could not be loaded", () => {

@@ -16,6 +16,9 @@ import {
 /** Rows shown before "+n more" — the Diary owns the full day. */
 const MAX_DIARY_ROWS = 5;
 
+/** Fewest visible rows that justify a second column — 1–3 rows split across two columns read as gaps. */
+const MIN_ROWS_FOR_TWO_COLUMNS = 4;
+
 /** Today's diary (today's rows plus the open-overdue band, Phase 87 613D) — used by Home too. */
 export type TodaysDiaryEvents = DiaryEventsResult;
 
@@ -65,16 +68,31 @@ export function TodaysDiary({ slug, today, diaryEvents }: TodaysDiaryProps) {
   );
 }
 
+interface TodaysDiaryListProps extends TodaysDiaryProps {
+  /**
+   * Let the list flow into two columns once its nearest `@container` is `@4xl` (56rem) wide — only
+   * when ≥ 4 rows are visible; fewer stay one column. Home's full-width diary card sets it (640A).
+   */
+  twoColumnsWhenWide?: boolean;
+}
+
 /**
  * Today's rows (≤ 5, then "+n more") plus an "N overdue" link for the open-overdue band, or the
  * unidentified / failed / empty line. No heading — the caller supplies it.
  */
-export function TodaysDiaryList({ slug, today, diaryEvents }: TodaysDiaryProps) {
+export function TodaysDiaryList({
+  slug,
+  today,
+  diaryEvents,
+  twoColumnsWhenWide = false,
+}: TodaysDiaryListProps) {
   // The backend returns today's rows plus the overdue band (dated < today).
   const events = Array.isArray(diaryEvents) ? diaryEvents : [];
   const todaysEvents = events.filter((e) => e.date === today);
   const overdueCount = events.filter((e) => e.date < today).length;
   const hiddenCount = todaysEvents.length - MAX_DIARY_ROWS;
+  const visibleEvents = todaysEvents.slice(0, MAX_DIARY_ROWS);
+  const twoColumns = twoColumnsWhenWide && visibleEvents.length >= MIN_ROWS_FOR_TWO_COLUMNS;
   const diaryHref = todaysDiaryHref(slug);
 
   return (
@@ -94,8 +112,15 @@ export function TodaysDiaryList({ slug, today, diaryEvents }: TodaysDiaryProps) 
       ) : todaysEvents.length === 0 ? (
         <p className="text-sm text-slate-400">Nothing in the diary today</p>
       ) : (
-        <ul className="space-y-0.5">
-          {todaysEvents.slice(0, MAX_DIARY_ROWS).map((event) => (
+        <ul
+          data-columns={twoColumnsWhenWide ? (twoColumns ? "2" : "1") : undefined}
+          className={cn(
+            "space-y-0.5",
+            // Reading order flows down column 1, then column 2.
+            twoColumns && "@4xl:columns-2 @4xl:gap-x-8 [&>li]:break-inside-avoid"
+          )}
+        >
+          {visibleEvents.map((event) => (
             <li key={`${event.kind}:${event.id}`}>
               <DiaryEventRow event={event} slug={slug} />
             </li>

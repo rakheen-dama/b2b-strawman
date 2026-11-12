@@ -183,7 +183,9 @@ describe("rowSpanClass", () => {
   it("maps present-widget count to literal 12-column spans", () => {
     expect(rowSpanClass(1)).toBe("lg:col-span-12");
     expect(rowSpanClass(2)).toBe("lg:col-span-6");
-    expect(rowSpanClass(3)).toBe("lg:col-span-4");
+    // 3-up wraps 2 + 1 (last cell full-width) below 2xl; three-across only from 2xl (640A OBS).
+    expect(rowSpanClass(3)).toBe("lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4");
     expect(rowSpanClass(4)).toBe("lg:col-span-6"); // 4-up wraps 2×2, never quarter cells
+    expect(rowSpanClass(5)).toBe("lg:col-span-12");
   });
 });

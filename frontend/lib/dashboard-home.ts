@@ -171,11 +171,16 @@ function dropEmptyRows(rows: HomeWidget[][]): HomeWidget[][] {
  * 12-column span per present-widget count. Literal class strings so Tailwind sees them. Four-up
  * rows wrap 2×2 at every breakpoint: the app content area is width-capped, so a quarter cell
  * (~230–290px) can't hold the Matter health / FICA / activity tables without truncating them.
+ * Three-up rows wrap 2 + 1 (two halves, then the last cell full-width) below `2xl` and go
+ * three-across only from `2xl` (1536px): a third is ~212px at 1024 and ~350px at 1440, too narrow
+ * for the Matter health / FICA tables, Sensitive event titles or the WIP rows (640A OBS). The
+ * `lg:max-2xl:last:` range rule is inactive at `2xl`, so it never fights `2xl:col-span-4`.
+ * Cells must be the row grid's direct children for `last:` to hit the third cell.
  */
 const ROW_SPAN: Record<number, string> = {
   1: "lg:col-span-12",
   2: "lg:col-span-6",
-  3: "lg:col-span-4",
+  3: "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4",
   4: "lg:col-span-6",
 };
 

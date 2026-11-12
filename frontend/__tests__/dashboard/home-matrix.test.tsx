@@ -312,8 +312,16 @@ describe("Home widget matrix (614B)", () => {
     ]);
     expect(screen.getByTestId("home-cell-kpis")).toHaveClass("lg:col-span-12");
     expect(screen.getByTestId("home-cell-diary")).toHaveClass("lg:col-span-12");
-    expect(screen.getByTestId("home-cell-sensitive")).toHaveClass("lg:col-span-4");
-    expect(screen.getByTestId("home-cell-sensitive")).not.toHaveClass("xl:col-span-3");
+    // Three-up rows wrap 2 + 1 below 2xl: halves, then the last cell full-width (640A OBS).
+    const sensitiveCell = screen.getByTestId("home-cell-sensitive");
+    expect(sensitiveCell).toHaveClass(
+      "lg:col-span-6",
+      "lg:max-2xl:last:col-span-12",
+      "2xl:col-span-4"
+    );
+    expect(sensitiveCell).not.toHaveClass("lg:col-span-4", "xl:col-span-3");
+    // `last:` must land on the third cell: it is the row grid's last direct child.
+    expect(sensitiveCell.parentElement?.lastElementChild).toBe(sensitiveCell);
     expect(screen.getByTestId("matter-health-panel")).toBeInTheDocument();
   });
 
@@ -328,6 +336,7 @@ describe("Home widget matrix (614B)", () => {
     expect(screen.queryByTestId("trust-position-widget")).not.toBeInTheDocument();
     expect(cellRows()[2]).toEqual(["unbilledWip", "debtors"]);
     expect(screen.getByTestId("home-cell-debtors")).toHaveClass("lg:col-span-6");
+    expect(screen.getByTestId("home-cell-debtors")).not.toHaveClass("2xl:col-span-4");
   });
 
   it("trust module off: trust is neither fetched nor rendered", async () => {

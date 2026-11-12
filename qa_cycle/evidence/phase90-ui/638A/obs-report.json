@@ -1,0 +1,1844 @@
+{
+  "head": "e25c38f110004ef67941ce77dbe7db746234fa7d",
+  "capturedAt": "2026-11-12T03:37:41.848Z",
+  "obs": {
+    "o1_grid": [
+      {
+        "file": "shell-1024-light-expanded.png",
+        "sidebarWidth": 256,
+        "dataState": "expanded",
+        "mainX": 256,
+        "mainWidth": 768,
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "mainCount": 1,
+        "toggleMenuByRole": 1,
+        "zones": [
+          "Today=true",
+          "Matters=true",
+          "Clients=true",
+          "Fees=false",
+          "Trust=false",
+          "Firm=false"
+        ],
+        "linkCount": 11,
+        "ariaCurrent": [
+          "Home"
+        ],
+        "htmlClass": "light"
+      },
+      {
+        "file": "shell-1024-light-collapsed.png",
+        "sidebarWidth": 48,
+        "dataState": "collapsed",
+        "mainX": 48,
+        "mainWidth": 976,
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "mainCount": 1,
+        "toggleMenuByRole": 1,
+        "zones": [],
+        "linkCount": 28,
+        "ariaCurrent": [
+          "Home"
+        ],
+        "htmlClass": "light"
+      },
+      {
+        "file": "shell-1024-dark-expanded.png",
+        "sidebarWidth": 256,
+        "dataState": "expanded",
+        "mainX": 256,
+        "mainWidth": 768,
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "mainCount": 1,
+        "toggleMenuByRole": 1,
+        "zones": [
+          "Today=true",
+          "Matters=true",
+          "Clients=true",
+          "Fees=false",
+          "Trust=false",
+          "Firm=false"
+        ],
+        "linkCount": 11,
+        "ariaCurrent": [
+          "Home"
+        ],
+        "htmlClass": "dark"
+      },
+      {
+        "file": "shell-1024-dark-collapsed.png",
+        "sidebarWidth": 48,
+        "dataState": "collapsed",
+        "mainX": 48,
+        "mainWidth": 976,
+        "scrollWidth": 1024,
+        "innerWidth": 1024,
+        "mainCount": 1,
+        "toggleMenuByRole": 1,
+        "zones": [],
+        "linkCount": 28,
+        "ariaCurrent": [
+          "Home"
+        ],
+        "htmlClass": "dark"
+      },
+      {
+        "file": "shell-1440-light-expanded.png",
+        "sidebarWidth": 256,
+        "dataState": "expanded",
+        "mainX": 256,
+        "mainWidth": 1184,
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "mainCount": 1,
+        "toggleMenuByRole": 1,
+        "zones": [
+          "Today=true",
+          "Matters=true",
+          "Clients=true",
+          "Fees=false",
+          "Trust=false",
+          "Firm=false"
+        ],
+        "linkCount": 11,
+        "ariaCurrent": [
+          "Home"
+        ],
+        "htmlClass": "light"
+      },
+      {
+        "file": "shell-1440-light-collapsed.png",
+        "sidebarWidth": 48,
+        "dataState": "collapsed",
+        "mainX": 48,
+        "mainWidth": 1392,
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "mainCount": 1,
+        "toggleMenuByRole": 1,
+        "zones": [],
+        "linkCount": 28,
+        "ariaCurrent": [
+          "Home"
+        ],
+        "htmlClass": "light"
+      },
+      {
+        "file": "shell-1440-dark-expanded.png",
+        "sidebarWidth": 256,
+        "dataState": "expanded",
+        "mainX": 256,
+        "mainWidth": 1184,
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "mainCount": 1,
+        "toggleMenuByRole": 1,
+        "zones": [
+          "Today=true",
+          "Matters=true",
+          "Clients=true",
+          "Fees=false",
+          "Trust=false",
+          "Firm=false"
+        ],
+        "linkCount": 11,
+        "ariaCurrent": [
+          "Home"
+        ],
+        "htmlClass": "dark"
+      },
+      {
+        "file": "shell-1440-dark-collapsed.png",
+        "sidebarWidth": 48,
+        "dataState": "collapsed",
+        "mainX": 48,
+        "mainWidth": 1392,
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "mainCount": 1,
+        "toggleMenuByRole": 1,
+        "zones": [],
+        "linkCount": 28,
+        "ariaCurrent": [
+          "Home"
+        ],
+        "htmlClass": "dark"
+      }
+    ],
+    "o2_contract": {
+      "beforeZones": [
+        "Today=true",
+        "Matters=true",
+        "Clients=true",
+        "Fees=false",
+        "Trust=false",
+        "Firm=false"
+      ],
+      "nowZones": [
+        "Today=true",
+        "Matters=true",
+        "Clients=true",
+        "Fees=false",
+        "Trust=false",
+        "Firm=false"
+      ],
+      "zonesEqual": true,
+      "beforeLinks": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "nowLinks": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "linksEqual": true,
+      "beforeAriaCurrent": [],
+      "nowAriaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ]
+    },
+    "o3_persistence": {
+      "cookieBeforeToggle": null,
+      "stateBeforeToggle": "expanded",
+      "afterClick": {
+        "cookie": "false",
+        "state": "collapsed",
+        "width": 48
+      },
+      "collapsed-normal": {
+        "cookie": "false",
+        "samples": [
+          {
+            "t": 7,
+            "src": "mo",
+            "w": 48,
+            "st": "collapsed",
+            "rs": "loading"
+          }
+        ],
+        "n": 520,
+        "afterLoad": 48,
+        "firstWidth": 48,
+        "distinctWidths": [
+          48
+        ]
+      },
+      "collapsed-cpu6x": {
+        "cookie": "false",
+        "samples": [
+          {
+            "t": 43,
+            "src": "mo",
+            "w": 48,
+            "st": "collapsed",
+            "rs": "loading"
+          }
+        ],
+        "n": 486,
+        "afterLoad": 48,
+        "firstWidth": 48,
+        "distinctWidths": [
+          48
+        ]
+      },
+      "afterSecondClick": {
+        "cookie": "true",
+        "state": "expanded"
+      },
+      "expanded-normal": {
+        "cookie": "true",
+        "samples": [
+          {
+            "t": 7,
+            "src": "mo",
+            "w": 256,
+            "st": "expanded",
+            "rs": "loading"
+          }
+        ],
+        "n": 523,
+        "afterLoad": 256,
+        "firstWidth": 256,
+        "distinctWidths": [
+          256
+        ]
+      },
+      "expanded-cpu6x": {
+        "cookie": "true",
+        "samples": [
+          {
+            "t": 43,
+            "src": "mo",
+            "w": 256,
+            "st": "expanded",
+            "rs": "loading"
+          }
+        ],
+        "n": 490,
+        "afterLoad": 256,
+        "firstWidth": 256,
+        "distinctWidths": [
+          256
+        ]
+      }
+    },
+    "o4_shortcut": [
+      {
+        "key": "Control+b",
+        "activeElement": "BODY",
+        "before": "expanded",
+        "after": "collapsed",
+        "width": 48,
+        "cookie": "false"
+      },
+      {
+        "key": "Control+b",
+        "activeElement": "BODY",
+        "before": "collapsed",
+        "after": "expanded",
+        "width": 256,
+        "cookie": "true"
+      },
+      {
+        "key": "Meta+b",
+        "activeElement": "BODY",
+        "before": "expanded",
+        "after": "collapsed",
+        "width": 48,
+        "cookie": "false"
+      },
+      {
+        "key": "Meta+b",
+        "activeElement": "BODY",
+        "before": "collapsed",
+        "after": "expanded",
+        "width": 256,
+        "cookie": "true"
+      }
+    ],
+    "o5_tiptap": {
+      "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=clauses",
+      "metaB": {
+        "sidebarBefore": "expanded",
+        "sidebarAfter": "expanded",
+        "cookieBefore": "true",
+        "cookieAfter": "true",
+        "html": "<p><strong>Boldword</strong></p>",
+        "hasStrong": true
+      },
+      "ctrlB": {
+        "sidebarBefore": "expanded",
+        "sidebarAfter": "collapsed",
+        "cookieAfter": "false",
+        "html": "<p><strong>Boldword</strong></p>",
+        "hasStrong": true
+      },
+      "platform": "MacIntel",
+      "dialogOpenAfterClose": 0,
+      "noSaveClicked": true
+    },
+    "o6_rail": {
+      "dataState": "collapsed",
+      "linkCount": 28,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Unbilled work",
+        "Fee notes",
+        "Fee runs",
+        "Debtors",
+        "Disbursements",
+        "Tariffs",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports",
+        "Team",
+        "Reports",
+        "Audit trail",
+        "Settings"
+      ],
+      "zoneTriggers": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Fees",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Trust",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Firm",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 1077,
+        "clientHeight": 640,
+        "overflowY": "auto"
+      },
+      "tabSeenTriggerFocused": false,
+      "tabNavStops": 28,
+      "hoverTooltip": [],
+      "focusTarget": "My work",
+      "focusTooltip": [
+        "My workMy work"
+      ],
+      "scrollTopAfter": 437
+    },
+    "o7_keyboard": {
+      "focusSequence": [
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Skip to content",
+          "expanded": null,
+          "inNav": false
+        },
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Search, Command K",
+          "expanded": null,
+          "inNav": false
+        },
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Today",
+          "expanded": "true",
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Home",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "My work",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Diary",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Matters",
+          "expanded": "true",
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Matters",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "New matter",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Conflict check",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Adverse parties",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "AI reviews",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Clients",
+          "expanded": "true",
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Clients",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "FICA & compliance",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Data requests",
+          "expanded": null,
+          "inNav": true
+        },
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Fees",
+          "expanded": "false",
+          "inNav": true
+        },
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Trust",
+          "expanded": "false",
+          "inNav": true
+        },
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Firm",
+          "expanded": "false",
+          "inNav": true
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Platform Admin",
+          "expanded": null,
+          "inNav": false
+        },
+        {
+          "tag": "a",
+          "role": "link",
+          "name": "Notifications",
+          "expanded": null,
+          "inNav": false
+        },
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Toggle menu",
+          "expanded": null,
+          "inNav": false
+        }
+      ],
+      "feesBefore": "false",
+      "feesAfterEnter": "true",
+      "linksAfterEnter": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Unbilled work",
+        "Fee notes",
+        "Fee runs",
+        "Debtors",
+        "Disbursements",
+        "Tariffs"
+      ],
+      "feesAfterSpace": "false",
+      "linkCountAfterSpace": 11,
+      "sidebarStateUnchanged": "expanded"
+    },
+    "o8_mobile": {
+      "light": {
+        "closed": {
+          "mainNavByRole": 0,
+          "mainNavDom": 0,
+          "toggleMenuByRole": 1,
+          "mainBox": {
+            "x": 0,
+            "y": 56,
+            "width": 390,
+            "height": 3338
+          },
+          "scrollWidth": 390,
+          "htmlClass": "light"
+        },
+        "sheet": {
+          "dialogNamedKazi": 1,
+          "dialogsTotal": 1,
+          "dialogBox": {
+            "x": 0,
+            "y": 0,
+            "width": 288,
+            "height": 844
+          },
+          "closeButtonCount": 1,
+          "closeButtonVisible": true,
+          "closeButtonBox": {
+            "x": 255,
+            "y": 16,
+            "width": 16,
+            "height": 16
+          },
+          "mainNavByRole": 1,
+          "mainNavDom": 1,
+          "links": [
+            "Home",
+            "My work",
+            "Diary",
+            "Matters",
+            "New matter",
+            "Conflict check",
+            "Adverse parties",
+            "AI reviews",
+            "Clients",
+            "FICA & compliance",
+            "Data requests"
+          ]
+        },
+        "afterNav": {
+          "url": "http://localhost:3001/org/e2e-test-org/matters",
+          "dialogCount": 0,
+          "h1": "Matters"
+        }
+      },
+      "dark": {
+        "closed": {
+          "mainNavByRole": 0,
+          "mainNavDom": 0,
+          "toggleMenuByRole": 1,
+          "mainBox": {
+            "x": 0,
+            "y": 56,
+            "width": 390,
+            "height": 3338
+          },
+          "scrollWidth": 390,
+          "htmlClass": "dark"
+        },
+        "sheet": {
+          "dialogNamedKazi": 1,
+          "dialogsTotal": 1,
+          "dialogBox": {
+            "x": 0,
+            "y": 0,
+            "width": 288,
+            "height": 844
+          },
+          "closeButtonCount": 1,
+          "closeButtonVisible": true,
+          "closeButtonBox": {
+            "x": 255,
+            "y": 16,
+            "width": 16,
+            "height": 16
+          },
+          "mainNavByRole": 1,
+          "mainNavDom": 1,
+          "links": [
+            "Home",
+            "My work",
+            "Diary",
+            "Matters",
+            "New matter",
+            "Conflict check",
+            "Adverse parties",
+            "AI reviews",
+            "Clients",
+            "FICA & compliance",
+            "Data requests"
+          ]
+        },
+        "afterClose": {
+          "dialogCount": 0
+        }
+      }
+    },
+    "o9_matters": {
+      "h1": "Matters",
+      "ariaCurrent": [
+        {
+          "text": "Matters",
+          "href": "/org/e2e-test-org/matters"
+        }
+      ],
+      "sidebarWidth": 256,
+      "mainBox": {
+        "x": 256,
+        "y": 56,
+        "width": 1184,
+        "height": 844
+      },
+      "scrollWidth": 1440
+    },
+    "o10_console": {
+      "total": 1,
+      "hydration": [],
+      "all": [
+        {
+          "url": "http://localhost:3001/org/e2e-test-org/settings/documents?tab=clauses",
+          "type": "warning",
+          "text": "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues."
+        }
+      ]
+    }
+  },
+  "pages": [
+    {
+      "file": "shell-1024-light-expanded.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "theme": "light",
+      "mode": "expanded",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "sidebarDataState": "expanded",
+      "sidebarDataCollapsible": "",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 768
+      },
+      "sidebarGapWidth": 256,
+      "sidebarBg": "lab(2.214 -0.134699 -1.01047)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.1)",
+      "mainBg": "lab(96.7396 -0.214994 -1.49846)",
+      "mainContentBox": {
+        "x": 256,
+        "y": 56,
+        "width": 768,
+        "height": 2304
+      },
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "innerWidth": 1024,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Fees",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Trust",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Firm",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 669,
+        "clientHeight": 463,
+        "overflowY": "auto"
+      },
+      "h1": "Home",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "linkCount": 11,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "shell-1024-light-collapsed.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "theme": "light",
+      "mode": "collapsed",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "sidebarDataState": "collapsed",
+      "sidebarDataCollapsible": "icon",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 768
+      },
+      "sidebarGapWidth": 48,
+      "sidebarBg": "lab(2.214 -0.134699 -1.01047)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.1)",
+      "mainBg": "lab(96.7396 -0.214994 -1.49846)",
+      "mainContentBox": {
+        "x": 48,
+        "y": 56,
+        "width": 976,
+        "height": 2288
+      },
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "innerWidth": 1024,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Fees",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Trust",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Firm",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 1077,
+        "clientHeight": 508,
+        "overflowY": "auto"
+      },
+      "h1": "Home",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Unbilled work",
+        "Fee notes",
+        "Fee runs",
+        "Debtors",
+        "Disbursements",
+        "Tariffs",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports",
+        "Team",
+        "Reports",
+        "Audit trail",
+        "Settings"
+      ],
+      "linkCount": 28,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "shell-1024-dark-expanded.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "theme": "dark",
+      "mode": "expanded",
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "sidebarDataState": "expanded",
+      "sidebarDataCollapsible": "",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 768
+      },
+      "sidebarGapWidth": 256,
+      "sidebarBg": "lab(4.03813 -0.203118 -2.03682)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.08)",
+      "mainBg": "lab(2.214 -0.134699 -1.01047)",
+      "mainContentBox": {
+        "x": 256,
+        "y": 56,
+        "width": 768,
+        "height": 2304
+      },
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "innerWidth": 1024,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Fees",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Trust",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Firm",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 669,
+        "clientHeight": 463,
+        "overflowY": "auto"
+      },
+      "h1": "Home",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "linkCount": 11,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "shell-1024-dark-collapsed.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "theme": "dark",
+      "mode": "collapsed",
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "sidebarDataState": "collapsed",
+      "sidebarDataCollapsible": "icon",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 768
+      },
+      "sidebarGapWidth": 48,
+      "sidebarBg": "lab(4.03813 -0.203118 -2.03682)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.08)",
+      "mainBg": "lab(2.214 -0.134699 -1.01047)",
+      "mainContentBox": {
+        "x": 48,
+        "y": 56,
+        "width": 976,
+        "height": 2288
+      },
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "innerWidth": 1024,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Fees",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Trust",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Firm",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 1077,
+        "clientHeight": 508,
+        "overflowY": "auto"
+      },
+      "h1": "Home",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Unbilled work",
+        "Fee notes",
+        "Fee runs",
+        "Debtors",
+        "Disbursements",
+        "Tariffs",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports",
+        "Team",
+        "Reports",
+        "Audit trail",
+        "Settings"
+      ],
+      "linkCount": 28,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "shell-1440-light-expanded.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "mode": "expanded",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "sidebarDataState": "expanded",
+      "sidebarDataCollapsible": "",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 900
+      },
+      "sidebarGapWidth": 256,
+      "sidebarBg": "lab(2.214 -0.134699 -1.01047)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.1)",
+      "mainBg": "lab(96.7396 -0.214994 -1.49846)",
+      "mainContentBox": {
+        "x": 256,
+        "y": 56,
+        "width": 1184,
+        "height": 2288
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "innerWidth": 1440,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Fees",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Trust",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Firm",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 669,
+        "clientHeight": 595,
+        "overflowY": "auto"
+      },
+      "h1": "Home",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "linkCount": 11,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "shell-1440-light-collapsed.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "mode": "collapsed",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "sidebarDataState": "collapsed",
+      "sidebarDataCollapsible": "icon",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 900
+      },
+      "sidebarGapWidth": 48,
+      "sidebarBg": "lab(2.214 -0.134699 -1.01047)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.1)",
+      "mainBg": "lab(96.7396 -0.214994 -1.49846)",
+      "mainContentBox": {
+        "x": 48,
+        "y": 56,
+        "width": 1392,
+        "height": 2288
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "innerWidth": 1440,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Fees",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Trust",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Firm",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 1077,
+        "clientHeight": 640,
+        "overflowY": "auto"
+      },
+      "h1": "Home",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Unbilled work",
+        "Fee notes",
+        "Fee runs",
+        "Debtors",
+        "Disbursements",
+        "Tariffs",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports",
+        "Team",
+        "Reports",
+        "Audit trail",
+        "Settings"
+      ],
+      "linkCount": 28,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "shell-1440-dark-expanded.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "mode": "expanded",
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "sidebarDataState": "expanded",
+      "sidebarDataCollapsible": "",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 900
+      },
+      "sidebarGapWidth": 256,
+      "sidebarBg": "lab(4.03813 -0.203118 -2.03682)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.08)",
+      "mainBg": "lab(2.214 -0.134699 -1.01047)",
+      "mainContentBox": {
+        "x": 256,
+        "y": 56,
+        "width": 1184,
+        "height": 2288
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "innerWidth": 1440,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Fees",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Trust",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Firm",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 669,
+        "clientHeight": 595,
+        "overflowY": "auto"
+      },
+      "h1": "Home",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "linkCount": 11,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "shell-1440-dark-collapsed.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "mode": "collapsed",
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "sidebarDataState": "collapsed",
+      "sidebarDataCollapsible": "icon",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 48,
+        "height": 900
+      },
+      "sidebarGapWidth": 48,
+      "sidebarBg": "lab(4.03813 -0.203118 -2.03682)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.08)",
+      "mainBg": "lab(2.214 -0.134699 -1.01047)",
+      "mainContentBox": {
+        "x": 48,
+        "y": 56,
+        "width": 1392,
+        "height": 2288
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "innerWidth": 1440,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Fees",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Trust",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        },
+        {
+          "label": "Firm",
+          "expanded": "true",
+          "display": "none",
+          "visible": false
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Home",
+          "href": "/org/e2e-test-org/dashboard"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 1077,
+        "clientHeight": 640,
+        "overflowY": "auto"
+      },
+      "h1": "Home",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Unbilled work",
+        "Fee notes",
+        "Fee runs",
+        "Debtors",
+        "Disbursements",
+        "Tariffs",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports",
+        "Team",
+        "Reports",
+        "Audit trail",
+        "Settings"
+      ],
+      "linkCount": 28,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "mobile-390-closed-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "light",
+      "mode": "mobile-closed",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "sidebarDataState": null,
+      "sidebarDataCollapsible": null,
+      "sidebarContainerBox": null,
+      "sidebarGapWidth": null,
+      "sidebarBg": null,
+      "sidebarBorderRight": null,
+      "mainBg": "lab(96.7396 -0.214994 -1.49846)",
+      "mainContentBox": {
+        "x": 0,
+        "y": 56,
+        "width": 390,
+        "height": 3338
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "innerWidth": 390,
+      "mainCount": 1,
+      "mainNavDomCount": 0,
+      "zones": [],
+      "ariaCurrent": [],
+      "separatorsInNav": null,
+      "contentScroll": null,
+      "h1": "Home",
+      "mainNavByRoleCount": 0,
+      "links": [],
+      "linkCount": 0,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "mobile-390-closed-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "dark",
+      "mode": "mobile-closed",
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "sidebarDataState": null,
+      "sidebarDataCollapsible": null,
+      "sidebarContainerBox": null,
+      "sidebarGapWidth": null,
+      "sidebarBg": null,
+      "sidebarBorderRight": null,
+      "mainBg": "lab(2.214 -0.134699 -1.01047)",
+      "mainContentBox": {
+        "x": 0,
+        "y": 56,
+        "width": 390,
+        "height": 3338
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "innerWidth": 390,
+      "mainCount": 1,
+      "mainNavDomCount": 0,
+      "zones": [],
+      "ariaCurrent": [],
+      "separatorsInNav": null,
+      "contentScroll": null,
+      "h1": "Home",
+      "mainNavByRoleCount": 0,
+      "links": [],
+      "linkCount": 0,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    },
+    {
+      "file": "matters-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/matters",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "mode": "expanded",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "sidebarDataState": "expanded",
+      "sidebarDataCollapsible": "",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 900
+      },
+      "sidebarGapWidth": 256,
+      "sidebarBg": "lab(2.214 -0.134699 -1.01047)",
+      "sidebarBorderRight": "1px lab(100 0 0 / 0.1)",
+      "mainBg": "lab(96.7396 -0.214994 -1.49846)",
+      "mainContentBox": {
+        "x": 256,
+        "y": 56,
+        "width": 1184,
+        "height": 844
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "innerWidth": 1440,
+      "mainCount": 1,
+      "mainNavDomCount": 1,
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Matters",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Clients",
+          "expanded": "true",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Fees",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Trust",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        },
+        {
+          "label": "Firm",
+          "expanded": "false",
+          "display": "flex",
+          "visible": true
+        }
+      ],
+      "ariaCurrent": [
+        {
+          "text": "Matters",
+          "href": "/org/e2e-test-org/matters"
+        }
+      ],
+      "separatorsInNav": 5,
+      "contentScroll": {
+        "scrollHeight": 669,
+        "clientHeight": 595,
+        "overflowY": "auto"
+      },
+      "h1": "Matters",
+      "mainNavByRoleCount": 1,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "linkCount": 11,
+      "toggleMenuByRole": 1,
+      "noHorizontalOverflow": true
+    }
+  ]
+}

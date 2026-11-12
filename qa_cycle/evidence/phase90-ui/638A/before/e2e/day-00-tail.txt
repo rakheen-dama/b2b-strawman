@@ -1,0 +1,6 @@
+  ✓  13 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:242:7 › Day 0 — Firm Setup › Alice: Trust account — Mathebula & Partners Trust Account (GENERAL, Standard Bank) exists (658ms)
+  ✓  14 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:262:7 › Day 0 — Firm Setup › Alice: LPFF rate 6.5% — added on Trust › Interest, listed on the trust settings tab (1.3s)
+  ✓  15 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:303:7 › Day 0 — Firm Setup › Alice: Legal modules enabled (trust, court, conflict, tariff) (622ms)
+  ✓  16 [chromium] › e2e/tests/legal-lifecycle/day-00-firm-setup.spec.ts:324:7 › Day 0 — Firm Setup › Alice: Capture dashboard with legal navigation (356ms)
+
+  16 passed (12.4s)

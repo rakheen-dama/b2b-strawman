@@ -1,0 +1,61 @@
+{
+  "hover": {
+    "linkBox": {
+      "x": 8,
+      "y": 230,
+      "width": 32,
+      "height": 32
+    },
+    "tooltipTexts": [
+      "My workMy work",
+      "MattersMatters"
+    ],
+    "roleTooltip": [
+      "My work",
+      "Matters"
+    ],
+    "activeElement": "BODY"
+  },
+  "Win32": {
+    "platform": "Win32",
+    "Control+b": {
+      "sidebarBefore": "expanded",
+      "sidebarAfter": "expanded",
+      "html": "<p><strong>Boldword</strong></p>"
+    },
+    "Meta+b": {
+      "sidebarBefore": "expanded",
+      "sidebarAfter": "collapsed",
+      "html": "<p><strong>Boldword</strong></p>"
+    },
+    "dialogsAfterClose": 0,
+    "console": [
+      "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues."
+    ]
+  },
+  "MacIntel": {
+    "platform": "MacIntel",
+    "Control+b": {
+      "sidebarBefore": "expanded",
+      "sidebarAfter": "expanded",
+      "html": "<p>Boldword</p>"
+    },
+    "Meta+b": {
+      "sidebarBefore": "expanded",
+      "sidebarAfter": "expanded",
+      "html": "<p>Boldword</p>"
+    },
+    "titleInput Meta+b": {
+      "sidebarBefore": "expanded",
+      "sidebarAfter": "collapsed"
+    },
+    "titleInput Control+b": {
+      "sidebarBefore": "collapsed",
+      "sidebarAfter": "collapsed"
+    },
+    "dialogsAfterClose": 0,
+    "console": [
+      "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues."
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+  ✓  100 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:362:7 › Day 90 — Role-Based Access › Bob: Has admin access to trust accounting (543ms)
+  ✓  101 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:379:7 › Day 90 — Role-Based Access › Alice: Has full owner access to all areas (772ms)
+  ✓  102 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:56:7 › Matter team — Team tab (add, transfer, remove) › Alice: template matter auto-adds her as lead; she adds Carol (2.7s)
+  ✓  103 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:87:7 › Matter team — Team tab (add, transfer, remove) › Carol (Member): sees the matter and its team, but no management controls (1.3s)
+  ✓  104 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:98:7 › Matter team — Team tab (add, transfer, remove) › Bob (Admin, not on the matter): transfers the lead to Carol (2.8s)
+  ✓  105 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:126:7 › Matter team — Team tab (add, transfer, remove) › Carol (now lead): adds Bob, then removes him (2.8s)
+
+  105 passed (2.8m)

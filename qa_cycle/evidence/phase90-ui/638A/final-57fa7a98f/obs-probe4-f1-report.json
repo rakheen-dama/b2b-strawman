@@ -1,0 +1,373 @@
+{
+  "head": "57fa7a98f8c1bfc1a8167cad37f56368d727800f",
+  "capturedAt": "2026-11-12T03:58:10.958Z",
+  "mac": {
+    "env": {
+      "platform": "MacIntel",
+      "uaDataPlatform": "macOS",
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36"
+    },
+    "editor": {
+      "Control+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p>Boldword</p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          }
+        },
+        "after": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p>Boldword</p>",
+          "selection": {
+            "text": "",
+            "collapsed": true,
+            "anchorOffset": 0,
+            "focusOffset": 0
+          },
+          "keydown": {
+            "key": "b",
+            "ctrl": true,
+            "meta": false,
+            "target": "DIV",
+            "defaultPreventedAfterDispatch": false
+          },
+          "activeElementIsEditor": true
+        },
+        "toggled": false,
+        "bolded": false,
+        "dialogsAfterClose": 0
+      },
+      "Meta+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p>Boldword</p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          }
+        },
+        "after": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p><strong>Boldword</strong></p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          },
+          "keydown": {
+            "key": "b",
+            "ctrl": false,
+            "meta": true,
+            "target": "DIV",
+            "defaultPreventedAfterDispatch": true
+          },
+          "activeElementIsEditor": true
+        },
+        "toggled": false,
+        "bolded": true,
+        "dialogsAfterClose": 0
+      }
+    },
+    "body": {
+      "Control+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "activeElement": "BODY"
+        },
+        "after": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "keydown": {
+            "key": "b",
+            "ctrl": true,
+            "meta": false,
+            "target": "BODY",
+            "defaultPreventedAfterDispatch": false
+          }
+        },
+        "toggled": false
+      },
+      "Meta+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "activeElement": "BODY"
+        },
+        "after": {
+          "sidebar": "collapsed",
+          "cookie": "false",
+          "keydown": {
+            "key": "b",
+            "ctrl": false,
+            "meta": true,
+            "target": "BODY",
+            "defaultPreventedAfterDispatch": true
+          }
+        },
+        "toggled": true
+      }
+    },
+    "console": [
+      "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.",
+      "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues."
+    ]
+  },
+  "win-np": {
+    "env": {
+      "platform": "Win32",
+      "uaDataPlatform": "macOS",
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36"
+    },
+    "editor": {
+      "Control+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p>Boldword</p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          }
+        },
+        "after": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p><strong>Boldword</strong></p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          },
+          "keydown": {
+            "key": "b",
+            "ctrl": true,
+            "meta": false,
+            "target": "DIV",
+            "defaultPreventedAfterDispatch": true
+          },
+          "activeElementIsEditor": true
+        },
+        "toggled": false,
+        "bolded": true,
+        "dialogsAfterClose": 0
+      },
+      "Meta+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p>Boldword</p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          }
+        },
+        "after": {
+          "sidebar": "collapsed",
+          "cookie": "false",
+          "html": "<p>Boldword</p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          },
+          "keydown": {
+            "key": "b",
+            "ctrl": false,
+            "meta": true,
+            "target": "DIV",
+            "defaultPreventedAfterDispatch": true
+          },
+          "activeElementIsEditor": true
+        },
+        "toggled": true,
+        "bolded": false,
+        "dialogsAfterClose": 0
+      }
+    },
+    "body": {
+      "Control+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "activeElement": "BODY"
+        },
+        "after": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "keydown": {
+            "key": "b",
+            "ctrl": true,
+            "meta": false,
+            "target": "BODY",
+            "defaultPreventedAfterDispatch": false
+          }
+        },
+        "toggled": false
+      },
+      "Meta+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "activeElement": "BODY"
+        },
+        "after": {
+          "sidebar": "collapsed",
+          "cookie": "false",
+          "keydown": {
+            "key": "b",
+            "ctrl": false,
+            "meta": true,
+            "target": "BODY",
+            "defaultPreventedAfterDispatch": true
+          }
+        },
+        "toggled": true
+      }
+    },
+    "console": [
+      "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.",
+      "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues."
+    ]
+  },
+  "win-cdp": {
+    "env": {
+      "platform": "Win32",
+      "uaDataPlatform": "Windows",
+      "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36"
+    },
+    "editor": {
+      "Control+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p>Boldword</p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          }
+        },
+        "after": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p><strong>Boldword</strong></p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          },
+          "keydown": {
+            "key": "b",
+            "ctrl": true,
+            "meta": false,
+            "target": "DIV",
+            "defaultPreventedAfterDispatch": true
+          },
+          "activeElementIsEditor": true
+        },
+        "toggled": false,
+        "bolded": true,
+        "dialogsAfterClose": 0
+      },
+      "Meta+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p>Boldword</p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          }
+        },
+        "after": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "html": "<p><strong>Boldword</strong></p>",
+          "selection": {
+            "text": "Boldword",
+            "collapsed": false,
+            "anchorOffset": 0,
+            "focusOffset": 8
+          },
+          "keydown": {
+            "key": "b",
+            "ctrl": false,
+            "meta": true,
+            "target": "DIV",
+            "defaultPreventedAfterDispatch": false
+          },
+          "activeElementIsEditor": true
+        },
+        "toggled": false,
+        "bolded": true,
+        "dialogsAfterClose": 0
+      }
+    },
+    "body": {
+      "Control+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "activeElement": "BODY"
+        },
+        "after": {
+          "sidebar": "collapsed",
+          "cookie": "false",
+          "keydown": {
+            "key": "b",
+            "ctrl": true,
+            "meta": false,
+            "target": "BODY",
+            "defaultPreventedAfterDispatch": true
+          }
+        },
+        "toggled": true
+      },
+      "Meta+b": {
+        "before": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "activeElement": "BODY"
+        },
+        "after": {
+          "sidebar": "expanded",
+          "cookie": "true",
+          "keydown": {
+            "key": "b",
+            "ctrl": false,
+            "meta": true,
+            "target": "BODY",
+            "defaultPreventedAfterDispatch": false
+          }
+        },
+        "toggled": false
+      }
+    },
+    "console": [
+      "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.",
+      "[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues."
+    ]
+  }
+}

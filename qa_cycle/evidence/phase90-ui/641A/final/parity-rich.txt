@@ -1,0 +1,304 @@
+rich: IDENTICAL 298 / DIFF 4
+
+IDENTICAL | 1-default | url | "/org/e2e-test-org/matters"
+IDENTICAL | 1-default | h1 | "Matters"
+IDENTICAL | 1-default | subtitle | "5 matters"
+IDENTICAL | 1-default | caption | "Matters — Open matters"
+IDENTICAL | 1-default | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 1-default | rowStatuses | ["Active", "Active", "Active", "Active", "Active"]
+IDENTICAL | 1-default | footer | "Showing 5 matters"
+IDENTICAL | 1-default | statusChips | [{"label": "Active", "href": "/org/e2e-test-org/matters", "active": true}, {"label": "Completed", "href": "/org/e2e-test-org/matters?status=COMPLETED", "active"
+IDENTICAL | 1-default | viewTabs | [{"name": "My matters", "selected": false, "system": true}, {"name": "Open matters", "selected": true, "system": true}, {"name": "Awaiting fee note", "selected"
+IDENTICAL | 1-default | filtersTrigger | "Filters"
+IDENTICAL | 1-default | searchValue | ""
+IDENTICAL | 1-default | headers(text,visible,ariaSort,arrow,href) | [["Reference", true, "none", null, "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc"], ["Matter", true, "none", null, "/org/e2e-test-org/matters?sort=nam
+IDENTICAL | 1-default | rowClickOutsideLink.navigates | true
+IDENTICAL | 1-default | rowShape.usesTable/rowTag/cellCount/cursor/tabIndex/role | [true, "tr", 11, "pointer", -1, null]
+IDENTICAL | 1-default | rowShape.links/buttons | [[{"text": "Mobile App MVP", "href": "/org/e2e-test-org/matters/<uuid>", "testid": "matter-link"}, {"text": "Bright Solutions", "href": "/org/e2e-test-org/clien
+IDENTICAL | 2-sort | columns sortable | ["Reference", "Matter", "Client", "Work type", "Fee earner", "Status", "Opened", "Unbilled", "Trust", "Next in diary"]
+IDENTICAL | 2-sort Reference first | url | "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc"
+IDENTICAL | 2-sort Reference first | ariaSort | "ascending"
+IDENTICAL | 2-sort Reference first | arrow | "↑"
+IDENTICAL | 2-sort Reference first | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Reference first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Reference second | url | "/org/e2e-test-org/matters?sort=referenceNumber&dir=desc"
+IDENTICAL | 2-sort Reference second | ariaSort | "descending"
+IDENTICAL | 2-sort Reference second | arrow | "↓"
+IDENTICAL | 2-sort Reference second | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Reference second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Reference | thirdHref | "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc"
+IDENTICAL | 2-sort Reference | visibleAtDefault | true
+IDENTICAL | 2-sort Matter first | url | "/org/e2e-test-org/matters?sort=name&dir=asc"
+IDENTICAL | 2-sort Matter first | ariaSort | "ascending"
+IDENTICAL | 2-sort Matter first | arrow | "↑"
+IDENTICAL | 2-sort Matter first | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Matter first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Matter second | url | "/org/e2e-test-org/matters?sort=name&dir=desc"
+IDENTICAL | 2-sort Matter second | ariaSort | "descending"
+IDENTICAL | 2-sort Matter second | arrow | "↓"
+IDENTICAL | 2-sort Matter second | rowNames | ["Website Redesign", "SEO Audit", "Mobile App MVP", "Brand Guidelines", "Annual Report"]
+IDENTICAL | 2-sort Matter second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Matter | thirdHref | "/org/e2e-test-org/matters?sort=name&dir=asc"
+IDENTICAL | 2-sort Matter | visibleAtDefault | true
+IDENTICAL | 2-sort Client first | url | "/org/e2e-test-org/matters?sort=clientName&dir=asc"
+IDENTICAL | 2-sort Client first | ariaSort | "ascending"
+IDENTICAL | 2-sort Client first | arrow | "↑"
+IDENTICAL | 2-sort Client first | rowNames | ["Brand Guidelines", "Website Redesign", "Mobile App MVP", "SEO Audit", "Annual Report"]
+IDENTICAL | 2-sort Client first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Client second | url | "/org/e2e-test-org/matters?sort=clientName&dir=desc"
+IDENTICAL | 2-sort Client second | ariaSort | "descending"
+IDENTICAL | 2-sort Client second | arrow | "↓"
+IDENTICAL | 2-sort Client second | rowNames | ["Annual Report", "Mobile App MVP", "SEO Audit", "Brand Guidelines", "Website Redesign"]
+IDENTICAL | 2-sort Client second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Client | thirdHref | "/org/e2e-test-org/matters?sort=clientName&dir=asc"
+IDENTICAL | 2-sort Client | visibleAtDefault | true
+IDENTICAL | 2-sort Work type first | url | "/org/e2e-test-org/matters?sort=workType&dir=asc"
+IDENTICAL | 2-sort Work type first | ariaSort | "ascending"
+IDENTICAL | 2-sort Work type first | arrow | "↑"
+IDENTICAL | 2-sort Work type first | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Work type first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Work type second | url | "/org/e2e-test-org/matters?sort=workType&dir=desc"
+IDENTICAL | 2-sort Work type second | ariaSort | "descending"
+IDENTICAL | 2-sort Work type second | arrow | "↓"
+IDENTICAL | 2-sort Work type second | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Work type second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Work type | thirdHref | "/org/e2e-test-org/matters?sort=workType&dir=asc"
+IDENTICAL | 2-sort Work type | visibleAtDefault | false
+IDENTICAL | 2-sort Fee earner first | url | "/org/e2e-test-org/matters?sort=feeEarnerName&dir=asc"
+IDENTICAL | 2-sort Fee earner first | ariaSort | "ascending"
+IDENTICAL | 2-sort Fee earner first | arrow | "↑"
+IDENTICAL | 2-sort Fee earner first | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Fee earner first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Fee earner second | url | "/org/e2e-test-org/matters?sort=feeEarnerName&dir=desc"
+IDENTICAL | 2-sort Fee earner second | ariaSort | "descending"
+IDENTICAL | 2-sort Fee earner second | arrow | "↓"
+IDENTICAL | 2-sort Fee earner second | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Fee earner second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Fee earner | thirdHref | "/org/e2e-test-org/matters?sort=feeEarnerName&dir=asc"
+IDENTICAL | 2-sort Fee earner | visibleAtDefault | true
+IDENTICAL | 2-sort Status first | url | "/org/e2e-test-org/matters?sort=status&dir=asc"
+IDENTICAL | 2-sort Status first | ariaSort | "ascending"
+IDENTICAL | 2-sort Status first | arrow | "↑"
+IDENTICAL | 2-sort Status first | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Status first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Status second | url | "/org/e2e-test-org/matters?sort=status&dir=desc"
+IDENTICAL | 2-sort Status second | ariaSort | "descending"
+IDENTICAL | 2-sort Status second | arrow | "↓"
+IDENTICAL | 2-sort Status second | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Status second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Status | thirdHref | "/org/e2e-test-org/matters?sort=status&dir=asc"
+IDENTICAL | 2-sort Status | visibleAtDefault | true
+IDENTICAL | 2-sort Opened first | url | "/org/e2e-test-org/matters?sort=createdAt&dir=asc"
+IDENTICAL | 2-sort Opened first | ariaSort | "ascending"
+IDENTICAL | 2-sort Opened first | arrow | "↑"
+IDENTICAL | 2-sort Opened first | rowNames | ["Website Redesign", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Annual Report"]
+IDENTICAL | 2-sort Opened first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Opened second | url | "/org/e2e-test-org/matters?sort=createdAt&dir=desc"
+IDENTICAL | 2-sort Opened second | ariaSort | "descending"
+IDENTICAL | 2-sort Opened second | arrow | "↓"
+IDENTICAL | 2-sort Opened second | rowNames | ["Annual Report", "SEO Audit", "Mobile App MVP", "Brand Guidelines", "Website Redesign"]
+IDENTICAL | 2-sort Opened second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Opened | thirdHref | "/org/e2e-test-org/matters?sort=createdAt&dir=asc"
+IDENTICAL | 2-sort Opened | visibleAtDefault | false
+IDENTICAL | 2-sort Unbilled first | url | "/org/e2e-test-org/matters?sort=unbilled&dir=asc"
+IDENTICAL | 2-sort Unbilled first | ariaSort | "ascending"
+IDENTICAL | 2-sort Unbilled first | arrow | "↑"
+IDENTICAL | 2-sort Unbilled first | rowNames | ["Annual Report", "Brand Guidelines", "SEO Audit", "Mobile App MVP", "Website Redesign"]
+IDENTICAL | 2-sort Unbilled first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Unbilled second | url | "/org/e2e-test-org/matters?sort=unbilled&dir=desc"
+IDENTICAL | 2-sort Unbilled second | ariaSort | "descending"
+IDENTICAL | 2-sort Unbilled second | arrow | "↓"
+IDENTICAL | 2-sort Unbilled second | rowNames | ["Website Redesign", "Mobile App MVP", "SEO Audit", "Brand Guidelines", "Annual Report"]
+IDENTICAL | 2-sort Unbilled second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Unbilled | thirdHref | "/org/e2e-test-org/matters?sort=unbilled&dir=asc"
+IDENTICAL | 2-sort Unbilled | visibleAtDefault | true
+IDENTICAL | 2-sort Trust first | url | "/org/e2e-test-org/matters?sort=trustBalance&dir=asc"
+IDENTICAL | 2-sort Trust first | ariaSort | "ascending"
+IDENTICAL | 2-sort Trust first | arrow | "↑"
+IDENTICAL | 2-sort Trust first | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Trust first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Trust second | url | "/org/e2e-test-org/matters?sort=trustBalance&dir=desc"
+IDENTICAL | 2-sort Trust second | ariaSort | "descending"
+IDENTICAL | 2-sort Trust second | arrow | "↓"
+IDENTICAL | 2-sort Trust second | rowNames | ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Redesign"]
+IDENTICAL | 2-sort Trust second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Trust | thirdHref | "/org/e2e-test-org/matters?sort=trustBalance&dir=asc"
+IDENTICAL | 2-sort Trust | visibleAtDefault | true
+IDENTICAL | 2-sort Next in diary first | url | "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc"
+IDENTICAL | 2-sort Next in diary first | ariaSort | "descending"
+IDENTICAL | 2-sort Next in diary first | arrow | "↓"
+IDENTICAL | 2-sort Next in diary first | rowNames | ["Annual Report", "Brand Guidelines", "Website Redesign", "Mobile App MVP", "SEO Audit"]
+IDENTICAL | 2-sort Next in diary first | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Next in diary second | url | "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=asc"
+IDENTICAL | 2-sort Next in diary second | ariaSort | "ascending"
+IDENTICAL | 2-sort Next in diary second | arrow | "↑"
+IDENTICAL | 2-sort Next in diary second | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 2-sort Next in diary second | footer | "Showing 5 matters"
+IDENTICAL | 2-sort Next in diary | thirdHref | "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc"
+IDENTICAL | 2-sort Next in diary | visibleAtDefault | true
+IDENTICAL | 3-views | tabs | [{"name": "My matters", "selected": false, "system": true}, {"name": "Open matters", "selected": true, "system": true}, {"name": "Awaiting fee note", "selected"
+IDENTICAL | 3-views | createDialogTitles | ["Configure Filters", "Select Columns", "Name Your View"]
+IDENTICAL | 3-views switch My matters | tab | "My matters"
+IDENTICAL | 3-views switch My matters | url | "/org/e2e-test-org/matters?view=system%3Amy-matters"
+IDENTICAL | 3-views switch My matters | caption | "Matters — My matters"
+IDENTICAL | 3-views switch My matters | selectedTab | "My matters"
+IDENTICAL | 3-views switch My matters | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 3-views switch My matters | footer | "Showing 5 matters"
+IDENTICAL | 3-views switch My matters | emptyText | null
+IDENTICAL | 3-views switch My matters | headers | ["Reference", "Matter", "Client", "Fee earner", "Status", "Unbilled", "Trust", "Next in diary", "Actions"]
+IDENTICAL | 3-views switch Open matters | tab | "Open matters"
+IDENTICAL | 3-views switch Open matters | url | "/org/e2e-test-org/matters"
+IDENTICAL | 3-views switch Open matters | caption | "Matters — Open matters"
+IDENTICAL | 3-views switch Open matters | selectedTab | "Open matters"
+IDENTICAL | 3-views switch Open matters | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 3-views switch Open matters | footer | "Showing 5 matters"
+IDENTICAL | 3-views switch Open matters | emptyText | null
+IDENTICAL | 3-views switch Open matters | headers | ["Reference", "Matter", "Client", "Fee earner", "Status", "Unbilled", "Trust", "Next in diary", "Actions"]
+IDENTICAL | 3-views switch Awaiting fee note | tab | "Awaiting fee note"
+IDENTICAL | 3-views switch Awaiting fee note | url | "/org/e2e-test-org/matters?view=system%3Aawaiting-fee-note"
+IDENTICAL | 3-views switch Awaiting fee note | caption | "Matters — Awaiting fee note"
+IDENTICAL | 3-views switch Awaiting fee note | selectedTab | "Awaiting fee note"
+IDENTICAL | 3-views switch Awaiting fee note | rowNames | ["Mobile App MVP", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 3-views switch Awaiting fee note | footer | "Showing 4 matters"
+IDENTICAL | 3-views switch Awaiting fee note | emptyText | null
+IDENTICAL | 3-views switch Awaiting fee note | headers | ["Reference", "Matter", "Client", "Fee earner", "Status", "Unbilled", "Trust", "Next in diary", "Actions"]
+IDENTICAL | 3-views switch Dormant | tab | "Dormant"
+IDENTICAL | 3-views switch Dormant | url | "/org/e2e-test-org/matters?view=system%3Adormant"
+IDENTICAL | 3-views switch Dormant | caption | null
+IDENTICAL | 3-views switch Dormant | selectedTab | "Dormant"
+IDENTICAL | 3-views switch Dormant | rowNames | []
+IDENTICAL | 3-views switch Dormant | footer | null
+IDENTICAL | 3-views switch Dormant | emptyText | "No matters match this view.\n\nClear filters"
+IDENTICAL | 3-views switch Dormant | headers | []
+IDENTICAL | 3-views switch OBS 641A view | tab | "OBS 641A view"
+IDENTICAL | 3-views switch OBS 641A view | url | "/org/e2e-test-org/matters?view=<uuid>"
+IDENTICAL | 3-views switch OBS 641A view | caption | "Matters — OBS 641A view"
+IDENTICAL | 3-views switch OBS 641A view | selectedTab | "OBS 641A view"
+IDENTICAL | 3-views switch OBS 641A view | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 3-views switch OBS 641A view | footer | "Showing 5 matters"
+IDENTICAL | 3-views switch OBS 641A view | emptyText | null
+IDENTICAL | 3-views switch OBS 641A view | headers | ["Reference", "Matter", "Client", "Work type", "Fee earner", "Status", "Opened", "Unbilled", "Trust", "Next in diary", "Actions"]
+IDENTICAL | 3-views tagsDrop→My matters | switchTo | "My matters"
+IDENTICAL | 3-views tagsDrop→My matters | urlBefore | "/org/e2e-test-org/matters?tags=obs-nonexistent-tag&status=ALL"
+IDENTICAL | 3-views tagsDrop→My matters | filtersTriggerBefore | "Filters1"
+IDENTICAL | 3-views tagsDrop→My matters | emptyBefore | "No matters match this view.\n\nClear filters"
+IDENTICAL | 3-views tagsDrop→My matters | urlAfter | "/org/e2e-test-org/matters?tags=obs-nonexistent-tag&status=ALL&view=system%3Amy-matters"
+IDENTICAL | 3-views tagsDrop→My matters | rowNamesAfter | []
+IDENTICAL | 3-views tagsDrop→My matters | footerAfter | null
+IDENTICAL | 3-views tagsDrop→My matters | filtersTriggerAfter | "Filters1"
+IDENTICAL | 3-views tagsDrop→OBS 641A view | switchTo | "OBS 641A view"
+IDENTICAL | 3-views tagsDrop→OBS 641A view | urlBefore | "/org/e2e-test-org/matters?tags=obs-nonexistent-tag&status=ALL"
+IDENTICAL | 3-views tagsDrop→OBS 641A view | filtersTriggerBefore | "Filters1"
+IDENTICAL | 3-views tagsDrop→OBS 641A view | emptyBefore | "No matters match this view.\n\nClear filters"
+IDENTICAL | 3-views tagsDrop→OBS 641A view | urlAfter | "/org/e2e-test-org/matters?status=ALL&view=<uuid>"
+IDENTICAL | 3-views tagsDrop→OBS 641A view | rowNamesAfter | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 3-views tagsDrop→OBS 641A view | footerAfter | "Showing 5 matters"
+IDENTICAL | 3-views tagsDrop→OBS 641A view | filtersTriggerAfter | null
+IDENTICAL | 4-status | chipsAtDefault | [{"label": "Active", "href": "/org/e2e-test-org/matters", "active": true}, {"label": "Completed", "href": "/org/e2e-test-org/matters?status=COMPLETED", "active"
+IDENTICAL | 4-status Active | chip | "Active"
+IDENTICAL | 4-status Active | url | "/org/e2e-test-org/matters"
+IDENTICAL | 4-status Active | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 4-status Active | rowStatuses | ["Active", "Active", "Active", "Active", "Active"]
+IDENTICAL | 4-status Active | footer | "Showing 5 matters"
+IDENTICAL | 4-status Active | subtitle | "5 matters"
+IDENTICAL | 4-status Active | emptyText | null
+IDENTICAL | 4-status Active | activeChip | "Active"
+IDENTICAL | 4-status Completed | chip | "Completed"
+IDENTICAL | 4-status Completed | url | "/org/e2e-test-org/matters?status=COMPLETED"
+IDENTICAL | 4-status Completed | rowNames | []
+IDENTICAL | 4-status Completed | rowStatuses | []
+IDENTICAL | 4-status Completed | footer | null
+IDENTICAL | 4-status Completed | subtitle | "0 matters"
+IDENTICAL | 4-status Completed | emptyText | "No matters match this view.\n\nClear filters"
+IDENTICAL | 4-status Completed | activeChip | "Completed"
+IDENTICAL | 4-status Archived | chip | "Archived"
+IDENTICAL | 4-status Archived | url | "/org/e2e-test-org/matters?status=ARCHIVED"
+IDENTICAL | 4-status Archived | rowNames | ["Legacy Migration"]
+IDENTICAL | 4-status Archived | rowStatuses | ["Archived"]
+IDENTICAL | 4-status Archived | footer | "Showing 1 matter"
+IDENTICAL | 4-status Archived | subtitle | "1 matter"
+IDENTICAL | 4-status Archived | emptyText | null
+IDENTICAL | 4-status Archived | activeChip | "Archived"
+IDENTICAL | 4-status Closed | chip | "Closed"
+IDENTICAL | 4-status Closed | url | "/org/e2e-test-org/matters?status=CLOSED"
+IDENTICAL | 4-status Closed | rowNames | []
+IDENTICAL | 4-status Closed | rowStatuses | []
+IDENTICAL | 4-status Closed | footer | null
+IDENTICAL | 4-status Closed | subtitle | "0 matters"
+IDENTICAL | 4-status Closed | emptyText | "No matters match this view.\n\nClear filters"
+IDENTICAL | 4-status Closed | activeChip | "Closed"
+IDENTICAL | 4-status All | chip | "All"
+IDENTICAL | 4-status All | url | "/org/e2e-test-org/matters?status=ALL"
+IDENTICAL | 4-status All | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "Legacy Migration", "SEO Audit"]
+IDENTICAL | 4-status All | rowStatuses | ["Active", "Active", "Active", "Active", "Archived", "Active"]
+IDENTICAL | 4-status All | footer | "Showing 6 matters"
+IDENTICAL | 4-status All | subtitle | "6 matters"
+IDENTICAL | 4-status All | emptyText | null
+IDENTICAL | 4-status All | activeChip | "All"
+IDENTICAL | 5-search | term/placeholder | ["Mobile", "Search matters…"]
+IDENTICAL | 5-search match | url | "/org/e2e-test-org/matters?search=Mobile"
+IDENTICAL | 5-search match | subtitle | "1 matter"
+IDENTICAL | 5-search match | rowNames | ["Mobile App MVP"]
+IDENTICAL | 5-search match | footer | "Showing 1 matter"
+IDENTICAL | 5-search match | emptyText | null
+IDENTICAL | 5-search match | clearFiltersHref | null
+IDENTICAL | 5-search noMatch | url | "/org/e2e-test-org/matters?search=zzqx-no-such-matter"
+IDENTICAL | 5-search noMatch | subtitle | "0 matters"
+IDENTICAL | 5-search noMatch | rowNames | []
+IDENTICAL | 5-search noMatch | footer | null
+IDENTICAL | 5-search noMatch | emptyText | "No matters match this view.\n\nClear filters"
+IDENTICAL | 5-search noMatch | clearFiltersHref | "/org/e2e-test-org/matters"
+IDENTICAL | 5-search | afterClearFilters | {"url": "/org/e2e-test-org/matters", "rowCount": 5, "footer": "Showing 5 matters", "searchValue": ""}
+IDENTICAL | 6-filter | triggerPresent/text | [true, "Filters"]
+IDENTICAL | 6-filter | sheet | {"title": "Filter matters", "description": "Show only matters carrying every selected tag.", "labels": ["Tags"], "buttons": ["Add Tag", "Clear", "Apply", "Close
+IDENTICAL | 6-filter | tagOptions | ["Litigation", "Urgent"]
+IDENTICAL | 6-filter applied | url | "/org/e2e-test-org/matters?tags=litigation"
+IDENTICAL | 6-filter applied | rowNames | ["Annual Report"]
+IDENTICAL | 6-filter applied | footer | "Showing 1 matter"
+IDENTICAL | 6-filter applied | filtersTrigger | "Filters1"
+IDENTICAL | 6-filter applied | emptyText | null
+IDENTICAL | 7-create New Matter | count/disabled/dialogTitle | [1, false, "Create Matter"]
+IDENTICAL | 7-create New from Template | count/disabled/dialogTitle | [1, false, "New from Template — Select Template"]
+DIFF      | 8-keyboard | tabsFromSearch | before=7 | after=9
+IDENTICAL | 8-keyboard | focused text/href | ["Reference", "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc"]
+IDENTICAL | 8-keyboard | after url/rows | {"url": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc", "rowNames": ["Annual Report", "Brand Guidelines", "Mobile App MVP", "SEO Audit", "Website Rede
+IDENTICAL | 9-combined start | url | "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=name&dir=asc"
+IDENTICAL | 9-combined start | rowNames | ["Mobile App MVP"]
+IDENTICAL | 9-combined start | footer | "Showing 1 matter"
+IDENTICAL | 9-combined start | sortHrefs | [{"column": "Reference", "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=referenceNumber&dir=asc", "visible": true, "ariaSort": "none"}, {"colu
+IDENTICAL | 9-combined start | statusChipHrefs | [{"label": "Active", "href": "/org/e2e-test-org/matters?search=Mobile&sort=name&dir=asc", "active": false}, {"label": "Completed", "href": "/org/e2e-test-org/ma
+IDENTICAL | 9-combined afterClientSort | clicked | "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=clientName&dir=asc"
+IDENTICAL | 9-combined afterClientSort | url | "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=clientName&dir=asc"
+IDENTICAL | 9-combined afterClientSort | rowNames | ["Mobile App MVP"]
+IDENTICAL | 9-combined afterClientSort | footer | "Showing 1 matter"
+IDENTICAL | 9-combined afterClientSort | searchValue | "Mobile"
+IDENTICAL | 9-combined afterClientSort | activeChip | "All"
+IDENTICAL | 9-combined afterActiveChip | url | "/org/e2e-test-org/matters?search=Mobile&sort=clientName&dir=asc"
+IDENTICAL | 9-combined afterActiveChip | rowNames | ["Mobile App MVP"]
+IDENTICAL | 9-combined afterActiveChip | footer | "Showing 1 matter"
+IDENTICAL | 9-combined afterSearchCleared | url | "/org/e2e-test-org/matters?sort=clientName&dir=asc"
+IDENTICAL | 9-combined afterSearchCleared | rowNames | ["Brand Guidelines", "Website Redesign", "Mobile App MVP", "SEO Audit", "Annual Report"]
+IDENTICAL | 9-combined afterSearchCleared | footer | "Showing 5 matters"
+IDENTICAL | 1b 1440-dark | htmlClass | "dark"
+IDENTICAL | 1b 1440-dark | url | "/org/e2e-test-org/matters"
+IDENTICAL | 1b 1440-dark | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 1b 1440-dark | footer | "Showing 5 matters"
+IDENTICAL | 1b 1440-dark | visibleHeaders | ["Reference", "Matter", "Client", "Fee earner", "Status", "Unbilled", "Trust", "Next in diary", "Actions"]
+IDENTICAL | 1b 1440-dark | hiddenHeaders | ["Work type", "Opened"]
+DIFF      | 1b 1440-dark | tableContainerWidth | before=1134 | after=1136
+IDENTICAL | 1b 1024-light | htmlClass | "light"
+IDENTICAL | 1b 1024-light | url | "/org/e2e-test-org/matters"
+IDENTICAL | 1b 1024-light | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 1b 1024-light | footer | "Showing 5 matters"
+IDENTICAL | 1b 1024-light | visibleHeaders | ["Reference", "Matter", "Client", "Status", "Unbilled", "Trust", "Next in diary", "Actions"]
+IDENTICAL | 1b 1024-light | hiddenHeaders | ["Work type", "Fee earner", "Opened"]
+DIFF      | 1b 1024-light | tableContainerWidth | before=718 | after=720
+IDENTICAL | 1b 1024-dark | htmlClass | "dark"
+IDENTICAL | 1b 1024-dark | url | "/org/e2e-test-org/matters"
+IDENTICAL | 1b 1024-dark | rowNames | ["Mobile App MVP", "Annual Report", "Brand Guidelines", "Website Redesign", "SEO Audit"]
+IDENTICAL | 1b 1024-dark | footer | "Showing 5 matters"
+IDENTICAL | 1b 1024-dark | visibleHeaders | ["Reference", "Matter", "Client", "Status", "Unbilled", "Trust", "Next in diary", "Actions"]
+IDENTICAL | 1b 1024-dark | hiddenHeaders | ["Work type", "Fee earner", "Opened"]
+DIFF      | 1b 1024-dark | tableContainerWidth | before=718 | after=720
+IDENTICAL | 1b 1440-light | visibleHeaders | ["Reference", "Matter", "Client", "Fee earner", "Status", "Unbilled", "Trust", "Next in diary", "Actions"]
+IDENTICAL | 1b 1440-light | hiddenHeaders | ["Work type", "Opened"]

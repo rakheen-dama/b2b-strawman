@@ -1,0 +1,6 @@
+POST /api/tags Urgent -> {"id":"630e329f-bbb3-48cb-8b1a-ae733f5ac03d","name":"Urgent","slug":"urgent","color":"#dc2626","createdAt":"2026-11-12T14:31:48.681387888Z","updatedAt":"2026-11-12T14:31:48.681392388Z"}
+POST /api/tags Litigation -> {"id":"bf3f4bc6-d936-4923-aa1b-411e7d2f1a97","name":"Litigation","slug":"litigation","color":"#2563eb","createdAt":"2026-11-12T14:31:48.739996596Z","updatedAt":"2026-11-12T14:31:48.739996721Z"}
+POST /api/matters/0f15a6a2-5c18-4507-988c-601772c9f9d6/tags [Urgent] (Website) -> 200
+POST /api/matters/713921b7-9673-4bd9-ad3e-f83b8f226662/tags [Urgent] (SEO) -> 200
+POST /api/matters/de3f0548.../tags [Litigation,Urgent] (Annual Report) -> 200
+PATCH /api/matters/2a2f369e.../archive (Legacy Migration) -> {"name":"Legacy Migration","status":"ARCHIVED"} 200

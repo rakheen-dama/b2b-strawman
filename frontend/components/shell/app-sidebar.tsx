@@ -23,7 +23,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useCommandPalette } from "@/components/command-palette-provider";
-import { SIDEBAR_ACTIVE_BAR, SidebarUtilityFooter } from "@/components/sidebar-utility-footer";
+import { SIDEBAR_ACTIVE_BAR } from "@/components/shell/sidebar-styles";
+import { SidebarUtilityFooter } from "@/components/sidebar-utility-footer";
 import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";
@@ -197,7 +198,12 @@ export function AppSidebar({
   }, [brandColor]);
 
   return (
-    <Sidebar collapsible="icon" className="border-sidebar-border">
+    <Sidebar
+      collapsible="icon"
+      className="border-sidebar-border"
+      mobileTitle="Kazi"
+      mobileDescription="Main navigation menu"
+    >
       <SidebarHeader className="gap-0 p-0">
         {/* Firm logo (if branded) or product wordmark fallback */}
         <div className="flex h-14 items-center gap-2 px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">

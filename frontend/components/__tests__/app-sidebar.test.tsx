@@ -66,20 +66,22 @@ interface RenderOptions {
   modules?: string[];
   defaultOpen?: boolean;
   brandColor?: string;
+  groups?: string[];
   /** Rendered inside the provider; stands in for a focused editor that handles a key itself. */
   extra?: React.ReactNode;
 }
 
-function renderSidebar({
+function sidebarTree({
   capabilities = ALL_CAPABILITIES,
   isAdmin = false,
   isOwner = true,
   modules = LEGAL_MODULES,
   defaultOpen = true,
   brandColor,
+  groups,
   extra,
 }: RenderOptions = {}) {
-  return render(
+  return (
     <OrgProfileProvider verticalProfile={null} enabledModules={modules} terminologyNamespace={null}>
       <CapabilityProvider
         capabilities={capabilities}
@@ -88,13 +90,22 @@ function renderSidebar({
         isOwner={isOwner}
       >
         <SidebarProvider defaultOpen={defaultOpen}>
-          <AppSidebar slug="test-org" orgName="Mathebula & Partners" brandColor={brandColor} />
+          <AppSidebar
+            slug="test-org"
+            orgName="Mathebula & Partners"
+            brandColor={brandColor}
+            groups={groups}
+          />
           <SidebarTrigger />
           {extra}
         </SidebarProvider>
       </CapabilityProvider>
     </OrgProfileProvider>
   );
+}
+
+function renderSidebar(options: RenderOptions = {}) {
+  return render(sidebarTree(options));
 }
 
 const nav = () => screen.getByRole("navigation", { name: "Main navigation" });
@@ -288,6 +299,14 @@ describe("AppSidebar — ⌘/Ctrl+B", () => {
     fireEvent.keyDown(window, { key: "b", ctrlKey: true });
     expect(sidebarState()).toBe("expanded");
   });
+
+  it("ignores auto-repeat keydowns from a held ⌘B", () => {
+    renderSidebar();
+    expect(sidebarState()).toBe("expanded");
+
+    fireEvent.keyDown(window, { key: "b", metaKey: true, repeat: true });
+    expect(sidebarState()).toBe("expanded");
+  });
 });
 
 describe("AppSidebar — mobile Sheet", () => {
@@ -299,7 +318,8 @@ describe("AppSidebar — mobile Sheet", () => {
     expect(screen.queryByRole("navigation", { name: "Main navigation" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Toggle menu" }));
-    const dialog = screen.getByRole("dialog");
+    const dialog = screen.getByRole("dialog", { name: "Kazi" });
+    expect(dialog).toHaveAccessibleDescription("Main navigation menu");
     expect(within(dialog).getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("link", { name: "Home" }));
@@ -316,6 +336,61 @@ describe("AppSidebar — mobile Sheet", () => {
     await user.click(screen.getByRole("button", { name: "Toggle menu" }));
     await user.click(
       within(screen.getByRole("dialog")).getByRole("link", { name: "Notifications" })
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
+  it("does not re-open the Sheet after the viewport widens past the breakpoint and narrows again", async () => {
+    mobile.value = true;
+    const user = userEvent.setup();
+    const { rerender } = renderSidebar();
+
+    await user.click(screen.getByRole("button", { name: "Toggle menu" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    mobile.value = false;
+    rerender(sidebarTree());
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(nav()).toBeInTheDocument();
+
+    mobile.value = true;
+    rerender(sidebarTree());
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Main navigation" })).not.toBeInTheDocument();
+  });
+});
+
+describe("AppSidebar — Platform Admin", () => {
+  it("renders no Platform Admin link without the platform-admins group", () => {
+    renderSidebar();
+    expect(screen.queryByRole("link", { name: "Platform Admin" })).not.toBeInTheDocument();
+  });
+
+  it("renders the Platform Admin link outside the nav for platform admins", () => {
+    renderSidebar({ groups: ["platform-admins"] });
+    const link = screen.getByRole("link", { name: "Platform Admin" });
+    expect(link).toHaveAttribute("href", "/platform-admin/access-requests");
+    expect(link).not.toHaveAttribute("aria-current");
+    expect(nav()).not.toContainElement(link);
+  });
+
+  it('marks the Platform Admin link aria-current="page" on a /platform-admin path', () => {
+    mockUsePathname.mockReturnValue("/platform-admin/access-requests");
+    renderSidebar({ groups: ["platform-admins"] });
+    expect(screen.getByRole("link", { name: "Platform Admin" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+  });
+
+  it("closes the mobile Sheet on a Platform Admin link click", async () => {
+    mobile.value = true;
+    const user = userEvent.setup();
+    renderSidebar({ groups: ["platform-admins"] });
+
+    await user.click(screen.getByRole("button", { name: "Toggle menu" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("link", { name: "Platform Admin" })
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });

@@ -63,6 +63,14 @@ function SidebarProvider({
   const isMobile = useIsMobile();
   const [openMobile, setOpenMobile] = React.useState(false);
 
+  // Close the mobile Sheet when the viewport grows past the breakpoint, so narrowing again does not
+  // re-open it without a toggle. Adjusted during render (not in an effect) per the React docs.
+  const [prevIsMobile, setPrevIsMobile] = React.useState(isMobile);
+  if (prevIsMobile !== isMobile) {
+    setPrevIsMobile(isMobile);
+    if (!isMobile) setOpenMobile(false);
+  }
+
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
   const [_open, _setOpen] = React.useState(defaultOpen);
@@ -92,6 +100,8 @@ function SidebarProvider({
     const handleKeyDown = (event: KeyboardEvent) => {
       // A focused editor (Tiptap/ProseMirror binds Mod-b = bold) already handled the key.
       if (event.defaultPrevented) return;
+      // A held ⌘B auto-repeats; only the first keydown toggles.
+      if (event.repeat) return;
       if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         toggleSidebar();
@@ -150,11 +160,17 @@ function Sidebar({
   collapsible = "offcanvas",
   className,
   children,
+  mobileTitle = "Sidebar",
+  mobileDescription = "Displays the mobile sidebar.",
   ...props
 }: React.ComponentProps<"div"> & {
   side?: "left" | "right";
   variant?: "sidebar" | "floating" | "inset";
   collapsible?: "offcanvas" | "icon" | "none";
+  /** sr-only title of the mobile Sheet (Radix Dialog requires one). */
+  mobileTitle?: string;
+  /** sr-only description of the mobile Sheet. */
+  mobileDescription?: string;
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
@@ -189,8 +205,8 @@ function Sidebar({
           side={side}
         >
           <SheetHeader className="sr-only">
-            <SheetTitle>Kazi</SheetTitle>
-            <SheetDescription>Main navigation menu</SheetDescription>
+            <SheetTitle>{mobileTitle}</SheetTitle>
+            <SheetDescription>{mobileDescription}</SheetDescription>
           </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>

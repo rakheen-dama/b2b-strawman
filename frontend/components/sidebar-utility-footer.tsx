@@ -8,15 +8,8 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { SIDEBAR_ACTIVE_BAR } from "@/components/shell/sidebar-styles";
 import { UTILITY_ITEMS } from "@/lib/nav-items";
-
-/**
- * The `--sidebar-primary` bar on the active sidebar item (replaces the old Motion `layoutId`
- * indicator). Shared with AppSidebar, which imports it from here (this footer cannot import from
- * components/shell/app-sidebar.tsx without a cycle).
- */
-export const SIDEBAR_ACTIVE_BAR =
-  "relative data-[active=true]:before:absolute data-[active=true]:before:inset-y-1 data-[active=true]:before:left-0 data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-primary";
 
 interface SidebarUtilityFooterProps {
   slug: string;

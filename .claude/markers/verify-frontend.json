@@ -1,7 +1,7 @@
 {
-  "commit": "d78ce3ce510b5b516d35d0528747bea384ef56a7",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-640A, phase90/40A-home-kpi-row, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final code head)",
+  "commit": "4941cd086c737a410f9a8ca74f57149ae6392f63",
+  "command": "cd frontend && rm -rf .next && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-640B, phase90/40B-dashboard-widgets, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final code head)",
   "exit": 0,
-  "ts": "2026-11-12T10:58:32Z",
-  "summary": "PR #1767 (Phase 90 640A) @d78ce3ce5: FE-GATE exit 0 — 471 files, 4085 passed / 2 skipped; lint 0 errors. Head 90f8d740f adds OBS evidence only (qa_cycle/). E2E-LEGAL fresh stack @41c860fb8 and @d78ce3ce5: legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS 4 personas x 1024/1440 x light/dark on d78ce3ce5 (found + fixed three-cell row squeeze on 41c860fb8). Frontend CI pass @90f8d740f."
+  "ts": "2026-11-12T12:31:12Z",
+  "summary": "PR #1768 (Phase 90 640B) @4941cd086: FE-GATE exit 0 — 471 files, 4093 passed / 2 skipped; lint 0 errors. E2E-LEGAL fresh stacks @4941cd086: legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline); @788b93718: lifecycle 105, depth-ii run1 32/1 flake (day-30-45-soa-writeoff:227, Fees/Time tab stale after Log Time, file not in diff) then fresh run2 40/4. OBS 1024/1440 x light/dark, Alice+Carol, empty+seeded; fix1 re-measured. Frontend CI pass @4941cd086."
 }

@@ -1,0 +1,70 @@
+642C SEL-COMPAT — BEFORE (task 642.11). Worktree @ e2e73ca8f (origin/main). Grep over frontend/e2e/.
+Format: selector / role / name / URL mechanic -> where rendered (file:line) -> e2e consumers.
+Files: GTB = frontend/components/shared/grouped-tab-bar.tsx, MT = frontend/components/matters/matter-tabs.tsx,
+       CGT = frontend/components/customers/customer-grouped-tabs.tsx, helper = frontend/e2e/helpers/grouped-tabs.ts
+
+== Test ids ==
+[data-testid="grouped-tab-bar"]  (the role=tablist div)
+  -> GTB:81-86 (div role="tablist" data-testid="grouped-tab-bar" class "relative flex gap-6 border-b ...", onKeyDown ArrowLeft/Right)
+  -> e2e consumers: 0 specs (1 comment only: day-07-14-work-trust.spec.ts:136)
+[data-testid="tab-group-<groupId>"]  (group trigger button, role=tab)
+  -> single-tab group: GTB:105-125 (plain <button role="tab" aria-selected data-testid>)
+  -> multi-tab group:  GTB:136-168 (<DropdownMenuTrigger asChild><button role="tab" aria-selected data-testid> + ChevronDown); Radix adds aria-haspopup="menu", aria-expanded, data-state, id=radix-*
+  -> e2e consumers: helper openGroupedTab (helper:22, .filter({visible:true})) + 9 direct uses in 6 spec files:
+       day-07-14-work-trust:137-139 (tab-group-schedule, aria-selected=true), day-45-recon-prescription:33-35 (schedule),
+       day-90-review:273-275 (schedule), project-crud:174 (tab-group-finance aria-selected), project-tasks:388 (tab-group-client .filter visible, aria-selected),
+       legal-depth-ii/day-05-disbursements:431 (tab-group-finance .click() — NOT via helper, relies on one click opening the menu)
+     group ids used: matter details/overview?/work/finance/client/schedule/activity; client details/work/finance/compliance
+[data-testid="tab-item-<tabId>"]  (DropdownMenuItem, role=menuitem — NOT role=tab)
+  -> GTB:172-184 (DropdownMenuItem data-testid, onSelect -> onTabChange; active item class bg-slate-100/dark:bg-slate-800)
+  -> e2e consumers: helper openGroupedTab (helper:23) + day-05-disbursements:432-435 (tab-item-disbursements visible/hidden, tab-item-expenses count 0)
+
+== openGroupedTab(page, group, tab) — the main consumer (helper:19-40) ==
+  80 occurrences, 18 spec files (+ re-export legal-depth-ii.ts:241). Calls by group/tab:
+    15 work/tasks, 6 work/generated, 5 finance/time, 5 details/fields, 4 work/documents, 3 finance/budget, 3 details/team,
+    2 finance/invoices, 2 finance/disbursements, 2 details/details, 2 compliance/onboarding, 1 each: work/matters,
+    finance/statements, finance/rates, compliance/requests, client/requests, client/comments, client/adverse-parties, activity/activity
+  Contract it depends on: group trigger visible + clickable; clicking it (1–3x) makes tab-item-<tab> visible; clicking the item
+  makes the group trigger aria-selected="true". Helper clicks "until open" — it tolerates both "inactive click navigates" and
+  "inactive click opens menu" (observed today: inactive click OPENS the menu, see NOTES.md finding F-a).
+
+== Roles / accessible names ==
+role=tablist  -> GTB:82 (no aria-label; aria-orientation not set) -> 0 direct consumers
+role=tab      -> GTB:110 / GTB:141; accessible name = group label, plus " · <sub-tab label>" when a sub-tab of a multi group is
+                 active (GTB:93-100, e.g. "Work · Tasks", "Fees · Time recording"). Only group triggers are tabs.
+  -> getByRole("tab", …) consumers targeting the matter/client grouped bar: only the demo specs (not in any gating suite):
+       demo-recording.spec.ts:86/93/100/107 (/tasks/i, /time/i, /documents/i, /activity/i, guarded by isVisible()),
+       demo-full-90day.spec.ts:63 (clickTab helper, regex by name, guarded). All other 20 getByRole("tab") uses are other pages
+       (settings custom-fields/packs/data-protection, rates, compliance, task-detail sheet "Comments" tab).
+aria-selected -> GTB:111 / GTB:142 (true on the active GROUP trigger) -> 7 consumers (listed above + helper:35)
+aria-haspopup/aria-expanded -> Radix DropdownMenuTrigger (multi groups only) -> 0 consumers
+role=tabpanel -> Radix TabsPrimitive.Content, MT:218-308 (22 panels, class "pt-6 outline-none"), CGT:149-216 (14 panels).
+                 Panels are aria-labelledby a radix "-trigger-<tab>" id that does NOT exist (the bar does not render
+                 TabsPrimitive.Trigger) -> panels have no accessible name; inactive panels are hidden.
+  -> getByRole("tabpanel") (unnamed, relies on exactly ONE visible tabpanel on the page): 46 uses in 17 spec files + 2 in
+     helpers/legal-lifecycle.ts (:240, :410). Matter/client consumers include day-07-14-work-trust:92/105, day-75-complex (6),
+     day-90-review:250, day-30-billing, day-01-03-onboarding, project-crud:139, project-time:33/144, project-budget,
+     project-tasks, legal-depth-ii day-14/day-30-45/day-75-85, information-request-crud.
+     => any restyle that adds a 2nd visible tablist/tabpanel (e.g. a mobile duplicate) breaks these in strict mode.
+role=menu / menuitem -> Radix DropdownMenuContent/Item (GTB:170-186), portalled to body, align="start" -> consumers via tab-item-* only
+
+== URL mechanics (?tab=) ==
+Matter: MT:203-210 handleTabChange -> URLSearchParams(searchParams).set("tab", id) -> window.history.replaceState(null,"",`?…`)
+        (no RSC request; observed 2 replaceState calls per change: the app's + Next's history sync). Active tab read from
+        useSearchParams (MT:111-115, aliasLegacyTabId), falls back to "overview" (MT:200-201).
+Client: CGT:138-142 handleTabChange -> router.replace(`?…`) (observed: 1 replaceState by Next + 1 RSC GET `?tab=<id>&_rsc=…`).
+        Active tab via resolveTabFromUrl (CGT:130-136), fallback "overview".
+e2e consumers of matter/client ?tab= URLs:
+  toHaveURL/waitForURL: project-crud:153 (/[?&]tab=activity/), project-crud:172 (`/matters/<id>?tab=disbursements$` — exact end),
+     project-tasks:302 (`?tab=tasks&taskId=…&commentId=…`), project-tasks:378 (`?tab=comments&commentId=…`),
+     notification-bell:98 (`/matters/<id>?tab=tasks`), day-30-billing:99 (`/clients/<id>?tab=invoices`),
+     legal-depth-ii/day-30-45-soa-writeoff:448 (`/clients/<uuid>?tab=invoices`)  => 7 URL assertions in 6 files
+  (the remaining ~60 `?tab=` hits in e2e are settings pages: tariffs, trust-accounting, tax, packs, general, templates, …)
+  Note matter-team.spec.ts:27 comment: Team sub-tab must be CLICKED, not deep-linked via ?tab=team (619D stickiness).
+
+== Layout/animation hooks ==
+Active indicator: motion.span layoutId="grouped-tab-indicator" (GTB:118-123, GTB:161-166), "absolute inset-x-0 bottom-0 h-0.5 bg-teal-500"
+Focus style: GTB:29-33 "outline-none … focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+  (observed: computed outline-style stays "none" on :focus-visible -> NO visible focus ring; NOTES.md finding F-c)
+Keyboard: GTB:62-78 ArrowLeft/Right moves focus between group triggers (wraps); every trigger tabIndex=0 (no roving tabindex).
+0 e2e consumers of the indicator, focus ring, or arrow keys.

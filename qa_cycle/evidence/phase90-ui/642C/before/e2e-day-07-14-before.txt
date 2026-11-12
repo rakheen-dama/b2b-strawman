@@ -1,0 +1,89 @@
+642C BEFORE — day-07-14-work-trust.spec.ts against the e2e mock-auth stack (:3001), code @ e2e73ca8f
+Command (from frontend/, nvm node v20.11.1):
+  E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 ./node_modules/.bin/playwright test \
+    --config e2e/playwright.legal-lifecycle.config.ts e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts --reporter=list
+Run state: reused existing lifecycle run file $TMPDIR/kazi-legal-lifecycle-run.json (runId mwe0pu4a52ee, written 12 Nov 22:49
+by the earlier full lifecycle run on this stack). Days 0-3 prerequisites present; Days 7-14 had ALREADY run once for this runId.
+
+RESULT: 4 passed, 2 failed, 10 did not run (serial describes stop at first failure). Exit code 1.
+
+Both failures are RE-RUN ARTEFACTS (same runId -> records named per run already exist), not tab-bar failures:
+ 1) Day 7 › Bob: Add internal comment on the Sipho letter-of-demand task (:98)
+    strict mode violation at :114 sheet.getByText(comment) -> 2 elements (the posted <p> + the textarea still holding the text);
+    error-context aria snapshot shows TWO identical "Reviewed claim documents … (mwe0pu4a52ee)" comments by Bob (first run + this run).
+ 2) Day 14 › Alice: Deposit R250,000 into trust for Moroka estate (:197)
+    strict mode violation at helpers/legal-lifecycle.ts:358 trustTransactionRow(DEP/MOROKA/mwe0pu4a52ee) -> 2 rows (first run + this run).
+Not run because of the above: Day 7 tests 5-7 (incl. the Diary tab-group-schedule assertion at :137-139) and Day 14 tests 10-16.
+Not re-run in isolation: test 5 asserts exactly 1 "Motion" court-date row on the Sipho matter, but that matter already has 2 Motion
+rows (2026-12-12 Postponed, 2027-01-11 Scheduled — seen in obs screenshots), so it would fail on state too. The Diary single-tab click
+(tab-group-schedule -> aria-selected=true, ?tab=court-dates, court-date list renders) is covered live in obs-before.json visits[0].
+
+Tab-bar touchpoints that DID execute and pass in this run:
+ - test 2 (Carol log 90min) and test 3 (Bob log 120min): logTimeOnTask -> openGroupedTab(page,"work","tasks") + getByRole("tabpanel")
+ - test 3: openGroupedTab(page,"finance","time") + getByRole("tabpanel") (:91-92)
+ - test 4: openGroupedTab(page,"work","tasks") (:102) + tabpanel row -> task sheet opened; failed later at the comment assertion.
+
+STACK SIDE EFFECTS of this baseline run (created through the UI, not SQL): +90min Carol and +120min Bob time on the Sipho matter tasks,
++1 internal comment by Bob on the Sipho letter-of-demand task, +1 RECORDED R250,000 trust deposit DEP/MOROKA/mwe0pu4a52ee.
+An AFTER run of this file with the same runId will hit the same two failures (now with 3 duplicates) — compare on the same terms,
+or start a fresh lifecycle run (day-00 onwards) for a clean gate.
+
+--- raw list reporter output (ANSI stripped) ---
+Running 16 tests using 1 worker
+  ✓   1 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:54:7 › Day 7 — First Week of Work › Carol: Navigate to My Work page (1.3s)
+  ✓   2 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:62:7 › Day 7 — First Week of Work › Carol: Log 90min time on Sipho matter (2.5s)
+  ✓   3 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:78:7 › Day 7 — First Week of Work › Bob: Log 120min on Sipho — letter of demand (4.1s)
+  ✘   4 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:98:7 › Day 7 — First Week of Work › Bob: Add internal comment on the Sipho letter-of-demand task (3.9s)
+  -   5 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:119:7 › Day 7 — First Week of Work › Alice: Create court date for Sipho (Motion, 30 days out)
+  -   6 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:153:7 › Day 7 — First Week of Work › Alice: Log 60min on Moroka estate matter
+  -   7 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:167:7 › Day 7 — First Week of Work › Alice: My Work lists today's Moroka time entry
+  ✓   8 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:186:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Navigate to Trust Accounting (451ms)
+  ✘   9 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:197:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R250,000 into trust for Moroka estate (2.7s)
+  -  10 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:211:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Moroka trust deposit is RECORDED — no approval step
+  -  11 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:221:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Verify Moroka trust ledger balance
+  -  12 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:245:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R45,000 into trust for QuickCollect
+  -  13 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:258:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Add adverse party "Road Accident Fund" to registry
+  -  14 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:284:7 › Day 14 — Trust Deposits & Conflict Detection › Bob: Conflict check "Road Accident Fund" — adverse party match (Conflict Found)
+  -  15 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:299:7 › Day 14 — Trust Deposits & Conflict Detection › Carol: Log additional time on the Sipho matter (letter of demand)
+  -  16 [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:323:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Trust dashboard overview
+  1) [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:98:7 › Day 7 — First Week of Work › Bob: Add internal comment on the Sipho letter-of-demand task 
+    Error: expect(locator).toBeVisible() failed
+    Locator: getByRole('dialog', { name: 'Task Detail' }).getByText('Reviewed claim documents — need additional medical records from Dr. Nkosi (mwe0pu4a52ee)')
+    Expected: visible
+    Error: strict mode violation: getByRole('dialog', { name: 'Task Detail' }).getByText('Reviewed claim documents — need additional medical records from Dr. Nkosi (mwe0pu4a52ee)') resolved to 2 elements:
+        1) <p class="mt-1 text-sm whitespace-pre-wrap text-slate-700 dark:text-slate-300">Reviewed claim documents — need additional medica…</p> aka getByRole('paragraph').filter({ hasText: 'Reviewed claim documents —' })
+        2) <textarea name="body" required="" role="combobox" id="comment-body" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list" data-slot="popover-anchor" placeholder="Write a comment..." class="aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 …>Reviewed claim documents — need additional medica…</textarea> aka getByRole('combobox', { name: 'Add a comment' })
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByRole('dialog', { name: 'Task Detail' }).getByText('Reviewed claim documents — need additional medical records from Dr. Nkosi (mwe0pu4a52ee)')
+    > 114 |     await expect(sheet.getByText(comment)).toBeVisible({ timeout: 15_000 });
+          |                                            ^
+        at /Users/rakheendama/Projects/2026/worktree-epic-642C/frontend/e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:114:44
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-07-14-work-trust-Day-7-dc99c-Sipho-letter-of-demand-task-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Error Context: test-results/day-07-14-work-trust-Day-7-dc99c-Sipho-letter-of-demand-task-chromium/error-context.md
+  2) [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:197:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R250,000 into trust for Moroka estate 
+    Error: expect(locator).toContainText(expected) failed
+    Locator: locator('main tbody tr').filter({ hasText: 'DEP/MOROKA/mwe0pu4a52ee' })
+    Expected substring: "RECORDED"
+    Error: strict mode violation: locator('main tbody tr').filter({ hasText: 'DEP/MOROKA/mwe0pu4a52ee' }) resolved to 2 elements:
+        1) <tr data-testid="transaction-row-aef3afa4-0337-4f28-9a5c-574665cd59dd" class="border-b border-slate-100 last:border-0 dark:border-slate-800">…</tr> aka getByTestId('transaction-row-aef3afa4-0337-4f28-9a5c-574665cd59dd')
+        2) <tr data-testid="transaction-row-fdf98dbd-88d9-44a4-b690-7f885b596291" class="border-b border-slate-100 last:border-0 dark:border-slate-800">…</tr> aka getByTestId('transaction-row-fdf98dbd-88d9-44a4-b690-7f885b596291')
+    Call log:
+      - Expect "toContainText" with timeout 15000ms
+      - waiting for locator('main tbody tr').filter({ hasText: 'DEP/MOROKA/mwe0pu4a52ee' })
+       at ../../helpers/legal-lifecycle.ts:358
+    > 358 |   await expect(trustTransactionRow(page, opts.reference)).toContainText("RECORDED", {
+          |                                                           ^
+        at recordTrustDeposit (/Users/rakheendama/Projects/2026/worktree-epic-642C/frontend/e2e/helpers/legal-lifecycle.ts:358:59)
+        at /Users/rakheendama/Projects/2026/worktree-epic-642C/frontend/e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:199:5
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/day-07-14-work-trust-Day-1-7a6d2-nto-trust-for-Moroka-estate-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Error Context: test-results/day-07-14-work-trust-Day-1-7a6d2-nto-trust-for-Moroka-estate-chromium/error-context.md
+  2 failed
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:98:7 › Day 7 — First Week of Work › Bob: Add internal comment on the Sipho letter-of-demand task 
+    [chromium] › e2e/tests/legal-lifecycle/day-07-14-work-trust.spec.ts:197:7 › Day 14 — Trust Deposits & Conflict Detection › Alice: Deposit R250,000 into trust for Moroka estate 
+  10 did not run
+  4 passed (16.5s)

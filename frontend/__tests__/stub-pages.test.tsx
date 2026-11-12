@@ -78,7 +78,7 @@ vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
 import useSWR from "swr";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { ModuleGate } from "@/components/module-gate";
-import { TrustBalanceCard } from "@/components/customers/trust-balance-card";
+import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { Badge } from "@b2mash/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription } from "@b2mash/ui/card";
 import { Scale, Gavel } from "lucide-react";

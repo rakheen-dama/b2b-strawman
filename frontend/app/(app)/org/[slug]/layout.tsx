@@ -5,12 +5,10 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
 import { getSubscription } from "@/lib/actions/subscription";
 import { AppSidebar } from "@/components/shell/app-sidebar";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Breadcrumbs } from "@/components/breadcrumbs";
+import { AppHeader } from "@/components/shell/app-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SubscriptionBanner } from "@/components/billing/subscription-banner";
-import { NotificationBell } from "@/components/notifications/notification-bell";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { AuthHeaderControls } from "@/components/auth-header-controls";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { SubscriptionProvider } from "@/lib/subscription-context";
 import { OrgProfileProvider } from "@/lib/org-profile";
@@ -121,7 +119,7 @@ export default async function OrgLayout({
         terminologyNamespace={terminologyNamespace}
       >
         <RecentItemsProvider>
-          {/* Entity pages publish their name for the last crumb (Phase 88 628B); both the header's
+          {/* Entity pages publish their name for the last crumb (Phase 88 628B); both AppHeader's
               <Breadcrumbs> and the page {children} sit inside it. */}
           <BreadcrumbLabelProvider>
             <CommandPaletteProvider slug={slug}>
@@ -140,15 +138,7 @@ export default async function OrgLayout({
                     the whole document (1440px viewport: 1519px) instead of scrolling in its own
                     box. */}
                 <SidebarInset className="min-w-0">
-                  <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
-                    {/* Collapses the desktop rail / opens the mobile Sheet ("Toggle menu"). */}
-                    <SidebarTrigger />
-                    <Breadcrumbs slug={slug} orgName={orgName} />
-                    <div className="ml-auto flex items-center gap-3">
-                      <AuthHeaderControls />
-                      <NotificationBell orgSlug={slug} />
-                    </div>
-                  </header>
+                  <AppHeader slug={slug} orgName={orgName} />
                   <main id="main-content" className="bg-background min-w-0 flex-1">
                     <SubscriptionProvider billingResponse={billingData}>
                       <SubscriptionBanner billingResponse={billingData} slug={slug} />

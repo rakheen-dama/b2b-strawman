@@ -70,6 +70,14 @@ describe("TimeBreakdown", () => {
     expect(screen.getByText("total")).toBeInTheDocument();
     // The card keeps its own matter list, so the chart draws no second legend.
     expect(screen.queryByTestId("legend")).toBeNull();
+    expect(document.querySelector('[data-slot="chart-legend"]')).toBeNull();
+    // List swatches use the pinned slots, top matter first.
+    const swatches = Array.from(figure.querySelectorAll<HTMLElement>("span.rounded-full"));
+    expect(swatches.map((el) => el.style.backgroundColor)).toEqual([
+      "var(--chart-1)",
+      "var(--chart-2)",
+      "var(--chart-3)",
+    ]);
   });
 
   it("states the breakdown in an sr-only summary and a table on demand", async () => {

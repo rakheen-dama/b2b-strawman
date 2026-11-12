@@ -133,6 +133,32 @@ describe("TrendAreaChart", () => {
     expect(within(screen.getByRole("table")).getAllByRole("cell", { name: "11" })).toHaveLength(2);
   });
 
+  it("never sums non-additive series: six percent series draw five, the table keeps six", async () => {
+    const user = userEvent.setup();
+    const series = Array.from({ length: 6 }, (_, i) => ({ key: `s${i}`, label: `Earner ${i}` }));
+    const data = [{ month: "Nov", s0: 80, s1: 70, s2: 60, s3: 50, s4: 40, s5: 30 }];
+    render(
+      <TrendAreaChart
+        title="Utilization"
+        data={data}
+        xKey="month"
+        categoryLabel="Month"
+        series={series}
+        format="percent"
+      />
+    );
+
+    expect(screen.queryByTestId("area-__other")).toBeNull();
+    expect(screen.getByTestId("area-s4")).toHaveAttribute("data-stroke", "var(--chart-5)");
+    expect(screen.queryByTestId("area-s5")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "View as table" }));
+    const headers = within(screen.getByRole("table"))
+      .getAllByRole("columnheader")
+      .map((h) => h.textContent);
+    expect(headers).toEqual(["Month", ...series.map((s) => s.label)]);
+  });
+
   it("shows a skeleton at chart height while loading", () => {
     render(
       <TrendAreaChart

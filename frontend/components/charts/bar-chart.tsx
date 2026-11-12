@@ -3,7 +3,6 @@
 "use client";
 
 import { ChartColumn } from "lucide-react";
-import { useReducedMotion } from "motion/react";
 import { Bar, BarChart, CartesianGrid, LabelList, ReferenceLine, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
@@ -17,14 +16,24 @@ import { CHART_THEME } from "@/lib/chart-theme";
 import { formatAxisTick, formatChartValue, type ChartValueKind } from "@/lib/chart-format";
 import { ChartCard, type ChartCardSlots } from "./chart-card";
 import {
+  chartState,
   foldBars,
   foldSeries,
+  isAdditive,
+  moreLabel,
   seriesColor,
+  seriesTable,
   summarizeBars,
   type ChartRow,
   type ChartSeries,
 } from "./chart-summary";
-import { ChartTableToggle } from "./chart-table-toggle";
+import { ChartTableToggle, usePrefersReducedMotion } from "./chart-table-toggle";
+
+/** Series-name direct labels for 2–4 series (ADR-370 §3); one series gets value labels instead. */
+const MAX_DIRECT_LABELS = 4;
+/** Rough width of one 12px label character — labels that would not fit are skipped, not clipped. */
+const LABEL_CHAR_PX = 7;
+const LABEL_GAP = 8;
 
 interface BarChartPresetProps extends ChartCardSlots {
   data: ChartRow[];
@@ -32,7 +41,10 @@ interface BarChartPresetProps extends ChartCardSlots {
   categoryKey: string;
   /** "View as table" header of the category column. */
   categoryLabel?: string;
-  /** Same unit, one axis; a sixth series folds into "Other". `layout="single"` draws the first. */
+  /**
+   * Same unit, one axis; a sixth series folds into "Other" (summed only for additive formats).
+   * `layout="single"` draws the first. Pin `slot`s to keep colours stable across filters.
+   */
   series: ChartSeries[];
   /** "vertical" = columns (default); "horizontal" = bars, e.g. a ranking. */
   orientation?: "vertical" | "horizontal";
@@ -41,10 +53,81 @@ interface BarChartPresetProps extends ChartCardSlots {
   currency?: string;
   /** Single series about a zero line: negatives on --div-neg, the rest on --div-pos. */
   diverging?: boolean;
-  /** At most this many categories in total; the rest fold into one "Other" (default 10). */
+  /**
+   * At most this many categories in total (default 10). Additive formats fold the rest into one
+   * summed "Other"; percent/points draw the first `maxBars` and state "+N more" (the table keeps
+   * every row) — pre-aggregate a non-additive "Other" yourself if you need one.
+   */
   maxBars?: number;
   /** Chart area height in px. */
   height?: number;
+}
+
+type LabelPlacement = "margin" | "tip" | "above";
+
+interface SeriesNameLabelProps {
+  /** Series label drawn beside its mark. */
+  text: string;
+  /** Category index whose mark carries the label. */
+  targetIndex: number;
+  /**
+   * margin: columns — in the right margin at the bar's value end (grouped) or segment middle
+   * (stacked), like a line-end label. tip: horizontal grouped — beyond the bar end.
+   * above: horizontal stacked — centred above the segment, only where it fits.
+   */
+  placement: LabelPlacement;
+  stacked: boolean;
+  /** Right margin in px (the "margin" placement's free space). */
+  rightMargin: number;
+  // Injected by recharts' LabelList → Label.
+  index?: number;
+  viewBox?: { x?: number; y?: number; width?: number; height?: number };
+  parentViewBox?: { width?: number };
+}
+
+/** LabelList `content`: the series name on one category's mark only (selective direct label). */
+function SeriesNameLabel({
+  text,
+  targetIndex,
+  placement,
+  stacked,
+  rightMargin,
+  index,
+  viewBox,
+  parentViewBox,
+}: SeriesNameLabelProps) {
+  if (index !== targetIndex || !viewBox) return null;
+  const { x = 0, y = 0, width = 0, height = 0 } = viewBox;
+  const textWidth = text.length * LABEL_CHAR_PX;
+  let position: { x: number; y: number; anchor: "start" | "middle" } | null = null;
+
+  if (placement === "margin") {
+    if (parentViewBox?.width === undefined || textWidth > rightMargin - LABEL_GAP) return null;
+    position = {
+      x: parentViewBox.width - rightMargin + LABEL_GAP,
+      y: stacked ? y + height / 2 : y,
+      anchor: "start",
+    };
+  } else if (placement === "tip") {
+    position = { x: Math.max(x, x + width) + LABEL_GAP, y: y + height / 2, anchor: "start" };
+  } else {
+    // Interior segment with no free end: label above it, or not at all (dataviz: never clip).
+    if (textWidth > Math.abs(width)) return null;
+    position = { x: x + width / 2, y: y - LABEL_GAP, anchor: "middle" };
+  }
+
+  return (
+    <text
+      x={position.x}
+      y={position.y}
+      textAnchor={position.anchor}
+      dominantBaseline="middle"
+      fill={CHART_THEME.axis}
+      fontSize={12}
+    >
+      {text}
+    </text>
+  );
 }
 
 export function BarChartPreset({
@@ -69,19 +152,25 @@ export function BarChartPreset({
   className,
   "data-testid": testId,
 }: BarChartPresetProps) {
-  const reduceMotion = useReducedMotion() ?? false;
+  const reduceMotion = usePrefersReducedMotion();
 
   const singleSeries = layout === "single" || diverging;
-  const folded = foldSeries(data, singleSeries ? inputSeries.slice(0, 1) : inputSeries);
+  const drawnInput = singleSeries ? inputSeries.slice(0, 1) : inputSeries;
+  const folded = foldSeries(data, drawnInput, format);
   const series = folded.series;
   const rows = foldBars(
     folded.rows,
     categoryKey,
     series.map((s) => s.key),
+    format,
     maxBars
   );
+  // Additive formats fold into a summed "Other" (chart and table agree). Percent/points truncate,
+  // so the table keeps every row and series the chart leaves off.
+  const additive = isAdditive(format);
+  const hiddenCount = additive ? 0 : data.length - rows.length;
   const hasValue = rows.some((row) => series.some((s) => typeof row[s.key] === "number"));
-  const state = loading ? "loading" : error ? "error" : hasValue ? "ready" : "empty";
+  const state = chartState({ loading, error, hasValue });
 
   // Diverging: each row carries its own fill (recharts reads `fill` off the datum).
   const chartRows: ChartRow[] = diverging
@@ -99,13 +188,32 @@ export function BarChartPreset({
   const stacked = layout === "stacked" && !singleSeries;
   const config: ChartConfig = Object.fromEntries(series.map((s) => [s.key, { label: s.label }]));
   const showLegend = series.length >= 2;
-  // Value labels on single-series bars only: grouped/stacked would print a number on every mark.
+  // One series: compact value labels (the title names the series). 2–4: series-name labels on one
+  // category (the last; the first for horizontal stacks, whose labels sit above the top bar).
   const valueLabels = series.length === 1;
+  const nameLabels = series.length >= 2 && series.length <= MAX_DIRECT_LABELS;
+  const placement: LabelPlacement = !horizontal ? "margin" : stacked ? "above" : "tip";
+  const labelIndex = placement === "above" ? 0 : rows.length - 1;
+  const longestName = Math.max(0, ...series.map((s) => s.label.length));
+  const rightMargin =
+    nameLabels && placement !== "above"
+      ? Math.min(160, longestName * LABEL_CHAR_PX + 2 * LABEL_GAP)
+      : horizontal
+        ? 56
+        : 12;
   const radius: [number, number, number, number] = horizontal
     ? [0, CHART_THEME.bar.radius[0], CHART_THEME.bar.radius[1], 0]
     : CHART_THEME.bar.radius;
   const fmt = (value: number) => formatChartValue(value, format, currency);
   const tick = (value: number) => formatAxisTick(value, format, currency);
+  const table = seriesTable({
+    rows: additive ? rows : data,
+    categoryKey,
+    categoryLabel,
+    series: additive ? series : drawnInput,
+    format,
+    currency,
+  });
 
   return (
     <ChartCard
@@ -119,41 +227,29 @@ export function BarChartPreset({
       errorMessage={error}
       summary={
         state === "ready"
-          ? summarizeBars({ title, rows, categoryKey, series, format, currency, diverging })
+          ? summarizeBars({
+              title,
+              rows,
+              categoryKey,
+              series,
+              format,
+              currency,
+              diverging,
+              hiddenCount,
+            })
           : undefined
       }
       footer={footer}
       className={className}
       data-testid={testId}
-      toggle={
-        <ChartTableToggle
-          caption={title}
-          columns={[
-            { key: categoryKey, label: categoryLabel },
-            ...series.map((s) => ({ key: s.key, label: s.label, numeric: true })),
-          ]}
-          rows={rows.map((row, index) => ({
-            id: `${index}`,
-            cells: [
-              String(row[categoryKey] ?? ""),
-              ...series.map((s) =>
-                formatChartValue(
-                  typeof row[s.key] === "number" ? (row[s.key] as number) : null,
-                  format,
-                  currency
-                )
-              ),
-            ],
-          }))}
-        />
-      }
+      toggle={<ChartTableToggle caption={title} columns={table.columns} rows={table.rows} />}
     >
       <ChartContainer config={config} className="aspect-auto w-full" style={{ height }}>
         <BarChart
           accessibilityLayer
           data={chartRows}
           layout={horizontal ? "vertical" : "horizontal"}
-          margin={{ top: 16, right: horizontal ? 56 : 12, bottom: 0, left: 0 }}
+          margin={{ top: 16, right: rightMargin, bottom: 0, left: 0 }}
         >
           <CartesianGrid
             vertical={horizontal}
@@ -217,7 +313,7 @@ export function BarChartPreset({
               key={s.key}
               dataKey={s.key}
               name={s.label}
-              fill={diverging ? undefined : seriesColor(s.key, index)}
+              fill={diverging ? undefined : seriesColor(s, index)}
               stackId={stacked ? "stack" : undefined}
               radius={stacked && index < series.length - 1 ? 0 : radius}
               isAnimationActive={!reduceMotion}
@@ -231,10 +327,29 @@ export function BarChartPreset({
                   formatter={(value: unknown) => (typeof value === "number" ? tick(value) : "")}
                 />
               ) : null}
+              {nameLabels ? (
+                <LabelList
+                  dataKey={s.key}
+                  content={
+                    <SeriesNameLabel
+                      text={s.label}
+                      targetIndex={labelIndex}
+                      placement={placement}
+                      stacked={stacked}
+                      rightMargin={rightMargin}
+                    />
+                  }
+                />
+              ) : null}
             </Bar>
           ))}
         </BarChart>
       </ChartContainer>
+      {hiddenCount > 0 ? (
+        <p className="text-muted-foreground mt-1 text-right text-xs" data-slot="chart-more">
+          {moreLabel(hiddenCount)}
+        </p>
+      ) : null}
     </ChartCard>
   );
 }

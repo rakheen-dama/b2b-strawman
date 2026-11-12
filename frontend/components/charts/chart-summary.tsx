@@ -1,7 +1,9 @@
-// Chart kit helpers (ADR-370): series/category folding, colour slots and the sr-only summary
-// sentence. Pure and server-safe — no hooks, no "use client".
+// Chart kit helpers (ADR-370): series/category folding, colour slots, the "View as table" rows
+// and the sr-only summary sentence. Pure and server-safe — no hooks, no "use client".
 import { CHART_THEME } from "@/lib/chart-theme";
 import { formatChartValue, type ChartValueKind } from "@/lib/chart-format";
+import type { ChartCardState } from "./chart-card";
+import type { ChartTableColumn, ChartTableRow } from "./chart-table-toggle";
 
 /** ADR-370: at most five categorical slots; a sixth series folds into "Other". */
 export const MAX_SERIES = CHART_THEME.categorical.length;
@@ -10,17 +12,53 @@ export const OTHER_KEY = "__other";
 /** "Other" is de-emphasised (dataviz: the tail is not an identity), not a sixth hue. */
 export const OTHER_COLOR = "var(--muted-foreground)";
 
+/** A categorical colour slot, `var(--chart-1..5)`. */
+export type ChartSlot = 1 | 2 | 3 | 4 | 5;
+
 export interface ChartSeries {
   key: string;
   label: string;
+  /**
+   * Pins the series to a colour slot so it keeps its colour when a filter removes other series
+   * (ADR-370: colour follows the entity, never its position). Defaults to the series' position.
+   * Pass a slot for every series or for none.
+   */
+  slot?: ChartSlot;
 }
 
 export type ChartRow = Record<string, string | number | null>;
 
-/** Slot colour by position (fixed order, never cycled); the folded "Other" is muted. */
-export function seriesColor(key: string, index: number): string {
-  if (key === OTHER_KEY) return OTHER_COLOR;
-  return CHART_THEME.categorical[Math.min(index, MAX_SERIES - 1)];
+/**
+ * Slot colour: the item's pinned `slot`, else its position (fixed order, never cycled). The folded
+ * "Other" is muted.
+ */
+export function seriesColor(item: { key: string; slot?: ChartSlot }, index: number): string {
+  if (item.key === OTHER_KEY) return OTHER_COLOR;
+  const slotIndex = item.slot ? item.slot - 1 : index;
+  return CHART_THEME.categorical[Math.min(slotIndex, MAX_SERIES - 1)];
+}
+
+/**
+ * Percent and points are not additive: a sum of margins or utilisations means nothing, so the
+ * folds never sum them into "Other" — they truncate instead (see `foldSeries` / `foldBars`).
+ */
+export function isAdditive(format: ChartValueKind): boolean {
+  return format !== "percent" && format !== "points";
+}
+
+/** The card state every preset derives the same way. */
+export function chartState({
+  loading,
+  error,
+  hasValue,
+}: {
+  loading?: boolean;
+  error?: unknown;
+  hasValue: boolean;
+}): ChartCardState {
+  if (loading) return "loading";
+  if (error) return "error";
+  return hasValue ? "ready" : "empty";
 }
 
 function toNumber(value: unknown): number | null {
@@ -39,13 +77,17 @@ function sumOrNull(values: unknown[]): number | null {
 
 /**
  * ≤ MAX_SERIES series are kept as given. Six or more keep the first MAX_SERIES − 1 and add an
- * "Other" series whose value per row is the sum of the rest.
+ * "Other" series whose value per row is the sum of the rest. For a non-additive `format`
+ * (percent, points) nothing is summed: the first MAX_SERIES are drawn and the rest only appear in
+ * the table — callers pre-aggregate non-additive units if they need a total.
  */
 export function foldSeries(
   rows: ChartRow[],
-  series: ChartSeries[]
+  series: ChartSeries[],
+  format: ChartValueKind
 ): { rows: ChartRow[]; series: ChartSeries[] } {
   if (series.length <= MAX_SERIES) return { rows, series };
+  if (!isAdditive(format)) return { rows, series: series.slice(0, MAX_SERIES) };
   const kept = series.slice(0, MAX_SERIES - 1);
   const rest = series.slice(MAX_SERIES - 1);
   return {
@@ -59,15 +101,20 @@ export function foldSeries(
 
 /**
  * Bars: at most `maxBars` categories in total. Beyond that the first `maxBars − 1` (caller's
- * order) are kept and the rest are summed, per series, into one "Other" category.
+ * order) are kept and the rest are summed, per series, into one "Other" category. For a
+ * non-additive `format` (percent, points) the tail is not summed: the first `maxBars` are drawn,
+ * and the preset states "+N more" and keeps every row in the table. Callers that want an "Other"
+ * figure for a non-additive unit pre-aggregate it (e.g. a weighted margin) and pass it as a row.
  */
 export function foldBars(
   rows: ChartRow[],
   categoryKey: string,
   seriesKeys: string[],
+  format: ChartValueKind,
   maxBars = 10
 ): ChartRow[] {
   if (rows.length <= maxBars) return rows;
+  if (!isAdditive(format)) return rows.slice(0, maxBars);
   const keepCount = Math.max(maxBars - 1, 0);
   const kept = rows.slice(0, keepCount);
   const rest = rows.slice(keepCount);
@@ -82,11 +129,14 @@ export interface ChartSegment {
   key: string;
   label: string;
   value: number;
+  /** Pins the segment to a colour slot (see `ChartSeries.slot`). Defaults to its position. */
+  slot?: ChartSlot;
 }
 
 /**
  * Donut: ≤ `max` segments are kept in the caller's order. More are sorted by value (largest
- * first), the top `max − 1` kept and the rest summed into "Other".
+ * first), the top `max − 1` kept and the rest summed into "Other". A donut is part-to-whole, so
+ * its values are additive by construction.
  */
 export function foldSegments(segments: ChartSegment[], max = MAX_SERIES): ChartSegment[] {
   if (segments.length <= max) return segments;
@@ -94,6 +144,43 @@ export function foldSegments(segments: ChartSegment[], max = MAX_SERIES): ChartS
   const kept = sorted.slice(0, max - 1);
   const otherValue = sorted.slice(max - 1).reduce((sum, s) => sum + s.value, 0);
   return [...kept, { key: OTHER_KEY, label: OTHER_LABEL, value: otherValue }];
+}
+
+interface SeriesTableArgs {
+  rows: ChartRow[];
+  /** Key of the first column (the row header). */
+  categoryKey: string;
+  categoryLabel: string;
+  series: ChartSeries[];
+  format: ChartValueKind;
+  currency?: string;
+  /** Text of the row header; defaults to the row's `categoryKey` value. */
+  categoryText?: (row: ChartRow, index: number) => string;
+}
+
+/** "View as table" columns and rows for the cartesian presets: one row per category. */
+export function seriesTable({
+  rows,
+  categoryKey,
+  categoryLabel,
+  series,
+  format,
+  currency,
+  categoryText = (row) => String(row[categoryKey] ?? ""),
+}: SeriesTableArgs): { columns: ChartTableColumn[]; rows: ChartTableRow[] } {
+  return {
+    columns: [
+      { key: categoryKey, label: categoryLabel },
+      ...series.map((s) => ({ key: s.key, label: s.label, numeric: true })),
+    ],
+    rows: rows.map((row, index) => ({
+      id: `${index}`,
+      cells: [
+        categoryText(row, index),
+        ...series.map((s) => formatChartValue(toNumber(row[s.key]), format, currency)),
+      ],
+    })),
+  };
 }
 
 /** The x label shown for the last point of a trend whose last period is incomplete. */
@@ -158,6 +245,8 @@ interface SummarizeBarsArgs {
   format: ChartValueKind;
   currency?: string;
   diverging?: boolean;
+  /** Categories left off the chart (non-additive truncation); stated as "+N more in the table". */
+  hiddenCount?: number;
 }
 
 /** "WIP by fee earner: 6 bars; highest Alice R 84 000,00, lowest Carol R 3 200,00." */
@@ -169,6 +258,7 @@ export function summarizeBars({
   format,
   currency,
   diverging = false,
+  hiddenCount = 0,
 }: SummarizeBarsArgs): string {
   const fmt = (value: number) => formatChartValue(value, format, currency);
   const single = series.length === 1;
@@ -190,7 +280,13 @@ export function summarizeBars({
   });
 
   const count = `${rows.length} ${single ? "bars" : "categories"}`;
-  return `${title}: ${count}; ${clauses.join("; ")}.`;
+  const more = hiddenCount > 0 ? `; ${moreLabel(hiddenCount)}` : "";
+  return `${title}: ${count}; ${clauses.join("; ")}${more}.`;
+}
+
+/** "+3 more in the table" — the visible note and summary clause for truncated bars. */
+export function moreLabel(count: number): string {
+  return `+${count} more in the table`;
 }
 
 interface SummarizeSegmentsArgs {

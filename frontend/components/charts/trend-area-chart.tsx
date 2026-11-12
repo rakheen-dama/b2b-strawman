@@ -4,7 +4,6 @@
 
 import { useId } from "react";
 import { ChartArea } from "lucide-react";
-import { useReducedMotion } from "motion/react";
 import { Area, AreaChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
@@ -18,14 +17,17 @@ import { CHART_THEME } from "@/lib/chart-theme";
 import { formatAxisTick, formatChartValue, type ChartValueKind } from "@/lib/chart-format";
 import { ChartCard, type ChartCardSlots } from "./chart-card";
 import {
+  chartState,
   foldSeries,
+  isAdditive,
   seriesColor,
+  seriesTable,
   summarizeTrend,
   toDateLabel,
   type ChartRow,
   type ChartSeries,
 } from "./chart-summary";
-import { ChartTableToggle } from "./chart-table-toggle";
+import { ChartTableToggle, usePrefersReducedMotion } from "./chart-table-toggle";
 
 /** Suffix of the dashed companion series that draws the incomplete last period. */
 const PARTIAL_SUFFIX = "__partial";
@@ -37,8 +39,12 @@ interface TrendAreaChartProps extends ChartCardSlots {
   /** Key of the caller-formatted x label ("Aug 2026"). */
   xKey: string;
   /** "View as table" header of the x column. */
-  xLabel?: string;
-  /** Same unit, one axis; a sixth series folds into "Other". */
+  categoryLabel?: string;
+  /**
+   * Same unit, one axis; a sixth series folds into "Other" (summed only for additive formats;
+   * percent/points draw the first five and the table keeps the rest). Pin `slot`s to keep
+   * colours stable across filters.
+   */
   series: ChartSeries[];
   format: ChartValueKind;
   currency?: string;
@@ -79,7 +85,7 @@ export function TrendAreaChart({
   description,
   data,
   xKey,
-  xLabel = "Period",
+  categoryLabel = "Period",
   series: inputSeries,
   format,
   currency,
@@ -93,12 +99,12 @@ export function TrendAreaChart({
   className,
   "data-testid": testId,
 }: TrendAreaChartProps) {
-  const reduceMotion = useReducedMotion() ?? false;
+  const reduceMotion = usePrefersReducedMotion();
   const gradientId = `trend-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
-  const { rows, series } = foldSeries(data, inputSeries);
+  const { rows, series } = foldSeries(data, inputSeries, format);
   const hasValue = rows.some((row) => series.some((s) => typeof row[s.key] === "number"));
-  const state = loading ? "loading" : error ? "error" : hasValue ? "ready" : "empty";
+  const state = chartState({ loading, error, hasValue });
 
   const lastIndex = rows.length - 1;
   const partial = partialLastPoint && rows.length >= 2;
@@ -126,6 +132,16 @@ export function TrendAreaChart({
   const showLegend = series.length >= 2;
   const directLabels = series.length >= 2 && series.length <= MAX_DIRECT_LABELS;
   const fmt = (value: number) => formatChartValue(value, format, currency);
+  const table = seriesTable({
+    rows,
+    categoryKey: xKey,
+    categoryLabel,
+    // Non-additive truncation leaves series off the chart, never off the table.
+    series: isAdditive(format) ? series : inputSeries,
+    format,
+    currency,
+    categoryText: xAt,
+  });
 
   return (
     <ChartCard
@@ -153,28 +169,7 @@ export function TrendAreaChart({
       footer={footer}
       className={className}
       data-testid={testId}
-      toggle={
-        <ChartTableToggle
-          caption={title}
-          columns={[
-            { key: xKey, label: xLabel },
-            ...series.map((s) => ({ key: s.key, label: s.label, numeric: true })),
-          ]}
-          rows={rows.map((row, index) => ({
-            id: `${index}`,
-            cells: [
-              xAt(row, index),
-              ...series.map((s) =>
-                formatChartValue(
-                  typeof row[s.key] === "number" ? (row[s.key] as number) : null,
-                  format,
-                  currency
-                )
-              ),
-            ],
-          }))}
-        />
-      }
+      toggle={<ChartTableToggle caption={title} columns={table.columns} rows={table.rows} />}
     >
       <ChartContainer config={config} className="aspect-auto w-full" style={{ height }}>
         <AreaChart
@@ -187,12 +182,12 @@ export function TrendAreaChart({
               <linearGradient key={s.key} id={`${gradientId}-${index}`} x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor={seriesColor(s.key, index)}
+                  stopColor={seriesColor(s, index)}
                   stopOpacity={CHART_THEME.gradientOpacity.top}
                 />
                 <stop
                   offset="95%"
-                  stopColor={seriesColor(s.key, index)}
+                  stopColor={seriesColor(s, index)}
                   stopOpacity={CHART_THEME.gradientOpacity.bottom}
                 />
               </linearGradient>
@@ -250,7 +245,7 @@ export function TrendAreaChart({
               dataKey={s.key}
               name={s.label}
               type={CHART_THEME.area.type}
-              stroke={seriesColor(s.key, index)}
+              stroke={seriesColor(s, index)}
               strokeWidth={2}
               fill={`url(#${gradientId}-${index})`}
               dot={CHART_THEME.area.dot}
@@ -272,7 +267,7 @@ export function TrendAreaChart({
                   dataKey={`${s.key}${PARTIAL_SUFFIX}`}
                   name={s.label}
                   type={CHART_THEME.area.type}
-                  stroke={seriesColor(s.key, index)}
+                  stroke={seriesColor(s, index)}
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   fill="none"

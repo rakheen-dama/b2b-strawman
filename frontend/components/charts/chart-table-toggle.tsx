@@ -2,7 +2,9 @@
 
 // Chart kit "View as table" (ADR-370 accessibility contract). The <table> is mounted only while
 // open — never hidden with CSS — so pages with a strict getByRole("table") keep one table.
-import { useId, useState } from "react";
+// Also the kit's shared client hook `usePrefersReducedMotion` (every recharts preset imports this
+// module already).
+import { useId, useState, useSyncExternalStore } from "react";
 import { Button } from "@b2mash/ui/button";
 import {
   Table,
@@ -14,6 +16,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeReducedMotion(onChange: () => void): () => void {
+  if (typeof window.matchMedia !== "function") return () => {};
+  const media = window.matchMedia(REDUCED_MOTION_QUERY);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+function getReducedMotion(): boolean {
+  return typeof window.matchMedia === "function" && window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+/**
+ * `prefers-reduced-motion: reduce`, hydration-safe: the server snapshot and the hydrating client
+ * render both read `false`, then React re-renders with the real preference (and on every change).
+ * Used instead of `motion/react`'s `useReducedMotion`, which seeds `useState` with `null` on the
+ * server and the live preference on the client, and never updates.
+ */
+export function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false);
+}
 
 export interface ChartTableColumn {
   key: string;

@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { BarChartPreset } from "@/components/charts/bar-chart";
 import { formatChartValue } from "@/lib/chart-format";
 
@@ -39,7 +40,20 @@ vi.mock("recharts", () => ({
   CartesianGrid: () => null,
   XAxis: () => null,
   YAxis: () => null,
-  LabelList: () => <div data-testid="label-list" />,
+  LabelList: ({
+    content,
+  }: {
+    content?: React.ReactElement<{ text?: string; targetIndex?: number }>;
+  }) =>
+    content ? (
+      <div
+        data-testid="name-label"
+        data-text={content.props.text}
+        data-target={content.props.targetIndex}
+      />
+    ) : (
+      <div data-testid="label-list" />
+    ),
   ReferenceLine: () => <div data-testid="reference-line" />,
   Tooltip: () => null,
   Legend: () => <div data-testid="legend" />,
@@ -76,8 +90,9 @@ describe("BarChartPreset", () => {
     );
     expect(screen.queryByTestId("legend")).toBeNull();
     expect(screen.getByTestId("bar-wip")).toHaveAttribute("data-fill", "var(--chart-1)");
-    // Single series → direct value labels.
+    // Single series → direct value labels, no series-name labels.
     expect(screen.getByTestId("label-list")).toBeInTheDocument();
+    expect(screen.queryByTestId("name-label")).toBeNull();
   });
 
   it("folds categories beyond maxBars into one Other bar", () => {
@@ -149,8 +164,99 @@ describe("BarChartPreset", () => {
     expect(other).toHaveAttribute("data-fill", "var(--muted-foreground)");
     expect(other).toHaveAttribute("data-stack", "stack");
     expect(chartRows()[0].__other).toBe(11);
-    // No value labels on multi-series bars.
+    // Five drawn series: legend only — no value labels and no direct labels past four.
     expect(screen.queryByTestId("label-list")).toBeNull();
+    expect(screen.queryByTestId("name-label")).toBeNull();
+  });
+
+  it("direct-labels 2–4 grouped series by name on the last category, beside the legend", () => {
+    render(
+      <BarChartPreset
+        title="Billed vs collected"
+        data={[
+          { month: "Sep", billed: 10, collected: 8 },
+          { month: "Oct", billed: 12, collected: 11 },
+          { month: "Nov", billed: 9, collected: 7 },
+        ]}
+        categoryKey="month"
+        series={[
+          { key: "billed", label: "Billed" },
+          { key: "collected", label: "Collected" },
+        ]}
+        layout="grouped"
+        format="currency"
+      />
+    );
+
+    expect(screen.getByTestId("legend")).toBeInTheDocument();
+    const labels = screen.getAllByTestId("name-label");
+    expect(labels.map((l) => l.getAttribute("data-text"))).toEqual(["Billed", "Collected"]);
+    // The endpoint (last category) carries the label, never every bar.
+    expect(labels.map((l) => l.getAttribute("data-target"))).toEqual(["2", "2"]);
+    expect(screen.queryByTestId("label-list")).toBeNull();
+  });
+
+  it("keeps a series' colour slot when a filter removes another series", () => {
+    const data = [{ month: "Nov", fees: 5, disb: 2, trust: 9 }];
+    const all = [
+      { key: "fees", label: "Fees", slot: 1 as const },
+      { key: "disb", label: "Disbursements", slot: 2 as const },
+      { key: "trust", label: "Trust", slot: 3 as const },
+    ];
+    const { rerender } = render(
+      <BarChartPreset
+        title="Slots"
+        data={data}
+        categoryKey="month"
+        series={all}
+        layout="grouped"
+        format="currency"
+      />
+    );
+    expect(screen.getByTestId("bar-trust")).toHaveAttribute("data-fill", "var(--chart-3)");
+
+    rerender(
+      <BarChartPreset
+        title="Slots"
+        data={data}
+        categoryKey="month"
+        series={all.filter((s) => s.key !== "disb")}
+        layout="grouped"
+        format="currency"
+      />
+    );
+    expect(screen.getByTestId("bar-fees")).toHaveAttribute("data-fill", "var(--chart-1)");
+    expect(screen.getByTestId("bar-trust")).toHaveAttribute("data-fill", "var(--chart-3)");
+  });
+
+  it("never sums a non-additive tail: percent bars truncate to maxBars and state +N more", async () => {
+    const user = userEvent.setup();
+    const data = Array.from({ length: 7 }, (_, i) => ({ earner: `E${i + 1}`, util: 90 - i * 5 }));
+    render(
+      <BarChartPreset
+        title="Utilization"
+        data={data}
+        categoryKey="earner"
+        series={[{ key: "util", label: "Utilization" }]}
+        format="percent"
+        orientation="horizontal"
+        maxBars={4}
+      />
+    );
+
+    const rows = chartRows();
+    expect(rows.map((r) => r.earner)).toEqual(["E1", "E2", "E3", "E4"]);
+    expect(rows.some((r) => r.earner === "Other")).toBe(false);
+    expect(screen.getByText("+3 more in the table")).toBeInTheDocument();
+    expect(document.querySelector('[data-slot="chart-summary"]')?.textContent).toMatch(
+      /^Utilization: 4 bars; .*; \+3 more in the table\.$/
+    );
+
+    // The table keeps every row the chart leaves off.
+    await user.click(screen.getByRole("button", { name: "View as table" }));
+    const table = screen.getByRole("table");
+    expect(within(table).getAllByRole("rowheader")).toHaveLength(7);
+    expect(within(table).getByRole("rowheader", { name: "E7" })).toBeInTheDocument();
   });
 
   it("renders loading, empty and error states without the chart", () => {

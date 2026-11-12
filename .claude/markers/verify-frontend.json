@@ -1,7 +1,7 @@
 {
-  "commit": "69da024c9432290ad959f482bb4fd9e4adf9750a",
-  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-641A, phase90/41A-matters-datatable, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final head)",
+  "commit": "4754eda99",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-641B, phase90/41B-matter-hero, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final code head)",
   "exit": 0,
-  "ts": "2026-11-12T15:27:17Z",
-  "summary": "PR #1770 (Phase 90 641A) @69da024c9: FE-GATE exit 0 — 472 files, 4123 passed / 2 skipped; lint 0 errors (78 pre-existing warnings). E2E fresh stacks @2a0610740 (final code; 69da024c9 adds evidence only): test:e2e:projects 27 passed, legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS parity replay 274+298 IDENTICAL / 4+4 expected DIFF; 1024/1440 x light/dark; OBS-CARRY 639C. Frontend CI pass @69da024c9."
+  "ts": "2026-11-12T17:04:02Z",
+  "summary": "PR #1771 (Phase 90 641B) @4754eda99 (head 214672cf1 adds evidence only): FE-GATE exit 0 — 474 files, 4155 passed / 2 skipped; lint 0 errors. E2E fresh stack built from the worktree @4754eda99: test:e2e:projects 27 passed, legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS Alice 4 tiles / Carol 2 tiles, 1024 2x2 / 1440 4x1, light/dark, console 0. Frontend CI pass @214672cf1."
 }

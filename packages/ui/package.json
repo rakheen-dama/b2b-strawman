@@ -12,6 +12,8 @@
     "./separator": "./src/separator.tsx",
     "./skeleton": "./src/skeleton.tsx",
     "./badge": "./src/badge.tsx",
+    "./page-header": "./src/page-header.tsx",
+    "./stat-card": "./src/stat-card.tsx",
     "./cn": "./src/cn.ts",
     "./styles/globals.css": "./styles/globals.css"
   },

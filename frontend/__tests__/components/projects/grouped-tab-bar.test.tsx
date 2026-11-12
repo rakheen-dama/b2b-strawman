@@ -516,6 +516,97 @@ describe("GroupedTabBar keeps the active trigger in view (642C review)", () => {
   });
 });
 
+describe("GroupedTabBar keeps the focused trigger clear of the edge fades (642C OBS)", () => {
+  // 350px viewport over the 700px row: Work (200–300px) is fully clear of the end fade (318px);
+  // Fees (300–400px) is 50px visible, the last 32px of which is under the end fade.
+  const NARROW_W = 350;
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function renderNarrow() {
+    stubTabLayout({ viewportWidth: NARROW_W });
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="overview" onTabChange={() => {}} />
+    );
+    const viewport = getViewport(container);
+    expect(viewport.scrollLeft).toBe(0); // Overview (100–200px) is the active tab and in view
+    return viewport;
+  }
+
+  it("scrolls a partly hidden trigger fully clear of the end fade when it gets focus", () => {
+    const viewport = renderNarrow();
+
+    screen.getByTestId("tab-group-finance").focus();
+    expect(viewport.scrollLeft).toBe(400 - NARROW_W + EDGE_FADE_PX);
+  });
+
+  it("scrolls a trigger that is inside the viewport but under the end fade", () => {
+    stubTabLayout({ viewportWidth: 310 });
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="overview" onTabChange={() => {}} />
+    );
+    const viewport = getViewport(container);
+
+    // Work (200–300px) ends inside the 310px viewport, but 22px of it is under the end fade.
+    screen.getByTestId("tab-group-work").focus();
+    expect(viewport.scrollLeft).toBe(300 - 310 + EDGE_FADE_PX);
+  });
+
+  it("scrolls a trigger partly hidden past the start edge back clear of the start fade", () => {
+    const viewport = renderNarrow();
+    viewport.scrollLeft = 150; // the user scrolled; Overview (100–200px) is half hidden
+    fireEvent.scroll(viewport);
+
+    screen.getByTestId("tab-group-overview").focus();
+    expect(viewport.scrollLeft).toBe(100 - EDGE_FADE_PX);
+  });
+
+  it("leaves the scroll position alone when the focused trigger is already fully clear", () => {
+    const viewport = renderNarrow();
+
+    screen.getByTestId("tab-group-work").focus();
+    expect(viewport.scrollLeft).toBe(0);
+  });
+
+  it("ArrowRight onto a partly hidden trigger scrolls it clear of the end fade", () => {
+    const viewport = renderNarrow();
+    screen.getByTestId("tab-group-work").focus();
+    expect(viewport.scrollLeft).toBe(0);
+
+    fireEvent.keyDown(screen.getByTestId("grouped-tab-bar"), { key: "ArrowRight" });
+    expect(document.activeElement).toBe(screen.getByTestId("tab-group-finance"));
+    expect(viewport.scrollLeft).toBe(400 - NARROW_W + EDGE_FADE_PX);
+  });
+
+  it("does not scroll on focus from a mouse click (not :focus-visible), so the click lands", () => {
+    const viewport = renderNarrow();
+    const matches = Element.prototype.matches;
+    vi.spyOn(Element.prototype, "matches").mockImplementation(function (
+      this: Element,
+      selector: string
+    ) {
+      return selector === ":focus-visible" ? false : matches.call(this, selector);
+    });
+
+    screen.getByTestId("tab-group-finance").focus();
+    expect(document.activeElement).toBe(screen.getByTestId("tab-group-finance"));
+    expect(viewport.scrollLeft).toBe(0);
+  });
+
+  it("never calls scrollIntoView when a trigger gets focus", () => {
+    const viewport = renderNarrow();
+    const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView");
+
+    screen.getByTestId("tab-group-finance").focus();
+    fireEvent.keyDown(screen.getByTestId("grouped-tab-bar"), { key: "ArrowRight" });
+    expect(document.activeElement).toBe(screen.getByTestId("tab-group-client"));
+    expect(viewport.scrollLeft).toBe(500 - NARROW_W + EDGE_FADE_PX);
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+});
+
 describe("GroupedTabBar horizontal scrollbar (642C review)", () => {
   const HORIZONTAL_SCROLLBAR = '[data-slot="scroll-area-scrollbar"][data-orientation="horizontal"]';
 

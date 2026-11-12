@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect, useMemo, type KeyboardEvent } from "react";
+import {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  type FocusEvent,
+  type KeyboardEvent,
+} from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -66,11 +74,33 @@ const SCROLLBAR_CLASS = "h-1.5";
 const FADE_CLASS =
   "from-background pointer-events-none absolute top-0 bottom-1.5 w-8 opacity-0 transition-opacity data-[visible=true]:opacity-100 motion-reduce:transition-none";
 
-/** Width of an edge fade (`w-8`); keeping the active tab in view clears it, not just the edge. */
+/** Width of an edge fade (`w-8`); keeping a trigger in view clears it, not just the edge. */
 const EDGE_FADE_PX = 32;
 
 function findViewport(scrollArea: HTMLElement | null) {
   return scrollArea?.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]') ?? null;
+}
+
+/**
+ * Scroll the row horizontally just far enough that `trigger` sits fully clear of the edge fades.
+ * A fade only covers an edge with hidden content past it, so near the row's ends the target clamps
+ * (at 0 here, at the maximum by the browser) and that fade is gone. Only `scrollLeft` changes:
+ * never `scrollIntoView`, which can also scroll the page vertically. Offsets are measured against
+ * the tab row (its `relative` makes it the offsetParent), which starts at x=0 of the scroll
+ * content. Changing `scrollLeft` makes the viewport fire `scroll`, and the edge-fade listener then
+ * refreshes the fades.
+ */
+function scrollTriggerClearOfFades(viewport: HTMLElement, trigger: HTMLElement) {
+  const { scrollLeft, clientWidth } = viewport;
+  const start = trigger.offsetLeft;
+  const end = start + trigger.offsetWidth;
+  if (start < scrollLeft + EDGE_FADE_PX) {
+    const target = Math.max(0, start - EDGE_FADE_PX);
+    if (target < scrollLeft) viewport.scrollLeft = target;
+  } else if (end > scrollLeft + clientWidth - EDGE_FADE_PX) {
+    const target = Math.min(start, end - clientWidth + EDGE_FADE_PX);
+    if (target > scrollLeft) viewport.scrollLeft = target;
+  }
 }
 
 interface EdgeFades {
@@ -133,27 +163,27 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
     };
   }, []);
 
-  // Keep the active trigger inside the scroll viewport, e.g. on a deep link such as
-  // `?tab=disbursements` at a narrow width, when the tab changes, or when the label grows
-  // ("Fees · Disbursements"). This only scrolls the row horizontally and only when the trigger is
-  // out of view. It runs in an effect after hydration and never uses `scrollIntoView`, which can
-  // also scroll the page vertically. Offsets are measured against the tab row (its `relative`
-  // makes it the offsetParent), which starts at x=0 of the scroll content. Changing `scrollLeft`
-  // makes the viewport fire `scroll`, and the edge-fade listener above then refreshes the fades.
+  // Keep the active trigger in view, e.g. on a deep link such as `?tab=disbursements` at a narrow
+  // width, when the tab changes, or when the label grows ("Fees · Disbursements"). It runs in an
+  // effect after hydration.
   useEffect(() => {
     const viewport = findViewport(scrollAreaRef.current);
     const trigger = activeGroupIndex === -1 ? null : groupRefs.current[activeGroupIndex];
     if (!viewport || !trigger) return;
-
-    const { scrollLeft, clientWidth } = viewport;
-    const start = trigger.offsetLeft;
-    const end = start + trigger.offsetWidth;
-    if (start < scrollLeft) {
-      viewport.scrollLeft = Math.max(0, start - EDGE_FADE_PX);
-    } else if (end > scrollLeft + clientWidth) {
-      viewport.scrollLeft = Math.min(start, end - clientWidth + EDGE_FADE_PX);
-    }
+    scrollTriggerClearOfFades(viewport, trigger);
   }, [activeTab, activeGroupIndex]);
+
+  // Keep a keyboard-focused trigger in view too (arrow keys, Tab / Shift+Tab, focus returned from a
+  // closed menu), so its focus ring is never hidden under a fade (WCAG 2.4.11). The browser's own
+  // focus scroll skips a trigger that is already partly visible. Focus from a mouse click is left
+  // alone (it isn't `:focus-visible`): scrolling the trigger away from under the pointer between
+  // mousedown and mouseup would retarget the click to the row and lose it.
+  const handleFocus = useCallback((e: FocusEvent<HTMLDivElement>) => {
+    const trigger = e.target;
+    if (trigger.getAttribute("role") !== "tab" || !trigger.matches(":focus-visible")) return;
+    const viewport = findViewport(scrollAreaRef.current);
+    if (viewport) scrollTriggerClearOfFades(viewport, trigger);
+  }, []);
 
   // Keyboard: ArrowLeft / ArrowRight between group triggers
   const handleKeyDown = useCallback(
@@ -182,6 +212,7 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
           data-testid="grouped-tab-bar"
           className="relative flex w-max gap-2"
           onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
         >
           {visibleGroups.map((group, idx) => {
             const isActive = activeGroupId === group.id;

@@ -85,20 +85,27 @@ function findViewport(scrollArea: HTMLElement | null) {
  * Scroll the row horizontally just far enough that `trigger` sits fully clear of the edge fades.
  * A fade only covers an edge with hidden content past it, so near the row's ends the target clamps
  * (at 0 here, at the maximum by the browser) and that fade is gone. Only `scrollLeft` changes:
- * never `scrollIntoView`, which can also scroll the page vertically. Offsets are measured against
- * the tab row (its `relative` makes it the offsetParent), which starts at x=0 of the scroll
- * content. Changing `scrollLeft` makes the viewport fire `scroll`, and the edge-fade listener then
- * refreshes the fades.
+ * never `scrollIntoView`, which can also scroll the page vertically. Changing `scrollLeft` makes
+ * the viewport fire `scroll`, and the edge-fade listener then refreshes the fades.
+ *
+ * Positions are measured with `getBoundingClientRect()`, relative to the scroll content (trigger
+ * rect minus viewport rect, plus `scrollLeft`), not with `offsetLeft`/`offsetWidth`/`clientWidth`:
+ * those round to whole pixels, which left a trigger up to a pixel short of clearing a fade. The
+ * trigger's start is rounded down, its end up, and the viewport width down, so the integer target
+ * always errs on the side of clearing the fade.
  */
 function scrollTriggerClearOfFades(viewport: HTMLElement, trigger: HTMLElement) {
-  const { scrollLeft, clientWidth } = viewport;
-  const start = trigger.offsetLeft;
-  const end = start + trigger.offsetWidth;
+  const { scrollLeft } = viewport;
+  const viewportRect = viewport.getBoundingClientRect();
+  const triggerRect = trigger.getBoundingClientRect();
+  const width = Math.floor(viewportRect.width);
+  const start = Math.floor(triggerRect.left - viewportRect.left + scrollLeft);
+  const end = Math.ceil(triggerRect.right - viewportRect.left + scrollLeft);
   if (start < scrollLeft + EDGE_FADE_PX) {
     const target = Math.max(0, start - EDGE_FADE_PX);
     if (target < scrollLeft) viewport.scrollLeft = target;
-  } else if (end > scrollLeft + clientWidth - EDGE_FADE_PX) {
-    const target = Math.min(start, end - clientWidth + EDGE_FADE_PX);
+  } else if (end > scrollLeft + width - EDGE_FADE_PX) {
+    const target = Math.min(start, end - width + EDGE_FADE_PX);
     if (target > scrollLeft) viewport.scrollLeft = target;
   }
 }
@@ -134,7 +141,12 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
   const activeGroupIndex = visibleGroups.findIndex((g) => g.tabs.some((t) => t.id === activeTab));
   const activeGroupId = activeGroupIndex === -1 ? null : visibleGroups[activeGroupIndex].id;
 
-  // Edge fades follow the scroll viewport (scroll + resize of the viewport or the tab row).
+  // Edge fades follow the scroll viewport (scroll + resize of the viewport or the tab row). When the
+  // viewport itself changes width (window narrowed, device rotated), the active trigger is kept clear
+  // of the fades first, or a narrowing could leave it hidden past the end edge. Only an actual
+  // viewport width change does that: the user's own horizontal scroll (a `scroll` event) and a
+  // tab-row resize at the same width (a label growing) only refresh the fades, so this never fights
+  // the user, and the `scrollLeft` write itself cannot re-trigger it.
   useEffect(() => {
     const viewport = findViewport(scrollAreaRef.current);
     if (!viewport) return;
@@ -148,11 +160,24 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
       setFades((prev) => (prev.start === next.start && prev.end === next.end ? prev : next));
     };
 
+    let lastViewportWidth = viewport.clientWidth;
+    const handleResize = () => {
+      const width = viewport.clientWidth;
+      if (width !== lastViewportWidth) {
+        lastViewportWidth = width;
+        const active = viewport.querySelector<HTMLElement>(
+          '[role="tablist"] [role="tab"][aria-selected="true"]'
+        );
+        if (active) scrollTriggerClearOfFades(viewport, active);
+      }
+      update();
+    };
+
     update();
     viewport.addEventListener("scroll", update, { passive: true });
     let observer: ResizeObserver | undefined;
     if (typeof ResizeObserver !== "undefined") {
-      observer = new ResizeObserver(update);
+      observer = new ResizeObserver(handleResize);
       observer.observe(viewport);
       const row = viewport.querySelector('[role="tablist"]');
       if (row) observer.observe(row);

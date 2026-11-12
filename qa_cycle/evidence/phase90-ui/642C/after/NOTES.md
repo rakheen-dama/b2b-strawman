@@ -1,6 +1,6 @@
 # 642C after-observation (OBS, task 642.14)
 
-Captured 2026-11-13 against the e2e mock-auth stack on :3001 (backend :8081). The stack was freshly built from the worktree @ `32c89d2c1` (branch `phase90/42C-grouped-tab-bar`). I used the Playwright-library script `obs-after.cjs` (nvm node v20.11.1, `@playwright/test` from the worktree `frontend/`), based on `../before/obs-before.cjs`. I did not use the MCP browser. The theme was set via `localStorage["kazi-theme"]`. No source files were edited. Raw data is in `obs-after.json` (compact) and the console log of the run is in `run.log`.
+Captured 2026-11-13 against the e2e mock-auth stack on :3001 (backend :8081). The stack was freshly built from the worktree @ `32c89d2c1` (branch `phase90/42C-grouped-tab-bar`). I used the Playwright-library script `obs-after.cjs` (nvm node v20.11.1, `@playwright/test` from the worktree `frontend/`), based on `../before/obs-before.cjs`. I did not use the MCP browser. The theme was set via `localStorage["kazi-theme"]`. No source files were edited. Raw data is in `obs-after.json` (compact) and the console log of the run is in `run.txt`.
 
 ## Pages (lifecycle run `mwe43hoif41f` on the fresh stack)
 
@@ -53,4 +53,4 @@ Captured 2026-11-13 against the e2e mock-auth stack on :3001 (backend :8081). Th
 
 ## Files
 
-`obs-after.cjs`, `obs-after.json`, `run.log`, `sel-compat-after.txt`, and 27 screenshots: `alice-{matter,client}-{1440,1024}-{light,dark}.png`, `alice-{matter,client}-{390,768}-light.png`, `{matter-dropdown-work,client-dropdown-fees}-open-1440-light.png`, `alice-matter-sticky-scrolled600-1440x900-{light,dark}.png`, `alice-client-sticky-scrolled600-1440x600-{light,dark}.png`, `matter-sticky-menu-open-1440-light.png`, `alice-{matter-390-deeplink-disbursements,client-390-deeplink-audit}.png`, `alice-{matter,client}-keyboard-focus-1440-light.png`, `alice-matter-keyboard-focus-390-light.png`, `alice-{matter,client}-keyboard-partial-390-light.png`, `carol-matter-1440-light.png`.
+`obs-after.cjs`, `obs-after.json`, `run.txt`, `sel-compat-after.txt`, and 27 screenshots: `alice-{matter,client}-{1440,1024}-{light,dark}.png`, `alice-{matter,client}-{390,768}-light.png`, `{matter-dropdown-work,client-dropdown-fees}-open-1440-light.png`, `alice-matter-sticky-scrolled600-1440x900-{light,dark}.png`, `alice-client-sticky-scrolled600-1440x600-{light,dark}.png`, `matter-sticky-menu-open-1440-light.png`, `alice-{matter-390-deeplink-disbursements,client-390-deeplink-audit}.png`, `alice-{matter,client}-keyboard-focus-1440-light.png`, `alice-matter-keyboard-focus-390-light.png`, `alice-{matter,client}-keyboard-partial-390-light.png`, `carol-matter-1440-light.png`.

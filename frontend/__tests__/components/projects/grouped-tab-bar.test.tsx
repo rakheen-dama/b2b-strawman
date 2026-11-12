@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
 import { MATTER_TAB_GROUPS } from "@/lib/constants/matter-tab-groups";
 import { resolveTabFromUrl, type TabGroup } from "@/lib/constants/tab-group-types";
@@ -370,18 +370,33 @@ describe("GroupedTabBar edge fades (642C)", () => {
 
 // ---------------------------------------------------------------------------
 // 642C review fixes: scrollbar available whenever the row overflows; active trigger kept in view.
-// happy-dom has no layout, so the tests stub the layout getters on the prototypes before render
-// (the effects run on mount): each tab is TAB_W wide, laid out left to right, and the viewport is
-// VIEWPORT_W wide. Matter groups: details(0) overview(1) work(2) finance(3) client(4) schedule(5)
-// activity(6), so the row is 700px wide in a 300px viewport.
+// happy-dom has no layout, so the tests stub the layout on the prototypes before render (the
+// effects run on mount). Tabs are laid out left to right, TAB_W wide by default, and the viewport
+// is VIEWPORT_W wide and sits VIEWPORT_LEFT px into the page. Matter groups: details(0)
+// overview(1) work(2) finance(3) client(4) schedule(5) activity(6), so the row is 700px wide in a
+// 300px viewport. The component measures with getBoundingClientRect() (sub-pixel exact); the
+// integer getters (offsetLeft/offsetWidth/clientWidth/scrollWidth) are stubbed rounded, as a
+// browser reports them, so a sub-pixel layout tells the two measurements apart.
 // ---------------------------------------------------------------------------
 
 const TAB_W = 100;
 const VIEWPORT_W = 300;
+const VIEWPORT_LEFT = 24;
 const EDGE_FADE_PX = 32; // w-8 edge fade, cleared when the row scrolls a trigger into view
+
+interface TabLayout {
+  /** Viewport width in CSS px; may be fractional. Mutate it to simulate a resize. */
+  viewportWidth: number;
+  /** Width of the trigger at `index` in CSS px; may be fractional or depend on its label. */
+  tabWidth: (index: number, el: Element) => number;
+}
 
 function isViewport(el: Element) {
   return el.getAttribute("data-slot") === "scroll-area-viewport";
+}
+
+function rowTabs(el: Element) {
+  return Array.from(el.querySelectorAll('[role="tablist"] > [role="tab"]'));
 }
 
 function tabPosition(el: Element) {
@@ -389,8 +404,29 @@ function tabPosition(el: Element) {
   return Array.from(el.parentElement.children).indexOf(el);
 }
 
-function rowWidth(viewport: Element) {
-  return viewport.querySelectorAll('[role="tablist"] > [role="tab"]').length * TAB_W;
+function tabStart(layout: TabLayout, el: Element) {
+  let start = 0;
+  for (let i = 0; i < tabPosition(el); i++)
+    start += layout.tabWidth(i, el.parentElement!.children[i]);
+  return start;
+}
+
+function rowWidth(layout: TabLayout, viewport: Element) {
+  return rowTabs(viewport).reduce((sum, tab, i) => sum + layout.tabWidth(i, tab), 0);
+}
+
+function rect(left: number, width: number) {
+  return {
+    left,
+    right: left + width,
+    x: left,
+    width,
+    top: 0,
+    bottom: 36,
+    y: 0,
+    height: 36,
+    toJSON: () => ({}),
+  } as DOMRect;
 }
 
 /** Stub a layout getter on `proto`, falling back to happy-dom's own value for unrelated elements. */
@@ -407,19 +443,49 @@ function stubGetter<T extends object>(
   });
 }
 
-function stubTabLayout({ viewportWidth = VIEWPORT_W }: { viewportWidth?: number } = {}) {
-  stubGetter(HTMLElement.prototype, "offsetLeft", (el) => {
-    const i = tabPosition(el);
-    return i === -1 ? undefined : i * TAB_W;
+/** Stubs the layout and returns it; mutate the result to simulate a resize or a label change. */
+function stubTabLayout({
+  viewportWidth = VIEWPORT_W,
+  tabWidth = () => TAB_W,
+}: Partial<TabLayout> = {}): TabLayout {
+  const layout: TabLayout = { viewportWidth, tabWidth };
+  const tabWidthOf = (el: Element) => layout.tabWidth(tabPosition(el), el);
+
+  const getBoundingClientRect = Element.prototype.getBoundingClientRect;
+  vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+    if (isViewport(this)) return rect(VIEWPORT_LEFT, layout.viewportWidth);
+    const viewport = this.closest<HTMLElement>('[data-slot="scroll-area-viewport"]');
+    if (tabPosition(this) === -1 || !viewport) return getBoundingClientRect.call(this);
+    const left = VIEWPORT_LEFT + tabStart(layout, this) - viewport.scrollLeft;
+    return rect(left, tabWidthOf(this));
   });
+  stubGetter(HTMLElement.prototype, "offsetLeft", (el) =>
+    tabPosition(el) === -1 ? undefined : Math.round(tabStart(layout, el))
+  );
   stubGetter(HTMLElement.prototype, "offsetWidth", (el) => {
-    if (isViewport(el)) return viewportWidth;
-    return tabPosition(el) === -1 ? undefined : TAB_W;
+    if (isViewport(el)) return Math.round(layout.viewportWidth);
+    return tabPosition(el) === -1 ? undefined : Math.round(tabWidthOf(el));
   });
   stubGetter(HTMLElement.prototype, "clientWidth", (el) =>
-    isViewport(el) ? viewportWidth : undefined
+    isViewport(el) ? Math.round(layout.viewportWidth) : undefined
   );
-  stubGetter(Element.prototype, "scrollWidth", (el) => (isViewport(el) ? rowWidth(el) : undefined));
+  stubGetter(Element.prototype, "scrollWidth", (el) =>
+    isViewport(el) ? Math.round(rowWidth(layout, el)) : undefined
+  );
+  return layout;
+}
+
+/**
+ * How far `testId`'s trigger sits clear of the edge fades, from the stubbed (exact) rects: both are
+ * >= 0 when it is fully clear. A fade only exists while content is hidden past that edge.
+ */
+function fadeClearance(container: HTMLElement, testId: string) {
+  const viewport = getViewport(container).getBoundingClientRect();
+  const trigger = screen.getByTestId(testId).getBoundingClientRect();
+  return {
+    start: trigger.left - (viewport.left + EDGE_FADE_PX),
+    end: viewport.right - EDGE_FADE_PX - trigger.right,
+  };
 }
 
 function getViewport(container: HTMLElement) {
@@ -493,18 +559,25 @@ describe("GroupedTabBar keeps the active trigger in view (642C review)", () => {
   });
 
   it("re-runs on a sub-tab change within the active group (the trigger label changes width)", () => {
-    stubTabLayout();
+    // The Fees trigger is TAB_W wide as "Fees · Time recording" and grows to 180px as
+    // "Fees · Statements of account", pushing the later triggers right.
+    stubTabLayout({
+      tabWidth: (_, el) => (el.textContent?.includes("Statements of account") ? 180 : TAB_W),
+    });
     const { container, rerender } = render(
       <GroupedTabBar groups={makeGroups()} activeTab="time" onTabChange={() => {}} />
     );
     const viewport = getViewport(container);
     expect(viewport.scrollLeft).toBe(400 - VIEWPORT_W + EDGE_FADE_PX);
 
-    // The user scrolls Fees back out of view, then picks another Fees sub-tab.
-    viewport.scrollLeft = 0;
-    fireEvent.scroll(viewport);
-    rerender(<GroupedTabBar groups={makeGroups()} activeTab="trust" onTabChange={() => {}} />);
-    expect(viewport.scrollLeft).toBe(400 - VIEWPORT_W + EDGE_FADE_PX);
+    // Fees (300–400px) was clear of the end fade; at 300–480px its end is under it until the
+    // effect scrolls the row on.
+    rerender(<GroupedTabBar groups={makeGroups()} activeTab="statements" onTabChange={() => {}} />);
+    expect(viewport.scrollLeft).toBe(480 - VIEWPORT_W + EDGE_FADE_PX);
+    expect(fadeClearance(container, "tab-group-finance").end).toBe(0);
+    expect(screen.getByTestId("tab-group-client").getBoundingClientRect().left).toBe(
+      VIEWPORT_LEFT + 480 - viewport.scrollLeft
+    );
   });
 
   it("never calls scrollIntoView (it would also scroll the page vertically)", () => {
@@ -604,6 +677,109 @@ describe("GroupedTabBar keeps the focused trigger clear of the edge fades (642C 
     expect(document.activeElement).toBe(screen.getByTestId("tab-group-client"));
     expect(viewport.scrollLeft).toBe(500 - NARROW_W + EDGE_FADE_PX);
     expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+});
+
+describe("GroupedTabBar clears the edge fades at sub-pixel positions (642C review)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("brings a fractional trigger end fully clear of the end fade", () => {
+    // 100.4px tabs in a 300.4px viewport: Fees spans 301.2–401.6px. Rounded integers (offsetLeft
+    // 301, offsetWidth 100, clientWidth 300) would stop at scrollLeft 133, 0.2px under the fade.
+    stubTabLayout({ viewportWidth: 300.4, tabWidth: () => 100.4 });
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="disbursements" onTabChange={() => {}} />
+    );
+
+    expect(getViewport(container).scrollLeft).toBe(134);
+    expect(fadeClearance(container, "tab-group-finance").end).toBeGreaterThanOrEqual(0);
+  });
+
+  it("brings a fractional trigger start fully clear of the start fade", () => {
+    // 100.6px tabs: Overview starts at 100.6px. A rounded offsetLeft (101) would stop at
+    // scrollLeft 69, 0.4px under the start fade.
+    stubTabLayout({ viewportWidth: 350, tabWidth: () => 100.6 });
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="overview" onTabChange={() => {}} />
+    );
+    const viewport = getViewport(container);
+    expect(viewport.scrollLeft).toBe(0);
+    viewport.scrollLeft = 150; // the user scrolled; Overview is half hidden
+    fireEvent.scroll(viewport);
+
+    screen.getByTestId("tab-group-overview").focus();
+    expect(viewport.scrollLeft).toBe(68);
+    expect(fadeClearance(container, "tab-group-overview").start).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("GroupedTabBar keeps the active trigger in view when the viewport resizes (642C review)", () => {
+  /** A ResizeObserver that reports on observe (as a browser does) and on `fireResize()`. */
+  const observers = new Set<CapturingResizeObserver>();
+  class CapturingResizeObserver {
+    constructor(private readonly callback: ResizeObserverCallback) {}
+    observe() {
+      observers.add(this);
+      this.report();
+    }
+    unobserve() {}
+    disconnect() {
+      observers.delete(this);
+    }
+    report() {
+      this.callback([], this as unknown as ResizeObserver);
+    }
+  }
+  function fireResize() {
+    act(() => observers.forEach((observer) => observer.report()));
+  }
+
+  afterEach(() => {
+    observers.clear();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("scrolls the active last group clear of the end fade when the viewport narrows", () => {
+    vi.stubGlobal("ResizeObserver", CapturingResizeObserver);
+    const layout = stubTabLayout({ viewportWidth: 800 }); // the 700px row fits
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="audit" onTabChange={() => {}} />
+    );
+    const viewport = getViewport(container);
+    expect(viewport.scrollLeft).toBe(0);
+    expect(fadeVisibility(container)).toEqual({ start: "false", end: "false" });
+
+    // The window narrows: Activity (600–700px) would be hidden past the end edge.
+    layout.viewportWidth = VIEWPORT_W;
+    fireResize();
+    expect(viewport.scrollLeft).toBe(700 - VIEWPORT_W + EDGE_FADE_PX);
+    expect(fadeClearance(container, "tab-group-activity").end).toBeGreaterThanOrEqual(0);
+    expect(fadeVisibility(container)).toEqual({ start: "true", end: "false" });
+  });
+
+  it("does not move the row on a resize tick at an unchanged viewport width (no fighting the user)", () => {
+    vi.stubGlobal("ResizeObserver", CapturingResizeObserver);
+    const layout = stubTabLayout();
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="audit" onTabChange={() => {}} />
+    );
+    const viewport = getViewport(container);
+    expect(viewport.scrollLeft).toBe(700 - VIEWPORT_W + EDGE_FADE_PX);
+
+    // The user scrolls back to the start; the active Activity trigger is now off-screen.
+    viewport.scrollLeft = 0;
+    fireEvent.scroll(viewport);
+
+    // An observation at the same viewport width (e.g. the tab row resizing) leaves it there.
+    fireResize();
+    expect(viewport.scrollLeft).toBe(0);
+    layout.tabWidth = (i) => (i === 0 ? 140 : TAB_W);
+    fireResize();
+    expect(viewport.scrollLeft).toBe(0);
+    expect(fadeVisibility(container)).toEqual({ start: "false", end: "true" });
   });
 });
 

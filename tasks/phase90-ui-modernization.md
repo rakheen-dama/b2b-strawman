@@ -55,7 +55,7 @@ Phase 90 is a **visual phase**: no new entity, table, column, enum value, capabi
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 637 | Tokens + Kazi Chart Palette, ThemeProvider + Light/Dark/System Toggle, Dead Chart Code Deleted (E1) | packages/ui + Frontend | — (637.1 baseline first) | M | 637A, 637B (0 verifies) | In progress — 637A Done (PR #1759) |
+| 637 | Tokens + Kazi Chart Palette, ThemeProvider + Light/Dark/System Toggle, Dead Chart Code Deleted (E1) | packages/ui + Frontend | — (637.1 baseline first) | M | 637A, 637B (0 verifies) | **Done** (637A PR #1759, 637B PR #1760) |
 | 638 | App Shell — shadcn Sidebar (Cookie Collapse, ⌘/Ctrl+B, Mobile Sheet) + Floating Header + Command Palette Restyle (E2) | Frontend | 637A (638B also 637B) | M | 638A, 638B (0 verifies) | |
 | 639 | Design-System Primitives — PageHeader, StatCard, EmptyState (in place), DetailHero, Chart Kit (recharts + SVG micro presets), DataTable (E3) | packages/ui + Frontend | 637A (639B, 639C after 639A) — ∥ 638 | L | 639A, 639B, 639C, 639D (0 verifies) | |
 | 640 | Firm Dashboard — KPI Row + Audience Regrid (P1-gated), Widgets on the Kit, My Work + Loading Skeleton (E4) | Frontend | **P1 merged**, 639A, 639B, 639D | L | 640A, 640B, 640C (0 verifies) | |
@@ -174,7 +174,7 @@ Default serial order (one PR open at a time): **P1 → 637A → 637B → 638A �
 
 | Epic | PR | What must be green before merge | Notes |
 |------|----|----------------------------------|-------|
-| 637 | `phase90/37A-tokens-palette`, `37B-theme-toggle-dead-charts` | 637A: baseline statement recorded first (637.1); FE-GATE + **PORTAL-GATE** (`token-contrast.test.ts` AA pairs both themes, `chart-palette.test.ts` slot hexes + CVD results pinned, `chart-theme` values are `var(--…)` only); E2E-LEGAL ≥ baseline; OBS **light only** (Home, matters, trust; portal `/home`, `/trust`, `/invoices` at 1024). 637B: FE-GATE (`theme-toggle`, `theme-provider` forced-light routes, `user-menu-bff` + mock menu Theme section, edited `chart-components` / `completeness-visibility`); E2E-LEGAL; OBS: each choice persists across reload, no FOUC on a throttled reload, no hydration warning, `/` and `/dashboard` stay light with a stored dark preference; `git grep` empty for all seven dead basenames pasted in the PR | 637B is the first slice that can observe dark; in-scope surfaces observed dark here are *recorded*, not fixed (their own slices fix them). 637A **Done** (PR #1759, merge `cfe19b8d1`). |
+| 637 | `phase90/37A-tokens-palette`, `37B-theme-toggle-dead-charts` | 637A: baseline statement recorded first (637.1); FE-GATE + **PORTAL-GATE** (`token-contrast.test.ts` AA pairs both themes, `chart-palette.test.ts` slot hexes + CVD results pinned, `chart-theme` values are `var(--…)` only); E2E-LEGAL ≥ baseline; OBS **light only** (Home, matters, trust; portal `/home`, `/trust`, `/invoices` at 1024). 637B: FE-GATE (`theme-toggle`, `theme-provider` forced-light routes, `user-menu-bff` + mock menu Theme section, edited `chart-components` / `completeness-visibility`); E2E-LEGAL; OBS: each choice persists across reload, no FOUC on a throttled reload, no hydration warning, `/` and `/dashboard` stay light with a stored dark preference; `git grep` empty for all seven dead basenames pasted in the PR | 637B is the first slice that can observe dark; in-scope surfaces observed dark here are *recorded*, not fixed (their own slices fix them). 637A **Done** (PR #1759, merge `cfe19b8d1`). 637B **Done** (PR #1760, merge `acc742d2a`): FE-GATE 3903/2, E2E-LEGAL 105 + 40/4 on a fresh stack, OBS in `$EV/637B/` (cold-cache light flash found and fixed with a `<head>` init script, ADR-374). |
 
 ### Stage 2 — Shell ∥ primitives: 638 ∥ 639
 
@@ -259,14 +259,14 @@ PR rules restated (non-negotiable):
 
 **Behaviour changes**: none beyond the opt-in theme control (new UI, light default — Playwright's default `colorScheme` is light, so System resolves light in e2e).
 
-**Dependencies**: none (637.1 baseline first). **Scope**: packages/ui + Frontend. **Verifies: 0.** **Estimated Effort**: M. **Status**: 637A Done (PR #1759); 637B pending.
+**Dependencies**: none (637.1 baseline first). **Scope**: packages/ui + Frontend. **Verifies: 0.** **Estimated Effort**: M. **Status**: **Done** — 637A (PR #1759), 637B (PR #1760).
 
 ### Slices
 
 | Slice | Scope | Key deliverables / files | Files (est.) | Verify | Gates | Obs | Depends on |
 |-------|-------|--------------------------|--------------|--------|-------|-----|------------|
 | **637A** | packages/ui + FE | `$U/styles/globals.css` (§15.2.5 `:root` + `.dark` + `@theme inline` maps), `$F/app/globals.css` (sidebar split, `--app-header-height`), `$FL/chart-theme.ts`, in-scope raw-hex sites (listed by grep), NEW `$FT/theme/token-contrast.test.ts`, NEW `$FT/theme/chart-palette.test.ts`; baseline evidence `$EV/baseline/README.md` | 7 (+ hex sites) | **no** | FE-GATE + PORTAL-GATE, E2E-LEGAL | light only: Home, matters, trust at 1024/1440; portal `/home`, `/trust`, `/invoices` at 1024 | — — **Done** (PR #1759) |
-| **637B** | FE | `next-themes` 0.4.6; `$F/app/layout.tsx`; NEW `$FC/theme/{theme-provider,theme-toggle,themed-toaster}.tsx`; CLI `$FC/ui/{toggle-group,toggle}.tsx`; `$FC/auth-header-controls.tsx`, `$FC/auth/user-menu-bff.tsx`; tests; **delete** `$FC/dashboard/{horizontal-bar-chart,radial-gauge,kpi-card,sparkline-chart,sparkline,incomplete-profiles-widget,information-requests-widget}.tsx` + `$FT/dashboard/{horizontal-bar-chart,kpi-card,sparkline-chart,information-requests-widget}.test.tsx`; **edit** `$FT/dashboard/chart-components.test.tsx`, `$FT/components/customers/completeness-visibility.test.tsx` | ≈25 (12 theme incl. `package.json` + lockfile; 13 deletions/edits) — founder-authorised | **no** | FE-GATE, E2E-LEGAL | persistence ×3 choices, no FOUC, no hydration warning, `/` + `/dashboard` stay light; Home 1024/1440 in dark (recorded, not fixed) | 637A |
+| **637B** | FE | `next-themes` 0.4.6; `$F/app/layout.tsx`; NEW `$FC/theme/{theme-provider,theme-toggle,themed-toaster}.tsx`; CLI `$FC/ui/{toggle-group,toggle}.tsx`; `$FC/auth-header-controls.tsx`, `$FC/auth/user-menu-bff.tsx`; tests; **delete** `$FC/dashboard/{horizontal-bar-chart,radial-gauge,kpi-card,sparkline-chart,sparkline,incomplete-profiles-widget,information-requests-widget}.tsx` + `$FT/dashboard/{horizontal-bar-chart,kpi-card,sparkline-chart,information-requests-widget}.test.tsx`; **edit** `$FT/dashboard/chart-components.test.tsx`, `$FT/components/customers/completeness-visibility.test.tsx` | ≈25 (12 theme incl. `package.json` + lockfile; 13 deletions/edits) — founder-authorised | **no** | FE-GATE, E2E-LEGAL | persistence ×3 choices, no FOUC, no hydration warning, `/` + `/dashboard` stay light; Home 1024/1440 in dark (recorded, not fixed) | 637A — **Done** (PR #1760) |
 
 ### Tasks
 

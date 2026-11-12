@@ -1,7 +1,7 @@
 {
-  "commit": "874ba8df5f5b8f53f619694090b5d01b0a8d6211",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-637A, phase90/37A-tokens-palette, after pnpm install --frozen-lockfile)",
+  "commit": "4816cf4408a883c89ad29db1fb900e2effdaa0d8",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-637B, phase90/37B-theme-toggle-dead-charts, NODE_OPTIONS='' SHELL=/bin/bash)",
   "exit": 0,
-  "ts": "2026-11-11T22:34:34Z",
-  "summary": "PR #1759 (Phase 90 637A) @874ba8df5: FE-GATE (lint, typecheck, format:check, test, build) exit 0 — 459 files, 3879 passed / 2 skipped (3881)"
+  "ts": "2026-11-12T01:59:31Z",
+  "summary": "PR #1760 (Phase 90 637B) @4816cf440 (last frontend-touching commit; 76769c5e2 evidence-only, d6d7d52ee ADR-only): FE-GATE exit 0 — 460 files, 3903 passed / 2 skipped (3905). E2E-LEGAL fresh stack @4816cf440: legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped"
 }

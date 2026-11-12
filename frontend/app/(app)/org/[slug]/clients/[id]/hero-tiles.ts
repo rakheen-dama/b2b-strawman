@@ -159,7 +159,6 @@ const FICA_ICON: Record<FicaOnboardingStatus, { icon: LucideIcon; className: str
   NOT_STARTED: { icon: ShieldAlert, className: "text-danger" },
 };
 
-/** Label + icon, never colour alone (ADR-373 / ADR-370); the icon is decorative. */
 /** No default currency (the settings read failed) → the currency rule can't apply → "error". */
 function outstandingResult(
   debtor: WidgetResult<DebtorDetailResponse>,
@@ -170,6 +169,7 @@ function outstandingResult(
   return { state: "ok", data: outstandingTile(debtor.data, currency) };
 }
 
+/** Label + icon, never colour alone (ADR-373 / ADR-370); the icon is decorative. */
 function ficaTile(fica: FicaStatus): { value: ReactNode; hint?: ReactNode } {
   const status: FicaOnboardingStatus = fica.status in FICA_ICON ? fica.status : "NOT_STARTED";
   const { icon, className } = FICA_ICON[status];

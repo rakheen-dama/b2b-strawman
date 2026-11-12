@@ -1,0 +1,60 @@
+resize matter 1440→390: before overflow=false sl=0 y=0 active=tab-group-activity(Activity · Audit trail) | after tab-group-activity[200.81-358.25 sl=285/285 sg=168.81 eg=-0.25 fades=10 fv=false CLEAR y=0] maxY=0 rowScrollEvents=1 PASS=false
+nofight matter: wheel→0 userMenu=false dark=undefined workMenu=true
+   baseline after user scroll to 0: sl=0 fades=01 y=0
+   tab dropdown Work open (mouse): sl=0 fades=01 y=0
+   tab dropdown Work closed (Escape → focus-visible on Work): sl=0 fades=01 y=0
+   tab dropdown Work re-open (mouse): sl=0 fades=01 y=0
+   tab dropdown Work closed (outside click): sl=0 fades=01 y=0
+   viewport height 844 → 700 (same width): sl=0 fades=01 y=0
+   viewport height 700 → 844 (same width): sl=0 fades=01 y=0
+   row width +1px (same viewport width): sl=0 fades=01 y=0
+   row width restored: sl=0 fades=01 y=0
+   PASS=true
+resize matter 1440→768: before overflow=false sl=0 y=0 active=tab-group-activity(Activity · Audit trail) | after tab-group-activity[570.81-728.25 sl=179/179 sg=274.81 eg=-0.25 fades=10 fv=false CLEAR y=0] maxY=0 rowScrollEvents=1 PASS=false
+resize client 1440→390: before overflow=false sl=0 y=0 active=tab-group-activity(Activity) | after tab-group-activity[308.63-374.36 sl=205/205 sg=292.63 eg=-0.36 fades=10 fv=false CLEAR y=0] maxY=0 rowScrollEvents=1 PASS=false
+nofight client: wheel→0 userMenu=false dark=undefined workMenu=true
+   baseline after user scroll to 0: sl=0 fades=01 y=0
+   tab dropdown Work open (mouse): sl=0 fades=01 y=0
+   tab dropdown Work closed (Escape → focus-visible on Work): sl=0 fades=01 y=0
+   tab dropdown Work re-open (mouse): sl=0 fades=01 y=0
+   tab dropdown Work closed (outside click): sl=16 fades=11 y=0
+   viewport height 844 → 700 (same width): sl=16 fades=11 y=0
+   viewport height 700 → 844 (same width): sl=16 fades=11 y=0
+   row width +1px (same viewport width): sl=16 fades=11 y=0
+   row width restored: sl=16 fades=11 y=0
+   PASS=false
+resize client 1440→768: before overflow=false sl=0 y=0 active=tab-group-activity(Activity) | after tab-group-activity[678.63-744.36 sl=99/99 sg=398.63 eg=-0.36 fades=10 fv=false CLEAR y=0] maxY=0 rowScrollEvents=1 PASS=false
+
+== kbd matter 390 n=7 entry=tab-group-details fv=true
+  ArrowRight tab-group-overview[117.48-195.16 sl=0/210 sg=85.48 eg=162.84 fades=01 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-work[203.16-269.44 sl=0/210 sg=171.16 eg=88.56 fades=01 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-finance[262.44-325.77 sl=15/210 sg=230.44 eg=32.23 fades=11 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-client[254.77-325.22 sl=94/210 sg=222.77 eg=32.78 fades=11 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-schedule[275.22-325.81 sl=152/210 sg=243.22 eg=32.19 fades=11 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-activity[275.81-357.55 sl=210/210 sg=243.81 eg=0.45 fades=10 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-schedule[217.22-267.81 sl=210/210 sg=185.22 eg=90.19 fades=10 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-client[138.77-209.22 sl=210/210 sg=106.77 eg=148.78 fades=10 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-finance[67.44-130.77 sl=210/210 sg=35.44 eg=227.23 fades=10 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-work[64.16-130.44 sl=139/210 sg=32.16 eg=227.56 fades=11 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-overview[64.48-142.16 sl=53/210 sg=32.48 eg=215.84 fades=11 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-details[32-109.48 sl=0/210 sg=0 eg=248.52 fades=01 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  minEndGap=32.188 @tab-group-schedule minStartGap=32.156 @tab-group-work maxRingD=0 allClear=true maxScrollY=0 PASS=true
+
+== kbd client 390 n=6 entry=tab-group-details fv=true
+  ArrowRight tab-group-overview[101.48-179.16 sl=0/205 sg=85.48 eg=194.84 fades=01 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-work[187.16-270.08 sl=0/205 sg=171.16 eg=103.92 fades=01 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-finance[278.08-341.41 sl=0/205 sg=262.08 eg=32.59 fades=01 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-compliance[185.41-341.63 sl=164/205 sg=169.41 eg=32.38 fades=11 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowRight tab-group-activity[308.63-374.36 sl=205/205 sg=292.63 eg=-0.36 fades=10 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-compliance[144.41-300.63 sl=205/205 sg=128.41 eg=73.38 fades=10 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-finance[73.08-136.41 sl=205/205 sg=57.08 eg=237.59 fades=10 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-work[48.16-131.08 sl=139/205 sg=32.16 eg=242.92 fades=11 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-overview[48.48-126.16 sl=53/205 sg=32.48 eg=247.84 fades=11 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  ArrowLeft tab-group-details[16-93.48 sl=0/205 sg=0 eg=280.52 fades=01 fv=true CLEAR y=0] ring(L/R outer)=0/0 max=0
+  minEndGap=32.375 @tab-group-compliance minStartGap=32.156 @tab-group-work maxRingD=0 allClear=true maxScrollY=0 PASS=true
+deeplink matter 390 ?tab=disbursements: tab-group-finance[150.44-325.14 sl=127/321 sg=118.44 eg=32.86 fades=11 fv=false CLEAR y=0] text="Fees · Disbursements" maxScrollY=0 PASS=true
+wide1440 matter: {"page":"matter","tablists":1,"visibleTablists":1,"row":"1088/1088","overflows":false,"active":"tab-group-overview","underline":{"opacity":"1","height":"2px"},"n":7,"scrollLefts":[0],"rowScrollEvents":0,"allInBar":true,"allFocusVisible":true,"maxScrollY":0,"pass":true,"file":"wide-matter-1440-focus.png"}
+wide1440 client: {"page":"client","tablists":1,"visibleTablists":1,"row":"1136/1136","overflows":false,"active":"tab-group-overview","underline":{"opacity":"1","height":"2px"},"n":6,"scrollLefts":[0],"rowScrollEvents":0,"allInBar":true,"allFocusVisible":true,"maxScrollY":0,"pass":true}
+mouse768 {"pick":{"testid":"tab-group-schedule","left":691.21875,"right":741.8125,"vpRight":728,"x":718,"y":688,"fadeEnd":"true","scrollLeft":0,"hitIsTrigger":true},"tabBefore":null,"clk":[{"type":"pointerdown","target":"tab-group-schedule","scrollLeft":0},{"type":"mousedown","target":"tab-group-schedule","scrollLeft":0},{"type":"focusin","target":"tab-group-schedule","scrollLeft":0},{"type":"mouseup","target":"tab-group-schedule","scrollLeft":0},{"type":"click","target":"tab-group-schedule","scrollLeft":0}],"tab":"court-dates","selected":"true","scrollLeft":46,"scrollY":0,"navigated":true,"rowJumpedDuringClick":false,"clickTarget":"tab-group-schedule","pass":true}
+console: {"all":{"errors":0,"warnings":0,"hydration":0},"tabPages":{"errors":0,"warnings":0,"hydration":0},"items":[]}
+screenshots: 10 resize-matter-1440to390-audit.png, nofight-matter-390-after-relayouts.png, resize-matter-1440to768-audit.png, resize-client-1440to390-audit.png, nofight-client-390-after-relayouts.png, kbd-matter-390-tab-group-finance.png, kbd-client-390-tab-group-compliance.png, deeplink-matter-390-disbursements.png, wide-matter-1440-focus.png, mouse-matter-768-after-click.png

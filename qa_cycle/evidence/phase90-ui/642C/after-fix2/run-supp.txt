@@ -1,0 +1,46 @@
+resizeNonLast matter ?tab=court-dates 1440→390: before max=0 sl=0 | after tab-group-schedule("Diary") [275.22-325.81] vp 32-358 sl=152/210 sg=243.219 eg=32.188 fades=11 y=0 PASS=true
+resizeNonLast matter ?tab=court-dates 1440→768: before max=0 sl=0 | after tab-group-schedule("Diary") [645.22-695.81] vp 296-728 sl=46/104 sg=349.219 eg=32.188 fades=11 y=0 PASS=true
+resizeNonLast matter ?tab=disbursements 1440→390: before max=0 sl=0 | after tab-group-finance("Fees · Disbursements") [150.44-325.14] vp 32-358 sl=127/321 sg=118.438 eg=32.859 fades=11 y=0 PASS=true
+resizeNonLast matter ?tab=disbursements 1440→768: before max=0 sl=0 | after tab-group-finance("Fees · Disbursements") [520.44-695.14] vp 296-728 sl=21/215 sg=224.438 eg=32.859 fades=11 y=0 PASS=true
+resizeNonLast client ?tab=onboarding 1440→390: before max=0 sl=0 | after tab-group-compliance("FICA & compliance · FICA onboarding") [63.41-341.56] vp 16-374 sl=286/327 sg=47.406 eg=32.438 fades=11 y=0 PASS=true
+resizeNonLast client ?tab=onboarding 1440→768: before max=0 sl=0 | after tab-group-compliance("FICA & compliance · FICA onboarding") [433.41-711.56] vp 280-744 sl=180/221 sg=153.406 eg=32.438 fades=11 y=0 PASS=true
+outsideClick client @200,800: sl 0 → 0 → 16 activeAfter=tab-group-work hit="DIV.focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-des / Documents"
+   {"kind":"pointerdown","target":"BUTTON.relative shrink-0 cursor-pointer rounded-sm px-2 pt-2 pb-3 t","x":228.61000061035156,"y":709}
+   {"kind":"focusin","target":"DIV.bg-popover text-popover-foreground data-","fv":true,"sl":0}
+   {"kind":"focusin","target":"tab-item-documents","fv":true,"sl":0}
+   {"kind":"pointerdown","target":"DIV.focus:bg-accent focus:text-accent-foreground data-[variant=d","x":200,"y":800}
+   {"kind":"focusin","target":"tab-group-work","fv":true,"sl":0}
+   {"kind":"write","v":16,"stack":"    at ee (http://localhost:3001/_next/static/chunks/1wguwdrfryici.js:1:30329) |     at http://localhost:3001/_next/static/chunks/1wguwdrfryici.js:1:31353 |     at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706) |     at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)"}
+   {"kind":"scroll","sl":16,"active":"tab-group-work","fv":true}
+outsideClick client @370,600: sl 0 → 0 → 0 activeAfter=tab-group-work hit="HTML.light / Kazi — Practice management, built for Af"
+   {"kind":"pointerdown","target":"BUTTON.relative shrink-0 cursor-pointer rounded-sm px-2 pt-2 pb-3 t","x":228.61000061035156,"y":709}
+   {"kind":"focusin","target":"DIV.bg-popover text-popover-foreground data-","fv":true,"sl":0}
+   {"kind":"pointerdown","target":"HTML.light","x":370,"y":600}
+   {"kind":"focusin","target":"tab-group-work","fv":true,"sl":0}
+outsideClick matter @200,800: sl 0 → 0 → 0 activeAfter=tab-group-work hit="HTML.light / Kazi — Practice management, built for Af"
+   {"kind":"pointerdown","target":"BUTTON.relative shrink-0 cursor-pointer rounded-sm px-2 pt-2 pb-3 t","x":236.2899932861328,"y":788}
+   {"kind":"focusin","target":"DIV.bg-popover text-popover-foreground data-","fv":true,"sl":0}
+   {"kind":"pointerdown","target":"HTML.light","x":200,"y":800}
+   {"kind":"focusin","target":"tab-group-work","fv":true,"sl":0}
+outsideClick matter @370,600: sl 0 → 0 → 0 activeAfter=tab-group-work hit="HTML.light / Kazi — Practice management, built for Af"
+   {"kind":"pointerdown","target":"BUTTON.relative shrink-0 cursor-pointer rounded-sm px-2 pt-2 pb-3 t","x":236.2899932861328,"y":788}
+   {"kind":"focusin","target":"DIV.bg-popover text-popover-foreground data-","fv":true,"sl":0}
+   {"kind":"pointerdown","target":"HTML.light","x":370,"y":600}
+   {"kind":"focusin","target":"tab-group-work","fv":true,"sl":0}
+theme matter: wheel→0 avatar=true
+   after wheel to 0: sl=0 fades=01 dark=false y=0
+   avatar menu open: sl=0 fades=01 dark=false y=0
+   theme Dark: sl=0 fades=01 dark=true y=0
+   theme Light: sl=0 fades=01 dark=false y=0
+   avatar menu closed (toggle click): sl=0 fades=01 dark=false y=0
+   rowLog=[{"kind":"focusin","target":"BUTTON.flex h-8 w-8 items-center justify-center","fv":false,"sl":0},{"kind":"focusin","target":"BUTTON.inline-flex items-center justify-center ","fv":false,"sl":0},{"kind":"focusin","target":"BUTTON.inline-flex items-center justify-center ","fv":false,"sl":0},{"kind":"focusin","target":"BUTTON.flex h-8 w-8 items-center justify-center","fv":false,"sl":0}]
+   PASS=true
+theme client: wheel→0 avatar=true
+   after wheel to 0: sl=0 fades=01 dark=false y=0
+   avatar menu open: sl=0 fades=01 dark=false y=0
+   theme Dark: sl=0 fades=01 dark=true y=0
+   theme Light: sl=0 fades=01 dark=false y=0
+   avatar menu closed (toggle click): sl=0 fades=01 dark=false y=0
+   rowLog=[{"kind":"focusin","target":"BUTTON.flex h-8 w-8 items-center justify-center","fv":false,"sl":0},{"kind":"focusin","target":"BUTTON.inline-flex items-center justify-center ","fv":false,"sl":0},{"kind":"focusin","target":"BUTTON.inline-flex items-center justify-center ","fv":false,"sl":0},{"kind":"focusin","target":"BUTTON.flex h-8 w-8 items-center justify-center","fv":false,"sl":0}]
+   PASS=true
+console: []

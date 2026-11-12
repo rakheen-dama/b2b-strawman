@@ -1,7 +1,7 @@
 {
-  "commit": "0267c977bfaf99f07947cd5668dd93fc24ed60cd",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-639C, phase90/39C-datatable, node v20.11.1, NODE_OPTIONS='', orchestrator re-run)",
+  "commit": "faa96b0a8ddf88c058279388654adfdf2f828d35",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-639D, phase90/39D-micro-presets, node v20.11.1, NODE_OPTIONS='', fixer FE-GATE on final code head)",
   "exit": 0,
-  "ts": "2026-11-12T08:48:27Z",
-  "summary": "PR #1765 (Phase 90 639C) @0267c977b: FE-GATE exit 0 — 469 files, 4055 passed / 2 skipped (4057); lint 0 errors. E2E fresh stack @117cafad7 (delta to 0267c977b only touches components/data-table/** with zero live importers): legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS carried by 641A."
+  "ts": "2026-11-12T09:23:08Z",
+  "summary": "PR #1766 (Phase 90 639D) @faa96b0a8: FE-GATE exit 0 — 470 files, 4070 passed / 2 skipped; lint 0 errors. Head 850ab0f15 adds OBS evidence only (qa_cycle/). E2E fresh stack @6751e1547 (delta to faa96b0a8 = CHART_THEME token indirection, identical values): legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). Own OBS debtors StackedMeter 1024/1440 x light/dark on faa96b0a8. Frontend CI pass @850ab0f15."
 }

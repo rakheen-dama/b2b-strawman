@@ -1,0 +1,30 @@
+{
+  "report": [
+    {
+      "page": "home",
+      "url": "http://localhost:3012/home",
+      "h1": "Home",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "ring": "lab(52.8717% -45.7819 -2.8493)",
+      "bg": "lab(96.7396% -.214994 -1.49846)"
+    },
+    {
+      "page": "trust",
+      "url": "http://localhost:3012/trust",
+      "h1": "Trust statement",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "ring": "lab(52.8717% -45.7819 -2.8493)",
+      "bg": "lab(96.7396% -.214994 -1.49846)"
+    },
+    {
+      "page": "invoices",
+      "url": "http://localhost:3012/invoices",
+      "h1": "Fee notes",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "ring": "lab(52.8717% -45.7819 -2.8493)",
+      "bg": "lab(96.7396% -.214994 -1.49846)"
+    }
+  ],
+  "console": [],
+  "note": "branch portal dev on :3012 against e2e backend :8081; Origin rewritten to :3002 and CORS headers added by a Playwright route (test harness only, no app change)"
+}

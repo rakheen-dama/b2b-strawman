@@ -1,0 +1,6 @@
+start 2026-11-12T00:01:00Z head f7b7dbdf1
+e2e-up exit 0
+legal-lifecycle exit 0 ::  105 passed (3.1m)
+legal-depth-ii exit 0 ::  4 skipped; 40 passed (2.0m)
+default exit 1 ::  1 failed; 14 skipped; 7 did not run; 157 passed (1.4m)
+end 2026-11-12T00:18:07Z

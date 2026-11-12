@@ -1,0 +1,12 @@
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+  14 skipped
+  7 did not run
+  157 passed (1.4m)
+ ELIFECYCLE  Command failed with exit code 1.

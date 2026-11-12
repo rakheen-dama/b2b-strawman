@@ -387,19 +387,25 @@ describe("ClientsDataTable — responsive columns (D-8)", () => {
 });
 
 describe("ClientsDataTable — sticky header (639C OBS-CARRY)", () => {
-  it("the default column set sticks its header; the container drops horizontal scroll", () => {
+  it("the default column set sticks its header from a 42rem frame; narrower frames scroll in place", () => {
     renderTable([row()]);
-    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("sticky"));
+    screen.getAllByRole("columnheader").forEach((th) => {
+      expect(th).toHaveClass("@2xl:sticky");
+      expect(th).not.toHaveClass("sticky");
+    });
     const container = screen.getByRole("table").closest('[data-slot="table-container"]');
-    expect(container).toHaveClass("overflow-x-visible");
-    expect(container).not.toHaveClass("overflow-x-auto");
+    expect(container).toHaveClass("overflow-x-auto", "@2xl:overflow-x-visible");
   });
 
   it("a saved view's own columns scroll sideways in the frame, header not sticky", () => {
     renderTable([row()], { hideLowPriorityColumns: false });
-    screen.getAllByRole("columnheader").forEach((th) => expect(th).not.toHaveClass("sticky"));
+    screen.getAllByRole("columnheader").forEach((th) => {
+      expect(th).not.toHaveClass("sticky");
+      expect(th).not.toHaveClass("@2xl:sticky");
+    });
     const container = screen.getByRole("table").closest('[data-slot="table-container"]');
     expect(container).toHaveClass("overflow-x-auto");
+    expect(container).not.toHaveClass("@2xl:overflow-x-visible");
   });
 });
 

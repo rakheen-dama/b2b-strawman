@@ -425,7 +425,7 @@ describe("ClientsPage — page composition (642A)", () => {
 
   it("the default column set sticks its header; a saved view's own columns do not", async () => {
     await renderPage();
-    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("sticky"));
+    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("@2xl:sticky"));
     expect(tableProps[0].hideLowPriorityColumns).toBe(true);
     cleanup();
     tableProps.length = 0;
@@ -433,7 +433,7 @@ describe("ClientsPage — page composition (642A)", () => {
     mockGetViews.mockResolvedValue([savedView({ columns: ["name", "contact"] })]);
     await renderPage({ view: SAVED_ID });
     expect(tableProps[0].hideLowPriorityColumns).toBe(false);
-    screen.getAllByRole("columnheader").forEach((th) => expect(th).not.toHaveClass("sticky"));
+    screen.getAllByRole("columnheader").forEach((th) => expect(th).not.toHaveClass("@2xl:sticky"));
     expect(screen.getByRole("columnheader", { name: "Contact" })).not.toHaveClass("hidden");
   });
 

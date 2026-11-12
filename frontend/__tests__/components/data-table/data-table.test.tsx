@@ -365,19 +365,41 @@ describe("DataTable — column priority", () => {
 });
 
 describe("DataTable — sticky header", () => {
-  it("by default sticks the header cells under the floating header; the container drops overflow-x-auto", () => {
+  it("by default sticks the header cells from a 42rem frame; the container drops overflow-x-auto there", () => {
     renderTable();
-    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("sticky"));
+    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("@2xl:sticky"));
     const container = screen.getByRole("table").closest('[data-slot="table-container"]');
-    expect(container).toHaveClass("overflow-x-visible");
-    expect(container).not.toHaveClass("overflow-x-auto");
+    expect(container).toHaveClass("@2xl:overflow-x-visible");
     // The frame is never a card (finance specs count [data-slot="card"]).
     expect(document.querySelector('[data-slot="card"]')).toBeNull();
   });
 
+  it("sticky mode is container-responsive: below 42rem the table scrolls in its frame, header not stuck", () => {
+    renderTable();
+    const container = screen.getByRole("table").closest('[data-slot="table-container"]');
+    // cn/tailwind-merge keeps both: the @2xl variant does not conflict with the base utility.
+    expect(container).toHaveClass("overflow-x-auto", "@2xl:overflow-x-visible");
+    expect(container).not.toHaveClass("overflow-x-visible");
+    // The container queries resolve against the @container frame around the table container.
+    expect(container!.parentElement).toHaveClass("@container");
+    screen.getAllByRole("columnheader").forEach((th) => {
+      expect(th).toHaveClass(
+        "bg-card",
+        "@2xl:sticky",
+        "@2xl:top-[calc(var(--app-header-height)+0.5rem)]",
+        "@2xl:z-10"
+      );
+      expect(th).not.toHaveClass("sticky");
+      expect(th).not.toHaveClass("z-10");
+    });
+  });
+
   it("stickyHeader={false} keeps the default horizontal scroll container", () => {
     renderTable({ stickyHeader: false });
-    screen.getAllByRole("columnheader").forEach((th) => expect(th).not.toHaveClass("sticky"));
+    screen.getAllByRole("columnheader").forEach((th) => {
+      expect(th).not.toHaveClass("sticky");
+      expect(th).not.toHaveClass("@2xl:sticky");
+    });
     const container = screen.getByRole("table").closest('[data-slot="table-container"]');
     expect(container).toHaveClass("overflow-x-auto");
   });

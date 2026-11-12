@@ -40,7 +40,8 @@ const getClientRowId = (row: ClientListRow) => row.id;
  * lifecycle, tags, showIncomplete, search, `sortBy` and `sortDir`. The default column set fits its
  * container at every width (priority classes + the flexible Client column), so its header sticks
  * under the floating header; a saved view's own columns may need horizontal scroll, so sticky is
- * off there (sticky ⇔ no horizontal scroll, 639C).
+ * off there (sticky ⇔ no horizontal scroll, 639C). Sticky applies only from a 42rem frame; the
+ * always-shown set (~32rem) scrolls inside its frame below that.
  */
 export function ClientsDataTable({
   slug,

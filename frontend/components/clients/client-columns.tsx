@@ -50,7 +50,6 @@ const MAX_TAG_CHIPS = 3;
  * ~6rem, Contact ~13rem. The container is ~44 / 70 / 75rem at 1024 / 1440 / 1920px (the shell's
  * `max-w-7xl` caps it), so 1024 shows the always-shown set, 1440 adds all but Contact, and 1920
  * shows every column. Re-measure if a column, a cap or the shell width changes.
- * A column is never hidden when it is the active sort or when a saved view chose the columns.
  *
  * Applied through `meta.headerClassName` / `meta.cellClassName` rather than DataTable `priority`:
  * the kit has two thresholds (67rem / 7xl), this table needs four. The active sort column and a

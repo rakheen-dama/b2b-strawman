@@ -40,14 +40,23 @@ import type { DataTableColumn, DataTableSort } from "./define-columns";
 export type { DataTableSort } from "./define-columns";
 export type { DataTableToolbarSlots } from "./data-table-toolbar";
 
-export interface DataTableProps<T> {
+export interface DataTableProps<T, K extends string = string> {
   /** Built with `defineColumns<T>()` inside the consumer's client module. */
   columns: DataTableColumn<T>[];
-  /** Rows already searched, filtered and SORTED by the RSC; rendered in this order. */
+  /**
+   * Rows already searched, filtered and SORTED by the RSC; rendered in this order.
+   *
+   * A new `data` array identity means "navigation": it resets column visibility, row selection and
+   * the page index. Pass the RSC rows through untouched; `useMemo` any derivation (map/filter) on
+   * the RSC array, or every re-render of the wrapper resets the table.
+   */
   data: T[];
   getRowId: (row: T) => string;
-  /** URL-owned sort: headers link to `hrefFor(meta.sortKey)`; `aria-sort` on the active `th`. */
-  sort?: DataTableSort;
+  /**
+   * URL-owned sort: headers link to `hrefFor(meta.sortKey)`; `aria-sort` on the active `th`. `K` is
+   * inferred from `sort.key`, so `hrefFor` receives the page's own sort-key type.
+   */
+  sort?: DataTableSort<K>;
   toolbar?: DataTableToolbarSlots;
   /** "Columns" menu (default on). Local state; resets when `data` changes (navigation). */
   columnVisibility?: boolean;
@@ -55,9 +64,15 @@ export interface DataTableProps<T> {
   rowHref?: (row: T) => string;
   /** Forwarded to every body `<tr>` (`matter-row`, `client-row`); never on skeleton rows. */
   rowTestId?: string;
-  /** `null` (default) renders every row; a number paginates locally with a page-size select. */
+  /**
+   * `null` (default) renders every row; a positive integer paginates locally with a page-size
+   * select. Any other value (0, negative, `NaN`, fractional) is treated as `null`.
+   */
   pageSize?: number | null;
-  /** Checkbox column whose selection only scopes the CSV export (no bulk actions). */
+  /**
+   * Checkbox column whose selection only scopes the CSV export (no bulk actions). Turning it off
+   * clears the selection, so the export falls back to the rendered rows.
+   */
   selectable?: boolean;
   /** "Export CSV" of the visible columns × the selected (else rendered) rows, client-side. */
   exportCsv?: { filename: string };
@@ -78,6 +93,12 @@ export interface DataTableProps<T> {
   caption?: string;
   /** Forwarded to the `<table>` element (e.g. `transactions-table`). */
   tableTestId?: string;
+  /**
+   * Draws the table frame: card background, border and rounded corners (default on). Pass `false`
+   * when the table already sits inside a bordered surface (e.g. `<Card><CardContent>`) to avoid a
+   * double border; the `@container` that column `priority` measures is kept either way.
+   */
+  frame?: boolean;
 }
 
 /** Clicks on these (or inside them) keep their own behaviour instead of opening the row. */
@@ -93,6 +114,13 @@ const PRIORITY_CLASS = {
 const SKELETON_ROWS = 8;
 const DEFAULT_PAGE_SIZE = 25;
 const SELECT_COLUMN_ID = "select";
+
+/** `pageSize` honours positive integers only; anything else means "no pagination" (`null`). */
+function normalisePageSize(pageSize: number | null | undefined): number | null {
+  return typeof pageSize === "number" && Number.isInteger(pageSize) && pageSize > 0
+    ? pageSize
+    : null;
+}
 
 /** The page scrolls, so the container must not be a scroll container (see `stickyHeader`). */
 const STICKY_CONTAINER_CLASS = "overflow-x-visible";
@@ -151,7 +179,7 @@ type Meta<T> = ColumnMeta<T, unknown> | undefined;
  * frame uses tokens and is NOT a `data-slot="card"` (finance specs count cards). Narrow screens use
  * column `priority`; there is no card-list mode.
  */
-export function DataTable<T>({
+export function DataTable<T, K extends string = string>({
   columns,
   data,
   getRowId,
@@ -160,7 +188,7 @@ export function DataTable<T>({
   columnVisibility: showColumnMenu = true,
   rowHref,
   rowTestId,
-  pageSize = null,
+  pageSize: pageSizeProp = null,
   selectable = false,
   exportCsv,
   empty,
@@ -169,8 +197,10 @@ export function DataTable<T>({
   stickyHeader = true,
   caption,
   tableTestId,
-}: DataTableProps<T>) {
+  frame = true,
+}: DataTableProps<T, K>) {
   const router = useRouter();
+  const pageSize = normalisePageSize(pageSizeProp);
   const paginated = pageSize !== null;
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -182,15 +212,19 @@ export function DataTable<T>({
 
   // Reset the ephemeral state on navigation: adjust state while rendering when the props change
   // (React's "storing information from previous renders"; a setState in an effect is a lint error).
-  const [seen, setSeen] = useState({ data, pageSize });
-  if (seen.data !== data || seen.pageSize !== pageSize) {
-    setSeen({ data, pageSize });
-    setColumnVisibility({});
+  // Turning `selectable` off clears the selection too, so the CSV export cannot use a stale one.
+  const [seen, setSeen] = useState({ data, pageSize, selectable });
+  const navigated = seen.data !== data || seen.pageSize !== pageSize;
+  if (navigated || seen.selectable !== selectable) {
+    setSeen({ data, pageSize, selectable });
     setRowSelection({});
-    setPagination((current) => ({
-      pageIndex: 0,
-      pageSize: seen.pageSize !== pageSize ? (pageSize ?? DEFAULT_PAGE_SIZE) : current.pageSize,
-    }));
+    if (navigated) {
+      setColumnVisibility({});
+      setPagination((current) => ({
+        pageIndex: 0,
+        pageSize: seen.pageSize !== pageSize ? (pageSize ?? DEFAULT_PAGE_SIZE) : current.pageSize,
+      }));
+    }
   }
 
   const allColumns = useMemo(
@@ -215,7 +249,8 @@ export function DataTable<T>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    meta: { dataTableSort: sort },
+    // Headers only call `hrefFor` with a column's `meta.sortKey`, which the consumer draws from `K`.
+    meta: { dataTableSort: sort as DataTableSort | undefined },
   });
 
   const isEmpty = !loading && data.length === 0;
@@ -236,9 +271,11 @@ export function DataTable<T>({
 
   function openRow(event: MouseEvent<HTMLTableRowElement>, href: string) {
     if (event.defaultPrevented || event.button !== 0) return;
-    const target = event.target as Element | null;
-    // Row menus render in a portal, but their React events still bubble to this row.
-    if (target?.closest(INTERACTIVE_SELECTOR)) return;
+    // React bubbles events from portals (dialogs, popovers, menus opened from a cell) through the
+    // component tree to this row: only clicks inside the row's own DOM open it.
+    const target = event.target;
+    if (!(target instanceof Element) || !event.currentTarget.contains(target)) return;
+    if (target.closest(INTERACTIVE_SELECTOR)) return;
     // Do not navigate when the user is selecting text in the row.
     if (window.getSelection()?.toString()) return;
     router.push(href);
@@ -266,7 +303,7 @@ export function DataTable<T>({
         empty
       ) : (
         // `@container`: the priority classes measure this frame, not the viewport.
-        <div className="bg-card @container rounded-lg border">
+        <div className={cn("@container", frame && "bg-card rounded-lg border")}>
           <Table
             data-testid={tableTestId}
             aria-busy={loading || undefined}

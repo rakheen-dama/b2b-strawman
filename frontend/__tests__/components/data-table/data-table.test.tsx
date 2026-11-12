@@ -1,4 +1,7 @@
+import path from "node:path";
 import React, { useMemo } from "react";
+import { createPortal } from "react-dom";
+import ts from "typescript";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -150,22 +153,36 @@ function renderTable(overrides: Partial<DataTableProps<Row>> = {}) {
 
 /** Captures the CSV Blob and the download name of the next "Export CSV" click. */
 function stubDownload() {
-  const captured: { blob: Blob | null; downloads: string[] } = { blob: null, downloads: [] };
+  const captured: {
+    blob: Blob | null;
+    downloads: string[];
+    attachedAtClick: boolean[];
+    revokedSynchronously: boolean[];
+  } = { blob: null, downloads: [], attachedAtClick: [], revokedSynchronously: [] };
   const originalCreate = URL.createObjectURL;
   const originalRevoke = URL.revokeObjectURL;
   URL.createObjectURL = vi.fn((blob: Blob) => {
     captured.blob = blob;
     return "blob:mock";
   }) as typeof URL.createObjectURL;
-  URL.revokeObjectURL = vi.fn();
+  const revoke = vi.fn();
+  URL.revokeObjectURL = revoke;
   vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
     this: HTMLAnchorElement
   ) {
     captured.downloads.push(this.download);
+    captured.attachedAtClick.push(this.isConnected);
+    // A microtask runs after the click handler's synchronous code but before any timer task.
+    const callsAtClick = revoke.mock.calls.length;
+    queueMicrotask(() =>
+      captured.revokedSynchronously.push(revoke.mock.calls.length > callsAtClick)
+    );
   });
   return {
     captured,
-    restore() {
+    /** Waits one task first so the deferred `revokeObjectURL` still hits the mock. */
+    async restore() {
+      await new Promise((resolve) => setTimeout(resolve, 0));
       URL.createObjectURL = originalCreate;
       URL.revokeObjectURL = originalRevoke;
     },
@@ -292,14 +309,7 @@ describe("DataTable — column priority", () => {
 describe("DataTable — sticky header", () => {
   it("by default sticks the header cells under the floating header; the container drops overflow-x-auto", () => {
     renderTable();
-    screen.getAllByRole("columnheader").forEach((th) => {
-      expect(th).toHaveClass(
-        "sticky",
-        "top-[calc(var(--app-header-height)+0.5rem)]",
-        "z-10",
-        "bg-card"
-      );
-    });
+    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("sticky"));
     const container = screen.getByRole("table").closest('[data-slot="table-container"]');
     expect(container).toHaveClass("overflow-x-visible");
     expect(container).not.toHaveClass("overflow-x-auto");
@@ -312,6 +322,30 @@ describe("DataTable — sticky header", () => {
     screen.getAllByRole("columnheader").forEach((th) => expect(th).not.toHaveClass("sticky"));
     const container = screen.getByRole("table").closest('[data-slot="table-container"]');
     expect(container).toHaveClass("overflow-x-auto");
+  });
+});
+
+describe("DataTable — frame", () => {
+  const frameOf = () =>
+    screen.getByRole("table").closest('[data-slot="table-container"]')!.parentElement!;
+
+  it("draws a bordered card-coloured frame by default (never a data-slot card)", () => {
+    renderTable();
+    expect(frameOf()).toHaveClass("@container", "bg-card", "rounded-lg", "border");
+    expect(document.querySelector('[data-slot="card"]')).toBeNull();
+  });
+
+  it("frame={false} keeps the @container but drops the border, radius and background", () => {
+    renderTable({ frame: false });
+    const frame = frameOf();
+    expect(frame).toHaveClass("@container");
+    expect(frame).not.toHaveClass("border");
+    expect(frame).not.toHaveClass("rounded-lg");
+    expect(frame).not.toHaveClass("bg-card");
+    // Column priority still measures the container.
+    expect(screen.getByRole("columnheader", { name: "Client" })).toHaveClass(
+      "@min-[67rem]:table-cell"
+    );
   });
 });
 
@@ -379,6 +413,7 @@ describe("DataTable — CSV export", () => {
     expect(toCsvField("@cmd")).toBe("'@cmd");
     expect(toCsvField("\tlead")).toBe("'\tlead");
     expect(toCsvField("\rlead")).toBe(`"'\rlead"`);
+    expect(toCsvField("\n=1+1")).toBe(`"'\n=1+1"`);
     expect(toCsvField(-5)).toBe("-5");
   });
 
@@ -402,8 +437,13 @@ describe("DataTable — CSV export", () => {
         ].join("\r\n") + "\r\n"
       );
       expect(mockPush).not.toHaveBeenCalled();
+      // The anchor is detached after the click; the object URL is revoked on a later task.
+      expect(stub.captured.attachedAtClick).toEqual([true]);
+      expect(document.querySelector("a[download]")).toBeNull();
+      expect(stub.captured.revokedSynchronously).toEqual([false]);
+      await vi.waitFor(() => expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock"));
     } finally {
-      stub.restore();
+      await stub.restore();
     }
   });
 
@@ -422,7 +462,7 @@ describe("DataTable — CSV export", () => {
       expect(header).toBe("Matter,Amount,Note");
       expect(first).toBe("Estate late Dlamini,1500,plain");
     } finally {
-      stub.restore();
+      await stub.restore();
     }
   });
 
@@ -458,7 +498,34 @@ describe("DataTable — CSV export", () => {
       // Ticking a checkbox never opens the row.
       expect(mockPush).not.toHaveBeenCalled();
     } finally {
-      stub.restore();
+      await stub.restore();
+    }
+  });
+
+  it("turning selectable off clears the selection, so the export uses the rendered rows", async () => {
+    const user = userEvent.setup();
+    const stub = stubDownload();
+    try {
+      const props = { exportCsv: { filename: "stale.csv" } };
+      const { rerender } = renderTable({ ...props, selectable: true });
+      await user.click(screen.getAllByRole("checkbox", { name: "Select row" })[0]);
+
+      rerender(<DataTable {...tableProps({ ...props, selectable: false })} />);
+      expect(screen.queryByRole("checkbox")).toBeNull();
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      const lines = (await blobText(stub.captured.blob))
+        .slice(CSV_BOM.length)
+        .split("\r\n")
+        .filter(Boolean);
+      expect(lines).toHaveLength(1 + ROWS.length);
+
+      // Back on: the earlier selection is gone, not restored.
+      rerender(<DataTable {...tableProps({ ...props, selectable: true })} />);
+      screen
+        .getAllByRole("checkbox", { name: "Select row" })
+        .forEach((box) => expect(box).toHaveAttribute("aria-checked", "false"));
+    } finally {
+      await stub.restore();
     }
   });
 
@@ -476,7 +543,7 @@ describe("DataTable — CSV export", () => {
       expect(lines).toHaveLength(1 + 25);
       expect(lines[1].startsWith("Row 026,")).toBe(true);
     } finally {
-      stub.restore();
+      await stub.restore();
     }
   });
 });
@@ -488,6 +555,16 @@ describe("DataTable — pagination", () => {
     expect(screen.queryByRole("combobox", { name: "Rows per page" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Go to next page" })).toBeNull();
   });
+
+  it.each([0, -5, Number.NaN, 2.5, Number.POSITIVE_INFINITY])(
+    "an invalid pageSize (%s) is treated as null: every row, no pagination control",
+    (pageSize) => {
+      renderTable({ data: makeRows(30), pageSize });
+      expect(screen.getAllByTestId("fixture-row")).toHaveLength(30);
+      expect(screen.queryByRole("combobox", { name: "Rows per page" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "Go to next page" })).toBeNull();
+    }
+  );
 
   it("pageSize 25 paginates; Next moves a page; the page-size select changes the page size", async () => {
     const user = userEvent.setup();
@@ -522,8 +599,41 @@ describe("DataTable — pagination", () => {
   });
 });
 
+/** A cell that renders into a portal (as a Dialog/Popover/Select opened from a cell would). */
+function FixturePortalCell({ id }: { id: string }) {
+  return createPortal(<p>Portal body {id}</p>, document.body);
+}
+
+const portalColumns = defineColumns<Row>([
+  {
+    id: "name",
+    enableHiding: false,
+    meta: { label: "Matter" },
+    cell: ({ row }) => <span>{row.original.name}</span>,
+  },
+  {
+    id: "portal",
+    enableHiding: false,
+    header: () => <span className="sr-only">Portal</span>,
+    cell: ({ row }) => <FixturePortalCell id={row.original.id} />,
+  },
+]);
+
 describe("DataTable — row click", () => {
   const rowHref = (row: Row) => `/org/acme/matters/${row.id}`;
+
+  it("ignores clicks inside a portal rendered from a cell (React bubbles them to the row)", () => {
+    renderTable({ rowHref, columns: portalColumns });
+    const portalBody = screen.getByText("Portal body a");
+    // The portal content lives outside the row's DOM.
+    expect(screen.getAllByTestId("fixture-row")[0]).not.toContainElement(portalBody);
+    fireEvent.click(portalBody);
+    expect(mockPush).not.toHaveBeenCalled();
+
+    // A click in the row's own DOM still opens it.
+    fireEvent.click(screen.getByText("Estate late Dlamini"));
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/matters/a");
+  });
 
   it("opens rowHref on a plain-cell click", () => {
     renderTable({ rowHref });
@@ -649,7 +759,7 @@ function FixtureMattersTable({ slug, rows, sort, query }: FixtureMattersTablePro
       sort={{
         key: sort.key,
         dir: sort.dir,
-        hrefFor: (key) => buildSortHref(slug, query, key as MatterSort["key"], sort),
+        hrefFor: (key) => buildSortHref(slug, query, key, sort),
       }}
       rowHref={(row) => `/org/${slug}/matters/${row.id}`}
       rowTestId="fixture-matter-row"
@@ -687,19 +797,91 @@ describe("DataTable — RSC boundary rule", () => {
     expect(mockPush).toHaveBeenCalledWith("/org/acme/matters/m1");
   });
 
+  it("the importer scan resolves alias and relative specifiers and skips type-only imports", () => {
+    const at = (rel: string, text: string) => importsDataTableValue({ rel, text });
+    expect(
+      at("app/x/page.tsx", 'import { DataTable } from "@/components/data-table/data-table";')
+    ).toBe(true);
+    expect(
+      at(
+        "app/(app)/org/[slug]/matters/page.tsx",
+        'import { DataTable } from "../../../../../components/data-table/data-table";'
+      )
+    ).toBe(true);
+    expect(at("components/data-table/x.tsx", 'import { DataTable } from "./data-table";')).toBe(
+      true
+    );
+    expect(at("components/matters/x.tsx", 'import * as dt from "../data-table/data-table";')).toBe(
+      true
+    );
+    expect(
+      at(
+        "app/x/page.tsx",
+        'import type { DataTableProps } from "@/components/data-table/data-table";'
+      )
+    ).toBe(false);
+    expect(
+      at(
+        "app/x/page.tsx",
+        'import { type DataTableSort } from "@/components/data-table/data-table";'
+      )
+    ).toBe(false);
+    expect(
+      at(
+        "app/x/page.tsx",
+        'import { defineColumns } from "@/components/data-table/define-columns";'
+      )
+    ).toBe(false);
+    expect(at("components/x/y.tsx", 'import { DataTable } from "./data-table";')).toBe(false);
+  });
+
   it("every module that imports DataTable is a client module", () => {
     const sources = readSourceTree(["app", "components", "lib", "hooks"]);
-    const dataTable = sources.find((s) => s.rel.endsWith("components/data-table/data-table.tsx"));
+    const dataTable = sources.find((s) => s.rel === DATA_TABLE_MODULE + ".tsx");
     expect(dataTable?.text).toMatch(/^"use client";$/m);
 
-    const importers = sources.filter(
-      (s) =>
-        /from "@\/components\/data-table\/data-table"/.test(s.text) ||
-        (/components\/data-table\//.test(s.rel) && /from "\.\/data-table"/.test(s.text))
-    );
-    const serverImporters = importers
-      .filter((s) => !/^"use client";$/m.test(s.text))
+    const serverImporters = sources
+      .filter((s) => importsDataTableValue(s) && !/^"use client";$/m.test(s.text))
       .map((s) => s.rel);
     expect(serverImporters).toEqual([]);
   });
 });
+
+// ---- Importer scan ---------------------------------------------------------------------------
+
+const DATA_TABLE_MODULE = "components/data-table/data-table";
+
+/** `true` when `source` has a value (non type-only) import that resolves to `DataTable`'s module. */
+function importsDataTableValue(source: { rel: string; text: string }): boolean {
+  const sf = ts.createSourceFile(
+    source.rel,
+    source.text,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+  return sf.statements.some((statement) => {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
+      return false;
+    }
+    const clause = statement.importClause;
+    if (clause?.isTypeOnly) return false;
+    const bindings = clause?.namedBindings;
+    const onlyTypeNames =
+      clause !== undefined &&
+      !clause.name &&
+      bindings !== undefined &&
+      ts.isNamedImports(bindings) &&
+      bindings.elements.length > 0 &&
+      bindings.elements.every((element) => element.isTypeOnly);
+    if (onlyTypeNames) return false;
+
+    const specifier = statement.moduleSpecifier.text;
+    const resolved = specifier.startsWith("@/")
+      ? specifier.slice(2)
+      : specifier.startsWith(".")
+        ? path.posix.join(path.posix.dirname(source.rel), specifier)
+        : null;
+    return resolved?.replace(/\.tsx?$/, "") === DATA_TABLE_MODULE;
+  });
+}

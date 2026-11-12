@@ -11,6 +11,10 @@
  * and `meta.csv` INSIDE that module. Toolbar slots, `empty` and `footer` are pre-rendered ReactNodes
  * from the RSC (allowed). Memoise the column array in the wrapper (`useMemo`).
  *
+ * `data` IDENTITY IS NAVIGATION: `DataTable` resets column visibility, row selection and the page
+ * index whenever `data` is a new array. Pass the RSC rows through untouched; if the wrapper derives
+ * rows (map/filter), `useMemo` the derivation on the RSC array, or every re-render resets the table.
+ *
  * Set `enableHiding: false` on the row's name/link column (it is the keyboard path and the e2e row
  * filter) and on any actions column; the "Columns" menu lists only hideable columns that have a
  * `meta.label`.
@@ -21,13 +25,17 @@
  */
 import type { ColumnDef, RowData } from "@tanstack/react-table";
 
-/** URL-owned sort state. `hrefFor` is built by the page's existing `buildSortHref`. */
-export interface DataTableSort {
+/**
+ * URL-owned sort state. `hrefFor` is built by the page's existing `buildSortHref`. `K` is the
+ * page's sort-key union (e.g. `MatterSort["key"]`), so `hrefFor` can call `buildSortHref` without a
+ * cast; set each sortable column's `meta.sortKey` to a member of `K`.
+ */
+export interface DataTableSort<K extends string = string> {
   /** The active sort key, or `null` when the list has no active sort. */
-  key: string | null;
+  key: K | null;
   dir: "asc" | "desc";
   /** Link target for a header: the page's sort href for that key (all other params kept). */
-  hrefFor: (sortKey: string) => string;
+  hrefFor: (sortKey: K) => string;
 }
 
 /**

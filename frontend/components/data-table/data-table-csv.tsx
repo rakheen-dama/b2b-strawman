@@ -10,10 +10,10 @@ import { Button } from "@b2mash/ui/button";
 export const CSV_BOM = "﻿";
 
 /** A string a spreadsheet would evaluate as a formula (OWASP CSV injection). */
-const FORMULA_TRIGGER = /^[=+\-@\t\r]/;
+const FORMULA_TRIGGER = /^[=+\-@\t\r\n]/;
 
 /**
- * One CSV field. Strings that start with `=`, `+`, `-`, `@`, TAB or CR get a leading `'` so a
+ * One CSV field. Strings that start with `=`, `+`, `-`, `@`, TAB, CR or LF get a leading `'` so a
  * spreadsheet shows them as text instead of evaluating them; numbers are written raw. Then RFC 4180:
  * a field containing `"`, `,`, CR or LF is wrapped in double quotes with inner quotes doubled.
  * `null`/`undefined` → empty field.
@@ -45,15 +45,22 @@ export function buildCsv<T>(table: Table<T>): string {
   return records.map((fields) => fields.join(",")).join("\r\n") + "\r\n";
 }
 
-/** Client-side download (no server round-trip), mirroring the profitability export mechanics. */
+/**
+ * Client-side download (no server round-trip). The anchor is attached for the click (Firefox ignores
+ * a detached one) and the object URL is revoked on a later task: revoking it synchronously after
+ * `click()` can cancel the download before the browser has read the blob.
+ */
 function downloadCsv(csv: string, filename: string) {
   const blob = new Blob([CSV_BOM, csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;
+  anchor.hidden = true;
+  document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 interface DataTableCsvButtonProps<T> {

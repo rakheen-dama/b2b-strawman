@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { FolderOpen } from "lucide-react";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { RequiresCapability } from "@/lib/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
@@ -35,7 +36,7 @@ import { CreateProjectDialog } from "@/components/projects/create-project-dialog
 import { NewFromTemplateWrapper } from "@/components/templates/NewFromTemplateWrapper";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { ProjectStatusFilter } from "@/components/projects/project-status-filter";
-import { MattersTable } from "@/components/matters/matters-table";
+import { MattersDataTable } from "@/components/matters/matters-table";
 import { MatterSearch } from "@/components/matters/matter-search";
 import { MatterFiltersSheet } from "@/components/matters/matter-filters-sheet";
 import { EmptyState } from "@/components/empty-state";
@@ -187,16 +188,11 @@ export default async function MattersPage({
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Matters</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {matterCount(visibleRows.length)}
-          </p>
-        </div>
-        <RequiresCapability cap="PROJECT_MANAGEMENT">
-          <div className="flex items-center gap-2">
+      <PageHeader
+        title="Matters"
+        description={matterCount(visibleRows.length)}
+        actions={
+          <RequiresCapability cap="PROJECT_MANAGEMENT">
             <NewFromTemplateWrapper
               slug={slug}
               templates={activeTemplates}
@@ -206,89 +202,84 @@ export default async function MattersPage({
               initialCustomerId={initialCustomerId}
             />
             <CreateProjectDialog slug={slug} />
-          </div>
-        </RequiresCapability>
-      </div>
+          </RequiresCapability>
+        }
+      />
 
-      {/* Toolbar: views, search, status, filters */}
-      <div className="space-y-3">
-        {/* The view tabs scroll sideways on narrow screens; pb-1 keeps the active underline in view. */}
-        <div className="overflow-x-auto pb-1">
-          <Suspense fallback={null}>
-            <ViewSelectorClient
-              entityType="PROJECT"
-              views={views}
-              canCreate={true}
-              canCreateShared={isAdmin}
-              slug={slug}
-              allTags={allTags}
-              fieldDefinitions={fieldDefs}
-              onSave={handleCreateView}
-              systemViews={MATTER_SYSTEM_VIEWS}
-              defaultViewId={DEFAULT_MATTER_VIEW_ID}
-              clearOnSavedView={SAVED_VIEW_IGNORED_PARAMS}
-            />
-          </Suspense>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Suspense fallback={null}>
-            <MatterSearch />
-          </Suspense>
-          <Suspense fallback={null}>
-            <ProjectStatusFilter slug={slug} />
-          </Suspense>
-          {/* F-3: the backend ignores tags on the saved-view path, so the filter hides there. */}
-          {!savedViewActive && allTags.length > 0 && (
+      <MattersDataTable
+        slug={slug}
+        rows={visibleRows}
+        columns={columns}
+        customFieldNames={customFieldNames}
+        sort={sort}
+        query={query}
+        caption={`Matters — ${selection.view.name}`}
+        hideLowPriorityColumns={!explicitColumns}
+        toolbar={{
+          views: (
             <Suspense fallback={null}>
-              <MatterFiltersSheet allTags={allTags} />
+              <ViewSelectorClient
+                entityType="PROJECT"
+                views={views}
+                canCreate={true}
+                canCreateShared={isAdmin}
+                slug={slug}
+                allTags={allTags}
+                fieldDefinitions={fieldDefs}
+                onSave={handleCreateView}
+                systemViews={MATTER_SYSTEM_VIEWS}
+                defaultViewId={DEFAULT_MATTER_VIEW_ID}
+                clearOnSavedView={SAVED_VIEW_IGNORED_PARAMS}
+              />
             </Suspense>
-          )}
-        </div>
-      </div>
-
-      {/* Matters table or empty state */}
-      {visibleRows.length === 0 ? (
-        filtered ? (
-          <div className="rounded-lg border border-dashed border-slate-200 px-6 py-10 text-center dark:border-slate-800">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              No matters match this view.
-            </p>
-            <Link
-              href={`/org/${slug}/matters`}
-              className="mt-2 inline-block text-sm font-medium text-teal-600 hover:underline"
-            >
-              Clear filters
-            </Link>
-          </div>
-        ) : (
-          <EmptyState
-            icon={FolderOpen}
-            title={t("projects.list.heading")}
-            description={
-              isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")
-            }
-            action={<CreateProjectDialog slug={slug} />}
-          />
-        )
-      ) : (
-        <div className="space-y-2">
-          <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-            <MattersTable
-              slug={slug}
-              rows={visibleRows}
-              columns={columns}
-              customFieldNames={customFieldNames}
-              sort={sort}
-              query={query}
-              caption={`Matters — ${selection.view.name}`}
-              hideLowPriorityColumns={!explicitColumns}
+          ),
+          search: (
+            <Suspense fallback={null}>
+              <MatterSearch />
+            </Suspense>
+          ),
+          filters: (
+            <>
+              <Suspense fallback={null}>
+                <ProjectStatusFilter slug={slug} />
+              </Suspense>
+              {/* F-3: the backend ignores tags on the saved-view path, so the filter hides there. */}
+              {!savedViewActive && allTags.length > 0 && (
+                <Suspense fallback={null}>
+                  <MatterFiltersSheet allTags={allTags} />
+                </Suspense>
+              )}
+            </>
+          ),
+        }}
+        empty={
+          filtered ? (
+            <div className="border-border rounded-lg border border-dashed px-6 py-10 text-center">
+              <p className="text-muted-foreground text-sm">No matters match this view.</p>
+              <Link
+                href={`/org/${slug}/matters`}
+                className="text-primary mt-2 inline-block text-sm font-medium underline-offset-4 hover:underline"
+              >
+                Clear filters
+              </Link>
+            </div>
+          ) : (
+            <EmptyState
+              icon={FolderOpen}
+              title={t("projects.list.heading")}
+              description={
+                isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")
+              }
+              action={<CreateProjectDialog slug={slug} />}
             />
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400" data-testid="matters-footer">
+          )
+        }
+        footer={
+          <p className="text-muted-foreground text-xs" data-testid="matters-footer">
             Showing {matterCount(visibleRows.length)}
           </p>
-        </div>
-      )}
+        }
+      />
     </div>
   );
 }

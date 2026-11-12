@@ -1,0 +1,2130 @@
+{
+  "startedAt": "2026-11-12T14:34:44.088Z",
+  "checks": {
+    "default": {
+      "url": "/org/e2e-test-org/matters",
+      "headers": [
+        "Reference",
+        "Matter",
+        "Client",
+        "Fee earner",
+        "Status",
+        "Unbilled",
+        "Trust",
+        "Next in diary",
+        "Actions"
+      ],
+      "rows": [
+        [
+          "—",
+          "Mobile App MVP",
+          "Bright Solutions",
+          "AO Alice Owner",
+          "Active",
+          "8h 30m",
+          "R 0,00",
+          "Task due: 19 Nov 2026",
+          "Matter actions"
+        ],
+        [
+          "—",
+          "Annual Report Litigation Urgent",
+          "Carlos Mendez",
+          "AO Alice Owner",
+          "Active",
+          "—",
+          "R 0,00",
+          "Task due: 12 Dec 2026",
+          "Matter actions"
+        ],
+        [
+          "—",
+          "Brand Guidelines",
+          "Acme Corp",
+          "AO Alice Owner",
+          "Active",
+          "5h",
+          "R 0,00",
+          "Task due: 12 Dec 2026",
+          "Matter actions"
+        ],
+        [
+          "—",
+          "Website Redesign Urgent",
+          "Acme Corp",
+          "AO Alice Owner",
+          "Active",
+          "11h 30m",
+          "R 0,00",
+          "Task due: 12 Dec 2026",
+          "Matter actions"
+        ],
+        [
+          "—",
+          "SEO Audit Urgent",
+          "Bright Solutions",
+          "AO Alice Owner",
+          "Active",
+          "6h",
+          "R 0,00",
+          "—",
+          "Matter actions"
+        ]
+      ],
+      "columnsButton": true,
+      "exportButton": true,
+      "pagination": {
+        "rowsPerPage": false,
+        "pageXofY": false,
+        "prevNext": false
+      },
+      "footer": "Showing 5 matters",
+      "emptyText": null,
+      "clearFiltersHref": null,
+      "hasTable": true
+    },
+    "columnMenu": {
+      "items": [
+        {
+          "label": "Reference",
+          "checked": "true"
+        },
+        {
+          "label": "Client",
+          "checked": "true"
+        },
+        {
+          "label": "Work type",
+          "checked": "true"
+        },
+        {
+          "label": "Fee earner",
+          "checked": "true"
+        },
+        {
+          "label": "Status",
+          "checked": "true"
+        },
+        {
+          "label": "Opened",
+          "checked": "true"
+        },
+        {
+          "label": "Unbilled",
+          "checked": "true"
+        },
+        {
+          "label": "Trust",
+          "checked": "true"
+        },
+        {
+          "label": "Next in diary",
+          "checked": "true"
+        }
+      ],
+      "label": "Show columns",
+      "screenshot": "checks/colmenu-open-1440-light.png",
+      "stillOpenAfterToggle": true,
+      "afterHideClient": {
+        "url": "/org/e2e-test-org/matters",
+        "headers": [
+          "Reference",
+          "Matter",
+          "Fee earner",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "rows": [
+          [
+            "—",
+            "Mobile App MVP",
+            "AO Alice Owner",
+            "Active",
+            "8h 30m",
+            "R 0,00",
+            "Task due: 19 Nov 2026",
+            "Matter actions"
+          ],
+          [
+            "—",
+            "Annual Report Litigation Urgent",
+            "AO Alice Owner",
+            "Active",
+            "—",
+            "R 0,00",
+            "Task due: 12 Dec 2026",
+            "Matter actions"
+          ],
+          [
+            "—",
+            "Brand Guidelines",
+            "AO Alice Owner",
+            "Active",
+            "5h",
+            "R 0,00",
+            "Task due: 12 Dec 2026",
+            "Matter actions"
+          ],
+          [
+            "—",
+            "Website Redesign Urgent",
+            "AO Alice Owner",
+            "Active",
+            "11h 30m",
+            "R 0,00",
+            "Task due: 12 Dec 2026",
+            "Matter actions"
+          ],
+          [
+            "—",
+            "SEO Audit Urgent",
+            "AO Alice Owner",
+            "Active",
+            "6h",
+            "R 0,00",
+            "—",
+            "Matter actions"
+          ]
+        ],
+        "columnsButton": true,
+        "exportButton": true,
+        "pagination": {
+          "rowsPerPage": false,
+          "pageXofY": false,
+          "prevNext": false
+        },
+        "footer": "Showing 5 matters",
+        "emptyText": null,
+        "clearFiltersHref": null,
+        "hasTable": true
+      },
+      "afterHideClientScreenshot": "checks/colmenu-client-hidden-1440-light.png",
+      "afterSortNav": {
+        "url": "/org/e2e-test-org/matters?sort=name&dir=asc",
+        "headers": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Fee earner",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "rows": [
+          [
+            "—",
+            "Annual Report Litigation Urgent",
+            "Carlos Mendez",
+            "AO Alice Owner",
+            "Active",
+            "—",
+            "R 0,00",
+            "Task due: 12 Dec 2026",
+            "Matter actions"
+          ],
+          [
+            "—",
+            "Brand Guidelines",
+            "Acme Corp",
+            "AO Alice Owner",
+            "Active",
+            "5h",
+            "R 0,00",
+            "Task due: 12 Dec 2026",
+            "Matter actions"
+          ],
+          [
+            "—",
+            "Mobile App MVP",
+            "Bright Solutions",
+            "AO Alice Owner",
+            "Active",
+            "8h 30m",
+            "R 0,00",
+            "Task due: 19 Nov 2026",
+            "Matter actions"
+          ],
+          [
+            "—",
+            "SEO Audit Urgent",
+            "Bright Solutions",
+            "AO Alice Owner",
+            "Active",
+            "6h",
+            "R 0,00",
+            "—",
+            "Matter actions"
+          ],
+          [
+            "—",
+            "Website Redesign Urgent",
+            "Acme Corp",
+            "AO Alice Owner",
+            "Active",
+            "11h 30m",
+            "R 0,00",
+            "Task due: 12 Dec 2026",
+            "Matter actions"
+          ]
+        ],
+        "columnsButton": true,
+        "exportButton": true,
+        "pagination": {
+          "rowsPerPage": false,
+          "pageXofY": false,
+          "prevNext": false
+        },
+        "footer": "Showing 5 matters",
+        "emptyText": null,
+        "clearFiltersHref": null,
+        "hasTable": true
+      },
+      "afterSortNavScreenshot": "checks/colmenu-reset-after-sort-1440-light.png",
+      "afterHideTrust": [
+        "Reference",
+        "Matter",
+        "Client",
+        "Fee earner",
+        "Status",
+        "Unbilled",
+        "Next in diary",
+        "Actions"
+      ],
+      "afterChipNav": [
+        "Reference",
+        "Matter",
+        "Client",
+        "Fee earner",
+        "Status",
+        "Unbilled",
+        "Trust",
+        "Next in diary",
+        "Actions"
+      ],
+      "afterChipNavUrl": "/org/e2e-test-org/matters?sort=name&dir=asc&status=ALL"
+    },
+    "csvClientHidden": {
+      "file": "matters-export-client-hidden.csv",
+      "suggestedFilename": "matters.csv",
+      "bom": true,
+      "lines": [
+        "Reference,Matter,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary",
+        ",Mobile App MVP,,Alice Owner,Active,12 Nov 2026,8h 30m,0,19 Nov 2026",
+        ",Annual Report,,Alice Owner,Active,12 Nov 2026,,0,12 Dec 2026",
+        ",Brand Guidelines,,Alice Owner,Active,12 Nov 2026,5h,0,12 Dec 2026",
+        ",Website Redesign,,Alice Owner,Active,12 Nov 2026,11h 30m,0,12 Dec 2026",
+        ",SEO Audit,,Alice Owner,Active,12 Nov 2026,6h,0,"
+      ]
+    },
+    "csv1440": {
+      "file": "matters-export.csv",
+      "suggestedFilename": "matters.csv",
+      "bom": true,
+      "lines": [
+        "Reference,Matter,Client,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary",
+        ",Mobile App MVP,Bright Solutions,,Alice Owner,Active,12 Nov 2026,8h 30m,0,19 Nov 2026",
+        ",Annual Report,Carlos Mendez,,Alice Owner,Active,12 Nov 2026,,0,12 Dec 2026",
+        ",Brand Guidelines,Acme Corp,,Alice Owner,Active,12 Nov 2026,5h,0,12 Dec 2026",
+        ",Website Redesign,Acme Corp,,Alice Owner,Active,12 Nov 2026,11h 30m,0,12 Dec 2026",
+        ",SEO Audit,Bright Solutions,,Alice Owner,Active,12 Nov 2026,6h,0,"
+      ],
+      "screenHeaders": [
+        "Reference",
+        "Matter",
+        "Client",
+        "Fee earner",
+        "Status",
+        "Unbilled",
+        "Trust",
+        "Next in diary",
+        "Actions"
+      ]
+    },
+    "keyboard": {
+      "tabSequenceFromSearch": [
+        {
+          "tag": "A",
+          "text": "Active",
+          "href": "/org/e2e-test-org/matters",
+          "inThead": false
+        },
+        {
+          "tag": "A",
+          "text": "Completed",
+          "href": "/org/e2e-test-org/matters?status=COMPLETED",
+          "inThead": false
+        },
+        {
+          "tag": "A",
+          "text": "Archived",
+          "href": "/org/e2e-test-org/matters?status=ARCHIVED",
+          "inThead": false
+        },
+        {
+          "tag": "A",
+          "text": "Closed",
+          "href": "/org/e2e-test-org/matters?status=CLOSED",
+          "inThead": false
+        },
+        {
+          "tag": "A",
+          "text": "All",
+          "href": "/org/e2e-test-org/matters?status=ALL",
+          "inThead": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Filters",
+          "href": null,
+          "inThead": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Columns",
+          "href": null,
+          "inThead": false
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Export CSV",
+          "href": null,
+          "inThead": false
+        },
+        {
+          "tag": "A",
+          "text": "Reference",
+          "href": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc",
+          "inThead": true
+        }
+      ],
+      "focusShot": "checks/keyboard-focus-sort-link-1440-light.png",
+      "afterEnter": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc",
+      "columnsMenuOpensWithEnter": true
+    },
+    "pagination": {
+      "rowsPerPage": false,
+      "pageXofY": false,
+      "prevNext": false
+    },
+    "rowClick": {
+      "cellText": "—",
+      "expected": "/org/e2e-test-org/matters/de3f0548-651b-4e11-a481-7c8e7a3c302c",
+      "navigates": true,
+      "urlAfter": "/org/e2e-test-org/matters/de3f0548-651b-4e11-a481-7c8e7a3c302c"
+    },
+    "clientLink": {
+      "expected": "/org/e2e-test-org/clients/53b28cf9-6efd-4403-80b4-296a30229dd8",
+      "urlAfter": "/org/e2e-test-org/clients/53b28cf9-6efd-4403-80b4-296a30229dd8",
+      "ok": true
+    },
+    "rowMenu": {
+      "items": [
+        "Open matter",
+        "Open client"
+      ],
+      "urlAfterOpen": "/org/e2e-test-org/matters",
+      "rowDidNotNavigate": true,
+      "screenshot": "checks/row-menu-open-1440-light.png",
+      "openClientUrl": "/org/e2e-test-org/clients/53b28cf9-6efd-4403-80b4-296a30229dd8",
+      "openMatterUrl": "/org/e2e-test-org/matters/de3f0548-651b-4e11-a481-7c8e7a3c302c"
+    },
+    "emptyFiltered": {
+      "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter",
+      "headers": [],
+      "rows": [],
+      "columnsButton": false,
+      "exportButton": false,
+      "pagination": {
+        "rowsPerPage": false,
+        "pageXofY": false,
+        "prevNext": false
+      },
+      "footer": null,
+      "emptyText": "No matters match this view.\n\nClear filters",
+      "clearFiltersHref": "/org/e2e-test-org/matters",
+      "hasTable": false,
+      "afterClear": {
+        "url": "/org/e2e-test-org/matters",
+        "rows": 5
+      }
+    },
+    "emptyDormant": {
+      "url": "/org/e2e-test-org/matters?view=system%3Adormant",
+      "headers": [],
+      "rows": [],
+      "columnsButton": false,
+      "exportButton": false,
+      "pagination": {
+        "rowsPerPage": false,
+        "pageXofY": false,
+        "prevNext": false
+      },
+      "footer": null,
+      "emptyText": "No matters match this view.\n\nClear filters",
+      "clearFiltersHref": "/org/e2e-test-org/matters",
+      "hasTable": false,
+      "screenshot": "checks/empty-dormant-1440-light.png"
+    },
+    "sticky": {
+      "before": {
+        "top": 269,
+        "position": "static"
+      },
+      "afterScroll300": {
+        "top": 162,
+        "position": "static"
+      },
+      "scrollY": 107,
+      "sticks": false,
+      "screenshot": "checks/sticky-scrolled-1440x500-light.png"
+    },
+    "csv1024": {
+      "file": "matters-export-1024.csv",
+      "suggestedFilename": "matters.csv",
+      "bom": true,
+      "lines": [
+        "Reference,Matter,Client,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary",
+        ",Mobile App MVP,Bright Solutions,,Alice Owner,Active,12 Nov 2026,8h 30m,0,19 Nov 2026",
+        ",Annual Report,Carlos Mendez,,Alice Owner,Active,12 Nov 2026,,0,12 Dec 2026",
+        ",Brand Guidelines,Acme Corp,,Alice Owner,Active,12 Nov 2026,5h,0,12 Dec 2026",
+        ",Website Redesign,Acme Corp,,Alice Owner,Active,12 Nov 2026,11h 30m,0,12 Dec 2026",
+        ",SEO Audit,Bright Solutions,,Alice Owner,Active,12 Nov 2026,6h,0,"
+      ],
+      "screenHeaders": [
+        "Reference",
+        "Matter",
+        "Client",
+        "Status",
+        "Unbilled",
+        "Trust",
+        "Next in diary",
+        "Actions"
+      ]
+    },
+    "carol": {
+      "url": "/org/e2e-test-org/matters",
+      "headers": [
+        "Reference",
+        "Matter",
+        "Client",
+        "Fee earner",
+        "Status",
+        "Unbilled",
+        "Trust",
+        "Next in diary",
+        "Actions"
+      ],
+      "rows": [
+        [
+          "—",
+          "Mobile App MVP",
+          "Bright Solutions",
+          "AO Alice Owner",
+          "Active",
+          "8h 30m",
+          "R 0,00",
+          "Task due: 19 Nov 2026",
+          "Matter actions"
+        ],
+        [
+          "—",
+          "Annual Report Litigation Urgent",
+          "Carlos Mendez",
+          "AO Alice Owner",
+          "Active",
+          "—",
+          "R 0,00",
+          "Task due: 12 Dec 2026",
+          "Matter actions"
+        ],
+        [
+          "—",
+          "Brand Guidelines",
+          "Acme Corp",
+          "AO Alice Owner",
+          "Active",
+          "5h",
+          "R 0,00",
+          "Task due: 12 Dec 2026",
+          "Matter actions"
+        ],
+        [
+          "—",
+          "Website Redesign Urgent",
+          "Acme Corp",
+          "AO Alice Owner",
+          "Active",
+          "11h 30m",
+          "R 0,00",
+          "Task due: 12 Dec 2026",
+          "Matter actions"
+        ],
+        [
+          "—",
+          "SEO Audit Urgent",
+          "Bright Solutions",
+          "AO Alice Owner",
+          "Active",
+          "6h",
+          "R 0,00",
+          "—",
+          "Matter actions"
+        ]
+      ],
+      "columnsButton": true,
+      "exportButton": true,
+      "pagination": {
+        "rowsPerPage": false,
+        "pageXofY": false,
+        "prevNext": false
+      },
+      "footer": "Showing 5 matters",
+      "emptyText": null,
+      "clearFiltersHref": null,
+      "hasTable": true,
+      "screenshot": "checks/carol-default-1440-light.png"
+    },
+    "carolCsv": {
+      "file": "matters-export-carol.csv",
+      "suggestedFilename": "matters.csv",
+      "bom": true,
+      "lines": [
+        "Reference,Matter,Client,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary",
+        ",Mobile App MVP,Bright Solutions,,Alice Owner,Active,12 Nov 2026,8h 30m,0,19 Nov 2026",
+        ",Annual Report,Carlos Mendez,,Alice Owner,Active,12 Nov 2026,,0,12 Dec 2026",
+        ",Brand Guidelines,Acme Corp,,Alice Owner,Active,12 Nov 2026,5h,0,12 Dec 2026",
+        ",Website Redesign,Acme Corp,,Alice Owner,Active,12 Nov 2026,11h 30m,0,12 Dec 2026",
+        ",SEO Audit,Bright Solutions,,Alice Owner,Active,12 Nov 2026,6h,0,"
+      ]
+    }
+  },
+  "layout": {
+    "1024-light": {
+      "default": {
+        "htmlClass": "light",
+        "viewport": 1024,
+        "docScrollWidth": 1024,
+        "table": {
+          "tableWidth": 904.4,
+          "containerClientWidth": 718,
+          "containerScrollWidth": 904,
+          "overflowX": "auto",
+          "horizontallyScrollable": true,
+          "frameWidth": 720
+        },
+        "borders": {
+          "frameBorder": "1px solid",
+          "frameRadius": "8px",
+          "containerBorder": "0px solid",
+          "tableBorder": "0px solid"
+        },
+        "alignment": {
+          "h1Left": 280,
+          "dataTableLeft": 280,
+          "frameLeft": 280,
+          "frameRight": 1000,
+          "searchLeft": 280,
+          "newMatterRight": 1000
+        },
+        "toolbarRow": {
+          "children": [
+            {
+              "tag": "DIV",
+              "text": "",
+              "top": 220,
+              "left": 280,
+              "right": 536
+            },
+            {
+              "tag": "DIV",
+              "text": "Active\nCompleted\nArchived\nClosed\nAll",
+              "top": 224,
+              "left": 548,
+              "right": 934
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Filters",
+              "top": 268,
+              "left": 280,
+              "right": 363
+            },
+            {
+              "tag": "DIV",
+              "text": "Columns\nExport CSV",
+              "top": 268,
+              "left": 771,
+              "right": 1000
+            }
+          ],
+          "distinctTops": 3
+        },
+        "headerCells": [
+          {
+            "header": "Reference",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 281,
+            "tdLeft": 281
+          },
+          {
+            "header": "Matter",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 390,
+            "tdLeft": 390
+          },
+          {
+            "header": "Client",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 630,
+            "tdLeft": 630
+          },
+          {
+            "header": "Status",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 749,
+            "tdLeft": 749
+          },
+          {
+            "header": "Unbilled",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 833,
+            "tdLeft": 833
+          },
+          {
+            "header": "Trust",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 931,
+            "tdLeft": 931
+          },
+          {
+            "header": "Next in diary",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 1008,
+            "tdLeft": 1008
+          },
+          {
+            "header": "Actions",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 1137,
+            "tdLeft": 1137
+          }
+        ],
+        "colors": {
+          "body": "lab(96.7396 -0.214994 -1.49846)",
+          "frame": "lab(99.5299 -0.108749 -0.749981)",
+          "thead": "rgba(0, 0, 0, 0)",
+          "th": "rgba(0, 0, 0, 0)",
+          "thColor": "lab(35.5441 -0.826195 -7.36533)",
+          "row": "rgba(0, 0, 0, 0)",
+          "td": "lab(7.73948 -0.41344 -4.03315)",
+          "columnsBtn": [
+            "lab(96.7396 -0.214994 -1.49846)",
+            "lab(7.73948 -0.41344 -4.03315)",
+            "lab(89.5346 -0.418812 -2.99045)"
+          ]
+        },
+        "whiteSurfacesInMain": []
+      },
+      "defaultShot": "checks/default-1024-light.png",
+      "sorted": {
+        "url": "/org/e2e-test-org/matters?sort=unbilled&dir=desc",
+        "headers": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "layout": {
+          "htmlClass": "light",
+          "viewport": 1024,
+          "docScrollWidth": 1024,
+          "table": {
+            "tableWidth": 904.4,
+            "containerClientWidth": 718,
+            "containerScrollWidth": 904,
+            "overflowX": "auto",
+            "horizontallyScrollable": true,
+            "frameWidth": 720
+          },
+          "borders": {
+            "frameBorder": "1px solid",
+            "frameRadius": "8px",
+            "containerBorder": "0px solid",
+            "tableBorder": "0px solid"
+          },
+          "alignment": {
+            "h1Left": 280,
+            "dataTableLeft": 280,
+            "frameLeft": 280,
+            "frameRight": 1000,
+            "searchLeft": 280,
+            "newMatterRight": 1000
+          },
+          "toolbarRow": {
+            "children": [
+              {
+                "tag": "DIV",
+                "text": "",
+                "top": 220,
+                "left": 280,
+                "right": 536
+              },
+              {
+                "tag": "DIV",
+                "text": "Active\nCompleted\nArchived\nClosed\nAll",
+                "top": 224,
+                "left": 548,
+                "right": 934
+              },
+              {
+                "tag": "BUTTON",
+                "text": "Filters",
+                "top": 268,
+                "left": 280,
+                "right": 363
+              },
+              {
+                "tag": "DIV",
+                "text": "Columns\nExport CSV",
+                "top": 268,
+                "left": 771,
+                "right": 1000
+              }
+            ],
+            "distinctTops": 3
+          },
+          "headerCells": [
+            {
+              "header": "Reference",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 281,
+              "tdLeft": 281
+            },
+            {
+              "header": "Matter",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 390,
+              "tdLeft": 390
+            },
+            {
+              "header": "Client",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 630,
+              "tdLeft": 630
+            },
+            {
+              "header": "Status",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 749,
+              "tdLeft": 749
+            },
+            {
+              "header": "Unbilled",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 833,
+              "tdLeft": 833
+            },
+            {
+              "header": "Trust",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 931,
+              "tdLeft": 931
+            },
+            {
+              "header": "Next in diary",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 1008,
+              "tdLeft": 1008
+            },
+            {
+              "header": "Actions",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 1137,
+              "tdLeft": 1137
+            }
+          ],
+          "colors": {
+            "body": "lab(96.7396 -0.214994 -1.49846)",
+            "frame": "lab(99.5299 -0.108749 -0.749981)",
+            "thead": "rgba(0, 0, 0, 0)",
+            "th": "rgba(0, 0, 0, 0)",
+            "thColor": "lab(35.5441 -0.826195 -7.36533)",
+            "row": "rgba(0, 0, 0, 0)",
+            "td": "lab(7.73948 -0.41344 -4.03315)",
+            "columnsBtn": [
+              "lab(96.7396 -0.214994 -1.49846)",
+              "lab(7.73948 -0.41344 -4.03315)",
+              "lab(89.5346 -0.418812 -2.99045)"
+            ]
+          },
+          "whiteSurfacesInMain": []
+        }
+      },
+      "sortedShot": "checks/sorted-unbilled-desc-1024-light.png",
+      "colMenuShot": "checks/colmenu-open-1024-light.png",
+      "colMenuBox": {
+        "top": 304,
+        "bottom": 643,
+        "left": 649,
+        "right": 873,
+        "bg": "lab(100 0 0)"
+      },
+      "filteredEmpty": {
+        "state": {
+          "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter",
+          "headers": [],
+          "rows": [],
+          "columnsButton": false,
+          "exportButton": false,
+          "pagination": {
+            "rowsPerPage": false,
+            "pageXofY": false,
+            "prevNext": false
+          },
+          "footer": null,
+          "emptyText": "No matters match this view.\n\nClear filters",
+          "clearFiltersHref": "/org/e2e-test-org/matters",
+          "hasTable": false
+        },
+        "layout": {
+          "htmlClass": "light",
+          "viewport": 1024,
+          "docScrollWidth": 1024,
+          "table": null,
+          "borders": null,
+          "alignment": {
+            "h1Left": 280,
+            "dataTableLeft": 280,
+            "frameLeft": null,
+            "frameRight": null,
+            "searchLeft": 280,
+            "newMatterRight": 1000
+          },
+          "toolbarRow": {
+            "children": [
+              {
+                "tag": "DIV",
+                "text": "",
+                "top": 220,
+                "left": 280,
+                "right": 536
+              },
+              {
+                "tag": "DIV",
+                "text": "Active\nCompleted\nArchived\nClosed\nAll",
+                "top": 224,
+                "left": 548,
+                "right": 934
+              },
+              {
+                "tag": "BUTTON",
+                "text": "Filters",
+                "top": 268,
+                "left": 280,
+                "right": 363
+              }
+            ],
+            "distinctTops": 3
+          },
+          "headerCells": [],
+          "colors": {
+            "body": "lab(96.7396 -0.214994 -1.49846)",
+            "frame": null,
+            "thead": null,
+            "th": null,
+            "thColor": null,
+            "row": null,
+            "td": null,
+            "columnsBtn": null
+          },
+          "whiteSurfacesInMain": []
+        }
+      },
+      "filteredEmptyShot": "checks/filtered-empty-1024-light.png",
+      "scrolledRightShot": "checks/default-scrolled-right-1024-light.png"
+    },
+    "1024-dark": {
+      "default": {
+        "htmlClass": "dark",
+        "viewport": 1024,
+        "docScrollWidth": 1024,
+        "table": {
+          "tableWidth": 904.4,
+          "containerClientWidth": 718,
+          "containerScrollWidth": 904,
+          "overflowX": "auto",
+          "horizontallyScrollable": true,
+          "frameWidth": 720
+        },
+        "borders": {
+          "frameBorder": "1px solid",
+          "frameRadius": "8px",
+          "containerBorder": "0px solid",
+          "tableBorder": "0px solid"
+        },
+        "alignment": {
+          "h1Left": 280,
+          "dataTableLeft": 280,
+          "frameLeft": 280,
+          "frameRight": 1000,
+          "searchLeft": 280,
+          "newMatterRight": 1000
+        },
+        "toolbarRow": {
+          "children": [
+            {
+              "tag": "DIV",
+              "text": "",
+              "top": 220,
+              "left": 280,
+              "right": 536
+            },
+            {
+              "tag": "DIV",
+              "text": "Active\nCompleted\nArchived\nClosed\nAll",
+              "top": 224,
+              "left": 548,
+              "right": 934
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Filters",
+              "top": 268,
+              "left": 280,
+              "right": 363
+            },
+            {
+              "tag": "DIV",
+              "text": "Columns\nExport CSV",
+              "top": 268,
+              "left": 771,
+              "right": 1000
+            }
+          ],
+          "distinctTops": 3
+        },
+        "headerCells": [
+          {
+            "header": "Reference",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 281,
+            "tdLeft": 281
+          },
+          {
+            "header": "Matter",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 390,
+            "tdLeft": 390
+          },
+          {
+            "header": "Client",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 630,
+            "tdLeft": 630
+          },
+          {
+            "header": "Status",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 749,
+            "tdLeft": 749
+          },
+          {
+            "header": "Unbilled",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 833,
+            "tdLeft": 833
+          },
+          {
+            "header": "Trust",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 931,
+            "tdLeft": 931
+          },
+          {
+            "header": "Next in diary",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 1008,
+            "tdLeft": 1008
+          },
+          {
+            "header": "Actions",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 1137,
+            "tdLeft": 1137
+          }
+        ],
+        "colors": {
+          "body": "lab(2.214 -0.134699 -1.01047)",
+          "frame": "lab(7.73948 -0.41344 -4.03315)",
+          "thead": "rgba(0, 0, 0, 0)",
+          "th": "rgba(0, 0, 0, 0)",
+          "thColor": "lab(65.1376 -0.85035 -6.67907)",
+          "row": "rgba(0, 0, 0, 0)",
+          "td": "lab(100 0 0)",
+          "columnsBtn": [
+            "lab(2.214 -0.134699 -1.01047)",
+            "lab(100 0 0)",
+            "lab(14.1047 -0.539318 -5.13909)"
+          ]
+        },
+        "whiteSurfacesInMain": []
+      },
+      "defaultShot": "checks/default-1024-dark.png",
+      "sorted": {
+        "url": "/org/e2e-test-org/matters?sort=unbilled&dir=desc",
+        "headers": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "layout": {
+          "htmlClass": "dark",
+          "viewport": 1024,
+          "docScrollWidth": 1024,
+          "table": {
+            "tableWidth": 904.4,
+            "containerClientWidth": 718,
+            "containerScrollWidth": 904,
+            "overflowX": "auto",
+            "horizontallyScrollable": true,
+            "frameWidth": 720
+          },
+          "borders": {
+            "frameBorder": "1px solid",
+            "frameRadius": "8px",
+            "containerBorder": "0px solid",
+            "tableBorder": "0px solid"
+          },
+          "alignment": {
+            "h1Left": 280,
+            "dataTableLeft": 280,
+            "frameLeft": 280,
+            "frameRight": 1000,
+            "searchLeft": 280,
+            "newMatterRight": 1000
+          },
+          "toolbarRow": {
+            "children": [
+              {
+                "tag": "DIV",
+                "text": "",
+                "top": 220,
+                "left": 280,
+                "right": 536
+              },
+              {
+                "tag": "DIV",
+                "text": "Active\nCompleted\nArchived\nClosed\nAll",
+                "top": 224,
+                "left": 548,
+                "right": 934
+              },
+              {
+                "tag": "BUTTON",
+                "text": "Filters",
+                "top": 268,
+                "left": 280,
+                "right": 363
+              },
+              {
+                "tag": "DIV",
+                "text": "Columns\nExport CSV",
+                "top": 268,
+                "left": 771,
+                "right": 1000
+              }
+            ],
+            "distinctTops": 3
+          },
+          "headerCells": [
+            {
+              "header": "Reference",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 281,
+              "tdLeft": 281
+            },
+            {
+              "header": "Matter",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 390,
+              "tdLeft": 390
+            },
+            {
+              "header": "Client",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 630,
+              "tdLeft": 630
+            },
+            {
+              "header": "Status",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 749,
+              "tdLeft": 749
+            },
+            {
+              "header": "Unbilled",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 833,
+              "tdLeft": 833
+            },
+            {
+              "header": "Trust",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 931,
+              "tdLeft": 931
+            },
+            {
+              "header": "Next in diary",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 1008,
+              "tdLeft": 1008
+            },
+            {
+              "header": "Actions",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 1137,
+              "tdLeft": 1137
+            }
+          ],
+          "colors": {
+            "body": "lab(2.214 -0.134699 -1.01047)",
+            "frame": "lab(7.73948 -0.41344 -4.03315)",
+            "thead": "rgba(0, 0, 0, 0)",
+            "th": "rgba(0, 0, 0, 0)",
+            "thColor": "lab(65.1376 -0.85035 -6.67907)",
+            "row": "rgba(0, 0, 0, 0)",
+            "td": "lab(100 0 0)",
+            "columnsBtn": [
+              "lab(2.214 -0.134699 -1.01047)",
+              "lab(100 0 0)",
+              "lab(14.1047 -0.539318 -5.13909)"
+            ]
+          },
+          "whiteSurfacesInMain": []
+        }
+      },
+      "sortedShot": "checks/sorted-unbilled-desc-1024-dark.png",
+      "colMenuShot": "checks/colmenu-open-1024-dark.png",
+      "colMenuBox": {
+        "top": 304,
+        "bottom": 643,
+        "left": 649,
+        "right": 873,
+        "bg": "lab(11.2132 -0.472777 -4.4093)"
+      },
+      "filteredEmpty": {
+        "state": {
+          "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter",
+          "headers": [],
+          "rows": [],
+          "columnsButton": false,
+          "exportButton": false,
+          "pagination": {
+            "rowsPerPage": false,
+            "pageXofY": false,
+            "prevNext": false
+          },
+          "footer": null,
+          "emptyText": "No matters match this view.\n\nClear filters",
+          "clearFiltersHref": "/org/e2e-test-org/matters",
+          "hasTable": false
+        },
+        "layout": {
+          "htmlClass": "dark",
+          "viewport": 1024,
+          "docScrollWidth": 1024,
+          "table": null,
+          "borders": null,
+          "alignment": {
+            "h1Left": 280,
+            "dataTableLeft": 280,
+            "frameLeft": null,
+            "frameRight": null,
+            "searchLeft": 280,
+            "newMatterRight": 1000
+          },
+          "toolbarRow": {
+            "children": [
+              {
+                "tag": "DIV",
+                "text": "",
+                "top": 220,
+                "left": 280,
+                "right": 536
+              },
+              {
+                "tag": "DIV",
+                "text": "Active\nCompleted\nArchived\nClosed\nAll",
+                "top": 224,
+                "left": 548,
+                "right": 934
+              },
+              {
+                "tag": "BUTTON",
+                "text": "Filters",
+                "top": 268,
+                "left": 280,
+                "right": 363
+              }
+            ],
+            "distinctTops": 3
+          },
+          "headerCells": [],
+          "colors": {
+            "body": "lab(2.214 -0.134699 -1.01047)",
+            "frame": null,
+            "thead": null,
+            "th": null,
+            "thColor": null,
+            "row": null,
+            "td": null,
+            "columnsBtn": null
+          },
+          "whiteSurfacesInMain": []
+        }
+      },
+      "filteredEmptyShot": "checks/filtered-empty-1024-dark.png"
+    },
+    "1440-light": {
+      "default": {
+        "htmlClass": "light",
+        "viewport": 1440,
+        "docScrollWidth": 1440,
+        "table": {
+          "tableWidth": 1134,
+          "containerClientWidth": 1134,
+          "containerScrollWidth": 1134,
+          "overflowX": "auto",
+          "horizontallyScrollable": false,
+          "frameWidth": 1136
+        },
+        "borders": {
+          "frameBorder": "1px solid",
+          "frameRadius": "8px",
+          "containerBorder": "0px solid",
+          "tableBorder": "0px solid"
+        },
+        "alignment": {
+          "h1Left": 280,
+          "dataTableLeft": 280,
+          "frameLeft": 280,
+          "frameRight": 1416,
+          "searchLeft": 280,
+          "newMatterRight": 1416
+        },
+        "toolbarRow": {
+          "children": [
+            {
+              "tag": "DIV",
+              "text": "",
+              "top": 220,
+              "left": 280,
+              "right": 536
+            },
+            {
+              "tag": "DIV",
+              "text": "Active\nCompleted\nArchived\nClosed\nAll",
+              "top": 224,
+              "left": 548,
+              "right": 934
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Filters",
+              "top": 222,
+              "left": 946,
+              "right": 1029
+            },
+            {
+              "tag": "DIV",
+              "text": "Columns\nExport CSV",
+              "top": 222,
+              "left": 1187,
+              "right": 1416
+            }
+          ],
+          "distinctTops": 3
+        },
+        "headerCells": [
+          {
+            "header": "Reference",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 281,
+            "tdLeft": 281
+          },
+          {
+            "header": "Matter",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 402,
+            "tdLeft": 402
+          },
+          {
+            "header": "Client",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 667,
+            "tdLeft": 667
+          },
+          {
+            "header": "Fee earner",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 798,
+            "tdLeft": 798
+          },
+          {
+            "header": "Status",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 937,
+            "tdLeft": 937
+          },
+          {
+            "header": "Unbilled",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 1030,
+            "tdLeft": 1030
+          },
+          {
+            "header": "Trust",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 1138,
+            "tdLeft": 1138
+          },
+          {
+            "header": "Next in diary",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 1224,
+            "tdLeft": 1224
+          },
+          {
+            "header": "Actions",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 1367,
+            "tdLeft": 1367
+          }
+        ],
+        "colors": {
+          "body": "lab(96.7396 -0.214994 -1.49846)",
+          "frame": "lab(99.5299 -0.108749 -0.749981)",
+          "thead": "rgba(0, 0, 0, 0)",
+          "th": "rgba(0, 0, 0, 0)",
+          "thColor": "lab(35.5441 -0.826195 -7.36533)",
+          "row": "rgba(0, 0, 0, 0)",
+          "td": "lab(7.73948 -0.41344 -4.03315)",
+          "columnsBtn": [
+            "lab(96.7396 -0.214994 -1.49846)",
+            "lab(7.73948 -0.41344 -4.03315)",
+            "lab(89.5346 -0.418812 -2.99045)"
+          ]
+        },
+        "whiteSurfacesInMain": []
+      },
+      "defaultShot": "checks/default-1440-light.png",
+      "sorted": {
+        "url": "/org/e2e-test-org/matters?sort=unbilled&dir=desc",
+        "headers": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Fee earner",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "layout": {
+          "htmlClass": "light",
+          "viewport": 1440,
+          "docScrollWidth": 1440,
+          "table": {
+            "tableWidth": 1134,
+            "containerClientWidth": 1134,
+            "containerScrollWidth": 1134,
+            "overflowX": "auto",
+            "horizontallyScrollable": false,
+            "frameWidth": 1136
+          },
+          "borders": {
+            "frameBorder": "1px solid",
+            "frameRadius": "8px",
+            "containerBorder": "0px solid",
+            "tableBorder": "0px solid"
+          },
+          "alignment": {
+            "h1Left": 280,
+            "dataTableLeft": 280,
+            "frameLeft": 280,
+            "frameRight": 1416,
+            "searchLeft": 280,
+            "newMatterRight": 1416
+          },
+          "toolbarRow": {
+            "children": [
+              {
+                "tag": "DIV",
+                "text": "",
+                "top": 220,
+                "left": 280,
+                "right": 536
+              },
+              {
+                "tag": "DIV",
+                "text": "Active\nCompleted\nArchived\nClosed\nAll",
+                "top": 224,
+                "left": 548,
+                "right": 934
+              },
+              {
+                "tag": "BUTTON",
+                "text": "Filters",
+                "top": 222,
+                "left": 946,
+                "right": 1029
+              },
+              {
+                "tag": "DIV",
+                "text": "Columns\nExport CSV",
+                "top": 222,
+                "left": 1187,
+                "right": 1416
+              }
+            ],
+            "distinctTops": 3
+          },
+          "headerCells": [
+            {
+              "header": "Reference",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 281,
+              "tdLeft": 281
+            },
+            {
+              "header": "Matter",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 402,
+              "tdLeft": 402
+            },
+            {
+              "header": "Client",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 667,
+              "tdLeft": 667
+            },
+            {
+              "header": "Fee earner",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 798,
+              "tdLeft": 798
+            },
+            {
+              "header": "Status",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 937,
+              "tdLeft": 937
+            },
+            {
+              "header": "Unbilled",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 1030,
+              "tdLeft": 1030
+            },
+            {
+              "header": "Trust",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 1138,
+              "tdLeft": 1138
+            },
+            {
+              "header": "Next in diary",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 1224,
+              "tdLeft": 1224
+            },
+            {
+              "header": "Actions",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 1367,
+              "tdLeft": 1367
+            }
+          ],
+          "colors": {
+            "body": "lab(96.7396 -0.214994 -1.49846)",
+            "frame": "lab(99.5299 -0.108749 -0.749981)",
+            "thead": "rgba(0, 0, 0, 0)",
+            "th": "rgba(0, 0, 0, 0)",
+            "thColor": "lab(35.5441 -0.826195 -7.36533)",
+            "row": "rgba(0, 0, 0, 0)",
+            "td": "lab(7.73948 -0.41344 -4.03315)",
+            "columnsBtn": [
+              "lab(96.7396 -0.214994 -1.49846)",
+              "lab(7.73948 -0.41344 -4.03315)",
+              "lab(89.5346 -0.418812 -2.99045)"
+            ]
+          },
+          "whiteSurfacesInMain": []
+        }
+      },
+      "sortedShot": "checks/sorted-unbilled-desc-1440-light.png",
+      "colMenuShot": "checks/colmenu-open-1440-light.png",
+      "colMenuBox": {
+        "top": 258,
+        "bottom": 597,
+        "left": 1065,
+        "right": 1289,
+        "bg": "lab(100 0 0)"
+      },
+      "filteredEmpty": {
+        "state": {
+          "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter",
+          "headers": [],
+          "rows": [],
+          "columnsButton": false,
+          "exportButton": false,
+          "pagination": {
+            "rowsPerPage": false,
+            "pageXofY": false,
+            "prevNext": false
+          },
+          "footer": null,
+          "emptyText": "No matters match this view.\n\nClear filters",
+          "clearFiltersHref": "/org/e2e-test-org/matters",
+          "hasTable": false
+        },
+        "layout": {
+          "htmlClass": "light",
+          "viewport": 1440,
+          "docScrollWidth": 1440,
+          "table": null,
+          "borders": null,
+          "alignment": {
+            "h1Left": 280,
+            "dataTableLeft": 280,
+            "frameLeft": null,
+            "frameRight": null,
+            "searchLeft": 280,
+            "newMatterRight": 1416
+          },
+          "toolbarRow": {
+            "children": [
+              {
+                "tag": "DIV",
+                "text": "",
+                "top": 220,
+                "left": 280,
+                "right": 536
+              },
+              {
+                "tag": "DIV",
+                "text": "Active\nCompleted\nArchived\nClosed\nAll",
+                "top": 224,
+                "left": 548,
+                "right": 934
+              },
+              {
+                "tag": "BUTTON",
+                "text": "Filters",
+                "top": 222,
+                "left": 946,
+                "right": 1029
+              }
+            ],
+            "distinctTops": 3
+          },
+          "headerCells": [],
+          "colors": {
+            "body": "lab(96.7396 -0.214994 -1.49846)",
+            "frame": null,
+            "thead": null,
+            "th": null,
+            "thColor": null,
+            "row": null,
+            "td": null,
+            "columnsBtn": null
+          },
+          "whiteSurfacesInMain": []
+        }
+      },
+      "filteredEmptyShot": "checks/filtered-empty-1440-light.png"
+    },
+    "1440-dark": {
+      "default": {
+        "htmlClass": "dark",
+        "viewport": 1440,
+        "docScrollWidth": 1440,
+        "table": {
+          "tableWidth": 1134,
+          "containerClientWidth": 1134,
+          "containerScrollWidth": 1134,
+          "overflowX": "auto",
+          "horizontallyScrollable": false,
+          "frameWidth": 1136
+        },
+        "borders": {
+          "frameBorder": "1px solid",
+          "frameRadius": "8px",
+          "containerBorder": "0px solid",
+          "tableBorder": "0px solid"
+        },
+        "alignment": {
+          "h1Left": 280,
+          "dataTableLeft": 280,
+          "frameLeft": 280,
+          "frameRight": 1416,
+          "searchLeft": 280,
+          "newMatterRight": 1416
+        },
+        "toolbarRow": {
+          "children": [
+            {
+              "tag": "DIV",
+              "text": "",
+              "top": 220,
+              "left": 280,
+              "right": 536
+            },
+            {
+              "tag": "DIV",
+              "text": "Active\nCompleted\nArchived\nClosed\nAll",
+              "top": 224,
+              "left": 548,
+              "right": 934
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Filters",
+              "top": 222,
+              "left": 946,
+              "right": 1029
+            },
+            {
+              "tag": "DIV",
+              "text": "Columns\nExport CSV",
+              "top": 222,
+              "left": 1187,
+              "right": 1416
+            }
+          ],
+          "distinctTops": 3
+        },
+        "headerCells": [
+          {
+            "header": "Reference",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 281,
+            "tdLeft": 281
+          },
+          {
+            "header": "Matter",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 402,
+            "tdLeft": 402
+          },
+          {
+            "header": "Client",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 667,
+            "tdLeft": 667
+          },
+          {
+            "header": "Fee earner",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 798,
+            "tdLeft": 798
+          },
+          {
+            "header": "Status",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 937,
+            "tdLeft": 937
+          },
+          {
+            "header": "Unbilled",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 1030,
+            "tdLeft": 1030
+          },
+          {
+            "header": "Trust",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 1138,
+            "tdLeft": 1138
+          },
+          {
+            "header": "Next in diary",
+            "thAlign": "left",
+            "tdAlign": "start",
+            "thLeft": 1224,
+            "tdLeft": 1224
+          },
+          {
+            "header": "Actions",
+            "thAlign": "right",
+            "tdAlign": "right",
+            "thLeft": 1367,
+            "tdLeft": 1367
+          }
+        ],
+        "colors": {
+          "body": "lab(2.214 -0.134699 -1.01047)",
+          "frame": "lab(7.73948 -0.41344 -4.03315)",
+          "thead": "rgba(0, 0, 0, 0)",
+          "th": "rgba(0, 0, 0, 0)",
+          "thColor": "lab(65.1376 -0.85035 -6.67907)",
+          "row": "rgba(0, 0, 0, 0)",
+          "td": "lab(100 0 0)",
+          "columnsBtn": [
+            "lab(2.214 -0.134699 -1.01047)",
+            "lab(100 0 0)",
+            "lab(14.1047 -0.539318 -5.13909)"
+          ]
+        },
+        "whiteSurfacesInMain": []
+      },
+      "defaultShot": "checks/default-1440-dark.png",
+      "sorted": {
+        "url": "/org/e2e-test-org/matters?sort=unbilled&dir=desc",
+        "headers": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Fee earner",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "layout": {
+          "htmlClass": "dark",
+          "viewport": 1440,
+          "docScrollWidth": 1440,
+          "table": {
+            "tableWidth": 1134,
+            "containerClientWidth": 1134,
+            "containerScrollWidth": 1134,
+            "overflowX": "auto",
+            "horizontallyScrollable": false,
+            "frameWidth": 1136
+          },
+          "borders": {
+            "frameBorder": "1px solid",
+            "frameRadius": "8px",
+            "containerBorder": "0px solid",
+            "tableBorder": "0px solid"
+          },
+          "alignment": {
+            "h1Left": 280,
+            "dataTableLeft": 280,
+            "frameLeft": 280,
+            "frameRight": 1416,
+            "searchLeft": 280,
+            "newMatterRight": 1416
+          },
+          "toolbarRow": {
+            "children": [
+              {
+                "tag": "DIV",
+                "text": "",
+                "top": 220,
+                "left": 280,
+                "right": 536
+              },
+              {
+                "tag": "DIV",
+                "text": "Active\nCompleted\nArchived\nClosed\nAll",
+                "top": 224,
+                "left": 548,
+                "right": 934
+              },
+              {
+                "tag": "BUTTON",
+                "text": "Filters",
+                "top": 222,
+                "left": 946,
+                "right": 1029
+              },
+              {
+                "tag": "DIV",
+                "text": "Columns\nExport CSV",
+                "top": 222,
+                "left": 1187,
+                "right": 1416
+              }
+            ],
+            "distinctTops": 3
+          },
+          "headerCells": [
+            {
+              "header": "Reference",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 281,
+              "tdLeft": 281
+            },
+            {
+              "header": "Matter",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 402,
+              "tdLeft": 402
+            },
+            {
+              "header": "Client",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 667,
+              "tdLeft": 667
+            },
+            {
+              "header": "Fee earner",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 798,
+              "tdLeft": 798
+            },
+            {
+              "header": "Status",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 937,
+              "tdLeft": 937
+            },
+            {
+              "header": "Unbilled",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 1030,
+              "tdLeft": 1030
+            },
+            {
+              "header": "Trust",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 1138,
+              "tdLeft": 1138
+            },
+            {
+              "header": "Next in diary",
+              "thAlign": "left",
+              "tdAlign": "start",
+              "thLeft": 1224,
+              "tdLeft": 1224
+            },
+            {
+              "header": "Actions",
+              "thAlign": "right",
+              "tdAlign": "right",
+              "thLeft": 1367,
+              "tdLeft": 1367
+            }
+          ],
+          "colors": {
+            "body": "lab(2.214 -0.134699 -1.01047)",
+            "frame": "lab(7.73948 -0.41344 -4.03315)",
+            "thead": "rgba(0, 0, 0, 0)",
+            "th": "rgba(0, 0, 0, 0)",
+            "thColor": "lab(65.1376 -0.85035 -6.67907)",
+            "row": "rgba(0, 0, 0, 0)",
+            "td": "lab(100 0 0)",
+            "columnsBtn": [
+              "lab(2.214 -0.134699 -1.01047)",
+              "lab(100 0 0)",
+              "lab(14.1047 -0.539318 -5.13909)"
+            ]
+          },
+          "whiteSurfacesInMain": []
+        }
+      },
+      "sortedShot": "checks/sorted-unbilled-desc-1440-dark.png",
+      "colMenuShot": "checks/colmenu-open-1440-dark.png",
+      "colMenuBox": {
+        "top": 258,
+        "bottom": 597,
+        "left": 1065,
+        "right": 1289,
+        "bg": "lab(11.2132 -0.472777 -4.4093)"
+      },
+      "filteredEmpty": {
+        "state": {
+          "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter",
+          "headers": [],
+          "rows": [],
+          "columnsButton": false,
+          "exportButton": false,
+          "pagination": {
+            "rowsPerPage": false,
+            "pageXofY": false,
+            "prevNext": false
+          },
+          "footer": null,
+          "emptyText": "No matters match this view.\n\nClear filters",
+          "clearFiltersHref": "/org/e2e-test-org/matters",
+          "hasTable": false
+        },
+        "layout": {
+          "htmlClass": "dark",
+          "viewport": 1440,
+          "docScrollWidth": 1440,
+          "table": null,
+          "borders": null,
+          "alignment": {
+            "h1Left": 280,
+            "dataTableLeft": 280,
+            "frameLeft": null,
+            "frameRight": null,
+            "searchLeft": 280,
+            "newMatterRight": 1416
+          },
+          "toolbarRow": {
+            "children": [
+              {
+                "tag": "DIV",
+                "text": "",
+                "top": 220,
+                "left": 280,
+                "right": 536
+              },
+              {
+                "tag": "DIV",
+                "text": "Active\nCompleted\nArchived\nClosed\nAll",
+                "top": 224,
+                "left": 548,
+                "right": 934
+              },
+              {
+                "tag": "BUTTON",
+                "text": "Filters",
+                "top": 222,
+                "left": 946,
+                "right": 1029
+              }
+            ],
+            "distinctTops": 3
+          },
+          "headerCells": [],
+          "colors": {
+            "body": "lab(2.214 -0.134699 -1.01047)",
+            "frame": null,
+            "thead": null,
+            "th": null,
+            "thColor": null,
+            "row": null,
+            "td": null,
+            "columnsBtn": null
+          },
+          "whiteSurfacesInMain": []
+        }
+      },
+      "filteredEmptyShot": "checks/filtered-empty-1440-dark.png"
+    }
+  },
+  "console": [
+    {
+      "ctx": "alice-1440-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "alice-1024-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "alice-1024-dark",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "alice-1440-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "alice-1440-dark",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "carol-1440-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    }
+  ],
+  "finishedAt": "2026-11-12T14:35:30.847Z"
+}

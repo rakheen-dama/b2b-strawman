@@ -1,0 +1,568 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: day-90-review.spec.ts >> Day 90 — Quarter Review >> Alice: Matters list shows the lifecycle's six matters
+- Location: e2e/tests/legal-lifecycle/day-90-review.spec.ts:83:7
+
+# Error details
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator: locator('#main-content').getByTestId('matters-table').getByRole('link', { name: 'Apex Annual Returns mwdnksj22fc0', exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('#main-content').getByTestId('matters-table').getByRole('link', { name: 'Apex Annual Returns mwdnksj22fc0', exact: true })
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e9]: Kazi
+        - generic [ref=e12]: E2E Test Organization
+        - list [ref=e13]:
+          - listitem [ref=e14]:
+            - button "Search, Command K" [ref=e15]:
+              - img [ref=e16]
+              - generic [ref=e19]: Search...
+              - generic [ref=e20]: ⌘K
+      - navigation "Main navigation" [ref=e22]:
+        - generic [ref=e24]:
+          - button "Today" [expanded] [ref=e25]:
+            - text: Today
+            - img [ref=e26]
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "Home" [ref=e32] [cursor=pointer]:
+                - /url: /org/e2e-test-org/dashboard
+                - img [ref=e33]
+                - generic [ref=e36]: Home
+            - listitem [ref=e37]:
+              - link "My work" [ref=e38] [cursor=pointer]:
+                - /url: /org/e2e-test-org/my-work
+                - img [ref=e39]
+                - generic [ref=e42]: My work
+            - listitem [ref=e43]:
+              - link "Diary" [ref=e44] [cursor=pointer]:
+                - /url: /org/e2e-test-org/diary
+                - img [ref=e45]
+                - generic [ref=e47]: Diary
+        - generic [ref=e49]:
+          - button "Matters" [expanded] [ref=e50]:
+            - text: Matters
+            - img [ref=e51]
+          - list [ref=e55]:
+            - listitem [ref=e56]:
+              - link "Matters" [ref=e57] [cursor=pointer]:
+                - /url: /org/e2e-test-org/matters
+                - img [ref=e58]
+                - generic [ref=e62]: Matters
+            - listitem [ref=e63]:
+              - link "New matter" [ref=e64] [cursor=pointer]:
+                - /url: /org/e2e-test-org/matters/new
+                - img [ref=e65]
+                - generic [ref=e66]: New matter
+            - listitem [ref=e67]:
+              - link "Conflict check" [ref=e68] [cursor=pointer]:
+                - /url: /org/e2e-test-org/conflict-check
+                - img [ref=e69]
+                - generic [ref=e73]: Conflict check
+            - listitem [ref=e74]:
+              - link "Adverse parties" [ref=e75] [cursor=pointer]:
+                - /url: /org/e2e-test-org/legal/adverse-parties
+                - img [ref=e76]
+                - generic [ref=e81]: Adverse parties
+            - listitem [ref=e82]:
+              - link "AI reviews" [ref=e83] [cursor=pointer]:
+                - /url: /org/e2e-test-org/ai/reviews
+                - img [ref=e84]
+                - generic [ref=e87]: AI reviews
+        - generic [ref=e89]:
+          - button "Clients" [expanded] [ref=e90]:
+            - text: Clients
+            - img [ref=e91]
+          - list [ref=e95]:
+            - listitem [ref=e96]:
+              - link "Clients" [ref=e97] [cursor=pointer]:
+                - /url: /org/e2e-test-org/clients
+                - img [ref=e98]
+                - generic [ref=e102]: Clients
+            - listitem [ref=e103]:
+              - link "FICA & compliance" [ref=e104] [cursor=pointer]:
+                - /url: /org/e2e-test-org/compliance
+                - img [ref=e105]
+                - generic [ref=e108]: FICA & compliance
+            - listitem [ref=e109]:
+              - link "Data requests" [ref=e110] [cursor=pointer]:
+                - /url: /org/e2e-test-org/compliance/requests
+                - img [ref=e111]
+                - generic [ref=e114]: Data requests
+        - button "Fees" [ref=e117]:
+          - text: Fees
+          - img [ref=e118]
+        - button "Trust" [ref=e122]:
+          - text: Trust
+          - img [ref=e123]
+        - button "Firm" [ref=e127]:
+          - text: Firm
+          - img [ref=e128]
+      - generic [ref=e130]:
+        - list [ref=e131]:
+          - listitem [ref=e132]:
+            - link "Platform Admin" [ref=e133] [cursor=pointer]:
+              - /url: /platform-admin/access-requests
+              - img [ref=e134]
+              - generic [ref=e136]: Platform Admin
+        - list [ref=e137]:
+          - listitem [ref=e138]:
+            - link "Notifications" [ref=e139] [cursor=pointer]:
+              - /url: /org/e2e-test-org/notifications
+              - img [ref=e140]
+              - generic [ref=e143]: Notifications
+        - generic [ref=e144]:
+          - generic [ref=e145]: AO
+          - generic [ref=e146]:
+            - paragraph [ref=e147]: Alice Owner
+            - paragraph [ref=e148]: alice@e2e-test.local
+    - generic [ref=e149]:
+      - banner [ref=e150]:
+        - button "Toggle menu" [ref=e151]:
+          - img
+          - generic [ref=e152]: Toggle menu
+        - navigation "Breadcrumb" [ref=e153]:
+          - link "E2E Test Organization" [ref=e154] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e155]:
+            - img [ref=e156]
+            - generic "Matters" [ref=e158]
+        - generic [ref=e159]:
+          - button "Search, Command K" [ref=e160]:
+            - img [ref=e161]
+            - generic [ref=e164]: Search
+            - generic: ⌘K
+          - button "Notifications" [ref=e166]:
+            - img
+            - generic [ref=e167]: 11 unread notifications
+            - generic [ref=e168]: "11"
+          - generic [ref=e170]: e2e-test-org
+          - button "AO" [ref=e172]
+      - main [ref=e173]:
+        - generic [ref=e176]:
+          - generic [ref=e178]:
+            - generic [ref=e179]:
+              - heading "Matters" [level=1] [ref=e180]
+              - paragraph [ref=e181]: 6 matters
+            - generic [ref=e182]:
+              - button "New from Template" [ref=e183]:
+                - img
+                - text: New from Template
+              - button "New Matter" [ref=e185]:
+                - img
+                - text: New Matter
+          - generic [ref=e186]:
+            - generic [ref=e187]:
+              - generic [ref=e189]:
+                - generic [ref=e190]:
+                  - generic [ref=e191]:
+                    - img [ref=e192]
+                    - 'button "Help: Saved views" [ref=e195] [cursor=pointer]':
+                      - img [ref=e196]
+                  - tablist [ref=e200]:
+                    - tab "My matters" [ref=e201]
+                    - tab "Open matters" [selected] [ref=e202]
+                    - tab "Awaiting fee note" [ref=e203]
+                    - tab "Dormant" [ref=e204]
+                - button "Save View" [ref=e205]:
+                  - img
+                  - text: Save View
+              - generic [ref=e206]:
+                - search "Search matters" [ref=e207]:
+                  - generic [ref=e208]:
+                    - img [ref=e209]
+                    - textbox "Search matters…" [ref=e212]
+                - generic [ref=e213]:
+                  - link "Active" [ref=e214] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/matters
+                  - link "Completed" [ref=e215] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/matters?status=COMPLETED
+                  - link "Archived" [ref=e216] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/matters?status=ARCHIVED
+                  - link "Closed" [ref=e217] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/matters?status=CLOSED
+                  - link "All" [ref=e218] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/matters?status=ALL
+                - generic [ref=e219]:
+                  - button "Columns" [ref=e220]:
+                    - img
+                    - text: Columns
+                  - button "Export CSV" [ref=e221]:
+                    - img
+                    - text: Export CSV
+            - table "Matters — Open matters" [ref=e224]:
+              - caption [ref=e225]: Matters — Open matters
+              - rowgroup [ref=e226]:
+                - row "Reference Matter Client Status Unbilled Trust Next in diary Actions" [ref=e227]:
+                  - columnheader "Reference" [ref=e228]:
+                    - link "Reference" [ref=e229] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=referenceNumber&dir=asc
+                      - text: Reference
+                      - img [ref=e230]
+                  - columnheader "Matter" [ref=e233]:
+                    - link "Matter" [ref=e234] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=name&dir=asc
+                      - text: Matter
+                      - img [ref=e235]
+                  - columnheader "Client" [ref=e238]:
+                    - link "Client" [ref=e239] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=clientName&dir=asc
+                      - text: Client
+                      - img [ref=e240]
+                  - columnheader "Status" [ref=e243]:
+                    - link "Status" [ref=e244] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=status&dir=asc
+                      - text: Status
+                      - img [ref=e245]
+                  - columnheader "Unbilled" [ref=e248]:
+                    - link "Unbilled" [ref=e249] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=unbilled&dir=asc
+                      - text: Unbilled
+                      - img [ref=e250]
+                  - columnheader "Trust" [ref=e253]:
+                    - link "Trust" [ref=e254] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=trustBalance&dir=asc
+                      - text: Trust
+                      - img [ref=e255]
+                  - columnheader "Next in diary" [ref=e258]:
+                    - link "Next in diary" [ref=e259] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc
+                      - text: Next in diary
+                      - img [ref=e260]
+                  - columnheader "Actions" [ref=e262]:
+                    - generic [ref=e263]: Actions
+              - rowgroup [ref=e264]:
+                - 'row "— Ndlovu v RAF mwdnksj22fc0 Sipho Ndlovu mwdnksj22fc0 Active — R 0,00 Court date: 12 Dec 2026 Matter actions" [ref=e265] [cursor=pointer]':
+                  - cell "—" [ref=e266]
+                  - cell "Ndlovu v RAF mwdnksj22fc0" [ref=e267]:
+                    - link "Ndlovu v RAF mwdnksj22fc0" [ref=e269]:
+                      - /url: /org/e2e-test-org/matters/00fd8f20-6799-416a-be18-ff60131a2936
+                  - cell "Sipho Ndlovu mwdnksj22fc0" [ref=e270]:
+                    - link "Sipho Ndlovu mwdnksj22fc0" [ref=e271]:
+                      - /url: /org/e2e-test-org/clients/1b20cc3c-6f84-4079-a1f1-4c12f8162804
+                  - cell "Active" [ref=e272]:
+                    - generic [ref=e273]: Active
+                  - cell "—" [ref=e274]
+                  - cell "R 0,00" [ref=e275]
+                  - 'cell "Court date: 12 Dec 2026" [ref=e276]':
+                    - generic [ref=e277]:
+                      - img [ref=e278]
+                      - generic [ref=e284]: "Court date:"
+                      - text: 12 Dec 2026
+                  - cell "Matter actions" [ref=e285]:
+                    - button "Matter actions" [ref=e286]:
+                      - img
+                      - generic [ref=e287]: Matter actions
+                - row "— Apex Shareholder Agreement mwdnksj22fc0 Apex Holdings mwdnksj22fc0 Active 30m · R 1 250,00 R 0,00 — Matter actions" [ref=e288] [cursor=pointer]:
+                  - cell "—" [ref=e289]
+                  - cell "Apex Shareholder Agreement mwdnksj22fc0" [ref=e290]:
+                    - link "Apex Shareholder Agreement mwdnksj22fc0" [ref=e292]:
+                      - /url: /org/e2e-test-org/matters/7e39bef8-4bb9-4da9-bb54-6d58020ea90d
+                  - cell "Apex Holdings mwdnksj22fc0" [ref=e293]:
+                    - link "Apex Holdings mwdnksj22fc0" [ref=e294]:
+                      - /url: /org/e2e-test-org/clients/1a728e08-fb72-4ef8-9db5-53c3766aeee6
+                  - cell "Active" [ref=e295]:
+                    - generic [ref=e296]: Active
+                  - cell "30m · R 1 250,00" [ref=e297]
+                  - cell "R 0,00" [ref=e298]
+                  - cell "—" [ref=e299]
+                  - cell "Matter actions" [ref=e300]:
+                    - button "Matter actions" [ref=e301]:
+                      - img
+                      - generic [ref=e302]: Matter actions
+                - row "— Estate Late Peter Moroka mwdnksj22fc0 Moroka Family Trust mwdnksj22fc0 Active 6h · R 15 000,00 R 241 521,50 — Matter actions" [ref=e303] [cursor=pointer]:
+                  - cell "—" [ref=e304]
+                  - cell "Estate Late Peter Moroka mwdnksj22fc0" [ref=e305]:
+                    - link "Estate Late Peter Moroka mwdnksj22fc0" [ref=e307]:
+                      - /url: /org/e2e-test-org/matters/e126d3a6-5508-48b8-8430-a224bcd92b83
+                  - cell "Moroka Family Trust mwdnksj22fc0" [ref=e308]:
+                    - link "Moroka Family Trust mwdnksj22fc0" [ref=e309]:
+                      - /url: /org/e2e-test-org/clients/62c9f4a0-7b89-49de-ab2f-27133c27fd26
+                  - cell "Active" [ref=e310]:
+                    - generic [ref=e311]: Active
+                  - cell "6h · R 15 000,00" [ref=e312]
+                  - cell "R 241 521,50" [ref=e313]
+                  - cell "—" [ref=e314]
+                  - cell "Matter actions" [ref=e315]:
+                    - button "Matter actions" [ref=e316]:
+                      - img
+                      - generic [ref=e317]: Matter actions
+                - row "— Ndlovu Property Dispute mwdnksj22fc0 Sipho Ndlovu mwdnksj22fc0 Active — R 0,00 — Matter actions" [ref=e318] [cursor=pointer]:
+                  - cell "—" [ref=e319]
+                  - cell "Ndlovu Property Dispute mwdnksj22fc0" [ref=e320]:
+                    - link "Ndlovu Property Dispute mwdnksj22fc0" [ref=e322]:
+                      - /url: /org/e2e-test-org/matters/5104954c-2f49-4996-a1da-584a39735f70
+                  - cell "Sipho Ndlovu mwdnksj22fc0" [ref=e323]:
+                    - link "Sipho Ndlovu mwdnksj22fc0" [ref=e324]:
+                      - /url: /org/e2e-test-org/clients/1b20cc3c-6f84-4079-a1f1-4c12f8162804
+                  - cell "Active" [ref=e325]:
+                    - generic [ref=e326]: Active
+                  - cell "—" [ref=e327]
+                  - cell "R 0,00" [ref=e328]
+                  - cell "—" [ref=e329]
+                  - cell "Matter actions" [ref=e330]:
+                    - button "Matter actions" [ref=e331]:
+                      - img
+                      - generic [ref=e332]: Matter actions
+                - 'row "— QC Debt Recovery #1 mwdnksj22fc0 QuickCollect Services mwdnksj22fc0 Active — R 45 004,00 — Matter actions" [ref=e333] [cursor=pointer]':
+                  - cell "—" [ref=e334]
+                  - 'cell "QC Debt Recovery #1 mwdnksj22fc0" [ref=e335]':
+                    - 'link "QC Debt Recovery #1 mwdnksj22fc0" [ref=e337]':
+                      - /url: /org/e2e-test-org/matters/a91e1a49-65a8-4bad-8f79-2469b8ab6c31
+                  - cell "QuickCollect Services mwdnksj22fc0" [ref=e338]:
+                    - link "QuickCollect Services mwdnksj22fc0" [ref=e339]:
+                      - /url: /org/e2e-test-org/clients/218b361f-f580-4623-baf8-1f8d7ff67c12
+                  - cell "Active" [ref=e340]:
+                    - generic [ref=e341]: Active
+                  - cell "—" [ref=e342]
+                  - cell "R 45 004,00" [ref=e343]
+                  - cell "—" [ref=e344]
+                  - cell "Matter actions" [ref=e345]:
+                    - button "Matter actions" [ref=e346]:
+                      - img
+                      - generic [ref=e347]: Matter actions
+                - row "— Website Redesign Acme Corp Active — R 0,00 — Matter actions" [ref=e348] [cursor=pointer]:
+                  - cell "—" [ref=e349]
+                  - cell "Website Redesign" [ref=e350]:
+                    - link "Website Redesign" [ref=e352]:
+                      - /url: /org/e2e-test-org/matters/4816300b-5e1b-40a3-90bb-33f4df890000
+                  - cell "Acme Corp" [ref=e353]:
+                    - link "Acme Corp" [ref=e354]:
+                      - /url: /org/e2e-test-org/clients/ab83bbf1-8b13-499c-befb-d0a34612655b
+                  - cell "Active" [ref=e355]:
+                    - generic [ref=e356]: Active
+                  - cell "—" [ref=e357]
+                  - cell "R 0,00" [ref=e358]
+                  - cell "—" [ref=e359]
+                  - cell "Matter actions" [ref=e360]:
+                    - button "Matter actions" [ref=e361]:
+                      - img
+                      - generic [ref=e362]: Matter actions
+            - paragraph [ref=e363]: Showing 6 matters
+  - generic [ref=e364]:
+    - heading "Command Palette" [level=2] [ref=e365]
+    - paragraph [ref=e366]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e367]
+```
+
+# Test source
+
+```ts
+  1   | /**
+  2   |  * Day 90 — Quarter Review & Role-Based Access
+  3   |  *
+  4   |  * The quarter review over the lifecycle's own records: the four clients and six matters, the fee
+  5   |  * notes billed on Days 30 and 60, the Section 35 data pack, trust ledgers / investments /
+  6   |  * transactions, profitability (this month's rated time), the owner dashboard, an engagement letter
+  7   |  * generated for Sipho's matter, compliance, and Sipho's diary (postponed + rescheduled motion).
+  8   |  * Then access control: Carol (Member) is denied rates, trust settings and trust approvals; Bob
+  9   |  * (Admin) and Alice (Owner) are allowed.
+  10  |  *
+  11  |  * Records come from the lifecycle run (helpers/legal-lifecycle.ts): Days 0–75 must have run on the
+  12  |  * same stack.
+  13  |  *
+  14  |  * Phase 88 628E: rewritten strict — every step is real or asserted (no `isVisible().catch` guards).
+  15  |  *
+  16  |  * Run:
+  17  |  *   E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle
+  18  |  */
+  19  | import { test, expect } from "@playwright/test";
+  20  | import { loginAs } from "../../fixtures/auth";
+  21  | import { captureScreenshot } from "../../helpers/screenshot";
+  22  | import { openGroupedTab } from "../../helpers/grouped-tabs";
+  23  | import { BASE, clickThrough, isoDate, openMatter } from "../../helpers/legal-depth-ii";
+  24  | import {
+  25  |   apexAnnualReturns,
+  26  |   apexMatter,
+  27  |   clientId,
+  28  |   currentLifecycleRun,
+  29  |   lifecycleClientName,
+  30  |   morokaClient,
+  31  |   morokaMatter,
+  32  |   qcClient,
+  33  |   qcMatter,
+  34  |   recordedValue,
+  35  |   siphoClient,
+  36  |   siphoMatter,
+  37  |   siphoPropertyMatter,
+  38  |   openTrustTransactions,
+  39  |   recordFeeTransfer,
+  40  |   recordValue,
+  41  |   TRUST_ACCOUNT,
+  42  |   trustTransactionRow,
+  43  |   type LifecycleValueKey,
+  44  | } from "../../helpers/legal-lifecycle";
+  45  | 
+  46  | const runMatters = () => [
+  47  |   siphoMatter(),
+  48  |   apexMatter(),
+  49  |   morokaMatter(),
+  50  |   qcMatter(),
+  51  |   siphoPropertyMatter(),
+  52  |   apexAnnualReturns(),
+  53  | ];
+  54  | const pendingTransferRef = () => `FEE/SIPHO/${currentLifecycleRun()}`;
+  55  | const ENGAGEMENT_LETTER = "Engagement Letter — Litigation";
+  56  | const FEE_NOTES: LifecycleValueKey[] = [
+  57  |   "siphoFeeNote",
+  58  |   "apexFeeNote",
+  59  |   "morokaFeeNote",
+  60  |   "qcFeeNote",
+  61  |   "siphoFeeNote2",
+  62  | ];
+  63  | 
+  64  | // ═══════════════════════════════════════════════════════════════════
+  65  | //  DAY 90 — Quarter Review
+  66  | // ═══════════════════════════════════════════════════════════════════
+  67  | test.describe.serial("Day 90 — Quarter Review", () => {
+  68  |   // ── 90.1-90.7: Portfolio review ───────────────────────────────────
+  69  |   test("Alice: Client list shows the four lifecycle clients", async ({ page }) => {
+  70  |     await loginAs(page, "alice");
+  71  |     // Phase 87 S4 (ADR-344): route rename
+  72  |     await page.goto(`${BASE}/clients`);
+  73  |     // (a second, hidden copy of the list renders outside #main-content)
+  74  |     const table = page.locator("#main-content").getByTestId("clients-table");
+  75  |     await expect(table).toBeVisible({ timeout: 15_000 });
+  76  |     for (const key of ["sipho", "apex", "moroka", "qc"] as const) {
+  77  |       await expect(
+  78  |         table.getByRole("link", { name: lifecycleClientName(key), exact: true })
+  79  |       ).toBeVisible();
+  80  |     }
+  81  |   });
+  82  | 
+  83  |   test("Alice: Matters list shows the lifecycle's six matters", async ({ page }) => {
+  84  |     await loginAs(page, "alice");
+  85  |     // Phase 87 S4 (ADR-344): route rename
+  86  |     await page.goto(`${BASE}/matters`);
+  87  |     // (a second, hidden copy of the list renders outside #main-content)
+  88  |     const table = page.locator("#main-content").getByTestId("matters-table");
+  89  |     await expect(table).toBeVisible({ timeout: 15_000 });
+  90  |     for (const matter of runMatters()) {
+> 91  |       await expect(table.getByRole("link", { name: matter, exact: true })).toBeVisible();
+      |                                                                            ^ Error: expect(locator).toBeVisible() failed
+  92  |     }
+  93  |   });
+  94  | 
+  95  |   test("Alice: Fee notes list shows the run's five fee notes", async ({ page }) => {
+  96  |     await loginAs(page, "alice");
+  97  |     await page.goto(`${BASE}/invoices`);
+  98  |     await expect(page.getByRole("heading", { level: 1, name: "Fee notes" })).toBeVisible({
+  99  |       timeout: 15_000,
+  100 |     });
+  101 |     // Real fee-note rows only (a row links to /invoices/<uuid>)
+  102 |     const rows = page
+  103 |       .locator("main table tbody tr")
+  104 |       .filter({ has: page.locator('a[href*="/invoices/"]') });
+  105 |     await expect.poll(() => rows.count(), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
+  106 |     for (const key of FEE_NOTES) {
+  107 |       await expect(
+  108 |         page.locator(`main a[href$="/invoices/${recordedValue(key)}"]`),
+  109 |         key
+  110 |       ).toBeVisible();
+  111 |     }
+  112 | 
+  113 |     // Screenshot: portfolio review
+  114 |     await captureScreenshot(page, "day-90-portfolio-review-loaded");
+  115 |   });
+  116 | 
+  117 |   // ── 90.8-90.11: Section 35 Data Pack ──────────────────────────────
+  118 |   test("Alice: Generate Section 35 Data Pack report", async ({ page }) => {
+  119 |     await loginAs(page, "alice");
+  120 |     await page.goto(`${BASE}/trust-accounting/reports`);
+  121 |     await expect(page.getByTestId("trust-reports-page")).toBeVisible({ timeout: 15_000 });
+  122 |     await clickThrough(
+  123 |       page.getByTestId("report-card-section-35-data-pack"),
+  124 |       page.getByRole("heading", { level: 1, name: /Section 35/ })
+  125 |     );
+  126 |     await expect(page).toHaveURL(/\/reports\/section-35-data-pack/);
+  127 |     await page.getByRole("combobox", { name: /Trust Account/ }).click();
+  128 |     await page.getByRole("option", { name: new RegExp(TRUST_ACCOUNT.name) }).click();
+  129 |     await page.getByLabel(/Financial Year End/).fill(isoDate());
+  130 |     await page.getByRole("button", { name: "Run Report" }).click();
+  131 |     await expect(page.getByRole("button", { name: "Export CSV" })).toBeEnabled({
+  132 |       timeout: 15_000,
+  133 |     });
+  134 |     // A rendered result (630A / G88-F40): the Section / Item / Amount table with at least one data
+  135 |     // row — the trust account carries the earlier days' deposits and client balances.
+  136 |     const results = page.getByRole("table");
+  137 |     await expect(results.getByRole("columnheader", { name: "Section", exact: true })).toBeVisible();
+  138 |     await expect(results.getByRole("columnheader", { name: "Item", exact: true })).toBeVisible();
+  139 |     await expect(results.getByRole("columnheader", { name: "Amount", exact: true })).toBeVisible();
+  140 |     await expect(results.getByRole("row").nth(1)).toBeVisible();
+  141 | 
+  142 |     // Screenshot: Section 35 report
+  143 |     await captureScreenshot(page, "day-90-section-35-generated");
+  144 |     await captureScreenshot(page, "section-35-report", { curated: true });
+  145 |   });
+  146 | 
+  147 |   // ── 90.12-90.15: Trust reports ────────────────────────────────────
+  148 |   test("Alice: Trust reports — Client Trust Balances", async ({ page }) => {
+  149 |     await loginAs(page, "alice");
+  150 |     await page.goto(`${BASE}/trust-accounting/client-ledgers`);
+  151 |     await expect(page.getByTestId("client-ledgers-page")).toBeVisible({ timeout: 15_000 });
+  152 |     for (const key of ["moroka", "qc"] as const) {
+  153 |       await expect(page.getByTestId(`ledger-row-${clientId(key)}`), key).toBeVisible({
+  154 |         timeout: 15_000,
+  155 |       });
+  156 |     }
+  157 |   });
+  158 | 
+  159 |   test("Alice: Trust reports — Investment Register with s86 basis", async ({ page }) => {
+  160 |     await loginAs(page, "alice");
+  161 |     await page.goto(`${BASE}/trust-accounting/investments`);
+  162 |     await expect(page.getByTestId("investments-page")).toBeVisible({ timeout: 15_000 });
+  163 |     await expect(page.getByTestId("investment-basis-filter")).toBeVisible();
+  164 |     const rows = page.locator("main tbody tr");
+  165 |     await expect(rows.filter({ hasText: morokaClient() })).toContainText("Firm");
+  166 |     await expect(rows.filter({ hasText: qcClient() })).toContainText("Client Instruction");
+  167 | 
+  168 |     // Screenshot: investment register
+  169 |     await captureScreenshot(page, "day-90-investment-register-loaded");
+  170 |   });
+  171 | 
+  172 |   test("Alice: Trust reports — Receipts & Payments", async ({ page }) => {
+  173 |     await loginAs(page, "alice");
+  174 |     await page.goto(`${BASE}/trust-accounting/transactions`);
+  175 |     await expect(page.getByRole("heading", { level: 1, name: "Transactions" })).toBeVisible({
+  176 |       timeout: 15_000,
+  177 |     });
+  178 |     // Receipts (Day 14 deposits) and a payment out (Day 30 fee transfer)
+  179 |     await expect(trustTransactionRow(page, recordedValue("morokaDepositRef"))).toContainText(
+  180 |       "RECORDED"
+  181 |     );
+  182 |     await expect(trustTransactionRow(page, recordedValue("qcDepositRef"))).toContainText(
+  183 |       "RECORDED"
+  184 |     );
+  185 |     await expect(
+  186 |       page.getByTestId(`transaction-row-${recordedValue("morokaFeeTransfer")}`)
+  187 |     ).toContainText("APPROVED");
+  188 |   });
+  189 | 
+  190 |   // ── 90.16-90.20: Profitability dashboard ──────────────────────────
+  191 |   test("Alice: Profitability report — revenue, cost and margin columns for this month's matters", async ({
+```

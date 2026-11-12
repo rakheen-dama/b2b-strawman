@@ -1,0 +1,1674 @@
+{
+  "tag": "after-rich",
+  "startedAt": "2026-11-12T14:31:54.044Z",
+  "base": "http://localhost:3001",
+  "steps": {
+    "1-default": {
+      "url": "/org/e2e-test-org/matters",
+      "h1": "Matters",
+      "subtitle": "5 matters",
+      "caption": "Matters — Open matters",
+      "rowCount": 5,
+      "rowNames": [
+        "Mobile App MVP",
+        "Annual Report",
+        "Brand Guidelines",
+        "Website Redesign",
+        "SEO Audit"
+      ],
+      "rowStatuses": [
+        "Active",
+        "Active",
+        "Active",
+        "Active",
+        "Active"
+      ],
+      "footer": "Showing 5 matters",
+      "headers": [
+        {
+          "text": "Reference",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+        },
+        {
+          "text": "Matter",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=name&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+        },
+        {
+          "text": "Client",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=clientName&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+        },
+        {
+          "text": "Work type",
+          "arrow": null,
+          "visible": false,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=workType&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @7xl:table-cell"
+        },
+        {
+          "text": "Fee earner",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=feeEarnerName&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @min-[67rem]:table-cell"
+        },
+        {
+          "text": "Status",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=status&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+        },
+        {
+          "text": "Opened",
+          "arrow": null,
+          "visible": false,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=createdAt&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @7xl:table-cell"
+        },
+        {
+          "text": "Unbilled",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=unbilled&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right"
+        },
+        {
+          "text": "Trust",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/matters?sort=trustBalance&dir=asc",
+          "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right"
+        },
+        {
+          "text": "Next in diary",
+          "arrow": "↑",
+          "visible": true,
+          "ariaSort": "ascending",
+          "sortHref": "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+        },
+        {
+          "text": "Actions",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": null,
+          "sortHref": null,
+          "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right w-10"
+        }
+      ],
+      "statusChips": [
+        {
+          "label": "Active",
+          "href": "/org/e2e-test-org/matters",
+          "active": true
+        },
+        {
+          "label": "Completed",
+          "href": "/org/e2e-test-org/matters?status=COMPLETED",
+          "active": false
+        },
+        {
+          "label": "Archived",
+          "href": "/org/e2e-test-org/matters?status=ARCHIVED",
+          "active": false
+        },
+        {
+          "label": "Closed",
+          "href": "/org/e2e-test-org/matters?status=CLOSED",
+          "active": false
+        },
+        {
+          "label": "All",
+          "href": "/org/e2e-test-org/matters?status=ALL",
+          "active": false
+        }
+      ],
+      "viewTabs": [
+        {
+          "name": "My matters",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "Open matters",
+          "selected": true,
+          "system": true
+        },
+        {
+          "name": "Awaiting fee note",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "Dormant",
+          "selected": false,
+          "system": true
+        }
+      ],
+      "filtersTrigger": "Filters",
+      "searchValue": "",
+      "emptyText": null,
+      "clearFiltersHref": null,
+      "rowShape": {
+        "ancestry": [
+          "tr[data-testid=matter-row][data-slot=table-row]",
+          "tbody[data-slot=table-body]",
+          "table[data-testid=matters-table][data-slot=table]",
+          "div[data-slot=table-container]",
+          "div",
+          "div[data-slot=data-table]"
+        ],
+        "usesTable": true,
+        "rowTag": "tr",
+        "rowAttrs": {
+          "data-slot": "table-row",
+          "class": "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors cursor-pointer",
+          "data-testid": "matter-row"
+        },
+        "rowCursor": "pointer",
+        "rowTabIndex": -1,
+        "rowRole": null,
+        "cellCount": 11,
+        "linksInRow": [
+          {
+            "text": "Mobile App MVP",
+            "href": "/org/e2e-test-org/matters/9e6b30a8-6172-4d92-9fa1-3310752a991b",
+            "testid": "matter-link"
+          },
+          {
+            "text": "Bright Solutions",
+            "href": "/org/e2e-test-org/clients/78c12156-4e36-4371-a96b-53d700c167c2",
+            "testid": null
+          }
+        ],
+        "buttonsInRow": [
+          {
+            "text": "Matter actions",
+            "ariaLabel": null,
+            "haspopup": "menu",
+            "testid": "matter-row-actions-trigger"
+          }
+        ],
+        "tree": {
+          "tag": "tr",
+          "data-testid": "matter-row",
+          "data-slot": "table-row",
+          "children": [
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "text": "—"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "div",
+                  "children": [
+                    {
+                      "tag": "a",
+                      "data-testid": "matter-link",
+                      "href": "/org/e2e-test-org/matters/9e6b30a8-6172-4d92-9fa1-3310752a991b",
+                      "title": "Mobile App MVP",
+                      "text": "Mobile App MVP"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "a",
+                  "href": "/org/e2e-test-org/clients/78c12156-4e36-4371-a96b-53d700c167c2",
+                  "title": "Bright Solutions",
+                  "text": "Bright Solutions"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "text": "—"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "text": "AO"
+                    },
+                    {
+                      "tag": "span",
+                      "title": "Alice Owner",
+                      "text": "Alice Owner"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "data-testid": "matter-status-badge",
+                  "data-slot": "badge",
+                  "text": "Active"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "text": "12 Nov 2026"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "text": "8h 30m"
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "text": "R 0,00"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "children": [
+                    {
+                      "tag": "svg",
+                      "children": [
+                        {
+                          "tag": "circle"
+                        },
+                        {
+                          "tag": "path"
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "span",
+                      "srOnly": true,
+                      "text": "Task due:"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "button",
+                  "data-testid": "matter-row-actions-trigger",
+                  "data-slot": "dropdown-menu-trigger",
+                  "aria-haspopup": "menu",
+                  "children": [
+                    {
+                      "tag": "svg",
+                      "children": [
+                        {
+                          "tag": "circle"
+                        },
+                        {
+                          "tag": "circle"
+                        },
+                        {
+                          "tag": "circle"
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "span",
+                      "srOnly": true,
+                      "text": "Matter actions"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "screenshot": "rich/01-default-1440-light.png",
+      "rowClickOutsideLink": {
+        "clickedOn": "status badge cell",
+        "expectedHref": "/org/e2e-test-org/matters/9e6b30a8-6172-4d92-9fa1-3310752a991b",
+        "navigatedTo": "/org/e2e-test-org/matters/9e6b30a8-6172-4d92-9fa1-3310752a991b",
+        "navigates": true
+      }
+    },
+    "2-sort": [
+      {
+        "column": "Reference",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=referenceNumber&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=referenceNumber&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc"
+      },
+      {
+        "column": "Matter",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/matters?sort=name&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=name&dir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=name&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=name&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=name&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Website Redesign",
+            "SEO Audit",
+            "Mobile App MVP",
+            "Brand Guidelines",
+            "Annual Report"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=name&dir=asc"
+      },
+      {
+        "column": "Client",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/matters?sort=clientName&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=clientName&dir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=clientName&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Brand Guidelines",
+            "Website Redesign",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Annual Report"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=clientName&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=clientName&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Annual Report",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Brand Guidelines",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=clientName&dir=asc"
+      },
+      {
+        "column": "Work type",
+        "visibleAtDefault": false,
+        "defaultHref": "/org/e2e-test-org/matters?sort=workType&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=workType&dir=asc",
+        "note": "header hidden at 1440 default; navigated to its href",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=workType&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=workType&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=workType&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=workType&dir=asc"
+      },
+      {
+        "column": "Fee earner",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/matters?sort=feeEarnerName&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=feeEarnerName&dir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=feeEarnerName&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=feeEarnerName&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=feeEarnerName&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=feeEarnerName&dir=asc"
+      },
+      {
+        "column": "Status",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/matters?sort=status&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=status&dir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=status&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=status&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=status&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=status&dir=asc"
+      },
+      {
+        "column": "Opened",
+        "visibleAtDefault": false,
+        "defaultHref": "/org/e2e-test-org/matters?sort=createdAt&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=createdAt&dir=asc",
+        "note": "header hidden at 1440 default; navigated to its href",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=createdAt&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Website Redesign",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Annual Report"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=createdAt&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=createdAt&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Annual Report",
+            "SEO Audit",
+            "Mobile App MVP",
+            "Brand Guidelines",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=createdAt&dir=asc"
+      },
+      {
+        "column": "Unbilled",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/matters?sort=unbilled&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=unbilled&dir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=unbilled&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "SEO Audit",
+            "Mobile App MVP",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=unbilled&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=unbilled&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Website Redesign",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Brand Guidelines",
+            "Annual Report"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=unbilled&dir=asc"
+      },
+      {
+        "column": "Trust",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/matters?sort=trustBalance&dir=asc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=trustBalance&dir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=trustBalance&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=trustBalance&dir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=trustBalance&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Mobile App MVP",
+            "SEO Audit",
+            "Website Redesign"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=trustBalance&dir=asc"
+      },
+      {
+        "column": "Next in diary",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc",
+        "firstClickHref": "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc",
+        "first": {
+          "url": "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Annual Report",
+            "Brand Guidelines",
+            "Website Redesign",
+            "Mobile App MVP",
+            "SEO Audit"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "secondClickHref": "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=asc",
+        "second": {
+          "url": "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "rowNames": [
+            "Mobile App MVP",
+            "Annual Report",
+            "Brand Guidelines",
+            "Website Redesign",
+            "SEO Audit"
+          ],
+          "footer": "Showing 5 matters"
+        },
+        "thirdHref": "/org/e2e-test-org/matters?sort=nextDiaryDate&dir=desc"
+      }
+    ],
+    "3-views": {
+      "tabsAtDefault": [
+        {
+          "name": "My matters",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "Open matters",
+          "selected": true,
+          "system": true
+        },
+        {
+          "name": "Awaiting fee note",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "Dormant",
+          "selected": false,
+          "system": true
+        }
+      ],
+      "createDialogTitles": [
+        "Configure Filters",
+        "Select Columns",
+        "Name Your View"
+      ],
+      "createDialogStep1": {
+        "dialogTop": -714.5,
+        "dialogBottom": 1614.5,
+        "viewportH": 900,
+        "nextButtonBottom": 1589.5,
+        "nextInViewport": false,
+        "overflowY": "visible"
+      },
+      "createDialogStep1Screenshot": "rich/03-save-view-dialog-step1-1440-light.png",
+      "createdView": "OBS 641A view (default columns, no filters, not shared) — created via Save View dialog",
+      "urlAfterCreate": "/org/e2e-test-org/matters",
+      "tabsAfterCreate": [
+        {
+          "name": "My matters",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "Open matters",
+          "selected": true,
+          "system": true
+        },
+        {
+          "name": "Awaiting fee note",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "Dormant",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "OBS 641A view",
+          "selected": false,
+          "system": false
+        }
+      ],
+      "switches": [
+        {
+          "tab": "My matters",
+          "system": true,
+          "url": "/org/e2e-test-org/matters?view=system%3Amy-matters",
+          "caption": "Matters — My matters",
+          "selectedTab": "My matters",
+          "rowNames": [
+            "Mobile App MVP",
+            "Annual Report",
+            "Brand Guidelines",
+            "Website Redesign",
+            "SEO Audit"
+          ],
+          "footer": "Showing 5 matters",
+          "emptyText": null,
+          "headers": [
+            "Reference",
+            "Matter",
+            "Client",
+            "Fee earner",
+            "Status",
+            "Unbilled",
+            "Trust",
+            "Next in diary",
+            "Actions"
+          ]
+        },
+        {
+          "tab": "Open matters",
+          "system": true,
+          "url": "/org/e2e-test-org/matters",
+          "caption": "Matters — Open matters",
+          "selectedTab": "Open matters",
+          "rowNames": [
+            "Mobile App MVP",
+            "Annual Report",
+            "Brand Guidelines",
+            "Website Redesign",
+            "SEO Audit"
+          ],
+          "footer": "Showing 5 matters",
+          "emptyText": null,
+          "headers": [
+            "Reference",
+            "Matter",
+            "Client",
+            "Fee earner",
+            "Status",
+            "Unbilled",
+            "Trust",
+            "Next in diary",
+            "Actions"
+          ]
+        },
+        {
+          "tab": "Awaiting fee note",
+          "system": true,
+          "url": "/org/e2e-test-org/matters?view=system%3Aawaiting-fee-note",
+          "caption": "Matters — Awaiting fee note",
+          "selectedTab": "Awaiting fee note",
+          "rowNames": [
+            "Mobile App MVP",
+            "Brand Guidelines",
+            "Website Redesign",
+            "SEO Audit"
+          ],
+          "footer": "Showing 4 matters",
+          "emptyText": null,
+          "headers": [
+            "Reference",
+            "Matter",
+            "Client",
+            "Fee earner",
+            "Status",
+            "Unbilled",
+            "Trust",
+            "Next in diary",
+            "Actions"
+          ]
+        },
+        {
+          "tab": "Dormant",
+          "system": true,
+          "url": "/org/e2e-test-org/matters?view=system%3Adormant",
+          "caption": null,
+          "selectedTab": "Dormant",
+          "rowNames": [],
+          "footer": null,
+          "emptyText": "No matters match this view.\n\nClear filters",
+          "headers": []
+        },
+        {
+          "tab": "OBS 641A view",
+          "system": false,
+          "url": "/org/e2e-test-org/matters?view=08992c76-663c-462c-9491-d206255082f7",
+          "caption": "Matters — OBS 641A view",
+          "selectedTab": "OBS 641A view",
+          "rowNames": [
+            "Mobile App MVP",
+            "Annual Report",
+            "Brand Guidelines",
+            "Website Redesign",
+            "SEO Audit"
+          ],
+          "footer": "Showing 5 matters",
+          "emptyText": null,
+          "headers": [
+            "Reference",
+            "Matter",
+            "Client",
+            "Work type",
+            "Fee earner",
+            "Status",
+            "Opened",
+            "Unbilled",
+            "Trust",
+            "Next in diary",
+            "Actions"
+          ]
+        }
+      ],
+      "tagsDrop": [
+        {
+          "switchTo": "My matters",
+          "system": true,
+          "urlBefore": "/org/e2e-test-org/matters?tags=obs-nonexistent-tag&status=ALL",
+          "filtersTriggerBefore": "Filters1",
+          "emptyBefore": "No matters match this view.\n\nClear filters",
+          "urlAfter": "/org/e2e-test-org/matters?tags=obs-nonexistent-tag&status=ALL&view=system%3Amy-matters",
+          "rowNamesAfter": [],
+          "footerAfter": null,
+          "filtersTriggerAfter": "Filters1"
+        },
+        {
+          "switchTo": "OBS 641A view",
+          "system": false,
+          "urlBefore": "/org/e2e-test-org/matters?tags=obs-nonexistent-tag&status=ALL",
+          "filtersTriggerBefore": "Filters1",
+          "emptyBefore": "No matters match this view.\n\nClear filters",
+          "urlAfter": "/org/e2e-test-org/matters?status=ALL&view=08992c76-663c-462c-9491-d206255082f7",
+          "rowNamesAfter": [
+            "Mobile App MVP",
+            "Annual Report",
+            "Brand Guidelines",
+            "Website Redesign",
+            "SEO Audit"
+          ],
+          "footerAfter": "Showing 5 matters",
+          "filtersTriggerAfter": null
+        }
+      ],
+      "screenshot": "rich/03-view-switch-1440-light.png"
+    },
+    "4-status": {
+      "chipsAtDefault": [
+        {
+          "label": "Active",
+          "href": "/org/e2e-test-org/matters",
+          "active": true
+        },
+        {
+          "label": "Completed",
+          "href": "/org/e2e-test-org/matters?status=COMPLETED",
+          "active": false
+        },
+        {
+          "label": "Archived",
+          "href": "/org/e2e-test-org/matters?status=ARCHIVED",
+          "active": false
+        },
+        {
+          "label": "Closed",
+          "href": "/org/e2e-test-org/matters?status=CLOSED",
+          "active": false
+        },
+        {
+          "label": "All",
+          "href": "/org/e2e-test-org/matters?status=ALL",
+          "active": false
+        }
+      ],
+      "results": [
+        {
+          "chip": "Active",
+          "href": "/org/e2e-test-org/matters",
+          "url": "/org/e2e-test-org/matters",
+          "rowNames": [
+            "Mobile App MVP",
+            "Annual Report",
+            "Brand Guidelines",
+            "Website Redesign",
+            "SEO Audit"
+          ],
+          "rowStatuses": [
+            "Active",
+            "Active",
+            "Active",
+            "Active",
+            "Active"
+          ],
+          "footer": "Showing 5 matters",
+          "subtitle": "5 matters",
+          "emptyText": null,
+          "activeChip": "Active"
+        },
+        {
+          "chip": "Completed",
+          "href": "/org/e2e-test-org/matters?status=COMPLETED",
+          "url": "/org/e2e-test-org/matters?status=COMPLETED",
+          "rowNames": [],
+          "rowStatuses": [],
+          "footer": null,
+          "subtitle": "0 matters",
+          "emptyText": "No matters match this view.\n\nClear filters",
+          "activeChip": "Completed"
+        },
+        {
+          "chip": "Archived",
+          "href": "/org/e2e-test-org/matters?status=ARCHIVED",
+          "url": "/org/e2e-test-org/matters?status=ARCHIVED",
+          "rowNames": [
+            "Legacy Migration"
+          ],
+          "rowStatuses": [
+            "Archived"
+          ],
+          "footer": "Showing 1 matter",
+          "subtitle": "1 matter",
+          "emptyText": null,
+          "activeChip": "Archived"
+        },
+        {
+          "chip": "Closed",
+          "href": "/org/e2e-test-org/matters?status=CLOSED",
+          "url": "/org/e2e-test-org/matters?status=CLOSED",
+          "rowNames": [],
+          "rowStatuses": [],
+          "footer": null,
+          "subtitle": "0 matters",
+          "emptyText": "No matters match this view.\n\nClear filters",
+          "activeChip": "Closed"
+        },
+        {
+          "chip": "All",
+          "href": "/org/e2e-test-org/matters?status=ALL",
+          "url": "/org/e2e-test-org/matters?status=ALL",
+          "rowNames": [
+            "Mobile App MVP",
+            "Annual Report",
+            "Brand Guidelines",
+            "Website Redesign",
+            "Legacy Migration",
+            "SEO Audit"
+          ],
+          "rowStatuses": [
+            "Active",
+            "Active",
+            "Active",
+            "Active",
+            "Archived",
+            "Active"
+          ],
+          "footer": "Showing 6 matters",
+          "subtitle": "6 matters",
+          "emptyText": null,
+          "activeChip": "All"
+        }
+      ]
+    },
+    "5-search": {
+      "term": "Mobile",
+      "termMatchesAll": false,
+      "placeholder": "Search matters…",
+      "match": {
+        "url": "/org/e2e-test-org/matters?search=Mobile",
+        "h1": "Matters",
+        "subtitle": "1 matter",
+        "caption": "Matters — Open matters",
+        "rowCount": 1,
+        "rowNames": [
+          "Mobile App MVP"
+        ],
+        "rowStatuses": [
+          "Active"
+        ],
+        "footer": "Showing 1 matter",
+        "headers": [
+          {
+            "text": "Reference",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=referenceNumber&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          },
+          {
+            "text": "Matter",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=name&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          },
+          {
+            "text": "Client",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=clientName&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          },
+          {
+            "text": "Work type",
+            "arrow": null,
+            "visible": false,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=workType&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @7xl:table-cell"
+          },
+          {
+            "text": "Fee earner",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=feeEarnerName&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @min-[67rem]:table-cell"
+          },
+          {
+            "text": "Status",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=status&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          },
+          {
+            "text": "Opened",
+            "arrow": null,
+            "visible": false,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=createdAt&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @7xl:table-cell"
+          },
+          {
+            "text": "Unbilled",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=unbilled&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right"
+          },
+          {
+            "text": "Trust",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=trustBalance&dir=asc",
+            "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right"
+          },
+          {
+            "text": "Next in diary",
+            "arrow": "↑",
+            "visible": true,
+            "ariaSort": "ascending",
+            "sortHref": "/org/e2e-test-org/matters?search=Mobile&sort=nextDiaryDate&dir=desc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          },
+          {
+            "text": "Actions",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": null,
+            "sortHref": null,
+            "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right w-10"
+          }
+        ],
+        "statusChips": [
+          {
+            "label": "Active",
+            "href": "/org/e2e-test-org/matters?search=Mobile",
+            "active": true
+          },
+          {
+            "label": "Completed",
+            "href": "/org/e2e-test-org/matters?search=Mobile&status=COMPLETED",
+            "active": false
+          },
+          {
+            "label": "Archived",
+            "href": "/org/e2e-test-org/matters?search=Mobile&status=ARCHIVED",
+            "active": false
+          },
+          {
+            "label": "Closed",
+            "href": "/org/e2e-test-org/matters?search=Mobile&status=CLOSED",
+            "active": false
+          },
+          {
+            "label": "All",
+            "href": "/org/e2e-test-org/matters?search=Mobile&status=ALL",
+            "active": false
+          }
+        ],
+        "viewTabs": [
+          {
+            "name": "My matters",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "Open matters",
+            "selected": true,
+            "system": true
+          },
+          {
+            "name": "Awaiting fee note",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "Dormant",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "OBS 641A view",
+            "selected": false,
+            "system": false
+          }
+        ],
+        "filtersTrigger": "Filters",
+        "searchValue": "Mobile",
+        "emptyText": null,
+        "clearFiltersHref": null,
+        "screenshot": "rich/05-search-match-1440-light.png"
+      },
+      "noMatch": {
+        "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter",
+        "h1": "Matters",
+        "subtitle": "0 matters",
+        "caption": null,
+        "rowCount": 0,
+        "rowNames": [],
+        "rowStatuses": [],
+        "footer": null,
+        "headers": [],
+        "statusChips": [
+          {
+            "label": "Active",
+            "href": "/org/e2e-test-org/matters?search=zzqx-no-such-matter",
+            "active": true
+          },
+          {
+            "label": "Completed",
+            "href": "/org/e2e-test-org/matters?search=zzqx-no-such-matter&status=COMPLETED",
+            "active": false
+          },
+          {
+            "label": "Archived",
+            "href": "/org/e2e-test-org/matters?search=zzqx-no-such-matter&status=ARCHIVED",
+            "active": false
+          },
+          {
+            "label": "Closed",
+            "href": "/org/e2e-test-org/matters?search=zzqx-no-such-matter&status=CLOSED",
+            "active": false
+          },
+          {
+            "label": "All",
+            "href": "/org/e2e-test-org/matters?search=zzqx-no-such-matter&status=ALL",
+            "active": false
+          }
+        ],
+        "viewTabs": [
+          {
+            "name": "My matters",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "Open matters",
+            "selected": true,
+            "system": true
+          },
+          {
+            "name": "Awaiting fee note",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "Dormant",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "OBS 641A view",
+            "selected": false,
+            "system": false
+          }
+        ],
+        "filtersTrigger": "Filters",
+        "searchValue": "zzqx-no-such-matter",
+        "emptyText": "No matters match this view.\n\nClear filters",
+        "clearFiltersHref": "/org/e2e-test-org/matters",
+        "screenshot": "rich/05-search-empty-1440-light.png"
+      },
+      "afterClearFilters": {
+        "url": "/org/e2e-test-org/matters",
+        "rowCount": 5,
+        "footer": "Showing 5 matters",
+        "searchValue": ""
+      }
+    },
+    "6-filter-sheet": {
+      "triggerPresent": true,
+      "triggerText": "Filters",
+      "sheet": {
+        "title": "Filter matters",
+        "description": "Show only matters carrying every selected tag.",
+        "labels": [
+          "Tags"
+        ],
+        "buttons": [
+          "Add Tag",
+          "Clear",
+          "Apply",
+          "Close"
+        ],
+        "inputs": []
+      },
+      "sheetScreenshot": "rich/06-filter-sheet-1440-light.png",
+      "tagOptions": [
+        "Litigation",
+        "Urgent"
+      ],
+      "pickedTag": "Litigation",
+      "applied": {
+        "url": "/org/e2e-test-org/matters?tags=litigation",
+        "rowNames": [
+          "Annual Report"
+        ],
+        "footer": "Showing 1 matter",
+        "filtersTrigger": "Filters1",
+        "emptyText": null
+      },
+      "appliedScreenshot": "rich/06-filter-applied-1440-light.png"
+    },
+    "7-create-buttons": {
+      "New Matter": {
+        "count": 1,
+        "disabled": false,
+        "role": "button",
+        "dialogTitle": "Create Matter",
+        "screenshot": "rich/07-new-matter-1440-light.png"
+      },
+      "New from Template": {
+        "count": 1,
+        "disabled": false,
+        "role": "button",
+        "dialogTitle": "New from Template — Select Template",
+        "screenshot": "rich/07-new-from-template-1440-light.png"
+      }
+    },
+    "8-keyboard": {
+      "tabsFromSearch": 9,
+      "focused": {
+        "text": "Reference",
+        "href": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc",
+        "tag": "A",
+        "outline": "none",
+        "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.579996 -0.129818 -0.00679168 / 0.5) 0px 0px 0px 3px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+      },
+      "focusScreenshot": "rich/08-keyboard-focus-1440-light.png",
+      "after": {
+        "url": "/org/e2e-test-org/matters?sort=referenceNumber&dir=asc",
+        "rowNames": [
+          "Annual Report",
+          "Brand Guidelines",
+          "Mobile App MVP",
+          "SEO Audit",
+          "Website Redesign"
+        ]
+      }
+    },
+    "9-combined": {
+      "start": {
+        "url": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=name&dir=asc",
+        "rowNames": [
+          "Mobile App MVP"
+        ],
+        "footer": "Showing 1 matter",
+        "sortHrefs": [
+          {
+            "column": "Reference",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=referenceNumber&dir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Matter",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=name&dir=desc",
+            "visible": true,
+            "ariaSort": "ascending"
+          },
+          {
+            "column": "Client",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=clientName&dir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Work type",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=workType&dir=asc",
+            "visible": false,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Fee earner",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=feeEarnerName&dir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Status",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=status&dir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Opened",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=createdAt&dir=asc",
+            "visible": false,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Unbilled",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=unbilled&dir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Trust",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=trustBalance&dir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Next in diary",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=nextDiaryDate&dir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          }
+        ],
+        "statusChipHrefs": [
+          {
+            "label": "Active",
+            "href": "/org/e2e-test-org/matters?search=Mobile&sort=name&dir=asc",
+            "active": false
+          },
+          {
+            "label": "Completed",
+            "href": "/org/e2e-test-org/matters?status=COMPLETED&search=Mobile&sort=name&dir=asc",
+            "active": false
+          },
+          {
+            "label": "Archived",
+            "href": "/org/e2e-test-org/matters?status=ARCHIVED&search=Mobile&sort=name&dir=asc",
+            "active": false
+          },
+          {
+            "label": "Closed",
+            "href": "/org/e2e-test-org/matters?status=CLOSED&search=Mobile&sort=name&dir=asc",
+            "active": false
+          },
+          {
+            "label": "All",
+            "href": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=name&dir=asc",
+            "active": true
+          }
+        ]
+      },
+      "afterClientSort": {
+        "clicked": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=clientName&dir=asc",
+        "url": "/org/e2e-test-org/matters?status=ALL&search=Mobile&sort=clientName&dir=asc",
+        "rowNames": [
+          "Mobile App MVP"
+        ],
+        "footer": "Showing 1 matter",
+        "searchValue": "Mobile",
+        "activeChip": "All"
+      },
+      "afterActiveChip": {
+        "url": "/org/e2e-test-org/matters?search=Mobile&sort=clientName&dir=asc",
+        "rowNames": [
+          "Mobile App MVP"
+        ],
+        "footer": "Showing 1 matter"
+      },
+      "afterSearchCleared": {
+        "url": "/org/e2e-test-org/matters?sort=clientName&dir=asc",
+        "rowNames": [
+          "Brand Guidelines",
+          "Website Redesign",
+          "Mobile App MVP",
+          "SEO Audit",
+          "Annual Report"
+        ],
+        "footer": "Showing 5 matters"
+      },
+      "screenshot": "rich/09-combined-1440-light.png"
+    },
+    "1b-viewports": {
+      "1440-dark": {
+        "htmlClass": "dark",
+        "url": "/org/e2e-test-org/matters",
+        "rowNames": [
+          "Mobile App MVP",
+          "Annual Report",
+          "Brand Guidelines",
+          "Website Redesign",
+          "SEO Audit"
+        ],
+        "footer": "Showing 5 matters",
+        "visibleHeaders": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Fee earner",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "hiddenHeaders": [
+          "Work type",
+          "Opened"
+        ],
+        "tableContainerWidth": 1136,
+        "overflow": {
+          "tableWidth": 1134,
+          "containerClientWidth": 1134,
+          "containerScrollWidth": 1134,
+          "overflowX": "auto",
+          "horizontallyScrollable": false,
+          "docScrollWidth": 1440,
+          "viewportWidth": 1440
+        },
+        "screenshot": "rich/01-default-1440-dark.png"
+      },
+      "1024-light": {
+        "htmlClass": "light",
+        "url": "/org/e2e-test-org/matters",
+        "rowNames": [
+          "Mobile App MVP",
+          "Annual Report",
+          "Brand Guidelines",
+          "Website Redesign",
+          "SEO Audit"
+        ],
+        "footer": "Showing 5 matters",
+        "visibleHeaders": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "hiddenHeaders": [
+          "Work type",
+          "Fee earner",
+          "Opened"
+        ],
+        "tableContainerWidth": 720,
+        "overflow": {
+          "tableWidth": 904.4,
+          "containerClientWidth": 718,
+          "containerScrollWidth": 904,
+          "overflowX": "auto",
+          "horizontallyScrollable": true,
+          "docScrollWidth": 1024,
+          "viewportWidth": 1024
+        },
+        "screenshot": "rich/01-default-1024-light.png"
+      },
+      "1024-dark": {
+        "htmlClass": "dark",
+        "url": "/org/e2e-test-org/matters",
+        "rowNames": [
+          "Mobile App MVP",
+          "Annual Report",
+          "Brand Guidelines",
+          "Website Redesign",
+          "SEO Audit"
+        ],
+        "footer": "Showing 5 matters",
+        "visibleHeaders": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "hiddenHeaders": [
+          "Work type",
+          "Fee earner",
+          "Opened"
+        ],
+        "tableContainerWidth": 720,
+        "overflow": {
+          "tableWidth": 904.4,
+          "containerClientWidth": 718,
+          "containerScrollWidth": 904,
+          "overflowX": "auto",
+          "horizontallyScrollable": true,
+          "docScrollWidth": 1024,
+          "viewportWidth": 1024
+        },
+        "screenshot": "rich/01-default-1024-dark.png"
+      },
+      "1440-light": {
+        "visibleHeaders": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Fee earner",
+          "Status",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "hiddenHeaders": [
+          "Work type",
+          "Opened"
+        ]
+      }
+    }
+  },
+  "console": [
+    {
+      "ctx": "1440-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "1024-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    }
+  ],
+  "finishedAt": "2026-11-12T14:33:18.160Z"
+}

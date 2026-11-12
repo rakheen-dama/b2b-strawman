@@ -1,0 +1,600 @@
+{
+  "startedAt": "2026-11-12T15:11:39.840Z",
+  "opened": {
+    "Africa/Johannesburg": {
+      "browserNow": {
+        "tz": "Africa/Johannesburg",
+        "offsetMin": 120
+      },
+      "view": {
+        "url": "/org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35",
+        "visibleHeaders": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Work type",
+          "Fee earner",
+          "Status",
+          "Opened",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "openedVisible": true,
+        "rows": [
+          {
+            "id": "47696d4e-0dc1-4f46-a045-04f97fac3b91",
+            "name": "Mobile App MVP",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.333839Z",
+            "matchesSA": true
+          },
+          {
+            "id": "abd3edd4-992d-477a-ad6d-c2524eadc7b5",
+            "name": "Annual Report",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.566116Z",
+            "matchesSA": true
+          },
+          {
+            "id": "35c5f6fa-eed0-4f88-b5ce-7e5caf46883c",
+            "name": "Brand Guidelines",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.216927Z",
+            "matchesSA": true
+          },
+          {
+            "id": "e74fbb34-2224-41ba-8f2e-03df850763dd",
+            "name": "Website Redesign",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:07:08.939551Z",
+            "matchesSA": true
+          },
+          {
+            "id": "2d6f1f6c-3388-45d9-b523-36879a89623a",
+            "name": "SEO Audit",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.451715Z",
+            "matchesSA": true
+          }
+        ]
+      },
+      "afterReloadSame": true
+    },
+    "America/New_York": {
+      "browserNow": {
+        "tz": "America/New_York",
+        "offsetMin": -300
+      },
+      "view": {
+        "url": "/org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35",
+        "visibleHeaders": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Work type",
+          "Fee earner",
+          "Status",
+          "Opened",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "openedVisible": true,
+        "rows": [
+          {
+            "id": "47696d4e-0dc1-4f46-a045-04f97fac3b91",
+            "name": "Mobile App MVP",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.333839Z",
+            "matchesSA": true
+          },
+          {
+            "id": "abd3edd4-992d-477a-ad6d-c2524eadc7b5",
+            "name": "Annual Report",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.566116Z",
+            "matchesSA": true
+          },
+          {
+            "id": "35c5f6fa-eed0-4f88-b5ce-7e5caf46883c",
+            "name": "Brand Guidelines",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.216927Z",
+            "matchesSA": true
+          },
+          {
+            "id": "e74fbb34-2224-41ba-8f2e-03df850763dd",
+            "name": "Website Redesign",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:07:08.939551Z",
+            "matchesSA": true
+          },
+          {
+            "id": "2d6f1f6c-3388-45d9-b523-36879a89623a",
+            "name": "SEO Audit",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "12 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.451715Z",
+            "matchesSA": true
+          }
+        ]
+      },
+      "afterReloadSame": true
+    },
+    "Pacific/Kiritimati": {
+      "browserNow": {
+        "tz": "Pacific/Kiritimati",
+        "offsetMin": 840
+      },
+      "view": {
+        "url": "/org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35",
+        "visibleHeaders": [
+          "Reference",
+          "Matter",
+          "Client",
+          "Work type",
+          "Fee earner",
+          "Status",
+          "Opened",
+          "Unbilled",
+          "Trust",
+          "Next in diary",
+          "Actions"
+        ],
+        "openedVisible": true,
+        "rows": [
+          {
+            "id": "47696d4e-0dc1-4f46-a045-04f97fac3b91",
+            "name": "Mobile App MVP",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "13 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.333839Z",
+            "matchesSA": true
+          },
+          {
+            "id": "abd3edd4-992d-477a-ad6d-c2524eadc7b5",
+            "name": "Annual Report",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "13 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.566116Z",
+            "matchesSA": true
+          },
+          {
+            "id": "35c5f6fa-eed0-4f88-b5ce-7e5caf46883c",
+            "name": "Brand Guidelines",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "13 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.216927Z",
+            "matchesSA": true
+          },
+          {
+            "id": "e74fbb34-2224-41ba-8f2e-03df850763dd",
+            "name": "Website Redesign",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "13 Nov 2026",
+            "createdAt": "2026-11-12T15:07:08.939551Z",
+            "matchesSA": true
+          },
+          {
+            "id": "2d6f1f6c-3388-45d9-b523-36879a89623a",
+            "name": "SEO Audit",
+            "opened": "12 Nov 2026",
+            "expectedSA": "12 Nov 2026",
+            "browserLocal": "13 Nov 2026",
+            "createdAt": "2026-11-12T15:08:47.451715Z",
+            "matchesSA": true
+          }
+        ]
+      },
+      "afterReloadSame": true
+    }
+  },
+  "csv": {
+    "Africa/Johannesburg": {
+      "file": "matters-export.csv",
+      "suggestedFilename": "matters.csv",
+      "bom": true,
+      "crlf": true,
+      "lines": [
+        "Reference,Matter,Client,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary",
+        ",Mobile App MVP,Bright Solutions,,Alice Owner,Active,12 Nov 2026,8h 30m,0,19 Nov 2026",
+        ",Annual Report,Carlos Mendez,,Alice Owner,Active,12 Nov 2026,,0,12 Dec 2026",
+        ",Brand Guidelines,Acme Corp,,Alice Owner,Active,12 Nov 2026,5h,0,12 Dec 2026",
+        ",Website Redesign,Acme Corp,,Alice Owner,Active,12 Nov 2026,11h 30m,0,12 Dec 2026",
+        ",SEO Audit,Bright Solutions,,Alice Owner,Active,12 Nov 2026,6h,0,"
+      ]
+    },
+    "Pacific/Kiritimati": {
+      "file": "matters-export-kiritimati.csv",
+      "suggestedFilename": "matters.csv",
+      "bom": true,
+      "crlf": true,
+      "lines": [
+        "Reference,Matter,Client,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary",
+        ",Mobile App MVP,Bright Solutions,,Alice Owner,Active,12 Nov 2026,8h 30m,0,19 Nov 2026",
+        ",Annual Report,Carlos Mendez,,Alice Owner,Active,12 Nov 2026,,0,12 Dec 2026",
+        ",Brand Guidelines,Acme Corp,,Alice Owner,Active,12 Nov 2026,5h,0,12 Dec 2026",
+        ",Website Redesign,Acme Corp,,Alice Owner,Active,12 Nov 2026,11h 30m,0,12 Dec 2026",
+        ",SEO Audit,Bright Solutions,,Alice Owner,Active,12 Nov 2026,6h,0,"
+      ]
+    }
+  },
+  "emptyState": {
+    "1024-light": {
+      "emptyText": "No matters match this view.\n\nClear filters",
+      "tableRendered": 0,
+      "link": {
+        "className": "text-primary mt-2 inline-block text-sm font-medium underline-offset-4 hover:underline",
+        "href": "/org/e2e-test-org/matters",
+        "colorCss": "lab(2.214 -0.134699 -1.01047)",
+        "colorHex": "#07080b",
+        "bgHex": "#f4f6f8",
+        "bgLayers": [
+          {
+            "tag": "BODY",
+            "cls": "sora_85118407-module__WBzQKW__variable plexsans_b72cf294-module__iwFkfa__variabl",
+            "css": "lab(96.7396 -0.214994 -1.49846)"
+          },
+          {
+            "tag": "DIV",
+            "cls": "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:",
+            "css": "lab(96.7396 -0.214994 -1.49846)"
+          },
+          {
+            "tag": "MAIN",
+            "cls": "bg-background min-w-0 flex-1",
+            "css": "lab(96.7396 -0.214994 -1.49846)"
+          }
+        ],
+        "contrast": 18.49,
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "textDecorationLine": "none",
+        "textUnderlineOffset": "4px",
+        "html": "light"
+      },
+      "hover": {
+        "textDecorationLine": "underline",
+        "textUnderlineOffset": "4px",
+        "color": "lab(2.214 -0.134699 -1.01047)"
+      },
+      "focus": {
+        "text": "Clear filters",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px",
+        "boxShadow": "none"
+      },
+      "afterClick": {
+        "url": "/org/e2e-test-org/matters",
+        "rows": 5,
+        "footer": "Showing 5 matters",
+        "search": ""
+      }
+    },
+    "1024-dark": {
+      "emptyText": "No matters match this view.\n\nClear filters",
+      "tableRendered": 0,
+      "link": {
+        "className": "text-primary mt-2 inline-block text-sm font-medium underline-offset-4 hover:underline",
+        "href": "/org/e2e-test-org/matters",
+        "colorCss": "lab(100 0 0)",
+        "colorHex": "#ffffff",
+        "bgHex": "#07080b",
+        "bgLayers": [
+          {
+            "tag": "BODY",
+            "cls": "sora_85118407-module__WBzQKW__variable plexsans_b72cf294-module__iwFkfa__variabl",
+            "css": "lab(2.214 -0.134699 -1.01047)"
+          },
+          {
+            "tag": "DIV",
+            "cls": "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:",
+            "css": "lab(2.214 -0.134699 -1.01047)"
+          },
+          {
+            "tag": "MAIN",
+            "cls": "bg-background min-w-0 flex-1",
+            "css": "lab(2.214 -0.134699 -1.01047)"
+          }
+        ],
+        "contrast": 20.03,
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "textDecorationLine": "none",
+        "textUnderlineOffset": "4px",
+        "html": "dark"
+      },
+      "hover": {
+        "textDecorationLine": "underline",
+        "textUnderlineOffset": "4px",
+        "color": "lab(100 0 0)"
+      },
+      "focus": {
+        "text": "Clear filters",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px",
+        "boxShadow": "none"
+      },
+      "afterClick": {
+        "url": "/org/e2e-test-org/matters",
+        "rows": 5,
+        "footer": "Showing 5 matters",
+        "search": ""
+      }
+    },
+    "1440-light": {
+      "emptyText": "No matters match this view.\n\nClear filters",
+      "tableRendered": 0,
+      "link": {
+        "className": "text-primary mt-2 inline-block text-sm font-medium underline-offset-4 hover:underline",
+        "href": "/org/e2e-test-org/matters",
+        "colorCss": "lab(2.214 -0.134699 -1.01047)",
+        "colorHex": "#07080b",
+        "bgHex": "#f4f6f8",
+        "bgLayers": [
+          {
+            "tag": "BODY",
+            "cls": "sora_85118407-module__WBzQKW__variable plexsans_b72cf294-module__iwFkfa__variabl",
+            "css": "lab(96.7396 -0.214994 -1.49846)"
+          },
+          {
+            "tag": "DIV",
+            "cls": "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:",
+            "css": "lab(96.7396 -0.214994 -1.49846)"
+          },
+          {
+            "tag": "MAIN",
+            "cls": "bg-background min-w-0 flex-1",
+            "css": "lab(96.7396 -0.214994 -1.49846)"
+          }
+        ],
+        "contrast": 18.49,
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "textDecorationLine": "none",
+        "textUnderlineOffset": "4px",
+        "html": "light"
+      },
+      "hover": {
+        "textDecorationLine": "underline",
+        "textUnderlineOffset": "4px",
+        "color": "lab(2.214 -0.134699 -1.01047)"
+      },
+      "focus": {
+        "text": "Clear filters",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px",
+        "boxShadow": "none"
+      },
+      "afterClick": {
+        "url": "/org/e2e-test-org/matters",
+        "rows": 5,
+        "footer": "Showing 5 matters",
+        "search": ""
+      }
+    },
+    "1440-dark": {
+      "emptyText": "No matters match this view.\n\nClear filters",
+      "tableRendered": 0,
+      "link": {
+        "className": "text-primary mt-2 inline-block text-sm font-medium underline-offset-4 hover:underline",
+        "href": "/org/e2e-test-org/matters",
+        "colorCss": "lab(100 0 0)",
+        "colorHex": "#ffffff",
+        "bgHex": "#07080b",
+        "bgLayers": [
+          {
+            "tag": "BODY",
+            "cls": "sora_85118407-module__WBzQKW__variable plexsans_b72cf294-module__iwFkfa__variabl",
+            "css": "lab(2.214 -0.134699 -1.01047)"
+          },
+          {
+            "tag": "DIV",
+            "cls": "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:",
+            "css": "lab(2.214 -0.134699 -1.01047)"
+          },
+          {
+            "tag": "MAIN",
+            "cls": "bg-background min-w-0 flex-1",
+            "css": "lab(2.214 -0.134699 -1.01047)"
+          }
+        ],
+        "contrast": 20.03,
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "textDecorationLine": "none",
+        "textUnderlineOffset": "4px",
+        "html": "dark"
+      },
+      "hover": {
+        "textDecorationLine": "underline",
+        "textUnderlineOffset": "4px",
+        "color": "lab(100 0 0)"
+      },
+      "focus": {
+        "text": "Clear filters",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px",
+        "boxShadow": "none"
+      },
+      "afterClick": {
+        "url": "/org/e2e-test-org/matters",
+        "rows": 5,
+        "footer": "Showing 5 matters",
+        "search": ""
+      }
+    }
+  },
+  "console": [
+    {
+      "ctx": "1440-light-Africa/Johannesburg",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "1440-light-Pacific/Kiritimati",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "1024-dark-Africa/Johannesburg",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "1440-light-Africa/Johannesburg",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    }
+  ],
+  "loads": [
+    {
+      "ctx": "1440-light-Africa/Johannesburg",
+      "url": "/org/e2e-test-org/matters"
+    },
+    {
+      "ctx": "1440-light-Africa/Johannesburg",
+      "url": "/org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35"
+    },
+    {
+      "ctx": "1440-light-Africa/Johannesburg",
+      "url": "reload /org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35"
+    },
+    {
+      "ctx": "1440-light-Africa/Johannesburg",
+      "url": "/org/e2e-test-org/matters"
+    },
+    {
+      "ctx": "1440-light-America/New_York",
+      "url": "/org/e2e-test-org/matters"
+    },
+    {
+      "ctx": "1440-light-America/New_York",
+      "url": "/org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35"
+    },
+    {
+      "ctx": "1440-light-America/New_York",
+      "url": "reload /org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35"
+    },
+    {
+      "ctx": "1440-light-America/New_York",
+      "url": "/org/e2e-test-org/matters"
+    },
+    {
+      "ctx": "1440-light-Pacific/Kiritimati",
+      "url": "/org/e2e-test-org/matters"
+    },
+    {
+      "ctx": "1440-light-Pacific/Kiritimati",
+      "url": "/org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35"
+    },
+    {
+      "ctx": "1440-light-Pacific/Kiritimati",
+      "url": "reload /org/e2e-test-org/matters?view=6b023365-d344-48a3-91f1-4f0005a14d35"
+    },
+    {
+      "ctx": "1440-light-Pacific/Kiritimati",
+      "url": "/org/e2e-test-org/matters"
+    },
+    {
+      "ctx": "1024-light-Africa/Johannesburg",
+      "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter"
+    },
+    {
+      "ctx": "1024-light-Africa/Johannesburg",
+      "url": "after Clear filters click"
+    },
+    {
+      "ctx": "1024-dark-Africa/Johannesburg",
+      "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter"
+    },
+    {
+      "ctx": "1024-dark-Africa/Johannesburg",
+      "url": "after Clear filters click"
+    },
+    {
+      "ctx": "1440-light-Africa/Johannesburg",
+      "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter"
+    },
+    {
+      "ctx": "1440-light-Africa/Johannesburg",
+      "url": "after Clear filters click"
+    },
+    {
+      "ctx": "1440-dark-Africa/Johannesburg",
+      "url": "/org/e2e-test-org/matters?search=zzqx-no-such-matter"
+    },
+    {
+      "ctx": "1440-dark-Africa/Johannesburg",
+      "url": "after Clear filters click"
+    }
+  ],
+  "expected": {
+    "abd3edd4-992d-477a-ad6d-c2524eadc7b5": {
+      "name": "Annual Report",
+      "createdAt": "2026-11-12T15:08:47.566116Z",
+      "sa": "12 Nov 2026",
+      "ny": "12 Nov 2026",
+      "kiri": "13 Nov 2026"
+    },
+    "2d6f1f6c-3388-45d9-b523-36879a89623a": {
+      "name": "SEO Audit",
+      "createdAt": "2026-11-12T15:08:47.451715Z",
+      "sa": "12 Nov 2026",
+      "ny": "12 Nov 2026",
+      "kiri": "13 Nov 2026"
+    },
+    "47696d4e-0dc1-4f46-a045-04f97fac3b91": {
+      "name": "Mobile App MVP",
+      "createdAt": "2026-11-12T15:08:47.333839Z",
+      "sa": "12 Nov 2026",
+      "ny": "12 Nov 2026",
+      "kiri": "13 Nov 2026"
+    },
+    "35c5f6fa-eed0-4f88-b5ce-7e5caf46883c": {
+      "name": "Brand Guidelines",
+      "createdAt": "2026-11-12T15:08:47.216927Z",
+      "sa": "12 Nov 2026",
+      "ny": "12 Nov 2026",
+      "kiri": "13 Nov 2026"
+    },
+    "e74fbb34-2224-41ba-8f2e-03df850763dd": {
+      "name": "Website Redesign",
+      "createdAt": "2026-11-12T15:07:08.939551Z",
+      "sa": "12 Nov 2026",
+      "ny": "12 Nov 2026",
+      "kiri": "13 Nov 2026"
+    }
+  },
+  "finishedAt": "2026-11-12T15:12:10.140Z"
+}

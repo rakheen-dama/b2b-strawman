@@ -18,10 +18,30 @@
 import "@/lib/intl-polyfill";
 // Loaded after the polyfill (module requests evaluate in source order).
 import { formatCurrency } from "@b2mash/shared/format";
+import { KAZI_TIME_ZONE } from "@b2mash/shared/date";
 
 export * from "@b2mash/shared/format";
 
 /** Formats an integer minor-unit amount (cents) as currency, e.g. 12345 → "R 123,45". */
 export function formatCurrencyFromCents(cents: number, currency?: string): string {
   return formatCurrency(cents / 100, currency);
+}
+
+/**
+ * `formatDate`'s day-first date ("1 May 2026") on the South African calendar (`KAZI_TIME_ZONE`),
+ * whatever the runtime zone. Use it for an instant rendered in a client component: SSR runs in
+ * UTC and the browser anywhere, so the zone-less `formatDate` can print a different day on each
+ * side of hydration near midnight (and in a CSV export). Same zone policy as `formatDateTime`.
+ * Returns "" for empty/invalid input.
+ */
+export function formatDateInSA(date: string | Date): string {
+  if (!date) return "";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: KAZI_TIME_ZONE,
+  });
 }

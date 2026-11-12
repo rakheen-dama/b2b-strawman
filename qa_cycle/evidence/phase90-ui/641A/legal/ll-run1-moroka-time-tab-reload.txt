@@ -1,0 +1,1 @@
+From To TOTAL TIME 7h BILLABLE 7h NON-BILLABLE 0m CONTRIBUTORS 1 ENTRIES 2 By Task TASK BILLABLE TOTAL ENTRIES Prepare Liquidation & Distribution account 6h 6h 1 Report estate to Master of High Court 1h 1h 1 By Member MEMBER BILLABLE NON-BILLABLE TOTAL Alice Owner 7h 0m 7h

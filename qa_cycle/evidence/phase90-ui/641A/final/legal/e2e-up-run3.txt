@@ -1,0 +1,421 @@
+Stopping E2E mock-auth stack...
+ Container e2e-seed  Stopping
+ Container e2e-mailpit  Stopping
+ Container e2e-seed  Stopped
+ Container e2e-seed  Removing
+ Container e2e-seed  Removed
+ Container e2e-frontend  Stopping
+ Container e2e-frontend  Stopped
+ Container e2e-frontend  Removing
+ Container e2e-frontend  Removed
+ Container e2e-backend  Stopping
+ Container e2e-mailpit  Stopped
+ Container e2e-mailpit  Removing
+ Container e2e-mailpit  Removed
+ Container e2e-backend  Stopped
+ Container e2e-backend  Removing
+ Container e2e-backend  Removed
+ Container e2e-postgres  Stopping
+ Container e2e-localstack  Stopping
+ Container e2e-mock-idp  Stopping
+ Container e2e-postgres  Stopped
+ Container e2e-postgres  Removing
+ Container e2e-postgres  Removed
+ Container e2e-mock-idp  Stopped
+ Container e2e-mock-idp  Removing
+ Container e2e-mock-idp  Removed
+ Container e2e-localstack  Stopped
+ Container e2e-localstack  Removing
+ Container e2e-localstack  Removed
+ Volume docteams-e2e_e2e_localstack_data  Removing
+ Volume docteams-e2e_e2e_postgres_data  Removing
+ Network docteams-e2e_e2e-network  Removing
+ Volume docteams-e2e_e2e_localstack_data  Removed
+ Volume docteams-e2e_e2e_postgres_data  Removed
+ Network docteams-e2e_e2e-network  Removed
+
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+q2wvgvqv4umgkejudm77yb8bv*              	true 		225B      	4 minutes ago
+zdue2s4qi5wu7s80aeb0669z0*              	true 	360B      	4 minutes ago
+gwdop86s4z4kemjhd9fcmk6en*              	true 	756B      	4 minutes ago
+ss1dtfkycnp4crd516to0p42v*              	true 	66.69kB   	4 minutes ago
+dcpnxdunkm1ot1a9jrbx4l366*              	true 	895B      	4 minutes ago
+vzirhjqr1k80andewojqlf914*              	true 	18.02MB   	4 minutes ago
+ecgx4xdl1q6ww0r1ihl43h0jg*              	true 	100B      	4 minutes ago
+rww8a59vfcia84ebtyovuudpz*              	true 	0B        	4 minutes ago
+uazqn7qsnla4mbaah9ofzbmg3*              	true 	11.23MB   	4 minutes ago
+ta77v5ota5j5dd1zt60dibgox*              	true 	43.62kB   	4 minutes ago
+7upv5rk4i8jy316654w25uslx*              	true 	0B        	4 minutes ago
+g5epkd6bnz9sxsvkk7fhjr0zx*              	true 	4.41kB    	4 minutes ago
+Total:	29.37MB
+=== E2E Mock-Auth Stack ===
+
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-641A
+
+[1/3] Building and starting services...
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.28kB done
+#1 DONE 0.0s
+
+#2 [seed internal] load build definition from Dockerfile
+#2 transferring dockerfile: 264B done
+#2 DONE 0.0s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 934B done
+#3 DONE 0.0s
+
+#4 [mock-idp internal] load build definition from Dockerfile
+#4 transferring dockerfile: 399B done
+#4 DONE 0.0s
+
+#5 [frontend internal] load build definition from Dockerfile
+#5 transferring dockerfile: 4.45kB done
+#5 DONE 0.1s
+
+#6 [auth] library/eclipse-temurin:pull token for registry-1.docker.io
+#6 DONE 0.0s
+
+#7 [auth] library/node:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [auth] library/alpine:pull token for registry-1.docker.io
+#8 DONE 0.0s
+
+#9 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#9 ...
+
+#10 [seed internal] load metadata for docker.io/library/alpine:3.19
+#10 DONE 1.9s
+
+#11 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jre-alpine
+#11 DONE 1.9s
+
+#12 [seed internal] load .dockerignore
+#12 transferring context: 2B done
+#12 DONE 0.0s
+
+#13 [seed 1/8] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#13 DONE 0.0s
+
+#14 [mock-idp internal] load metadata for docker.io/library/node:22-alpine
+#14 DONE 1.9s
+
+#9 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#9 DONE 1.9s
+
+#15 [seed internal] load build context
+#15 transferring context: 67.45kB done
+#15 DONE 0.1s
+
+#16 [mock-idp internal] load .dockerignore
+#16 transferring context: 2B done
+#16 DONE 0.0s
+
+#17 [frontend internal] load .dockerignore
+#17 transferring context: 798B done
+#17 DONE 0.0s
+
+#18 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jdk
+#18 ...
+
+#19 [seed 3/8] WORKDIR /seed
+#19 CACHED
+
+#20 [seed 5/8] COPY seed.sh .
+#20 CACHED
+
+#21 [seed 2/8] RUN apk add --no-cache curl jq
+#21 CACHED
+
+#22 [seed 6/8] COPY rich-seed.sh .
+#22 CACHED
+
+#23 [seed 7/8] COPY lib/ lib/
+#23 CACHED
+
+#24 [seed 4/8] COPY wait-for-backend.sh .
+#24 CACHED
+
+#25 [seed 8/8] RUN chmod +x wait-for-backend.sh seed.sh rich-seed.sh lib/*.sh
+#25 CACHED
+
+#26 [mock-idp builder 1/7] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+#26 DONE 0.0s
+
+#27 [frontend deps 1/9] FROM docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+#27 DONE 0.0s
+
+#28 [seed] exporting to image
+#28 exporting layers done
+#28 writing image sha256:933d6df80f0aed11e75e55b5026ca03497366f8c39c01924a8c85ffd9a09bcac done
+#28 naming to docker.io/library/docteams-e2e-seed done
+#28 DONE 0.0s
+
+#29 [mock-idp internal] load build context
+#29 transferring context: 43.91kB 0.0s done
+#29 DONE 0.1s
+
+#30 [mock-idp stage-1 4/5] RUN npm ci --omit=dev
+#30 CACHED
+
+#31 [mock-idp builder 4/7] RUN npm ci
+#31 CACHED
+
+#32 [mock-idp builder 3/7] COPY package.json package-lock.json* ./
+#32 CACHED
+
+#33 [mock-idp builder 6/7] COPY src/ ./src/
+#33 CACHED
+
+#34 [mock-idp stage-1 3/5] COPY --from=builder /app/package.json /app/package-lock.json* ./
+#34 CACHED
+
+#35 [mock-idp builder 2/7] WORKDIR /app
+#35 CACHED
+
+#36 [mock-idp builder 5/7] COPY tsconfig.json ./
+#36 CACHED
+
+#37 [mock-idp builder 7/7] RUN npm run build
+#37 CACHED
+
+#38 [mock-idp stage-1 5/5] COPY --from=builder /app/dist ./dist
+#38 CACHED
+
+#39 [seed] resolving provenance for metadata file
+#39 DONE 0.0s
+
+#40 [mock-idp] exporting to image
+#40 exporting layers done
+#40 writing image sha256:43583952b3cec1812a701bef32a889c8aa2d6fd9df1398068b555feb09bdb2a6 done
+#40 naming to docker.io/library/docteams-e2e-mock-idp done
+#40 DONE 0.0s
+
+#41 [mock-idp] resolving provenance for metadata file
+#41 DONE 0.0s
+
+#42 [frontend internal] load build context
+#42 transferring context: 11.38MB 0.2s done
+#42 DONE 0.2s
+
+#43 [frontend builder 10/11] COPY packages/ ./packages/
+#43 CACHED
+
+#44 [frontend deps 3/9] RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
+#44 CACHED
+
+#45 [frontend deps 5/9] COPY patches/ ./patches/
+#45 CACHED
+
+#46 [frontend builder  8/11] COPY tsconfig.base.json ./
+#46 CACHED
+
+#47 [frontend builder 11/11] RUN pnpm --filter frontend build
+#47 CACHED
+
+#48 [frontend runner 5/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+#48 CACHED
+
+#49 [frontend deps 6/9] COPY frontend/package.json ./frontend/
+#49 CACHED
+
+#50 [frontend runner 3/7] RUN addgroup --system --gid 1001 nodejs &&     adduser --system --uid 1001 nextjs
+#50 CACHED
+
+#51 [frontend deps 9/9] RUN pnpm install --frozen-lockfile --filter frontend...
+#51 CACHED
+
+#52 [frontend deps 8/9] COPY packages/shared/package.json ./packages/shared/
+#52 CACHED
+
+#53 [frontend deps 2/9] WORKDIR /app
+#53 CACHED
+
+#54 [frontend builder  9/11] COPY frontend/ ./frontend/
+#54 CACHED
+
+#55 [frontend deps 7/9] COPY packages/ui/package.json ./packages/ui/
+#55 CACHED
+
+#56 [frontend runner 4/7] RUN apk add --no-cache curl
+#56 CACHED
+
+#57 [frontend deps 4/9] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+#57 CACHED
+
+#58 [frontend runner 6/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
+#58 CACHED
+
+#59 [frontend builder  6/11] COPY --from=deps /app/packages ./packages
+#59 CACHED
+
+#60 [frontend builder  4/11] COPY --from=deps /app/node_modules ./node_modules
+#60 CACHED
+
+#61 [frontend builder  5/11] COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+#61 CACHED
+
+#62 [frontend builder  7/11] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+#62 CACHED
+
+#63 [frontend runner 7/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public
+#63 CACHED
+
+#64 [frontend] exporting to image
+#64 exporting layers done
+#64 writing image sha256:9504b639183f36ec4d3cc7c86dc47e719212b4c2b5a95d7384535d23971de070 done
+#64 naming to docker.io/library/docteams-e2e-frontend done
+#64 DONE 0.0s
+
+#65 [frontend] resolving provenance for metadata file
+#65 DONE 0.0s
+
+#18 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jdk
+#18 DONE 3.1s
+
+#66 [backend internal] load .dockerignore
+#66 transferring context: 140B done
+#66 DONE 0.0s
+
+#67 [backend builder  1/10] FROM docker.io/library/eclipse-temurin:25-jdk@sha256:b8705e936964c228dfce359e63dbf08f6c69cb380ed1d576b1f6b1064f15567d
+#67 DONE 0.0s
+
+#68 [backend runner 1/5] FROM docker.io/library/eclipse-temurin:25-jre-alpine@sha256:e1898fd6a11fc965a994d8ace186fd3585aeb636cf8f05f47a723fcfee0b0918
+#68 DONE 0.0s
+
+#69 [backend internal] load build context
+#69 transferring context: 18.34MB 0.4s done
+#69 DONE 0.4s
+
+#70 [backend builder 10/10] RUN mv extracted/*.jar extracted/app.jar
+#70 CACHED
+
+#71 [backend runner 4/5] RUN apk add --no-cache curl
+#71 CACHED
+
+#72 [backend builder  4/10] COPY .mvn .mvn
+#72 CACHED
+
+#73 [backend builder  6/10] RUN ./mvnw dependency:go-offline -B
+#73 CACHED
+
+#74 [backend builder  8/10] RUN ./mvnw clean package -DskipTests -B
+#74 CACHED
+
+#75 [backend builder  5/10] COPY pom.xml .
+#75 CACHED
+
+#76 [backend runner 3/5] RUN addgroup --system --gid 1001 spring &&     adduser --system --uid 1001 spring
+#76 CACHED
+
+#77 [backend builder  2/10] WORKDIR /build
+#77 CACHED
+
+#78 [backend builder  9/10] RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
+#78 CACHED
+
+#79 [backend runner 2/5] WORKDIR /app
+#79 CACHED
+
+#80 [backend builder  7/10] COPY src src
+#80 CACHED
+
+#81 [backend builder  3/10] COPY mvnw .
+#81 CACHED
+
+#82 [backend runner 5/5] COPY --from=builder --chown=spring:spring /build/extracted/ ./
+#82 CACHED
+
+#83 [backend] exporting to image
+#83 exporting layers done
+#83 writing image sha256:01bf8d01026c0f80f385651b0c7395fbb71a4ce72e4ea2da858a55fd68e4b346 done
+#83 naming to docker.io/library/docteams-e2e-backend
+#83 naming to docker.io/library/docteams-e2e-backend done
+#83 DONE 0.0s
+
+#84 [backend] resolving provenance for metadata file
+#84 DONE 0.0s
+ docteams-e2e-frontend  Built
+ docteams-e2e-seed  Built
+ docteams-e2e-mock-idp  Built
+ docteams-e2e-backend  Built
+ Network docteams-e2e_e2e-network  Creating
+ Network docteams-e2e_e2e-network  Created
+ Volume docteams-e2e_e2e_localstack_data  Creating
+ Volume docteams-e2e_e2e_localstack_data  Created
+ Volume docteams-e2e_e2e_postgres_data  Creating
+ Volume docteams-e2e_e2e_postgres_data  Created
+ Container e2e-mock-idp  Creating
+ Container e2e-mailpit  Creating
+ Container e2e-localstack  Creating
+ Container e2e-postgres  Creating
+ Container e2e-postgres  Created
+ Container e2e-mailpit  Created
+ Container e2e-mock-idp  Created
+ Container e2e-localstack  Created
+ Container e2e-backend  Creating
+ Container e2e-backend  Created
+ Container e2e-frontend  Creating
+ Container e2e-frontend  Created
+ Container e2e-seed  Creating
+ Container e2e-seed  Created
+ Container e2e-mock-idp  Starting
+ Container e2e-postgres  Starting
+ Container e2e-localstack  Starting
+ Container e2e-mailpit  Starting
+ Container e2e-mailpit  Started
+ Container e2e-postgres  Started
+ Container e2e-localstack  Started
+ Container e2e-mock-idp  Started
+ Container e2e-mock-idp  Waiting
+ Container e2e-postgres  Waiting
+ Container e2e-localstack  Waiting
+ Container e2e-postgres  Healthy
+ Container e2e-mock-idp  Healthy
+ Container e2e-localstack  Healthy
+ Container e2e-backend  Starting
+ Container e2e-backend  Started
+ Container e2e-backend  Waiting
+ Container e2e-backend  Healthy
+ Container e2e-frontend  Starting
+ Container e2e-frontend  Started
+ Container e2e-frontend  Waiting
+ Container e2e-mock-idp  Waiting
+ Container e2e-backend  Waiting
+ Container e2e-backend  Healthy
+ Container e2e-mock-idp  Healthy
+ Container e2e-frontend  Healthy
+ Container e2e-seed  Starting
+ Container e2e-seed  Started
+
+[2/3] Waiting for services to become healthy...
+  Backend (localhost:8081)... ready
+  Frontend (localhost:3001)... ready
+  Mock IDP (localhost:8090)... ready
+  Mailpit (localhost:8026)... ready
+
+[3/3] Waiting for seed to complete...
+  Seed completed (container exited)
+
+=== E2E Stack Ready ===
+
+  Frontend (mock auth):  http://localhost:3001
+  Mock login page:       http://localhost:3001/mock-login
+  Backend (e2e profile): http://localhost:8081
+  Mock IDP:              http://localhost:8090
+  Mailpit SMTP:          localhost:1026
+  Mailpit UI:            http://localhost:8026
+  Postgres:              localhost:5433 (user: postgres, pass: changeme, db: app)
+
+  Users: Alice (owner), Bob (admin), Carol (member)
+  Org:   e2e-test-org
+
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-641A/compose/docker-compose.e2e.yml logs -f backend frontend
+  Access DB:   docker exec -it e2e-postgres psql -U postgres -d app
+  Stop stack:  bash compose/scripts/e2e-down.sh
+  Reseed data: bash compose/scripts/e2e-reseed.sh
+
+UP_EXIT=0

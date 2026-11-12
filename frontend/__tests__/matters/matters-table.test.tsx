@@ -2,13 +2,15 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MattersTable } from "@/components/matters/matters-table";
+import { MattersDataTable } from "@/components/matters/matters-table";
+import { CSV_BOM } from "@/components/data-table/data-table-csv";
 import {
   DEFAULT_MATTER_VIEW_ID,
   MATTER_SYSTEM_VIEWS,
   resolveViewSelection,
 } from "@/lib/constants/system-views";
 import { buildMatterListParams, defaultMatterColumns, type MatterSort } from "@/lib/matters-list";
+import { formatDate } from "@/lib/format";
 import type { MatterListRow } from "@/lib/types";
 
 const mockPush = vi.fn();
@@ -18,6 +20,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/acme/matters",
 }));
 
+// `scroll` / `prefetch` are next/link props, not DOM attributes: drop them before spreading.
 vi.mock("next/link", () => ({
   default: ({
     children,
@@ -27,11 +30,16 @@ vi.mock("next/link", () => ({
     children: React.ReactNode;
     href: string;
     [key: string]: unknown;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
+  }) => {
+    const anchorProps = { ...props };
+    delete anchorProps.scroll;
+    delete anchorProps.prefetch;
+    return (
+      <a href={href} {...anchorProps}>
+        {children}
+      </a>
+    );
+  },
 }));
 
 function row(overrides: Partial<MatterListRow> = {}): MatterListRow {
@@ -65,31 +73,75 @@ function row(overrides: Partial<MatterListRow> = {}): MatterListRow {
 
 const DEFAULT_SORT: MatterSort = { key: "nextDiaryDate", dir: "asc" };
 
-function renderTable(
-  rows: MatterListRow[],
-  opts: {
-    columns?: string[];
-    sort?: MatterSort;
-    query?: Record<string, string>;
-    hideLowPriorityColumns?: boolean;
-  } = {}
-) {
+interface RenderOptions {
+  columns?: string[];
+  sort?: MatterSort;
+  query?: Record<string, string>;
+  hideLowPriorityColumns?: boolean;
+  footer?: React.ReactNode;
+}
+
+/** The serializable props the server page passes (no `empty` / `footer` / `toolbar` nodes). */
+function serializableProps(rows: MatterListRow[], opts: RenderOptions = {}) {
+  return {
+    slug: "acme",
+    rows,
+    columns: opts.columns ?? defaultMatterColumns(true),
+    customFieldNames: { court: "Court" },
+    sort: opts.sort ?? DEFAULT_SORT,
+    query: opts.query ?? {},
+    caption: "Matters — Open matters",
+    hideLowPriorityColumns: opts.hideLowPriorityColumns,
+  };
+}
+
+function renderTable(rows: MatterListRow[], opts: RenderOptions = {}) {
   return render(
-    <MattersTable
-      slug="acme"
-      rows={rows}
-      columns={opts.columns ?? defaultMatterColumns(true)}
-      customFieldNames={{ court: "Court" }}
-      sort={opts.sort ?? DEFAULT_SORT}
-      query={opts.query ?? {}}
-      caption="Matters — Open matters"
-      hideLowPriorityColumns={opts.hideLowPriorityColumns}
+    <MattersDataTable
+      {...serializableProps(rows, opts)}
+      empty={<p>No fixture matters.</p>}
+      footer={opts.footer}
     />
   );
 }
 
+/** Captures the CSV Blob and the download name of each "Export CSV" click (639C pattern). */
+function stubDownload() {
+  const captured: { blobs: Blob[]; downloads: string[] } = { blobs: [], downloads: [] };
+  const originalCreate = URL.createObjectURL;
+  const originalRevoke = URL.revokeObjectURL;
+  URL.createObjectURL = vi.fn((blob: Blob) => {
+    captured.blobs.push(blob);
+    return "blob:mock";
+  }) as typeof URL.createObjectURL;
+  URL.revokeObjectURL = vi.fn();
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+    this: HTMLAnchorElement
+  ) {
+    captured.downloads.push(this.download);
+  });
+  return {
+    captured,
+    /** Waits one task first so the deferred `revokeObjectURL` still hits the mock. */
+    async restore() {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      URL.createObjectURL = originalCreate;
+      URL.revokeObjectURL = originalRevoke;
+    },
+  };
+}
+
+async function blobText(blob: Blob | undefined): Promise<string> {
+  if (!blob) throw new Error("no CSV blob was created");
+  // ignoreBOM keeps a leading BOM in the decoded text so the test can assert it.
+  return new TextDecoder("utf-8", { ignoreBOM: true }).decode(await blob.arrayBuffer());
+}
+
 beforeEach(() => vi.clearAllMocks());
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 /**
  * The first body row's cell under the column headed `label`. Located via the header index, so
@@ -106,7 +158,7 @@ function cellUnder(label: string): HTMLElement {
 
 const cellText = (label: string) => cellUnder(label).textContent?.trim();
 
-describe("MattersTable — columns", () => {
+describe("MattersDataTable — columns", () => {
   it("renders a visually hidden caption and scope=col headers in §12.6.4 order", () => {
     renderTable([row()]);
     const table = screen.getByRole("table");
@@ -173,7 +225,7 @@ describe("MattersTable — columns", () => {
   });
 });
 
-describe("MattersTable — fitting the container", () => {
+describe("MattersDataTable — fitting the container", () => {
   const LOW_PRIORITY = ["Work type", "Fee earner", "Opened"];
 
   function headerFor(label: string): HTMLElement {
@@ -243,7 +295,7 @@ describe("MattersTable — fitting the container", () => {
   });
 });
 
-describe("MattersTable — redaction and nulls", () => {
+describe("MattersDataTable — redaction and nulls", () => {
   it("value redacted → hours only; null trust / client / fee earner / diary / reference → —", () => {
     renderTable([
       row({
@@ -296,7 +348,7 @@ describe("MattersTable — redaction and nulls", () => {
   });
 });
 
-describe("MattersTable — sorting headers", () => {
+describe("MattersDataTable — sorting headers", () => {
   it("sortable headers are links that set sort/dir and keep other params; aria-sort on th", () => {
     renderTable([row()], {
       sort: { key: "nextDiaryDate", dir: "asc" },
@@ -320,7 +372,7 @@ describe("MattersTable — sorting headers", () => {
   });
 });
 
-describe("MattersTable — row click and row actions", () => {
+describe("MattersDataTable — row click and row actions", () => {
   it("clicking a plain cell opens the matter; clicking a link does not double-navigate", () => {
     renderTable([row()]);
     const r = screen.getByTestId("matter-row");
@@ -353,6 +405,203 @@ describe("MattersTable — row click and row actions", () => {
     await user.click(screen.getByTestId("matter-row-actions-trigger"));
     await screen.findByRole("menuitem", { name: "Open matter" });
     expect(screen.queryByRole("menuitem", { name: "Open client" })).not.toBeInTheDocument();
+  });
+});
+
+describe("MattersDataTable — custom-field columns", () => {
+  it("custom-field headers are plain text: no sort link, no aria-sort", () => {
+    renderTable([row({ customFields: { court: "Durban High Court" } })], {
+      columns: ["name", "cf:court"],
+    });
+    const court = screen.getByRole("columnheader", { name: "Court" });
+    expect(within(court).queryByRole("link")).toBeNull();
+    expect(court).not.toHaveAttribute("aria-sort");
+    const matter = screen.getByRole("columnheader", { name: "Matter" });
+    expect(within(matter).getByRole("link")).toBeInTheDocument();
+  });
+
+  it("a custom field with no known name is headed by its slug", () => {
+    renderTable([row()], { columns: ["name", "cf:unknown_slug"] });
+    const headers = screen.getAllByRole("columnheader").map((h) => h.textContent?.trim());
+    expect(headers).toEqual(["Matter", "unknown_slug", "Actions"]);
+  });
+});
+
+describe("MattersDataTable — table controls", () => {
+  it("the Columns menu lists every hideable column (not Matter, not Actions) and hides one", async () => {
+    const user = userEvent.setup();
+    renderTable([row()]);
+    await user.click(screen.getByRole("button", { name: "Columns" }));
+    const client = await screen.findByRole("menuitemcheckbox", { name: "Client" });
+    expect(screen.getAllByRole("menuitemcheckbox").map((item) => item.textContent)).toEqual([
+      "Reference",
+      "Client",
+      "Work type",
+      "Fee earner",
+      "Status",
+      "Opened",
+      "Unbilled",
+      "Trust",
+      "Next in diary",
+    ]);
+    await user.click(client);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("columnheader", { name: "Client" })).toBeNull();
+    expect(screen.queryByText("Sipho Ndlovu")).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("renders every row with no pagination control", () => {
+    const rows = Array.from({ length: 30 }, (_, i) =>
+      row({ id: `m${i + 1}`, name: `Matter ${i + 1}`, referenceNumber: `LIT-${i + 1}` })
+    );
+    renderTable(rows);
+    expect(screen.getAllByTestId("matter-row")).toHaveLength(30);
+    expect(screen.queryByText("Rows per page")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Next|Previous/ })).toBeNull();
+  });
+
+  it("no rows → the empty node instead of the table, footer and controls", () => {
+    renderTable([], { footer: <p data-testid="matters-footer">Showing 0 matters</p> });
+    expect(screen.getByText("No fixture matters.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
+    expect(screen.queryByTestId("matters-footer")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Columns" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Export CSV" })).toBeNull();
+  });
+
+  it("renders the footer after the table when rows render", () => {
+    renderTable([row(), row({ id: "m2", name: "Second matter" })], {
+      footer: <p data-testid="matters-footer">Showing 2 matters</p>,
+    });
+    const footer = screen.getByTestId("matters-footer");
+    expect(footer).toHaveTextContent("Showing 2 matters");
+    expect(
+      screen.getByTestId("matters-table").compareDocumentPosition(footer) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+});
+
+describe("MattersDataTable — CSV export", () => {
+  it("exports the visible columns × rendered rows as matters.csv; a hidden column drops out", async () => {
+    const user = userEvent.setup();
+    const stub = stubDownload();
+    try {
+      renderTable([
+        row(),
+        row({
+          id: "m2",
+          name: "Redacted matter",
+          referenceNumber: "LIT-0002",
+          unbilledMinutes: 90,
+          unbilledValue: null,
+          trustBalance: null,
+        }),
+      ]);
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      expect(stub.captured.downloads).toEqual(["matters.csv"]);
+
+      const text = await blobText(stub.captured.blobs[0]);
+      expect(text.startsWith(CSV_BOM)).toBe(true);
+      const [header, first, second] = text.slice(CSV_BOM.length).split("\r\n");
+      expect(header).toBe(
+        "Reference,Matter,Client,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary"
+      );
+      // Money uses non-breaking group separators, hence \s?.
+      expect(first).toMatch(
+        /^LIT-0001,RAF claim — Ndlovu,Sipho Ndlovu,Personal injury,Alice Mokoena,Active,1 May 2026,"21h · R\s?42\s?000,00",15000,03 Nov 2026$/
+      );
+      // Redacted value → hours only; redacted trust → empty field.
+      expect(second).toMatch(/,1h 30m,,03 Nov 2026$/);
+
+      await user.click(screen.getByRole("button", { name: "Columns" }));
+      await user.click(await screen.findByRole("menuitemcheckbox", { name: "Client" }));
+      await user.keyboard("{Escape}");
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      const [hiddenHeader] = (await blobText(stub.captured.blobs[1]))
+        .slice(CSV_BOM.length)
+        .split("\r\n");
+      expect(hiddenHeader).toBe(
+        "Reference,Matter,Work type,Fee earner,Status,Opened,Unbilled,Trust,Next in diary"
+      );
+      expect(mockPush).not.toHaveBeenCalled();
+    } finally {
+      await stub.restore();
+    }
+  });
+});
+
+describe("MattersDataTable — Opened date across time zones", () => {
+  // 01:30 SAST on 2 May; still 1 May in UTC (the SSR server) and in New York.
+  const LATE_INSTANT = "2026-05-01T23:30:00Z";
+
+  /** Moves the process zone (Date and Intl follow), guarding against a vacuous stub. */
+  function inZone(zone: string) {
+    vi.stubEnv("TZ", zone);
+    expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(zone);
+  }
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("a zone-less format would differ by viewer (the stub is not vacuous)", () => {
+    inZone("UTC");
+    expect(formatDate(LATE_INSTANT)).toBe("1 May 2026");
+    inZone("Pacific/Kiritimati");
+    expect(formatDate(LATE_INSTANT)).toBe("2 May 2026");
+  });
+
+  it.each(["UTC", "America/New_York", "Africa/Johannesburg", "Pacific/Kiritimati"])(
+    "cell and CSV show the South African date under TZ=%s",
+    async (zone) => {
+      inZone(zone);
+      const user = userEvent.setup();
+      const stub = stubDownload();
+      try {
+        renderTable([row({ createdAt: LATE_INSTANT })], {
+          columns: ["name", "createdAt"],
+          hideLowPriorityColumns: false,
+        });
+        expect(cellText("Opened")).toBe("2 May 2026");
+
+        await user.click(screen.getByRole("button", { name: "Export CSV" }));
+        const [, first] = (await blobText(stub.captured.blobs[0]))
+          .slice(CSV_BOM.length)
+          .split("\r\n");
+        expect(first).toBe("RAF claim — Ndlovu,2 May 2026");
+      } finally {
+        await stub.restore();
+      }
+    }
+  );
+});
+
+describe("MattersDataTable — custom-field CSV values", () => {
+  it("numbers export as numbers (no formula guard); text keeps the guard", async () => {
+    const user = userEvent.setup();
+    const stub = stubDownload();
+    try {
+      renderTable(
+        [
+          row({ customFields: { claim: -42, rate: 1250.5, note: "=SUM(A1)", ref: "-42" } }),
+          row({ id: "m2", name: "Second matter", customFields: {} }),
+        ],
+        { columns: ["name", "cf:claim", "cf:rate", "cf:note", "cf:ref"] }
+      );
+      expect(cellText("claim")).toBe("-42");
+
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      const [header, first, second] = (await blobText(stub.captured.blobs[0]))
+        .slice(CSV_BOM.length)
+        .split("\r\n");
+      expect(header).toBe("Matter,claim,rate,note,ref");
+      // NUMBER fields arrive as JSON numbers (CustomFieldValidator.validateNumber); a text field
+      // that merely looks numeric stays text and keeps the OWASP guard.
+      expect(first).toBe("RAF claim — Ndlovu,-42,1250.5,'=SUM(A1),'-42");
+      expect(second).toBe("Second matter,,,,");
+    } finally {
+      await stub.restore();
+    }
   });
 });
 

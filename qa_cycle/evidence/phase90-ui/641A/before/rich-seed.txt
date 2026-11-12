@@ -1,0 +1,204 @@
+============================================
+  E2E Rich Seed
+============================================
+  Backend:  http://localhost:8081
+  Mock IDP: http://localhost:8090
+  Reset:    false
+  Only:     all
+============================================
+
+==> Seeding customers
+    [skip] Acme Corp already exists (8962c9ab-3b20-4f11-9720-d69d067702e0)
+    [ok] Create Bright Solutions (HTTP 201)
+    [ok] Bright Solutions -> ONBOARDING (HTTP 200)
+    [ok] Checklists completed for customer 33a57519-ca37-4545-a355-432dd828ee5e
+    [ok] Bright Solutions auto-transitioned to ACTIVE
+    [ok] Create Carlos Mendez (HTTP 201)
+    [ok] Carlos Mendez -> ONBOARDING (HTTP 200)
+    [ok] Create Dormant Industries (HTTP 201)
+    [ok] Dormant Industries -> ONBOARDING (HTTP 200)
+    [ok] Checklists completed for customer c04ec71e-fd0a-4f1f-b4dd-03effa96a3e9
+    [ok] Dormant Industries auto-transitioned to ACTIVE
+    [ok] Dormant Industries -> DORMANT (HTTP 200)
+
+    Customers seeded:
+      Acme Corp:          8962c9ab-3b20-4f11-9720-d69d067702e0
+      Bright Solutions:   33a57519-ca37-4545-a355-432dd828ee5e
+      Carlos Mendez:      a39e0454-9042-498e-8582-ed57082b32c1
+      Dormant Industries: c04ec71e-fd0a-4f1f-b4dd-03effa96a3e9
+
+==> Seeding projects
+    [skip] Website Redesign already exists (686e9060-8fa0-4e6c-9839-83efa3fc467f)
+    [ok] Create Brand Guidelines (HTTP 201)
+    [ok]   Add Bob to Brand Guidelines (HTTP 201)
+    [ok]   Add Carol to Brand Guidelines (HTTP 201)
+    [ok] Create Mobile App MVP (HTTP 201)
+    [ok]   Add Bob to Mobile App MVP (HTTP 201)
+    [ok]   Add Carol to Mobile App MVP (HTTP 201)
+    [ok] Create SEO Audit (HTTP 201)
+    [ok]   Add Bob to SEO Audit (HTTP 201)
+    [ok]   Add Carol to SEO Audit (HTTP 201)
+    [ok] Create Annual Report (HTTP 201)
+    [ok]   Add Bob to Annual Report (HTTP 201)
+    [ok]   Add Carol to Annual Report (HTTP 201)
+    [ok] Create Legacy Migration (HTTP 201)
+    [ok]   Add Bob to Legacy Migration (HTTP 201)
+    [ok]   Add Carol to Legacy Migration (HTTP 201)
+
+    Projects seeded:
+      Website Redesign:   686e9060-8fa0-4e6c-9839-83efa3fc467f
+      Brand Guidelines:   e271ad89-3501-4d2f-803a-6a1d0d88735c
+      Mobile App MVP:     ce695a34-3072-4b15-83e1-b07c20d75b30
+      SEO Audit:          3e64beeb-6efa-4f69-901b-9364050b7c58
+      Annual Report:      422e9b5d-826f-4272-b89b-47f13f54f32b
+      Legacy Migration:   325d4902-5861-467d-b968-7c8ba43e7b07
+
+==> Seeding tasks
+    Member IDs: Alice=e5ce7b14-b675-46f1-afdc-2081e018433f, Bob=c2ef14ca-dd57-457f-bf26-b966ed1b7266, Carol=265aa994-b639-4e90-9a95-a2d7c1e69cf1
+
+  -- Website Redesign tasks --
+    [ok] Create task: Design homepage mockup (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+    [ok] Create task: Implement responsive navigation (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+    [ok] Create task: Build contact form (HTTP 201)
+    [skip]   -> IN_PROGRESS (already)
+    [ok] Create task: Set up analytics tracking (HTTP 201)
+    [skip]   -> IN_PROGRESS (already)
+    [ok] Create task: Write SEO meta tags (HTTP 201)
+    [ok] Create task: Performance optimization (HTTP 201)
+
+  -- Brand Guidelines tasks --
+    [ok] Create task: Define color palette (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+    [ok] Create task: Create typography guide (HTTP 201)
+    [skip]   -> IN_PROGRESS (already)
+    [ok] Create task: Design logo variations (HTTP 201)
+
+  -- Mobile App MVP tasks --
+    [ok] Create task: Set up React Native project (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+    [ok] Create task: Implement authentication flow (HTTP 201)
+    [skip]   -> IN_PROGRESS (already)
+    [ok] Create task: Build dashboard screen (HTTP 201)
+    [skip]   -> IN_PROGRESS (already)
+    [ok] Create task: Push notification setup (HTTP 201)
+
+  -- SEO Audit tasks (all done) --
+    [ok] Create task: Crawl site structure (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+    [ok] Create task: Analyze page speed metrics (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+    [ok] Create task: Write recommendations report (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+
+  -- Annual Report tasks --
+    [ok] Create task: Gather financial data (HTTP 201)
+    [ok] Create task: Draft executive summary (HTTP 201)
+
+  -- Legacy Migration tasks (all done) --
+    [ok] Create task: Database schema migration (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+    [ok] Create task: Data validation scripts (HTTP 201)
+    [ok]   -> DONE (HTTP 200)
+
+    Tasks seeded: 20 tasks across 6 projects
+
+==> Seeding time entries
+
+  -- Website Redesign time --
+    [ok] Time: Homepage mockup — initial concepts (240m) (HTTP 201)
+    [ok] Time: Homepage mockup — revisions (180m) (HTTP 201)
+    [ok] Time: Navigation component scaffold (120m) (HTTP 201)
+    [ok] Time: Navigation responsive breakpoints (90m) (HTTP 201)
+    [ok] Time: Contact form wireframe (60m) (HTTP 201)
+    [ok] Time: Analytics research — internal (45m) (HTTP 201)
+
+  -- Brand Guidelines time --
+    [ok] Time: Color palette research and selection (180m) (HTTP 201)
+    [ok] Time: Typography audit and pairing (120m) (HTTP 201)
+
+  -- Mobile App MVP time --
+    [ok] Time: React Native project setup (180m) (HTTP 201)
+    [ok] Time: Auth flow — OAuth integration (240m) (HTTP 201)
+    [ok] Time: Dashboard screen layout (90m) (HTTP 201)
+
+  -- SEO Audit time --
+    [ok] Time: Crawl configuration and execution (120m) (HTTP 201)
+    [ok] Time: PageSpeed and Core Web Vitals analysis (90m) (HTTP 201)
+    [ok] Time: SEO recommendations writeup (150m) (HTTP 201)
+
+  -- Legacy Migration time --
+    [ok] Time: Schema migration scripts (360m) (HTTP 201)
+    [ok] Time: Validation query development (120m) (HTTP 201)
+
+    Time entries seeded: 16 entries across 5 projects
+
+==> Seeding billing rates and budgets
+
+  -- Billing rates --
+    [ok] Alice org rate: $150/hr (HTTP 201)
+    [ok] Bob org rate: $120/hr (HTTP 201)
+
+  -- Project budgets --
+    [ok] Brand Guidelines budget (HTTP 200)
+    [ok] Mobile App MVP budget (HTTP 200)
+
+    Rates and budgets seeded
+
+==> Seeding invoices
+    [ok] Create Acme Corp invoice (HTTP 201)
+    [ok]   Line: schema migration (HTTP 201)
+    [ok]   Line: data validation (HTTP 201)
+    [ok]   Line: project management (HTTP 201)
+    [ok] Create Bright Solutions invoice (HTTP 201)
+    [ok]   Line: React Native setup (HTTP 201)
+    [ok]   Line: OAuth integration (HTTP 201)
+    [ok]   Line: SEO audit (HTTP 201)
+
+    Invoices seeded:
+      Acme Corp:        3ae17cca-9783-403d-8221-c56c5435f7d1
+      Bright Solutions: 5c2a88ed-360d-4f75-9e72-c1273bade954
+
+==> Seeding documents
+    [ok] Init design-mockup.pdf (Website Redesign) (HTTP 201)
+    [ok] Uploaded to S3
+    [ok] Confirm design-mockup.pdf (Website Redesign) (HTTP 200)
+f9525a67-45df-4c08-998b-1986d434b00b
+    [ok] Init service-agreement.pdf (Acme Corp) (HTTP 201)
+    [ok] Uploaded to S3
+    [ok] Confirm service-agreement.pdf (Acme Corp) (HTTP 200)
+b106445b-7260-46fc-b42a-6da9ff26cd6a
+    [ok] Init company-policies.pdf (Org) (HTTP 201)
+    [ok] Uploaded to S3
+    [ok] Confirm company-policies.pdf (Org) (HTTP 200)
+74df90c0-5ec5-4917-92ef-1eed0a0e8014
+
+    Documents seeded: 3 documents
+
+==> Seeding comments
+    [ok] Comment on TASK by carol (HTTP 201)
+    [ok] Comment on TASK by bob (HTTP 201)
+    [ok] Comment on TASK by bob (HTTP 201)
+    [ok] Comment on TASK by bob (HTTP 201)
+    [ok] Comment on TASK by carol (HTTP 201)
+
+    Comments seeded: 5 comments
+
+==> Portal resync
+    [ok] Portal resync (HTTP 200)
+
+============================================
+  E2E Rich Seed Complete!
+============================================
+
+  Customers:    4 (Acme, Bright, Carlos, Dormant)
+  Projects:     6
+  Tasks:        20
+  Time entries: 16
+  Invoices:     2
+  Documents:    3
+  Comments:     5
+
+  Login: http://localhost:3001/mock-login
+

@@ -33,6 +33,8 @@ function currencySymbol(currency: string): string {
     .trim();
 }
 
+// Intentionally mirrors StatCard's delta figure (en-ZA comma, one decimal, U+2212); the package
+// can't use Intl (no polyfill there → server "." vs browser ","), so parity is pinned in stat-card.test.tsx.
 function formatSignedPoints(value: number): string {
   const magnitude = numberFormat(1, 1).format(Math.abs(value));
   const isZero = numberFormat(1, 1).format(0) === magnitude;

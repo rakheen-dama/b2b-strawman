@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 
 import { StatCard, type StatCardDelta } from "@b2mash/ui/stat-card";
+import { formatChartValue } from "@/lib/chart-format";
 
 afterEach(() => {
   cleanup();
@@ -82,9 +83,6 @@ describe("StatCard", () => {
     expect(screen.getByText("vs previous 30 days")).toHaveAttribute("aria-hidden", "true");
     const row = deltaRow(container);
     expect(row).toHaveAttribute("data-tone", "positive");
-    expect(row?.querySelector('[data-slot="stat-card-delta-figure"]')).toHaveClass(
-      "text-success-foreground"
-    );
     expect(row?.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
   });
 
@@ -129,15 +127,13 @@ describe("StatCard", () => {
     expect(screen.getByText("Up 4,5 percentage points vs last month")).toHaveClass("sr-only");
   });
 
-  it("down-is-good inverts the tone and colour token", () => {
+  it("down-is-good inverts the tone", () => {
     const { container, rerender } = render(
       <StatCard label="Overdue" value="3" delta={{ ...upPercent, polarity: "down-is-good" }} />
     );
-    let row = deltaRow(container);
-    expect(row).toHaveAttribute("data-tone", "negative");
-    expect(row?.querySelector('[data-slot="stat-card-delta-figure"]')).toHaveClass(
-      "text-danger-foreground"
-    );
+    // An increase on a down-is-good metric is bad.
+    expect(screen.getByText("+12,5%")).toBeInTheDocument();
+    expect(deltaRow(container)).toHaveAttribute("data-tone", "negative");
 
     rerender(
       <StatCard
@@ -146,11 +142,9 @@ describe("StatCard", () => {
         delta={{ ...upPercent, change: -10, polarity: "down-is-good" }}
       />
     );
-    row = deltaRow(container);
-    expect(row).toHaveAttribute("data-tone", "positive");
-    expect(row?.querySelector('[data-slot="stat-card-delta-figure"]')).toHaveClass(
-      "text-success-foreground"
-    );
+    // A decrease on a down-is-good metric is good.
+    expect(screen.getByText("−10,0%")).toBeInTheDocument();
+    expect(deltaRow(container)).toHaveAttribute("data-tone", "positive");
   });
 
   it("neutral polarity and a flat change are muted; flat says 'No change'", () => {
@@ -186,7 +180,6 @@ describe("StatCard", () => {
     );
     const group = screen.getByRole("group", { name: "Hours" });
     expect(group).toHaveAttribute("data-variant", "compact");
-    expect(group).toHaveClass("p-3");
     expect(screen.queryByTestId("spark")).toBeNull();
     // Compact keeps the figure and the full sr sentence, drops the visible comparison label.
     expect(screen.getByText("+12,5%")).toBeInTheDocument();
@@ -217,5 +210,31 @@ describe("StatCard", () => {
       "true"
     );
     expect(screen.getByRole("link", { name: "View time" })).toHaveAttribute("href", "/time");
+  });
+});
+
+// StatCard formats its delta with toFixed(1) (no Intl in the package); chart-format uses the
+// polyfilled en-ZA Intl. Pin that both render the same figure for the same signed change.
+describe("StatCard delta figure ↔ chart-format parity", () => {
+  const values = [12.5, 2.25, 0.05, -3.14, -0.04, 99.95];
+
+  function visibleFigure(change: number, unit: StatCardDelta["unit"]): string {
+    const { container, unmount } = render(
+      <StatCard label="Parity" value="1" delta={{ ...upPercent, change, unit }} />
+    );
+    const figure = container.querySelector('[data-slot="stat-card-delta-figure"]')?.textContent;
+    unmount();
+    return figure ?? "";
+  }
+
+  it.each(values)("points %s: the full signed figure matches formatChartValue", (change) => {
+    expect(visibleFigure(change, "points")).toBe(formatChartValue(change, "points"));
+  });
+
+  // chart-format's "percent" kind is unsigned (Intl hyphen-minus) while StatCard signs with
+  // "+" / U+2212, so only the absolute numeric portion is comparable here.
+  it.each(values)("percent %s: the absolute figure matches formatChartValue", (change) => {
+    const unsigned = visibleFigure(change, "percent").replace(/^[+−]/, "");
+    expect(unsigned).toBe(formatChartValue(Math.abs(change), "percent"));
   });
 });

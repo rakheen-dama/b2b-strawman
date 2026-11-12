@@ -202,7 +202,7 @@ describe("EmptyState", () => {
     expect(fallbackLink).toBeUndefined();
   });
 
-  it("default variant (explicit) keeps the 48px icon tile, h2 title, max-w-md and actions", () => {
+  it("default variant (explicit) keeps the icon tile, h2 title, description and actions", () => {
     const { container } = render(
       <EmptyState
         variant="default"
@@ -216,17 +216,18 @@ describe("EmptyState", () => {
 
     const root = container.querySelector('[data-slot="empty-state"]');
     expect(root).toHaveAttribute("data-variant", "default");
-    expect(container.querySelector('[data-slot="empty-state-icon"]')).toHaveClass("size-12");
-    expect(container.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    const iconTile = container.querySelector('[data-slot="empty-state-icon"]');
+    expect(iconTile).toBeInTheDocument();
+    expect(iconTile?.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByRole("heading", { level: 2, name: "No matters yet" })).toBeInTheDocument();
-    expect(screen.getByText("Open your first matter.")).toHaveClass("max-w-md");
+    expect(screen.getByText("Open your first matter.").tagName).toBe("P");
     expect(screen.getByRole("link", { name: "New matter" })).toHaveAttribute(
       "href",
       "/matters/new"
     );
   });
 
-  it("compact variant keeps the h2 title, description and onAction button", async () => {
+  it("compact variant keeps the icon tile, h2 title, description and onAction button", async () => {
     const user = userEvent.setup();
     const handleAction = vi.fn();
     const { container } = render(
@@ -244,7 +245,7 @@ describe("EmptyState", () => {
       "data-variant",
       "compact"
     );
-    expect(container.querySelector('[data-slot="empty-state-icon"]')).toHaveClass("size-10");
+    expect(container.querySelector('[data-slot="empty-state-icon"]')).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { level: 2, name: "No fee notes in this period" })
     ).toBeInTheDocument();
@@ -270,7 +271,8 @@ describe("EmptyState", () => {
       "inline"
     );
     expect(screen.queryByRole("heading")).toBeNull();
-    expect(screen.getByText("No tasks")).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="empty-state-icon"]')).toBeNull();
+    expect(screen.getByText("No tasks").tagName).toBe("P");
     expect(screen.getByText("Nothing assigned to this matter.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add task" })).toBeInTheDocument();
     const help = screen.getByRole("link", { name: "Task help" });

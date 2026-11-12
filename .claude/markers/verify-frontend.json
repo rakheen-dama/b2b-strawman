@@ -1,7 +1,7 @@
 {
-  "commit": "706919c0a",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-642A, phase90/42A-clients-datatable, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final code head)",
+  "commit": "912249f4a",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-642B, phase90/42B-client-hero, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final head; code head acf20f6cf, 912249f4a adds evidence only)",
   "exit": 0,
-  "ts": "2026-11-12T19:04:48Z",
-  "summary": "PR #1772 (Phase 90 642A) @706919c0a (head 2585352ba adds evidence only): FE-GATE exit 0 — 475 files, 4205 passed / 2 skipped; lint 0 errors. Fresh stacks built from the worktree @706919c0a: test:e2e:customers 18 passed / 2 skipped, legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS parity pristine 509 IDENTICAL / 2 explained DIFF; sticky header pins at 64px at 1024/1440, docScrollWidth = viewport at 390/768/1024/1440; console 0. Frontend CI pass @2585352ba."
+  "ts": "2026-11-12T20:48:13Z",
+  "summary": "PR #1773 (Phase 90 642B) @912249f4a: FE-GATE exit 0 — 476 files, 4245 passed / 2 skipped; lint 0 errors. Fresh stack built from the worktree @912249f4a: test:e2e:customers 18 passed / 2 skipped, test:e2e:projects 27, legal-lifecycle 105, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS: hero tiles correct for 7 viewer/client pairs (Open matters = ACTIVE visible count; Acme R 8 625,00 + 'Excludes 1 fee note in other currencies'; Carol no Outstanding); client hero fits at 390 after the DetailHero shrink-0 fix; console 0; SEL-COMPAT no spec edited — no role changed; page.tsx 380 lines. Frontend CI pass @912249f4a."
 }

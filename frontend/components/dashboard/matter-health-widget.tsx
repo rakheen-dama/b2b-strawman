@@ -50,9 +50,9 @@ const HEALTH: Record<
 };
 
 // Column layout by the card's own width (container queries, 640B): at a half-width cell
-// (~352px) the matter name keeps the room — Hours shows from @md, the health label from @lg
-// (icon + sr-only label below it), Progress from @xl. Header and rows share these classes.
-const COL_STATUS = "flex w-12 justify-center @lg:w-24";
+// (~352px) the matter name keeps the room — Hours and the health label show from @md (icon +
+// sr-only label below it), Progress from @xl. Header and rows share these classes.
+const COL_STATUS = "flex w-12 justify-center @md:w-24";
 const COL_PROGRESS = "hidden w-20 @xl:block";
 const COL_HOURS = "hidden w-12 text-right @md:block";
 const COL_TASKS = "w-12 text-right";
@@ -226,10 +226,10 @@ export function MatterHealthWidget({ matters: projects, orgSlug }: MatterHealthW
                     </p>
                   )}
                 </div>
-                {/* Health: icon + label; the label is sr-only until the card is @lg wide */}
+                {/* Health: icon + label; the label is sr-only until the card is @md wide */}
                 <div className={COL_STATUS}>
-                  <StatusBadge tone={health.tone} icon={health.icon} className="px-1 @lg:px-2">
-                    <span className="sr-only @lg:not-sr-only">{health.label}</span>
+                  <StatusBadge tone={health.tone} icon={health.icon} className="px-1 @md:px-2">
+                    <span className="sr-only @md:not-sr-only">{health.label}</span>
                   </StatusBadge>
                 </div>
                 {/* Progress Bar */}

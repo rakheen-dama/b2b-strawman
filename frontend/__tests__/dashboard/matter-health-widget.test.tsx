@@ -88,7 +88,7 @@ describe("MatterHealthWidget", () => {
     render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     const row = (name: string) => screen.getByText(name).closest("button")!;
-    // The label stays in the accessibility tree at every width (sr-only below @lg).
+    // The label stays in the accessibility tree at every width (sr-only below @md).
     expect(within(row("Website Redesign")).getByText("At Risk")).toBeInTheDocument();
     expect(within(row("Mobile App")).getByText("Healthy")).toBeInTheDocument();
     expect(within(row("API Migration")).getByText("Critical")).toBeInTheDocument();

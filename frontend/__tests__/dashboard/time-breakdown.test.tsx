@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
 import type { PersonalMatterBreakdown } from "@/lib/dashboard-types";
 
@@ -61,8 +62,39 @@ describe("TimeBreakdown", () => {
     expect(screen.getByText("20.0h (52%)")).toBeInTheDocument();
     expect(screen.getByText("12.5h (33%)")).toBeInTheDocument();
     expect(screen.getByText("6.0h (16%)")).toBeInTheDocument();
-    // DonutChart renders with data-testid="donut-chart"
-    expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
+    // The kit DonutChart: a figure named by the card title, centre total overlay.
+    const figure = screen.getByRole("figure", { name: "Time Breakdown" });
+    expect(figure).toHaveAttribute("data-testid", "time-activity-panel");
+    expect(screen.getByTestId("pie-chart")).toBeInTheDocument();
+    expect(screen.getByText("38.5h")).toBeInTheDocument();
+    expect(screen.getByText("total")).toBeInTheDocument();
+    // The card keeps its own matter list, so the chart draws no second legend.
+    expect(screen.queryByTestId("legend")).toBeNull();
+    expect(document.querySelector('[data-slot="chart-legend"]')).toBeNull();
+    // List swatches use the pinned slots, top matter first.
+    const swatches = Array.from(figure.querySelectorAll<HTMLElement>("span.rounded-full"));
+    expect(swatches.map((el) => el.style.backgroundColor)).toEqual([
+      "var(--chart-1)",
+      "var(--chart-2)",
+      "var(--chart-3)",
+    ]);
+  });
+
+  it("states the breakdown in an sr-only summary and a table on demand", async () => {
+    const user = userEvent.setup();
+    render(<TimeBreakdown data={mockBreakdown} />);
+
+    const summary = document.querySelector('[data-slot="chart-summary"]');
+    expect(summary?.textContent).toMatch(/^Time Breakdown: .* total — Website Redesign /);
+
+    expect(screen.queryByRole("table")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "View as table" }));
+    const table = screen.getByRole("table", { name: "Time Breakdown" });
+    expect(within(table).getByRole("columnheader", { name: "Matter" })).toBeInTheDocument();
+    expect(within(table).getByRole("columnheader", { name: "Hours" })).toBeInTheDocument();
+    for (const name of ["Website Redesign", "Mobile App", "API Migration"]) {
+      expect(within(table).getByRole("rowheader", { name })).toBeInTheDocument();
+    }
   });
 
   it("renders empty state when data is empty", () => {
@@ -70,6 +102,24 @@ describe("TimeBreakdown", () => {
 
     expect(screen.getByText("Time Breakdown")).toBeInTheDocument();
     expect(screen.getByText("No time logged this period.")).toBeInTheDocument();
+  });
+
+  it("renders the same empty state when every matter has zero hours", () => {
+    render(
+      <TimeBreakdown
+        data={[
+          { matterId: "p1", matterName: "Website Redesign", hours: 0, percent: 0 },
+          { matterId: "p2", matterName: "Mobile App", hours: 0, percent: 0 },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("figure", { name: "Time Breakdown" })).toHaveAttribute(
+      "data-state",
+      "empty"
+    );
+    expect(screen.getByText("No time logged this period.")).toBeInTheDocument();
+    expect(screen.queryByTestId("pie-chart")).toBeNull();
   });
 
   it("renders error state when data is null", () => {

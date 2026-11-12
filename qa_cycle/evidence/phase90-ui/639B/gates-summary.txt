@@ -1,0 +1,21 @@
+639B gates — orchestrator re-runs, worktree-epic-639B, nvm node v20.11.1 (CI pins node 20), NODE_OPTIONS=""
+
+FE-GATE (cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build)
+  @7eb951b36 (after Superpowers fix cycle): exit 0 — lint 0 errors / 78 pre-existing warnings; typecheck ok; prettier ok;
+    vitest Test Files 468 passed (468), Tests 3998 passed | 2 skipped (4000); next build ok
+  @ff41c7202 (after tooltip gap fix 5e557a862 + CodeRabbit fix cycle; final code head): exit 0 — lint 0 errors / 78 pre-existing warnings;
+    typecheck ok; prettier ok; vitest Test Files 468 passed (468), Tests 4011 passed | 2 skipped (4013)
+    [639A baseline 3975 / 2 → −2 old DonutChart/ChartTooltip cases, +38 kit/edge-case cases]; next build ok
+  @008e77020 (after CodeRabbit 2nd pass: trend tooltip "to date" by index, truncated series stated; FINAL code head): exit 0 —
+    lint 0 errors / 78 pre-existing warnings; typecheck ok; prettier ok; vitest Test Files 468 passed (468),
+    Tests 4015 passed | 2 skipped (4017); next build ok
+PORTAL-GATE: not applicable (no file under packages/ or portal/ touched).
+BE-VERIFY: not applicable (no Java).
+
+E2E-LEGAL (fresh e2e-down → docker builder prune → e2e-up from this worktree; frontend image rebuilt on the code head, suites run on unused seed data)
+  @7eb951b36: legal-lifecycle 105 passed; legal-depth-ii 40 passed / 4 skipped
+  @ff41c7202 (second fresh stack): legal-lifecycle 105 passed (3.0m); legal-depth-ii 40 passed / 4 skipped (1.9m)
+  @008e77020 (third fresh stack, FINAL code head): legal-lifecycle 105 passed (2.9m); legal-depth-ii 40 passed / 4 skipped (1.8m)   [639A baseline 105 ; 40/4]
+  Generated documentation/screenshots/legal-vertical/*.png removed after each run (git clean on that path only).
+
+OBS (own surface: My Work "Time Breakdown" donut) @008e77020 (re-captured; first captured @7eb951b36 and @ff41c7202) — obs.cjs + obs-report.json, see README.md.

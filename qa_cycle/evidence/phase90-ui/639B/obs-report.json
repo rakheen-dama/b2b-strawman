@@ -1,0 +1,263 @@
+{
+  "capturedAt": "2026-11-12T07:47:21.890Z",
+  "head": "008e77020a8cc45298a1ef8b3da786e405b4174f",
+  "report": [
+    {
+      "theme": "light",
+      "motion": "no-preference",
+      "w": 1024,
+      "h": 768,
+      "htmlClass": "light",
+      "figureRole": "figure",
+      "figureName": "Time Breakdown",
+      "srSummary": [
+        "Time Breakdown: 10,5h total — Estate Late Peter Moroka mwd8pc6fe358 7,0h (66,7%), Ndlovu v RAF — Depth II mwd8t2n5933d 2,0h (19,0%), Ndlovu v RAF mwd8pc6fe358 1,0h (9,5%), Apex Shareholder Agreement mwd8pc6fe358 0,5h (4,8%)."
+      ],
+      "sectorFills": [
+        "var(--chart-1)",
+        "var(--chart-2)",
+        "var(--chart-3)",
+        "var(--chart-4)"
+      ],
+      "centre": "10.5h\ntotal",
+      "list": [
+        "10.5h",
+        "7.0h (67%)",
+        "2.0h (19%)",
+        "1.0h (10%)",
+        "0.5h (5%)"
+      ],
+      "tablesInPanel": 0,
+      "tablesOnPage": 1,
+      "cardBg": "lab(99.5299 -0.108749 -0.749981)",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "accessibilityLayerTabIndex": "-1",
+      "hoverTooltip": "Estate Late Peter Moroka mwd8pc6fe358\n7,0h",
+      "keyboard": {
+        "focusable": true,
+        "tooltipAfterArrow": "Ndlovu v RAF mwd8pc6fe358\n1,0h",
+        "activeElement": "svg.recharts-surface"
+      },
+      "tableOpen": {
+        "tablesInPanel": 1,
+        "tablesOnPage": 2,
+        "rows": [
+          "Matter | Hours | Share",
+          "Estate Late Peter Moroka mwd8pc6fe358 | 7,0h | 66,7%",
+          "Ndlovu v RAF — Depth II mwd8t2n5933d | 2,0h | 19,0%",
+          "Ndlovu v RAF mwd8pc6fe358 | 1,0h | 9,5%",
+          "Apex Shareholder Agreement mwd8pc6fe358 | 0,5h | 4,8%"
+        ]
+      },
+      "tablesInPanelAfterClose": 0,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "theme": "light",
+      "motion": "no-preference",
+      "w": 1440,
+      "h": 900,
+      "htmlClass": "light",
+      "figureRole": "figure",
+      "figureName": "Time Breakdown",
+      "srSummary": [
+        "Time Breakdown: 10,5h total — Estate Late Peter Moroka mwd8pc6fe358 7,0h (66,7%), Ndlovu v RAF — Depth II mwd8t2n5933d 2,0h (19,0%), Ndlovu v RAF mwd8pc6fe358 1,0h (9,5%), Apex Shareholder Agreement mwd8pc6fe358 0,5h (4,8%)."
+      ],
+      "sectorFills": [
+        "var(--chart-1)",
+        "var(--chart-2)",
+        "var(--chart-3)",
+        "var(--chart-4)"
+      ],
+      "centre": "10.5h\ntotal",
+      "list": [
+        "10.5h",
+        "7.0h (67%)",
+        "2.0h (19%)",
+        "1.0h (10%)",
+        "0.5h (5%)"
+      ],
+      "tablesInPanel": 0,
+      "tablesOnPage": 1,
+      "cardBg": "lab(99.5299 -0.108749 -0.749981)",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "accessibilityLayerTabIndex": "-1",
+      "hoverTooltip": "Estate Late Peter Moroka mwd8pc6fe358\n7,0h",
+      "keyboard": {
+        "focusable": true,
+        "tooltipAfterArrow": "Ndlovu v RAF mwd8pc6fe358\n1,0h",
+        "activeElement": "svg.recharts-surface"
+      },
+      "tableOpen": {
+        "tablesInPanel": 1,
+        "tablesOnPage": 2,
+        "rows": [
+          "Matter | Hours | Share",
+          "Estate Late Peter Moroka mwd8pc6fe358 | 7,0h | 66,7%",
+          "Ndlovu v RAF — Depth II mwd8t2n5933d | 2,0h | 19,0%",
+          "Ndlovu v RAF mwd8pc6fe358 | 1,0h | 9,5%",
+          "Apex Shareholder Agreement mwd8pc6fe358 | 0,5h | 4,8%"
+        ]
+      },
+      "tablesInPanelAfterClose": 0,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "theme": "dark",
+      "motion": "no-preference",
+      "w": 1024,
+      "h": 768,
+      "htmlClass": "dark",
+      "figureRole": "figure",
+      "figureName": "Time Breakdown",
+      "srSummary": [
+        "Time Breakdown: 10,5h total — Estate Late Peter Moroka mwd8pc6fe358 7,0h (66,7%), Ndlovu v RAF — Depth II mwd8t2n5933d 2,0h (19,0%), Ndlovu v RAF mwd8pc6fe358 1,0h (9,5%), Apex Shareholder Agreement mwd8pc6fe358 0,5h (4,8%)."
+      ],
+      "sectorFills": [
+        "var(--chart-1)",
+        "var(--chart-2)",
+        "var(--chart-3)",
+        "var(--chart-4)"
+      ],
+      "centre": "10.5h\ntotal",
+      "list": [
+        "10.5h",
+        "7.0h (67%)",
+        "2.0h (19%)",
+        "1.0h (10%)",
+        "0.5h (5%)"
+      ],
+      "tablesInPanel": 0,
+      "tablesOnPage": 1,
+      "cardBg": "lab(7.73948 -0.41344 -4.03315)",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "accessibilityLayerTabIndex": "-1",
+      "hoverTooltip": "Estate Late Peter Moroka mwd8pc6fe358\n7,0h",
+      "keyboard": {
+        "focusable": true,
+        "tooltipAfterArrow": "Ndlovu v RAF mwd8pc6fe358\n1,0h",
+        "activeElement": "svg.recharts-surface"
+      },
+      "tableOpen": {
+        "tablesInPanel": 1,
+        "tablesOnPage": 2,
+        "rows": [
+          "Matter | Hours | Share",
+          "Estate Late Peter Moroka mwd8pc6fe358 | 7,0h | 66,7%",
+          "Ndlovu v RAF — Depth II mwd8t2n5933d | 2,0h | 19,0%",
+          "Ndlovu v RAF mwd8pc6fe358 | 1,0h | 9,5%",
+          "Apex Shareholder Agreement mwd8pc6fe358 | 0,5h | 4,8%"
+        ]
+      },
+      "tablesInPanelAfterClose": 0,
+      "console": [
+        "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+      ],
+      "hydrationMessages": []
+    },
+    {
+      "theme": "dark",
+      "motion": "no-preference",
+      "w": 1440,
+      "h": 900,
+      "htmlClass": "dark",
+      "figureRole": "figure",
+      "figureName": "Time Breakdown",
+      "srSummary": [
+        "Time Breakdown: 10,5h total — Estate Late Peter Moroka mwd8pc6fe358 7,0h (66,7%), Ndlovu v RAF — Depth II mwd8t2n5933d 2,0h (19,0%), Ndlovu v RAF mwd8pc6fe358 1,0h (9,5%), Apex Shareholder Agreement mwd8pc6fe358 0,5h (4,8%)."
+      ],
+      "sectorFills": [
+        "var(--chart-1)",
+        "var(--chart-2)",
+        "var(--chart-3)",
+        "var(--chart-4)"
+      ],
+      "centre": "10.5h\ntotal",
+      "list": [
+        "10.5h",
+        "7.0h (67%)",
+        "2.0h (19%)",
+        "1.0h (10%)",
+        "0.5h (5%)"
+      ],
+      "tablesInPanel": 0,
+      "tablesOnPage": 1,
+      "cardBg": "lab(7.73948 -0.41344 -4.03315)",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "accessibilityLayerTabIndex": "-1",
+      "hoverTooltip": "Estate Late Peter Moroka mwd8pc6fe358\n7,0h",
+      "keyboard": {
+        "focusable": true,
+        "tooltipAfterArrow": "Ndlovu v RAF mwd8pc6fe358\n1,0h",
+        "activeElement": "svg.recharts-surface"
+      },
+      "tableOpen": {
+        "tablesInPanel": 1,
+        "tablesOnPage": 2,
+        "rows": [
+          "Matter | Hours | Share",
+          "Estate Late Peter Moroka mwd8pc6fe358 | 7,0h | 66,7%",
+          "Ndlovu v RAF — Depth II mwd8t2n5933d | 2,0h | 19,0%",
+          "Ndlovu v RAF mwd8pc6fe358 | 1,0h | 9,5%",
+          "Apex Shareholder Agreement mwd8pc6fe358 | 0,5h | 4,8%"
+        ]
+      },
+      "tablesInPanelAfterClose": 0,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "theme": "light",
+      "motion": "reduce",
+      "w": 1440,
+      "h": 900,
+      "htmlClass": "light",
+      "figureRole": "figure",
+      "figureName": "Time Breakdown",
+      "srSummary": [
+        "Time Breakdown: 10,5h total — Estate Late Peter Moroka mwd8pc6fe358 7,0h (66,7%), Ndlovu v RAF — Depth II mwd8t2n5933d 2,0h (19,0%), Ndlovu v RAF mwd8pc6fe358 1,0h (9,5%), Apex Shareholder Agreement mwd8pc6fe358 0,5h (4,8%)."
+      ],
+      "sectorFills": [
+        "var(--chart-1)",
+        "var(--chart-2)",
+        "var(--chart-3)",
+        "var(--chart-4)"
+      ],
+      "centre": "10.5h\ntotal",
+      "list": [
+        "10.5h",
+        "7.0h (67%)",
+        "2.0h (19%)",
+        "1.0h (10%)",
+        "0.5h (5%)"
+      ],
+      "tablesInPanel": 0,
+      "tablesOnPage": 1,
+      "cardBg": "lab(99.5299 -0.108749 -0.749981)",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "accessibilityLayerTabIndex": "-1",
+      "hoverTooltip": "Estate Late Peter Moroka mwd8pc6fe358\n7,0h",
+      "keyboard": {
+        "focusable": true,
+        "tooltipAfterArrow": "Ndlovu v RAF mwd8pc6fe358\n1,0h",
+        "activeElement": "svg.recharts-surface"
+      },
+      "tableOpen": {
+        "tablesInPanel": 1,
+        "tablesOnPage": 2,
+        "rows": [
+          "Matter | Hours | Share",
+          "Estate Late Peter Moroka mwd8pc6fe358 | 7,0h | 66,7%",
+          "Ndlovu v RAF — Depth II mwd8t2n5933d | 2,0h | 19,0%",
+          "Ndlovu v RAF mwd8pc6fe358 | 1,0h | 9,5%",
+          "Apex Shareholder Agreement mwd8pc6fe358 | 0,5h | 4,8%"
+        ]
+      },
+      "tablesInPanelAfterClose": 0,
+      "console": [],
+      "hydrationMessages": []
+    }
+  ]
+}

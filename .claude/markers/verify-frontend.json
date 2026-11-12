@@ -1,7 +1,7 @@
 {
-  "commit": "008e77020a8cc45298a1ef8b3da786e405b4174f",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-639B, phase90/39B-chart-kit-core, node v20.11.1, NODE_OPTIONS='')",
+  "commit": "0267c977bfaf99f07947cd5668dd93fc24ed60cd",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-639C, phase90/39C-datatable, node v20.11.1, NODE_OPTIONS='', orchestrator re-run)",
   "exit": 0,
-  "ts": "2026-11-12T07:41:00Z",
-  "summary": "PR #1764 (Phase 90 639B) @008e77020 (last frontend-touching commit; 6a87685b6 evidence-only under qa_cycle/): FE-GATE exit 0 — 468 files, 4015 passed / 2 skipped (4017); lint 0 errors. E2E fresh stack @008e77020: legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped. Own OBS of My Work donut in qa_cycle/evidence/phase90-ui/639B/"
+  "ts": "2026-11-12T08:48:27Z",
+  "summary": "PR #1765 (Phase 90 639C) @0267c977b: FE-GATE exit 0 — 469 files, 4055 passed / 2 skipped (4057); lint 0 errors. E2E fresh stack @117cafad7 (delta to 0267c977b only touches components/data-table/** with zero live importers): legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS carried by 641A."
 }

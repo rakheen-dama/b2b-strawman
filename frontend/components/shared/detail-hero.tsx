@@ -106,10 +106,7 @@ export function DetailHero({
           {facts}
         </div>
         {hasContent(actions) ? (
-          <div
-            data-slot="detail-hero-actions"
-            className="flex shrink-0 flex-wrap items-center gap-2"
-          >
+          <div data-slot="detail-hero-actions" className="flex flex-wrap items-center gap-2">
             {actions}
           </div>
         ) : null}

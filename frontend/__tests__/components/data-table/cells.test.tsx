@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render } from "@testing-library/react";
 import { DateCell } from "@/components/data-table/cells";
 import { formatDate } from "@/lib/format";
+import { inZone } from "@/__tests__/helpers/time-zone";
 
 // 641A F2: DateCell kind="instant" used the zone-less `formatDate`, so the UTC SSR render and a
 // browser elsewhere could print different days (hydration mismatch) and CSV dates varied by
@@ -11,12 +12,6 @@ import { formatDate } from "@/lib/format";
 const LATE_INSTANT = "2026-05-01T23:30:00Z"; // 01:30 SAST on 2 May; still 1 May in UTC and New York
 const YEAR_ROLL = "2026-12-31T22:15:00Z"; // 00:15 SAST on 1 Jan 2027; still 2026 in UTC
 const ZONES = ["UTC", "America/New_York", "Africa/Johannesburg", "Pacific/Kiritimati"];
-
-/** Moves the process zone, guarding against a vacuous stub. */
-function inZone(zone: string) {
-  vi.stubEnv("TZ", zone);
-  expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(zone);
-}
 
 afterEach(() => {
   cleanup();

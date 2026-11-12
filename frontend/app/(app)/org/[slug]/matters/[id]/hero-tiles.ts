@@ -1,10 +1,9 @@
 import "server-only";
 
-import { createElement, type ReactNode } from "react";
-import { AlertTriangle } from "lucide-react";
 import type { HeroTile } from "@/components/shared/detail-hero";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { formatChartValue } from "@/lib/chart-format";
+import { overdueHint, tileFrom } from "@/lib/hero-tiles";
 import { getMatterUnbilledSummary, getMatterUpcomingDeadlines } from "@/lib/api/matters";
 import { fetchOutstandingSummaryAction } from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
 import { fetchMatterTrustBalance } from "@/app/(app)/org/[slug]/trust-accounting/actions";
@@ -20,7 +19,8 @@ import type {
 // Matter hero tiles (Phase 90 641B, arch §15.3.5, ADR-373). Server-only, not a server action: the
 // matter page is the only caller and passes its own capabilities.
 //
-// Two halves, so the client hero (642B) can copy the shape:
+// Two halves (the client hero, 642B, has the same shape; tileFrom / overdueHint live in
+// @/lib/hero-tiles, shared by both):
 //   loadMatterHeroData  — I/O. Each read runs only under its own gate; gate fails / 403 / 404 →
 //                         "absent", any other failure → "error" (the WidgetResult idiom, lib/settle).
 //   buildMatterHeroTiles — pure. absent → tile omitted (the strip reflows), error → state "error",
@@ -77,32 +77,6 @@ export async function loadMatterHeroData(
   ]);
 
   return { unbilledSummary, trustBalance, outstandingSummary, upcomingDeadlines };
-}
-
-function tileFrom<T>(
-  id: string,
-  label: string,
-  result: WidgetResult<T>,
-  render: (data: T) => { value: ReactNode | null; hint?: ReactNode }
-): HeroTile | null {
-  if (result.state === "absent") return null;
-  if (result.state === "error") return { id, label, value: null, state: "error" };
-  return { id, label, state: "ready", ...render(result.data) };
-}
-
-/** "N overdue"; with a --danger icon when N > 0 (colour is not the only signal — the count is). */
-function overdueHint(count: number): ReactNode {
-  const text = `${count} overdue`;
-  if (count <= 0) return text;
-  return createElement(
-    "span",
-    { className: "inline-flex items-center gap-1" },
-    createElement(AlertTriangle, {
-      "aria-hidden": true,
-      className: "text-danger size-3.5 shrink-0",
-    }),
-    text
-  );
 }
 
 /**

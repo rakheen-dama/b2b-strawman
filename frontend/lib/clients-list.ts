@@ -5,7 +5,7 @@
  *
  * No directive: used by the server page, the table, and the Save-view dialog's column list.
  */
-import type { ClientListRow, ClientType, LifecycleStatus } from "@/lib/types";
+import type { ClientListRow, ClientType, FicaOnboardingStatus, LifecycleStatus } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
 import type { ViewSelection } from "@/lib/constants/system-views";
 
@@ -50,6 +50,13 @@ export const CLIENT_TYPE_LABEL: Record<ClientType, string> = {
   INDIVIDUAL: "Individual",
   COMPANY: "Company",
   TRUST: "Trust",
+};
+
+/** FICA onboarding status labels: the Clients table (cell + CSV) and the client hero tile (642B). */
+export const FICA_STATUS_LABEL: Record<FicaOnboardingStatus, string> = {
+  DONE: "Done",
+  IN_PROGRESS: "In progress",
+  NOT_STARTED: "Not started",
 };
 
 /** Lifecycle order used for sorting (the order a client moves through). */

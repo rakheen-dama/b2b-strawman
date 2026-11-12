@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { ClientHeaderCard } from "@/components/customers/client-header-card";
 import type { ClientHeaderCardProps } from "@/components/customers/client-header-card";
+import type { HeroTile } from "@/components/shared/detail-hero";
 import type { TemplateListResponse } from "@/lib/types";
 
 // ---- Mocks ----
@@ -117,11 +118,13 @@ describe("ClientHeaderCard", () => {
     cleanup();
   });
 
-  it("renders customer name with title attribute for overflow", () => {
+  // 642B: the DetailHero h1 wraps instead of clamping, so the old `title` tooltip is gone.
+  it("renders the customer name as the only h1", () => {
     render(<ClientHeaderCard {...defaultProps} />);
-    const nameEl = screen.getByTestId("client-name");
-    expect(nameEl).toHaveTextContent("Acme Corporation");
-    expect(nameEl.getAttribute("title")).toBe("Acme Corporation");
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toBe(screen.getByTestId("client-name"));
+    expect(headings[0]).toHaveTextContent(/^Acme Corporation$/);
   });
 
   it('renders "Start Onboarding" button for PROSPECT lifecycle', () => {
@@ -245,5 +248,163 @@ describe("ClientHeaderCard", () => {
       );
       expect(screen.queryByTestId("generate-document-dropdown")).not.toBeInTheDocument();
     });
+  });
+});
+
+// --- 642B: composed on DetailHero (ADR-373, §15.6.6 selectors) ---
+
+const TILES: HeroTile[] = [
+  { id: "openMatters", label: "Open matters", value: "2", state: "ready" },
+  { id: "trust", label: "Trust balance", value: "R 50 000,00", hint: "Main Trust", state: "ready" },
+  {
+    id: "outstanding",
+    label: "Outstanding",
+    value: "R 3 450,00",
+    hint: "1 overdue",
+    state: "ready",
+  },
+  { id: "fica", label: "FICA", value: "Done", hint: "Completed 2 May 2026", state: "ready" },
+];
+
+function heroRoot(): HTMLElement {
+  return screen.getByTestId("client-header-card");
+}
+
+function tilesContainer(): HTMLElement | null {
+  return heroRoot().querySelector('[data-slot="detail-hero-tiles"]');
+}
+
+describe("ClientHeaderCard on DetailHero (642B)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("is the DetailHero root with the client name as the only h1", () => {
+    render(<ClientHeaderCard {...defaultProps} />);
+
+    const root = heroRoot();
+    expect(root).toHaveAttribute("data-slot", "detail-hero");
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toBe(screen.getByTestId("client-name"));
+    expect(root).toContainElement(headings[0]);
+  });
+
+  it("keeps every header test id inside the hero root", () => {
+    render(
+      <ClientHeaderCard
+        {...defaultProps}
+        headerFields={[
+          { slug: "id_passport_number", label: "ID / Passport Number", value: "8501015800087" },
+        ]}
+      />
+    );
+
+    const root = heroRoot();
+    for (const id of [
+      "client-name",
+      "lifecycle-badge",
+      "client-contact",
+      "client-context",
+      "client-header-fields",
+      "client-header-actions",
+      "smart-primary-action",
+      "client-overflow-trigger",
+    ]) {
+      expect(within(root).getByTestId(id)).toBeInTheDocument();
+    }
+    const actions = within(root).getByTestId("client-header-actions");
+    expect(within(actions).getByTestId("smart-primary-action")).toHaveTextContent("Edit");
+    expect(within(actions).getByTestId("client-overflow-trigger")).toBeInTheDocument();
+  });
+
+  it("puts the contact line in the subtitle and the context line after it", () => {
+    render(<ClientHeaderCard {...defaultProps} />);
+
+    const subtitle = heroRoot().querySelector('[data-slot="detail-hero-subtitle"]') as HTMLElement;
+    expect(subtitle).not.toBeNull();
+    expect(within(subtitle).getByTestId("client-contact")).toHaveTextContent(
+      "info@acme.com · +27 11 123 4567"
+    );
+    // 2026-01-15T10:00Z is 15 Jan on the SA calendar (formatDateInSA — hydration-safe).
+    expect(screen.getByTestId("client-context")).toHaveTextContent("Since 15 Jan 2026 · 3 matters");
+  });
+
+  it("omits the contact line without email and phone; singular matter count", () => {
+    render(<ClientHeaderCard {...defaultProps} email={null} phone={null} linkedProjectCount={1} />);
+
+    expect(screen.queryByTestId("client-contact")).not.toBeInTheDocument();
+    expect(heroRoot().querySelector('[data-slot="detail-hero-subtitle"]')).toBeNull();
+    expect(screen.getByTestId("client-context")).toHaveTextContent(/1 matter$/);
+  });
+
+  it("renders no identifier chip (clients have no number)", () => {
+    render(<ClientHeaderCard {...defaultProps} />);
+    expect(heroRoot().querySelector("code")).toBeNull();
+  });
+
+  it("renders no tile strip when no tiles are passed", () => {
+    render(<ClientHeaderCard {...defaultProps} />);
+    expect(tilesContainer()).toBeNull();
+  });
+
+  it("renders four tiles as compact StatCards, in order, without links", () => {
+    render(<ClientHeaderCard {...defaultProps} tiles={TILES} />);
+
+    const strip = tilesContainer() as HTMLElement;
+    expect(strip).not.toBeNull();
+    const groups = within(strip).getAllByRole("group");
+    expect(groups).toHaveLength(4);
+    expect(groups[0]).toHaveAccessibleName("Open matters");
+    expect(groups[1]).toHaveAccessibleName("Trust balance");
+    expect(groups[2]).toHaveAccessibleName("Outstanding");
+    expect(groups[3]).toHaveAccessibleName("FICA");
+    expect(groups[1]).toHaveTextContent("R 50 000,00");
+    expect(within(strip).queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("renders three tiles when Outstanding was omitted by its gate (member)", () => {
+    render(
+      <ClientHeaderCard {...defaultProps} tiles={TILES.filter((t) => t.id !== "outstanding")} />
+    );
+
+    const groups = within(tilesContainer() as HTMLElement).getAllByRole("group");
+    expect(groups).toHaveLength(3);
+    expect(screen.queryByText("Outstanding")).not.toBeInTheDocument();
+  });
+
+  it("renders an error tile as '—' with \"Couldn't load\"", () => {
+    render(
+      <ClientHeaderCard
+        {...defaultProps}
+        tiles={[{ id: "fica", label: "FICA", value: null, state: "error" }]}
+      />
+    );
+
+    const group = within(tilesContainer() as HTMLElement).getByRole("group", { name: "FICA" });
+    expect(within(group).getByRole("status")).toHaveTextContent("Couldn't load");
+  });
+
+  it("shows the currency-exclusion hint on the Outstanding tile", () => {
+    render(
+      <ClientHeaderCard
+        {...defaultProps}
+        tiles={[
+          {
+            id: "outstanding",
+            label: "Outstanding",
+            value: "R 8 625,00",
+            hint: "Excludes 1 fee note in other currencies",
+            state: "ready",
+          },
+        ]}
+      />
+    );
+
+    const group = within(tilesContainer() as HTMLElement).getByRole("group", {
+      name: "Outstanding",
+    });
+    expect(group).toHaveTextContent("R 8 625,00");
+    expect(within(group).getByText("Excludes 1 fee note in other currencies")).toBeInTheDocument();
   });
 });

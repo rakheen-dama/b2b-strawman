@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { buildSortHref, type MatterSort } from "@/lib/matters-list";
 import { readSourceTree } from "../../helpers/source-scan";
+import { blobText } from "@/__tests__/helpers/csv-download";
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -188,12 +189,6 @@ function stubDownload() {
       URL.revokeObjectURL = originalRevoke;
     },
   };
-}
-
-async function blobText(blob: Blob | null): Promise<string> {
-  if (!blob) throw new Error("no CSV blob was created");
-  // ignoreBOM keeps a leading BOM in the decoded text so the test can assert it.
-  return new TextDecoder("utf-8", { ignoreBOM: true }).decode(await blob.arrayBuffer());
 }
 
 // ---- Tests -----------------------------------------------------------------------------------

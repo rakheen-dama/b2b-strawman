@@ -89,6 +89,8 @@ export interface OutstandingInvoice {
   invoiceId: string;
   invoiceNumber: string;
   total: number;
+  /** What is still owed (`total - amountPaid`), in `currency`. */
+  balanceDue: number;
   currency: string;
   dueDate: string;
   daysOverdue: number;

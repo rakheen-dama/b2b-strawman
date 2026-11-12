@@ -1,0 +1,122 @@
+# 642B SEL-COMPAT before (task 642.6) — worktree @ 9b3ec3555 (= main 9b3ec3555)
+# frontend/e2e byte-identical to main: yes
+# Paths relative to frontend/. Raw grep output; annotations in NOTES.md.
+
+$ grep -rn -- "client-header-card" e2e/
+e2e/tests/customers/customer-lifecycle.spec.ts:160:      "628F-BLOCKER: no firm-UI DORMANT→OFFBOARDING transition (header action 'Edit' has no handler, overflow menu has no lifecycle items; LifecycleTransitionDropdown orphaned since #1395) — components/customers/client-header-card-with-lifecycle.tsx:70, app/(app)/org/[slug]/clients/[id]/page.tsx:434-470, components/customers/client-overflow-menu.tsx:101-177"
+e2e/tests/customers/customer-lifecycle.spec.ts:181:      "628F-BLOCKER: header 'Complete Offboarding' button has no onClick (no target status computed for OFFBOARDING) — components/customers/client-header-card-with-lifecycle.tsx:70, app/(app)/org/[slug]/clients/[id]/page.tsx:434-470"
+(hits: 2)
+
+$ grep -rn -- "client-name" e2e/
+(hits: 0)
+
+$ grep -rn -- "customer-status-badge" e2e/
+(hits: 0)
+
+$ grep -rn -- "lifecycle-badge" e2e/
+e2e/tests/customers/customer-lifecycle.spec.ts:63:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Prospect");
+e2e/tests/customers/customer-lifecycle.spec.ts:81:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Onboarding", { timeout: 10_000 });
+e2e/tests/customers/customer-lifecycle.spec.ts:154:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Dormant", { timeout: 10_000 });
+e2e/tests/customers/customer-lifecycle.spec.ts:166:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Dormant", { timeout: 10_000 });
+e2e/tests/customers/customer-lifecycle.spec.ts:173:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Offboarding", {
+e2e/tests/customers/customer-lifecycle.spec.ts:187:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Offboarding", {
+e2e/tests/customers/customer-lifecycle.spec.ts:194:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Offboarded", {
+e2e/tests/customers/customer-data-protection.spec.ts:142:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Anonymized", {
+e2e/tests/customers/customer-data-protection.spec.ts:156:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Anonymized");
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:76:  await expect(page.getByTestId("lifecycle-badge")).toHaveText("Prospect");
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:193:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Active", { timeout: 15_000 });
+e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:180:    await expect(page.getByTestId("lifecycle-badge")).toHaveText("Active", { timeout: 15_000 });
+e2e/helpers/legal-depth-ii.ts:231:  const badge = page.getByTestId("lifecycle-badge");
+(hits: 13)
+
+$ grep -rn -- "client-contact" e2e/
+(hits: 0)
+
+$ grep -rn -- "client-context" e2e/
+(hits: 0)
+
+$ grep -rn -- "client-header-actions" e2e/
+e2e/tests/documents/document-generation.spec.ts:109:      .getByTestId("client-header-actions")
+(hits: 1)
+
+$ grep -rn -- "smart-primary-action" e2e/
+e2e/tests/customers/customer-lifecycle.spec.ts:77:    await expect(page.getByTestId("smart-primary-action")).toHaveText("Start Onboarding");
+e2e/tests/customers/customer-lifecycle.spec.ts:190:    await page.getByTestId("smart-primary-action").click();
+e2e/tests/customers/customer-data-protection.spec.ts:158:    await expect(page.getByTestId("smart-primary-action")).toHaveCount(0);
+(hits: 3)
+
+$ grep -rn -- "client-header-fields" e2e/
+(hits: 0)
+
+$ grep -rn -- "client-header-field-" e2e/
+(hits: 0)
+
+$ grep -rnw "openClient" e2e/   (word match; excludes openClientFeeNotes/openClientOverflow)
+e2e/tests/legal-lifecycle/day-75-complex.spec.ts:28:  openClient,
+e2e/tests/legal-lifecycle/day-75-complex.spec.ts:107:    await openClient(page, siphoClient());
+e2e/tests/legal-lifecycle/day-75-complex.spec.ts:245:    await openClient(page, morokaClient());
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:32:  openClient,
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:132:    await openClient(page, siphoClient());
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:139:    await openClient(page, siphoClient());
+e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:38:  openClient,
+e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:149:    await openClient(page, clientName());
+e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:43:  openClient,
+e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:206:    await openClient(page, siphoClientName());
+e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:41:  openClient,
+e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:179:    await openClient(page, apexClient());
+e2e/helpers/legal-lifecycle.ts:31:import { BASE, clickThrough, escapeRegExp, openClient, selectNativeOption } from "./legal-depth-ii";
+e2e/helpers/legal-lifecycle.ts:397:  await openClient(page, client);
+e2e/helpers/legal-depth-ii.ts:156:export async function openClient(page: Page, clientName: string): Promise<void> {
+
+$ grep -rn "openClientFeeNotes" e2e/   (calls openClient first)
+e2e/tests/legal-lifecycle/day-30-billing.spec.ts:38:  openClientFeeNotes,
+e2e/tests/legal-lifecycle/day-30-billing.spec.ts:155:    await openClientFeeNotes(page, apexClient());
+e2e/tests/legal-lifecycle/day-30-billing.spec.ts:177:    await openClientFeeNotes(page, morokaClient());
+e2e/tests/legal-lifecycle/day-30-billing.spec.ts:272:    await openClientFeeNotes(page, qcClient());
+e2e/tests/legal-lifecycle/day-60-interest.spec.ts:31:  openClientFeeNotes,
+e2e/tests/legal-lifecycle/day-60-interest.spec.ts:299:    await openClientFeeNotes(page, siphoClient());
+e2e/helpers/legal-lifecycle.ts:396:export async function openClientFeeNotes(page: Page, client: string): Promise<void> {
+
+$ sed -n 152,163p e2e/helpers/legal-depth-ii.ts   (openClient — the h1 wait)
+/**
+ * Opens a client from the Clients list by clicking its link and waits until the client
+ * page is ready (heading visible).
+ */
+export async function openClient(page: Page, clientName: string): Promise<void> {
+  // Phase 87 S4 (ADR-344): route rename
+  await page.goto(`${BASE}/clients`);
+  const link = page.getByRole("link", { name: clientName, exact: true });
+  await expect(link, `client "${clientName}" should be listed`).toBeVisible({ timeout: 15_000 });
+  await clickThrough(link, page.getByRole("heading", { level: 1, name: clientName }));
+  // Phase 87 S4 (ADR-344): route rename (610D — post-redirect URL)
+  await expect(page).toHaveURL(/\/clients\/[0-9a-f-]{36}/);
+
+$ grep -rn "heading\", { level: 1" e2e/tests/customers e2e/tests/documents/document-generation.spec.ts   (client-page h1 waits outside openClient)
+e2e/tests/customers/customer-lifecycle.spec.ts:59:      page.getByRole("heading", { level: 1, name: LIFECYCLE_NAME, exact: true })
+e2e/tests/customers/customer-lifecycle.spec.ts:71:      page.getByRole("heading", { level: 1, name: LIFECYCLE_NAME, exact: true })
+e2e/tests/documents/document-generation.spec.ts:47:  await expect(page.getByRole("heading", { level: 1, name: MATTER })).toBeVisible({
+e2e/tests/documents/document-generation.spec.ts:106:    await expect(page.getByRole("heading", { level: 1, name: CLIENT })).toBeVisible();
+e2e/tests/customers/customer-data-protection.spec.ts:51:      page.getByRole("heading", { level: 1, name: SEED.client, exact: true })
+e2e/tests/customers/customer-data-protection.spec.ts:81:      page.getByRole("heading", { level: 1, name: SEED.client, exact: true })
+e2e/tests/customers/customer-data-protection.spec.ts:104:      page.getByRole("heading", { level: 1, name: SEED.client, exact: true })
+e2e/tests/customers/customer-data-protection.spec.ts:114:    await expect(page.getByRole("heading", { level: 1, name, exact: true })).toBeVisible({
+e2e/tests/customers/customer-data-protection.spec.ts:146:      page.getByRole("heading", { level: 1, name: /^Anonymized Client / })
+e2e/tests/customers/customer-crud.spec.ts:39:  await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+e2e/tests/customers/customer-crud.spec.ts:72:      page.getByRole("heading", { level: 1, name: CUSTOMER_NAME, exact: true })
+e2e/tests/customers/customer-crud.spec.ts:102:    await expect(page.getByRole("heading", { level: 1, name: name2, exact: true })).toBeVisible({
+e2e/tests/customers/customer-crud.spec.ts:120:      page.getByRole("heading", { level: 1, name: CUSTOMER_NAME, exact: true })
+e2e/tests/customers/customer-crud.spec.ts:139:      page.getByRole("heading", { level: 1, name: EDITED_NAME, exact: true })
+e2e/tests/customers/customer-crud.spec.ts:149:    await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+e2e/tests/customers/customer-crud.spec.ts:172:    await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+
+$ grep -rn "\"Start Onboarding\"\|\"Activate Client\"\|\"Complete Offboarding\"" e2e/   (header smart-action by role/name)
+e2e/tests/customers/customer-lifecycle.spec.ts:76:    // The header smart action of a PROSPECT is "Start Onboarding" (confirm dialog → ONBOARDING)
+e2e/tests/customers/customer-lifecycle.spec.ts:77:    await expect(page.getByTestId("smart-primary-action")).toHaveText("Start Onboarding");
+e2e/tests/customers/customer-lifecycle.spec.ts:191:    const confirm = page.getByRole("alertdialog", { name: "Complete Offboarding" });
+e2e/tests/customers/customer-lifecycle.spec.ts:192:    await confirm.getByRole("button", { name: "Complete Offboarding" }).click();
+e2e/tests/customers/customer-crud.spec.ts:125:    // Editing lives in the client overflow menu (the header action of a PROSPECT is "Start Onboarding")
+e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:181:    // Phase 88 628A (ADR-357): label → "Activate Client" (the negative count tracks the current label)
+e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:182:    await expect(page.getByRole("button", { name: "Activate Client" })).toHaveCount(0);
+e2e/helpers/legal-depth-ii.ts:233:  await page.getByRole("button", { name: "Start Onboarding" }).first().click();
+e2e/helpers/legal-depth-ii.ts:234:  const confirm = page.getByRole("alertdialog", { name: "Start Onboarding" });
+e2e/helpers/legal-depth-ii.ts:235:  await confirm.getByRole("button", { name: "Start Onboarding" }).click();

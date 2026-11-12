@@ -119,15 +119,12 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
         <span className="flex items-center gap-1.5">
           <kbd className={KBD_CLASS}>↑</kbd>
           <kbd className={KBD_CLASS}>↓</kbd>
-          Navigate
         </span>
         <span className="flex items-center gap-1.5">
           <kbd className={KBD_CLASS}>↵</kbd>
-          Open
         </span>
         <span className="ml-auto flex items-center gap-1.5">
           <kbd className={KBD_CLASS}>Esc</kbd>
-          Close
         </span>
       </div>
     </CommandDialog>

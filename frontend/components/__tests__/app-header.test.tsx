@@ -30,6 +30,7 @@ import { AppHeader } from "@/components/shell/app-header";
 
 afterEach(() => {
   cleanup();
+  document.cookie = "sidebar_state=; max-age=0; path=/";
   mockSetPaletteOpen.mockClear();
 });
 

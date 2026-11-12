@@ -1,0 +1,42 @@
+642C SEL-COMPAT — AFTER (task 642.14). Worktree @ 32c89d2c1 (phase90/42C-grouped-tab-bar). Grep over frontend/e2e/.
+Files: GTB = frontend/components/shared/grouped-tab-bar.tsx, MT = frontend/components/matters/matter-tabs.tsx,
+       CGT = frontend/components/customers/customer-grouped-tabs.tsx, helper = frontend/e2e/helpers/grouped-tabs.ts
+
+`git diff origin/main --stat -- frontend/e2e` -> EMPTY (origin/main = e2e73ca8f, the before-capture commit; `git diff e2e73ca8f --stat -- frontend/e2e` also empty).
+=> NO SPEC EDITED — NO ROLE CHANGED. Every selector in sel-compat-before.txt is still rendered with the same role/attributes:
+
+== Test ids ==
+[data-testid="grouped-tab-bar"]  (role=tablist div)        before GTB:81-86  -> after GTB:180-185 (div role="tablist" data-testid="grouped-tab-bar", class "relative flex w-max gap-2", onKeyDown)
+   now nested: div[data-slot=grouped-tab-bar-sticky] (GTB:178) > Radix ScrollArea root > viewport > tablist. Still exactly ONE role=tablist on the page (observed 1/1 on all loads, obs-after.json loads[].facts.tablistCount).
+   e2e consumers: 0 specs (comment only: day-07-14-work-trust.spec.ts:136).
+[data-testid="tab-group-<groupId>"] (role=tab button)       single: before GTB:105-125 -> after GTB:203-217 (button role="tab" aria-selected data-testid, onClick -> onTabChange)
+                                                             multi:  before GTB:136-168 -> after GTB:227-247 (DropdownMenuTrigger asChild > button role="tab" aria-selected data-testid + ChevronDown; Radix adds aria-haspopup="menu", aria-expanded, data-state)
+   e2e consumers unchanged: helper openGroupedTab (helper:22) + direct uses day-07-14-work-trust:137, day-45-recon-prescription:33,
+     day-90-review:273, project-crud:174 (aria-selected), project-tasks:388 (.filter visible, aria-selected), legal-depth-ii/day-05-disbursements:431 (single click opens menu).
+[data-testid="tab-item-<tabId>"] (role=menuitem)             before GTB:172-184 -> after GTB:253-264 (DropdownMenuItem data-testid, new data-active="true" on current item, onSelect -> onTabChange)
+   e2e consumers unchanged: helper:23 + day-05-disbursements:432/433/435.
+
+== openGroupedTab contract (helper:19-40) ==
+  group trigger visible + clickable; clicking it opens the menu; clicking tab-item-* makes the group aria-selected="true".
+  Observed after (obs-after.json visits[]): every inactive multi-group click opened the menu on the FIRST click (menu.openedOnFirstClick=true,
+  same as before finding F-a), the item click moved aria-selected to the group. Helper still satisfied.
+  Call sites: 57 literal `openGroupedTab(page, "<group>", "<tab>")` calls; 20 files reference `openGroupedTab(` (this grep differs from the
+  before-count of 80 occurrences, which used a different pattern — the call sites themselves are unchanged, e2e diff is empty).
+
+== Roles / accessible names ==
+role=tablist   -> GTB:181 (still no aria-label / aria-orientation — unchanged, F-e)
+role=tab       -> GTB:209 / GTB:232; name = group label + " · <sub-tab>" when active (GTB:192-199) — observed "Work · Tasks", "Fees · Disbursements", "Matters · Documents", "Fees · Fee notes".
+aria-selected  -> GTB:210 / GTB:233 (also drives the new underline: `aria-selected:after:opacity-100`, GTB:46)
+role=tabpanel  -> MT:218-308 (22 Radix Content panels), CGT:149-215 (14 panels) — files untouched by this slice. Observed exactly ONE visible tabpanel on every load/visit
+                  (loads[].facts.tabpanelVisibleCount = 1, visits[].visiblePanels = 1). 49 `getByRole("tabpanel"…)` uses in 20 e2e files unaffected.
+role=menu/menuitem -> Radix DropdownMenuContent/Item (GTB:249-267), portalled, align="start" — unchanged.
+
+== URL mechanics (?tab=) — unchanged, observed ==
+Matter: MT:204-210 handleTabChange -> window.history.replaceState  => observed 2 replaceState calls (app + Next sync), 0 RSC per change.
+Client: CGT:138-142 handleTabChange -> router.replace              => observed 1 replaceState + 1 RSC GET per change (5 on Fees→Fee notes = 1 + 4 <Link> prefetches, same as before).
+The 7 ?tab= URL assertions in 6 spec files (project-crud:153/172, project-tasks:302/378, notification-bell:98, day-30-billing:99, day-30-45-soa-writeoff:448) depend on these and are unaffected.
+
+== Removed / changed hooks (0 e2e consumers before) ==
+motion.span layoutId="grouped-tab-indicator" (before GTB:118-123/161-166) -> REMOVED; replaced by ::after underline (GTB:46). 0 consumers.
+Focus style (before GTB:29-33 outline-*, non-functional) -> GTB:47 inset 2px ring box-shadow. 0 consumers.
+Keyboard ArrowLeft/Right (before GTB:62-78) -> GTB:159-175, same behaviour (wraps). 0 consumers.

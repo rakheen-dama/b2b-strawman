@@ -1,7 +1,7 @@
 {
-  "commit": "d852bc4a7e43576532cc053537e80c439087f111",
-  "command": "portal: pnpm lint && pnpm build && pnpm test && pnpm format:check (builder @d852bc4a7); pnpm run typecheck @9c7a58c4e",
+  "commit": "874ba8df5f5b8f53f619694090b5d01b0a8d6211",
+  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-637A, phase90/37A-tokens-palette, after pnpm install --frozen-lockfile)",
   "exit": 0,
-  "ts": "2026-11-11T09:56:49Z",
-  "summary": "PR #1753: builder portal gate @d852bc4a7 all rc0, vitest 51 files / 284 passed; offline sandbox build rc0. Portal source unchanged to 9c7a58c4e (README only). e2e gate @b146c09e0: vitest 284, production builds (login-bare 1/0/0) with 0 font fetches. typecheck @9c7a58c4e rc0."
+  "ts": "2026-11-11T22:34:34Z",
+  "summary": "PR #1759 (Phase 90 637A) @874ba8df5: PORTAL-GATE (lint, typecheck, format:check, test, build) exit 0 — 51 files, 284 passed (284)"
 }

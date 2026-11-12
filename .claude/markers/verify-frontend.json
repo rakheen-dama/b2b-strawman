@@ -1,7 +1,7 @@
 {
-  "commit": "d7ef98978b15fc4a25261aeccdfbd77c712a2500",
-  "command": "frontend: pnpm lint && pnpm run typecheck && pnpm build && pnpm test && pnpm format:check (builder, round 3) + CI Frontend job",
+  "commit": "874ba8df5f5b8f53f619694090b5d01b0a8d6211",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-637A, phase90/37A-tokens-palette, after pnpm install --frozen-lockfile)",
   "exit": 0,
-  "ts": "2026-11-11T19:24:54Z",
-  "summary": "PR #1757 @d7ef98978: lint/typecheck/build/format rc0, vitest 457 files / 3763 passed / 2 skipped; CI Frontend pass. No frontend change d7ef98978..864af7343."
+  "ts": "2026-11-11T22:34:34Z",
+  "summary": "PR #1759 (Phase 90 637A) @874ba8df5: FE-GATE (lint, typecheck, format:check, test, build) exit 0 — 459 files, 3879 passed / 2 skipped (3881)"
 }

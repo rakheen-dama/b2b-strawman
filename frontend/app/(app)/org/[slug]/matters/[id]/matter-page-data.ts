@@ -11,6 +11,7 @@ import {
   getViews,
 } from "@/lib/api";
 import {
+  getMatterBudget,
   getMatterProfitability,
   getMatterSetupStatus,
   getMatterTags,
@@ -38,6 +39,7 @@ import {
   type HeaderField,
 } from "@/lib/constants/header-field-slugs";
 import type {
+  BudgetStatusResponse,
   OrgMember,
   Matter,
   Client,
@@ -62,10 +64,12 @@ import type {
 
 // The matter page's tab-panel reads (Phase 90 641B, §15.3.5: pages shrink by extracting loaders,
 // not by touching tab panels). Moved verbatim out of page.tsx — same order, same non-fatal
-// fallbacks. The hero reads (trust, outstanding, unbilled, deadlines) and the budget live in
-// ./hero-tiles.ts. Server-only: never import from a "use client" file.
+// fallbacks. The hero reads (trust, outstanding, unbilled, deadlines) live in ./hero-tiles.ts.
+// Server-only: never import from a "use client" file.
 
 export interface MatterPageData {
+  /** null = no budget set (404) or the read failed. Read once; Budget and Overview tabs share it. */
+  budget: BudgetStatusResponse | null;
   setupStatus: MatterSetupStatus | null;
   setupSteps: SetupStep[];
   canExecuteAi: boolean;
@@ -109,6 +113,10 @@ export async function loadMatterPageData({
   caps: MyCapabilitiesResponse;
   canManage: boolean;
 }): Promise<MatterPageData> {
+  // Started first and awaited last, so it overlaps the sequential reads below. Non-fatal: 404
+  // means no budget set, other errors show the empty state.
+  const budgetPromise = getMatterBudget(id).catch(() => null);
+
   // Setup guidance data (Epic 112A)
   let setupStatus: MatterSetupStatus | null = null;
   try {
@@ -387,6 +395,7 @@ export async function loadMatterPageData({
   }
 
   return {
+    budget: await budgetPromise,
     setupStatus,
     setupSteps,
     canExecuteAi,

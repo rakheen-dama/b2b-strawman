@@ -2,6 +2,7 @@ import { getAuthContext } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { handleApiError } from "@/lib/api";
 import { getMatter } from "@/lib/api/matters";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import type { CreateSavedViewRequest, Matter } from "@/lib/types";
 import { MatterHeaderCard } from "@/components/projects/matter-header-card";
 import { MatterDetailsTab } from "@/components/projects/matter-details-tab";
@@ -53,25 +54,33 @@ export default async function ProjectDetailPage({
   // Court-date / prescription writes need MANAGE_LEGAL (backend @RequiresCapability).
   const canManageLegal = isAdmin || caps.capabilities.includes("MANAGE_LEGAL");
 
+  // Module flags gate hero reads and the Overview trust card — read once, alongside the matter.
+  // Never rejects (isModuleEnabledServer falls back to false).
+  const modulesPromise = Promise.all([
+    isModuleEnabledServer("trust_accounting"),
+    isModuleEnabledServer("court_calendar"),
+  ]);
   let project: Matter;
   try {
     project = await getMatter(id);
   } catch (error) {
     handleApiError(error);
   }
+  const [trustEnabled, courtCalendarEnabled] = await modulesPromise;
 
   const canEdit = isAdmin || project.matterRole === "lead";
   const isCurrentLead = project.matterRole === "lead";
   const canManage = isAdmin || isCurrentLead;
 
-  // Loaders (641B, §15.3.5): the tab-panel reads (./matter-page-data) and the hero reads
-  // (./hero-tiles — trust, outstanding, unbilled WIP, court dates, and the budget the Budget and
-  // Overview tabs share, so budget and deadlines are each read once). Independent → in parallel.
+  // Loaders (641B, §15.3.5): the tab-panel reads (./matter-page-data, incl. the budget the Budget
+  // and Overview tabs share) and the hero reads (./hero-tiles — trust, outstanding, unbilled WIP,
+  // court dates, which the Overview tab shares). Each read once; independent → in parallel.
   const [data, hero] = await Promise.all([
     loadMatterPageData({ id, project, caps, canManage }),
-    loadMatterHeroData(id, caps),
+    loadMatterHeroData(id, caps, { trustEnabled, courtCalendarEnabled }),
   ]);
   const {
+    budget: budgetStatus,
     setupStatus,
     setupSteps,
     canExecuteAi,
@@ -103,12 +112,7 @@ export default async function ProjectDetailPage({
     allTags,
     projectTemplates,
   } = data;
-  const {
-    trustEnabled,
-    outstandingSummary,
-    trustBalance: matterTrustBalance,
-    budget: budgetStatus,
-  } = hero;
+  const { outstandingSummary, trustBalance: matterTrustBalance } = hero;
 
   // Hero subtitle fee earner: the matter's earliest lead — the matters list's "Fee earner" rule.
   const feeEarner = members

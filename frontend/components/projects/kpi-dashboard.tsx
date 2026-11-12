@@ -160,7 +160,6 @@ export async function KPIDashboard({
 
   const health = settled(healthResult);
   const memberHours = settled(memberHoursResult);
-  const budgetStatus = budget;
   const firmRetentionYears = settled(settingsResult)?.legalMatterRetentionYears ?? null;
 
   // Health status
@@ -170,7 +169,7 @@ export async function KPIDashboard({
   // Metrics from health
   const metrics = health?.metrics ?? null;
   const totalHours = memberHours?.reduce((sum, m) => sum + m.totalHours, 0) ?? 0;
-  const budgetPercent = budgetStatus?.hoursConsumedPct ?? null;
+  const budgetPercent = budget?.hoursConsumedPct ?? null;
 
   // Task completion
   const tasksDone = metrics?.tasksDone ?? 0;

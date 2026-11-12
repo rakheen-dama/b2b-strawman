@@ -5,18 +5,12 @@ import { AlertTriangle } from "lucide-react";
 import type { HeroTile } from "@/components/shared/detail-hero";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { formatChartValue } from "@/lib/chart-format";
-import {
-  getMatterBudget,
-  getMatterUnbilledSummary,
-  getMatterUpcomingDeadlines,
-} from "@/lib/api/matters";
-import { isModuleEnabledServer } from "@/lib/api/settings";
+import { getMatterUnbilledSummary, getMatterUpcomingDeadlines } from "@/lib/api/matters";
 import { fetchOutstandingSummaryAction } from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
 import { fetchMatterTrustBalance } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { hasCapability, type HomeCaps, type WidgetResult } from "@/lib/dashboard-home";
 import { settle } from "@/lib/settle";
 import type {
-  BudgetStatusResponse,
   MatterTrustBalance,
   MatterUpcomingDeadline,
   OutstandingSummary,
@@ -43,56 +37,46 @@ export const MATTER_HERO_TILE_LABELS = {
   court: "Next court date",
 } as const;
 
-export interface MatterHeroData {
-  /** trust_accounting enabled — also drives the Overview trust MetricCard (unchanged). */
+/** The module flags that gate hero reads. The page reads them once (it also needs trustEnabled). */
+export interface MatterHeroModules {
   trustEnabled: boolean;
-  unbilledSummary: WidgetResult<UnbilledTimeSummary>;
-  trustBalance: WidgetResult<MatterTrustBalance>;
-  outstandingSummary: WidgetResult<OutstandingSummary>;
-  /** absent when court_calendar is off. */
-  upcomingDeadlines: WidgetResult<MatterUpcomingDeadline[]>;
-  /** null = no budget set (404) or the read failed. Read once; BudgetPanel and KPIDashboard share it. */
-  budget: BudgetStatusResponse | null;
+  courtCalendarEnabled: boolean;
 }
 
-/** The matter page's hero reads plus the two it shares with the Overview tab (budget, deadlines). */
+export interface MatterHeroData {
+  /** absent when trust_accounting is off or the caller lacks VIEW_TRUST. */
+  trustBalance: WidgetResult<MatterTrustBalance>;
+  unbilledSummary: WidgetResult<UnbilledTimeSummary>;
+  outstandingSummary: WidgetResult<OutstandingSummary>;
+  /** absent when court_calendar is off. Shared with the Overview tab's deadlines list. */
+  upcomingDeadlines: WidgetResult<MatterUpcomingDeadline[]>;
+}
+
+/** The matter page's hero reads (deadlines are also shared with the Overview tab). */
 export async function loadMatterHeroData(
   matterId: string,
-  caps: HomeCaps
+  caps: HomeCaps,
+  { trustEnabled, courtCalendarEnabled }: MatterHeroModules
 ): Promise<MatterHeroData> {
-  const [trustEnabled, courtCalendarEnabled] = await Promise.all([
-    isModuleEnabledServer("trust_accounting"),
-    isModuleEnabledServer("court_calendar"),
-  ]);
   // PROJECT_MANAGEMENT ∧ (admin ∨ owner ∨ FINANCIAL_VISIBILITY): the unbilled-summary endpoint does
   // no financial redaction, so this frontend gate is the gate (ADR-373 §1).
   const seesUnbilled =
     hasCapability(caps, "PROJECT_MANAGEMENT") && hasCapability(caps, "FINANCIAL_VISIBILITY");
 
-  const [unbilledSummary, trustBalance, outstandingSummary, upcomingDeadlines, budget] =
-    await Promise.all([
-      settle(seesUnbilled, "matter unbilled summary", () => getMatterUnbilledSummary(matterId)),
-      trustEnabled && hasCapability(caps, "VIEW_TRUST")
-        ? fetchMatterTrustBalance(matterId)
-        : Promise.resolve<WidgetResult<MatterTrustBalance>>(ABSENT),
-      hasCapability(caps, "FINANCIAL_VISIBILITY")
-        ? fetchOutstandingSummaryAction(matterId)
-        : Promise.resolve<WidgetResult<OutstandingSummary>>(ABSENT),
-      settle(courtCalendarEnabled, "matter upcoming deadlines", () =>
-        getMatterUpcomingDeadlines(matterId)
-      ),
-      // Non-fatal: 404 means no budget set, other errors show the empty state.
-      getMatterBudget(matterId).catch(() => null),
-    ]);
+  const [unbilledSummary, trustBalance, outstandingSummary, upcomingDeadlines] = await Promise.all([
+    settle(seesUnbilled, "matter unbilled summary", () => getMatterUnbilledSummary(matterId)),
+    trustEnabled && hasCapability(caps, "VIEW_TRUST")
+      ? fetchMatterTrustBalance(matterId)
+      : Promise.resolve<WidgetResult<MatterTrustBalance>>(ABSENT),
+    hasCapability(caps, "FINANCIAL_VISIBILITY")
+      ? fetchOutstandingSummaryAction(matterId)
+      : Promise.resolve<WidgetResult<OutstandingSummary>>(ABSENT),
+    settle(courtCalendarEnabled, "matter upcoming deadlines", () =>
+      getMatterUpcomingDeadlines(matterId)
+    ),
+  ]);
 
-  return {
-    trustEnabled,
-    unbilledSummary,
-    trustBalance,
-    outstandingSummary,
-    upcomingDeadlines,
-    budget,
-  };
+  return { unbilledSummary, trustBalance, outstandingSummary, upcomingDeadlines };
 }
 
 function tileFrom<T>(
@@ -121,6 +105,16 @@ function overdueHint(count: number): ReactNode {
   );
 }
 
+/**
+ * The earliest live hearing. Rows are date-ascending, today or later, but filtered by date only
+ * (backend ProjectUpcomingDeadlinesService): a postponement keeps the original row as POSTPONED
+ * beside a new SCHEDULED one (CourtCalendarService.postponeCourtDate), and CANCELLED / HEARD rows
+ * stay too — only SCHEDULED is a hearing still to happen.
+ */
+function nextScheduledCourtDate(rows: MatterUpcomingDeadline[]): MatterUpcomingDeadline | null {
+  return rows.find((row) => row.status === "SCHEDULED") ?? null;
+}
+
 /** Pure: the hero strip in order (WIP, Trust, Outstanding, Next court date), gated tiles omitted. */
 export function buildMatterHeroTiles(data: MatterHeroData): HeroTile[] {
   const L = MATTER_HERO_TILE_LABELS;
@@ -131,19 +125,19 @@ export function buildMatterHeroTiles(data: MatterHeroData): HeroTile[] {
         s.entryCount === 1 ? "entry" : "entries"
       }`,
     })),
-    tileFrom("trust", L.trust, data.trustEnabled ? data.trustBalance : ABSENT, (b) => ({
+    tileFrom("trust", L.trust, data.trustBalance, (b) => ({
       value: formatCurrency(b.balance, b.currency),
     })),
     tileFrom("outstanding", L.outstanding, data.outstandingSummary, (s) => ({
       value: formatCurrency(s.outstandingTotal, s.currency),
       hint: overdueHint(s.overdueCount),
     })),
-    // Rows are date-ascending, today or later (backend ProjectUpcomingDeadlinesService).
-    tileFrom("court", L.court, data.upcomingDeadlines, (rows) =>
-      rows.length === 0
-        ? { value: null, hint: "None scheduled" }
-        : { value: formatLocalDate(rows[0].date), hint: rows[0].description }
-    ),
+    tileFrom("court", L.court, data.upcomingDeadlines, (rows) => {
+      const next = nextScheduledCourtDate(rows);
+      return next
+        ? { value: formatLocalDate(next.date), hint: next.description }
+        : { value: null, hint: "None scheduled" };
+    }),
   ].filter((tile): tile is HeroTile => tile !== null);
 }
 

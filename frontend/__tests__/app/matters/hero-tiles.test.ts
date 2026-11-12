@@ -11,15 +11,7 @@ import type { HeroTile } from "@/components/shared/detail-hero";
 
 vi.mock("server-only", () => ({}));
 
-const {
-  mockUnbilled,
-  mockDeadlines,
-  mockBudget,
-  mockModule,
-  mockOutstanding,
-  mockTrust,
-  MockApiError,
-} = vi.hoisted(() => {
+const { mockUnbilled, mockDeadlines, mockOutstanding, mockTrust, MockApiError } = vi.hoisted(() => {
   class MockApiError extends Error {
     constructor(
       public status: number,
@@ -32,8 +24,6 @@ const {
   return {
     mockUnbilled: vi.fn(),
     mockDeadlines: vi.fn(),
-    mockBudget: vi.fn(),
-    mockModule: vi.fn(),
     mockOutstanding: vi.fn(),
     mockTrust: vi.fn(),
     MockApiError,
@@ -43,9 +33,7 @@ const {
 vi.mock("@/lib/api/matters", () => ({
   getMatterUnbilledSummary: mockUnbilled,
   getMatterUpcomingDeadlines: mockDeadlines,
-  getMatterBudget: mockBudget,
 }));
-vi.mock("@/lib/api/settings", () => ({ isModuleEnabledServer: mockModule }));
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
   fetchOutstandingSummaryAction: mockOutstanding,
 }));
@@ -64,7 +52,7 @@ import {
 import type { HomeCaps } from "@/lib/dashboard-home";
 
 const MATTER = "m-1";
-const ALL_MODULES = ["trust_accounting", "court_calendar"];
+const ALL_MODULES = { trustEnabled: true, courtCalendarEnabled: true };
 
 const ADMIN: HomeCaps = { capabilities: [], isAdmin: true, isOwner: false };
 const OWNER: HomeCaps = { capabilities: [], isAdmin: false, isOwner: true };
@@ -98,17 +86,17 @@ const OUTSTANDING = {
   approvedUnsentCount: 0,
 };
 const DEADLINES = [
-  { type: "COURT" as const, date: "2026-12-01", description: "Pre-trial conference", status: null },
-  { type: "COURT" as const, date: "2027-01-15", description: "Trial", status: null },
+  {
+    type: "COURT" as const,
+    date: "2026-12-01",
+    description: "Pre-trial conference",
+    status: "SCHEDULED",
+  },
+  { type: "COURT" as const, date: "2027-01-15", description: "Trial", status: "SCHEDULED" },
 ];
-const BUDGET = { matterId: MATTER, hoursConsumedPct: 80 };
-
-function enableModules(modules: string[]) {
-  mockModule.mockImplementation(async (m: string) => modules.includes(m));
-}
 
 async function tilesFor(caps: HomeCaps): Promise<HeroTile[]> {
-  return buildMatterHeroTiles(await loadMatterHeroData(MATTER, caps));
+  return buildMatterHeroTiles(await loadMatterHeroData(MATTER, caps, ALL_MODULES));
 }
 
 function tileIds(tiles: HeroTile[]): string[] {
@@ -134,12 +122,10 @@ describe("matter hero tiles (641B)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
-    enableModules(ALL_MODULES);
     mockUnbilled.mockResolvedValue(UNBILLED);
     mockTrust.mockResolvedValue({ state: "ok", data: TRUST });
     mockOutstanding.mockResolvedValue({ state: "ok", data: OUTSTANDING });
     mockDeadlines.mockResolvedValue(DEADLINES);
-    mockBudget.mockResolvedValue(BUDGET);
   });
 
   afterEach(() => {
@@ -202,17 +188,18 @@ describe("matter hero tiles (641B)", () => {
   });
 
   it("trust_accounting off: trust tile omitted and the balance never read", async () => {
-    enableModules(["court_calendar"]);
-    const data = await loadMatterHeroData(MATTER, ADMIN);
+    const data = await loadMatterHeroData(MATTER, ADMIN, { ...ALL_MODULES, trustEnabled: false });
 
-    expect(data.trustEnabled).toBe(false);
+    expect(data.trustBalance).toEqual({ state: "absent" });
     expect(tileIds(buildMatterHeroTiles(data))).toEqual(["wip", "outstanding", "court"]);
     expect(mockTrust).not.toHaveBeenCalled();
   });
 
   it("court_calendar off: court tile omitted, deadlines never read, KPIDashboard gets []", async () => {
-    enableModules(["trust_accounting"]);
-    const data = await loadMatterHeroData(MATTER, ADMIN);
+    const data = await loadMatterHeroData(MATTER, ADMIN, {
+      ...ALL_MODULES,
+      courtCalendarEnabled: false,
+    });
 
     expect(data.upcomingDeadlines).toEqual({ state: "absent" });
     expect(tileIds(buildMatterHeroTiles(data))).toEqual(["wip", "trust", "outstanding"]);
@@ -233,8 +220,39 @@ describe("matter hero tiles (641B)", () => {
     });
   });
 
+  it("a postponed hearing: the earlier POSTPONED row is skipped for the rescheduled SCHEDULED one", async () => {
+    // CourtCalendarService.postponeCourtDate keeps the original row (POSTPONED) beside a new
+    // SCHEDULED one; the backend filters by date only, so both come back.
+    mockDeadlines.mockResolvedValue([
+      { type: "COURT", date: "2026-12-01", description: "Pre-trial", status: "POSTPONED" },
+      { type: "COURT", date: "2026-12-05", description: "Motion", status: "CANCELLED" },
+      { type: "COURT", date: "2026-12-15", description: "Pre-trial", status: "SCHEDULED" },
+    ]);
+    const court = (await tilesFor(ADMIN)).find((t) => t.id === "court");
+
+    expect(court?.value).toBe(formatLocalDate("2026-12-15"));
+    expect(court?.hint).toBe("Pre-trial");
+  });
+
+  it("only cancelled / postponed / heard rows: '—' (null value) with 'None scheduled'", async () => {
+    mockDeadlines.mockResolvedValue([
+      { type: "COURT", date: "2026-12-01", description: "Trial", status: "CANCELLED" },
+      { type: "COURT", date: "2026-12-02", description: "Hearing", status: "POSTPONED" },
+      { type: "COURT", date: "2026-12-03", description: "Motion", status: "HEARD" },
+    ]);
+    const court = (await tilesFor(ADMIN)).find((t) => t.id === "court");
+
+    expect(court).toEqual({
+      id: "court",
+      label: "Next court date",
+      value: null,
+      hint: "None scheduled",
+      state: "ready",
+    });
+  });
+
   it("deadlines are read once and shared with KPIDashboard", async () => {
-    const data = await loadMatterHeroData(MATTER, ADMIN);
+    const data = await loadMatterHeroData(MATTER, ADMIN, ALL_MODULES);
 
     expect(mockDeadlines).toHaveBeenCalledTimes(1);
     expect(mockDeadlines).toHaveBeenCalledWith(MATTER);
@@ -243,7 +261,7 @@ describe("matter hero tiles (641B)", () => {
 
   it("a failed deadlines read: court tile errors, KPIDashboard gets [] (as before)", async () => {
     mockDeadlines.mockRejectedValue(new Error("boom"));
-    const data = await loadMatterHeroData(MATTER, ADMIN);
+    const data = await loadMatterHeroData(MATTER, ADMIN, ALL_MODULES);
 
     expect(buildMatterHeroTiles(data).find((t) => t.id === "court")).toEqual({
       id: "court",
@@ -304,15 +322,6 @@ describe("matter hero tiles (641B)", () => {
     const wip = tiles.find((t) => t.id === "wip");
     expect(wip?.value).toBe(formatCurrency(0, "ZAR"));
     expect(wip?.hint).toBe(`${formatChartValue(0, "hours")} · 1 entry`);
-  });
-
-  it("budget: read exactly once; a failure (or 404 = no budget) → null", async () => {
-    expect((await loadMatterHeroData(MATTER, MEMBER)).budget).toEqual(BUDGET);
-    expect(mockBudget).toHaveBeenCalledTimes(1);
-
-    mockBudget.mockRejectedValueOnce(new MockApiError(404, "Not found"));
-    expect((await loadMatterHeroData(MATTER, MEMBER)).budget).toBeNull();
-    expect(mockBudget).toHaveBeenCalledTimes(2);
   });
 
   it("tiles carry only serializable data across the RSC boundary (OQ #26)", async () => {

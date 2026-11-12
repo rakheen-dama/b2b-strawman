@@ -1,0 +1,107 @@
+# 642B SEL-COMPAT after (task 642.10) — worktree @ 3c04cb3bb (branch phase90/42B-client-hero)
+# frontend/e2e diff vs main (9b3ec3555):
+$ git diff --stat main...HEAD -- frontend/e2e
+(empty = frontend/e2e byte-identical to main)
+
+## Part 1 — e2e consumers (same greps as sel-compat-before.txt, paths relative to frontend/)
+
+$ grep -rn -- "client-header-card" e2e/ | wc -l
+2
+
+$ grep -rn -- "client-name" e2e/ | wc -l
+0
+
+$ grep -rn -- "customer-status-badge" e2e/ | wc -l
+0
+
+$ grep -rn -- "lifecycle-badge" e2e/ | wc -l
+13
+
+$ grep -rn -- "client-contact" e2e/ | wc -l
+0
+
+$ grep -rn -- "client-context" e2e/ | wc -l
+0
+
+$ grep -rn -- "client-header-actions" e2e/ | wc -l
+1
+
+$ grep -rn -- "smart-primary-action" e2e/ | wc -l
+3
+
+$ grep -rn -- "client-header-fields" e2e/ | wc -l
+0
+
+$ grep -rn -- "client-header-field-" e2e/ | wc -l
+0
+
+$ grep -rn -- "lifecycle-badge\|client-header-actions\|smart-primary-action" e2e/   (hit locations, unchanged from before)
+e2e/tests/customers/customer-lifecycle.spec.ts:63
+e2e/tests/customers/customer-lifecycle.spec.ts:77
+e2e/tests/customers/customer-lifecycle.spec.ts:81
+e2e/tests/customers/customer-lifecycle.spec.ts:154
+e2e/tests/customers/customer-lifecycle.spec.ts:166
+e2e/tests/customers/customer-lifecycle.spec.ts:173
+e2e/tests/customers/customer-lifecycle.spec.ts:187
+e2e/tests/customers/customer-lifecycle.spec.ts:190
+e2e/tests/customers/customer-lifecycle.spec.ts:194
+e2e/tests/customers/customer-data-protection.spec.ts:142
+e2e/tests/customers/customer-data-protection.spec.ts:156
+e2e/tests/customers/customer-data-protection.spec.ts:158
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:76
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:193
+e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:180
+e2e/tests/documents/document-generation.spec.ts:109
+e2e/helpers/legal-depth-ii.ts:231
+
+## Part 2 — live DOM facts, before (obs-before.json, stack @642A) vs after (obs-after.json, this branch)
+# One record per user/client (facts were identical across viewport/theme within each pair; checked below).
+
+### BEFORE
+alice/rich [1024x768/light, 1024x768/dark, 1440x900/light, 1440x900/dark] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Sipho Ndlovu mwdwiakrbc6a"}],"clientName":"Sipho Ndlovu mwdwiakrbc6a","customerStatusBadge":null,"lifecycleBadge":"Onboarding","clientHeaderFields":"ID8501015800087","clientContact":"sipho.ndlovu.mwdwiakrbc6a@example.com","clientContext":"Since 12 Nov 2026 · 2 matters","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Activate Client","-:Generate Document","client-overflow-trigger:More actions"],"smartPrimaryAction":"Activate Client"}
+alice/fx [1440x900/light] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Acme Corp"}],"clientName":"Acme Corp","customerStatusBadge":null,"lifecycleBadge":"Active","clientHeaderFields":null,"clientContact":"contact@acme.example.com · +1-555-0100","clientContext":"Since 12 Nov 2026 · 1 matter","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Edit","-:Generate Document","client-overflow-trigger:More actions"],"smartPrimaryAction":"Edit"}
+carol/rich [1024x768/light, 1024x768/dark, 1440x900/light, 1440x900/dark] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Sipho Ndlovu mwdwiakrbc6a"}],"clientName":"Sipho Ndlovu mwdwiakrbc6a","customerStatusBadge":null,"lifecycleBadge":"Onboarding","clientHeaderFields":"ID8501015800087","clientContact":"sipho.ndlovu.mwdwiakrbc6a@example.com","clientContext":"Since 12 Nov 2026 · 0 matters","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Activate Client","client-overflow-trigger:More actions"],"smartPrimaryAction":"Activate Client"}
+carol/fx [1440x900/light] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Acme Corp"}],"clientName":"Acme Corp","customerStatusBadge":null,"lifecycleBadge":"Active","clientHeaderFields":null,"clientContact":"contact@acme.example.com · +1-555-0100","clientContext":"Since 12 Nov 2026 · 0 matters","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Edit","client-overflow-trigger:More actions"],"smartPrimaryAction":"Edit"}
+
+### AFTER
+alice/rich [1024x768/light, 1024x768/dark, 1440x900/light, 1440x900/dark, 390x844/light, 768x1024/light] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Sipho Ndlovu mwdzyk4n12b3"}],"clientName":"Sipho Ndlovu mwdzyk4n12b3","customerStatusBadge":null,"lifecycleBadge":"Onboarding","clientHeaderFields":"ID8501015800087","clientContact":"sipho.ndlovu.mwdzyk4n12b3@example.com","clientContext":"Since 12 Nov 2026 · 2 matters","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Activate Client","-:Generate Document","client-overflow-trigger:More actions"],"smartPrimaryAction":"Activate Client"}
+alice/fx [1440x900/light, 1024x768/dark] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Acme Corp"}],"clientName":"Acme Corp","customerStatusBadge":null,"lifecycleBadge":"Active","clientHeaderFields":null,"clientContact":"contact@acme.example.com · +1-555-0100","clientContext":"Since 12 Nov 2026 · 1 matter","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Edit","-:Generate Document","client-overflow-trigger:More actions"],"smartPrimaryAction":"Edit"}
+alice/full [1440x900/light] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Moroka Family Trust mwdzupuo0b2c"}],"clientName":"Moroka Family Trust mwdzupuo0b2c","customerStatusBadge":null,"lifecycleBadge":"Onboarding","clientHeaderFields":null,"clientContact":"moroka.trust.mwdzupuo0b2c@example.com","clientContext":"Since 12 Nov 2026 · 1 matter","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Activate Client","-:Generate Document","client-overflow-trigger:More actions"],"smartPrimaryAction":"Activate Client"}
+alice/vis [1440x900/light] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Sipho Ndlovu mwdzupuo0b2c"}],"clientName":"Sipho Ndlovu mwdzupuo0b2c","customerStatusBadge":null,"lifecycleBadge":"Active","clientHeaderFields":"ID8501015800087","clientContact":"sipho.ndlovu.mwdzupuo0b2c@example.com","clientContext":"Since 12 Nov 2026 · 2 matters","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Edit","-:Generate Document","client-overflow-trigger:More actions"],"smartPrimaryAction":"Edit"}
+carol/rich [1024x768/light, 1440x900/light, 1440x900/dark] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Sipho Ndlovu mwdzyk4n12b3"}],"clientName":"Sipho Ndlovu mwdzyk4n12b3","customerStatusBadge":null,"lifecycleBadge":"Onboarding","clientHeaderFields":"ID8501015800087","clientContact":"sipho.ndlovu.mwdzyk4n12b3@example.com","clientContext":"Since 12 Nov 2026 · 0 matters","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Activate Client","client-overflow-trigger:More actions"],"smartPrimaryAction":"Activate Client"}
+carol/vis [1440x900/light] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Sipho Ndlovu mwdzupuo0b2c"}],"clientName":"Sipho Ndlovu mwdzupuo0b2c","customerStatusBadge":null,"lifecycleBadge":"Active","clientHeaderFields":"ID8501015800087","clientContact":"sipho.ndlovu.mwdzupuo0b2c@example.com","clientContext":"Since 12 Nov 2026 · 1 matter","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Edit","client-overflow-trigger:More actions"],"smartPrimaryAction":"Edit"}
+carol/fx [1440x900/light] identical-across-loads=true
+  {"h1Count":1,"h1s":[{"testid":"client-name","text":"Acme Corp"}],"clientName":"Acme Corp","customerStatusBadge":null,"lifecycleBadge":"Active","clientHeaderFields":null,"clientContact":"contact@acme.example.com · +1-555-0100","clientContext":"Since 12 Nov 2026 · 0 matters","clientHeaderActionsPresent":true,"actions":["smart-primary-action:Edit","client-overflow-trigger:More actions"],"smartPrimaryAction":"Edit"}
+
+### AFTER checks (every load, all tabs)
+alice/rich/(default) 1024x768 light: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+alice/rich/(default) 1024x768 dark: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+alice/rich/(default) 1440x900 light: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+alice/rich/(default) 1440x900 dark: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+alice/rich/trust 1440x900 light: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+alice/rich/(default) 390x844 light: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+alice/rich/(default) 768x1024 light: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+alice/fx/(default) 1440x900 light: all pass (h1="Acme Corp", lifecycle="Active", smart="Edit")
+alice/fx/(default) 1024x768 dark: all pass (h1="Acme Corp", lifecycle="Active", smart="Edit")
+alice/fx/invoices 1440x900 light: all pass (h1="Acme Corp", lifecycle="Active", smart="Edit")
+alice/full/(default) 1440x900 light: all pass (h1="Moroka Family Trust mwdzupuo0b2c", lifecycle="Onboarding", smart="Activate Client")
+alice/full/trust 1440x900 light: all pass (h1="Moroka Family Trust mwdzupuo0b2c", lifecycle="Onboarding", smart="Activate Client")
+alice/vis/(default) 1440x900 light: all pass (h1="Sipho Ndlovu mwdzupuo0b2c", lifecycle="Active", smart="Edit")
+carol/rich/(default) 1024x768 light: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+carol/rich/(default) 1440x900 light: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+carol/rich/(default) 1440x900 dark: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+carol/rich/trust 1440x900 light: all pass (h1="Sipho Ndlovu mwdzyk4n12b3", lifecycle="Onboarding", smart="Activate Client")
+carol/vis/(default) 1440x900 light: all pass (h1="Sipho Ndlovu mwdzupuo0b2c", lifecycle="Active", smart="Edit")
+carol/fx/(default) 1440x900 light: all pass (h1="Acme Corp", lifecycle="Active", smart="Edit")
+
+RESULT: 0 load(s) with a failed check out of 19.

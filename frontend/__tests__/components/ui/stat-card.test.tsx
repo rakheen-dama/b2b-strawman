@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 
 import { StatCard, type StatCardDelta } from "@b2mash/ui/stat-card";
+import { SparklineTrend } from "@/components/charts/sparkline-trend";
 import { formatChartValue } from "@/lib/chart-format";
 
 afterEach(() => {
@@ -161,13 +162,20 @@ describe("StatCard", () => {
     expect(screen.getByText("No change vs previous 30 days")).toBeInTheDocument();
   });
 
-  it("default shows the sparkline in an aria-hidden wrapper; compact hides it", () => {
+  it("default shows the sparkline slot without hiding it from assistive tech; compact hides it", () => {
     const { container, rerender } = render(
-      <StatCard label="Hours" value="10h" sparkline={<svg data-testid="spark" />} />
+      <StatCard
+        label="Hours"
+        value="10h"
+        sparkline={<SparklineTrend values={[1, 3, 2]} label="Hours per week" summary="Peak 3h." />}
+      />
     );
     const wrapper = container.querySelector('[data-slot="stat-card-sparkline"]');
-    expect(wrapper).toHaveAttribute("aria-hidden", "true");
-    expect(within(wrapper as HTMLElement).getByTestId("spark")).toBeInTheDocument();
+    expect(wrapper).not.toHaveAttribute("aria-hidden");
+    // The preset's own name + summary reach the accessibility tree (ADR-370; 640.6).
+    expect(screen.getByRole("img", { name: "Hours per week" })).toHaveAccessibleDescription(
+      "Peak 3h."
+    );
 
     rerender(
       <StatCard

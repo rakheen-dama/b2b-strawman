@@ -1,0 +1,303 @@
+{
+  "capturedAt": "2026-11-12T09:55:05.934Z",
+  "head": "e0e399b244d848cfffa6f29374b0f0e752c2b38a",
+  "roleName": "Finance viewer (640A OBS)",
+  "personas": [
+    {
+      "persona": "alice",
+      "viewport": 1440,
+      "file": "home-alice-1440-light.png",
+      "homePageCount": 1,
+      "audience": "owner",
+      "cells": [
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-matterHealth",
+        "home-cell-activity",
+        "home-cell-sensitive"
+      ],
+      "rows": [
+        [
+          "home-cell-diary{lg:col-span-6}",
+          "home-cell-unbilledWip{lg:col-span-6}"
+        ],
+        [
+          "home-cell-debtors{lg:col-span-6}",
+          "home-cell-trustPosition{lg:col-span-6}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-6}",
+          "home-cell-matterHealth{lg:col-span-6}",
+          "home-cell-activity{lg:col-span-6}",
+          "home-cell-sensitive{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        "Home"
+      ],
+      "htmlClass": "light",
+      "cellCount": 8,
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "alice",
+      "viewport": 1024,
+      "file": "home-alice-1024-light.png",
+      "homePageCount": 1,
+      "audience": "owner",
+      "cells": [
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-matterHealth",
+        "home-cell-activity",
+        "home-cell-sensitive"
+      ],
+      "rows": [
+        [
+          "home-cell-diary{lg:col-span-6}",
+          "home-cell-unbilledWip{lg:col-span-6}"
+        ],
+        [
+          "home-cell-debtors{lg:col-span-6}",
+          "home-cell-trustPosition{lg:col-span-6}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-6}",
+          "home-cell-matterHealth{lg:col-span-6}",
+          "home-cell-activity{lg:col-span-6}",
+          "home-cell-sensitive{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        "Home"
+      ],
+      "htmlClass": "light",
+      "cellCount": 8,
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "bob",
+      "viewport": 1440,
+      "file": "home-bob-1440-light.png",
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-diary",
+        "home-cell-ficaOutstanding",
+        "home-cell-activity",
+        "home-cell-sensitive"
+      ],
+      "rows": [
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-6}",
+          "home-cell-ficaOutstanding{lg:col-span-6}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-6}",
+          "home-cell-sensitive{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        "Home"
+      ],
+      "htmlClass": "light",
+      "cellCount": 7,
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [
+        "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+      ],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carol",
+      "viewport": 1440,
+      "file": "home-carol-1440-light.png",
+      "homePageCount": 1,
+      "audience": "feeEarner",
+      "cells": [
+        "home-cell-diary",
+        "home-cell-tasks",
+        "home-cell-unbilledWip",
+        "home-cell-matterHealth",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-tasks{lg:col-span-6}",
+          "home-cell-unbilledWip{lg:col-span-6}"
+        ],
+        [
+          "home-cell-matterHealth{lg:col-span-6}",
+          "home-cell-activity{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        "Home"
+      ],
+      "htmlClass": "light",
+      "cellCount": 5,
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [
+        "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+      ],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carol-finance",
+      "viewport": 1440,
+      "file": "home-carol-finance-1440-light.png",
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-unbilledWip",
+        "home-cell-diary",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-unbilledWip{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        "Home"
+      ],
+      "htmlClass": "light",
+      "cellCount": 3,
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [
+        "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+      ],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carol-restored",
+      "viewport": 1440,
+      "file": "home-carol-restored-1440-light.png",
+      "homePageCount": 1,
+      "audience": "feeEarner",
+      "cells": [
+        "home-cell-diary",
+        "home-cell-tasks",
+        "home-cell-unbilledWip",
+        "home-cell-matterHealth",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-tasks{lg:col-span-6}",
+          "home-cell-unbilledWip{lg:col-span-6}"
+        ],
+        [
+          "home-cell-matterHealth{lg:col-span-6}",
+          "home-cell-activity{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        "Home"
+      ],
+      "htmlClass": "light",
+      "cellCount": 5,
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [
+        "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+      ],
+      "hydrationMessages": []
+    }
+  ],
+  "roleFlow": {
+    "roleExistedBefore": false,
+    "roleVisibleAfterCreate": true,
+    "original": {
+      "testid": "member-row-carol@e2e-test.local",
+      "badge": "Member",
+      "overrideCount": null,
+      "roleValue": "Member",
+      "checkedCaps": [
+        "View Trust",
+        "AI Execute"
+      ],
+      "overrideMarks": []
+    },
+    "assignedCapsShown": [
+      "Financial Visibility"
+    ],
+    "afterAssign": {
+      "testid": "member-row-carol@e2e-test.local",
+      "badge": "Finance viewer (640A OBS)",
+      "overrideCount": null,
+      "roleValue": "Finance viewer (640A OBS)",
+      "checkedCaps": [
+        "Financial Visibility"
+      ],
+      "overrideMarks": []
+    },
+    "restored": {
+      "testid": "member-row-carol@e2e-test.local",
+      "badge": "Member",
+      "overrideCount": null,
+      "roleValue": "Member",
+      "checkedCaps": [
+        "View Trust",
+        "AI Execute"
+      ],
+      "overrideMarks": []
+    },
+    "restoreVerified": true
+  },
+  "steps": [
+    "2026-11-12T09:55:09.099Z HOME alice@1440: audience=owner cells(8)=home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-matterHealth,home-cell-activity,home-cell-sensitive h1=[\"Home\"] kpis=0 console=0",
+    "2026-11-12T09:55:11.431Z HOME alice@1024: audience=owner cells(8)=home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-matterHealth,home-cell-activity,home-cell-sensitive h1=[\"Home\"] kpis=0 console=0",
+    "2026-11-12T09:55:14.172Z HOME bob@1440: audience=firm cells(7)=home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-diary,home-cell-ficaOutstanding,home-cell-activity,home-cell-sensitive h1=[\"Home\"] kpis=0 console=1",
+    "2026-11-12T09:55:16.714Z HOME carol@1440: audience=feeEarner cells(5)=home-cell-diary,home-cell-tasks,home-cell-unbilledWip,home-cell-matterHealth,home-cell-activity h1=[\"Home\"] kpis=0 console=1",
+    "2026-11-12T09:55:20.353Z created custom role \"Finance viewer (640A OBS)\"",
+    "2026-11-12T09:55:21.734Z Carol original: badge=Member sheetRole=Member overrides=null marks=[] caps=[\"View Trust\",\"AI Execute\"]",
+    "2026-11-12T09:55:25.862Z Carol after assign: badge=Finance viewer (640A OBS) sheetRole=Finance viewer (640A OBS) caps=[\"Financial Visibility\"]",
+    "2026-11-12T09:55:28.436Z HOME carol-finance@1440: audience=firm cells(3)=home-cell-unbilledWip,home-cell-diary,home-cell-activity h1=[\"Home\"] kpis=0 console=1",
+    "2026-11-12T09:55:34.284Z Carol restored: badge=Member sheetRole=Member caps=[\"View Trust\",\"AI Execute\"] verified=true",
+    "2026-11-12T09:55:36.970Z HOME carol-restored@1440: audience=feeEarner cells(5)=home-cell-diary,home-cell-tasks,home-cell-unbilledWip,home-cell-matterHealth,home-cell-activity h1=[\"Home\"] kpis=0 console=1"
+  ],
+  "notes": {
+    "kpisBackendLog": "docker compose ... logs --since 5m backend | grep -i kpis -> 0 lines; NOT evidential on its own: the e2e backend logs only scheduler INFO lines (no per-request access log).",
+    "kpisSourceOnMain": "git grep kpis e0e399b24 -- frontend/lib frontend/app frontend/components -> 0 matches (exit 1): no Home caller of /api/dashboard/kpis on main, consistent with 0 browser requests. (The 640A worktree has uncommitted WIP adding a server-side gated kpis fetch in lib/dashboard-home-fetch.ts; the stack was not built from it.)",
+    "userinfoConsoleError": "[error] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch -- seen once for bob, carol, carol-finance, carol-restored captures. Re-probed with userinfo-probe.cjs (settled login + reload, bob & carol): 0 errors. Cause: the OBS script page.goto(dashboard) immediately after the login redirect aborts the in-flight mock-IDP /userinfo fetch -> harness navigation race, not a product defect.",
+    "hydration": "0 hydration messages in all 6 captures.",
+    "customRoleCaveat": "Finance viewer (640A OBS) holds ONLY FINANCIAL_VISIBILITY; the system Member role it replaces carries VIEW_TRUST + AI_EXECUTE, so carol-finance loses trust-gated widgets as well as gaining the firm audience.",
+    "homePageNodes": "exactly 1 [data-testid=home-page] node in document for every capture (scoped to #main-content)."
+  }
+}

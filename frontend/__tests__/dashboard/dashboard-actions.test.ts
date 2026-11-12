@@ -57,6 +57,8 @@ import { fetchHomeWidgets } from "@/lib/dashboard-home-fetch";
 import { buildHomePlan, type HomeCaps } from "@/lib/dashboard-home";
 
 const TODAY = "2026-10-21";
+/** 640A (B1): the last 30 days including TODAY — from = TODAY − 29 days. */
+const KPIS_URL = "/api/dashboard/kpis?from=2026-09-22&to=2026-10-21";
 const ALL_MODULES = ["trust_accounting", "disbursements", "court_calendar"];
 const MEMBER: HomeCaps = {
   capabilities: ["VIEW_LEGAL", "VIEW_TRUST"],
@@ -118,6 +120,9 @@ describe("fetchHomeWidgets — gate → call matrix", () => {
     expect(data.trustPosition).toEqual({ state: "absent" });
     expect(data.debtors).toEqual({ state: "absent" });
     expect(data.ficaOutstanding).toEqual({ state: "absent" });
+    // B2 — the KPI endpoint is firm-wide, so a fee earner's Home never reads it.
+    expect(calledUrls().some((u) => u.startsWith("/api/dashboard/kpis"))).toBe(false);
+    expect(data.kpis).toEqual({ state: "absent" });
   });
 
   it("admin (bookkeeper row): firm-wide diary, WIP, debtors, trust, FICA, activity — no tasks or health", async () => {
@@ -127,12 +132,14 @@ describe("fetchHomeWidgets — gate → call matrix", () => {
     expect(calledUrls()).not.toContain("/api/members");
     expect(calledUrls()).toEqual(
       expect.arrayContaining([
+        KPIS_URL,
         "/api/dashboard/unbilled-wip",
         "/api/dashboard/trust-position",
         "/api/dashboard/fica-outstanding?limit=5",
         "/api/dashboard/activity?limit=15",
       ])
     );
+    expect(data.kpis).toEqual({ state: "ok", data: { url: KPIS_URL } });
     expect(mockGetDebtors).toHaveBeenCalledWith({ size: 5 });
     expect(calledUrls()).not.toContain("/api/my-work/tasks");
     expect(calledUrls()).not.toContain("/api/dashboard/matter-health");
@@ -149,6 +156,7 @@ describe("fetchHomeWidgets — gate → call matrix", () => {
 
     expect(calledUrls()).toEqual(
       expect.arrayContaining([
+        KPIS_URL,
         "/api/dashboard/unbilled-wip",
         "/api/dashboard/trust-position",
         "/api/dashboard/fica-outstanding?limit=5",
@@ -211,6 +219,26 @@ describe("fetchHomeWidgets — gate → call matrix", () => {
 
     expect(data.unbilledWip).toEqual({ state: "error" });
     expect(data.trustPosition.state).toBe("ok");
+    expect(mockRedirectToReLogin).not.toHaveBeenCalled();
+  });
+
+  it("KPIs: 403/404 → absent (the row drops out); any other failure → error, the rest still load", async () => {
+    routeGets({
+      [KPIS_URL]: () => {
+        throw new MockApiError(403, "Forbidden");
+      },
+    });
+    const forbidden = await fetchHomeWidgets(buildHomePlan(ADMIN, ALL_MODULES), TODAY);
+    expect(forbidden.kpis).toEqual({ state: "absent" });
+
+    routeGets({
+      [KPIS_URL]: () => {
+        throw new MockApiError(500, "boom");
+      },
+    });
+    const failed = await fetchHomeWidgets(buildHomePlan(OWNER, ALL_MODULES), TODAY);
+    expect(failed.kpis).toEqual({ state: "error" });
+    expect(failed.unbilledWip.state).toBe("ok");
     expect(mockRedirectToReLogin).not.toHaveBeenCalled();
   });
 

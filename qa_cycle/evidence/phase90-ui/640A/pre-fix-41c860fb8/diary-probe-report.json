@@ -1,0 +1,166 @@
+{
+  "synthetic": true,
+  "capturedAt": "2026-11-12T10:24:31.106Z",
+  "results": [
+    {
+      "viewport": 1440,
+      "file": "diary-synthetic-1rows-1440.png",
+      "rows": 1,
+      "contentBoxWidth": 1086,
+      "ulColumnCount": "2",
+      "ulColumnGap": "32px",
+      "liBoxes": [
+        {
+          "x": 305,
+          "y": 435,
+          "w": 527
+        }
+      ],
+      "distinctColumnsX": [
+        305
+      ]
+    },
+    {
+      "viewport": 1440,
+      "file": "diary-synthetic-2rows-1440.png",
+      "rows": 2,
+      "contentBoxWidth": 1086,
+      "ulColumnCount": "2",
+      "ulColumnGap": "32px",
+      "liBoxes": [
+        {
+          "x": 305,
+          "y": 435,
+          "w": 527
+        },
+        {
+          "x": 864,
+          "y": 435,
+          "w": 527
+        }
+      ],
+      "distinctColumnsX": [
+        305,
+        864
+      ]
+    },
+    {
+      "viewport": 1440,
+      "file": "diary-synthetic-5rows-1440.png",
+      "rows": 5,
+      "contentBoxWidth": 1086,
+      "ulColumnCount": "2",
+      "ulColumnGap": "32px",
+      "liBoxes": [
+        {
+          "x": 305,
+          "y": 435,
+          "w": 527
+        },
+        {
+          "x": 305,
+          "y": 469,
+          "w": 527
+        },
+        {
+          "x": 305,
+          "y": 503,
+          "w": 527
+        },
+        {
+          "x": 864,
+          "y": 435,
+          "w": 527
+        },
+        {
+          "x": 864,
+          "y": 469,
+          "w": 527
+        }
+      ],
+      "distinctColumnsX": [
+        305,
+        864
+      ]
+    },
+    {
+      "viewport": 1024,
+      "file": "diary-synthetic-1rows-1024.png",
+      "rows": 1,
+      "contentBoxWidth": 670,
+      "ulColumnCount": "auto",
+      "ulColumnGap": "normal",
+      "liBoxes": [
+        {
+          "x": 305,
+          "y": 549,
+          "w": 670
+        }
+      ],
+      "distinctColumnsX": [
+        305
+      ]
+    },
+    {
+      "viewport": 1024,
+      "file": "diary-synthetic-2rows-1024.png",
+      "rows": 2,
+      "contentBoxWidth": 670,
+      "ulColumnCount": "auto",
+      "ulColumnGap": "normal",
+      "liBoxes": [
+        {
+          "x": 305,
+          "y": 549,
+          "w": 670
+        },
+        {
+          "x": 305,
+          "y": 583,
+          "w": 670
+        }
+      ],
+      "distinctColumnsX": [
+        305
+      ]
+    },
+    {
+      "viewport": 1024,
+      "file": "diary-synthetic-5rows-1024.png",
+      "rows": 5,
+      "contentBoxWidth": 670,
+      "ulColumnCount": "auto",
+      "ulColumnGap": "normal",
+      "liBoxes": [
+        {
+          "x": 305,
+          "y": 549,
+          "w": 670
+        },
+        {
+          "x": 305,
+          "y": 583,
+          "w": 670
+        },
+        {
+          "x": 305,
+          "y": 617,
+          "w": 670
+        },
+        {
+          "x": 305,
+          "y": 651,
+          "w": 670
+        },
+        {
+          "x": 305,
+          "y": 685,
+          "w": 670
+        }
+      ],
+      "distinctColumnsX": [
+        305
+      ]
+    }
+  ]
+}

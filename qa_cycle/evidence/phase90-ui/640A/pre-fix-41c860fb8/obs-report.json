@@ -1,0 +1,2734 @@
+{
+  "capturedAt": "2026-11-12T10:21:15.834Z",
+  "head": "41c860fb86a2ccfa372bdef2225bba40a0c0edf0",
+  "roleName": "Finance viewer (640A OBS)",
+  "captures": [
+    {
+      "persona": "alice",
+      "viewport": "1024x768",
+      "width": 1024,
+      "theme": "light",
+      "file": "home-alice-1024-light.png",
+      "kpiFile": "kpis-alice-1024-light.png",
+      "diaryFile": null,
+      "homePageCount": 1,
+      "audience": "owner",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-matterHealth",
+        "home-cell-sensitive",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-4}",
+          "home-cell-matterHealth{lg:col-span-4}",
+          "home-cell-sensitive{lg:col-span-4}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(7.73948 -0.41344 -4.03315)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 720,
+          "h": 56
+        }
+      },
+      "htmlClass": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "overflowX": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 720,
+        "gridTemplateColumns": "352px 352px",
+        "tilesPerRow": [
+          2,
+          2
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 310,
+                "h": 40
+              },
+              "lineStroke": "lab(55.0695 -42.0362 -2.64502)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "ready",
+            "valueVisible": "100,0%",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 358,
+              "w": 352,
+              "h": 98
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 358,
+              "w": 352,
+              "h": 98
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 670,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 9,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % 100,0%\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "alice",
+      "viewport": "1440x900",
+      "width": 1440,
+      "theme": "light",
+      "file": "home-alice-1440-light.png",
+      "kpiFile": "kpis-alice-1440-light.png",
+      "diaryFile": "diary-alice-1440-light.png",
+      "homePageCount": 1,
+      "audience": "owner",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-matterHealth",
+        "home-cell-sensitive",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-4}",
+          "home-cell-matterHealth{lg:col-span-4}",
+          "home-cell-sensitive{lg:col-span-4}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(7.73948 -0.41344 -4.03315)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 1136,
+          "h": 56
+        }
+      },
+      "htmlClass": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "overflowX": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 1136,
+        "gridTemplateColumns": "272px 272px 272px 272px",
+        "tilesPerRow": [
+          4
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 568,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 230,
+                "h": 40
+              },
+              "lineStroke": "lab(55.0695 -42.0362 -2.64502)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "ready",
+            "valueVisible": "100,0%",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 856,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 1144,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 1086,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 9,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % 100,0%\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "alice",
+      "viewport": "1024x768",
+      "width": 1024,
+      "theme": "dark",
+      "file": "home-alice-1024-dark.png",
+      "kpiFile": "kpis-alice-1024-dark.png",
+      "diaryFile": null,
+      "homePageCount": 1,
+      "audience": "owner",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-matterHealth",
+        "home-cell-sensitive",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-4}",
+          "home-cell-matterHealth{lg:col-span-4}",
+          "home-cell-sensitive{lg:col-span-4}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(100 0 0)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(65.1376 -0.85035 -6.67907)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 720,
+          "h": 56
+        }
+      },
+      "htmlClass": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "overflowX": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 720,
+        "gridTemplateColumns": "352px 352px",
+        "tilesPerRow": [
+          2,
+          2
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 310,
+                "h": 40
+              },
+              "lineStroke": "lab(62.0297 -41.8748 -2.65642)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "ready",
+            "valueVisible": "100,0%",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 358,
+              "w": 352,
+              "h": 98
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 358,
+              "w": 352,
+              "h": 98
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 670,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 9,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % 100,0%\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "alice",
+      "viewport": "1440x900",
+      "width": 1440,
+      "theme": "dark",
+      "file": "home-alice-1440-dark.png",
+      "kpiFile": "kpis-alice-1440-dark.png",
+      "diaryFile": "diary-alice-1440-dark.png",
+      "homePageCount": 1,
+      "audience": "owner",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-matterHealth",
+        "home-cell-sensitive",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-4}",
+          "home-cell-matterHealth{lg:col-span-4}",
+          "home-cell-sensitive{lg:col-span-4}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(100 0 0)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(65.1376 -0.85035 -6.67907)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 1136,
+          "h": 56
+        }
+      },
+      "htmlClass": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "overflowX": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 1136,
+        "gridTemplateColumns": "272px 272px 272px 272px",
+        "tilesPerRow": [
+          4
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 568,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 230,
+                "h": 40
+              },
+              "lineStroke": "lab(62.0297 -41.8748 -2.65642)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "ready",
+            "valueVisible": "100,0%",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 856,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 1144,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 1086,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 9,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % 100,0%\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "bob",
+      "viewport": "1024x768",
+      "width": 1024,
+      "theme": "light",
+      "file": "home-bob-1024-light.png",
+      "kpiFile": "kpis-bob-1024-light.png",
+      "diaryFile": null,
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-sensitive",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-6}",
+          "home-cell-sensitive{lg:col-span-6}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(7.73948 -0.41344 -4.03315)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 720,
+          "h": 56
+        }
+      },
+      "htmlClass": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "overflowX": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 720,
+        "gridTemplateColumns": "352px 352px",
+        "tilesPerRow": [
+          2,
+          2
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 310,
+                "h": 40
+              },
+              "lineStroke": "lab(55.0695 -42.0362 -2.64502)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "ready",
+            "valueVisible": "100,0%",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 358,
+              "w": 352,
+              "h": 98
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 358,
+              "w": 352,
+              "h": 98
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 670,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 8,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % 100,0%\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "bob",
+      "viewport": "1440x900",
+      "width": 1440,
+      "theme": "light",
+      "file": "home-bob-1440-light.png",
+      "kpiFile": "kpis-bob-1440-light.png",
+      "diaryFile": "diary-bob-1440-light.png",
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-sensitive",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-6}",
+          "home-cell-sensitive{lg:col-span-6}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(7.73948 -0.41344 -4.03315)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 1136,
+          "h": 56
+        }
+      },
+      "htmlClass": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "overflowX": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 1136,
+        "gridTemplateColumns": "272px 272px 272px 272px",
+        "tilesPerRow": [
+          4
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 568,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 230,
+                "h": 40
+              },
+              "lineStroke": "lab(55.0695 -42.0362 -2.64502)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "ready",
+            "valueVisible": "100,0%",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 856,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 1144,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 1086,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 8,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % 100,0%\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "bob",
+      "viewport": "1024x768",
+      "width": 1024,
+      "theme": "dark",
+      "file": "home-bob-1024-dark.png",
+      "kpiFile": "kpis-bob-1024-dark.png",
+      "diaryFile": null,
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-sensitive",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-6}",
+          "home-cell-sensitive{lg:col-span-6}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(100 0 0)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(65.1376 -0.85035 -6.67907)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 720,
+          "h": 56
+        }
+      },
+      "htmlClass": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "overflowX": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 720,
+        "gridTemplateColumns": "352px 352px",
+        "tilesPerRow": [
+          2,
+          2
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 310,
+                "h": 40
+              },
+              "lineStroke": "lab(62.0297 -41.8748 -2.65642)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "ready",
+            "valueVisible": "100,0%",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 358,
+              "w": 352,
+              "h": 98
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 358,
+              "w": 352,
+              "h": 98
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 670,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 8,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % 100,0%\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "bob",
+      "viewport": "1440x900",
+      "width": 1440,
+      "theme": "dark",
+      "file": "home-bob-1440-dark.png",
+      "kpiFile": "kpis-bob-1440-dark.png",
+      "diaryFile": "diary-bob-1440-dark.png",
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-debtors",
+        "home-cell-trustPosition",
+        "home-cell-ficaOutstanding",
+        "home-cell-sensitive",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-4}",
+          "home-cell-debtors{lg:col-span-4}",
+          "home-cell-trustPosition{lg:col-span-4}"
+        ],
+        [
+          "home-cell-ficaOutstanding{lg:col-span-6}",
+          "home-cell-sensitive{lg:col-span-6}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(100 0 0)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(65.1376 -0.85035 -6.67907)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 1136,
+          "h": 56
+        }
+      },
+      "htmlClass": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "overflowX": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 1136,
+        "gridTemplateColumns": "272px 272px 272px 272px",
+        "tilesPerRow": [
+          4
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 568,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 230,
+                "h": 40
+              },
+              "lineStroke": "lab(62.0297 -41.8748 -2.65642)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "ready",
+            "valueVisible": "100,0%",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 856,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 1144,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 1086,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 8,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % 100,0%\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carol",
+      "viewport": "1024x768",
+      "width": 1024,
+      "theme": "light",
+      "file": "home-carol-1024-light.png",
+      "kpiFile": null,
+      "diaryFile": null,
+      "homePageCount": 1,
+      "audience": "feeEarner",
+      "cells": [
+        "home-cell-diary",
+        "home-cell-tasks",
+        "home-cell-unbilledWip",
+        "home-cell-matterHealth",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-tasks{lg:col-span-6}",
+          "home-cell-unbilledWip{lg:col-span-6}"
+        ],
+        [
+          "home-cell-matterHealth{lg:col-span-6}",
+          "home-cell-activity{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(7.73948 -0.41344 -4.03315)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 720,
+          "h": 56
+        }
+      },
+      "htmlClass": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "overflowX": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "overflow": false
+      },
+      "kpi": null,
+      "diary": {
+        "contentBoxWidth": 670,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 5,
+      "kpiAriaSnapshot": null,
+      "sparklineAx": [],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carol",
+      "viewport": "1440x900",
+      "width": 1440,
+      "theme": "light",
+      "file": "home-carol-1440-light.png",
+      "kpiFile": null,
+      "diaryFile": "diary-carol-1440-light.png",
+      "homePageCount": 1,
+      "audience": "feeEarner",
+      "cells": [
+        "home-cell-diary",
+        "home-cell-tasks",
+        "home-cell-unbilledWip",
+        "home-cell-matterHealth",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-tasks{lg:col-span-6}",
+          "home-cell-unbilledWip{lg:col-span-6}"
+        ],
+        [
+          "home-cell-matterHealth{lg:col-span-6}",
+          "home-cell-activity{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(7.73948 -0.41344 -4.03315)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 1136,
+          "h": 56
+        }
+      },
+      "htmlClass": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "overflowX": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "kpi": null,
+      "diary": {
+        "contentBoxWidth": 1086,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 5,
+      "kpiAriaSnapshot": null,
+      "sparklineAx": [],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carol",
+      "viewport": "1024x768",
+      "width": 1024,
+      "theme": "dark",
+      "file": "home-carol-1024-dark.png",
+      "kpiFile": null,
+      "diaryFile": null,
+      "homePageCount": 1,
+      "audience": "feeEarner",
+      "cells": [
+        "home-cell-diary",
+        "home-cell-tasks",
+        "home-cell-unbilledWip",
+        "home-cell-matterHealth",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-tasks{lg:col-span-6}",
+          "home-cell-unbilledWip{lg:col-span-6}"
+        ],
+        [
+          "home-cell-matterHealth{lg:col-span-6}",
+          "home-cell-activity{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(100 0 0)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(65.1376 -0.85035 -6.67907)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 720,
+          "h": 56
+        }
+      },
+      "htmlClass": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "overflowX": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "overflow": false
+      },
+      "kpi": null,
+      "diary": {
+        "contentBoxWidth": 670,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 5,
+      "kpiAriaSnapshot": null,
+      "sparklineAx": [],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carol",
+      "viewport": "1440x900",
+      "width": 1440,
+      "theme": "dark",
+      "file": "home-carol-1440-dark.png",
+      "kpiFile": null,
+      "diaryFile": "diary-carol-1440-dark.png",
+      "homePageCount": 1,
+      "audience": "feeEarner",
+      "cells": [
+        "home-cell-diary",
+        "home-cell-tasks",
+        "home-cell-unbilledWip",
+        "home-cell-matterHealth",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-tasks{lg:col-span-6}",
+          "home-cell-unbilledWip{lg:col-span-6}"
+        ],
+        [
+          "home-cell-matterHealth{lg:col-span-6}",
+          "home-cell-activity{lg:col-span-6}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(100 0 0)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(65.1376 -0.85035 -6.67907)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 1136,
+          "h": 56
+        }
+      },
+      "htmlClass": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "overflowX": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "kpi": null,
+      "diary": {
+        "contentBoxWidth": 1086,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 5,
+      "kpiAriaSnapshot": null,
+      "sparklineAx": [],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carolfv",
+      "viewport": "1024x768",
+      "width": 1024,
+      "theme": "light",
+      "file": "home-carolfv-1024-light.png",
+      "kpiFile": "kpis-carolfv-1024-light.png",
+      "diaryFile": null,
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-12}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(7.73948 -0.41344 -4.03315)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 720,
+          "h": 56
+        }
+      },
+      "htmlClass": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "overflowX": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 720,
+        "gridTemplateColumns": "352px 352px",
+        "tilesPerRow": [
+          2,
+          2
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 310,
+                "h": 40
+              },
+              "lineStroke": "lab(55.0695 -42.0362 -2.64502)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "redacted",
+            "valueVisible": "—",
+            "valueSr": "Not available",
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": "Visible to admins and owners",
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 358,
+              "w": 352,
+              "h": 120
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 358,
+              "w": 352,
+              "h": 120
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 670,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 4,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % Not available Visible to admins and owners\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carolfv",
+      "viewport": "1440x900",
+      "width": 1440,
+      "theme": "light",
+      "file": "home-carolfv-1440-light.png",
+      "kpiFile": "kpis-carolfv-1440-light.png",
+      "diaryFile": "diary-carolfv-1440-light.png",
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-12}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(7.73948 -0.41344 -4.03315)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 1136,
+          "h": 56
+        }
+      },
+      "htmlClass": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "overflowX": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 1136,
+        "gridTemplateColumns": "272px 272px 272px 272px",
+        "tilesPerRow": [
+          4
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 568,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 230,
+                "h": 40
+              },
+              "lineStroke": "lab(55.0695 -42.0362 -2.64502)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "redacted",
+            "valueVisible": "—",
+            "valueSr": "Not available",
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": "Visible to admins and owners",
+            "errorStatus": null,
+            "box": {
+              "x": 856,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 1144,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 1086,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 4,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % Not available Visible to admins and owners\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carolfv",
+      "viewport": "1024x768",
+      "width": 1024,
+      "theme": "dark",
+      "file": "home-carolfv-1024-dark.png",
+      "kpiFile": "kpis-carolfv-1024-dark.png",
+      "diaryFile": null,
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-12}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(100 0 0)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(65.1376 -0.85035 -6.67907)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 720,
+          "h": 56
+        }
+      },
+      "htmlClass": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "overflowX": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 720,
+        "gridTemplateColumns": "352px 352px",
+        "tilesPerRow": [
+          2,
+          2
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 192,
+              "w": 352,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 310,
+                "h": 40
+              },
+              "lineStroke": "lab(62.0297 -41.8748 -2.65642)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "redacted",
+            "valueVisible": "—",
+            "valueSr": "Not available",
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": "Visible to admins and owners",
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 358,
+              "w": 352,
+              "h": 120
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 648,
+              "y": 358,
+              "w": 352,
+              "h": 120
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 670,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 4,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % Not available Visible to admins and owners\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "persona": "carolfv",
+      "viewport": "1440x900",
+      "width": 1440,
+      "theme": "dark",
+      "file": "home-carolfv-1440-dark.png",
+      "kpiFile": "kpis-carolfv-1440-dark.png",
+      "diaryFile": "diary-carolfv-1440-dark.png",
+      "homePageCount": 1,
+      "audience": "firm",
+      "cells": [
+        "home-cell-kpis",
+        "home-cell-diary",
+        "home-cell-unbilledWip",
+        "home-cell-activity"
+      ],
+      "rows": [
+        [
+          "home-cell-kpis{lg:col-span-12}"
+        ],
+        [
+          "home-cell-diary{lg:col-span-12}"
+        ],
+        [
+          "home-cell-unbilledWip{lg:col-span-12}"
+        ],
+        [
+          "home-cell-activity{lg:col-span-12}"
+        ]
+      ],
+      "h1": [
+        {
+          "text": "Home",
+          "inMain": true,
+          "slot": "page-header-title",
+          "color": "lab(100 0 0)",
+          "visible": true
+        }
+      ],
+      "pageHeader": {
+        "countInMain": 1,
+        "description": "What needs you today",
+        "descriptionColor": "lab(65.1376 -0.85035 -6.67907)",
+        "box": {
+          "x": 280,
+          "y": 88,
+          "w": 1136,
+          "h": 56
+        }
+      },
+      "htmlClass": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "overflowX": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "overflow": false
+      },
+      "kpi": {
+        "periodLabel": "Last 30 days",
+        "kpiRowWidth": 1136,
+        "gridTemplateColumns": "272px 272px 272px 272px",
+        "tilesPerRow": [
+          4
+        ],
+        "tiles": [
+          {
+            "label": "Active matters",
+            "state": "ready",
+            "valueVisible": "10",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 280,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Hours logged",
+            "state": "ready",
+            "valueVisible": "15,8h",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 568,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": {
+              "role": "img",
+              "ariaLabel": "Hours logged per week, last 6 weeks",
+              "describedById": "_S_3_",
+              "describedByText": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+              "describedByIsSrOnly": true,
+              "ariaHiddenAncestor": null,
+              "dataEmpty": null,
+              "box": {
+                "w": 230,
+                "h": 40
+              },
+              "lineStroke": "lab(62.0297 -41.8748 -2.65642)"
+            }
+          },
+          {
+            "label": "Billable %",
+            "state": "redacted",
+            "valueVisible": "—",
+            "valueSr": "Not available",
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": "Visible to admins and owners",
+            "errorStatus": null,
+            "box": {
+              "x": 856,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          },
+          {
+            "label": "Overdue tasks",
+            "state": "ready",
+            "valueVisible": "0",
+            "valueSr": null,
+            "deltaFigure": null,
+            "deltaTone": null,
+            "deltaSr": null,
+            "deltaVisible": null,
+            "hint": null,
+            "errorStatus": null,
+            "box": {
+              "x": 1144,
+              "y": 192,
+              "w": 272,
+              "h": 150
+            },
+            "sparkline": null
+          }
+        ]
+      },
+      "diary": {
+        "contentBoxWidth": 1086,
+        "containerType": "inline-size",
+        "rowCount": 0,
+        "ulColumnCount": null,
+        "distinctColumnsX": [],
+        "rows": [],
+        "emptyText": "Nothing in the diary today",
+        "overdueBadge": null,
+        "ulHeight": null
+      },
+      "cellCount": 4,
+      "kpiAriaSnapshot": "- paragraph: Last 30 days\n- group \"Active matters\": Active matters 10\n- group \"Hours logged\":\n  - text: Hours logged 15,8h\n  - img \"Hours logged per week, last 6 weeks\"\n  - text: First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.\n- group \"Billable %\": Billable % Not available Visible to admins and owners\n- group \"Overdue tasks\": Overdue tasks 0",
+      "sparklineAx": [
+        {
+          "role": "image",
+          "name": "Hours logged per week, last 6 weeks",
+          "description": "First week 0,0h, latest week 15,8h, peak 15,8h in week 6 of 6.",
+          "ignored": false
+        }
+      ],
+      "kpisRequests": 0,
+      "kpisRequestUrls": [],
+      "console": [],
+      "hydrationMessages": []
+    }
+  ],
+  "roleFlow": {
+    "roleExistedBefore": false,
+    "roleVisibleAfterCreate": true,
+    "original": {
+      "testid": "member-row-carol@e2e-test.local",
+      "badge": "Member",
+      "overrideCount": null,
+      "roleValue": "Member",
+      "checkedCaps": [
+        "View Trust",
+        "AI Execute"
+      ],
+      "overrideMarks": []
+    },
+    "assignedCapsShown": [
+      "Financial Visibility"
+    ],
+    "afterAssign": {
+      "testid": "member-row-carol@e2e-test.local",
+      "badge": "Finance viewer (640A OBS)",
+      "overrideCount": null,
+      "roleValue": "Finance viewer (640A OBS)",
+      "checkedCaps": [
+        "Financial Visibility"
+      ],
+      "overrideMarks": []
+    },
+    "restored": {
+      "testid": "member-row-carol@e2e-test.local",
+      "badge": "Member",
+      "overrideCount": null,
+      "roleValue": "Member",
+      "checkedCaps": [
+        "View Trust",
+        "AI Execute"
+      ],
+      "overrideMarks": [],
+      "badgeAfterReload": "Member"
+    },
+    "restoreVerified": true
+  },
+  "restoredCheck": {
+    "persona": "carol-restored",
+    "viewport": "1440x900",
+    "width": 1440,
+    "theme": "light",
+    "file": "home-carol-restored-1440-light.png",
+    "kpiFile": null,
+    "diaryFile": "diary-carol-restored-1440-light.png",
+    "homePageCount": 1,
+    "audience": "feeEarner",
+    "cells": [
+      "home-cell-diary",
+      "home-cell-tasks",
+      "home-cell-unbilledWip",
+      "home-cell-matterHealth",
+      "home-cell-activity"
+    ],
+    "rows": [
+      [
+        "home-cell-diary{lg:col-span-12}"
+      ],
+      [
+        "home-cell-tasks{lg:col-span-6}",
+        "home-cell-unbilledWip{lg:col-span-6}"
+      ],
+      [
+        "home-cell-matterHealth{lg:col-span-6}",
+        "home-cell-activity{lg:col-span-6}"
+      ]
+    ],
+    "h1": [
+      {
+        "text": "Home",
+        "inMain": true,
+        "slot": "page-header-title",
+        "color": "lab(7.73948 -0.41344 -4.03315)",
+        "visible": true
+      }
+    ],
+    "pageHeader": {
+      "countInMain": 1,
+      "description": "What needs you today",
+      "descriptionColor": "lab(35.5441 -0.826195 -7.36533)",
+      "box": {
+        "x": 280,
+        "y": 88,
+        "w": 1136,
+        "h": 56
+      }
+    },
+    "htmlClass": "light",
+    "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+    "overflowX": {
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "overflow": false
+    },
+    "kpi": null,
+    "diary": {
+      "contentBoxWidth": 1086,
+      "containerType": "inline-size",
+      "rowCount": 0,
+      "ulColumnCount": null,
+      "distinctColumnsX": [],
+      "rows": [],
+      "emptyText": "Nothing in the diary today",
+      "overdueBadge": null,
+      "ulHeight": null
+    },
+    "cellCount": 5,
+    "kpiAriaSnapshot": null,
+    "sparklineAx": [],
+    "kpisRequests": 0,
+    "kpisRequestUrls": [],
+    "console": [],
+    "hydrationMessages": []
+  },
+  "steps": [
+    "2026-11-12T10:21:21.613Z HOME alice-1024-light: audience=owner cells(9)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-matterHealth,home-cell-sensitive,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=100,0%; Overdue tasks=0} perRow=[2,2] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:24.078Z HOME alice-1440-light: audience=owner cells(9)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-matterHealth,home-cell-sensitive,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=100,0%; Overdue tasks=0} perRow=[4] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:29.546Z HOME alice-1024-dark: audience=owner cells(9)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-matterHealth,home-cell-sensitive,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=100,0%; Overdue tasks=0} perRow=[2,2] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:32.062Z HOME alice-1440-dark: audience=owner cells(9)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-matterHealth,home-cell-sensitive,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=100,0%; Overdue tasks=0} perRow=[4] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:37.442Z HOME bob-1024-light: audience=firm cells(8)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-sensitive,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=100,0%; Overdue tasks=0} perRow=[2,2] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:39.884Z HOME bob-1440-light: audience=firm cells(8)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-sensitive,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=100,0%; Overdue tasks=0} perRow=[4] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:45.308Z HOME bob-1024-dark: audience=firm cells(8)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-sensitive,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=100,0%; Overdue tasks=0} perRow=[2,2] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:47.784Z HOME bob-1440-dark: audience=firm cells(8)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-debtors,home-cell-trustPosition,home-cell-ficaOutstanding,home-cell-sensitive,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=100,0%; Overdue tasks=0} perRow=[4] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:52.945Z HOME carol-1024-light: audience=feeEarner cells(5)=home-cell-diary,home-cell-tasks,home-cell-unbilledWip,home-cell-matterHealth,home-cell-activity h1=[\"Home\"] kpi{NO KPIS} perRow=undefined diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:21:55.262Z HOME carol-1440-light: audience=feeEarner cells(5)=home-cell-diary,home-cell-tasks,home-cell-unbilledWip,home-cell-matterHealth,home-cell-activity h1=[\"Home\"] kpi{NO KPIS} perRow=undefined diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:22:00.395Z HOME carol-1024-dark: audience=feeEarner cells(5)=home-cell-diary,home-cell-tasks,home-cell-unbilledWip,home-cell-matterHealth,home-cell-activity h1=[\"Home\"] kpi{NO KPIS} perRow=undefined diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:22:02.669Z HOME carol-1440-dark: audience=feeEarner cells(5)=home-cell-diary,home-cell-tasks,home-cell-unbilledWip,home-cell-matterHealth,home-cell-activity h1=[\"Home\"] kpi{NO KPIS} perRow=undefined diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:22:08.343Z created custom role \"Finance viewer (640A OBS)\"",
+    "2026-11-12T10:22:09.684Z Carol original: badge=Member sheetRole=Member overrides=null marks=[] caps=[\"View Trust\",\"AI Execute\"]",
+    "2026-11-12T10:22:13.791Z Carol after assign: badge=Finance viewer (640A OBS) sheetRole=Finance viewer (640A OBS) caps=[\"Financial Visibility\"]",
+    "2026-11-12T10:22:19.070Z HOME carolfv-1024-light: audience=firm cells(4)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=—[Visible to admins and owners]; Overdue tasks=0} perRow=[2,2] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:22:21.421Z HOME carolfv-1440-light: audience=firm cells(4)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=—[Visible to admins and owners]; Overdue tasks=0} perRow=[4] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:22:26.661Z HOME carolfv-1024-dark: audience=firm cells(4)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=—[Visible to admins and owners]; Overdue tasks=0} perRow=[2,2] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:22:29.003Z HOME carolfv-1440-dark: audience=firm cells(4)=home-cell-kpis,home-cell-diary,home-cell-unbilledWip,home-cell-activity h1=[\"Home\"] kpi{Active matters=10; Hours logged=15,8h; Billable %=—[Visible to admins and owners]; Overdue tasks=0} perRow=[4] diary=0rows cols=null xs= overflow=false kpisReq=0 console=0",
+    "2026-11-12T10:22:34.879Z Carol restored: badge=Member badgeAfterReload=Member sheetRole=Member caps=[\"View Trust\",\"AI Execute\"] verified=true",
+    "2026-11-12T10:22:40.295Z HOME carol-restored-1440-light: audience=feeEarner cells(5)=home-cell-diary,home-cell-tasks,home-cell-unbilledWip,home-cell-matterHealth,home-cell-activity h1=[\"Home\"] kpi{NO KPIS} perRow=undefined diary=0rows cols=null xs= overflow=false kpisReq=0 console=0"
+  ]
+}

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   absentWidgets,
   buildHomePlan,
+  kpiWindow,
   resolveHomeAudience,
   rowSpanClass,
   withoutAbsent,
@@ -62,6 +63,7 @@ describe("buildHomePlan", () => {
     expect(plan.audience).toBe("feeEarner");
     expect(plan.diaryScope).toBe("me");
     expect(plan.rows).toEqual([["diary"], ["tasks", "unbilledWip"], ["matterHealth", "activity"]]);
+    expect(plan.kpis).toBe(false); // B2 — the KPI endpoint is firm-wide
     expect(plan.trustPosition).toBe(false);
     expect(plan.debtors).toBe(false);
     expect(plan.ficaOutstanding).toBe(false);
@@ -69,28 +71,34 @@ describe("buildHomePlan", () => {
     expect(plan.unbilledWipLink).toBe(false);
   });
 
-  it("bookkeeper/admin: WIP + debtors + trust → diary + FICA → activity + sensitive", () => {
+  it("bookkeeper/admin: KPIs → diary → WIP + debtors + trust → FICA + sensitive → activity", () => {
     const plan = buildHomePlan(ADMIN, ALL_MODULES);
     expect(plan.audience).toBe("firm");
+    expect(plan.kpis).toBe(true);
     expect(plan.diaryScope).toBe("firm");
     expect(plan.rows).toEqual([
+      ["kpis"],
+      ["diary"],
       ["unbilledWip", "debtors", "trustPosition"],
-      ["diary", "ficaOutstanding"],
-      ["activity", "sensitive"],
+      ["ficaOutstanding", "sensitive"],
+      ["activity"],
     ]);
     expect(plan.tasks).toBe(false);
     expect(plan.matterHealth).toBe(false);
     expect(plan.unbilledWipLink).toBe(true);
   });
 
-  it("owner: diary + WIP → debtors + trust → FICA + health + activity + sensitive", () => {
+  it("owner: KPIs → diary → WIP + debtors + trust → FICA + health + sensitive → activity", () => {
     const plan = buildHomePlan(OWNER, ALL_MODULES);
     expect(plan.audience).toBe("owner");
+    expect(plan.kpis).toBe(true);
     expect(plan.diaryScope).toBe("firm");
     expect(plan.rows).toEqual([
-      ["diary", "unbilledWip"],
-      ["debtors", "trustPosition"],
-      ["ficaOutstanding", "matterHealth", "activity", "sensitive"],
+      ["kpis"],
+      ["diary"],
+      ["unbilledWip", "debtors", "trustPosition"],
+      ["ficaOutstanding", "matterHealth", "sensitive"],
+      ["activity"],
     ]);
   });
 
@@ -101,7 +109,7 @@ describe("buildHomePlan", () => {
   it("trust needs the trust_accounting module as well as VIEW_TRUST", () => {
     const plan = buildHomePlan(OWNER, ["disbursements"]);
     expect(plan.trustPosition).toBe(false);
-    expect(plan.rows[1]).toEqual(["debtors"]);
+    expect(plan.rows[2]).toEqual(["unbilledWip", "debtors"]);
   });
 
   it("each firm widget needs its own capability; sensitive needs TEAM_OVERSIGHT for non-admins", () => {
@@ -115,7 +123,8 @@ describe("buildHomePlan", () => {
     expect(plan.ficaOutstanding).toBe(false);
     expect(plan.sensitive).toBe(false);
     expect(plan.unbilledWipLink).toBe(false);
-    expect(plan.rows).toEqual([["unbilledWip"], ["diary"], ["activity"]]);
+    expect(plan.kpis).toBe(true); // FINANCIAL_VISIBILITY alone → firm audience → KPI row
+    expect(plan.rows).toEqual([["kpis"], ["diary"], ["unbilledWip"], ["activity"]]);
 
     const withOversight = buildHomePlan(
       { capabilities: ["FINANCIAL_VISIBILITY", "TEAM_OVERSIGHT"], isAdmin: false, isOwner: false },
@@ -134,9 +143,14 @@ describe("withoutAbsent", () => {
   it("drops absent widgets and the rows they leave empty", () => {
     const rows = buildHomePlan(OWNER, ALL_MODULES).rows;
     expect(withoutAbsent(rows, new Set(["debtors", "trustPosition"]))).toEqual([
-      ["diary", "unbilledWip"],
-      ["ficaOutstanding", "matterHealth", "activity", "sensitive"],
+      ["kpis"],
+      ["diary"],
+      ["unbilledWip"],
+      ["ficaOutstanding", "matterHealth", "sensitive"],
+      ["activity"],
     ]);
+    // A KPI read that came back absent (403/404) drops the whole KPI row.
+    expect(withoutAbsent(rows, new Set(["kpis"]))[0]).toEqual(["diary"]);
   });
 });
 
@@ -144,6 +158,7 @@ describe("absentWidgets", () => {
   it("collects every absent WidgetResult by widget name; ok, error and non-results stay", () => {
     expect(
       absentWidgets({
+        kpis: { state: "absent" },
         diary: [],
         tasks: { state: "absent" },
         unbilledWip: { state: "ok", data: {} },
@@ -152,7 +167,15 @@ describe("absentWidgets", () => {
         activity: null,
         matterHealth: null,
       })
-    ).toEqual(new Set(["tasks", "trustPosition"]));
+    ).toEqual(new Set(["kpis", "tasks", "trustPosition"]));
+  });
+});
+
+describe("kpiWindow", () => {
+  it("is the last 30 days including today (from = today − 29 days), zone-free", () => {
+    expect(kpiWindow("2026-10-21")).toEqual({ from: "2026-09-22", to: "2026-10-21" });
+    expect(kpiWindow("2027-01-05")).toEqual({ from: "2026-12-07", to: "2027-01-05" });
+    expect(kpiWindow("2026-03-01")).toEqual({ from: "2026-01-31", to: "2026-03-01" });
   });
 });
 
@@ -160,7 +183,9 @@ describe("rowSpanClass", () => {
   it("maps present-widget count to literal 12-column spans", () => {
     expect(rowSpanClass(1)).toBe("lg:col-span-12");
     expect(rowSpanClass(2)).toBe("lg:col-span-6");
-    expect(rowSpanClass(3)).toBe("lg:col-span-4");
+    // 3-up wraps 2 + 1 (last cell full-width) below 2xl; three-across only from 2xl (640A OBS).
+    expect(rowSpanClass(3)).toBe("lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4");
     expect(rowSpanClass(4)).toBe("lg:col-span-6"); // 4-up wraps 2×2, never quarter cells
+    expect(rowSpanClass(5)).toBe("lg:col-span-12");
   });
 });

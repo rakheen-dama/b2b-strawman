@@ -1,0 +1,36 @@
+{
+  "head": "d78ce3ce5",
+  "capturedAt": "2026-11-12T10:47:03.068Z",
+  "res": [
+    {
+      "width": 1600,
+      "boxes": [
+        "kpis:1232@312,168",
+        "diary:1232@312,366",
+        "unbilledWip:400@312,504",
+        "debtors:400@728,504",
+        "trustPosition:400@1144,504",
+        "ficaOutstanding:400@312,953",
+        "matterHealth:400@728,953",
+        "sensitive:400@1144,953",
+        "activity:1232@312,1683"
+      ],
+      "console": []
+    },
+    {
+      "width": 1535,
+      "boxes": [
+        "kpis:1231@280,168",
+        "diary:1231@280,366",
+        "unbilledWip:608@280,504",
+        "debtors:608@904,504",
+        "trustPosition:1231@280,945",
+        "ficaOutstanding:608@280,1225",
+        "matterHealth:608@904,1225",
+        "sensitive:1231@280,1947",
+        "activity:1231@280,2293"
+      ],
+      "console": []
+    }
+  ]
+}

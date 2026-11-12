@@ -8,8 +8,9 @@ import { findCurrentMemberId } from "@/lib/current-member";
 import { settle } from "@/lib/settle";
 import { loadTodaysDiary } from "@/app/(app)/org/[slug]/my-work/todays-diary";
 import type { TodaysDiaryEvents } from "@/components/dashboard/todays-agenda";
-import type { HomePlan, HomeWidget, WidgetResult } from "@/lib/dashboard-home";
+import { kpiWindow, type HomePlan, type HomeWidget, type WidgetResult } from "@/lib/dashboard-home";
 import type {
+  KpiResponse,
   MatterHealth,
   CrossMatterActivityItem,
   UnbilledWipResponse,
@@ -27,6 +28,8 @@ import type { MyWorkTasksResponse, OrgMember } from "@/lib/types";
  * relies on that to drop every `absent` WidgetResult without a per-widget list.
  */
 export interface HomeWidgetData {
+  /** Firm-wide KPIs for the last 30 days vs the 30 before (640A) — firm and owner only. */
+  kpis: WidgetResult<KpiResponse>;
   /** Today's diary — always shown; `null` = could not load, `"unidentified"` = no member match. */
   diary: TodaysDiaryEvents;
   tasks: WidgetResult<MyWorkTasksResponse>;
@@ -85,30 +88,44 @@ async function loadHomeDiary(plan: HomePlan, today: string): Promise<TodaysDiary
  * caller's own day for members (feeEarnerId = me) and the firm's day for admins and owners.
  */
 export async function fetchHomeWidgets(plan: HomePlan, today: string): Promise<HomeWidgetData> {
-  const [diary, tasks, unbilledWip, trustPosition, ficaOutstanding, debtors, activity, health] =
-    await Promise.all([
-      loadHomeDiary(plan, today),
-      settle(plan.tasks, "my tasks", () => api.get<MyWorkTasksResponse>("/api/my-work/tasks")),
-      settle(plan.unbilledWip, "unbilled WIP", () =>
-        api.get<UnbilledWipResponse>("/api/dashboard/unbilled-wip")
-      ),
-      settle(plan.trustPosition, "trust position", () =>
-        api.get<TrustPositionResponse>("/api/dashboard/trust-position")
-      ),
-      settle(plan.ficaOutstanding, "FICA outstanding", () =>
-        api.get<FicaOutstandingResponse>("/api/dashboard/fica-outstanding?limit=5")
-      ),
-      settle(plan.debtors, "debtors", () => getDebtors({ size: 5 })),
-      readOrNull(plan.activity, "recent activity", () =>
-        api.get<CrossMatterActivityItem[]>("/api/dashboard/activity?limit=15")
-      ),
-      readOrNull(plan.matterHealth, "matter health", () =>
-        api.get<MatterHealth[]>("/api/dashboard/matter-health")
-      ),
-    ]);
+  const { from, to } = kpiWindow(today);
+  const [
+    kpis,
+    diary,
+    tasks,
+    unbilledWip,
+    trustPosition,
+    ficaOutstanding,
+    debtors,
+    activity,
+    health,
+  ] = await Promise.all([
+    settle(plan.kpis, "KPIs", () =>
+      api.get<KpiResponse>(`/api/dashboard/kpis?from=${from}&to=${to}`)
+    ),
+    loadHomeDiary(plan, today),
+    settle(plan.tasks, "my tasks", () => api.get<MyWorkTasksResponse>("/api/my-work/tasks")),
+    settle(plan.unbilledWip, "unbilled WIP", () =>
+      api.get<UnbilledWipResponse>("/api/dashboard/unbilled-wip")
+    ),
+    settle(plan.trustPosition, "trust position", () =>
+      api.get<TrustPositionResponse>("/api/dashboard/trust-position")
+    ),
+    settle(plan.ficaOutstanding, "FICA outstanding", () =>
+      api.get<FicaOutstandingResponse>("/api/dashboard/fica-outstanding?limit=5")
+    ),
+    settle(plan.debtors, "debtors", () => getDebtors({ size: 5 })),
+    readOrNull(plan.activity, "recent activity", () =>
+      api.get<CrossMatterActivityItem[]>("/api/dashboard/activity?limit=15")
+    ),
+    readOrNull(plan.matterHealth, "matter health", () =>
+      api.get<MatterHealth[]>("/api/dashboard/matter-health")
+    ),
+  ]);
 
   // `satisfies` keeps every key a widget name — `absentWidgets` depends on it.
   return {
+    kpis,
     diary,
     tasks,
     unbilledWip,

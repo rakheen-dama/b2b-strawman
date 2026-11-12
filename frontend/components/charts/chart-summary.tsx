@@ -205,12 +205,15 @@ interface SummarizeTrendArgs {
   format: ChartValueKind;
   currency?: string;
   partialLastPoint?: boolean;
+  /** Series left off the chart (non-additive truncation); "+N more series in the table". */
+  hiddenSeries?: number;
 }
 
 /**
  * "Trust balance: from R 120 000,00 in Dec 2025 to R 184 500,00 in Nov 2026 (to date), peak
  * R 210 000,00 in Aug 2026." — one clause per series (prefixed by its label when there are
- * several), joined by "; ".
+ * several), joined by "; ", then "+N more series in the table" for series a non-additive
+ * truncation left off the chart.
  */
 export function summarizeTrend({
   title,
@@ -220,6 +223,7 @@ export function summarizeTrend({
   format,
   currency,
   partialLastPoint = false,
+  hiddenSeries = 0,
 }: SummarizeTrendArgs): string {
   const fmt = (value: number) => formatChartValue(value, format, currency);
   const lastIndex = rows.length - 1;
@@ -243,7 +247,9 @@ export function summarizeTrend({
     );
   });
 
-  return `${title}: ${clauses.join("; ")}.`;
+  const hidden = moreText(0, hiddenSeries);
+  const more = hidden ? `; ${hidden}` : "";
+  return `${title}: ${clauses.join("; ")}${more}.`;
 }
 
 interface SummarizeBarsArgs {
@@ -256,6 +262,8 @@ interface SummarizeBarsArgs {
   diverging?: boolean;
   /** Categories left off the chart (non-additive truncation); stated as "+N more in the table". */
   hiddenCount?: number;
+  /** Series left off the chart (non-additive truncation); "+N more series in the table". */
+  hiddenSeries?: number;
 }
 
 /** "WIP by fee earner: 6 bars; highest Alice R 84 000,00, lowest Carol R 3 200,00." */
@@ -268,6 +276,7 @@ export function summarizeBars({
   currency,
   diverging = false,
   hiddenCount = 0,
+  hiddenSeries = 0,
 }: SummarizeBarsArgs): string {
   const fmt = (value: number) => formatChartValue(value, format, currency);
   const single = series.length === 1;
@@ -289,13 +298,36 @@ export function summarizeBars({
   });
 
   const count = `${rows.length} ${single ? "bars" : "categories"}`;
-  const more = hiddenCount > 0 ? `; ${moreLabel(hiddenCount)}` : "";
+  const hidden = moreText(hiddenCount, hiddenSeries);
+  const more = hidden ? `; ${hidden}` : "";
   return `${title}: ${count}; ${clauses.join("; ")}${more}.`;
 }
 
-/** "+3 more in the table" — the visible note and summary clause for truncated bars. */
-export function moreLabel(count: number): string {
-  return `+${count} more in the table`;
+/**
+ * "+3 more in the table" / "+1 more series in the table" — the visible note and summary clause
+ * for what a non-additive truncation leaves off the chart (categories, then series).
+ */
+export function moreLabel(count: number, noun?: string): string {
+  return `+${count} more ${noun ? `${noun} ` : ""}in the table`;
+}
+
+/** The truncation note: hidden categories and hidden series, "" when nothing is hidden. */
+export function moreText(hiddenCategories: number, hiddenSeries: number): string {
+  return [
+    hiddenCategories > 0 ? moreLabel(hiddenCategories) : "",
+    hiddenSeries > 0 ? moreLabel(hiddenSeries, "series") : "",
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+/** The visible muted "+N more in the table" note under a truncated chart. */
+export function ChartMoreNote({ children }: { children: string }) {
+  return (
+    <p className="text-muted-foreground mt-1 text-right text-xs" data-slot="chart-more">
+      {children}
+    </p>
+  );
 }
 
 interface SummarizeSegmentsArgs {

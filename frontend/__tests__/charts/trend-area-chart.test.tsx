@@ -8,6 +8,8 @@ import { formatChartValue } from "@/lib/chart-format";
 // `mode.real` switches every mocked export to the real recharts for the un-mocked smoke renders
 // (same technique as the donut test).
 const mode = vi.hoisted(() => ({ real: false }));
+// Props the mocked Tooltip hands its `content` (recharts' activeIndex/label/payload), or none.
+const tooltip = vi.hoisted(() => ({ props: null as Record<string, unknown> | null }));
 vi.mock("recharts", async (importOriginal) => {
   const actual = await importOriginal<typeof import("recharts")>();
   const pick = <P extends object>(
@@ -62,7 +64,15 @@ vi.mock("recharts", async (importOriginal) => {
     XAxis: pick("XAxis", () => null),
     YAxis: pick("YAxis", () => null),
     LabelList: pick("LabelList", () => null),
-    Tooltip: pick("Tooltip", () => null),
+    Tooltip: pick("Tooltip", ({ content }: { content?: unknown }) => {
+      if (!tooltip.props || typeof content !== "function") return null;
+      const Content = content as React.ComponentType<Record<string, unknown>>;
+      return (
+        <div data-testid="tooltip">
+          <Content {...tooltip.props} />
+        </div>
+      );
+    }),
     Legend: pick("Legend", () => <div data-testid="legend" />),
   };
 });
@@ -111,6 +121,7 @@ function withRealRecharts() {
 
 beforeEach(() => {
   mode.real = false;
+  tooltip.props = null;
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -259,6 +270,80 @@ describe("TrendAreaChart", () => {
         name: formatChartValue(30, "percent"),
       })
     ).toBeInTheDocument();
+  });
+
+  it("states the series a non-additive truncation leaves off the chart", () => {
+    const series = Array.from({ length: 6 }, (_, i) => ({ key: `s${i}`, label: `Earner ${i}` }));
+    const data = [{ month: "Nov", s0: null, s1: null, s2: null, s3: null, s4: null, s5: 30 }];
+    render(
+      <TrendAreaChart
+        title="Sparse utilization"
+        data={data}
+        xKey="month"
+        series={series}
+        format="percent"
+      />
+    );
+
+    expect(document.querySelector('[data-slot="chart-more"]')?.textContent).toBe(
+      "+1 more series in the table"
+    );
+    expect(document.querySelector('[data-slot="chart-summary"]')?.textContent).toMatch(
+      /; \+1 more series in the table\.$/
+    );
+  });
+
+  it("adds no truncation note when every series is drawn", () => {
+    render(
+      <TrendAreaChart
+        title="Trust balance"
+        data={balance}
+        xKey="month"
+        series={[{ key: "trust", label: "Trust" }]}
+        format="percent"
+      />
+    );
+
+    expect(document.querySelector('[data-slot="chart-more"]')).toBeNull();
+    expect(document.querySelector('[data-slot="chart-summary"]')?.textContent).not.toContain(
+      "more"
+    );
+  });
+
+  it("labels the tooltip (to date) by the hovered index, not by a repeated x label", () => {
+    // An earlier period shares the last period's label.
+    const data = [
+      { week: "Wk 1", trust: 10 },
+      { week: "Wk 2", trust: 20 },
+      { week: "Wk 1", trust: 30 },
+    ];
+    const hover = (activeIndex: string, dataKey: string, value: number) => {
+      tooltip.props = {
+        active: true,
+        activeIndex,
+        label: "Wk 1",
+        payload: [{ dataKey, name: "Trust", value, payload: {} }],
+      };
+    };
+    const chart = () => (
+      <TrendAreaChart
+        title="Weekly trust"
+        data={data}
+        xKey="week"
+        series={[{ key: "trust", label: "Trust" }]}
+        format="count"
+        partialLastPoint
+      />
+    );
+
+    hover("0", "trust", 10);
+    const { rerender } = render(chart());
+    expect(within(screen.getByTestId("tooltip")).getByText("Wk 1")).toBeInTheDocument();
+    expect(within(screen.getByTestId("tooltip")).queryByText("Wk 1 (to date)")).toBeNull();
+
+    hover("2", "trust__partial", 30);
+    rerender(chart());
+    expect(within(screen.getByTestId("tooltip")).getByText("Wk 1 (to date)")).toBeInTheDocument();
   });
 
   it("treats NaN and Infinity as no value", () => {

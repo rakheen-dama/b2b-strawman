@@ -335,6 +335,43 @@ describe("BarChartPreset", () => {
     expect(within(table).getByRole("rowheader", { name: "E7" })).toBeInTheDocument();
   });
 
+  it("states the series and categories a non-additive truncation leaves off the chart", async () => {
+    const user = userEvent.setup();
+    const series = Array.from({ length: 6 }, (_, i) => ({ key: `s${i}`, label: `Earner ${i}` }));
+    const data = Array.from({ length: 3 }, (_, i) => ({
+      month: `M${i + 1}`,
+      s0: null,
+      s1: null,
+      s2: null,
+      s3: null,
+      s4: null,
+      s5: 30 + i,
+    }));
+    render(
+      <BarChartPreset
+        title="Sparse utilization"
+        data={data}
+        categoryKey="month"
+        series={series}
+        layout="grouped"
+        format="percent"
+        maxBars={2}
+      />
+    );
+
+    expect(screen.queryByTestId("bar-s5")).toBeNull();
+    expect(document.querySelector('[data-slot="chart-more"]')?.textContent).toBe(
+      "+1 more in the table, +1 more series in the table"
+    );
+    expect(document.querySelector('[data-slot="chart-summary"]')?.textContent).toMatch(
+      /; \+1 more in the table, \+1 more series in the table\.$/
+    );
+    await user.click(screen.getByRole("button", { name: "View as table" }));
+    expect(
+      within(screen.getByRole("table")).getByRole("columnheader", { name: "Earner 5" })
+    ).toBeInTheDocument();
+  });
+
   it("stays ready with the table reachable when truncation leaves only empty bars", async () => {
     const user = userEvent.setup();
     const data = [

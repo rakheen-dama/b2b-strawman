@@ -21,6 +21,8 @@ import {
   foldSeries,
   hasFiniteValue,
   isAdditive,
+  moreText,
+  ChartMoreNote,
   seriesColor,
   seriesTable,
   summarizeTrend,
@@ -141,12 +143,14 @@ export function TrendAreaChart({
   // Ready vs empty from the full data: a non-additive truncation that leaves only empty series on
   // the chart must not hide the table that still holds the values.
   const state = chartState({ loading, error, hasValue: hasFiniteValue(data, inputSeries) });
+  // Series a non-additive truncation leaves off the chart: stated in the note and the summary.
+  const hiddenSeries = isAdditive(format) ? 0 : inputSeries.length - series.length;
+  const more = moreText(0, hiddenSeries);
 
   const lastIndex = rows.length - 1;
   // "(to date)" labels the last x whenever it is incomplete; the dashed segment needs two points.
   const toDate = partialLastPoint && rows.length >= 1;
   const partial = partialLastPoint && rows.length >= 2;
-  const lastX = String(rows[lastIndex]?.[xKey] ?? "");
   const xAt = (row: ChartRow, index: number) => {
     const x = String(row[xKey] ?? "");
     return toDate && index === lastIndex ? toDateLabel(x) : x;
@@ -201,6 +205,7 @@ export function TrendAreaChart({
               format,
               currency,
               partialLastPoint: toDate,
+              hiddenSeries,
             })
           : undefined
       }
@@ -263,13 +268,17 @@ export function TrendAreaChart({
                     other.dataKey === base && other.value !== null && other.value !== undefined
                 );
               });
+              // The incomplete period by position (recharts' active index), never by label text:
+              // an earlier period may carry the same x label.
+              const activeLast =
+                props.activeIndex != null && Number(props.activeIndex) === lastIndex;
               return (
                 <ChartTooltipContent
                   active={props.active}
                   payload={payload}
                   label={props.label}
                   labelFormatter={(value) =>
-                    toDate && props.label === lastX ? toDateLabel(String(value)) : value
+                    toDate && activeLast ? toDateLabel(String(value)) : value
                   }
                   valueFormatter={(value) => fmt(Number(value))}
                 />
@@ -341,6 +350,7 @@ export function TrendAreaChart({
             : null}
         </AreaChart>
       </ChartContainer>
+      {more ? <ChartMoreNote>{more}</ChartMoreNote> : null}
     </ChartCard>
   );
 }

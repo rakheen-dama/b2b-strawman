@@ -21,7 +21,8 @@ import {
   foldSeries,
   hasFiniteValue,
   isAdditive,
-  moreLabel,
+  moreText,
+  ChartMoreNote,
   seriesColor,
   seriesTable,
   summarizeBars,
@@ -194,6 +195,8 @@ export function BarChartPreset({
   // so the table keeps every row and series the chart leaves off.
   const additive = isAdditive(format);
   const hiddenCount = additive ? 0 : data.length - rows.length;
+  const hiddenSeries = additive ? 0 : drawnInput.length - series.length;
+  const more = moreText(hiddenCount, hiddenSeries);
   // Ready vs empty from the full data: a truncation that leaves only empty bars must not hide
   // the table that still holds the values.
   const state = chartState({ loading, error, hasValue: hasFiniteValue(data, drawnInput) });
@@ -262,6 +265,7 @@ export function BarChartPreset({
               currency,
               diverging,
               hiddenCount,
+              hiddenSeries,
             })
           : undefined
       }
@@ -371,11 +375,7 @@ export function BarChartPreset({
           ))}
         </BarChart>
       </ChartContainer>
-      {hiddenCount > 0 ? (
-        <p className="text-muted-foreground mt-1 text-right text-xs" data-slot="chart-more">
-          {moreLabel(hiddenCount)}
-        </p>
-      ) : null}
+      {more ? <ChartMoreNote>{more}</ChartMoreNote> : null}
     </ChartCard>
   );
 }

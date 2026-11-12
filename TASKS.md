@@ -727,7 +727,7 @@
 | 637 | Tokens + Kazi Chart Palette, ThemeProvider + Light/Dark/System Toggle, Dead Chart Code Deleted (E1) | packages/ui + Frontend | — | M | 637A, 637B (0 verifies) | **Done** (PRs #1759, #1760) |
 | 638 | App Shell — shadcn Sidebar + Floating Header + Command Palette Restyle (E2) | Frontend | 637A (638B also 637B) | M | 638A, 638B (0 verifies) || **Done** (PRs #1761, #1762) |
 | 639 | Design-System Primitives — PageHeader, StatCard, EmptyState, DetailHero, Chart Kit (recharts + SVG micro), DataTable (E3) | packages/ui + Frontend | 637A — ∥ 638 | L | 639A, 639B, 639C, 639D (0 verifies) | **Done** (PRs #1763, #1764, #1765, #1766) — 639A Done (PR #1763), 639B Done (PR #1764), 639C Done (PR #1765), 639D Done (PR #1766) |
-| 640 | Firm Dashboard — KPI Row + Audience Regrid, Widgets on the Kit, My Work + Loading (E4) | Frontend | **P1 merged**, 639A, 639B, 639D | L | 640A, 640B, 640C (0 verifies) | In progress — 640A Done (PR #1767), 640B Done (PR #1768) |
+| 640 | Firm Dashboard — KPI Row + Audience Regrid, Widgets on the Kit, My Work + Loading (E4) | Frontend | **P1 merged**, 639A, 639B, 639D | L | 640A, 640B, 640C (0 verifies) | **Done** (PRs #1767, #1768, #1769) |
 | 641 | Matters — List on DataTable + Matter Hero (KPI Strip) + Page Split (E5) | Frontend | 639A, 639C, 639D | M | 641A, 641B (0 verifies) | |
 | 642 | Clients — List on DataTable, Client Hero, GroupedTabBar Restyle (E6) | Frontend | 639A, 639C, 641B | M | 642A, 642B, 642C (0 verifies) | |
 | 643 | Trust Dashboard + Reports/Profitability — Trust-Balance-Trend + Billing-Trend Endpoints, Charts, Reconciliation Card Fix, Tables on DataTable (E7) | Backend + Frontend | 639A, 639B, 639C | L | 643A, 643B, 643C (2 verifies) | |

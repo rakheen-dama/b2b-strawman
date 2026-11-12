@@ -1,7 +1,7 @@
 {
-  "commit": "4941cd086c737a410f9a8ca74f57149ae6392f63",
-  "command": "cd frontend && rm -rf .next && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-640B, phase90/40B-dashboard-widgets, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final code head)",
+  "commit": "2b52bc934de8dd4b0cfd367272f5ba1774ce885e",
+  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-640C, phase90/40C-mywork-loading, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final head)",
   "exit": 0,
-  "ts": "2026-11-12T12:31:12Z",
-  "summary": "PR #1768 (Phase 90 640B) @4941cd086: FE-GATE exit 0 — 471 files, 4093 passed / 2 skipped; lint 0 errors. E2E-LEGAL fresh stacks @4941cd086: legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline); @788b93718: lifecycle 105, depth-ii run1 32/1 flake (day-30-45-soa-writeoff:227, Fees/Time tab stale after Log Time, file not in diff) then fresh run2 40/4. OBS 1024/1440 x light/dark, Alice+Carol, empty+seeded; fix1 re-measured. Frontend CI pass @4941cd086."
+  "ts": "2026-11-12T13:42:45Z",
+  "summary": "PR #1769 (Phase 90 640C) @2b52bc934: FE-GATE exit 0 — 472 files, 4099 passed / 2 skipped; lint 0 errors. E2E-LEGAL fresh stacks @bd6c7cdc9 and @a9e613443 (final code): legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS 1024/1440 x light/dark (My Work weekly summary; Home throttled loading skeleton, StatCard loading observed; mature-firm skeleton→content 0px shift). Frontend CI pass @2b52bc934."
 }

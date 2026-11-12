@@ -1,7 +1,7 @@
 {
-  "commit": "d78ce3ce510b5b516d35d0528747bea384ef56a7",
-  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-640A, phase90/40A-home-kpi-row, node v20.11.1, NODE_OPTIONS='')",
+  "commit": "2b52bc934de8dd4b0cfd367272f5ba1774ce885e",
+  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-640C, phase90/40C-mywork-loading, node v20.11.1, NODE_OPTIONS='')",
   "exit": 0,
-  "ts": "2026-11-12T10:58:32Z",
-  "summary": "PR #1767 (Phase 90 640A) @d78ce3ce5 (packages/ui/src/stat-card.tsx: sparkline slot no longer aria-hidden): PORTAL-GATE exit 0 — 51 files, 284 passed. Portal imports nothing from stat-card. Portal CI pass @90f8d740f."
+  "ts": "2026-11-12T13:42:45Z",
+  "summary": "PR #1769 (Phase 90 640C) @2b52bc934 (packages/ui/src/stat-card.tsx: loading value skeleton h-8/h-7 = ready line box): PORTAL-GATE exit 0 — 51 files, 284 passed; lint 0 errors. Portal CI pass @2b52bc934."
 }

@@ -55,8 +55,7 @@ function href(slug: string, query: Record<string, string>, set: Record<string, s
 
 /**
  * Clients toolbar pills (615D, D-2 / D-3): lifecycle status, then the "Show incomplete" toggle
- * that `incomplete-profiles-widget` links to (`?showIncomplete=true`). Directive-free: plain
- * links built from the server page's params.
+ * (`?showIncomplete=true`). Directive-free: plain links built from the server page's params.
  */
 export function ClientLifecycleFilter({
   slug,

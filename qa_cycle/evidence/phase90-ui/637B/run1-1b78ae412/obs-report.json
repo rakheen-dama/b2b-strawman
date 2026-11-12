@@ -1,0 +1,3062 @@
+{
+  "head": "1b78ae412",
+  "startedAt": "2026-11-12T01:40:48.260Z",
+  "obs1": {
+    "initial": {
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": null,
+      "htmlClass": "light",
+      "hasDark": false,
+      "htmlColorScheme": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null
+    },
+    "Dark": {
+      "beforeClick": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": null,
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Light"
+      },
+      "afterClick": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "dark",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Dark"
+      },
+      "popoverStayedOpen": true,
+      "afterReloadMenuClosed": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "dark",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null
+      },
+      "afterReloadMenuOpen": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "dark",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Dark"
+      }
+    },
+    "Light": {
+      "beforeClick": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "dark",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Dark"
+      },
+      "afterClick": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "light",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Light"
+      },
+      "popoverStayedOpen": true,
+      "afterReloadMenuClosed": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "light",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null
+      },
+      "afterReloadMenuOpen": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "light",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Light"
+      }
+    },
+    "System": {
+      "beforeClick": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "light",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Light"
+      },
+      "afterClick": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "system",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "true",
+            "dataState": "on"
+          }
+        ],
+        "selected": "System"
+      },
+      "popoverStayedOpen": true,
+      "afterReloadMenuClosed": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "system",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null
+      },
+      "afterReloadMenuOpen": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "system",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "true",
+            "dataState": "on"
+          }
+        ],
+        "selected": "System"
+      },
+      "osDark": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "system",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": true,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "true",
+            "dataState": "on"
+          }
+        ],
+        "selected": "System"
+      },
+      "osLight": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "system",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "true",
+            "dataState": "on"
+          }
+        ],
+        "selected": "System"
+      },
+      "osDarkAfterReload": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "system",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": true,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "true",
+            "dataState": "on"
+          }
+        ],
+        "selected": "System"
+      },
+      "osLightNoReload": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "system",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "true",
+            "dataState": "on"
+          }
+        ],
+        "selected": "System"
+      }
+    }
+  },
+  "obs2": {
+    "dark": {
+      "stored": "dark",
+      "wantDark": true,
+      "cacheDisabled": false,
+      "msTotal": 3001,
+      "sampleCount": 50,
+      "firstRaf": {
+        "ev": "first-rAF",
+        "t": 603.2,
+        "readyState": "loading",
+        "htmlExists": true,
+        "dark": true,
+        "cls": "dark",
+        "bodyExists": true,
+        "bodyChildren": 4
+      },
+      "firstPaint": {
+        "ev": "paint:first-paint@616.0",
+        "t": 693.4,
+        "readyState": "loading",
+        "htmlExists": true,
+        "dark": true,
+        "cls": "dark",
+        "bodyExists": true,
+        "bodyChildren": 15
+      },
+      "finalState": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "dark",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null
+      },
+      "mismatchesFromFirstRaf": [],
+      "anyMismatchWithBodyContent": [],
+      "pass": true,
+      "shots": [
+        {
+          "f": "fouc-dark-early-1-commit.png",
+          "msAfterReload": 720
+        },
+        {
+          "f": "fouc-dark-early-2-dcl.png",
+          "msAfterReload": 937
+        },
+        {
+          "f": "fouc-dark-early-3-load.png",
+          "msAfterReload": 973
+        }
+      ],
+      "samples": [
+        {
+          "ev": "init-script",
+          "t": 591,
+          "readyState": "loading",
+          "htmlExists": false,
+          "dark": null,
+          "cls": null,
+          "bodyExists": false,
+          "bodyChildren": 0
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 599.4,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 2
+        },
+        {
+          "ev": "first-rAF",
+          "t": 603.2,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 4
+        },
+        {
+          "ev": "rAF#2",
+          "t": 657.6,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 4
+        },
+        {
+          "ev": "rAF#3",
+          "t": 676.6,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 15
+        },
+        {
+          "ev": "paint:first-paint@616.0",
+          "t": 693.4,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 15
+        },
+        {
+          "ev": "paint:first-contentful-paint@616.0",
+          "t": 693.4,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 15
+        },
+        {
+          "ev": "rAF#4",
+          "t": 694.8,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 15
+        },
+        {
+          "ev": "rAF#5",
+          "t": 705.3,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 19
+        },
+        {
+          "ev": "rAF#6",
+          "t": 720.5,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 26
+        },
+        {
+          "ev": "readystate:interactive",
+          "t": 731,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "DOMContentLoaded",
+          "t": 731,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "readystate:complete",
+          "t": 731.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "load",
+          "t": 731.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#7",
+          "t": 733.2,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#8",
+          "t": 753.2,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#9",
+          "t": 769,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 822.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 823,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#10",
+          "t": 824,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#11",
+          "t": 875.6,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#12",
+          "t": 906.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#13",
+          "t": 914.3,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#14",
+          "t": 919.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#15",
+          "t": 926.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#16",
+          "t": 934.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#17",
+          "t": 943.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#18",
+          "t": 950.4,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#19",
+          "t": 959,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#20",
+          "t": 968.4,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#21",
+          "t": 976.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#22",
+          "t": 985,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#23",
+          "t": 992.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#24",
+          "t": 1002,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#25",
+          "t": 1009.2,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#26",
+          "t": 1018.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#27",
+          "t": 1027.7,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#28",
+          "t": 1034.3,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#29",
+          "t": 1043.7,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#30",
+          "t": 1051.4,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#31",
+          "t": 1060.3,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#32",
+          "t": 1068.3,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#33",
+          "t": 1075.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#34",
+          "t": 1084.8,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#35",
+          "t": 1093.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#36",
+          "t": 1101.3,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#37",
+          "t": 1110.6,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#38",
+          "t": 1118,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#39",
+          "t": 1127,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#40",
+          "t": 1135.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        }
+      ]
+    },
+    "light": {
+      "stored": "light",
+      "wantDark": false,
+      "cacheDisabled": false,
+      "msTotal": 2993,
+      "sampleCount": 50,
+      "firstRaf": {
+        "ev": "first-rAF",
+        "t": 601,
+        "readyState": "loading",
+        "htmlExists": true,
+        "dark": false,
+        "cls": "light",
+        "bodyExists": true,
+        "bodyChildren": 4
+      },
+      "firstPaint": {
+        "ev": "paint:first-paint@616.0",
+        "t": 702.4,
+        "readyState": "loading",
+        "htmlExists": true,
+        "dark": false,
+        "cls": "light",
+        "bodyExists": true,
+        "bodyChildren": 19
+      },
+      "finalState": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "light",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null
+      },
+      "mismatchesFromFirstRaf": [],
+      "anyMismatchWithBodyContent": [],
+      "pass": true,
+      "shots": [
+        {
+          "f": "fouc-light-early-1-commit.png",
+          "msAfterReload": 714
+        },
+        {
+          "f": "fouc-light-early-2-dcl.png",
+          "msAfterReload": 919
+        },
+        {
+          "f": "fouc-light-early-3-load.png",
+          "msAfterReload": 957
+        }
+      ],
+      "samples": [
+        {
+          "ev": "init-script",
+          "t": 590.4,
+          "readyState": "loading",
+          "htmlExists": false,
+          "dark": null,
+          "cls": null,
+          "bodyExists": false,
+          "bodyChildren": 0
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 599.6,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 2
+        },
+        {
+          "ev": "first-rAF",
+          "t": 601,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 4
+        },
+        {
+          "ev": "rAF#2",
+          "t": 656.6,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 11
+        },
+        {
+          "ev": "rAF#3",
+          "t": 679.9,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 11
+        },
+        {
+          "ev": "rAF#4",
+          "t": 692.9,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 15
+        },
+        {
+          "ev": "paint:first-paint@616.0",
+          "t": 702.4,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 19
+        },
+        {
+          "ev": "paint:first-contentful-paint@616.0",
+          "t": 702.4,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 19
+        },
+        {
+          "ev": "rAF#5",
+          "t": 702.9,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 19
+        },
+        {
+          "ev": "rAF#6",
+          "t": 713,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 19
+        },
+        {
+          "ev": "rAF#7",
+          "t": 721.6,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 25
+        },
+        {
+          "ev": "readystate:interactive",
+          "t": 732,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "DOMContentLoaded",
+          "t": 732.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "readystate:complete",
+          "t": 732.2,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "load",
+          "t": 732.2,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#8",
+          "t": 734.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#9",
+          "t": 746.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#10",
+          "t": 764.2,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 800.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 800.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#11",
+          "t": 840.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#12",
+          "t": 858.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#13",
+          "t": 887.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#14",
+          "t": 895.4,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#15",
+          "t": 902.4,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#16",
+          "t": 910.8,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#17",
+          "t": 922,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#18",
+          "t": 927.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#19",
+          "t": 935.7,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#20",
+          "t": 944.2,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#21",
+          "t": 952.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 29
+        },
+        {
+          "ev": "rAF#22",
+          "t": 960.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#23",
+          "t": 972.3,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#24",
+          "t": 978.6,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#25",
+          "t": 985,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#26",
+          "t": 993.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#27",
+          "t": 1001.6,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#28",
+          "t": 1010.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#29",
+          "t": 1019.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#30",
+          "t": 1027,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#31",
+          "t": 1035.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#32",
+          "t": 1043,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#33",
+          "t": 1051.6,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#34",
+          "t": 1061.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#35",
+          "t": 1068.7,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#36",
+          "t": 1076.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#37",
+          "t": 1085.4,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#38",
+          "t": 1095,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#39",
+          "t": 1102.2,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "rAF#40",
+          "t": 1111.1,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        }
+      ]
+    },
+    "darkColdCache": {
+      "stored": "dark",
+      "wantDark": true,
+      "cacheDisabled": true,
+      "msTotal": 7208,
+      "sampleCount": 50,
+      "firstRaf": {
+        "ev": "first-rAF",
+        "t": 1904.5,
+        "readyState": "loading",
+        "htmlExists": true,
+        "dark": false,
+        "cls": "",
+        "bodyExists": true,
+        "bodyChildren": 2
+      },
+      "firstPaint": {
+        "ev": "paint:first-paint@1920.0",
+        "t": 1990.2,
+        "readyState": "interactive",
+        "htmlExists": true,
+        "dark": true,
+        "cls": "dark",
+        "bodyExists": true,
+        "bodyChildren": 27
+      },
+      "finalState": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "dark",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null
+      },
+      "mismatchesFromFirstRaf": [
+        {
+          "ev": "first-rAF",
+          "t": 1904.5,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "",
+          "bodyExists": true,
+          "bodyChildren": 2
+        }
+      ],
+      "anyMismatchWithBodyContent": [
+        {
+          "ev": "first-rAF",
+          "t": 1904.5,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "",
+          "bodyExists": true,
+          "bodyChildren": 2
+        }
+      ],
+      "pass": false,
+      "shots": [
+        {
+          "f": "fouc-dark-nocache-early-1-commit.png",
+          "msAfterReload": 1992
+        },
+        {
+          "f": "fouc-dark-nocache-early-2-dcl.png",
+          "msAfterReload": 2914
+        },
+        {
+          "f": "fouc-dark-nocache-early-3-load.png",
+          "msAfterReload": 5177
+        }
+      ],
+      "samples": [
+        {
+          "ev": "init-script",
+          "t": 589.4,
+          "readyState": "loading",
+          "htmlExists": false,
+          "dark": null,
+          "cls": null,
+          "bodyExists": false,
+          "bodyChildren": 0
+        },
+        {
+          "ev": "first-rAF",
+          "t": 1904.5,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "",
+          "bodyExists": true,
+          "bodyChildren": 2
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 1911.5,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 2
+        },
+        {
+          "ev": "rAF#2",
+          "t": 1918.6,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "readystate:interactive",
+          "t": 1987,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "DOMContentLoaded",
+          "t": 1987,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#3",
+          "t": 1988.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "paint:first-paint@1920.0",
+          "t": 1990.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#4",
+          "t": 1995.9,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "paint:first-contentful-paint@1996.0",
+          "t": 1999.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#5",
+          "t": 2000.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#6",
+          "t": 2008.6,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#7",
+          "t": 2016.9,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#8",
+          "t": 2024.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#9",
+          "t": 2033.6,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#10",
+          "t": 2043,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#11",
+          "t": 2049.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#12",
+          "t": 2059.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#13",
+          "t": 2067.3,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#14",
+          "t": 2075.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#15",
+          "t": 2083.7,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#16",
+          "t": 2097.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#17",
+          "t": 2102.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#18",
+          "t": 2108.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#19",
+          "t": 2116.7,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#20",
+          "t": 2125.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#21",
+          "t": 2133.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#22",
+          "t": 2141.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#23",
+          "t": 2151.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#24",
+          "t": 2158.3,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#25",
+          "t": 2167.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#26",
+          "t": 2174.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#27",
+          "t": 2183.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#28",
+          "t": 2191.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#29",
+          "t": 2199.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#30",
+          "t": 2207.7,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#31",
+          "t": 2217.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#32",
+          "t": 2224.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#33",
+          "t": 2233.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#34",
+          "t": 2241.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#35",
+          "t": 2249.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#36",
+          "t": 2257.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#37",
+          "t": 2267.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#38",
+          "t": 2275.3,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#39",
+          "t": 2282.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#40",
+          "t": 2291.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "readystate:complete",
+          "t": 5056.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "load",
+          "t": 5056.6,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 5132.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 5132.5,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": true,
+          "cls": "dark",
+          "bodyExists": true,
+          "bodyChildren": 27
+        }
+      ]
+    },
+    "lightColdCache": {
+      "stored": "light",
+      "wantDark": false,
+      "cacheDisabled": true,
+      "msTotal": 7274,
+      "sampleCount": 50,
+      "firstRaf": {
+        "ev": "first-rAF",
+        "t": 2098.3,
+        "readyState": "loading",
+        "htmlExists": true,
+        "dark": false,
+        "cls": "light",
+        "bodyExists": true,
+        "bodyChildren": 2
+      },
+      "firstPaint": {
+        "ev": "paint:first-paint@2116.0",
+        "t": 2174.4,
+        "readyState": "interactive",
+        "htmlExists": true,
+        "dark": false,
+        "cls": "light",
+        "bodyExists": true,
+        "bodyChildren": 27
+      },
+      "finalState": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "light",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null
+      },
+      "mismatchesFromFirstRaf": [],
+      "anyMismatchWithBodyContent": [],
+      "pass": true,
+      "shots": [
+        {
+          "f": "fouc-light-nocache-early-1-commit.png",
+          "msAfterReload": 2180
+        },
+        {
+          "f": "fouc-light-nocache-early-2-dcl.png",
+          "msAfterReload": 2991
+        },
+        {
+          "f": "fouc-light-nocache-early-3-load.png",
+          "msAfterReload": 5224
+        }
+      ],
+      "samples": [
+        {
+          "ev": "init-script",
+          "t": 589.2,
+          "readyState": "loading",
+          "htmlExists": false,
+          "dark": null,
+          "cls": null,
+          "bodyExists": false,
+          "bodyChildren": 0
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 2097.5,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 2
+        },
+        {
+          "ev": "first-rAF",
+          "t": 2098.3,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 2
+        },
+        {
+          "ev": "rAF#2",
+          "t": 2113.9,
+          "readyState": "loading",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 28
+        },
+        {
+          "ev": "readystate:interactive",
+          "t": 2170.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "DOMContentLoaded",
+          "t": 2170.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#3",
+          "t": 2172.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "paint:first-paint@2116.0",
+          "t": 2174.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#4",
+          "t": 2187.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "paint:first-contentful-paint@2180.0",
+          "t": 2191,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#5",
+          "t": 2193.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#6",
+          "t": 2200.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#7",
+          "t": 2209.6,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#8",
+          "t": 2217.7,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#9",
+          "t": 2226.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#10",
+          "t": 2235.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#11",
+          "t": 2242.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#12",
+          "t": 2251.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#13",
+          "t": 2259.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#14",
+          "t": 2267.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#15",
+          "t": 2276.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#16",
+          "t": 2285.6,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#17",
+          "t": 2292.6,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#18",
+          "t": 2301.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#19",
+          "t": 2310.2,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#20",
+          "t": 2318.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#21",
+          "t": 2325.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#22",
+          "t": 2335,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#23",
+          "t": 2342.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#24",
+          "t": 2351.6,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#25",
+          "t": 2360.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#26",
+          "t": 2367.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#27",
+          "t": 2376.7,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#28",
+          "t": 2384.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#29",
+          "t": 2393.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#30",
+          "t": 2401.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#31",
+          "t": 2409.9,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#32",
+          "t": 2418.5,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#33",
+          "t": 2426.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#34",
+          "t": 2435.8,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#35",
+          "t": 2443.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#36",
+          "t": 2452.1,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#37",
+          "t": 2458.9,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#38",
+          "t": 2467,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#39",
+          "t": 2476.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "rAF#40",
+          "t": 2484.4,
+          "readyState": "interactive",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "readystate:complete",
+          "t": 5112.6,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "load",
+          "t": 5112.7,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 5189.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        },
+        {
+          "ev": "mutation:html.class",
+          "t": 5189.9,
+          "readyState": "complete",
+          "htmlExists": true,
+          "dark": false,
+          "cls": "light",
+          "bodyExists": true,
+          "bodyChildren": 27
+        }
+      ]
+    }
+  },
+  "obs3": {
+    "light": {
+      "state": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "light",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Light"
+      },
+      "messages": [],
+      "hydration": []
+    },
+    "dark": {
+      "state": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "dark",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": false,
+        "menuOpen": true,
+        "radios": [
+          {
+            "label": "Light",
+            "ariaChecked": "false",
+            "dataState": "off"
+          },
+          {
+            "label": "Dark",
+            "ariaChecked": "true",
+            "dataState": "on"
+          },
+          {
+            "label": "System",
+            "ariaChecked": "false",
+            "dataState": "off"
+          }
+        ],
+        "selected": "Dark"
+      },
+      "messages": [],
+      "hydration": []
+    }
+  },
+  "obs4": {
+    "themedBaseline": {
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": "dark",
+      "htmlClass": "dark",
+      "hasDark": true,
+      "htmlColorScheme": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null
+    },
+    "clientNav": {
+      "linkCount": 1,
+      "href": "/platform-admin/access-requests",
+      "state": {
+        "url": "/platform-admin/access-requests",
+        "h1": "Access Requests",
+        "ls": "dark",
+        "htmlClass": "light",
+        "hasDark": false,
+        "htmlColorScheme": "light",
+        "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null
+      },
+      "clientSideNavigation": true,
+      "screenshot": "forced-clientnav.png",
+      "afterBack": {
+        "url": "/org/e2e-test-org/dashboard",
+        "h1": "Home",
+        "ls": "dark",
+        "htmlClass": "dark",
+        "hasDark": true,
+        "htmlColorScheme": "dark",
+        "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+        "osPrefersDark": false,
+        "menuOpen": false,
+        "radios": null,
+        "selected": null,
+        "clientSideNavigation": true
+      }
+    },
+    "root": {
+      "requested": "/",
+      "url": "/",
+      "h1": "Practice management, built for Africa",
+      "ls": "dark",
+      "htmlClass": "light",
+      "hasDark": false,
+      "htmlColorScheme": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null,
+      "screenshot": "forced-root.png"
+    },
+    "dashboard": {
+      "requested": "/dashboard",
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": "dark",
+      "htmlClass": "dark",
+      "hasDark": true,
+      "htmlColorScheme": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null,
+      "screenshot": "forced-dashboard.png"
+    },
+    "mock-login": {
+      "requested": "/mock-login",
+      "url": "/mock-login",
+      "h1": "E2E Test Login",
+      "ls": "dark",
+      "htmlClass": "light",
+      "hasDark": false,
+      "htmlColorScheme": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null,
+      "screenshot": "forced-mock-login.png"
+    }
+  },
+  "obs5": {
+    "dark": {
+      "url": "/org/e2e-test-org/settings/firm?tab=data-protection",
+      "h1": "Data Protection",
+      "ls": "dark",
+      "htmlClass": "dark",
+      "hasDark": true,
+      "htmlColorScheme": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null,
+      "toasterDataTheme": null,
+      "toasterDataSonnerTheme": "dark",
+      "toastText": "Export register is coming soon.",
+      "toastBg": "rgb(0, 0, 0)",
+      "toastColor": "rgb(252, 252, 252)",
+      "screenshot": "toast-dark.png"
+    },
+    "light": {
+      "url": "/org/e2e-test-org/settings/firm?tab=data-protection",
+      "h1": "Data Protection",
+      "ls": "light",
+      "htmlClass": "light",
+      "hasDark": false,
+      "htmlColorScheme": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null,
+      "toasterDataTheme": null,
+      "toasterDataSonnerTheme": "light",
+      "toastText": "Export register is coming soon.",
+      "toastBg": "rgb(255, 255, 255)",
+      "toastColor": "rgb(23, 23, 23)",
+      "screenshot": "toast-light.png"
+    },
+    "system-osdark": {
+      "url": "/org/e2e-test-org/settings/firm?tab=data-protection",
+      "h1": "Data Protection",
+      "ls": "system",
+      "htmlClass": "dark",
+      "hasDark": true,
+      "htmlColorScheme": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "osPrefersDark": true,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null,
+      "toasterDataTheme": null,
+      "toasterDataSonnerTheme": "dark",
+      "toastText": "Export register is coming soon.",
+      "toastBg": "rgb(0, 0, 0)",
+      "toastColor": "rgb(252, 252, 252)",
+      "screenshot": "toast-system-osdark.png"
+    }
+  },
+  "obs6": {
+    "home-1024-light.png": {
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": "light",
+      "htmlClass": "light",
+      "hasDark": false,
+      "htmlColorScheme": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null
+    },
+    "home-1440-light.png": {
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": "light",
+      "htmlClass": "light",
+      "hasDark": false,
+      "htmlColorScheme": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null
+    },
+    "user-menu-light.png": {
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": "light",
+      "htmlClass": "light",
+      "hasDark": false,
+      "htmlColorScheme": "light",
+      "bodyBg": "lab(96.7396 -0.214994 -1.49846)",
+      "osPrefersDark": false,
+      "menuOpen": true,
+      "radios": [
+        {
+          "label": "Light",
+          "ariaChecked": "true",
+          "dataState": "on"
+        },
+        {
+          "label": "Dark",
+          "ariaChecked": "false",
+          "dataState": "off"
+        },
+        {
+          "label": "System",
+          "ariaChecked": "false",
+          "dataState": "off"
+        }
+      ],
+      "selected": "Light"
+    },
+    "home-1024-dark.png": {
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": "dark",
+      "htmlClass": "dark",
+      "hasDark": true,
+      "htmlColorScheme": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null
+    },
+    "home-1440-dark.png": {
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": "dark",
+      "htmlClass": "dark",
+      "hasDark": true,
+      "htmlColorScheme": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "osPrefersDark": false,
+      "menuOpen": false,
+      "radios": null,
+      "selected": null
+    },
+    "user-menu-dark.png": {
+      "url": "/org/e2e-test-org/dashboard",
+      "h1": "Home",
+      "ls": "dark",
+      "htmlClass": "dark",
+      "hasDark": true,
+      "htmlColorScheme": "dark",
+      "bodyBg": "lab(2.214 -0.134699 -1.01047)",
+      "osPrefersDark": false,
+      "menuOpen": true,
+      "radios": [
+        {
+          "label": "Light",
+          "ariaChecked": "false",
+          "dataState": "off"
+        },
+        {
+          "label": "Dark",
+          "ariaChecked": "true",
+          "dataState": "on"
+        },
+        {
+          "label": "System",
+          "ariaChecked": "false",
+          "dataState": "off"
+        }
+      ],
+      "selected": "Dark"
+    }
+  },
+  "console": [
+    {
+      "phase": "obs4",
+      "page": "main",
+      "type": "error",
+      "url": "http://localhost:3001/",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "httpErrors": [
+    {
+      "phase": "obs4",
+      "page": "main",
+      "status": 404,
+      "url": "http://localhost:3001/sign-up?_rsc=5CB68i4pnAekjehf",
+      "pageUrl": "http://localhost:3001/"
+    }
+  ],
+  "finishedAt": "2026-11-12T01:42:18.303Z",
+  "consoleSummary": {
+    "total": 1,
+    "errors": 1,
+    "warnings": 0,
+    "pageerrors": 0,
+    "hydration": 0
+  }
+}

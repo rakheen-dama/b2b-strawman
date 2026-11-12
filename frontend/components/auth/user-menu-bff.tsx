@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { clientRedirectToReLogin } from "@/lib/auth/expiry";
 import { captureReturnTo } from "@/lib/auth/return-to";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
@@ -178,7 +179,7 @@ export function UserMenuBff() {
         {initials}
       </button>
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div className="absolute top-full right-0 mt-2 w-64 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
             <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
               {user?.name ?? "Loading..."}
@@ -194,6 +195,10 @@ export function UserMenuBff() {
             <ShieldCheck className="h-3.5 w-3.5" />
             Account &amp; Security
           </button>
+          <div className="border-border border-y px-3 py-2">
+            <p className="text-muted-foreground mb-1.5 text-xs font-medium">Theme</p>
+            <ThemeToggle variant="segmented" />
+          </div>
           <button
             onClick={handleSignOut}
             className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"

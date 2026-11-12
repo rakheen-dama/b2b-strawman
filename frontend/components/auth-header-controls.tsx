@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import { useMockAuthContext } from "@/lib/auth/client/mock-context";
 import { useSignOut } from "@/lib/auth/client";
 import { UserMenuBff } from "@/components/auth/user-menu-bff";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import type { AuthUser } from "@/lib/auth";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
@@ -53,12 +54,16 @@ function MockUserButton() {
         {initials}
       </button>
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div className="absolute top-full right-0 mt-2 w-64 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
             <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
               {authUser?.firstName} {authUser?.lastName}
             </p>
             <p className="truncate text-xs text-slate-500 dark:text-slate-400">{authUser?.email}</p>
+          </div>
+          <div className="border-border border-b px-3 py-2">
+            <p className="text-muted-foreground mb-1.5 text-xs font-medium">Theme</p>
+            <ThemeToggle variant="segmented" />
           </div>
           <button
             onClick={signOut}

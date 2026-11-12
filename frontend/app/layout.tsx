@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth/client/auth-provider";
 import localFont from "next/font/local";
-import { Toaster } from "sonner";
+import { THEME_INIT_SCRIPT } from "@/components/theme/theme-config";
+import { KaziThemeProvider } from "@/components/theme/theme-provider";
+import { ThemedToaster } from "@/components/theme/themed-toaster";
 import "./globals.css";
 
 // G89-F46: self-hosted with next/font/local (no build-time Google Fonts download). Latin subset
@@ -68,18 +70,24 @@ export default function RootLayout({
 }>) {
   return (
     <AuthProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          {/* Parser-blocking: applies the stored theme class before any body content can paint. */}
+          <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        </head>
         <body
           className={`${sora.variable} ${plexSans.variable} ${jetbrainsMono.variable} antialiased`}
         >
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
-          >
-            Skip to content
-          </a>
-          {children}
-          <Toaster position="bottom-right" />
+          <KaziThemeProvider>
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg"
+            >
+              Skip to content
+            </a>
+            {children}
+            <ThemedToaster />
+          </KaziThemeProvider>
         </body>
       </html>
     </AuthProvider>

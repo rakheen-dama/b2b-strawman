@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth/client/auth-provider";
 import localFont from "next/font/local";
+import { THEME_INIT_SCRIPT } from "@/components/theme/theme-config";
 import { KaziThemeProvider } from "@/components/theme/theme-provider";
 import { ThemedToaster } from "@/components/theme/themed-toaster";
 import "./globals.css";
@@ -70,6 +71,10 @@ export default function RootLayout({
   return (
     <AuthProvider>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          {/* Parser-blocking: applies the stored theme class before any body content can paint. */}
+          <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        </head>
         <body
           className={`${sora.variable} ${plexSans.variable} ${jetbrainsMono.variable} antialiased`}
         >

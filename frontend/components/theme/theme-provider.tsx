@@ -3,14 +3,7 @@
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { ThemeProvider } from "next-themes";
-
-/** localStorage key of the per-browser theme choice (ADR-371). */
-export const THEME_STORAGE_KEY = "kazi-theme";
-
-/** Only the org-scoped app is themed; every other route always paints light (ADR-371, B6). */
-export function isThemedRoute(pathname: string | null): boolean {
-  return pathname?.startsWith("/org/") ?? false;
-}
+import { DEFAULT_THEME, THEME_STORAGE_KEY, isThemedRoute } from "@/components/theme/theme-config";
 
 interface KaziThemeProviderProps {
   children: ReactNode;
@@ -18,19 +11,21 @@ interface KaziThemeProviderProps {
 
 /**
  * Class-strategy theme provider: light by default, opt-in Dark / System per browser. Lives
- * inside `<body>` because `AuthProvider` wraps `<html>`; next-themes' blocking script writes the
- * class to `document.documentElement` itself, so the first paint is already in the right theme.
+ * inside `<body>` because `AuthProvider` wraps `<html>`, so next-themes' inline script is emitted
+ * in `<body>` too and a streamed HTML chunk can end before it executes (a light frame on a cold
+ * cache). The first paint is therefore owned by `THEME_INIT_SCRIPT` in the root layout's `<head>`
+ * (`app/layout.tsx`); this provider owns the theme at runtime. Both read `theme-config.ts`.
  */
 export function KaziThemeProvider({ children }: KaziThemeProviderProps) {
   const pathname = usePathname();
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="light"
+      defaultTheme={DEFAULT_THEME}
       enableSystem
       storageKey={THEME_STORAGE_KEY}
       disableTransitionOnChange
-      forcedTheme={isThemedRoute(pathname) ? undefined : "light"}
+      forcedTheme={isThemedRoute(pathname) ? undefined : DEFAULT_THEME}
     >
       {children}
     </ThemeProvider>

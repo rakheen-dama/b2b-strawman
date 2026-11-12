@@ -19,7 +19,8 @@ vi.mock("next-themes", () => ({
 
 vi.mock("next/navigation", () => ({ usePathname: () => nav.pathname }));
 
-import { KaziThemeProvider, isThemedRoute } from "@/components/theme/theme-provider";
+import { KaziThemeProvider } from "@/components/theme/theme-provider";
+import { isThemedRoute } from "@/components/theme/theme-config";
 
 const lastProps = () => captured[captured.length - 1];
 

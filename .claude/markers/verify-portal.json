@@ -1,7 +1,7 @@
 {
-  "commit": "bc7233bf824552f6f2bcd5235caad8b32c64e7b9",
-  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-639A, phase90/39A-pageheader-statcard-hero, node v20.11.1, NODE_OPTIONS='' SHELL=/bin/bash)",
+  "commit": "d78ce3ce510b5b516d35d0528747bea384ef56a7",
+  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-640A, phase90/40A-home-kpi-row, node v20.11.1, NODE_OPTIONS='')",
   "exit": 0,
-  "ts": "2026-11-12T05:45:43Z",
-  "summary": "PR #1763 (Phase 90 639A) @bc7233bf8 (last packages/ui + portal-affecting commit; f265fc609 frontend tests/comment only, 72c687815 evidence only): PORTAL-GATE exit 0 — 51 files, 284 passed (284); portal /home observed at 1024 light"
+  "ts": "2026-11-12T10:58:32Z",
+  "summary": "PR #1767 (Phase 90 640A) @d78ce3ce5 (packages/ui/src/stat-card.tsx: sparkline slot no longer aria-hidden): PORTAL-GATE exit 0 — 51 files, 284 passed. Portal imports nothing from stat-card. Portal CI pass @90f8d740f."
 }

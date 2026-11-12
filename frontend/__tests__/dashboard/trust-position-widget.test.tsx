@@ -41,7 +41,7 @@ describe("TrustPositionWidget", () => {
     render(<TrustPositionWidget slug="acme" data={BALANCED} />);
 
     expect(screen.getByTestId("trust-position-widget")).toBeInTheDocument();
-    expect(screen.getByText("Balanced")).toBeInTheDocument();
+    expect(screen.getByText("Balanced")).toHaveAttribute("data-tone", "success");
     expect(screen.queryByText(/^Difference/)).not.toBeInTheDocument();
     expect(screen.getByText("Bank cashbook")).toBeInTheDocument();
     expect(screen.getByText("Client ledgers")).toBeInTheDocument();
@@ -64,6 +64,7 @@ describe("TrustPositionWidget", () => {
 
     const badge = screen.getByText(/^Difference/);
     expect(badge.textContent).toMatch(/R\s?1\s?000/);
+    expect(badge).toHaveAttribute("data-tone", "warning");
     expect(screen.queryByText("Balanced")).not.toBeInTheDocument();
     expect(screen.getByTestId("trust-position-headline").textContent).toMatch(/1\s?000/);
   });

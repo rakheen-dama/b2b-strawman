@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, within } from "@testing-library/react";
 import { MatterHealthWidget } from "@/components/dashboard/matter-health-widget";
 import type { MatterHealth } from "@/lib/dashboard-types";
 
@@ -57,7 +57,11 @@ describe("MatterHealthWidget", () => {
 
   it("renders empty state when projects is null", () => {
     render(<MatterHealthWidget matters={null} orgSlug="acme" />);
-    expect(screen.getByText("No matters yet")).toBeInTheDocument();
+    expect(screen.getByText("No matters yet").closest('[data-slot="empty-state"]')).toHaveAttribute(
+      "data-variant",
+      "compact"
+    );
+    expect(screen.getByTestId("matter-health-panel")).toBeInTheDocument();
   });
 
   it("renders empty state when projects is empty", () => {
@@ -78,6 +82,32 @@ describe("MatterHealthWidget", () => {
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Beta Inc")).toBeInTheDocument();
+  });
+
+  it("health is token + icon + label: every row names its status, never colour alone", () => {
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
+
+    const row = (name: string) => screen.getByText(name).closest("button")!;
+    // The label stays in the accessibility tree at every width (sr-only below @lg).
+    expect(within(row("Website Redesign")).getByText("At Risk")).toBeInTheDocument();
+    expect(within(row("Mobile App")).getByText("Healthy")).toBeInTheDocument();
+    expect(within(row("API Migration")).getByText("Critical")).toBeInTheDocument();
+    expect(
+      within(row("API Migration")).getByText("Critical").closest("[data-tone]")
+    ).toHaveAttribute("data-tone", "danger");
+    expect(row("Website Redesign")).toHaveAccessibleName(/At Risk/);
+  });
+
+  it("keeps the sortable column headers and their sort state", () => {
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
+
+    const health = screen.getByRole("columnheader", { name: "Sort by health status" });
+    expect(health).toHaveAttribute("aria-sort", "ascending");
+    const name = screen.getByRole("columnheader", { name: "Sort by matter name" });
+    expect(name).toHaveAttribute("aria-sort", "none");
+    fireEvent.click(name);
+    expect(name).toHaveAttribute("aria-sort", "ascending");
+    expect(health).toHaveAttribute("aria-sort", "none");
   });
 
   it("shows task ratio and hours in dense row", () => {

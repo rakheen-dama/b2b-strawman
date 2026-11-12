@@ -1,15 +1,20 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { Hourglass } from "lucide-react";
+import { StatCard } from "@b2mash/ui/stat-card";
+import { EmptyState } from "@/components/empty-state";
+import { UnbilledWipChart } from "@/components/dashboard/unbilled-wip-chart";
 import { formatCurrency, formatDuration, formatLocalDate } from "@/lib/format";
 import type { UnbilledWipResponse } from "@/lib/dashboard-types";
 import {
+  WIDGET_ELEVATION_CLASS,
   WIDGET_LINK_CLASS,
+  WidgetCard,
   WidgetErrorLine,
   WidgetHeadline,
 } from "@/components/dashboard/widget-parts";
 
-/** Fee earners listed before the card defers to the Unbilled work page. */
-const MAX_ROWS = 5;
+const FIRM_TITLE = "Unbilled WIP";
 
 interface UnbilledWipWidgetProps {
   slug: string;
@@ -22,9 +27,11 @@ interface UnbilledWipWidgetProps {
 }
 
 /**
- * Unbilled WIP (614B, arch §12.6.3). Full view: firm value headline + value and hours per fee
- * earner. Redacted view (`redacted: true`, callers without FINANCIAL_VISIBILITY): "My unbilled
- * time" — the caller's own hours only; the response carries no values, and none are rendered.
+ * Unbilled WIP (614B, arch §12.6.3; on the kit in 640B). Full view: firm value headline + a
+ * ranked bar of value per fee earner (≥ 2 earners — one bar is not a chart, §15.9; hours and the
+ * oldest date per earner live on Unbilled work). Redacted view (`redacted: true`, callers without
+ * FINANCIAL_VISIBILITY): "My unbilled time" — a StatCard of the caller's own hours only; the
+ * response carries no values, and none are rendered.
  */
 export function UnbilledWipWidget({ slug, data, personal, showLink }: UnbilledWipWidgetProps) {
   const redacted = data ? data.redacted : personal;
@@ -37,36 +44,41 @@ export function UnbilledWipWidget({ slug, data, personal, showLink }: UnbilledWi
 
 function MyUnbilledTime({ slug, data }: { slug: string; data: UnbilledWipResponse | null }) {
   const own = data?.byFeeEarner[0] ?? null;
+  let value: ReactNode = null;
+  let hint: ReactNode;
+  if (data === null) {
+    hint = <WidgetErrorLine subject="Your unbilled time" />;
+  } else if (data.totalMinutes === 0) {
+    value = formatDuration(0);
+    hint = "No unbilled time. Billable time you record stays here until it is on a fee note.";
+  } else {
+    value = <span data-testid="unbilled-wip-headline">{formatDuration(data.totalMinutes)}</span>;
+    hint = (
+      <>
+        Billable time not yet on a fee note
+        {own?.oldestEntryDate && <>, oldest from {formatLocalDate(own.oldestEntryDate)}</>}
+      </>
+    );
+  }
   return (
-    <Card data-testid="unbilled-wip-widget" data-variant="personal" className="gap-4">
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">My unbilled time</CardTitle>
-        <CardAction>
+    // The wrapper keeps the widget's testid + variant; the StatCard is the only frame.
+    <div
+      data-testid="unbilled-wip-widget"
+      data-variant="personal"
+      className="flex flex-col *:flex-1"
+    >
+      <StatCard
+        label="My unbilled time"
+        value={value}
+        hint={hint}
+        footer={
           <Link href={`/org/${slug}/my-work/timesheet`} className={WIDGET_LINK_CLASS}>
             Open timesheet
           </Link>
-        </CardAction>
-      </CardHeader>
-      <CardContent className="space-y-1">
-        {data === null ? (
-          <WidgetErrorLine subject="Your unbilled time" />
-        ) : data.totalMinutes === 0 ? (
-          <p className="text-sm text-slate-400">
-            No unbilled time. Billable time you record stays here until it is on a fee note.
-          </p>
-        ) : (
-          <>
-            <WidgetHeadline testId="unbilled-wip-headline">
-              {formatDuration(data.totalMinutes)}
-            </WidgetHeadline>
-            <p className="text-xs text-slate-500">
-              Billable time not yet on a fee note
-              {own?.oldestEntryDate && <>, oldest from {formatLocalDate(own.oldestEntryDate)}</>}
-            </p>
-          </>
-        )}
-      </CardContent>
-    </Card>
+        }
+        className={WIDGET_ELEVATION_CLASS}
+      />
+    </div>
   );
 }
 
@@ -79,79 +91,70 @@ function FirmUnbilledWip({
   data: UnbilledWipResponse | null;
   showLink: boolean;
 }) {
-  const rows = data?.byFeeEarner.slice(0, MAX_ROWS) ?? [];
-  const moreCount = (data?.byFeeEarner.length ?? 0) - rows.length;
+  const earners = data?.byFeeEarner ?? [];
+  const single = earners.length === 1 ? earners[0] : null;
   return (
-    <Card data-testid="unbilled-wip-widget" data-variant="firm" className="gap-4">
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">Unbilled WIP</CardTitle>
-        {showLink && (
-          <CardAction>
-            <Link href={`/org/${slug}/invoices/unbilled`} className={WIDGET_LINK_CLASS}>
-              Open unbilled work
-            </Link>
-          </CardAction>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {data === null ? (
-          <WidgetErrorLine subject="Unbilled WIP" />
-        ) : data.byFeeEarner.length === 0 && !data.unbilledDisbursementTotal ? (
-          <p className="text-sm text-slate-400">
-            Nothing unbilled. Billable time appears here until it is on a fee note.
-          </p>
-        ) : (
-          <>
-            <div>
-              <WidgetHeadline testId="unbilled-wip-headline">
-                {data.totalValue != null ? formatCurrency(data.totalValue, data.currency) : "–"}
-              </WidgetHeadline>
-              <p className="text-xs text-slate-500">
-                {formatDuration(data.totalMinutes)} of unbilled time
-              </p>
-            </div>
-            {rows.length > 0 && (
-              <ul className="space-y-0.5" aria-label="Unbilled WIP by fee earner">
-                {rows.map((row) => (
-                  <li
-                    key={row.memberId}
-                    className="flex items-baseline gap-2 rounded-md px-2 py-1.5 text-sm"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate">{row.memberName}</span>
-                      <span className="block text-[11px] text-slate-500">
-                        Oldest from {formatLocalDate(row.oldestEntryDate)}
-                      </span>
-                    </span>
-                    <span className="font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
-                      {formatDuration(row.minutes)}
-                    </span>
-                    <span className="w-28 text-right font-mono text-sm font-medium text-slate-900 tabular-nums dark:text-slate-100">
-                      {row.value != null ? formatCurrency(row.value, data.currency) : "–"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {moreCount > 0 && (
-              <p className="px-2 text-xs text-slate-500">
-                {moreCount} more fee {moreCount === 1 ? "earner" : "earners"}
-              </p>
-            )}
-            {data.unbilledDisbursementTotal != null && (
-              <p
-                data-testid="unbilled-disbursements"
-                className="flex items-baseline justify-between border-t border-slate-100 px-2 pt-2 text-xs text-slate-500 dark:border-slate-800"
-              >
-                <span>Disbursements not yet billed</span>
-                <span className="font-mono text-sm font-medium text-slate-900 tabular-nums dark:text-slate-100">
-                  {formatCurrency(data.unbilledDisbursementTotal, data.currency)}
+    <WidgetCard
+      data-testid="unbilled-wip-widget"
+      data-variant="firm"
+      title={FIRM_TITLE}
+      action={
+        showLink ? (
+          <Link href={`/org/${slug}/invoices/unbilled`} className={WIDGET_LINK_CLASS}>
+            Open unbilled work
+          </Link>
+        ) : null
+      }
+      contentProps={{ className: "space-y-3" }}
+    >
+      {data === null ? (
+        <WidgetErrorLine subject="Unbilled WIP" />
+      ) : earners.length === 0 && !data.unbilledDisbursementTotal ? (
+        <EmptyState
+          variant="compact"
+          icon={Hourglass}
+          title="Nothing unbilled."
+          description="Billable time appears here until it is on a fee note."
+        />
+      ) : (
+        <>
+          <div>
+            <WidgetHeadline testId="unbilled-wip-headline">
+              {data.totalValue != null ? formatCurrency(data.totalValue, data.currency) : "–"}
+            </WidgetHeadline>
+            <p className="text-muted-foreground text-xs">
+              {formatDuration(data.totalMinutes)} of unbilled time
+            </p>
+          </div>
+          {earners.length >= 2 ? (
+            <UnbilledWipChart
+              title={FIRM_TITLE}
+              rows={earners.map((row) => ({ feeEarner: row.memberName, value: row.value }))}
+              currency={data.currency}
+            />
+          ) : single ? (
+            <ul aria-label="Unbilled WIP by fee earner">
+              <li className="flex items-baseline gap-2 rounded-md px-2 py-1.5 text-sm">
+                <span className="text-foreground min-w-0 flex-1 truncate">{single.memberName}</span>
+                <span className="text-foreground font-mono text-sm font-medium tabular-nums">
+                  {single.value != null ? formatCurrency(single.value, data.currency) : "–"}
                 </span>
-              </p>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+              </li>
+            </ul>
+          ) : null}
+          {data.unbilledDisbursementTotal != null && (
+            <p
+              data-testid="unbilled-disbursements"
+              className="border-border text-muted-foreground flex items-baseline justify-between border-t px-2 pt-2 text-xs"
+            >
+              <span>Disbursements not yet billed</span>
+              <span className="text-foreground font-mono text-sm font-medium tabular-nums">
+                {formatCurrency(data.unbilledDisbursementTotal, data.currency)}
+              </span>
+            </p>
+          )}
+        </>
+      )}
+    </WidgetCard>
   );
 }

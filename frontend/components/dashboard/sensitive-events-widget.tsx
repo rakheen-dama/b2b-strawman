@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShieldAlert } from "lucide-react";
+import type { ReactNode } from "react";
+import { AlertTriangle, Circle, Info, OctagonAlert, ShieldAlert, ShieldCheck } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
 import { Button } from "@b2mash/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import { RelativeDate } from "@/components/ui/relative-date";
-import { SeverityPill } from "@/components/audit/severity-pill";
+import { StatusBadge, type StatusTone, WidgetCard } from "@/components/dashboard/widget-parts";
 import { CAPABILITIES, RequiresCapability } from "@/lib/capabilities";
 import type { AuditEventResponse, AuditSeverity, EventTypeFacet } from "@/lib/api/audit-events";
 
@@ -21,6 +22,31 @@ const PILL_SEVERITIES: ReadonlyArray<Exclude<AuditSeverity, "INFO">> = [
 ];
 
 const ROW_WINDOW_MS = 60_000; // ±1 minute around the event timestamp.
+
+// Widget-local severity badge (640B): status tokens + icon + the same uppercase label. Keeps the
+// audit log's SeverityPill testid/attribute contract; severity-pill.tsx itself is not touched
+// (the audit log and its e2e selector still use it).
+const SEVERITY: Record<AuditSeverity, { tone: StatusTone; icon: ReactNode }> = {
+  INFO: { tone: "neutral", icon: <Circle /> },
+  NOTICE: { tone: "info", icon: <Info /> },
+  WARNING: { tone: "warning", icon: <AlertTriangle /> },
+  CRITICAL: { tone: "danger", icon: <OctagonAlert /> },
+};
+
+function SeverityBadge({ severity }: { severity: AuditSeverity }) {
+  const { tone, icon } = SEVERITY[severity] ?? SEVERITY.INFO;
+  return (
+    <StatusBadge
+      tone={tone}
+      icon={icon}
+      data-testid="severity-pill"
+      data-severity={severity}
+      className="px-1.5 text-[10px]"
+    >
+      {severity}
+    </StatusBadge>
+  );
+}
 
 export interface SensitiveEventsWidgetProps {
   orgSlug: string;
@@ -94,75 +120,81 @@ function SensitiveEventsWidgetInner({
   const viewAllHref = buildViewAllHref(orgSlug, viewAllFromIso);
 
   return (
-    <Card data-testid="sensitive-events-widget">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+    <WidgetCard
+      data-testid="sensitive-events-widget"
+      title={
+        <>
           <ShieldAlert className="size-4" />
           Sensitive events
-          <span className="text-xs font-normal text-slate-500">Last 7 days</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 pt-0">
-        <div className="flex flex-wrap items-center gap-2" data-testid="sensitive-events-counts">
-          {PILL_SEVERITIES.map((sev) => (
-            <div
-              key={sev}
-              className="flex items-center gap-1.5"
-              data-testid={`sensitive-count-${sev}`}
-            >
-              <SeverityPill severity={sev} size="sm" />
-              <span className="font-mono text-xs font-semibold tabular-nums">{counts[sev]}</span>
-            </div>
-          ))}
-        </div>
-
-        {events.length === 0 ? (
-          <p className="text-xs text-slate-500 italic" data-testid="sensitive-events-empty">
-            No sensitive events in the last 7 days.
-          </p>
-        ) : (
-          <ul className="space-y-0">
-            {events.map((event, idx) => {
-              const href = buildRowHref(orgSlug, event);
-              return (
-                <li key={event.id}>
-                  <button
-                    type="button"
-                    data-testid={`sensitive-row-${event.id}`}
-                    onClick={() => router.push(href)}
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900",
-                      idx % 2 === 1 && "bg-slate-50/50 dark:bg-slate-900/50"
-                    )}
-                  >
-                    <SeverityPill severity={event.severity} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs text-slate-700 dark:text-slate-300">
-                        {event.label}
-                      </p>
-                      <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">
-                        {event.entityType}
-                        {event.entityId ? ` · ${event.entityId}` : ""}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
-                      <RelativeDate iso={event.occurredAt} />
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </CardContent>
-      <CardFooter className="pt-0">
-        <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" asChild>
+          <span className="text-muted-foreground text-xs font-normal">Last 7 days</span>
+        </>
+      }
+      contentProps={{ className: "space-y-3" }}
+      footer={
+        <Button variant="ghost" size="sm" className="text-muted-foreground h-7 text-xs" asChild>
           <Link href={viewAllHref} data-testid="sensitive-events-view-all">
             View all &rarr;
           </Link>
         </Button>
-      </CardFooter>
-    </Card>
+      }
+    >
+      <div className="flex flex-wrap items-center gap-2" data-testid="sensitive-events-counts">
+        {PILL_SEVERITIES.map((sev) => (
+          <div
+            key={sev}
+            className="flex items-center gap-1.5"
+            data-testid={`sensitive-count-${sev}`}
+          >
+            <SeverityBadge severity={sev} />
+            <span className="text-foreground font-mono text-xs font-semibold tabular-nums">
+              {counts[sev]}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {events.length === 0 ? (
+        <div data-testid="sensitive-events-empty">
+          <EmptyState
+            variant="compact"
+            icon={ShieldCheck}
+            title="No sensitive events in the last 7 days."
+            description={null}
+          />
+        </div>
+      ) : (
+        <ul className="space-y-0">
+          {events.map((event, idx) => {
+            const href = buildRowHref(orgSlug, event);
+            return (
+              <li key={event.id}>
+                <button
+                  type="button"
+                  data-testid={`sensitive-row-${event.id}`}
+                  onClick={() => router.push(href)}
+                  className={cn(
+                    "hover:bg-muted focus-visible:ring-ring flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors outline-none focus-visible:ring-2",
+                    idx % 2 === 1 && "bg-muted/50"
+                  )}
+                >
+                  <SeverityBadge severity={event.severity} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground truncate text-xs">{event.label}</p>
+                    <p className="text-muted-foreground truncate text-[10px]">
+                      {event.entityType}
+                      {event.entityId ? ` · ${event.entityId}` : ""}
+                    </p>
+                  </div>
+                  <span className="text-muted-foreground shrink-0 text-[10px]">
+                    <RelativeDate iso={event.occurredAt} />
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </WidgetCard>
   );
 }
 

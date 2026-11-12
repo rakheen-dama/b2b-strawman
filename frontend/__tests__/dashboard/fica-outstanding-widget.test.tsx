@@ -57,8 +57,8 @@ describe("FicaOutstandingWidget", () => {
       "href",
       "/org/acme/clients/c1"
     );
-    expect(screen.getByText("Not started")).toBeInTheDocument();
-    expect(screen.getByText("In progress")).toBeInTheDocument();
+    expect(screen.getByText("Not started")).toHaveAttribute("data-tone", "warning");
+    expect(screen.getByText("In progress")).toHaveAttribute("data-tone", "info");
     expect(screen.getByText("50 days")).toBeInTheDocument();
     expect(screen.getByText("1 day")).toBeInTheDocument();
   });
@@ -87,7 +87,11 @@ describe("FicaOutstandingWidget", () => {
     render(
       <FicaOutstandingWidget slug="acme" data={{ ...DATA, outstandingCount: 0, clients: [] }} />
     );
-    expect(screen.getByText("Every active client has completed FICA.")).toBeInTheDocument();
+    expect(
+      screen
+        .getByText("Every active client has completed FICA.")
+        .closest('[data-slot="empty-state"]')
+    ).toHaveAttribute("data-variant", "compact");
   });
 
   it("error: quiet error line, footer link kept", () => {

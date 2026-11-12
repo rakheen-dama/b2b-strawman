@@ -106,7 +106,10 @@ describe("DebtorsWidget", () => {
         data={{ content: [], page: { totalElements: 0, totalPages: 0, size: 5, number: 0 } }}
       />
     );
-    expect(screen.getByText("No client owes fees.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No client owes fees.").closest('[data-slot="empty-state"]')
+    ).toHaveAttribute("data-variant", "compact");
+    expect(screen.queryByRole("list", { name: "Largest debtors" })).not.toBeInTheDocument();
   });
 
   it("error: quiet error line", () => {

@@ -49,7 +49,10 @@ describe("HomeDiaryWidget", () => {
       "href",
       "/org/acme/diary?view=day"
     );
-    expect(within(card).getByText("Nothing in the diary today")).toBeInTheDocument();
+    // The list sits in the card's content section (the testid the agenda tests use).
+    expect(
+      within(within(card).getByTestId("todays-diary")).getByText("Nothing in the diary today")
+    ).toBeInTheDocument();
   });
 
   it("lists today's rows and links the overdue band", () => {

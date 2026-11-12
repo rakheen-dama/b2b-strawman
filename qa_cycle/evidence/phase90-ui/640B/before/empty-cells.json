@@ -1,0 +1,310 @@
+{
+  "empty-alice-1440-light": {
+    "audience": "owner",
+    "htmlClass": "light",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 174,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 1 Hours logged 0,0h No hours logged in the last 6 weeks. Billable % — Not available Overdue tasks 0",
+        "truncated": []
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 114,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": []
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 240,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work Nothing unbilled. Billable time appears here until it is on a fee note.",
+        "truncated": []
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 240,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 1 client owes fees Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": []
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 256,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation R 0,00 Balanced Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 0,00 Client ledgers R 0,00 Last reconciliation Never reconciled Awaiting approval 0",
+        "truncated": []
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 286,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance Every active client has completed FICA. Incomplete profiles",
+        "truncated": []
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 286,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate Matter Status PROGRESS HOURS TASKS Website Redesign Acme Corp 0% 0h 0/0 View all matters →",
+        "truncated": []
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 209,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 0 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": []
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 378,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity AO Alice Owner generated a statement of account \"statement-of-account-website-redesign-2026-11-12.pdf\" just now AO Information request REQ-0001 sent to Acme Corp just now AO Alice Owner created information request REQ-0001 just now AO Alice Owner sent fee note INV-0001 just now AO Alice Owner approved fee note INV-0001 just now AO Alice Owner opened the matter \"Website Redesign\" just now View all activity →",
+        "truncated": []
+      }
+    ]
+  },
+  "empty-alice-1440-dark": {
+    "audience": "owner",
+    "htmlClass": "dark",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 174,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 1 Hours logged 0,0h No hours logged in the last 6 weeks. Billable % — Not available Overdue tasks 0",
+        "truncated": []
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 114,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": []
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 240,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work Nothing unbilled. Billable time appears here until it is on a fee note.",
+        "truncated": []
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 240,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 1 client owes fees Acme Corp Not yet overdue R 8 625,00 Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": []
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 256,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation R 0,00 Balanced Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 0,00 Client ledgers R 0,00 Last reconciliation Never reconciled Awaiting approval 0",
+        "truncated": []
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 286,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance Every active client has completed FICA. Incomplete profiles",
+        "truncated": []
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 286,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate Matter Status PROGRESS HOURS TASKS Website Redesign Acme Corp 0% 0h 0/0 View all matters →",
+        "truncated": []
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 209,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 0 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": []
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 378,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity AO Alice Owner generated a statement of account \"statement-of-account-website-redesign-2026-11-12.pdf\" just now AO Information request REQ-0001 sent to Acme Corp just now AO Alice Owner created information request REQ-0001 just now AO Alice Owner sent fee note INV-0001 just now AO Alice Owner approved fee note INV-0001 just now AO Alice Owner opened the matter \"Website Redesign\" just now View all activity →",
+        "truncated": []
+      }
+    ]
+  },
+  "empty-carol-1440-light": {
+    "audience": "feeEarner",
+    "htmlClass": "light",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 114,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": []
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 114,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": []
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 114,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time Open timesheet No unbilled time. Billable time you record stays here until it is on a fee note.",
+        "truncated": []
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 350,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health No matters yet Create a matter to start tracking health status.",
+        "truncated": []
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 350,
+        "innerTestId": null,
+        "text": "Recent Activity No recent activity Activity will appear as your team works on matters.",
+        "truncated": []
+      }
+    ]
+  },
+  "empty-carol-1440-dark": {
+    "audience": "feeEarner",
+    "htmlClass": "dark",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 114,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": []
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 114,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": []
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 114,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time Open timesheet No unbilled time. Billable time you record stays here until it is on a fee note.",
+        "truncated": []
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 350,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health No matters yet Create a matter to start tracking health status.",
+        "truncated": []
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 350,
+        "innerTestId": null,
+        "text": "Recent Activity No recent activity Activity will appear as your team works on matters.",
+        "truncated": []
+      }
+    ]
+  }
+}

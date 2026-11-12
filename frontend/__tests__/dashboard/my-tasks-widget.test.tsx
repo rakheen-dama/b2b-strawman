@@ -79,7 +79,8 @@ describe("MyTasksWidget", () => {
     );
     const late = screen.getByRole("link", { name: /Task late/ });
     const soon = screen.getByRole("link", { name: /Task soon/ });
-    expect(within(late).getByText("Overdue")).toBeInTheDocument();
+    // Status = token + icon + label: the label is the text, the tone is state, not a colour class.
+    expect(within(late).getByText("Overdue")).toHaveAttribute("data-tone", "danger");
     expect(within(soon).queryByText("Overdue")).not.toBeInTheDocument();
   });
 
@@ -95,7 +96,10 @@ describe("MyTasksWidget", () => {
       "href",
       "/org/acme/my-work"
     );
-    expect(screen.getByText(/Nothing assigned to you/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Nothing assigned to you/).closest('[data-slot="empty-state"]')
+    ).toHaveAttribute("data-variant", "compact");
+    expect(screen.getByText("Tasks assigned to you on a matter appear here.")).toBeInTheDocument();
     expect(screen.queryByText("Task u")).not.toBeInTheDocument();
   });
 

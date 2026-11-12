@@ -3,13 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { HeartPulse, ArrowUp, ArrowDown } from "lucide-react";
+import type { ReactNode } from "react";
+import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  CheckCircle2,
+  HeartPulse,
+  HelpCircle,
+  XCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
-import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
+import { StatusBadge, type StatusTone, WidgetCard } from "@/components/dashboard/widget-parts";
 import type { MatterHealth } from "@/lib/dashboard-types";
 
 interface MatterHealthWidgetProps {
@@ -29,6 +37,27 @@ type SortField = "health" | "budget" | "name";
 type SortDirection = "asc" | "desc";
 
 const MAX_VISIBLE_ROWS = 10;
+
+/** Labels are HealthBadge's STATUS_LABELS (existing copy); token + icon + label (ADR-370). */
+const HEALTH: Record<
+  MatterHealth["healthStatus"],
+  { label: string; tone: StatusTone; icon: ReactNode }
+> = {
+  HEALTHY: { label: "Healthy", tone: "success", icon: <CheckCircle2 /> },
+  AT_RISK: { label: "At Risk", tone: "warning", icon: <AlertTriangle /> },
+  CRITICAL: { label: "Critical", tone: "danger", icon: <XCircle /> },
+  UNKNOWN: { label: "Unknown", tone: "neutral", icon: <HelpCircle /> },
+};
+
+// Column layout by the card's own width (container queries, 640B): at a half-width cell
+// (~352px) the matter name keeps the room — Hours shows from @md, the health label from @lg
+// (icon + sr-only label below it), Progress from @xl. Header and rows share these classes.
+const COL_STATUS = "flex w-12 justify-center @lg:w-24";
+const COL_PROGRESS = "hidden w-20 @xl:block";
+const COL_HOURS = "hidden w-12 text-right @md:block";
+const COL_TASKS = "w-12 text-right";
+const HEADER_BUTTON =
+  "focus-visible:ring-ring rounded-sm tracking-wider uppercase outline-none focus-visible:ring-2";
 
 function getHealthOrder(status: string): number {
   switch (status) {
@@ -61,18 +90,14 @@ export function MatterHealthWidget({ matters: projects, orgSlug }: MatterHealthW
 
   if (!projects || projects.length === 0) {
     return (
-      <Card data-testid="matter-health-panel">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Matter Health</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <EmptyState
-            icon={HeartPulse}
-            title="No matters yet"
-            description="Create a matter to start tracking health status."
-          />
-        </CardContent>
-      </Card>
+      <WidgetCard data-testid="matter-health-panel" title="Matter Health">
+        <EmptyState
+          variant="compact"
+          icon={HeartPulse}
+          title="No matters yet"
+          description="Create a matter to start tracking health status."
+        />
+      </WidgetCard>
     );
   }
 
@@ -113,116 +138,121 @@ export function MatterHealthWidget({ matters: projects, orgSlug }: MatterHealthW
   const SortIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
 
   return (
-    <Card data-testid="matter-health-panel">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Matter Health</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 pt-0">
-        {/* Filter Tabs */}
-        <div className="flex gap-1">
-          {FILTER_TABS.map((tab) => (
-            <Button
-              key={tab.value}
-              variant={activeFilter === tab.value ? "outline" : "ghost"}
-              size="sm"
-              onClick={() => setActiveFilter(tab.value)}
-              className={cn(
-                "h-7 text-xs",
-                activeFilter === tab.value && "border-slate-400 dark:border-slate-600"
-              )}
-            >
-              {tab.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Column Headers */}
-        <div className="flex items-center gap-2 border-b border-slate-100 px-2 pb-1.5 text-[11px] font-medium tracking-wider text-slate-400 uppercase dark:border-slate-800">
-          <button
-            type="button"
-            role="columnheader"
-            onClick={() => handleSort("name")}
-            className="flex min-w-0 flex-1 items-center gap-1"
-            aria-label="Sort by matter name"
-            aria-sort={
-              sortField === "name" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
-            }
-          >
-            Matter
-            {sortField === "name" && <SortIcon className="size-3" />}
-          </button>
-          <button
-            type="button"
-            role="columnheader"
-            onClick={() => handleSort("health")}
-            className="flex w-12 items-center justify-center gap-1"
-            aria-label="Sort by health status"
-            aria-sort={
-              sortField === "health"
-                ? sortDirection === "asc"
-                  ? "ascending"
-                  : "descending"
-                : "none"
-            }
-          >
-            Status
-            {sortField === "health" && <SortIcon className="size-3" />}
-          </button>
-          <span className="w-20 text-center">Progress</span>
-          <span className="w-12 text-right">Hours</span>
-          <span className="w-12 text-right">Tasks</span>
-        </div>
-
-        {/* Matter Rows */}
-        {visibleProjects.length === 0 ? (
-          <p className="py-2 text-center text-xs text-slate-500 italic">No matching matters</p>
-        ) : (
-          <div className="space-y-0">
-            {visibleProjects.map((project) => (
-              <button
-                key={project.matterId}
-                type="button"
-                onClick={() => router.push(`/org/${orgSlug}/matters/${project.matterId}`)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
-              >
-                {/* Name + Client stacked */}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{project.matterName}</p>
-                  {project.clientName && (
-                    <p className="truncate text-[11px] text-slate-500">{project.clientName}</p>
-                  )}
-                </div>
-                {/* Health Badge */}
-                <div className="flex w-12 justify-center">
-                  <HealthBadge status={project.healthStatus} size="sm" />
-                </div>
-                {/* Progress Bar */}
-                <div className="w-20">
-                  <CompletionProgressBar percent={project.completionPercent} />
-                </div>
-                {/* Hours */}
-                <span className="w-12 text-right font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
-                  {formatHours(project.hoursLogged)}
-                </span>
-                {/* Task Ratio */}
-                <span className="w-12 text-right font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
-                  {formatTaskRatio(project.tasksDone, project.tasksTotal)}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="pt-0">
+    <WidgetCard
+      data-testid="matter-health-panel"
+      title="Matter Health"
+      contentProps={{ className: "@container space-y-3" }}
+      footer={
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 text-xs text-slate-500"
+          className="text-muted-foreground h-7 text-xs"
           onClick={() => router.push(`/org/${orgSlug}/matters`)}
         >
           View all matters &rarr;
         </Button>
-      </CardFooter>
-    </Card>
+      }
+    >
+      {/* Filter Tabs */}
+      <div className="flex gap-1">
+        {FILTER_TABS.map((tab) => (
+          <Button
+            key={tab.value}
+            variant={activeFilter === tab.value ? "outline" : "ghost"}
+            size="sm"
+            onClick={() => setActiveFilter(tab.value)}
+            className={cn("h-7 text-xs", activeFilter === tab.value && "border-foreground/30")}
+          >
+            {tab.label}
+          </Button>
+        ))}
+      </div>
+
+      {/* Column Headers */}
+      <div className="border-border text-muted-foreground flex items-center gap-2 border-b px-2 pb-1.5 text-[11px] font-medium tracking-wider uppercase">
+        <button
+          type="button"
+          role="columnheader"
+          onClick={() => handleSort("name")}
+          className={cn(HEADER_BUTTON, "flex min-w-0 flex-1 items-center gap-1")}
+          aria-label="Sort by matter name"
+          aria-sort={
+            sortField === "name" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
+          }
+        >
+          Matter
+          {sortField === "name" && <SortIcon className="size-3" />}
+        </button>
+        <button
+          type="button"
+          role="columnheader"
+          onClick={() => handleSort("health")}
+          className={cn(HEADER_BUTTON, COL_STATUS, "items-center gap-1")}
+          aria-label="Sort by health status"
+          aria-sort={
+            sortField === "health" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
+          }
+        >
+          Status
+          {sortField === "health" && <SortIcon className="size-3" />}
+        </button>
+        <span className={cn(COL_PROGRESS, "text-center")}>Progress</span>
+        <span className={COL_HOURS}>Hours</span>
+        <span className={COL_TASKS}>Tasks</span>
+      </div>
+
+      {/* Matter Rows */}
+      {visibleProjects.length === 0 ? (
+        <p className="text-muted-foreground py-2 text-center text-xs italic">No matching matters</p>
+      ) : (
+        <div className="space-y-0">
+          {visibleProjects.map((project) => {
+            const health = HEALTH[project.healthStatus] ?? HEALTH.UNKNOWN;
+            return (
+              <button
+                key={project.matterId}
+                type="button"
+                onClick={() => router.push(`/org/${orgSlug}/matters/${project.matterId}`)}
+                className="hover:bg-muted focus-visible:ring-ring flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors outline-none focus-visible:ring-2"
+              >
+                {/* Name + Client stacked */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground truncate text-sm font-medium">
+                    {project.matterName}
+                  </p>
+                  {project.clientName && (
+                    <p className="text-muted-foreground truncate text-[11px]">
+                      {project.clientName}
+                    </p>
+                  )}
+                </div>
+                {/* Health: icon + label; the label is sr-only until the card is @lg wide */}
+                <div className={COL_STATUS}>
+                  <StatusBadge tone={health.tone} icon={health.icon} className="px-1 @lg:px-2">
+                    <span className="sr-only @lg:not-sr-only">{health.label}</span>
+                  </StatusBadge>
+                </div>
+                {/* Progress Bar */}
+                <div className={COL_PROGRESS}>
+                  <CompletionProgressBar percent={project.completionPercent} />
+                </div>
+                {/* Hours */}
+                <span
+                  className={cn(COL_HOURS, "text-muted-foreground font-mono text-xs tabular-nums")}
+                >
+                  {formatHours(project.hoursLogged)}
+                </span>
+                {/* Task Ratio */}
+                <span
+                  className={cn(COL_TASKS, "text-muted-foreground font-mono text-xs tabular-nums")}
+                >
+                  {formatTaskRatio(project.tasksDone, project.tasksTotal)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </WidgetCard>
   );
 }

@@ -42,7 +42,8 @@ vi.mock("@/components/command-palette-provider", () => ({
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { OrgProfileProvider } from "@/lib/org-profile";
-import { DesktopSidebar } from "@/components/desktop-sidebar";
+import { AppSidebar } from "@/components/shell/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 afterEach(() => {
   cleanup();
@@ -136,7 +137,9 @@ describe("Sidebar nav label changes", () => {
     return render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
-          <DesktopSidebar slug="test-org" />
+          <SidebarProvider>
+            <AppSidebar slug="test-org" />
+          </SidebarProvider>
         </CapabilityProvider>
       </OrgProfileProvider>
     );

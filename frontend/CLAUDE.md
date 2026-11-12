@@ -51,8 +51,7 @@ frontend/
 │   ├── team/                         # Team management components
 │   ├── billing/                      # Subscription banner, platform-admin billing/demo tenant tables
 │   ├── marketing/                    # Landing page section components
-│   ├── desktop-sidebar.tsx           # Dark slate-950 sidebar with Motion indicator
-│   ├── mobile-sidebar.tsx            # Sheet-based mobile sidebar
+│   ├── shell/app-sidebar.tsx         # shadcn Sidebar shell (cookie collapse, icon rail, mobile Sheet)
 │   └── breadcrumbs.tsx               # Pathname-based breadcrumb nav
 ├── lib/
 │   ├── auth/                         # Auth abstraction layer (Keycloak + mock providers)
@@ -118,7 +117,7 @@ Semantic token mappings (light mode):
 ### Animation
 
 - **`tw-animate-css`** — Tailwind animation utilities (existing)
-- **`motion`** (Framer Motion) — Sidebar active indicator, tab underlines, dialog enter/exit. Import from `motion/react`.
+- **`motion`** (Framer Motion) — tab underlines, dialog enter/exit (the sidebar's active bar is CSS on `--sidebar-primary`). Import from `motion/react`.
 - **Page entrance** — `app/(app)/org/[slug]/template.tsx` (CSS `animate-in`, `motion-reduce:animate-none`). Never wrap route `children` in a pathname-keyed `AnimatePresence`: the new page renders into the exiting wrapper and is then remounted, discarding user state.
 
 ## Key Conventions

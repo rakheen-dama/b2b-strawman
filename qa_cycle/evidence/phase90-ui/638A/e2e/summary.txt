@@ -1,0 +1,7 @@
+head=57fa7a98f8c1bfc1a8167cad37f56368d727800f
+install exit=0
+e2e-down exit=0
+e2e-up exit=0
+navigation exit=0 ::  16 passed (7.3s)
+legal-lifecycle exit=0 ::  105 passed (2.8m)
+legal-depth-ii exit=0 ::  4 skipped, 40 passed (1.8m)

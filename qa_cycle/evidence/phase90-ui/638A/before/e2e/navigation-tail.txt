@@ -1,0 +1,6 @@
+  ✓  13 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Team page loads (270ms)
+  ✓  14 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Notifications page loads (245ms)
+  ✓  15 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:33:9 › NAV-01: Sidebar Navigation › Settings page loads (327ms)
+  ✓  16 [chromium] › e2e/tests/navigation/sidebar-navigation.spec.ts:75:7 › NAV-02: Sidebar zones › six zones in order with 28 items in order (740ms)
+
+  16 passed (7.1s)

@@ -1,0 +1,8 @@
+  ✓  40 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:361:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Override close with justification ≥20 chars (2.2s)
+  ✓  41 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:393:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Verify override audit event captures override_used=true + justification (2.9s)
+  -  42 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Matters list -> matter (projects/[id]): 120 fresh-session clicks render the destination
+  -  43 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Reports -> report detail (reports/[reportSlug]): 120 fresh-session clicks render the destination
+  -  44 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination
+
+  4 skipped
+  40 passed (1.8m)

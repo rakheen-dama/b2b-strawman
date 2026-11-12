@@ -30,7 +30,7 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
   const { items: recentItems } = useRecentItems();
   const access: NavFilterAccess = { hasCapability, isAdmin, isOwner, isModuleEnabled };
 
-  // Same gates as the sidebar zones (lib/nav-filter.ts, shared with nav-zone.tsx — 612B.1, 616E).
+  // Same gates as the sidebar zones (lib/nav-filter.ts, shared with components/shell/app-sidebar.tsx — 612B.1, 616E).
   const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter((item) =>
     isNavEntryVisible(item, access)
   );

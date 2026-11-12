@@ -41,7 +41,7 @@ export interface NavItem {
   icon: LucideIcon;
   /**
    * Active only on an exact pathname match (no `/`-segment prefix match). Within a zone the single
-   * active item is the longest matching href (nav-zone.tsx).
+   * active item is the longest matching href (components/shell/app-sidebar.tsx).
    */
   exact?: boolean;
   /**
@@ -175,7 +175,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         // Phase 87 612B: per-client unbilled time + expenses (GET /api/invoices/unbilled-summary).
-        // Longest-match in nav-zone keeps /invoices/unbilled off the "Fee notes" prefix item.
+        // Longest-match in app-sidebar keeps /invoices/unbilled off the "Fee notes" prefix item.
         label: "Unbilled work",
         href: (slug) => `/org/${slug}/invoices/unbilled`,
         icon: Hourglass,
@@ -184,7 +184,7 @@ export const NAV_GROUPS: NavGroup[] = [
         keywords: ["unbilled", "wip", "work in progress"],
       },
       {
-        // Prefix match so /invoices/[id] highlights Fee notes; nav-zone's longest-match keeps
+        // Prefix match so /invoices/[id] highlights Fee notes; app-sidebar's longest-match keeps
         // /invoices/billing-runs/* and /invoices/collections on their own items.
         label: "Fee notes",
         href: (slug) => `/org/${slug}/invoices`,
@@ -316,7 +316,7 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 /**
- * Utility items pinned to the sidebar footer (SidebarUtilityFooter — desktop and mobile share it).
+ * Utility items pinned to the sidebar footer (SidebarUtilityFooter in components/shell/app-sidebar.tsx).
  * Notifications only: Settings lives in the Firm zone and nowhere else (ADR-339).
  */
 export const UTILITY_ITEMS: NavItem[] = [

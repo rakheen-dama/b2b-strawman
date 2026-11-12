@@ -1,0 +1,54 @@
+[
+  {
+    "viewport": 1440,
+    "sidebar": "expanded",
+    "main": 1184,
+    "tableW": 1161,
+    "wrapper": {
+      "cls": "relative w-full overflow-x-auto",
+      "scrollWidth": 1161,
+      "clientWidth": 1134,
+      "overflowX": "auto"
+    },
+    "docScrollWidth": 1440
+  },
+  {
+    "viewport": 1456,
+    "sidebar": "expanded",
+    "main": 1200,
+    "tableW": 1161,
+    "wrapper": {
+      "cls": "relative w-full overflow-x-auto",
+      "scrollWidth": 1161,
+      "clientWidth": 1150,
+      "overflowX": "auto"
+    },
+    "docScrollWidth": 1456
+  },
+  {
+    "viewport": 1440,
+    "sidebar": "collapsed",
+    "main": 1392,
+    "tableW": 1230,
+    "wrapper": {
+      "cls": "relative w-full overflow-x-auto",
+      "scrollWidth": 1230,
+      "clientWidth": 1230,
+      "overflowX": "auto"
+    },
+    "docScrollWidth": 1440
+  },
+  {
+    "viewport": 1600,
+    "sidebar": "expanded",
+    "main": 1344,
+    "tableW": 1230,
+    "wrapper": {
+      "cls": "relative w-full overflow-x-auto",
+      "scrollWidth": 1230,
+      "clientWidth": 1230,
+      "overflowX": "auto"
+    },
+    "docScrollWidth": 1600
+  }
+]

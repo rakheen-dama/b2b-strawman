@@ -1,0 +1,24 @@
+1c1
+< // 638A OBS (task 638.7): new shadcn sidebar shell on the mock-auth e2e stack (head e25c38f11).
+---
+> // 638A OBS (task 638.7): new shadcn sidebar shell on the mock-auth e2e stack (head 57fa7a98f, final re-run).
+12c12
+< const report = { head: 'e25c38f110004ef67941ce77dbe7db746234fa7d', capturedAt: new Date().toISOString(), obs: {}, pages: [] };
+---
+> const report = { head: '57fa7a98f8c1bfc1a8167cad37f56368d727800f', capturedAt: new Date().toISOString(), obs: {}, pages: [] };
+130c130
+<   const before = JSON.parse(fs.readFileSync(`${OUT}/before/before-report.json`, 'utf8')).captures.find((c) => c.file === 'shell-1440-light.png');
+---
+>   const before = JSON.parse(fs.readFileSync(`${OUT}/../before/before-report.json`, 'utf8')).captures.find((c) => c.file === 'shell-1440-light.png');
+1c1
+< // 638A OBS follow-up probe: (a) collapsed-rail hover tooltip with an explicit wait; (b) Ctrl+B in the
+---
+> // [final re-run at head 57fa7a98f] 638A OBS follow-up probe: (a) collapsed-rail hover tooltip with an explicit wait; (b) Ctrl+B in the
+1c1
+< // 638A OBS follow-up probe 2: (a) clean hover-tooltip capture (pointer approaches the icon horizontally
+---
+> // [final re-run at head 57fa7a98f] 638A OBS follow-up probe 2: (a) clean hover-tooltip capture (pointer approaches the icon horizontally
+1c1
+< // 638A OBS follow-up probe 3: is the /matters table's right-edge clipping caused by the shell (main 1184 vs
+---
+> // [final re-run at head 57fa7a98f] 638A OBS follow-up probe 3: is the /matters table's right-edge clipping caused by the shell (main 1184 vs

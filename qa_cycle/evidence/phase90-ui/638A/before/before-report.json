@@ -1,0 +1,771 @@
+{
+  "head": "68cf12103",
+  "capturedAt": "2026-11-12T03:00:42.279Z",
+  "captures": [
+    {
+      "file": "shell-1024-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "theme": "light",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainNavCount": 1,
+      "mainNavVisibleCount": 1,
+      "sidebarContainerTag": "aside",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 768
+      },
+      "navBox": {
+        "x": 0,
+        "y": 137,
+        "width": 240,
+        "height": 464
+      },
+      "mainContentBox": {
+        "x": 240,
+        "y": 56,
+        "width": 784,
+        "height": 1250
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Home",
+      "toggleMenuCountByRole": 0,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "shell-1024-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "theme": "dark",
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainNavCount": 1,
+      "mainNavVisibleCount": 1,
+      "sidebarContainerTag": "aside",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 768
+      },
+      "navBox": {
+        "x": 0,
+        "y": 137,
+        "width": 240,
+        "height": 464
+      },
+      "mainContentBox": {
+        "x": 240,
+        "y": 56,
+        "width": 784,
+        "height": 1250
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Home",
+      "toggleMenuCountByRole": 0,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "shell-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainNavCount": 1,
+      "mainNavVisibleCount": 1,
+      "sidebarContainerTag": "aside",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 900
+      },
+      "navBox": {
+        "x": 0,
+        "y": 137,
+        "width": 240,
+        "height": 596
+      },
+      "mainContentBox": {
+        "x": 240,
+        "y": 56,
+        "width": 1200,
+        "height": 1230
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Home",
+      "toggleMenuCountByRole": 0,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "shell-1440-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainNavCount": 1,
+      "mainNavVisibleCount": 1,
+      "sidebarContainerTag": "aside",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 900
+      },
+      "navBox": {
+        "x": 0,
+        "y": 137,
+        "width": 240,
+        "height": 596
+      },
+      "mainContentBox": {
+        "x": 240,
+        "y": 56,
+        "width": 1200,
+        "height": 1230
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Home",
+      "toggleMenuCountByRole": 0,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "shell-matters-1440-light.png",
+      "url": "http://localhost:3001/org/e2e-test-org/matters",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainNavCount": 1,
+      "mainNavVisibleCount": 1,
+      "sidebarContainerTag": "aside",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 900
+      },
+      "navBox": {
+        "x": 0,
+        "y": 137,
+        "width": 240,
+        "height": 596
+      },
+      "mainContentBox": {
+        "x": 240,
+        "y": 56,
+        "width": 1200,
+        "height": 844
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Matters",
+      "toggleMenuCountByRole": 0,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "shell-1440-light-all-zones.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainNavCount": 1,
+      "mainNavVisibleCount": 1,
+      "sidebarContainerTag": "aside",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 900
+      },
+      "navBox": {
+        "x": 0,
+        "y": 137,
+        "width": 240,
+        "height": 596
+      },
+      "mainContentBox": {
+        "x": 240,
+        "y": 56,
+        "width": 1200,
+        "height": 1230
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "true"
+        },
+        {
+          "label": "Trust",
+          "expanded": "true"
+        },
+        {
+          "label": "Firm",
+          "expanded": "true"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Unbilled work",
+        "Fee notes",
+        "Fee runs",
+        "Debtors",
+        "Disbursements",
+        "Tariffs",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports",
+        "Team",
+        "Reports",
+        "Audit trail",
+        "Settings"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Home",
+      "toggleMenuCountByRole": 0,
+      "zonesBeforeExpand": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "zonesClicked": [
+        "Fees",
+        "Trust",
+        "Firm"
+      ],
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "mobile-390-closed.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "light",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainNavCount": 1,
+      "mainNavVisibleCount": 0,
+      "sidebarContainerTag": "aside",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "navBox": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "mainContentBox": {
+        "x": 0,
+        "y": 56,
+        "width": 390,
+        "height": 2027
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Home",
+      "toggleMenuCountByRole": 1,
+      "state": "closed",
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "mobile-390-sheet-open.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "light",
+      "htmlClass": "light",
+      "kaziThemeLS": "light",
+      "mainNavCount": 2,
+      "mainNavVisibleCount": 1,
+      "sidebarContainerTag": "div",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 844
+      },
+      "navBox": {
+        "x": 0,
+        "y": 70,
+        "width": 240,
+        "height": 628
+      },
+      "mainContentBox": {
+        "x": 0,
+        "y": 56,
+        "width": 390,
+        "height": 2027
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Home",
+      "toggleMenuCountByRole": 0,
+      "state": "sheet-open",
+      "dialogCount": 1,
+      "console": [],
+      "hydrationMessages": []
+    },
+    {
+      "file": "mobile-390-sheet-open-dark.png",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme": "dark",
+      "htmlClass": "dark",
+      "kaziThemeLS": "dark",
+      "mainNavCount": 2,
+      "mainNavVisibleCount": 1,
+      "sidebarContainerTag": "div",
+      "sidebarContainerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 844
+      },
+      "navBox": {
+        "x": 0,
+        "y": 70,
+        "width": 240,
+        "height": 628
+      },
+      "mainContentBox": {
+        "x": 0,
+        "y": 56,
+        "width": 390,
+        "height": 2027
+      },
+      "mainContentTag": "main",
+      "zones": [
+        {
+          "label": "Today",
+          "expanded": "true"
+        },
+        {
+          "label": "Matters",
+          "expanded": "true"
+        },
+        {
+          "label": "Clients",
+          "expanded": "true"
+        },
+        {
+          "label": "Fees",
+          "expanded": "false"
+        },
+        {
+          "label": "Trust",
+          "expanded": "false"
+        },
+        {
+          "label": "Firm",
+          "expanded": "false"
+        }
+      ],
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests"
+      ],
+      "ariaCurrent": [],
+      "mainCount": 1,
+      "toggleMenuCountDom": 1,
+      "h1": "Home",
+      "toggleMenuCountByRole": 0,
+      "state": "sheet-open",
+      "dialogCount": 1,
+      "console": [],
+      "hydrationMessages": []
+    }
+  ],
+  "mattersLinkHref": "/org/e2e-test-org/matters"
+}

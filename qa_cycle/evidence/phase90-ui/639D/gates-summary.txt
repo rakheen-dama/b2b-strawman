@@ -1,0 +1,17 @@
+639D gates (PR #1766, branch phase90/39D-micro-presets)
+
+FE-GATE @faa96b0a8 (node v20.11.1):
+  lint 0 / typecheck 0 / format:check 0 / vitest 470 files, 4070 passed, 2 skipped / build 0
+
+FE-GATE @6751e1547 (node v20.11.1):
+  lint 0 / typecheck 0 / format:check 0 / vitest 470 files, 4070 passed, 2 skipped / build 0
+
+E2E-LEGAL, fresh stack (e2e-down, builder prune, e2e-up) @6751e1547:
+  legal-lifecycle  105 passed (3.0m)
+  legal-depth-ii    40 passed, 4 skipped (1.9m)
+  = 639C baseline (105 + 40/4)
+  Tails: e2e/legal-lifecycle-summary.txt, e2e/legal-depth-ii-summary.txt
+
+Delta 6751e1547..faa96b0a8: a colour-token indirection refactor (micro-preset colours routed through
+CHART_THEME) with identical rendered values, pinned by the unchanged preset tests. The frontend image was
+rebuilt from faa96b0a8 and the OBS ran on faa96b0a8.

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import type { Column } from "@tanstack/react-table";
@@ -7,6 +8,11 @@ import type { DataTableSort } from "./define-columns";
 interface DataTableColumnHeaderProps<T> {
   column: Column<T, unknown>;
   sort?: DataTableSort;
+  /**
+   * Replaces the visible label (e.g. a long label broken over two lines). Its text content must
+   * equal `meta.label`, which stays the Columns-menu label, the CSV header and the accessible name.
+   */
+  children?: ReactNode;
 }
 
 /**
@@ -15,10 +21,14 @@ interface DataTableColumnHeaderProps<T> {
  * never sorts client-side. The icon is `aria-hidden` so the `columnheader` name equals the label;
  * `aria-sort` itself sits on the `<th>` (set by `DataTable`).
  */
-export function DataTableColumnHeader<T>({ column, sort }: DataTableColumnHeaderProps<T>) {
+export function DataTableColumnHeader<T>({
+  column,
+  sort,
+  children,
+}: DataTableColumnHeaderProps<T>) {
   const meta = column.columnDef.meta;
-  const label = meta?.label ?? column.id;
-  if (!meta?.sortKey || !sort) return <span>{label}</span>;
+  const content = children ?? meta?.label ?? column.id;
+  if (!meta?.sortKey || !sort) return <span>{content}</span>;
 
   const active = sort.key === meta.sortKey;
   const icon = !active ? (
@@ -38,7 +48,7 @@ export function DataTableColumnHeader<T>({ column, sort }: DataTableColumnHeader
         active && "text-foreground"
       )}
     >
-      {label}
+      {content}
       {icon}
     </Link>
   );

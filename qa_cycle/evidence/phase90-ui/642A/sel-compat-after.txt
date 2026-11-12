@@ -1,0 +1,59 @@
+# SEL-COMPAT after (642.5) — grep of e2e/tests + e2e/helpers at dd1fa28b4 (PR #1772 head)
+
+## e2e files changed by the PR (git diff --stat 38c34ce92...HEAD -- frontend/e2e)
+(end; empty = none)
+
+## client-row"
+e2e/tests/customers/customer-crud.spec.ts:177:    await expect(page.getByTestId("client-row").filter({ visible: true }).first()).toBeVisible({
+
+## clients-table
+e2e/tests/legal-lifecycle/day-90-review.spec.ts:74:    const table = page.locator("#main-content").getByTestId("clients-table");
+
+## clients-footer
+e2e/tests/customers/customer-crud.spec.ts:181:    await expect(page.getByTestId("clients-footer").filter({ visible: true })).toContainText(
+
+## client-link
+
+## client-fica-status
+
+## client-type
+
+## client-lifecycle-filter
+
+## client-show-incomplete
+
+## client-filters-trigger
+
+## client-row-actions-trigger
+
+## Search clients
+e2e/tests/customers/customer-crud.spec.ts:155:      .getByRole("search", { name: "Search clients" })
+e2e/tests/legal-lifecycle/day-30-billing.spec.ts:97:    await page.getByPlaceholder("Search clients...").fill(siphoClient());
+
+## saved-view-selector
+
+## name: "Clients"
+e2e/tests/customers/customer-crud.spec.ts:149:    await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+e2e/tests/customers/customer-crud.spec.ts:172:    await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+e2e/tests/customers/customer-crud.spec.ts:39:  await expect(page.getByRole("heading", { level: 1, name: "Clients" })).toBeVisible({
+e2e/tests/navigation/sidebar-navigation.spec.ts:17:  { name: "Clients", path: `${base}/clients` },
+e2e/tests/settings/custom-fields.spec.ts:38:    await page.getByRole("tab", { name: "Clients" }).click();
+e2e/tests/settings/custom-fields.spec.ts:46:    await page.getByRole("tab", { name: "Clients" }).click();
+e2e/tests/settings/custom-fields.spec.ts:58:    await page.getByRole("tab", { name: "Clients" }).click();
+
+## openClient(
+e2e/helpers/legal-depth-ii.ts:156:export async function openClient(page: Page, clientName: string): Promise<void> {
+e2e/helpers/legal-lifecycle.ts:397:  await openClient(page, client);
+e2e/tests/legal-depth-ii/day-14-conveyancing.spec.ts:149:    await openClient(page, clientName());
+e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:206:    await openClient(page, siphoClientName());
+e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:179:    await openClient(page, apexClient());
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:132:    await openClient(page, siphoClient());
+e2e/tests/legal-lifecycle/day-01-03-onboarding.spec.ts:139:    await openClient(page, siphoClient());
+e2e/tests/legal-lifecycle/day-75-complex.spec.ts:107:    await openClient(page, siphoClient());
+e2e/tests/legal-lifecycle/day-75-complex.spec.ts:245:    await openClient(page, morokaClient());
+
+## sortBy=
+
+## /clients?
+e2e/helpers/seed.ts:43:  return idByName("/api/clients?size=200", SEED.client);
+e2e/tests/customers/customer-crud.spec.ts:31:  const body = await apiOk<ClientRow[] | { content: ClientRow[] }>("/api/clients?size=500");

@@ -1,0 +1,554 @@
+rich: IDENTICAL 549 / DIFF 3
+
+IDENTICAL | 1-default | url | "/org/e2e-test-org/clients"
+IDENTICAL | 1-default | h1 | "Clients"
+IDENTICAL | 1-default | h1Count | 1
+IDENTICAL | 1-default | subtitle | "6 clients"
+IDENTICAL | 1-default | caption | "Clients — All clients"
+IDENTICAL | 1-default | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 1-default | rowFica | ["Done12 Nov 2026", "Done12 Nov 2026", "In progress", "Done12 Nov 2026", "Not started", "Not started"]
+IDENTICAL | 1-default | rowTypes | ["Individual", "Individual", "Individual", "Individual", "Trust", "Company"]
+IDENTICAL | 1-default | rowCells | [["Acme CorpIndividualCorporateVIP", "Active", "Done12 Nov 2026", "2", "R 8 625,00 · 1", "R 0,00", "0%", "<date>", "contact@acme.example.com+1-555-0100", "Clien
+IDENTICAL | 1-default | footer | "Showing 6 clients"
+IDENTICAL | 1-default | lifecyclePills | [{"label": "All", "href": "/org/e2e-test-org/clients", "active": true}, {"label": "Prospect", "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT", "act
+IDENTICAL | 1-default | showIncomplete | {"tag": "a", "href": "/org/e2e-test-org/clients?showIncomplete=true", "active": false, "title": null}
+IDENTICAL | 1-default | viewTabs | [{"name": "All clients", "selected": true, "system": true}, {"name": "Active", "selected": false, "system": true}, {"name": "FICA outstanding", "selected": fals
+IDENTICAL | 1-default | filtersTrigger | "Filters"
+IDENTICAL | 1-default | searchValue | ""
+IDENTICAL | 1-default | headers(text,visible,ariaSort,arrow,href) | [["Client", true, "ascending", "↑", "/org/e2e-test-org/clients?sortBy=name&sortDir=desc"], ["Lifecycle", true, "none", null, "/org/e2e-test-org/clients?sortBy=l
+IDENTICAL | 1-default | rowClickPlainCell | {"clickedOn": "td[1] (Lifecycle cell)", "expectedHref": "/org/e2e-test-org/clients/<uuid>", "navigates": true, "navigatedTo": "/org/e2e-test-org/clients/<uuid>"
+IDENTICAL | 1-default | clientLinkClick | {"url": "/org/e2e-test-org/clients/<uuid>", "h1": "Acme Corp"}
+IDENTICAL | 1-default | rowActions(items,navigatedOnOpen,openClient) | [[{"text": "Open client", "tag": "a", "href": "/org/e2e-test-org/clients/<uuid>"}], false, "/org/e2e-test-org/clients/<uuid>"]
+IDENTICAL | 1-default | rowShape | [true, "tr", {"data-slot": "table-row", "data-testid": "client-row"}, 10, "pointer", -1, null, [{"text": "Acme Corp", "href": "/org/e2e-test-org/clients/<uuid>"
+IDENTICAL | 2-sort | sortable columns | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created"]
+IDENTICAL | 2-sort Client | visibleAtDefault/ariaSortAtDefault/defaultHref | [true, "ascending", "/org/e2e-test-org/clients?sortBy=name&sortDir=desc"]
+IDENTICAL | 2-sort Client first | url | "/org/e2e-test-org/clients?sortBy=name&sortDir=desc"
+IDENTICAL | 2-sort Client first | ariaSort | "descending"
+IDENTICAL | 2-sort Client first | arrow | "↓"
+IDENTICAL | 2-sort Client first | rowNames | ["Zulu Prospect Holdings", "Mkhize Family Trust", "Dormant Industries", "Carlos Mendez", "Bright Solutions", "Acme Corp"]
+IDENTICAL | 2-sort Client first | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Client second | url | "/org/e2e-test-org/clients?sortBy=name&sortDir=asc"
+IDENTICAL | 2-sort Client second | ariaSort | "ascending"
+IDENTICAL | 2-sort Client second | arrow | "↑"
+IDENTICAL | 2-sort Client second | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 2-sort Client second | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Client first | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 2-sort Client | thirdHref | "/org/e2e-test-org/clients?sortBy=name&sortDir=desc"
+IDENTICAL | 2-sort Client | thirdColumnHref | {"column": "FICA", "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"}
+IDENTICAL | 2-sort Client | otherAriaSort | [["Lifecycle", "none"], ["FICA", "none"], ["Open matters", "none"], ["Outstanding fee notes", "none"], ["Trust balance", "none"], ["Completeness", "none"], ["Cr
+IDENTICAL | 2-sort Lifecycle | visibleAtDefault/ariaSortAtDefault/defaultHref | [true, "none", "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc"]
+IDENTICAL | 2-sort Lifecycle first | url | "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc"
+IDENTICAL | 2-sort Lifecycle first | ariaSort | "ascending"
+IDENTICAL | 2-sort Lifecycle first | arrow | "↑"
+IDENTICAL | 2-sort Lifecycle first | rowNames | ["Mkhize Family Trust", "Zulu Prospect Holdings", "Carlos Mendez", "Acme Corp", "Bright Solutions", "Dormant Industries"]
+IDENTICAL | 2-sort Lifecycle first | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Lifecycle second | url | "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=desc"
+IDENTICAL | 2-sort Lifecycle second | ariaSort | "descending"
+IDENTICAL | 2-sort Lifecycle second | arrow | "↓"
+IDENTICAL | 2-sort Lifecycle second | rowNames | ["Dormant Industries", "Acme Corp", "Bright Solutions", "Carlos Mendez", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 2-sort Lifecycle second | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Lifecycle first | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 2-sort Lifecycle | thirdHref | "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc"
+IDENTICAL | 2-sort Lifecycle | thirdColumnHref | {"column": "FICA", "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"}
+IDENTICAL | 2-sort Lifecycle | otherAriaSort | [["Client", "none"], ["FICA", "none"], ["Open matters", "none"], ["Outstanding fee notes", "none"], ["Trust balance", "none"], ["Completeness", "none"], ["Creat
+IDENTICAL | 2-sort FICA | visibleAtDefault/ariaSortAtDefault/defaultHref | [true, "none", "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"]
+IDENTICAL | 2-sort FICA first | url | "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+IDENTICAL | 2-sort FICA first | ariaSort | "ascending"
+IDENTICAL | 2-sort FICA first | arrow | "↑"
+IDENTICAL | 2-sort FICA first | rowNames | ["Mkhize Family Trust", "Zulu Prospect Holdings", "Carlos Mendez", "Acme Corp", "Bright Solutions", "Dormant Industries"]
+IDENTICAL | 2-sort FICA first | footer | "Showing 6 clients"
+IDENTICAL | 2-sort FICA second | url | "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=desc"
+IDENTICAL | 2-sort FICA second | ariaSort | "descending"
+IDENTICAL | 2-sort FICA second | arrow | "↓"
+IDENTICAL | 2-sort FICA second | rowNames | ["Acme Corp", "Bright Solutions", "Dormant Industries", "Carlos Mendez", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 2-sort FICA second | footer | "Showing 6 clients"
+IDENTICAL | 2-sort FICA first | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 2-sort FICA | thirdHref | "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+IDENTICAL | 2-sort FICA | thirdColumnHref | {"column": "FICA", "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"}
+IDENTICAL | 2-sort FICA | otherAriaSort | [["Client", "none"], ["Lifecycle", "none"], ["Open matters", "none"], ["Outstanding fee notes", "none"], ["Trust balance", "none"], ["Completeness", "none"], ["
+IDENTICAL | 2-sort Open matters | visibleAtDefault/ariaSortAtDefault/defaultHref | [true, "none", "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc"]
+IDENTICAL | 2-sort Open matters first | url | "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc"
+IDENTICAL | 2-sort Open matters first | ariaSort | "ascending"
+IDENTICAL | 2-sort Open matters first | arrow | "↑"
+IDENTICAL | 2-sort Open matters first | rowNames | ["Mkhize Family Trust", "Zulu Prospect Holdings", "Carlos Mendez", "Dormant Industries", "Acme Corp", "Bright Solutions"]
+IDENTICAL | 2-sort Open matters first | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Open matters second | url | "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=desc"
+IDENTICAL | 2-sort Open matters second | ariaSort | "descending"
+IDENTICAL | 2-sort Open matters second | arrow | "↓"
+IDENTICAL | 2-sort Open matters second | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 2-sort Open matters second | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Open matters first | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 2-sort Open matters | thirdHref | "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc"
+IDENTICAL | 2-sort Open matters | thirdColumnHref | {"column": "FICA", "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"}
+IDENTICAL | 2-sort Open matters | otherAriaSort | [["Client", "none"], ["Lifecycle", "none"], ["FICA", "none"], ["Outstanding fee notes", "none"], ["Trust balance", "none"], ["Completeness", "none"], ["Created"
+IDENTICAL | 2-sort Outstanding fee notes | visibleAtDefault/ariaSortAtDefault/defaultHref | [true, "none", "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc"]
+IDENTICAL | 2-sort Outstanding fee notes first | url | "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc"
+IDENTICAL | 2-sort Outstanding fee notes first | ariaSort | "ascending"
+IDENTICAL | 2-sort Outstanding fee notes first | arrow | "↑"
+IDENTICAL | 2-sort Outstanding fee notes first | rowNames | ["Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings", "Acme Corp"]
+IDENTICAL | 2-sort Outstanding fee notes first | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Outstanding fee notes second | url | "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=desc"
+IDENTICAL | 2-sort Outstanding fee notes second | ariaSort | "descending"
+IDENTICAL | 2-sort Outstanding fee notes second | arrow | "↓"
+IDENTICAL | 2-sort Outstanding fee notes second | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 2-sort Outstanding fee notes second | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Outstanding fee notes first | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 2-sort Outstanding fee notes | thirdHref | "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc"
+IDENTICAL | 2-sort Outstanding fee notes | thirdColumnHref | {"column": "FICA", "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"}
+IDENTICAL | 2-sort Outstanding fee notes | otherAriaSort | [["Client", "none"], ["Lifecycle", "none"], ["FICA", "none"], ["Open matters", "none"], ["Trust balance", "none"], ["Completeness", "none"], ["Created", "none"]
+IDENTICAL | 2-sort Trust balance | visibleAtDefault/ariaSortAtDefault/defaultHref | [true, "none", "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc"]
+IDENTICAL | 2-sort Trust balance first | url | "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc"
+IDENTICAL | 2-sort Trust balance first | ariaSort | "ascending"
+IDENTICAL | 2-sort Trust balance first | arrow | "↑"
+IDENTICAL | 2-sort Trust balance first | rowNames | ["Acme Corp", "Carlos Mendez", "Mkhize Family Trust", "Zulu Prospect Holdings", "Dormant Industries", "Bright Solutions"]
+IDENTICAL | 2-sort Trust balance first | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Trust balance second | url | "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=desc"
+IDENTICAL | 2-sort Trust balance second | ariaSort | "descending"
+IDENTICAL | 2-sort Trust balance second | arrow | "↓"
+IDENTICAL | 2-sort Trust balance second | rowNames | ["Bright Solutions", "Dormant Industries", "Acme Corp", "Carlos Mendez", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 2-sort Trust balance second | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Trust balance first | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 2-sort Trust balance | thirdHref | "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc"
+IDENTICAL | 2-sort Trust balance | thirdColumnHref | {"column": "FICA", "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"}
+IDENTICAL | 2-sort Trust balance | otherAriaSort | [["Client", "none"], ["Lifecycle", "none"], ["FICA", "none"], ["Open matters", "none"], ["Outstanding fee notes", "none"], ["Completeness", "none"], ["Created",
+IDENTICAL | 2-sort Completeness | visibleAtDefault/ariaSortAtDefault/defaultHref | [true, "none", "/org/e2e-test-org/clients?sortBy=completeness&sortDir=asc"]
+IDENTICAL | 2-sort Completeness first | url | "/org/e2e-test-org/clients?sortBy=completeness&sortDir=asc"
+IDENTICAL | 2-sort Completeness first | ariaSort | "ascending"
+IDENTICAL | 2-sort Completeness first | arrow | "↑"
+IDENTICAL | 2-sort Completeness first | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 2-sort Completeness first | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Completeness second | url | "/org/e2e-test-org/clients?sortBy=completeness&sortDir=desc"
+IDENTICAL | 2-sort Completeness second | ariaSort | "descending"
+IDENTICAL | 2-sort Completeness second | arrow | "↓"
+IDENTICAL | 2-sort Completeness second | rowNames | ["Zulu Prospect Holdings", "Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust"]
+IDENTICAL | 2-sort Completeness second | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Completeness first | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 2-sort Completeness | thirdHref | "/org/e2e-test-org/clients?sortBy=completeness&sortDir=asc"
+IDENTICAL | 2-sort Completeness | thirdColumnHref | {"column": "FICA", "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"}
+IDENTICAL | 2-sort Completeness | otherAriaSort | [["Client", "none"], ["Lifecycle", "none"], ["FICA", "none"], ["Open matters", "none"], ["Outstanding fee notes", "none"], ["Trust balance", "none"], ["Created"
+IDENTICAL | 2-sort Created | visibleAtDefault/ariaSortAtDefault/defaultHref | [true, "none", "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc"]
+IDENTICAL | 2-sort Created first | url | "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc"
+IDENTICAL | 2-sort Created first | ariaSort | "ascending"
+IDENTICAL | 2-sort Created first | arrow | "↑"
+IDENTICAL | 2-sort Created first | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Zulu Prospect Holdings", "Mkhize Family Trust"]
+IDENTICAL | 2-sort Created first | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Created second | url | "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=desc"
+IDENTICAL | 2-sort Created second | ariaSort | "descending"
+IDENTICAL | 2-sort Created second | arrow | "↓"
+IDENTICAL | 2-sort Created second | rowNames | ["Mkhize Family Trust", "Zulu Prospect Holdings", "Dormant Industries", "Carlos Mendez", "Bright Solutions", "Acme Corp"]
+IDENTICAL | 2-sort Created second | footer | "Showing 6 clients"
+IDENTICAL | 2-sort Created first | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 2-sort Created | thirdHref | "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc"
+IDENTICAL | 2-sort Created | thirdColumnHref | {"column": "FICA", "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"}
+IDENTICAL | 2-sort Created | otherAriaSort | [["Client", "none"], ["Lifecycle", "none"], ["FICA", "none"], ["Open matters", "none"], ["Outstanding fee notes", "none"], ["Trust balance", "none"], ["Complete
+IDENTICAL | 3-views | tabs | [{"name": "All clients", "selected": true, "system": true}, {"name": "Active", "selected": false, "system": true}, {"name": "FICA outstanding", "selected": fals
+IDENTICAL | 3-views | createDialogTitles | ["Configure Filters", "Select Columns", "Name Your View"]
+IDENTICAL | 3-views | createDialogStep2Columns | [{"label": "Client", "checked": true}, {"label": "Lifecycle", "checked": true}, {"label": "FICA", "checked": true}, {"label": "Open matters", "checked": true}, 
+IDENTICAL | 3-views switch All clients | tab | "All clients"
+IDENTICAL | 3-views switch All clients | url | "/org/e2e-test-org/clients"
+IDENTICAL | 3-views switch All clients | caption | "Clients — All clients"
+IDENTICAL | 3-views switch All clients | selectedTab | "All clients"
+IDENTICAL | 3-views switch All clients | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 3-views switch All clients | footer | "Showing 6 clients"
+IDENTICAL | 3-views switch All clients | subtitle | "6 clients"
+IDENTICAL | 3-views switch All clients | emptyText | null
+IDENTICAL | 3-views switch All clients | emptyStateText | null
+IDENTICAL | 3-views switch All clients | clearFiltersHref | null
+IDENTICAL | 3-views switch All clients | headers | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 3-views switch All clients | lifecycleGroupPresent | true
+IDENTICAL | 3-views switch All clients | lifecyclePills | [{"label": "All", "href": "/org/e2e-test-org/clients", "active": true}, {"label": "Prospect", "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT", "act
+IDENTICAL | 3-views switch All clients | showIncomplete | {"tag": "a", "href": "/org/e2e-test-org/clients?showIncomplete=true", "active": false, "title": null}
+IDENTICAL | 3-views switch All clients | filtersTrigger | "Filters"
+IDENTICAL | 3-views switch Active | tab | "Active"
+IDENTICAL | 3-views switch Active | url | "/org/e2e-test-org/clients?view=system%3Aactive"
+IDENTICAL | 3-views switch Active | caption | "Clients — Active"
+IDENTICAL | 3-views switch Active | selectedTab | "Active"
+IDENTICAL | 3-views switch Active | rowNames | ["Acme Corp", "Bright Solutions"]
+IDENTICAL | 3-views switch Active | footer | "Showing 2 clients"
+IDENTICAL | 3-views switch Active | subtitle | "2 clients"
+IDENTICAL | 3-views switch Active | emptyText | null
+IDENTICAL | 3-views switch Active | emptyStateText | null
+IDENTICAL | 3-views switch Active | clearFiltersHref | null
+IDENTICAL | 3-views switch Active | headers | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 3-views switch Active | lifecycleGroupPresent | true
+IDENTICAL | 3-views switch Active | lifecyclePills | [{"label": "All", "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ALL", "active": false}, {"label": "Prospect", "href": "/org/e2e-test-o
+IDENTICAL | 3-views switch Active | showIncomplete | {"tag": "a", "href": "/org/e2e-test-org/clients?view=system%3Aactive&showIncomplete=true", "active": false, "title": null}
+IDENTICAL | 3-views switch Active | filtersTrigger | "Filters"
+IDENTICAL | 3-views switch FICA outstanding | tab | "FICA outstanding"
+IDENTICAL | 3-views switch FICA outstanding | url | "/org/e2e-test-org/clients?view=system%3Afica-outstanding"
+IDENTICAL | 3-views switch FICA outstanding | caption | "Clients — FICA outstanding"
+IDENTICAL | 3-views switch FICA outstanding | selectedTab | "FICA outstanding"
+IDENTICAL | 3-views switch FICA outstanding | rowNames | ["Carlos Mendez", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 3-views switch FICA outstanding | footer | "Showing 3 clients"
+IDENTICAL | 3-views switch FICA outstanding | subtitle | "3 clients"
+IDENTICAL | 3-views switch FICA outstanding | emptyText | null
+IDENTICAL | 3-views switch FICA outstanding | emptyStateText | null
+IDENTICAL | 3-views switch FICA outstanding | clearFiltersHref | null
+IDENTICAL | 3-views switch FICA outstanding | headers | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 3-views switch FICA outstanding | lifecycleGroupPresent | true
+IDENTICAL | 3-views switch FICA outstanding | lifecyclePills | [{"label": "All", "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding", "active": true}, {"label": "Prospect", "href": "/org/e2e-test-org/clients?
+IDENTICAL | 3-views switch FICA outstanding | showIncomplete | {"tag": "a", "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding&showIncomplete=true", "active": false, "title": null}
+IDENTICAL | 3-views switch FICA outstanding | filtersTrigger | "Filters"
+IDENTICAL | 3-views switch With trust balance | tab | "With trust balance"
+IDENTICAL | 3-views switch With trust balance | url | "/org/e2e-test-org/clients?view=system%3Awith-trust-balance"
+IDENTICAL | 3-views switch With trust balance | caption | "Clients — With trust balance"
+IDENTICAL | 3-views switch With trust balance | selectedTab | "With trust balance"
+IDENTICAL | 3-views switch With trust balance | rowNames | ["Bright Solutions", "Dormant Industries"]
+IDENTICAL | 3-views switch With trust balance | footer | "Showing 2 clients"
+IDENTICAL | 3-views switch With trust balance | subtitle | "2 clients"
+IDENTICAL | 3-views switch With trust balance | emptyText | null
+IDENTICAL | 3-views switch With trust balance | emptyStateText | null
+IDENTICAL | 3-views switch With trust balance | clearFiltersHref | null
+IDENTICAL | 3-views switch With trust balance | headers | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 3-views switch With trust balance | lifecycleGroupPresent | true
+IDENTICAL | 3-views switch With trust balance | lifecyclePills | [{"label": "All", "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance", "active": true}, {"label": "Prospect", "href": "/org/e2e-test-org/client
+IDENTICAL | 3-views switch With trust balance | showIncomplete | {"tag": "a", "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance&showIncomplete=true", "active": false, "title": null}
+IDENTICAL | 3-views switch With trust balance | filtersTrigger | "Filters"
+IDENTICAL | 3-views switch OBS 642A view | tab | "OBS 642A view"
+IDENTICAL | 3-views switch OBS 642A view | url | "/org/e2e-test-org/clients?view=<uuid>"
+IDENTICAL | 3-views switch OBS 642A view | caption | "Clients — OBS 642A view"
+IDENTICAL | 3-views switch OBS 642A view | selectedTab | "OBS 642A view"
+IDENTICAL | 3-views switch OBS 642A view | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 3-views switch OBS 642A view | footer | "Showing 6 clients"
+IDENTICAL | 3-views switch OBS 642A view | subtitle | "6 clients"
+IDENTICAL | 3-views switch OBS 642A view | emptyText | null
+IDENTICAL | 3-views switch OBS 642A view | emptyStateText | null
+IDENTICAL | 3-views switch OBS 642A view | clearFiltersHref | null
+IDENTICAL | 3-views switch OBS 642A view | headers | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Contact", "Actions"]
+IDENTICAL | 3-views switch OBS 642A view | lifecycleGroupPresent | false
+IDENTICAL | 3-views switch OBS 642A view | lifecyclePills | []
+IDENTICAL | 3-views switch OBS 642A view | showIncomplete | {"tag": "a", "href": "/org/e2e-test-org/clients?view=<uuid>&showIncomplete=true", "active": false, "title": null}
+IDENTICAL | 3-views switch OBS 642A view | filtersTrigger | null
+IDENTICAL | 3-views tagsDrop→FICA outstanding | switchTo | "FICA outstanding"
+IDENTICAL | 3-views tagsDrop→FICA outstanding | system | true
+IDENTICAL | 3-views tagsDrop→FICA outstanding | urlBefore | "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc"
+IDENTICAL | 3-views tagsDrop→FICA outstanding | rowNamesBefore | ["Bright Solutions", "Acme Corp"]
+IDENTICAL | 3-views tagsDrop→FICA outstanding | filtersTriggerBefore | "Filters1"
+IDENTICAL | 3-views tagsDrop→FICA outstanding | emptyBefore | null
+IDENTICAL | 3-views tagsDrop→FICA outstanding | activePillBefore | "Active"
+IDENTICAL | 3-views tagsDrop→FICA outstanding | urlAfter | "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc&view=system%3Afica-outstanding"
+IDENTICAL | 3-views tagsDrop→FICA outstanding | rowNamesAfter | []
+IDENTICAL | 3-views tagsDrop→FICA outstanding | footerAfter | null
+IDENTICAL | 3-views tagsDrop→FICA outstanding | emptyAfter | "No clients match this view.\n\nClear filters"
+IDENTICAL | 3-views tagsDrop→FICA outstanding | filtersTriggerAfter | "Filters1"
+IDENTICAL | 3-views tagsDrop→FICA outstanding | lifecycleGroupAfter | true
+IDENTICAL | 3-views tagsDrop→FICA outstanding | selectedTabAfter | "FICA outstanding"
+IDENTICAL | 3-views tagsDrop→All clients | switchTo | "All clients"
+IDENTICAL | 3-views tagsDrop→All clients | system | true
+IDENTICAL | 3-views tagsDrop→All clients | urlBefore | "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc"
+IDENTICAL | 3-views tagsDrop→All clients | rowNamesBefore | ["Bright Solutions", "Acme Corp"]
+IDENTICAL | 3-views tagsDrop→All clients | filtersTriggerBefore | "Filters1"
+IDENTICAL | 3-views tagsDrop→All clients | emptyBefore | null
+IDENTICAL | 3-views tagsDrop→All clients | activePillBefore | "Active"
+IDENTICAL | 3-views tagsDrop→All clients | urlAfter | "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc"
+IDENTICAL | 3-views tagsDrop→All clients | rowNamesAfter | ["Bright Solutions", "Acme Corp"]
+IDENTICAL | 3-views tagsDrop→All clients | footerAfter | "Showing 2 clients"
+IDENTICAL | 3-views tagsDrop→All clients | emptyAfter | null
+IDENTICAL | 3-views tagsDrop→All clients | filtersTriggerAfter | "Filters1"
+IDENTICAL | 3-views tagsDrop→All clients | lifecycleGroupAfter | true
+IDENTICAL | 3-views tagsDrop→All clients | selectedTabAfter | "All clients"
+IDENTICAL | 3-views tagsDrop→OBS 642A view | switchTo | "OBS 642A view"
+IDENTICAL | 3-views tagsDrop→OBS 642A view | system | false
+IDENTICAL | 3-views tagsDrop→OBS 642A view | urlBefore | "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc"
+IDENTICAL | 3-views tagsDrop→OBS 642A view | rowNamesBefore | ["Bright Solutions", "Acme Corp"]
+IDENTICAL | 3-views tagsDrop→OBS 642A view | filtersTriggerBefore | "Filters1"
+IDENTICAL | 3-views tagsDrop→OBS 642A view | emptyBefore | null
+IDENTICAL | 3-views tagsDrop→OBS 642A view | activePillBefore | "Active"
+IDENTICAL | 3-views tagsDrop→OBS 642A view | urlAfter | "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=desc&view=<uuid>"
+IDENTICAL | 3-views tagsDrop→OBS 642A view | rowNamesAfter | ["Mkhize Family Trust", "Zulu Prospect Holdings", "Dormant Industries", "Carlos Mendez", "Bright Solutions", "Acme Corp"]
+IDENTICAL | 3-views tagsDrop→OBS 642A view | footerAfter | "Showing 6 clients"
+IDENTICAL | 3-views tagsDrop→OBS 642A view | emptyAfter | null
+IDENTICAL | 3-views tagsDrop→OBS 642A view | filtersTriggerAfter | null
+IDENTICAL | 3-views tagsDrop→OBS 642A view | lifecycleGroupAfter | false
+IDENTICAL | 3-views tagsDrop→OBS 642A view | selectedTabAfter | "OBS 642A view"
+IDENTICAL | 4-lifecycle | pillsAtDefault | [{"label": "All", "href": "/org/e2e-test-org/clients", "active": true}, {"label": "Prospect", "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT", "act
+IDENTICAL | 4-lifecycle | showIncompleteAtDefault | {"tag": "a", "href": "/org/e2e-test-org/clients?showIncomplete=true", "active": false, "title": null}
+IDENTICAL | 4-lifecycle | onActiveView | {"url": "/org/e2e-test-org/clients?view=system%3Aactive", "pills": [{"label": "All", "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ALL
+IDENTICAL | 4-lifecycle | onActiveViewClickAll | {"url": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ALL", "rowNames": ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries
+IDENTICAL | 4-lifecycle | showIncompleteOff | {"url": "/org/e2e-test-org/clients"}
+IDENTICAL | 4-lifecycle All | pill | "All"
+IDENTICAL | 4-lifecycle All | href | "/org/e2e-test-org/clients"
+IDENTICAL | 4-lifecycle All | url | "/org/e2e-test-org/clients"
+IDENTICAL | 4-lifecycle All | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 4-lifecycle All | rowFica | ["Done12 Nov 2026", "Done12 Nov 2026", "In progress", "Done12 Nov 2026", "Not started", "Not started"]
+IDENTICAL | 4-lifecycle All | footer | "Showing 6 clients"
+IDENTICAL | 4-lifecycle All | subtitle | "6 clients"
+IDENTICAL | 4-lifecycle All | emptyText | null
+IDENTICAL | 4-lifecycle All | emptyStateText | null
+IDENTICAL | 4-lifecycle All | clearFiltersHref | null
+IDENTICAL | 4-lifecycle All | lifecycleCells | ["Active", "Active", "Onboarding", "Dormant", "Prospect", "Prospect"]
+IDENTICAL | 4-lifecycle All | activePill | "All"
+IDENTICAL | 4-lifecycle Prospect | pill | "Prospect"
+IDENTICAL | 4-lifecycle Prospect | href | "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT"
+IDENTICAL | 4-lifecycle Prospect | url | "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT"
+IDENTICAL | 4-lifecycle Prospect | rowNames | ["Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 4-lifecycle Prospect | rowFica | ["Not started", "Not started"]
+IDENTICAL | 4-lifecycle Prospect | footer | "Showing 2 clients"
+IDENTICAL | 4-lifecycle Prospect | subtitle | "2 clients"
+IDENTICAL | 4-lifecycle Prospect | emptyText | null
+IDENTICAL | 4-lifecycle Prospect | emptyStateText | null
+IDENTICAL | 4-lifecycle Prospect | clearFiltersHref | null
+IDENTICAL | 4-lifecycle Prospect | lifecycleCells | ["Prospect", "Prospect"]
+IDENTICAL | 4-lifecycle Prospect | activePill | "Prospect"
+IDENTICAL | 4-lifecycle Onboarding | pill | "Onboarding"
+IDENTICAL | 4-lifecycle Onboarding | href | "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING"
+IDENTICAL | 4-lifecycle Onboarding | url | "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING"
+IDENTICAL | 4-lifecycle Onboarding | rowNames | ["Carlos Mendez"]
+IDENTICAL | 4-lifecycle Onboarding | rowFica | ["In progress"]
+IDENTICAL | 4-lifecycle Onboarding | footer | "Showing 1 client"
+IDENTICAL | 4-lifecycle Onboarding | subtitle | "1 client"
+IDENTICAL | 4-lifecycle Onboarding | emptyText | null
+IDENTICAL | 4-lifecycle Onboarding | emptyStateText | null
+IDENTICAL | 4-lifecycle Onboarding | clearFiltersHref | null
+IDENTICAL | 4-lifecycle Onboarding | lifecycleCells | ["Onboarding"]
+IDENTICAL | 4-lifecycle Onboarding | activePill | "Onboarding"
+IDENTICAL | 4-lifecycle Active | pill | "Active"
+IDENTICAL | 4-lifecycle Active | href | "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE"
+IDENTICAL | 4-lifecycle Active | url | "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE"
+IDENTICAL | 4-lifecycle Active | rowNames | ["Acme Corp", "Bright Solutions"]
+IDENTICAL | 4-lifecycle Active | rowFica | ["Done12 Nov 2026", "Done12 Nov 2026"]
+IDENTICAL | 4-lifecycle Active | footer | "Showing 2 clients"
+IDENTICAL | 4-lifecycle Active | subtitle | "2 clients"
+IDENTICAL | 4-lifecycle Active | emptyText | null
+IDENTICAL | 4-lifecycle Active | emptyStateText | null
+IDENTICAL | 4-lifecycle Active | clearFiltersHref | null
+IDENTICAL | 4-lifecycle Active | lifecycleCells | ["Active", "Active"]
+IDENTICAL | 4-lifecycle Active | activePill | "Active"
+IDENTICAL | 4-lifecycle Dormant | pill | "Dormant"
+IDENTICAL | 4-lifecycle Dormant | href | "/org/e2e-test-org/clients?lifecycleStatus=DORMANT"
+IDENTICAL | 4-lifecycle Dormant | url | "/org/e2e-test-org/clients?lifecycleStatus=DORMANT"
+IDENTICAL | 4-lifecycle Dormant | rowNames | ["Dormant Industries"]
+IDENTICAL | 4-lifecycle Dormant | rowFica | ["Done12 Nov 2026"]
+IDENTICAL | 4-lifecycle Dormant | footer | "Showing 1 client"
+IDENTICAL | 4-lifecycle Dormant | subtitle | "1 client"
+IDENTICAL | 4-lifecycle Dormant | emptyText | null
+IDENTICAL | 4-lifecycle Dormant | emptyStateText | null
+IDENTICAL | 4-lifecycle Dormant | clearFiltersHref | null
+IDENTICAL | 4-lifecycle Dormant | lifecycleCells | ["Dormant"]
+IDENTICAL | 4-lifecycle Dormant | activePill | "Dormant"
+IDENTICAL | 4-lifecycle Offboarding | pill | "Offboarding"
+IDENTICAL | 4-lifecycle Offboarding | href | "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING"
+IDENTICAL | 4-lifecycle Offboarding | url | "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING"
+IDENTICAL | 4-lifecycle Offboarding | rowNames | []
+IDENTICAL | 4-lifecycle Offboarding | rowFica | []
+IDENTICAL | 4-lifecycle Offboarding | footer | null
+IDENTICAL | 4-lifecycle Offboarding | subtitle | "0 clients"
+IDENTICAL | 4-lifecycle Offboarding | emptyText | "No clients match this view.\n\nClear filters"
+IDENTICAL | 4-lifecycle Offboarding | emptyStateText | null
+IDENTICAL | 4-lifecycle Offboarding | clearFiltersHref | "/org/e2e-test-org/clients"
+IDENTICAL | 4-lifecycle Offboarding | lifecycleCells | null
+IDENTICAL | 4-lifecycle Offboarding | activePill | "Offboarding"
+IDENTICAL | 4-lifecycle Offboarded | pill | "Offboarded"
+IDENTICAL | 4-lifecycle Offboarded | href | "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED"
+IDENTICAL | 4-lifecycle Offboarded | url | "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED"
+IDENTICAL | 4-lifecycle Offboarded | rowNames | []
+IDENTICAL | 4-lifecycle Offboarded | rowFica | []
+IDENTICAL | 4-lifecycle Offboarded | footer | null
+IDENTICAL | 4-lifecycle Offboarded | subtitle | "0 clients"
+IDENTICAL | 4-lifecycle Offboarded | emptyText | "No clients match this view.\n\nClear filters"
+IDENTICAL | 4-lifecycle Offboarded | emptyStateText | null
+IDENTICAL | 4-lifecycle Offboarded | clearFiltersHref | "/org/e2e-test-org/clients"
+IDENTICAL | 4-lifecycle Offboarded | lifecycleCells | null
+IDENTICAL | 4-lifecycle Offboarded | activePill | "Offboarded"
+IDENTICAL | 4-lifecycle showIncompleteOn | url | "/org/e2e-test-org/clients?showIncomplete=true"
+IDENTICAL | 4-lifecycle showIncompleteOn | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust"]
+IDENTICAL | 4-lifecycle showIncompleteOn | rowFica | ["Done12 Nov 2026", "Done12 Nov 2026", "In progress", "Done12 Nov 2026", "Not started"]
+IDENTICAL | 4-lifecycle showIncompleteOn | footer | "Showing 5 clients"
+IDENTICAL | 4-lifecycle showIncompleteOn | subtitle | "5 clients"
+IDENTICAL | 4-lifecycle showIncompleteOn | emptyText | null
+IDENTICAL | 4-lifecycle showIncompleteOn | emptyStateText | null
+IDENTICAL | 4-lifecycle showIncompleteOn | toggle | {"tag": "a", "href": "/org/e2e-test-org/clients", "active": true, "title": null}
+IDENTICAL | 4-lifecycle showIncompleteOn | completenessCells | ["0%", "0%", "0%", "0%", "0%"]
+IDENTICAL | 5-search | term/placeholder/regionLabel/emailTerm | ["Acme", false, "Search clients…", "Search clients", "contact"]
+IDENTICAL | 5-search match | url | "/org/e2e-test-org/clients?search=Acme"
+IDENTICAL | 5-search match | subtitle | "1 client"
+IDENTICAL | 5-search match | rowNames | ["Acme Corp"]
+IDENTICAL | 5-search match | footer | "Showing 1 client"
+IDENTICAL | 5-search match | emptyText | null
+IDENTICAL | 5-search match | clearFiltersHref | null
+IDENTICAL | 5-search match | searchValue | "Acme"
+IDENTICAL | 5-search noMatch | url | "/org/e2e-test-org/clients?search=zzqx-no-such-client"
+IDENTICAL | 5-search noMatch | subtitle | "0 clients"
+IDENTICAL | 5-search noMatch | rowNames | []
+IDENTICAL | 5-search noMatch | footer | null
+IDENTICAL | 5-search noMatch | emptyText | "No clients match this view.\n\nClear filters"
+IDENTICAL | 5-search noMatch | clearFiltersHref | "/org/e2e-test-org/clients"
+IDENTICAL | 5-search noMatch | searchValue | "zzqx-no-such-client"
+IDENTICAL | 5-search | emailMatch | {"url": "/org/e2e-test-org/clients?search=contact", "rowNames": ["Acme Corp"], "footer": "Showing 1 client"}
+IDENTICAL | 5-search | afterClearFilters | {"url": "/org/e2e-test-org/clients", "rowCount": 6, "footer": "Showing 6 clients", "searchValue": ""}
+IDENTICAL | 6-filter | triggerPresent/text | [true, "Filters"]
+IDENTICAL | 6-filter | sheet | {"title": "Filter clients", "description": "Show only clients carrying every selected tag.", "labels": ["Tags"], "buttons": ["Add Tag", "Clear", "Apply", "Close
+IDENTICAL | 6-filter | tagOptions | ["Corporate", "Estate", "Litigation", "VIP"]
+IDENTICAL | 6-filter | pickedTag | "Corporate"
+IDENTICAL | 6-filter | applied | {"url": "/org/e2e-test-org/clients?tags=corporate", "rowNames": ["Acme Corp", "Zulu Prospect Holdings"], "footer": "Showing 2 clients", "filtersTrigger": "Filte
+IDENTICAL | 6-filter | appliedPlusIncomplete | {"url": "/org/e2e-test-org/clients?tags=corporate&showIncomplete=true", "rowNames": ["Acme Corp"], "footer": "Showing 1 client", "emptyText": null, "emptyStateT
+IDENTICAL | 6-filter | afterSheetClear | {"url": "/org/e2e-test-org/clients?showIncomplete=true"}
+IDENTICAL | 7-create New Client | count/disabled/dialogTitle | [1, false, "Create Client"]
+DIFF      | 8-keyboard | tabsFromSearch | before=10 | after=12
+DIFF      | 8-keyboard | path(text,testid) | before=[["All", null], ["Prospect", null], ["Onboarding", null], ["Active", null], ["Dormant", null], ["Offboarding", null], ["Offboarded", null], ["Show incomplete", "client-show-incomplete"], ["Filters", "client-filters-trigger"], ["Client↑", null]] | after=[["All", null], ["Prospect", null], ["Onboarding", null], ["Active", null], ["Dormant", null], ["Offboarding", null], ["Offboarded", null], ["Show incomplete", "client-show-incomplete"], ["Filters", "client-filters-trigger"], ["Columns", null], ["Export CSV", null], ["Client", null]]
+IDENTICAL | 8-keyboard | focused text/href | ["Client", "/org/e2e-test-org/clients?sortBy=name&sortDir=desc"]
+IDENTICAL | 8-keyboard | after url/rows | {"url": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc", "rowNames": ["Zulu Prospect Holdings", "Mkhize Family Trust", "Dormant Industries", "Carlos Mendez
+IDENTICAL | 9-combined start | url | "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=name&sortDir=desc"
+IDENTICAL | 9-combined start | rowNames | ["Acme Corp"]
+IDENTICAL | 9-combined start | footer | "Showing 1 client"
+IDENTICAL | 9-combined start | sortHrefs | [{"column": "Client", "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=name&sortDir=asc", "visible": true, "ariaSort": "descending"}
+IDENTICAL | 9-combined start | lifecyclePills | [{"label": "All", "href": "/org/e2e-test-org/clients?search=Acme&sortBy=name&sortDir=desc", "active": false}, {"label": "Prospect", "href": "/org/e2e-test-org/c
+IDENTICAL | 9-combined start | showIncompleteHref | "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=name&sortDir=desc&showIncomplete=true"
+IDENTICAL | 9-combined start | searchValue | "Acme"
+IDENTICAL | 9-combined afterFicaSort | clicked | "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=ficaStatus&sortDir=asc"
+IDENTICAL | 9-combined afterFicaSort | url | "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=ficaStatus&sortDir=asc"
+IDENTICAL | 9-combined afterFicaSort | rowNames | ["Acme Corp"]
+IDENTICAL | 9-combined afterFicaSort | footer | "Showing 1 client"
+IDENTICAL | 9-combined afterFicaSort | searchValue | "Acme"
+IDENTICAL | 9-combined afterFicaSort | activePill | "Active"
+IDENTICAL | 9-combined afterAllPill | url | "/org/e2e-test-org/clients?search=Acme&sortBy=ficaStatus&sortDir=asc"
+IDENTICAL | 9-combined afterAllPill | rowNames | ["Acme Corp"]
+IDENTICAL | 9-combined afterAllPill | footer | "Showing 1 client"
+IDENTICAL | 9-combined afterSearchCleared | url | "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+IDENTICAL | 9-combined afterSearchCleared | rowNames | ["Mkhize Family Trust", "Zulu Prospect Holdings", "Carlos Mendez", "Acme Corp", "Bright Solutions", "Dormant Industries"]
+IDENTICAL | 9-combined afterSearchCleared | footer | "Showing 6 clients"
+IDENTICAL | 10-empty searchNoMatch | qs | "?search=zzqx-no-such-client"
+IDENTICAL | 10-empty searchNoMatch | url | "/org/e2e-test-org/clients?search=zzqx-no-such-client"
+IDENTICAL | 10-empty searchNoMatch | rowNames | []
+IDENTICAL | 10-empty searchNoMatch | rowFica | []
+IDENTICAL | 10-empty searchNoMatch | footer | null
+IDENTICAL | 10-empty searchNoMatch | subtitle | "0 clients"
+IDENTICAL | 10-empty searchNoMatch | emptyText | "No clients match this view.\n\nClear filters"
+IDENTICAL | 10-empty searchNoMatch | emptyStateText | null
+IDENTICAL | 10-empty searchNoMatch | hasTable | false
+IDENTICAL | 10-empty searchNoMatch | clearFiltersHref | "/org/e2e-test-org/clients"
+IDENTICAL | 10-empty searchNoMatch | caption | null
+IDENTICAL | 10-empty searchNoMatch | selectedTab | "All clients"
+IDENTICAL | 10-empty searchNoMatch | ariaSorts | []
+IDENTICAL | 10-empty offboardedNone | qs | "?lifecycleStatus=OFFBOARDED"
+IDENTICAL | 10-empty offboardedNone | url | "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED"
+IDENTICAL | 10-empty offboardedNone | rowNames | []
+IDENTICAL | 10-empty offboardedNone | rowFica | []
+IDENTICAL | 10-empty offboardedNone | footer | null
+IDENTICAL | 10-empty offboardedNone | subtitle | "0 clients"
+IDENTICAL | 10-empty offboardedNone | emptyText | "No clients match this view.\n\nClear filters"
+IDENTICAL | 10-empty offboardedNone | emptyStateText | null
+IDENTICAL | 10-empty offboardedNone | hasTable | false
+IDENTICAL | 10-empty offboardedNone | clearFiltersHref | "/org/e2e-test-org/clients"
+IDENTICAL | 10-empty offboardedNone | caption | null
+IDENTICAL | 10-empty offboardedNone | selectedTab | "All clients"
+IDENTICAL | 10-empty offboardedNone | ariaSorts | []
+IDENTICAL | 10-empty viewWithTrustBalance | qs | "?view=system%3Awith-trust-balance"
+IDENTICAL | 10-empty viewWithTrustBalance | url | "/org/e2e-test-org/clients?view=system%3Awith-trust-balance"
+IDENTICAL | 10-empty viewWithTrustBalance | rowNames | ["Bright Solutions", "Dormant Industries"]
+IDENTICAL | 10-empty viewWithTrustBalance | rowFica | ["Done12 Nov 2026", "Done12 Nov 2026"]
+IDENTICAL | 10-empty viewWithTrustBalance | footer | "Showing 2 clients"
+IDENTICAL | 10-empty viewWithTrustBalance | subtitle | "2 clients"
+IDENTICAL | 10-empty viewWithTrustBalance | emptyText | null
+IDENTICAL | 10-empty viewWithTrustBalance | emptyStateText | null
+IDENTICAL | 10-empty viewWithTrustBalance | hasTable | true
+IDENTICAL | 10-empty viewWithTrustBalance | clearFiltersHref | null
+IDENTICAL | 10-empty viewWithTrustBalance | caption | "Clients — With trust balance"
+IDENTICAL | 10-empty viewWithTrustBalance | selectedTab | "With trust balance"
+IDENTICAL | 10-empty viewWithTrustBalance | ariaSorts | [["Client", "ascending"]]
+IDENTICAL | 10-empty viewFicaOutstanding | qs | "?view=system%3Afica-outstanding"
+IDENTICAL | 10-empty viewFicaOutstanding | url | "/org/e2e-test-org/clients?view=system%3Afica-outstanding"
+IDENTICAL | 10-empty viewFicaOutstanding | rowNames | ["Carlos Mendez", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 10-empty viewFicaOutstanding | rowFica | ["In progress", "Not started", "Not started"]
+IDENTICAL | 10-empty viewFicaOutstanding | footer | "Showing 3 clients"
+IDENTICAL | 10-empty viewFicaOutstanding | subtitle | "3 clients"
+IDENTICAL | 10-empty viewFicaOutstanding | emptyText | null
+IDENTICAL | 10-empty viewFicaOutstanding | emptyStateText | null
+IDENTICAL | 10-empty viewFicaOutstanding | hasTable | true
+IDENTICAL | 10-empty viewFicaOutstanding | clearFiltersHref | null
+IDENTICAL | 10-empty viewFicaOutstanding | caption | "Clients — FICA outstanding"
+IDENTICAL | 10-empty viewFicaOutstanding | selectedTab | "FICA outstanding"
+IDENTICAL | 10-empty viewFicaOutstanding | ariaSorts | [["Client", "ascending"]]
+IDENTICAL | 10-empty showIncomplete | qs | "?showIncomplete=true"
+IDENTICAL | 10-empty showIncomplete | url | "/org/e2e-test-org/clients?showIncomplete=true"
+IDENTICAL | 10-empty showIncomplete | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust"]
+IDENTICAL | 10-empty showIncomplete | rowFica | ["Done12 Nov 2026", "Done12 Nov 2026", "In progress", "Done12 Nov 2026", "Not started"]
+IDENTICAL | 10-empty showIncomplete | footer | "Showing 5 clients"
+IDENTICAL | 10-empty showIncomplete | subtitle | "5 clients"
+IDENTICAL | 10-empty showIncomplete | emptyText | null
+IDENTICAL | 10-empty showIncomplete | emptyStateText | null
+IDENTICAL | 10-empty showIncomplete | hasTable | true
+IDENTICAL | 10-empty showIncomplete | clearFiltersHref | null
+IDENTICAL | 10-empty showIncomplete | caption | "Clients — All clients"
+IDENTICAL | 10-empty showIncomplete | selectedTab | "All clients"
+IDENTICAL | 10-empty showIncomplete | ariaSorts | [["Client", "ascending"]]
+IDENTICAL | 10-empty unknownView | qs | "?view=<uuid>"
+IDENTICAL | 10-empty unknownView | url | "/org/e2e-test-org/clients?view=<uuid>"
+IDENTICAL | 10-empty unknownView | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 10-empty unknownView | rowFica | ["Done12 Nov 2026", "Done12 Nov 2026", "In progress", "Done12 Nov 2026", "Not started", "Not started"]
+IDENTICAL | 10-empty unknownView | footer | "Showing 6 clients"
+IDENTICAL | 10-empty unknownView | subtitle | "6 clients"
+IDENTICAL | 10-empty unknownView | emptyText | null
+IDENTICAL | 10-empty unknownView | emptyStateText | null
+IDENTICAL | 10-empty unknownView | hasTable | true
+IDENTICAL | 10-empty unknownView | clearFiltersHref | null
+IDENTICAL | 10-empty unknownView | caption | "Clients — All clients"
+IDENTICAL | 10-empty unknownView | selectedTab | "All clients"
+IDENTICAL | 10-empty unknownView | ariaSorts | [["Client", "ascending"]]
+IDENTICAL | 10-empty badSort | qs | "?sortBy=contact&sortDir=desc"
+IDENTICAL | 10-empty badSort | url | "/org/e2e-test-org/clients?sortBy=contact&sortDir=desc"
+IDENTICAL | 10-empty badSort | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 10-empty badSort | rowFica | ["Done12 Nov 2026", "Done12 Nov 2026", "In progress", "Done12 Nov 2026", "Not started", "Not started"]
+IDENTICAL | 10-empty badSort | footer | "Showing 6 clients"
+IDENTICAL | 10-empty badSort | subtitle | "6 clients"
+IDENTICAL | 10-empty badSort | emptyText | null
+IDENTICAL | 10-empty badSort | emptyStateText | null
+IDENTICAL | 10-empty badSort | hasTable | true
+IDENTICAL | 10-empty badSort | clearFiltersHref | null
+IDENTICAL | 10-empty badSort | caption | "Clients — All clients"
+IDENTICAL | 10-empty badSort | selectedTab | "All clients"
+IDENTICAL | 10-empty badSort | ariaSorts | [["Client", "ascending"]]
+IDENTICAL | 1b 1440-light | url | "/org/e2e-test-org/clients"
+IDENTICAL | 1b 1440-light | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 1b 1440-light | footer | "Showing 6 clients"
+IDENTICAL | 1b 1440-light | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 1b 1440-light | hiddenHeaders | ["Contact"]
+IDENTICAL | 1b 1440-light | htmlClass/pageScrollsSideways | ["light", false]
+IDENTICAL | 1b 1440-light | table(width,containerClientWidth,overflowPx,scrollsSideways) | [1134, 1134, 0, false]
+IDENTICAL | 1b 1440-light sortedByCreated | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 1b 1440-light sortedByCreated | table(width,containerClientWidth,overflowPx,scrollsSideways) | [1134, 1134, 0, false]
+IDENTICAL | 1b 1440-light savedView | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Contact", "Actions"]
+IDENTICAL | 1b 1440-light savedView | table(width,containerClientWidth,overflowPx,scrollsSideways) | [1134, 1134, 0, false]
+IDENTICAL | 1b 1440-dark | url | "/org/e2e-test-org/clients"
+IDENTICAL | 1b 1440-dark | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 1b 1440-dark | footer | "Showing 6 clients"
+IDENTICAL | 1b 1440-dark | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Actions"]
+IDENTICAL | 1b 1440-dark | hiddenHeaders | ["Contact"]
+IDENTICAL | 1b 1440-dark | htmlClass/pageScrollsSideways | ["dark", false]
+IDENTICAL | 1b 1440-dark | table(width,containerClientWidth,overflowPx,scrollsSideways) | [1134, 1134, 0, false]
+IDENTICAL | 1b 1024-light | url | "/org/e2e-test-org/clients"
+IDENTICAL | 1b 1024-light | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 1b 1024-light | footer | "Showing 6 clients"
+IDENTICAL | 1b 1024-light | visibleHeaders | ["Client", "Lifecycle", "FICA", "Outstanding fee notes", "Trust balance", "Actions"]
+IDENTICAL | 1b 1024-light | hiddenHeaders | ["Open matters", "Completeness", "Created", "Contact"]
+IDENTICAL | 1b 1024-light | htmlClass/pageScrollsSideways | ["light", false]
+IDENTICAL | 1b 1024-light | table(width,containerClientWidth,overflowPx,scrollsSideways) | [718, 718, 0, false]
+IDENTICAL | 1b 1024-light sortedByCreated | visibleHeaders | ["Client", "Lifecycle", "FICA", "Outstanding fee notes", "Trust balance", "Created", "Actions"]
+IDENTICAL | 1b 1024-light sortedByCreated | table(width,containerClientWidth,overflowPx,scrollsSideways) | [718, 718, 0, false]
+IDENTICAL | 1b 1024-light savedView | visibleHeaders | ["Client", "Lifecycle", "FICA", "Open matters", "Outstanding fee notes", "Trust balance", "Completeness", "Created", "Contact", "Actions"]
+DIFF      | 1b 1024-light savedView | table(width,containerClientWidth,overflowPx,scrollsSideways) | before=[1021.3, 718, 303, true] | after=[1057.3, 718, 339, true]
+IDENTICAL | 1b 1024-dark | url | "/org/e2e-test-org/clients"
+IDENTICAL | 1b 1024-dark | rowNames | ["Acme Corp", "Bright Solutions", "Carlos Mendez", "Dormant Industries", "Mkhize Family Trust", "Zulu Prospect Holdings"]
+IDENTICAL | 1b 1024-dark | footer | "Showing 6 clients"
+IDENTICAL | 1b 1024-dark | visibleHeaders | ["Client", "Lifecycle", "FICA", "Outstanding fee notes", "Trust balance", "Actions"]
+IDENTICAL | 1b 1024-dark | hiddenHeaders | ["Open matters", "Completeness", "Created", "Contact"]
+IDENTICAL | 1b 1024-dark | htmlClass/pageScrollsSideways | ["dark", false]
+IDENTICAL | 1b 1024-dark | table(width,containerClientWidth,overflowPx,scrollsSideways) | [718, 718, 0, false]
+IDENTICAL | 11-carol 1440-light | url | "/org/e2e-test-org/clients"
+IDENTICAL | 11-carol 1440-light | h1 | null
+IDENTICAL | 11-carol 1440-light | hasTable | false
+IDENTICAL | 11-carol 1440-light | permissionDenied | "You don't have access to Clients Contact your organisation admin to update your role. Go to dashboard"
+IDENTICAL | 11-carol 1440-light | rowNames | []
+IDENTICAL | 11-carol 1440-light | rowCells | []
+IDENTICAL | 11-carol 1440-light | headers | []
+IDENTICAL | 11-carol 1440-light | newClientButton | 0
+IDENTICAL | 11-carol 1440-light | saveViewButton | 0
+IDENTICAL | 11-carol 1024-light | url | "/org/e2e-test-org/clients"
+IDENTICAL | 11-carol 1024-light | h1 | null
+IDENTICAL | 11-carol 1024-light | hasTable | false
+IDENTICAL | 11-carol 1024-light | permissionDenied | "You don't have access to Clients Contact your organisation admin to update your role. Go to dashboard"
+IDENTICAL | 11-carol 1024-light | rowNames | []
+IDENTICAL | 11-carol 1024-light | rowCells | []
+IDENTICAL | 11-carol 1024-light | headers | []
+IDENTICAL | 11-carol 1024-light | newClientButton | 0
+IDENTICAL | 11-carol 1024-light | saveViewButton | 0

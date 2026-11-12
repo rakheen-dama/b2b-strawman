@@ -85,8 +85,11 @@ export interface DataTableProps<T, K extends string = string> {
   /**
    * Header cells stick under the floating app header while the PAGE scrolls (default on). A sticky
    * header needs the page to be its scroll container, so the table container drops its horizontal
-   * scroll: `stickyHeader` and horizontal scroll are mutually exclusive. Pass `false` for a table
-   * that must scroll sideways (many columns on narrow screens); column `priority` still applies.
+   * scroll: sticky and horizontal scroll are mutually exclusive. Sticky applies only from a 42rem
+   * frame (`@2xl`); below that the table always scrolls inside its frame and the header does not
+   * stick. Enable it only for a column set that fits a >= 42rem frame (clients' always-shown set is
+   * about 32rem); pass `false` for a table that must scroll sideways at wider frames too (many
+   * columns); column `priority` still applies.
    */
   stickyHeader?: boolean;
   /** Visually hidden `<caption>` (the table's accessible name). */
@@ -122,15 +125,20 @@ function normalisePageSize(pageSize: number | null | undefined): number | null {
     : null;
 }
 
-/** The page scrolls, so the container must not be a scroll container (see `stickyHeader`). */
-const STICKY_CONTAINER_CLASS = "overflow-x-visible";
+/**
+ * From a 42rem frame (`@2xl`, measured on the `@container` frame) the page scrolls, so the
+ * container must not be a scroll container (see `stickyHeader`). Below that the base
+ * `overflow-x-auto` of `ui/table.tsx` stays in force: narrow frames scroll the table in place.
+ */
+const STICKY_CONTAINER_CLASS = "@2xl:overflow-x-visible";
 /**
  * The floating header is `sticky top-2` and `--app-header-height` tall, so its bottom edge is at
  * header height + 0.5rem. Opaque card background; z-10 stays under the header's z-30. The inset
- * shadow redraws the header rule, which a collapsed-border `tr` cannot carry while stuck.
+ * shadow redraws the header rule, which a collapsed-border `tr` cannot carry while stuck. Positioning
+ * applies from a 42rem frame only, matching `STICKY_CONTAINER_CLASS`.
  */
 const STICKY_HEAD_CLASS =
-  "bg-card sticky top-[calc(var(--app-header-height)+0.5rem)] z-10 shadow-[inset_0_-1px_0_var(--border)]";
+  "bg-card @2xl:sticky @2xl:top-[calc(var(--app-header-height)+0.5rem)] @2xl:z-10 @2xl:shadow-[inset_0_-1px_0_var(--border)]";
 
 /** Default header for columns without their own `header`: the label, linked when sortable. */
 function renderDefaultHeader<T>({ column, table }: HeaderContext<T, unknown>) {

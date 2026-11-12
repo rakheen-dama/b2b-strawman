@@ -9,6 +9,7 @@ import Link from "next/link";
 import { DataTable, type DataTableProps } from "@/components/data-table/data-table";
 import { CSV_BOM, toCsvField } from "@/components/data-table/data-table-csv";
 import { EmptyCell, MoneyCell } from "@/components/data-table/cells";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { defineColumns } from "@/components/data-table/define-columns";
 import {
   DropdownMenu,
@@ -276,6 +277,63 @@ describe("DataTable — URL sort headers", () => {
     expect(screen.queryAllByRole("link", { name: "Matter" })).toHaveLength(0);
     expect(screen.getByRole("columnheader", { name: "Matter" })).not.toHaveAttribute("aria-sort");
   });
+
+  it("a header children override replaces the visible label; href and columnheader name unchanged", () => {
+    // 642A (R3 b): clients break a long label over two lines; the default header renders the label.
+    const twoLine = (label: string) => (
+      <span data-testid={`two-line-${label}`} className="inline-flex flex-col">
+        <span>{label.split(" ")[0]}</span> <span>{label.split(" ").slice(1).join(" ")}</span>
+      </span>
+    );
+    const overridden = defineColumns<Row>([
+      {
+        id: "client",
+        meta: { label: "Client name", sortKey: "client" },
+        header: ({ column, table }) => (
+          <DataTableColumnHeader column={column} sort={table.options.meta?.dataTableSort}>
+            {twoLine("Client name")}
+          </DataTableColumnHeader>
+        ),
+        cell: ({ row }) => row.original.client,
+      },
+      {
+        id: "note",
+        meta: { label: "Free note" },
+        header: ({ column, table }) => (
+          <DataTableColumnHeader column={column} sort={table.options.meta?.dataTableSort}>
+            {twoLine("Free note")}
+          </DataTableColumnHeader>
+        ),
+        cell: ({ row }) => row.original.note,
+      },
+      {
+        id: "amount",
+        meta: { label: "Amount due", sortKey: "amount" },
+        cell: ({ row }) => row.original.amount,
+      },
+    ]);
+    renderTable({ columns: overridden, sort: { key: "client", dir: "asc", hrefFor } });
+
+    // Override, sortable: the children render inside the same sort link; name = label.
+    const client = screen.getByRole("columnheader", { name: "Client name" });
+    const link = within(client).getByRole("link", { name: "Client name" });
+    expect(link).toHaveAttribute("href", "/x?sort=client");
+    expect(within(link).getByTestId("two-line-Client name")).toBeInTheDocument();
+    expect(link.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(client).toHaveAttribute("aria-sort", "ascending");
+
+    // Override, unsortable: plain children, no link.
+    const note = screen.getByRole("columnheader", { name: "Free note" });
+    expect(within(note).queryByRole("link")).toBeNull();
+    expect(within(note).getByTestId("two-line-Free note")).toBeInTheDocument();
+
+    // Default (no children): the label on one line, inside the sort link.
+    const amount = screen.getByRole("columnheader", { name: "Amount due" });
+    const amountLink = within(amount).getByRole("link", { name: "Amount due" });
+    expect(amountLink).toHaveAttribute("href", "/x?sort=amount");
+    expect(amountLink.textContent).toBe("Amount due");
+    expect(amount.querySelector('[data-testid^="two-line"]')).toBeNull();
+  });
 });
 
 describe("DataTable — column priority", () => {
@@ -307,19 +365,41 @@ describe("DataTable — column priority", () => {
 });
 
 describe("DataTable — sticky header", () => {
-  it("by default sticks the header cells under the floating header; the container drops overflow-x-auto", () => {
+  it("by default sticks the header cells from a 42rem frame; the container drops overflow-x-auto there", () => {
     renderTable();
-    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("sticky"));
+    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("@2xl:sticky"));
     const container = screen.getByRole("table").closest('[data-slot="table-container"]');
-    expect(container).toHaveClass("overflow-x-visible");
-    expect(container).not.toHaveClass("overflow-x-auto");
+    expect(container).toHaveClass("@2xl:overflow-x-visible");
     // The frame is never a card (finance specs count [data-slot="card"]).
     expect(document.querySelector('[data-slot="card"]')).toBeNull();
   });
 
+  it("sticky mode is container-responsive: below 42rem the table scrolls in its frame, header not stuck", () => {
+    renderTable();
+    const container = screen.getByRole("table").closest('[data-slot="table-container"]');
+    // cn/tailwind-merge keeps both: the @2xl variant does not conflict with the base utility.
+    expect(container).toHaveClass("overflow-x-auto", "@2xl:overflow-x-visible");
+    expect(container).not.toHaveClass("overflow-x-visible");
+    // The container queries resolve against the @container frame around the table container.
+    expect(container!.parentElement).toHaveClass("@container");
+    screen.getAllByRole("columnheader").forEach((th) => {
+      expect(th).toHaveClass(
+        "bg-card",
+        "@2xl:sticky",
+        "@2xl:top-[calc(var(--app-header-height)+0.5rem)]",
+        "@2xl:z-10"
+      );
+      expect(th).not.toHaveClass("sticky");
+      expect(th).not.toHaveClass("z-10");
+    });
+  });
+
   it("stickyHeader={false} keeps the default horizontal scroll container", () => {
     renderTable({ stickyHeader: false });
-    screen.getAllByRole("columnheader").forEach((th) => expect(th).not.toHaveClass("sticky"));
+    screen.getAllByRole("columnheader").forEach((th) => {
+      expect(th).not.toHaveClass("sticky");
+      expect(th).not.toHaveClass("@2xl:sticky");
+    });
     const container = screen.getByRole("table").closest('[data-slot="table-container"]');
     expect(container).toHaveClass("overflow-x-auto");
   });

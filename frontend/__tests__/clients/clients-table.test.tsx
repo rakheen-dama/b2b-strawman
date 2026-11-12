@@ -2,10 +2,11 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ClientsTable } from "@/components/clients/clients-table";
+import { ClientsDataTable } from "@/components/clients/clients-table";
 import { ClientLifecycleFilter } from "@/components/clients/client-lifecycle-filter";
+import { CSV_BOM } from "@/components/data-table/data-table-csv";
 import { defaultClientColumns, type ClientSort } from "@/lib/clients-list";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate, formatDateInSA } from "@/lib/format";
 import type { ClientListRow } from "@/lib/types";
 
 const mockPush = vi.fn();
@@ -15,6 +16,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/acme/clients",
 }));
 
+// `scroll` / `prefetch` are next/link props, not DOM attributes: drop them before spreading.
 vi.mock("next/link", () => ({
   default: ({
     children,
@@ -24,11 +26,16 @@ vi.mock("next/link", () => ({
     children: React.ReactNode;
     href: string;
     [key: string]: unknown;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
+  }) => {
+    const anchorProps = { ...props };
+    delete anchorProps.scroll;
+    delete anchorProps.prefetch;
+    return (
+      <a href={href} {...anchorProps}>
+        {children}
+      </a>
+    );
+  },
 }));
 
 function row(overrides: Partial<ClientListRow> = {}): ClientListRow {
@@ -58,35 +65,87 @@ function row(overrides: Partial<ClientListRow> = {}): ClientListRow {
 
 const DEFAULT_SORT: ClientSort = { key: "name", dir: "asc" };
 
-function renderTable(
-  rows: ClientListRow[],
-  opts: {
-    columns?: string[];
-    sort?: ClientSort;
-    query?: Record<string, string>;
-    hideLowPriorityColumns?: boolean;
-  } = {}
-) {
+interface RenderOptions {
+  columns?: string[];
+  sort?: ClientSort;
+  query?: Record<string, string>;
+  hideLowPriorityColumns?: boolean;
+  footer?: React.ReactNode;
+}
+
+/** The serializable props the server page passes (no `empty` / `footer` / `toolbar` nodes). */
+function serializableProps(rows: ClientListRow[], opts: RenderOptions = {}) {
+  return {
+    slug: "acme",
+    rows,
+    columns: opts.columns ?? defaultClientColumns(true),
+    customFieldNames: { vat_number: "VAT number" },
+    sort: opts.sort ?? DEFAULT_SORT,
+    query: opts.query ?? {},
+    caption: "Clients — All clients",
+    hideLowPriorityColumns: opts.hideLowPriorityColumns,
+  };
+}
+
+function renderTable(rows: ClientListRow[], opts: RenderOptions = {}) {
   return render(
-    <ClientsTable
-      slug="acme"
-      rows={rows}
-      columns={opts.columns ?? defaultClientColumns(true)}
-      customFieldNames={{ vat_number: "VAT number" }}
-      sort={opts.sort ?? DEFAULT_SORT}
-      query={opts.query ?? {}}
-      caption="Clients — All clients"
-      hideLowPriorityColumns={opts.hideLowPriorityColumns}
+    <ClientsDataTable
+      {...serializableProps(rows, opts)}
+      empty={<p>No fixture clients.</p>}
+      footer={opts.footer}
     />
   );
 }
 
-beforeEach(() => vi.clearAllMocks());
-afterEach(() => cleanup());
+/** Captures the CSV Blob and the download name of each "Export CSV" click (639C pattern). */
+function stubDownload() {
+  const captured: { blobs: Blob[]; downloads: string[] } = { blobs: [], downloads: [] };
+  const originalCreate = URL.createObjectURL;
+  const originalRevoke = URL.revokeObjectURL;
+  URL.createObjectURL = vi.fn((blob: Blob) => {
+    captured.blobs.push(blob);
+    return "blob:mock";
+  }) as typeof URL.createObjectURL;
+  URL.revokeObjectURL = vi.fn();
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+    this: HTMLAnchorElement
+  ) {
+    captured.downloads.push(this.download);
+  });
+  return {
+    captured,
+    /** Waits one task first so the deferred `revokeObjectURL` still hits the mock. */
+    async restore() {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      URL.createObjectURL = originalCreate;
+      URL.revokeObjectURL = originalRevoke;
+    },
+  };
+}
 
+async function blobText(blob: Blob | undefined): Promise<string> {
+  if (!blob) throw new Error("no CSV blob was created");
+  // ignoreBOM keeps a leading BOM in the decoded text so the test can assert it.
+  return new TextDecoder("utf-8", { ignoreBOM: true }).decode(await blob.arrayBuffer());
+}
+
+/** CSV records after the BOM (the trailing CRLF leaves an empty last element). */
+async function csvRecords(blob: Blob | undefined): Promise<string[]> {
+  const text = await blobText(blob);
+  expect(text.startsWith(CSV_BOM)).toBe(true);
+  return text.slice(CSV_BOM.length).split("\r\n");
+}
+
+beforeEach(() => vi.clearAllMocks());
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+// The kit's sort icons are svg (no text); the old arrows are stripped for safety.
 const headerText = (h: HTMLElement) => h.textContent?.replace(/[↑↓]/g, "").trim();
 
-/** The first body row's cell under the column headed `label`. */
+/** The body row's cell under the column headed `label`. */
 function cellUnder(label: string, rowIndex = 0): HTMLElement {
   const headers = screen.getAllByRole("columnheader").map(headerText);
   const index = headers.indexOf(label);
@@ -98,27 +157,29 @@ const cellText = (label: string, rowIndex = 0) => cellUnder(label, rowIndex).tex
 const headerCell = (label: string) =>
   screen.getAllByRole("columnheader").find((h) => headerText(h) === label);
 
-describe("ClientsTable — columns", () => {
+const DEFAULT_HEADERS = [
+  "Client",
+  "Lifecycle",
+  "FICA",
+  "Open matters",
+  "Outstanding fee notes",
+  "Trust balance",
+  "Completeness",
+  "Created",
+  "Contact",
+];
+
+describe("ClientsDataTable — columns", () => {
   it("renders a visually hidden caption and scope=col headers in §12.6.4 order", () => {
     renderTable([row()]);
     const table = screen.getByRole("table");
+    expect(table).toHaveAttribute("data-testid", "clients-table");
     const caption = table.querySelector("caption");
     expect(caption).toHaveTextContent("Clients — All clients");
     expect(caption).toHaveClass("sr-only");
 
     const headers = within(table).getAllByRole("columnheader");
-    expect(headers.map(headerText)).toEqual([
-      "Client",
-      "Lifecycle",
-      "FICA",
-      "Open matters",
-      "Outstanding fee notes",
-      "Trust balance",
-      "Completeness",
-      "Created",
-      "Contact",
-      "Actions",
-    ]);
+    expect(headers.map(headerText)).toEqual([...DEFAULT_HEADERS, "Actions"]);
     for (const h of headers) expect(h).toHaveAttribute("scope", "col");
   });
 
@@ -129,19 +190,30 @@ describe("ClientsTable — columns", () => {
 
   it("renders one body row per client from ClientListRow fields", () => {
     renderTable([row(), row({ id: "c2", name: "Apex Holdings", clientType: "COMPANY" })]);
-    expect(screen.getAllByTestId("client-row")).toHaveLength(2);
+    const rows = screen.getAllByTestId("client-row");
+    expect(rows).toHaveLength(2);
+    rows.forEach((tr) => expect(tr.tagName).toBe("TR"));
     expect(cellText("Lifecycle")).toBe("Active");
     expect(cellText("Open matters")).toBe("3");
     expect(cellText("Trust balance")).toBe(formatCurrency(5000, "ZAR"));
     expect(cellText("Completeness")).toBe("80%");
-    expect(cellText("Created")).toBe(formatDate("2026-05-01T08:00:00Z"));
+    expect(cellText("Created")).toBe(formatDateInSA("2026-05-01T08:00:00Z"));
     // Email and phone stack, each truncated with its full text in the title.
     expect(within(cellUnder("Contact")).getByTitle("sipho@example.com")).toBeInTheDocument();
     expect(within(cellUnder("Contact")).getByTitle("+27 82 555 0101")).toBeInTheDocument();
   });
+
+  it("right-aligns the numeric columns in mono tabular figures", () => {
+    renderTable([row()]);
+    for (const label of ["Open matters", "Outstanding fee notes", "Trust balance"]) {
+      expect(headerCell(label), label).toHaveClass("text-right");
+      expect(cellUnder(label), label).toHaveClass("text-right", "font-mono", "tabular-nums");
+    }
+    expect(cellUnder("Lifecycle")).not.toHaveClass("font-mono");
+  });
 });
 
-describe("ClientsTable — Client cell (D-9)", () => {
+describe("ClientsDataTable — Client cell (D-9)", () => {
   it("keeps the client type outside the name link, so the link name is exactly the name", () => {
     renderTable([row({ clientType: "TRUST", name: "Moroka Family Trust" })]);
     const link = screen.getByRole("link", { name: "Moroka Family Trust" });
@@ -170,7 +242,7 @@ describe("ClientsTable — Client cell (D-9)", () => {
   });
 });
 
-describe("ClientsTable — FICA, fee notes, financial redaction", () => {
+describe("ClientsDataTable — FICA, fee notes, financial redaction", () => {
   it("renders the three FICA variants", () => {
     renderTable([
       row({ id: "a", ficaStatus: "DONE", ficaLastVerifiedAt: "2026-10-03T08:00:00Z" }),
@@ -180,12 +252,12 @@ describe("ClientsTable — FICA, fee notes, financial redaction", () => {
     const [done, inProgress, notStarted] = screen.getAllByTestId("client-fica-status");
     expect(done).toHaveTextContent("Done");
     expect(done).toHaveAttribute("data-variant", "default");
-    expect(cellText("FICA", 0)).toContain(formatDate("2026-10-03T08:00:00Z"));
+    expect(cellText("FICA", 0)).toContain(formatDateInSA("2026-10-03T08:00:00Z"));
     expect(inProgress).toHaveTextContent("In progress");
     expect(inProgress).toHaveAttribute("data-variant", "outline");
     expect(notStarted).toHaveTextContent("Not started");
     expect(notStarted.tagName).toBe("SPAN");
-    expect(notStarted).toHaveClass("text-red-600");
+    expect(notStarted).toHaveClass("text-destructive");
   });
 
   it('renders outstanding fee notes as "R … · n", count only when redacted, "—" when none', () => {
@@ -204,9 +276,16 @@ describe("ClientsTable — FICA, fee notes, financial redaction", () => {
     expect(cellText("Trust balance")).toBe("—");
     expect(cellText("Completeness")).toBe("N/A");
   });
+
+  it("renders the muted — placeholder for a null lifecycle and no contact details", () => {
+    renderTable([row({ lifecycleStatus: null, email: "", phone: null })]);
+    expect(cellText("Lifecycle")).toBe("—");
+    expect(within(cellUnder("Lifecycle")).getByText("—")).toHaveClass("text-muted-foreground");
+    expect(cellText("Contact")).toBe("—");
+  });
 });
 
-describe("ClientsTable — sorting", () => {
+describe("ClientsDataTable — sorting", () => {
   it("sort links keep the URL params and use sortBy/sortDir; Contact is not sortable", () => {
     renderTable([row()], { query: { view: "system:active", showIncomplete: "true" } });
     const completeness = within(headerCell("Completeness")!).getByRole("link");
@@ -218,6 +297,16 @@ describe("ClientsTable — sorting", () => {
     expect(headerCell("Contact")).not.toHaveAttribute("aria-sort");
   });
 
+  it("every other client column is a sort link", () => {
+    renderTable([row()]);
+    for (const label of DEFAULT_HEADERS.filter((l) => l !== "Contact")) {
+      expect(within(headerCell(label)!).getByRole("link"), label).toHaveAttribute(
+        "href",
+        expect.stringMatching(/^\/org\/acme\/clients\?sortBy=\w+&sortDir=(asc|desc)$/)
+      );
+    }
+  });
+
   it("marks the active column and toggles its direction", () => {
     renderTable([row()], { sort: { key: "completeness", dir: "asc" } });
     expect(headerCell("Completeness")).toHaveAttribute("aria-sort", "ascending");
@@ -227,19 +316,38 @@ describe("ClientsTable — sorting", () => {
       "/org/acme/clients?sortBy=completeness&sortDir=desc"
     );
   });
+
+  it("descending active sort → aria-sort descending, next click goes asc", () => {
+    renderTable([row()], { sort: { key: "createdAt", dir: "desc" } });
+    expect(headerCell("Created")).toHaveAttribute("aria-sort", "descending");
+    expect(within(headerCell("Created")!).getByRole("link")).toHaveAttribute(
+      "href",
+      "/org/acme/clients?sortBy=createdAt&sortDir=asc"
+    );
+  });
 });
 
-describe("ClientsTable — responsive columns (D-8)", () => {
+describe("ClientsDataTable — responsive columns (D-8)", () => {
   it("hides low-priority columns in narrow containers (Contact first, Completeness last)", () => {
     renderTable([row()]);
     expect(headerCell("Completeness")).toHaveClass("hidden", "@min-[50rem]:table-cell");
     expect(headerCell("Open matters")).toHaveClass("hidden", "@min-[55rem]:table-cell");
     expect(headerCell("Created")).toHaveClass("hidden", "@min-[61rem]:table-cell");
     expect(headerCell("Contact")).toHaveClass("hidden", "@min-[74rem]:table-cell");
+    expect(cellUnder("Completeness")).toHaveClass("hidden", "@min-[50rem]:table-cell");
+    expect(cellUnder("Open matters")).toHaveClass("hidden", "@min-[55rem]:table-cell");
+    expect(cellUnder("Created")).toHaveClass("hidden", "@min-[61rem]:table-cell");
+    expect(cellUnder("Contact")).toHaveClass("hidden", "@min-[74rem]:table-cell");
     for (const label of ["Client", "Lifecycle", "FICA", "Outstanding fee notes", "Trust balance"]) {
-      expect(headerCell(label)).not.toHaveClass("hidden");
+      expect(headerCell(label), label).not.toHaveClass("hidden");
+      expect(cellUnder(label), label).not.toHaveClass("hidden");
     }
-    expect(cellUnder("Created")).toHaveClass("hidden");
+    expect(headerCell("Actions")).not.toHaveClass("hidden");
+  });
+
+  it("is its own size container, so column queries measure the table's box", () => {
+    renderTable([row()]);
+    expect(screen.getByTestId("clients-table").closest(".\\@container")).not.toBeNull();
   });
 
   it("lets the Client column take the spare width without adding to the minimum", () => {
@@ -253,12 +361,17 @@ describe("ClientsTable — responsive columns (D-8)", () => {
     const header = headerCell("Outstanding fee notes")!;
     expect(within(header).getByText("Outstanding")).toBeInTheDocument();
     expect(within(header).getByText("fee notes")).toBeInTheDocument();
+    // The accessible name (and the sort link's name) stays the whole label.
+    expect(screen.getByRole("columnheader", { name: "Outstanding fee notes" })).toBe(header);
+    expect(within(header).getByRole("link", { name: "Outstanding fee notes" })).toBeInTheDocument();
+    expect(header.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
   });
 
   it("never hides the active sort column", () => {
     renderTable([row()], { sort: { key: "createdAt", dir: "desc" } });
     expect(headerCell("Created")).not.toHaveClass("hidden");
     expect(cellUnder("Created")).not.toHaveClass("hidden");
+    expect(headerCell("Contact")).toHaveClass("hidden");
   });
 
   it("never hides columns a saved view chose", () => {
@@ -268,13 +381,58 @@ describe("ClientsTable — responsive columns (D-8)", () => {
     });
     expect(headerCell("Open matters")).not.toHaveClass("hidden");
     expect(headerCell("Contact")).not.toHaveClass("hidden");
+    expect(cellUnder("Contact")).not.toHaveClass("hidden");
     expect(headerCell("VAT number")).toBeDefined();
   });
 });
 
-describe("ClientsTable — row interaction", () => {
+describe("ClientsDataTable — sticky header (639C OBS-CARRY)", () => {
+  it("the default column set sticks its header from a 42rem frame; narrower frames scroll in place", () => {
+    renderTable([row()]);
+    screen.getAllByRole("columnheader").forEach((th) => {
+      expect(th).toHaveClass("@2xl:sticky");
+      expect(th).not.toHaveClass("sticky");
+    });
+    const container = screen.getByRole("table").closest('[data-slot="table-container"]');
+    expect(container).toHaveClass("overflow-x-auto", "@2xl:overflow-x-visible");
+  });
+
+  it("a saved view's own columns scroll sideways in the frame, header not sticky", () => {
+    renderTable([row()], { hideLowPriorityColumns: false });
+    screen.getAllByRole("columnheader").forEach((th) => {
+      expect(th).not.toHaveClass("sticky");
+      expect(th).not.toHaveClass("@2xl:sticky");
+    });
+    const container = screen.getByRole("table").closest('[data-slot="table-container"]');
+    expect(container).toHaveClass("overflow-x-auto");
+    expect(container).not.toHaveClass("@2xl:overflow-x-visible");
+  });
+});
+
+describe("ClientsDataTable — custom-field columns", () => {
+  it("custom-field headers are plain text (no sort link, no aria-sort), slug when unnamed", () => {
+    renderTable([row({ customFields: { vat_number: "4123456789" } })], {
+      columns: ["name", "cf:vat_number", "cf:unknown_slug"],
+    });
+    const vat = screen.getByRole("columnheader", { name: "VAT number" });
+    expect(within(vat).queryByRole("link")).toBeNull();
+    expect(vat).not.toHaveAttribute("aria-sort");
+    expect(screen.getAllByRole("columnheader").map(headerText)).toEqual([
+      "Client",
+      "VAT number",
+      "unknown_slug",
+      "Actions",
+    ]);
+    expect(cellText("VAT number")).toBe("4123456789");
+    expect(cellText("unknown_slug")).toBe("—");
+  });
+});
+
+describe("ClientsDataTable — row interaction", () => {
   it("a row click opens the client; clicks on links and the menu do not", async () => {
     renderTable([row()]);
+    const tr = screen.getByTestId("client-row");
+    expect(tr).toHaveClass("cursor-pointer");
     fireEvent.click(cellUnder("Lifecycle"));
     expect(mockPush).toHaveBeenCalledWith("/org/acme/clients/c1");
 
@@ -295,6 +453,190 @@ describe("ClientsTable — row interaction", () => {
       "href",
       "/org/acme/clients/c1"
     );
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+});
+
+describe("ClientsDataTable — table controls", () => {
+  it("the Columns menu lists every hideable column (not Client, not Actions) and hides one", async () => {
+    const user = userEvent.setup();
+    renderTable([row()]);
+    await user.click(screen.getByRole("button", { name: "Columns" }));
+    const lifecycle = await screen.findByRole("menuitemcheckbox", { name: "Lifecycle" });
+    expect(screen.getAllByRole("menuitemcheckbox").map((item) => item.textContent)).toEqual(
+      DEFAULT_HEADERS.slice(1)
+    );
+    await user.click(lifecycle);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("columnheader", { name: "Lifecycle" })).toBeNull();
+    expect(screen.queryByText("Active")).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("renders every row with no pagination control", () => {
+    const rows = Array.from({ length: 30 }, (_, i) =>
+      row({ id: `c${i + 1}`, name: `Client ${i + 1}` })
+    );
+    renderTable(rows);
+    expect(screen.getAllByTestId("client-row")).toHaveLength(30);
+    expect(screen.queryByText("Rows per page")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Next|Previous/ })).toBeNull();
+  });
+
+  it("no rows → the empty node instead of the table, footer and controls", () => {
+    renderTable([], { footer: <p data-testid="clients-footer">Showing 0 clients</p> });
+    expect(screen.getByText("No fixture clients.")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
+    expect(screen.queryByTestId("clients-footer")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Columns" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Export CSV" })).toBeNull();
+  });
+
+  it("renders the footer after the table when rows render", () => {
+    renderTable([row(), row({ id: "c2", name: "Apex Holdings" })], {
+      footer: <p data-testid="clients-footer">Showing 2 clients</p>,
+    });
+    const footer = screen.getByTestId("clients-footer");
+    expect(footer).toHaveTextContent("Showing 2 clients");
+    expect(
+      screen.getByTestId("clients-table").compareDocumentPosition(footer) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+});
+
+describe("ClientsDataTable — CSV export", () => {
+  it("exports the visible columns × rendered rows as clients.csv; a hidden column drops out", async () => {
+    const user = userEvent.setup();
+    const stub = stubDownload();
+    try {
+      renderTable([
+        row(),
+        row({
+          id: "c2",
+          name: "Apex Holdings",
+          lifecycleStatus: null,
+          ficaStatus: "NOT_STARTED",
+          ficaLastVerifiedAt: null,
+          outstandingFeeNoteTotal: null,
+          outstandingFeeNoteCount: 2,
+          trustBalance: null,
+          completenessPercent: null,
+          email: "",
+        }),
+      ]);
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      expect(stub.captured.downloads).toEqual(["clients.csv"]);
+
+      const [header, first, second, end] = await csvRecords(stub.captured.blobs[0]);
+      expect(header).toBe(DEFAULT_HEADERS.join(","));
+      // The outstanding text holds a decimal comma, hence the quotes.
+      expect(first).toBe(
+        [
+          "Sipho Ndlovu",
+          "Active",
+          "Done · 3 May 2026",
+          "3",
+          `"${formatCurrency(18400, "ZAR")} · 2"`,
+          "5000",
+          "80%",
+          "1 May 2026",
+          "sipho@example.com · +27 82 555 0101",
+        ].join(",")
+      );
+      // Redacted total → the count only; redacted trust → empty; a lone phone keeps the formula
+      // guard (it starts with "+").
+      expect(second).toBe("Apex Holdings,,Not started,3,2,,N/A,1 May 2026,'+27 82 555 0101");
+      expect(end).toBe("");
+
+      await user.click(screen.getByRole("button", { name: "Columns" }));
+      await user.click(await screen.findByRole("menuitemcheckbox", { name: "Lifecycle" }));
+      await user.keyboard("{Escape}");
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      const [hiddenHeader] = await csvRecords(stub.captured.blobs[1]);
+      expect(hiddenHeader).toBe(DEFAULT_HEADERS.filter((l) => l !== "Lifecycle").join(","));
+      expect(mockPush).not.toHaveBeenCalled();
+    } finally {
+      await stub.restore();
+    }
+  });
+
+  it("custom-field numbers export as numbers; text keeps the formula guard", async () => {
+    const user = userEvent.setup();
+    const stub = stubDownload();
+    try {
+      renderTable(
+        [
+          row({ customFields: { vat_number: "=CMD()", fee: 1250.5 } }),
+          row({ id: "c2", name: "Apex Holdings", customFields: {} }),
+        ],
+        { columns: ["name", "cf:vat_number", "cf:fee"] }
+      );
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      const [header, first, second] = await csvRecords(stub.captured.blobs[0]);
+      expect(header).toBe("Client,VAT number,fee");
+      expect(first).toBe("Sipho Ndlovu,'=CMD(),1250.5");
+      expect(second).toBe("Apex Holdings,,");
+    } finally {
+      await stub.restore();
+    }
+  });
+});
+
+describe("ClientsDataTable — dates across time zones", () => {
+  // 01:30 SAST on 2 May; still 1 May in UTC (the SSR server) and in New York.
+  const LATE_INSTANT = "2026-05-01T23:30:00Z";
+
+  /** Moves the process zone (Date and Intl follow), guarding against a vacuous stub. */
+  function inZone(zone: string) {
+    vi.stubEnv("TZ", zone);
+    expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(zone);
+  }
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("a zone-less format would differ by viewer (the stub is not vacuous)", () => {
+    inZone("UTC");
+    expect(formatDate(LATE_INSTANT)).toBe("1 May 2026");
+    inZone("Pacific/Kiritimati");
+    expect(formatDate(LATE_INSTANT)).toBe("2 May 2026");
+  });
+
+  it.each(["UTC", "America/New_York", "Africa/Johannesburg", "Pacific/Kiritimati"])(
+    "Created and the FICA verified date show the South African date (cell and CSV) under TZ=%s",
+    async (zone) => {
+      inZone(zone);
+      const user = userEvent.setup();
+      const stub = stubDownload();
+      try {
+        renderTable([row({ createdAt: LATE_INSTANT, ficaLastVerifiedAt: LATE_INSTANT })], {
+          columns: ["name", "ficaStatus", "createdAt"],
+          hideLowPriorityColumns: false,
+        });
+        expect(cellText("Created")).toBe("2 May 2026");
+        expect(cellText("FICA")).toBe("Done2 May 2026");
+
+        await user.click(screen.getByRole("button", { name: "Export CSV" }));
+        const [, first] = await csvRecords(stub.captured.blobs[0]);
+        expect(first).toBe("Sipho Ndlovu,Done · 2 May 2026,2 May 2026");
+      } finally {
+        await stub.restore();
+      }
+    }
+  );
+});
+
+describe("ClientsDataTable — RSC boundary", () => {
+  it("takes only serializable props: a JSON round-trip renders the same table", () => {
+    const props = serializableProps([row()], {
+      query: { view: "system:active" },
+      sort: { key: "completeness", dir: "desc" },
+    });
+    const roundTripped = JSON.parse(JSON.stringify(props));
+    expect(roundTripped).toEqual(props);
+    render(<ClientsDataTable {...roundTripped} empty={null} />);
+    expect(screen.getAllByTestId("client-row")).toHaveLength(1);
+    expect(headerCell("Completeness")).toHaveAttribute("aria-sort", "descending");
   });
 });
 

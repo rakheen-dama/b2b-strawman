@@ -1,7 +1,12 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import type { ClientListRow, SavedViewResponse } from "@/lib/types";
+import type {
+  ClientListRow,
+  FieldDefinitionResponse,
+  SavedViewResponse,
+  TagResponse,
+} from "@/lib/types";
 
 vi.mock("server-only", () => ({}));
 
@@ -39,6 +44,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/acme/clients",
 }));
 
+// `scroll` / `prefetch` are next/link props, not DOM attributes: drop them before spreading.
 vi.mock("next/link", () => ({
   default: ({
     children,
@@ -48,12 +54,35 @@ vi.mock("next/link", () => ({
     children: React.ReactNode;
     href: string;
     [key: string]: unknown;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
+  }) => {
+    const anchorProps = { ...props };
+    delete anchorProps.scroll;
+    delete anchorProps.prefetch;
+    return (
+      <a href={href} {...anchorProps}>
+        {children}
+      </a>
+    );
+  },
 }));
+
+vi.mock("@/components/clients/client-filters-sheet", () => ({
+  ClientFiltersSheet: () => <button data-testid="client-filters-trigger">Filters</button>,
+}));
+
+// OQ #19: capture the props the server page hands ClientsDataTable (a client component) while
+// still rendering the real table, so the RSC-boundary guard below inspects what the page passes.
+const tableProps = vi.hoisted(() => [] as Record<string, unknown>[]);
+vi.mock("@/components/clients/clients-table", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/clients/clients-table")>();
+  return {
+    ...actual,
+    ClientsDataTable: (props: React.ComponentProps<typeof actual.ClientsDataTable>) => {
+      tableProps.push(props as unknown as Record<string, unknown>);
+      return <actual.ClientsDataTable {...props} />;
+    },
+  };
+});
 
 vi.mock("@/components/views/ViewSelectorClient", () => ({
   ViewSelectorClient: ({
@@ -87,6 +116,8 @@ vi.mock("./view-actions", () => ({
 }));
 
 import ClientsPage from "./page";
+import { getFieldDefinitions, getTags } from "@/lib/api";
+import { unserializableProps } from "@/__tests__/helpers/rsc-props";
 
 function makeRow(overrides: Partial<ClientListRow> = {}): ClientListRow {
   return {
@@ -152,6 +183,7 @@ afterEach(() => cleanup());
 
 beforeEach(() => {
   vi.clearAllMocks();
+  tableProps.length = 0;
   mockGetViews.mockResolvedValue([]);
   mockIsModuleEnabled.mockResolvedValue(false);
   mockApiGet.mockResolvedValue([makeRow()]);
@@ -354,4 +386,136 @@ describe("ClientsPage — empty states", () => {
     );
     expect(screen.queryByText("No clients yet")).not.toBeInTheDocument();
   });
+});
+
+describe("ClientsPage — page composition (642A)", () => {
+  const tag: TagResponse = {
+    id: "t1",
+    name: "VIP",
+    slug: "vip",
+    color: null,
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+  };
+
+  it("renders a single h1 inside PageHeader with the count and the New Client action", async () => {
+    mockApiGet.mockResolvedValue([makeRow(), makeRow({ id: "c2", name: "Apex Holdings" })]);
+    await renderPage();
+    const header = screen.getByTestId("page-header");
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(within(header).getByRole("heading", { level: 1, name: "Clients" })).toBeInTheDocument();
+    expect(within(header).getByText("2 clients")).toBeInTheDocument();
+    expect(within(header).getByTestId("create-customer-dialog")).toHaveAttribute(
+      "data-slug",
+      "acme"
+    );
+    // Exactly one New Client button while rows exist (e2e clicks it strictly).
+    expect(screen.getAllByRole("button", { name: "New Client" })).toHaveLength(1);
+  });
+
+  it("renders the DataTable: clients-table on a TABLE, Columns + Export CSV, footer after rows", async () => {
+    await renderPage();
+    expect(screen.getByTestId("clients-table").tagName).toBe("TABLE");
+    expect(screen.getByRole("table", { name: "Clients — All clients" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Columns" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export CSV" })).toBeInTheDocument();
+    expect(screen.getByTestId("clients-footer")).toHaveTextContent("Showing 1 client");
+    expect(screen.getByTestId("client-row")).toHaveClass("cursor-pointer");
+  });
+
+  it("the default column set sticks its header; a saved view's own columns do not", async () => {
+    await renderPage();
+    screen.getAllByRole("columnheader").forEach((th) => expect(th).toHaveClass("@2xl:sticky"));
+    expect(tableProps[0].hideLowPriorityColumns).toBe(true);
+    cleanup();
+    tableProps.length = 0;
+
+    mockGetViews.mockResolvedValue([savedView({ columns: ["name", "contact"] })]);
+    await renderPage({ view: SAVED_ID });
+    expect(tableProps[0].hideLowPriorityColumns).toBe(false);
+    screen.getAllByRole("columnheader").forEach((th) => expect(th).not.toHaveClass("@2xl:sticky"));
+    expect(screen.getByRole("columnheader", { name: "Contact" })).not.toHaveClass("hidden");
+  });
+
+  it.each([
+    ["unfiltered", {}],
+    ["filtered", { view: "system:fica-outstanding" }],
+    ["show incomplete", { showIncomplete: "true" }],
+  ])("keeps the toolbar on an empty list (%s); no table, footer or controls", async (_, search) => {
+    mockApiGet.mockResolvedValue([]);
+    await renderPage(search as Record<string, string>);
+    expect(screen.getByTestId("view-selector-client")).toBeInTheDocument();
+    expect(screen.getByRole("search", { name: "Search clients" })).toBeInTheDocument();
+    expect(screen.getByTestId("client-show-incomplete")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).toBeNull();
+    expect(screen.queryByTestId("clients-footer")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Export CSV" })).toBeNull();
+  });
+
+  it("the filtered empty block uses tokens and links Clear filters to the bare list", async () => {
+    mockApiGet.mockResolvedValue([]);
+    await renderPage({ search: "zzz" });
+    const message = screen.getByText("No clients match this view.");
+    expect(message).toHaveClass("text-muted-foreground");
+    expect(message.parentElement).toHaveClass("border-dashed", "border-border");
+    const clear = screen.getByRole("link", { name: "Clear filters" });
+    expect(clear).toHaveAttribute("href", "/org/acme/clients");
+    expect(clear).toHaveClass("text-primary");
+  });
+
+  it("shows the tag filters sheet on system views only (F-3)", async () => {
+    vi.mocked(getTags).mockResolvedValueOnce([tag]);
+    await renderPage();
+    expect(screen.getByTestId("client-filters-trigger")).toBeInTheDocument();
+    cleanup();
+
+    vi.mocked(getTags).mockResolvedValueOnce([tag]);
+    mockGetViews.mockResolvedValue([savedView()]);
+    await renderPage({ view: SAVED_ID });
+    expect(screen.getByTestId("client-row")).toBeInTheDocument();
+    expect(screen.queryByTestId("client-filters-trigger")).toBeNull();
+  });
+
+  const NODE_SLOTS = new Set(["toolbar", "empty", "footer"]);
+  const vatField = { slug: "vat_number", name: "VAT number" } as FieldDefinitionResponse;
+
+  it.each([
+    ["default view with rows", {}, [makeRow({ customFields: { vat_number: "4123" } })], null],
+    [
+      "saved view with a custom-field column",
+      { view: SAVED_ID },
+      [makeRow()],
+      ["name", "cf:vat_number"],
+    ],
+    ["filtered empty", { search: "zzz" }, [makeRow()], null],
+    ["first-run empty", {}, [], null],
+    ["show-incomplete empty", { showIncomplete: "true" }, [], null],
+  ])(
+    "passes ClientsDataTable only serializable props (RSC boundary, OQ #19): %s",
+    async (_, search, rows, columns) => {
+      vi.mocked(getTags).mockResolvedValueOnce([tag]);
+      vi.mocked(getFieldDefinitions).mockResolvedValueOnce([vatField]);
+      mockGetViews.mockResolvedValue([savedView({ columns })]);
+      mockApiGet.mockResolvedValue(rows);
+
+      await renderPage(search as Record<string, string>);
+
+      expect(tableProps).toHaveLength(1);
+      const props = tableProps[0];
+      // Non-vacuous: the page really passed the data props and the slots.
+      expect(props).toEqual(
+        expect.objectContaining({
+          slug: "acme",
+          rows: expect.any(Array),
+          columns: expect.any(Array),
+          sort: expect.any(Object),
+          query: expect.any(Object),
+        })
+      );
+      expect(props.empty).toBeTruthy();
+      expect(props.toolbar).toBeTruthy();
+      if (columns) expect(props.columns).toEqual(columns);
+      expect(unserializableProps(props, NODE_SLOTS)).toEqual([]);
+    }
+  );
 });

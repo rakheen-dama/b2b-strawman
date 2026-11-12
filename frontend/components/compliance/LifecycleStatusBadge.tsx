@@ -27,6 +27,11 @@ const STATUS_CONFIG: Record<LifecycleStatus, StatusConfig> = {
   },
 };
 
+/** The badge's label for a lifecycle status (e.g. a CSV export of the Clients list). */
+export function lifecycleStatusLabel(status: LifecycleStatus): string {
+  return STATUS_CONFIG[status]?.label ?? status;
+}
+
 interface LifecycleStatusBadgeProps {
   status: LifecycleStatus;
   className?: string;

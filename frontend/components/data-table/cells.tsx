@@ -2,7 +2,7 @@
 // Used under the purchased admincn licence (founder-confirmed 2026-11-11); translated Base UI → Radix per ADR-368.
 import type { ReactNode } from "react";
 import { Badge } from "@b2mash/ui/badge";
-import { formatCurrency, formatDate, formatLocalDate } from "@/lib/format";
+import { formatCurrency, formatDateInSA, formatLocalDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** The "no value" placeholder shared by every list table. */
@@ -29,14 +29,19 @@ export function MoneyCell({ amount, currency, className }: MoneyCellProps) {
 
 interface DateCellProps {
   value: string | null | undefined;
-  /** `"instant"` → `formatDate` (timestamps); `"local"` → `formatLocalDate` (`yyyy-MM-dd`). */
+  /**
+   * `"instant"` → `formatDateInSA` (timestamps, on the South African calendar whatever the runtime
+   * zone: SSR runs in UTC and the browser anywhere, so a zone-less format would hydrate a different
+   * day near midnight and export a viewer-dependent CSV date); `"local"` → `formatLocalDate`
+   * (`yyyy-MM-dd`, already zone-free).
+   */
   kind?: "instant" | "local";
 }
 
-/** A date in the shared en-ZA format. */
+/** A date in the shared day-first format. */
 export function DateCell({ value, kind = "instant" }: DateCellProps) {
   if (!value) return <EmptyCell />;
-  const text = kind === "local" ? formatLocalDate(value) : formatDate(value);
+  const text = kind === "local" ? formatLocalDate(value) : formatDateInSA(value);
   return text ? <span>{text}</span> : <EmptyCell />;
 }
 

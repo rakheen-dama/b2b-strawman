@@ -1,0 +1,529 @@
+=== E2E Mock-Auth Stack ===
+
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-642A
+
+[1/3] Building and starting services...
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.28kB done
+#1 DONE 0.0s
+
+#2 [seed internal] load build definition from Dockerfile
+#2 transferring dockerfile: 264B done
+#2 DONE 0.0s
+
+#3 [mock-idp internal] load build definition from Dockerfile
+#3 transferring dockerfile: 399B done
+#3 DONE 0.0s
+
+#4 [frontend internal] load build definition from Dockerfile
+#4 transferring dockerfile: 4.45kB done
+#4 DONE 0.1s
+
+#5 [backend internal] load build definition from Dockerfile
+#5 transferring dockerfile: 934B done
+#5 DONE 0.1s
+
+#6 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jdk
+#6 ...
+
+#7 [auth] library/eclipse-temurin:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [auth] library/node:pull token for registry-1.docker.io
+#8 DONE 0.0s
+
+#9 [auth] library/alpine:pull token for registry-1.docker.io
+#9 DONE 0.0s
+
+#10 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jre-alpine
+#10 ...
+
+#11 [mock-idp internal] load metadata for docker.io/library/node:22-alpine
+#11 DONE 2.0s
+
+#12 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#12 DONE 2.0s
+
+#13 [mock-idp internal] load .dockerignore
+#13 transferring context: 2B done
+#13 DONE 0.0s
+
+#14 [frontend internal] load .dockerignore
+#14 transferring context: 798B done
+#14 DONE 0.0s
+
+#15 [mock-idp builder 1/7] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+#15 DONE 0.0s
+
+#16 [frontend deps 1/9] FROM docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+#16 DONE 0.0s
+
+#17 [mock-idp internal] load build context
+#17 transferring context: 43.91kB done
+#17 DONE 0.0s
+
+#18 [mock-idp builder 3/7] COPY package.json package-lock.json* ./
+#18 CACHED
+
+#19 [mock-idp builder 6/7] COPY src/ ./src/
+#19 CACHED
+
+#20 [mock-idp stage-1 3/5] COPY --from=builder /app/package.json /app/package-lock.json* ./
+#20 CACHED
+
+#21 [mock-idp builder 2/7] WORKDIR /app
+#21 CACHED
+
+#22 [mock-idp builder 5/7] COPY tsconfig.json ./
+#22 CACHED
+
+#23 [mock-idp builder 7/7] RUN npm run build
+#23 CACHED
+
+#24 [mock-idp stage-1 4/5] RUN npm ci --omit=dev
+#24 CACHED
+
+#25 [mock-idp builder 4/7] RUN npm ci
+#25 CACHED
+
+#26 [mock-idp stage-1 5/5] COPY --from=builder /app/dist ./dist
+#26 CACHED
+
+#27 [mock-idp] exporting to image
+#27 exporting layers done
+#27 writing image sha256:43583952b3cec1812a701bef32a889c8aa2d6fd9df1398068b555feb09bdb2a6 0.0s done
+#27 naming to docker.io/library/docteams-e2e-mock-idp
+#27 naming to docker.io/library/docteams-e2e-mock-idp done
+#27 DONE 0.0s
+
+#28 [mock-idp] resolving provenance for metadata file
+#28 DONE 0.0s
+
+#29 [frontend internal] load build context
+#29 transferring context: 11.45MB 0.3s done
+#29 DONE 0.3s
+
+#30 [seed internal] load metadata for docker.io/library/alpine:3.19
+#30 ...
+
+#31 [frontend deps 2/9] WORKDIR /app
+#31 CACHED
+
+#30 [seed internal] load metadata for docker.io/library/alpine:3.19
+#30 DONE 2.5s
+
+#32 [frontend deps 3/9] RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
+#32 ...
+
+#10 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jre-alpine
+#10 DONE 2.5s
+
+#33 [seed internal] load .dockerignore
+#33 transferring context: 2B done
+#33 DONE 0.0s
+
+#34 [seed 1/8] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#34 DONE 0.0s
+
+#35 [seed internal] load build context
+#35 transferring context: 67.45kB done
+#35 DONE 0.0s
+
+#36 [seed 2/8] RUN apk add --no-cache curl jq
+#36 CACHED
+
+#37 [seed 4/8] COPY wait-for-backend.sh .
+#37 CACHED
+
+#38 [seed 3/8] WORKDIR /seed
+#38 CACHED
+
+#39 [seed 6/8] COPY rich-seed.sh .
+#39 CACHED
+
+#40 [seed 7/8] COPY lib/ lib/
+#40 CACHED
+
+#41 [seed 5/8] COPY seed.sh .
+#41 CACHED
+
+#42 [seed 8/8] RUN chmod +x wait-for-backend.sh seed.sh rich-seed.sh lib/*.sh
+#42 CACHED
+
+#43 [seed] exporting to image
+#43 exporting layers done
+#43 writing image sha256:933d6df80f0aed11e75e55b5026ca03497366f8c39c01924a8c85ffd9a09bcac done
+#43 naming to docker.io/library/docteams-e2e-seed done
+#43 DONE 0.0s
+
+#44 [seed] resolving provenance for metadata file
+#44 DONE 0.0s
+
+#32 [frontend deps 3/9] RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
+#32 0.293 Preparing pnpm@10.26.1 for immediate activation...
+#32 ...
+
+#6 [backend internal] load metadata for docker.io/library/eclipse-temurin:25-jdk
+#6 DONE 3.7s
+
+#45 [backend internal] load .dockerignore
+#45 transferring context: 140B done
+#45 DONE 0.0s
+
+#46 [backend builder  1/10] FROM docker.io/library/eclipse-temurin:25-jdk@sha256:b8705e936964c228dfce359e63dbf08f6c69cb380ed1d576b1f6b1064f15567d
+#46 DONE 0.0s
+
+#47 [backend runner 1/5] FROM docker.io/library/eclipse-temurin:25-jre-alpine@sha256:e1898fd6a11fc965a994d8ace186fd3585aeb636cf8f05f47a723fcfee0b0918
+#47 DONE 0.0s
+
+#48 [backend internal] load build context
+#48 transferring context: 18.34MB 0.3s done
+#48 DONE 0.3s
+
+#49 [backend builder  5/10] COPY pom.xml .
+#49 CACHED
+
+#50 [backend runner 4/5] RUN apk add --no-cache curl
+#50 CACHED
+
+#51 [backend builder  2/10] WORKDIR /build
+#51 CACHED
+
+#52 [backend builder 10/10] RUN mv extracted/*.jar extracted/app.jar
+#52 CACHED
+
+#53 [backend builder  9/10] RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
+#53 CACHED
+
+#54 [backend runner 2/5] WORKDIR /app
+#54 CACHED
+
+#55 [backend builder  8/10] RUN ./mvnw clean package -DskipTests -B
+#55 CACHED
+
+#56 [backend builder  4/10] COPY .mvn .mvn
+#56 CACHED
+
+#57 [backend builder  6/10] RUN ./mvnw dependency:go-offline -B
+#57 CACHED
+
+#58 [backend builder  3/10] COPY mvnw .
+#58 CACHED
+
+#59 [backend builder  7/10] COPY src src
+#59 CACHED
+
+#60 [backend runner 3/5] RUN addgroup --system --gid 1001 spring &&     adduser --system --uid 1001 spring
+#60 CACHED
+
+#61 [backend runner 5/5] COPY --from=builder --chown=spring:spring /build/extracted/ ./
+#61 CACHED
+
+#62 [backend] exporting to image
+#62 exporting layers done
+#62 writing image sha256:01bf8d01026c0f80f385651b0c7395fbb71a4ce72e4ea2da858a55fd68e4b346 done
+#62 naming to docker.io/library/docteams-e2e-backend done
+#62 DONE 0.0s
+
+#63 [backend] resolving provenance for metadata file
+#63 DONE 0.0s
+
+#32 [frontend deps 3/9] RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
+#32 DONE 2.0s
+
+#64 [frontend deps 4/9] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+#64 DONE 0.0s
+
+#65 [frontend deps 5/9] COPY patches/ ./patches/
+#65 DONE 0.0s
+
+#66 [frontend deps 6/9] COPY frontend/package.json ./frontend/
+#66 DONE 0.1s
+
+#67 [frontend deps 7/9] COPY packages/ui/package.json ./packages/ui/
+#67 DONE 0.0s
+
+#68 [frontend deps 8/9] COPY packages/shared/package.json ./packages/shared/
+#68 DONE 0.1s
+
+#69 [frontend deps 9/9] RUN pnpm install --frozen-lockfile --filter frontend...
+#69 0.619 Scope: 3 of 4 workspace projects
+#69 0.784 Lockfile is up to date, resolution step is skipped
+#69 0.875 Progress: resolved 1, reused 0, downloaded 0, added 0
+#69 1.030 .                                        | +739 ++++++++++++++++++++++++++++++++
+#69 1.343 
+#69 1.343    ╭───────────────────────────────────────────────╮
+#69 1.343    │                                               │
+#69 1.343    │     Update available! 10.26.1 → 12.18.0.      │
+#69 1.343    │     Changelog: https://pnpm.io/v/12.18.0      │
+#69 1.343    │   To update, run: corepack use pnpm@12.18.0   │
+#69 1.343    │                                               │
+#69 1.343    ╰───────────────────────────────────────────────╯
+#69 1.343 
+#69 1.875 Progress: resolved 739, reused 0, downloaded 37, added 37
+#69 2.879 Progress: resolved 739, reused 0, downloaded 100, added 100
+#69 3.879 Progress: resolved 739, reused 0, downloaded 149, added 148
+#69 4.879 Progress: resolved 739, reused 0, downloaded 172, added 172
+#69 5.879 Progress: resolved 739, reused 0, downloaded 248, added 248
+#69 6.881 Progress: resolved 739, reused 0, downloaded 315, added 315
+#69 7.881 Progress: resolved 739, reused 0, downloaded 350, added 350
+#69 8.883 Progress: resolved 739, reused 0, downloaded 373, added 373
+#69 9.883 Progress: resolved 739, reused 0, downloaded 401, added 401
+#69 10.88 Progress: resolved 739, reused 0, downloaded 432, added 432
+#69 11.88 Progress: resolved 739, reused 0, downloaded 464, added 464
+#69 12.88 Progress: resolved 739, reused 0, downloaded 554, added 554
+#69 13.89 Progress: resolved 739, reused 0, downloaded 647, added 647
+#69 14.89 Progress: resolved 739, reused 0, downloaded 668, added 668
+#69 15.89 Progress: resolved 739, reused 0, downloaded 695, added 695
+#69 16.89 Progress: resolved 739, reused 0, downloaded 718, added 718
+#69 17.89 Progress: resolved 739, reused 0, downloaded 726, added 726
+#69 18.89 Progress: resolved 739, reused 0, downloaded 730, added 730
+#69 19.89 Progress: resolved 739, reused 0, downloaded 731, added 731
+#69 20.89 Progress: resolved 739, reused 0, downloaded 734, added 734
+#69 21.89 Progress: resolved 739, reused 0, downloaded 736, added 736
+#69 25.18 Progress: resolved 739, reused 0, downloaded 737, added 736
+#69 26.18 Progress: resolved 739, reused 0, downloaded 737, added 737
+#69 31.75 Progress: resolved 739, reused 0, downloaded 738, added 737
+#69 32.54 Progress: resolved 739, reused 0, downloaded 739, added 739, done
+#69 34.55 ╭ Warning ─────────────────────────────────────────────────────────────────────╮
+#69 34.55 │                                                                              │
+#69 34.55 │   Ignored build scripts: esbuild@0.27.7, unrs-resolver@1.11.1.               │
+#69 34.55 │   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+#69 34.55 │   to run scripts.                                                            │
+#69 34.55 │                                                                              │
+#69 34.55 ╰──────────────────────────────────────────────────────────────────────────────╯
+#69 34.60 Done in 34.3s using pnpm v10.26.1
+#69 DONE 34.8s
+
+#70 [frontend builder  4/11] COPY --from=deps /app/node_modules ./node_modules
+#70 DONE 3.3s
+
+#71 [frontend builder  5/11] COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+#71 DONE 0.0s
+
+#72 [frontend builder  6/11] COPY --from=deps /app/packages ./packages
+#72 DONE 0.0s
+
+#73 [frontend builder  7/11] COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+#73 DONE 0.0s
+
+#74 [frontend builder  8/11] COPY tsconfig.base.json ./
+#74 DONE 0.0s
+
+#75 [frontend builder  9/11] COPY frontend/ ./frontend/
+#75 DONE 0.1s
+
+#76 [frontend builder 10/11] COPY packages/ ./packages/
+#76 DONE 0.0s
+
+#77 [frontend builder 11/11] RUN pnpm --filter frontend build
+#77 0.469 
+#77 0.469 > frontend@0.1.0 build /app/frontend
+#77 0.469 > next build
+#77 0.469 
+#77 0.758 ▲ Next.js 16.3.8 (Turbopack)
+#77 0.791 ✓ Running next.config.ts took 32ms
+#77 0.810 - Experiments (use with caution):
+#77 0.810   ⨯ useTypeScriptCli
+#77 0.810 
+#77 0.851   Creating an optimized production build ...
+#77 12.14 ✓ Compiled successfully in 11.1s
+#77 12.15   Running TypeScript ...
+#77 43.69   Finished TypeScript in 31.5s ...
+#77 43.70   Collecting page data using 9 workers ...
+#77 44.98   Generating static pages using 9 workers (0/14) ...
+#77 45.24   Generating static pages using 9 workers (3/14) 
+#77 45.25   Generating static pages using 9 workers (6/14) 
+#77 45.31   Generating static pages using 9 workers (10/14) 
+#77 45.45 ✓ Generating static pages using 9 workers (14/14) in 463ms
+#77 45.45   Finalizing page optimization ...
+#77 46.12 
+#77 46.13 Route (app)
+#77 46.13 ┌ ○ /
+#77 46.13 ├ ○ /_not-found
+#77 46.13 ├ ƒ /accept-invite
+#77 46.13 ├ ○ /accept-invite/complete
+#77 46.13 ├ ƒ /accept-invite/continue
+#77 46.13 ├ ƒ /accept/[token]
+#77 46.13 ├ ƒ /api/clients
+#77 46.13 ├ ƒ /api/invoices/[id]/preview
+#77 46.13 ├ ○ /create-org
+#77 46.13 ├ ○ /dashboard
+#77 46.13 ├ ○ /mock-login
+#77 46.13 ├ ƒ /org/[slug]/ai/reviews
+#77 46.13 ├ ƒ /org/[slug]/clients
+#77 46.13 ├ ƒ /org/[slug]/clients/[id]
+#77 46.13 ├ ƒ /org/[slug]/compliance
+#77 46.13 ├ ƒ /org/[slug]/compliance/requests
+#77 46.13 ├ ƒ /org/[slug]/compliance/requests/[id]
+#77 46.13 ├ ƒ /org/[slug]/conflict-check
+#77 46.13 ├ ƒ /org/[slug]/dashboard
+#77 46.13 ├ ƒ /org/[slug]/diary
+#77 46.13 ├ ƒ /org/[slug]/information-requests/[id]
+#77 46.13 ├ ƒ /org/[slug]/invoices
+#77 46.13 ├ ƒ /org/[slug]/invoices/[id]
+#77 46.13 ├ ƒ /org/[slug]/invoices/billing-runs
+#77 46.13 ├ ƒ /org/[slug]/invoices/billing-runs/[id]
+#77 46.13 ├ ƒ /org/[slug]/invoices/billing-runs/new
+#77 46.13 ├ ƒ /org/[slug]/invoices/collections
+#77 46.13 ├ ƒ /org/[slug]/invoices/unbilled
+#77 46.13 ├ ƒ /org/[slug]/legal/adverse-parties
+#77 46.13 ├ ƒ /org/[slug]/legal/disbursements
+#77 46.13 ├ ƒ /org/[slug]/legal/disbursements/[id]
+#77 46.13 ├ ƒ /org/[slug]/legal/tariffs
+#77 46.13 ├ ƒ /org/[slug]/matters
+#77 46.13 ├ ƒ /org/[slug]/matters/[id]
+#77 46.13 ├ ƒ /org/[slug]/matters/new
+#77 46.13 ├ ƒ /org/[slug]/my-work
+#77 46.13 ├ ƒ /org/[slug]/my-work/timesheet
+#77 46.13 ├ ƒ /org/[slug]/notifications
+#77 46.13 ├ ƒ /org/[slug]/reports
+#77 46.13 ├ ƒ /org/[slug]/reports/[reportSlug]
+#77 46.13 ├ ƒ /org/[slug]/reports/profitability
+#77 46.13 ├ ƒ /org/[slug]/settings
+#77 46.13 ├ ƒ /org/[slug]/settings/connections
+#77 46.13 ├ ƒ /org/[slug]/settings/connections/ai/history
+#77 46.13 ├ ƒ /org/[slug]/settings/connections/automations/executions
+#77 46.13 ├ ƒ /org/[slug]/settings/connections/xero/sync-log
+#77 46.13 ├ ƒ /org/[slug]/settings/documents
+#77 46.13 ├ ƒ /org/[slug]/settings/documents/templates/[id]/edit
+#77 46.13 ├ ƒ /org/[slug]/settings/documents/templates/new
+#77 46.13 ├ ƒ /org/[slug]/settings/fees
+#77 46.13 ├ ƒ /org/[slug]/settings/firm
+#77 46.13 ├ ƒ /org/[slug]/settings/matters
+#77 46.13 ├ ƒ /org/[slug]/settings/matters/checklists/[id]
+#77 46.13 ├ ƒ /org/[slug]/settings/matters/checklists/[id]/edit
+#77 46.13 ├ ƒ /org/[slug]/settings/matters/checklists/new
+#77 46.13 ├ ƒ /org/[slug]/settings/matters/request-templates/[id]
+#77 46.13 ├ ƒ /org/[slug]/settings/matters/request-templates/new
+#77 46.13 ├ ƒ /org/[slug]/settings/matters/templates/[id]
+#77 46.13 ├ ƒ /org/[slug]/team
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting/client-ledgers
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting/client-ledgers/[clientId]
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting/interest
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting/investments
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting/reconciliation
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting/reconciliation/new
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting/reports
+#77 46.13 ├ ƒ /org/[slug]/trust-accounting/transactions
+#77 46.13 ├ ƒ /platform-admin/access-requests
+#77 46.13 ├ ƒ /platform-admin/billing
+#77 46.13 ├ ƒ /platform-admin/demo
+#77 46.13 ├ ○ /request-access
+#77 46.13 ├ ƒ /sign-in
+#77 46.13 └ ○ /signed-out
+#77 46.13 
+#77 46.13 
+#77 46.13 ƒ Proxy (Middleware)
+#77 46.13 
+#77 46.13 ○  (Static)   prerendered as static content
+#77 46.13 ƒ  (Dynamic)  server-rendered on demand
+#77 46.13 
+#77 DONE 46.9s
+
+#78 [frontend runner 3/7] RUN addgroup --system --gid 1001 nodejs &&     adduser --system --uid 1001 nextjs
+#78 CACHED
+
+#79 [frontend runner 4/7] RUN apk add --no-cache curl
+#79 CACHED
+
+#80 [frontend runner 5/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+#80 DONE 0.3s
+
+#81 [frontend runner 6/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
+#81 DONE 0.0s
+
+#82 [frontend runner 7/7] COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public
+#82 DONE 0.1s
+
+#83 [frontend] exporting to image
+#83 exporting layers
+#83 exporting layers 0.3s done
+#83 writing image sha256:950f3866b9f5031d4c2e2584e8bc3f08206a4bbb236d3d97f7aed11d98b99073
+#83 writing image sha256:950f3866b9f5031d4c2e2584e8bc3f08206a4bbb236d3d97f7aed11d98b99073 done
+#83 naming to docker.io/library/docteams-e2e-frontend done
+#83 DONE 0.3s
+
+#84 [frontend] resolving provenance for metadata file
+#84 DONE 0.0s
+ docteams-e2e-mock-idp  Built
+ docteams-e2e-backend  Built
+ docteams-e2e-frontend  Built
+ docteams-e2e-seed  Built
+ Network docteams-e2e_e2e-network  Creating
+ Network docteams-e2e_e2e-network  Created
+ Volume docteams-e2e_e2e_postgres_data  Creating
+ Volume docteams-e2e_e2e_postgres_data  Created
+ Volume docteams-e2e_e2e_localstack_data  Creating
+ Volume docteams-e2e_e2e_localstack_data  Created
+ Container e2e-mailpit  Creating
+ Container e2e-mock-idp  Creating
+ Container e2e-postgres  Creating
+ Container e2e-localstack  Creating
+ Container e2e-mailpit  Created
+ Container e2e-postgres  Created
+ Container e2e-localstack  Created
+ Container e2e-mock-idp  Created
+ Container e2e-backend  Creating
+ Container e2e-backend  Created
+ Container e2e-frontend  Creating
+ Container e2e-frontend  Created
+ Container e2e-seed  Creating
+ Container e2e-seed  Created
+ Container e2e-postgres  Starting
+ Container e2e-mailpit  Starting
+ Container e2e-mock-idp  Starting
+ Container e2e-localstack  Starting
+ Container e2e-postgres  Started
+ Container e2e-mock-idp  Started
+ Container e2e-mailpit  Started
+ Container e2e-localstack  Started
+ Container e2e-postgres  Waiting
+ Container e2e-localstack  Waiting
+ Container e2e-mock-idp  Waiting
+ Container e2e-mock-idp  Healthy
+ Container e2e-postgres  Healthy
+ Container e2e-localstack  Healthy
+ Container e2e-backend  Starting
+ Container e2e-backend  Started
+ Container e2e-backend  Waiting
+ Container e2e-backend  Healthy
+ Container e2e-frontend  Starting
+ Container e2e-frontend  Started
+ Container e2e-mock-idp  Waiting
+ Container e2e-backend  Waiting
+ Container e2e-frontend  Waiting
+ Container e2e-mock-idp  Healthy
+ Container e2e-backend  Healthy
+ Container e2e-frontend  Healthy
+ Container e2e-seed  Starting
+ Container e2e-seed  Started
+
+[2/3] Waiting for services to become healthy...
+  Backend (localhost:8081)... ready
+  Frontend (localhost:3001)... ready
+  Mock IDP (localhost:8090)... ready
+  Mailpit (localhost:8026)... ready
+
+[3/3] Waiting for seed to complete...
+  Seed completed (container exited)
+
+=== E2E Stack Ready ===
+
+  Frontend (mock auth):  http://localhost:3001
+  Mock login page:       http://localhost:3001/mock-login
+  Backend (e2e profile): http://localhost:8081
+  Mock IDP:              http://localhost:8090
+  Mailpit SMTP:          localhost:1026
+  Mailpit UI:            http://localhost:8026
+  Postgres:              localhost:5433 (user: postgres, pass: changeme, db: app)
+
+  Users: Alice (owner), Bob (admin), Carol (member)
+  Org:   e2e-test-org
+
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-642A/compose/docker-compose.e2e.yml logs -f backend frontend
+  Access DB:   docker exec -it e2e-postgres psql -U postgres -d app
+  Stop stack:  bash compose/scripts/e2e-down.sh
+  Reseed data: bash compose/scripts/e2e-reseed.sh
+

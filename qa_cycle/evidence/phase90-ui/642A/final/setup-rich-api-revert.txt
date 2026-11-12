@@ -1,0 +1,2 @@
+== revert: referred_by requiredForContexts -> []
+PATCH /api/field-definitions/e381d2f5-d4f5-4889-bc9f-535842f20332 -> HTTP 200 {"id":"e381d2f5-d4f5-4889-bc9f-535842f20332","entityType":"CUSTOMER","name":"Referred By","slug":"referred_by","fieldType":"TEXT","description":"Source of client referral for tracking","required":false,"defaultValue":null,"options":null,"va

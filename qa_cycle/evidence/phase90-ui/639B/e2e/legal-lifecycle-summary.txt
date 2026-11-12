@@ -1,1 +1,1 @@
-  105 passed (3.0m)
+  105 passed (2.9m)

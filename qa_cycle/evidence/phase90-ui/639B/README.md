@@ -1,6 +1,6 @@
 # 639B — own OBS: My Work "Time Breakdown" donut on the kit DonutChart
 
-Captured on the fresh :3001 mock stack, frontend image built from `ff41c7202` (final code head of PR #1764), after
+Captured on the fresh :3001 mock stack, frontend image built from `008e77020` (final code head of PR #1764), after
 E2E-LEGAL seeded time entries. Signed in as Alice (owner) at `/org/e2e-test-org/my-work`. The recharts presets
 (TrendAreaChart, BarChartPreset) have no live consumer in this slice: **recharts preset OBS carried by 640B**.
 

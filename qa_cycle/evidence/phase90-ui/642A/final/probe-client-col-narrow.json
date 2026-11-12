@@ -1,0 +1,154 @@
+{
+  "390x844": {
+    "clientThWidth": 16,
+    "clientThClass": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=che",
+    "clientTdWidth": 16,
+    "clientTdClass": "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] w-full max-w-0",
+    "headerOverlapsNext": true,
+    "clientHeaderLinkWidth": 65,
+    "linkWidths": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "namesVisibleChars": [
+      {
+        "name": "Acme Corp",
+        "clientW": 0,
+        "scrollW": 73
+      },
+      {
+        "name": "Apex Holdings mwdwiakrbc6a",
+        "clientW": 0,
+        "scrollW": 199
+      },
+      {
+        "name": "Khumalo Property Holdings mwdwiakrbc6a",
+        "clientW": 0,
+        "scrollW": 285
+      },
+      {
+        "name": "Sipho Ndlovu mwdwiakrbc6a",
+        "clientW": 0,
+        "scrollW": 191
+      }
+    ],
+    "tableWidth": 507,
+    "containerClientWidth": 356
+  },
+  "768x1024": {
+    "clientThWidth": 16,
+    "clientThClass": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=che",
+    "clientTdWidth": 16,
+    "clientTdClass": "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] w-full max-w-0",
+    "headerOverlapsNext": true,
+    "clientHeaderLinkWidth": 65,
+    "linkWidths": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "namesVisibleChars": [
+      {
+        "name": "Acme Corp",
+        "clientW": 0,
+        "scrollW": 73
+      },
+      {
+        "name": "Apex Holdings mwdwiakrbc6a",
+        "clientW": 0,
+        "scrollW": 199
+      },
+      {
+        "name": "Khumalo Property Holdings mwdwiakrbc6a",
+        "clientW": 0,
+        "scrollW": 285
+      },
+      {
+        "name": "Sipho Ndlovu mwdwiakrbc6a",
+        "clientW": 0,
+        "scrollW": 191
+      }
+    ],
+    "tableWidth": 507,
+    "containerClientWidth": 462
+  },
+  "1024x768": {
+    "clientThWidth": 227,
+    "clientThClass": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=che",
+    "clientTdWidth": 227,
+    "clientTdClass": "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] w-full max-w-0",
+    "headerOverlapsNext": false,
+    "clientHeaderLinkWidth": 65,
+    "linkWidths": [
+      73,
+      199,
+      211,
+      191
+    ],
+    "namesVisibleChars": [
+      {
+        "name": "Acme Corp",
+        "clientW": 73,
+        "scrollW": 73
+      },
+      {
+        "name": "Apex Holdings mwdwiakrbc6a",
+        "clientW": 199,
+        "scrollW": 199
+      },
+      {
+        "name": "Khumalo Property Holdings mwdwiakrbc6a",
+        "clientW": 211,
+        "scrollW": 285
+      },
+      {
+        "name": "Sipho Ndlovu mwdwiakrbc6a",
+        "clientW": 191,
+        "scrollW": 191
+      }
+    ],
+    "tableWidth": 718,
+    "containerClientWidth": 718
+  },
+  "1440x900": {
+    "clientThWidth": 309,
+    "clientThClass": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=che",
+    "clientTdWidth": 309,
+    "clientTdClass": "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] w-full max-w-0",
+    "headerOverlapsNext": false,
+    "clientHeaderLinkWidth": 65,
+    "linkWidths": [
+      73,
+      199,
+      285,
+      191
+    ],
+    "namesVisibleChars": [
+      {
+        "name": "Acme Corp",
+        "clientW": 73,
+        "scrollW": 73
+      },
+      {
+        "name": "Apex Holdings mwdwiakrbc6a",
+        "clientW": 199,
+        "scrollW": 199
+      },
+      {
+        "name": "Khumalo Property Holdings mwdwiakrbc6a",
+        "clientW": 285,
+        "scrollW": 285
+      },
+      {
+        "name": "Sipho Ndlovu mwdwiakrbc6a",
+        "clientW": 191,
+        "scrollW": 191
+      }
+    ],
+    "tableWidth": 1134,
+    "containerClientWidth": 1134
+  }
+}

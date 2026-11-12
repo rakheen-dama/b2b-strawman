@@ -1,0 +1,3414 @@
+{
+  "tag": "before-rich",
+  "startedAt": "2026-11-12T17:35:59.081Z",
+  "base": "http://localhost:3001",
+  "steps": {
+    "1-default": {
+      "url": "/org/e2e-test-org/clients",
+      "title": "Kazi — Practice management, built for Africa",
+      "h1": "Clients",
+      "h1Count": 1,
+      "subtitle": "6 clients",
+      "caption": "Clients — All clients",
+      "hasTable": true,
+      "rowCount": 6,
+      "rowNames": [
+        "Acme Corp",
+        "Bright Solutions",
+        "Carlos Mendez",
+        "Dormant Industries",
+        "Mkhize Family Trust",
+        "Zulu Prospect Holdings"
+      ],
+      "rowFica": [
+        "Done12 Nov 2026",
+        "Done12 Nov 2026",
+        "In progress",
+        "Done12 Nov 2026",
+        "Not started",
+        "Not started"
+      ],
+      "rowTypes": [
+        "Individual",
+        "Individual",
+        "Individual",
+        "Individual",
+        "Trust",
+        "Company"
+      ],
+      "rowCells": [
+        [
+          "Acme CorpIndividualCorporateVIP",
+          "Active",
+          "Done12 Nov 2026",
+          "2",
+          "R 8 625,00 · 1",
+          "R 0,00",
+          "0%",
+          "12 Nov 2026",
+          "contact@acme.example.com+1-555-0100",
+          "Client actions"
+        ],
+        [
+          "Bright SolutionsIndividualVIP",
+          "Active",
+          "Done12 Nov 2026",
+          "2",
+          "—",
+          "R 15 000,00",
+          "0%",
+          "12 Nov 2026",
+          "hello@brightsolutions.example.com+1-555-0200",
+          "Client actions"
+        ],
+        [
+          "Carlos MendezIndividual",
+          "Onboarding",
+          "In progress",
+          "1",
+          "—",
+          "R 0,00",
+          "0%",
+          "12 Nov 2026",
+          "carlos@mendez.example.com+1-555-0300",
+          "Client actions"
+        ],
+        [
+          "Dormant IndustriesIndividualEstate",
+          "Dormant",
+          "Done12 Nov 2026",
+          "1",
+          "—",
+          "R 2 500,00",
+          "0%",
+          "12 Nov 2026",
+          "info@dormant.example.com+1-555-0400",
+          "Client actions"
+        ],
+        [
+          "Mkhize Family TrustTrust",
+          "Prospect",
+          "Not started",
+          "0",
+          "—",
+          "R 0,00",
+          "0%",
+          "12 Nov 2026",
+          "trustees@mkhize.example.com+27 21 555 0199",
+          "Client actions"
+        ],
+        [
+          "Zulu Prospect HoldingsCompanyCorporateEstateLitigation+1",
+          "Prospect",
+          "Not started",
+          "0",
+          "—",
+          "R 0,00",
+          "100%",
+          "12 Nov 2026",
+          "info@zulu-prospect.example.com",
+          "Client actions"
+        ]
+      ],
+      "footer": "Showing 6 clients",
+      "headers": [
+        {
+          "text": "Client",
+          "arrow": "↑",
+          "visible": true,
+          "ariaSort": "ascending",
+          "sortHref": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] w-full max-w-0"
+        },
+        {
+          "text": "Lifecycle",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+        },
+        {
+          "text": "FICA",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+        },
+        {
+          "text": "Open matters",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc",
+          "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right hidden @min-[55rem]:table-cell"
+        },
+        {
+          "text": "Outstanding fee notes",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc",
+          "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right"
+        },
+        {
+          "text": "Trust balance",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc",
+          "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right"
+        },
+        {
+          "text": "Completeness",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/clients?sortBy=completeness&sortDir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @min-[50rem]:table-cell"
+        },
+        {
+          "text": "Created",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": "none",
+          "sortHref": "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc",
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @min-[61rem]:table-cell"
+        },
+        {
+          "text": "Contact",
+          "arrow": null,
+          "visible": false,
+          "ariaSort": null,
+          "sortHref": null,
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @min-[74rem]:table-cell"
+        },
+        {
+          "text": "Actions",
+          "arrow": null,
+          "visible": true,
+          "ariaSort": null,
+          "sortHref": null,
+          "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] w-10"
+        }
+      ],
+      "lifecyclePills": [
+        {
+          "label": "All",
+          "href": "/org/e2e-test-org/clients",
+          "active": true
+        },
+        {
+          "label": "Prospect",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT",
+          "active": false
+        },
+        {
+          "label": "Onboarding",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING",
+          "active": false
+        },
+        {
+          "label": "Active",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE",
+          "active": false
+        },
+        {
+          "label": "Dormant",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=DORMANT",
+          "active": false
+        },
+        {
+          "label": "Offboarding",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING",
+          "active": false
+        },
+        {
+          "label": "Offboarded",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED",
+          "active": false
+        }
+      ],
+      "lifecycleGroupPresent": true,
+      "showIncomplete": {
+        "tag": "a",
+        "href": "/org/e2e-test-org/clients?showIncomplete=true",
+        "active": false,
+        "title": null
+      },
+      "viewTabs": [
+        {
+          "name": "All clients",
+          "selected": true,
+          "system": true
+        },
+        {
+          "name": "Active",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "FICA outstanding",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "With trust balance",
+          "selected": false,
+          "system": true
+        }
+      ],
+      "filtersTrigger": "Filters",
+      "searchValue": "",
+      "emptyText": null,
+      "clearFiltersHref": null,
+      "emptyStateText": null,
+      "permissionDenied": null,
+      "rowShape": {
+        "ancestry": [
+          "tr[data-testid=client-row][data-slot=table-row]",
+          "tbody[data-slot=table-body]",
+          "table[data-testid=clients-table][data-slot=table]",
+          "div[data-slot=table-container]",
+          "div",
+          "div"
+        ],
+        "usesTable": true,
+        "rowTag": "tr",
+        "rowAttrs": {
+          "data-slot": "table-row",
+          "data-testid": "client-row"
+        },
+        "rowCursor": "pointer",
+        "rowTabIndex": -1,
+        "rowRole": null,
+        "cellCount": 10,
+        "linksInRow": [
+          {
+            "text": "Acme Corp",
+            "href": "/org/e2e-test-org/clients/eb77baa2-25b7-4650-b924-87251ac080c7",
+            "testid": "client-link"
+          }
+        ],
+        "buttonsInRow": [
+          {
+            "text": "Client actions",
+            "ariaLabel": null,
+            "haspopup": "menu",
+            "testid": "client-row-actions-trigger"
+          }
+        ],
+        "tree": {
+          "tag": "tr",
+          "data-testid": "client-row",
+          "data-slot": "table-row",
+          "children": [
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "div",
+                  "children": [
+                    {
+                      "tag": "a",
+                      "data-testid": "client-link",
+                      "href": "/org/e2e-test-org/clients/eb77baa2-25b7-4650-b924-87251ac080c7",
+                      "title": "Acme Corp",
+                      "text": "Acme Corp"
+                    },
+                    {
+                      "tag": "div",
+                      "children": [
+                        {
+                          "tag": "span",
+                          "data-testid": "client-type",
+                          "text": "Individual"
+                        },
+                        {
+                          "tag": "span",
+                          "data-slot": "badge",
+                          "text": "Corporate"
+                        },
+                        {
+                          "tag": "span",
+                          "data-slot": "badge",
+                          "text": "VIP"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "data-slot": "badge",
+                  "text": "Active"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "data-testid": "client-fica-status",
+                      "data-slot": "badge",
+                      "text": "Done"
+                    },
+                    {
+                      "tag": "span",
+                      "text": "12 Nov 2026"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "text": "2"
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "text": "R 8 625,00 · 1"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "text": "R 0,00"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "span",
+                  "data-slot": "badge",
+                  "text": "0%"
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "text": "12 Nov 2026"
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "div",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "title": "contact@acme.example.com",
+                      "text": "contact@acme.example.com"
+                    },
+                    {
+                      "tag": "span",
+                      "title": "+1-555-0100",
+                      "text": "+1-555-0100"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "td",
+              "data-slot": "table-cell",
+              "children": [
+                {
+                  "tag": "button",
+                  "data-testid": "client-row-actions-trigger",
+                  "data-slot": "dropdown-menu-trigger",
+                  "aria-haspopup": "menu",
+                  "children": [
+                    {
+                      "tag": "svg",
+                      "children": [
+                        {
+                          "tag": "circle"
+                        },
+                        {
+                          "tag": "circle"
+                        },
+                        {
+                          "tag": "circle"
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "span",
+                      "srOnly": true,
+                      "text": "Client actions"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "layout": {
+        "htmlClass": "light",
+        "viewport": {
+          "w": 1440,
+          "h": 900
+        },
+        "docScrollWidth": 1440,
+        "docClientWidth": 1440,
+        "pageScrollsSideways": false,
+        "mainWidth": 1184,
+        "table": {
+          "tableWidth": 1134,
+          "tableScrollWidth": 1134,
+          "containerSlot": "table-container",
+          "containerClientWidth": 1134,
+          "containerScrollWidth": 1134,
+          "containerOverflowX": "auto",
+          "tableScrollsSideways": false,
+          "overflowPx": 0,
+          "cqContainerWidth": 1134,
+          "firstScrollingAncestor": null,
+          "theadPosition": "static",
+          "thPosition": "static",
+          "lastHeaderRight": 1415,
+          "containerRight": 1415
+        }
+      },
+      "screenshot": "rich/01-default-1440-light.png",
+      "rowClickPlainCell": {
+        "clickedOn": "td[1] (Lifecycle cell)",
+        "expectedHref": "/org/e2e-test-org/clients/eb77baa2-25b7-4650-b924-87251ac080c7",
+        "navigates": true,
+        "navigatedTo": "/org/e2e-test-org/clients/eb77baa2-25b7-4650-b924-87251ac080c7"
+      },
+      "clientLinkClick": {
+        "url": "/org/e2e-test-org/clients/eb77baa2-25b7-4650-b924-87251ac080c7",
+        "h1": "Acme Corp"
+      },
+      "rowActions": {
+        "urlAfterOpen": "/org/e2e-test-org/clients",
+        "navigatedOnOpen": false,
+        "triggerAttrs": {
+          "haspopup": "menu",
+          "expanded": "true",
+          "srText": "Client actions"
+        },
+        "items": [
+          {
+            "text": "Open client",
+            "tag": "a",
+            "href": "/org/e2e-test-org/clients/eb77baa2-25b7-4650-b924-87251ac080c7"
+          }
+        ],
+        "screenshot": "rich/01-row-actions-menu-1440-light.png",
+        "openClientNavigatedTo": "/org/e2e-test-org/clients/eb77baa2-25b7-4650-b924-87251ac080c7"
+      }
+    },
+    "2-sort": [
+      {
+        "column": "Client",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc",
+        "ariaSortAtDefault": "ascending",
+        "firstClickHref": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc",
+        "first": {
+          "url": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Zulu Prospect Holdings",
+            "Mkhize Family Trust",
+            "Dormant Industries",
+            "Carlos Mendez",
+            "Bright Solutions",
+            "Acme Corp"
+          ],
+          "footer": "Showing 6 clients",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ]
+        },
+        "secondClickHref": "/org/e2e-test-org/clients?sortBy=name&sortDir=asc",
+        "second": {
+          "url": "/org/e2e-test-org/clients?sortBy=name&sortDir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients"
+        },
+        "thirdHref": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc",
+        "thirdColumnHref": {
+          "column": "FICA",
+          "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+        },
+        "otherAriaSort": [
+          [
+            "Lifecycle",
+            "none"
+          ],
+          [
+            "FICA",
+            "none"
+          ],
+          [
+            "Open matters",
+            "none"
+          ],
+          [
+            "Outstanding fee notes",
+            "none"
+          ],
+          [
+            "Trust balance",
+            "none"
+          ],
+          [
+            "Completeness",
+            "none"
+          ],
+          [
+            "Created",
+            "none"
+          ],
+          [
+            "Contact",
+            null
+          ],
+          [
+            "Actions",
+            null
+          ]
+        ]
+      },
+      {
+        "column": "Lifecycle",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc",
+        "ariaSortAtDefault": "none",
+        "firstClickHref": "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings",
+            "Carlos Mendez",
+            "Acme Corp",
+            "Bright Solutions",
+            "Dormant Industries"
+          ],
+          "footer": "Showing 6 clients",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ]
+        },
+        "secondClickHref": "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Dormant Industries",
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients"
+        },
+        "thirdHref": "/org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc",
+        "thirdColumnHref": {
+          "column": "FICA",
+          "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+        },
+        "otherAriaSort": [
+          [
+            "Client",
+            "none"
+          ],
+          [
+            "FICA",
+            "none"
+          ],
+          [
+            "Open matters",
+            "none"
+          ],
+          [
+            "Outstanding fee notes",
+            "none"
+          ],
+          [
+            "Trust balance",
+            "none"
+          ],
+          [
+            "Completeness",
+            "none"
+          ],
+          [
+            "Created",
+            "none"
+          ],
+          [
+            "Contact",
+            null
+          ],
+          [
+            "Actions",
+            null
+          ]
+        ]
+      },
+      {
+        "column": "FICA",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc",
+        "ariaSortAtDefault": "none",
+        "firstClickHref": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings",
+            "Carlos Mendez",
+            "Acme Corp",
+            "Bright Solutions",
+            "Dormant Industries"
+          ],
+          "footer": "Showing 6 clients",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ]
+        },
+        "secondClickHref": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Dormant Industries",
+            "Carlos Mendez",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients"
+        },
+        "thirdHref": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc",
+        "thirdColumnHref": {
+          "column": "FICA",
+          "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+        },
+        "otherAriaSort": [
+          [
+            "Client",
+            "none"
+          ],
+          [
+            "Lifecycle",
+            "none"
+          ],
+          [
+            "Open matters",
+            "none"
+          ],
+          [
+            "Outstanding fee notes",
+            "none"
+          ],
+          [
+            "Trust balance",
+            "none"
+          ],
+          [
+            "Completeness",
+            "none"
+          ],
+          [
+            "Created",
+            "none"
+          ],
+          [
+            "Contact",
+            null
+          ],
+          [
+            "Actions",
+            null
+          ]
+        ]
+      },
+      {
+        "column": "Open matters",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc",
+        "ariaSortAtDefault": "none",
+        "firstClickHref": "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Acme Corp",
+            "Bright Solutions"
+          ],
+          "footer": "Showing 6 clients",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ]
+        },
+        "secondClickHref": "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients"
+        },
+        "thirdHref": "/org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc",
+        "thirdColumnHref": {
+          "column": "FICA",
+          "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+        },
+        "otherAriaSort": [
+          [
+            "Client",
+            "none"
+          ],
+          [
+            "Lifecycle",
+            "none"
+          ],
+          [
+            "FICA",
+            "none"
+          ],
+          [
+            "Outstanding fee notes",
+            "none"
+          ],
+          [
+            "Trust balance",
+            "none"
+          ],
+          [
+            "Completeness",
+            "none"
+          ],
+          [
+            "Created",
+            "none"
+          ],
+          [
+            "Contact",
+            null
+          ],
+          [
+            "Actions",
+            null
+          ]
+        ]
+      },
+      {
+        "column": "Outstanding fee notes",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc",
+        "ariaSortAtDefault": "none",
+        "firstClickHref": "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings",
+            "Acme Corp"
+          ],
+          "footer": "Showing 6 clients",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ]
+        },
+        "secondClickHref": "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients"
+        },
+        "thirdHref": "/org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc",
+        "thirdColumnHref": {
+          "column": "FICA",
+          "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+        },
+        "otherAriaSort": [
+          [
+            "Client",
+            "none"
+          ],
+          [
+            "Lifecycle",
+            "none"
+          ],
+          [
+            "FICA",
+            "none"
+          ],
+          [
+            "Open matters",
+            "none"
+          ],
+          [
+            "Trust balance",
+            "none"
+          ],
+          [
+            "Completeness",
+            "none"
+          ],
+          [
+            "Created",
+            "none"
+          ],
+          [
+            "Contact",
+            null
+          ],
+          [
+            "Actions",
+            null
+          ]
+        ]
+      },
+      {
+        "column": "Trust balance",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc",
+        "ariaSortAtDefault": "none",
+        "firstClickHref": "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Acme Corp",
+            "Carlos Mendez",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings",
+            "Dormant Industries",
+            "Bright Solutions"
+          ],
+          "footer": "Showing 6 clients",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ]
+        },
+        "secondClickHref": "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Bright Solutions",
+            "Dormant Industries",
+            "Acme Corp",
+            "Carlos Mendez",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients"
+        },
+        "thirdHref": "/org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc",
+        "thirdColumnHref": {
+          "column": "FICA",
+          "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+        },
+        "otherAriaSort": [
+          [
+            "Client",
+            "none"
+          ],
+          [
+            "Lifecycle",
+            "none"
+          ],
+          [
+            "FICA",
+            "none"
+          ],
+          [
+            "Open matters",
+            "none"
+          ],
+          [
+            "Outstanding fee notes",
+            "none"
+          ],
+          [
+            "Completeness",
+            "none"
+          ],
+          [
+            "Created",
+            "none"
+          ],
+          [
+            "Contact",
+            null
+          ],
+          [
+            "Actions",
+            null
+          ]
+        ]
+      },
+      {
+        "column": "Completeness",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/clients?sortBy=completeness&sortDir=asc",
+        "ariaSortAtDefault": "none",
+        "firstClickHref": "/org/e2e-test-org/clients?sortBy=completeness&sortDir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/clients?sortBy=completeness&sortDir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ]
+        },
+        "secondClickHref": "/org/e2e-test-org/clients?sortBy=completeness&sortDir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/clients?sortBy=completeness&sortDir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Zulu Prospect Holdings",
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust"
+          ],
+          "footer": "Showing 6 clients"
+        },
+        "thirdHref": "/org/e2e-test-org/clients?sortBy=completeness&sortDir=asc",
+        "thirdColumnHref": {
+          "column": "FICA",
+          "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+        },
+        "otherAriaSort": [
+          [
+            "Client",
+            "none"
+          ],
+          [
+            "Lifecycle",
+            "none"
+          ],
+          [
+            "FICA",
+            "none"
+          ],
+          [
+            "Open matters",
+            "none"
+          ],
+          [
+            "Outstanding fee notes",
+            "none"
+          ],
+          [
+            "Trust balance",
+            "none"
+          ],
+          [
+            "Created",
+            "none"
+          ],
+          [
+            "Contact",
+            null
+          ],
+          [
+            "Actions",
+            null
+          ]
+        ]
+      },
+      {
+        "column": "Created",
+        "visibleAtDefault": true,
+        "defaultHref": "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc",
+        "ariaSortAtDefault": "none",
+        "firstClickHref": "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc",
+        "first": {
+          "url": "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc",
+          "ariaSort": "ascending",
+          "arrow": "↑",
+          "visibleWhenActive": true,
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Zulu Prospect Holdings",
+            "Mkhize Family Trust"
+          ],
+          "footer": "Showing 6 clients",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ]
+        },
+        "secondClickHref": "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=desc",
+        "second": {
+          "url": "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=desc",
+          "ariaSort": "descending",
+          "arrow": "↓",
+          "rowNames": [
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings",
+            "Dormant Industries",
+            "Carlos Mendez",
+            "Bright Solutions",
+            "Acme Corp"
+          ],
+          "footer": "Showing 6 clients"
+        },
+        "thirdHref": "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc",
+        "thirdColumnHref": {
+          "column": "FICA",
+          "href": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc"
+        },
+        "otherAriaSort": [
+          [
+            "Client",
+            "none"
+          ],
+          [
+            "Lifecycle",
+            "none"
+          ],
+          [
+            "FICA",
+            "none"
+          ],
+          [
+            "Open matters",
+            "none"
+          ],
+          [
+            "Outstanding fee notes",
+            "none"
+          ],
+          [
+            "Trust balance",
+            "none"
+          ],
+          [
+            "Completeness",
+            "none"
+          ],
+          [
+            "Contact",
+            null
+          ],
+          [
+            "Actions",
+            null
+          ]
+        ]
+      }
+    ],
+    "3-views": {
+      "tabsAtDefault": [
+        {
+          "name": "All clients",
+          "selected": true,
+          "system": true
+        },
+        {
+          "name": "Active",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "FICA outstanding",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "With trust balance",
+          "selected": false,
+          "system": true
+        }
+      ],
+      "createDialogTitles": [
+        "Configure Filters",
+        "Select Columns",
+        "Name Your View"
+      ],
+      "createDialogStep1": {
+        "dialogTop": -169,
+        "dialogBottom": 1070,
+        "viewportH": 900,
+        "nextInViewport": false,
+        "overflowY": "visible",
+        "carriedFilters": null,
+        "labels": [
+          "Tags",
+          "Custom Fields",
+          "Company Registration Number",
+          "SA ID Number",
+          "Passport Number",
+          "ID / Passport Number",
+          "Entity Type",
+          "Risk Rating",
+          "Postal Address",
+          "Preferred Correspondence",
+          "Referred By",
+          "Date Range",
+          "Search"
+        ]
+      },
+      "createDialogStep1Screenshot": "rich/03-save-view-dialog-step1-1440-light.png",
+      "createDialogStep2Columns": [
+        {
+          "label": "Client",
+          "checked": true
+        },
+        {
+          "label": "Lifecycle",
+          "checked": true
+        },
+        {
+          "label": "FICA",
+          "checked": true
+        },
+        {
+          "label": "Open matters",
+          "checked": true
+        },
+        {
+          "label": "Outstanding fee notes",
+          "checked": true
+        },
+        {
+          "label": "Trust balance",
+          "checked": true
+        },
+        {
+          "label": "Completeness",
+          "checked": true
+        },
+        {
+          "label": "Created",
+          "checked": true
+        },
+        {
+          "label": "Contact",
+          "checked": true
+        },
+        {
+          "label": "Company Registration Number(custom)",
+          "checked": false
+        },
+        {
+          "label": "SA ID Number(custom)",
+          "checked": false
+        },
+        {
+          "label": "Passport Number(custom)",
+          "checked": false
+        },
+        {
+          "label": "ID / Passport Number(custom)",
+          "checked": false
+        },
+        {
+          "label": "Entity Type(custom)",
+          "checked": false
+        },
+        {
+          "label": "Risk Rating(custom)",
+          "checked": false
+        },
+        {
+          "label": "Postal Address(custom)",
+          "checked": false
+        },
+        {
+          "label": "Preferred Correspondence(custom)",
+          "checked": false
+        },
+        {
+          "label": "Referred By(custom)",
+          "checked": false
+        }
+      ],
+      "createDialogStep2Screenshot": "rich/03-save-view-dialog-step2-1440-light.png",
+      "createdView": "OBS 642A view (started on All clients, default columns, not shared) — created via Save View dialog",
+      "urlAfterCreate": "/org/e2e-test-org/clients",
+      "tabsAfterCreate": [
+        {
+          "name": "All clients",
+          "selected": true,
+          "system": true
+        },
+        {
+          "name": "Active",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "FICA outstanding",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "With trust balance",
+          "selected": false,
+          "system": true
+        },
+        {
+          "name": "OBS 642A view",
+          "selected": false,
+          "system": false
+        }
+      ],
+      "switches": [
+        {
+          "tab": "All clients",
+          "system": true,
+          "url": "/org/e2e-test-org/clients",
+          "caption": "Clients — All clients",
+          "selectedTab": "All clients",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients",
+          "subtitle": "6 clients",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "headers": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ],
+          "lifecycleGroupPresent": true,
+          "lifecyclePills": [
+            {
+              "label": "All",
+              "href": "/org/e2e-test-org/clients",
+              "active": true
+            },
+            {
+              "label": "Prospect",
+              "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT",
+              "active": false
+            },
+            {
+              "label": "Onboarding",
+              "href": "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING",
+              "active": false
+            },
+            {
+              "label": "Active",
+              "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE",
+              "active": false
+            },
+            {
+              "label": "Dormant",
+              "href": "/org/e2e-test-org/clients?lifecycleStatus=DORMANT",
+              "active": false
+            },
+            {
+              "label": "Offboarding",
+              "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING",
+              "active": false
+            },
+            {
+              "label": "Offboarded",
+              "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED",
+              "active": false
+            }
+          ],
+          "showIncomplete": {
+            "tag": "a",
+            "href": "/org/e2e-test-org/clients?showIncomplete=true",
+            "active": false,
+            "title": null
+          },
+          "filtersTrigger": "Filters"
+        },
+        {
+          "tab": "Active",
+          "system": true,
+          "url": "/org/e2e-test-org/clients?view=system%3Aactive",
+          "caption": "Clients — Active",
+          "selectedTab": "Active",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions"
+          ],
+          "footer": "Showing 2 clients",
+          "subtitle": "2 clients",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "headers": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ],
+          "lifecycleGroupPresent": true,
+          "lifecyclePills": [
+            {
+              "label": "All",
+              "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ALL",
+              "active": false
+            },
+            {
+              "label": "Prospect",
+              "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=PROSPECT",
+              "active": false
+            },
+            {
+              "label": "Onboarding",
+              "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ONBOARDING",
+              "active": false
+            },
+            {
+              "label": "Active",
+              "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ACTIVE",
+              "active": true
+            },
+            {
+              "label": "Dormant",
+              "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=DORMANT",
+              "active": false
+            },
+            {
+              "label": "Offboarding",
+              "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=OFFBOARDING",
+              "active": false
+            },
+            {
+              "label": "Offboarded",
+              "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=OFFBOARDED",
+              "active": false
+            }
+          ],
+          "showIncomplete": {
+            "tag": "a",
+            "href": "/org/e2e-test-org/clients?view=system%3Aactive&showIncomplete=true",
+            "active": false,
+            "title": null
+          },
+          "filtersTrigger": "Filters"
+        },
+        {
+          "tab": "FICA outstanding",
+          "system": true,
+          "url": "/org/e2e-test-org/clients?view=system%3Afica-outstanding",
+          "caption": "Clients — FICA outstanding",
+          "selectedTab": "FICA outstanding",
+          "rowNames": [
+            "Carlos Mendez",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 3 clients",
+          "subtitle": "3 clients",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "headers": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ],
+          "lifecycleGroupPresent": true,
+          "lifecyclePills": [
+            {
+              "label": "All",
+              "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding",
+              "active": true
+            },
+            {
+              "label": "Prospect",
+              "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding&lifecycleStatus=PROSPECT",
+              "active": false
+            },
+            {
+              "label": "Onboarding",
+              "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding&lifecycleStatus=ONBOARDING",
+              "active": false
+            },
+            {
+              "label": "Active",
+              "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding&lifecycleStatus=ACTIVE",
+              "active": false
+            },
+            {
+              "label": "Dormant",
+              "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding&lifecycleStatus=DORMANT",
+              "active": false
+            },
+            {
+              "label": "Offboarding",
+              "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding&lifecycleStatus=OFFBOARDING",
+              "active": false
+            },
+            {
+              "label": "Offboarded",
+              "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding&lifecycleStatus=OFFBOARDED",
+              "active": false
+            }
+          ],
+          "showIncomplete": {
+            "tag": "a",
+            "href": "/org/e2e-test-org/clients?view=system%3Afica-outstanding&showIncomplete=true",
+            "active": false,
+            "title": null
+          },
+          "filtersTrigger": "Filters"
+        },
+        {
+          "tab": "With trust balance",
+          "system": true,
+          "url": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance",
+          "caption": "Clients — With trust balance",
+          "selectedTab": "With trust balance",
+          "rowNames": [
+            "Bright Solutions",
+            "Dormant Industries"
+          ],
+          "footer": "Showing 2 clients",
+          "subtitle": "2 clients",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "headers": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ],
+          "lifecycleGroupPresent": true,
+          "lifecyclePills": [
+            {
+              "label": "All",
+              "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance",
+              "active": true
+            },
+            {
+              "label": "Prospect",
+              "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance&lifecycleStatus=PROSPECT",
+              "active": false
+            },
+            {
+              "label": "Onboarding",
+              "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance&lifecycleStatus=ONBOARDING",
+              "active": false
+            },
+            {
+              "label": "Active",
+              "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance&lifecycleStatus=ACTIVE",
+              "active": false
+            },
+            {
+              "label": "Dormant",
+              "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance&lifecycleStatus=DORMANT",
+              "active": false
+            },
+            {
+              "label": "Offboarding",
+              "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance&lifecycleStatus=OFFBOARDING",
+              "active": false
+            },
+            {
+              "label": "Offboarded",
+              "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance&lifecycleStatus=OFFBOARDED",
+              "active": false
+            }
+          ],
+          "showIncomplete": {
+            "tag": "a",
+            "href": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance&showIncomplete=true",
+            "active": false,
+            "title": null
+          },
+          "filtersTrigger": "Filters"
+        },
+        {
+          "tab": "OBS 642A view",
+          "system": false,
+          "url": "/org/e2e-test-org/clients?view=8ef586c4-cab0-40ea-814b-3db5531bbe20",
+          "caption": "Clients — OBS 642A view",
+          "selectedTab": "OBS 642A view",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "footer": "Showing 6 clients",
+          "subtitle": "6 clients",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "headers": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Contact",
+            "Actions"
+          ],
+          "lifecycleGroupPresent": false,
+          "lifecyclePills": [],
+          "showIncomplete": {
+            "tag": "a",
+            "href": "/org/e2e-test-org/clients?view=8ef586c4-cab0-40ea-814b-3db5531bbe20&showIncomplete=true",
+            "active": false,
+            "title": null
+          },
+          "filtersTrigger": null
+        }
+      ],
+      "savedViewLayout": {
+        "htmlClass": "light",
+        "viewport": {
+          "w": 1440,
+          "h": 900
+        },
+        "docScrollWidth": 1440,
+        "docClientWidth": 1440,
+        "pageScrollsSideways": false,
+        "mainWidth": 1184,
+        "table": {
+          "tableWidth": 1134,
+          "tableScrollWidth": 1134,
+          "containerSlot": "table-container",
+          "containerClientWidth": 1134,
+          "containerScrollWidth": 1134,
+          "containerOverflowX": "auto",
+          "tableScrollsSideways": false,
+          "overflowPx": 0,
+          "cqContainerWidth": 1134,
+          "firstScrollingAncestor": null,
+          "theadPosition": "static",
+          "thPosition": "static",
+          "lastHeaderRight": 1415,
+          "containerRight": 1415
+        }
+      },
+      "tagsDrop": [
+        {
+          "switchTo": "FICA outstanding",
+          "system": true,
+          "urlBefore": "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc",
+          "rowNamesBefore": [
+            "Bright Solutions",
+            "Acme Corp"
+          ],
+          "filtersTriggerBefore": "Filters1",
+          "emptyBefore": null,
+          "activePillBefore": "Active",
+          "urlAfter": "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc&view=system%3Afica-outstanding",
+          "rowNamesAfter": [],
+          "footerAfter": null,
+          "emptyAfter": "No clients match this view.\n\nClear filters",
+          "filtersTriggerAfter": "Filters1",
+          "lifecycleGroupAfter": true,
+          "selectedTabAfter": "FICA outstanding"
+        },
+        {
+          "switchTo": "All clients",
+          "system": true,
+          "urlBefore": "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc",
+          "rowNamesBefore": [
+            "Bright Solutions",
+            "Acme Corp"
+          ],
+          "filtersTriggerBefore": "Filters1",
+          "emptyBefore": null,
+          "activePillBefore": "Active",
+          "urlAfter": "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc",
+          "rowNamesAfter": [
+            "Bright Solutions",
+            "Acme Corp"
+          ],
+          "footerAfter": "Showing 2 clients",
+          "emptyAfter": null,
+          "filtersTriggerAfter": "Filters1",
+          "lifecycleGroupAfter": true,
+          "selectedTabAfter": "All clients"
+        },
+        {
+          "switchTo": "OBS 642A view",
+          "system": false,
+          "urlBefore": "/org/e2e-test-org/clients?tags=vip&lifecycleStatus=ACTIVE&sortBy=createdAt&sortDir=desc",
+          "rowNamesBefore": [
+            "Bright Solutions",
+            "Acme Corp"
+          ],
+          "filtersTriggerBefore": "Filters1",
+          "emptyBefore": null,
+          "activePillBefore": "Active",
+          "urlAfter": "/org/e2e-test-org/clients?sortBy=createdAt&sortDir=desc&view=8ef586c4-cab0-40ea-814b-3db5531bbe20",
+          "rowNamesAfter": [
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings",
+            "Dormant Industries",
+            "Carlos Mendez",
+            "Bright Solutions",
+            "Acme Corp"
+          ],
+          "footerAfter": "Showing 6 clients",
+          "emptyAfter": null,
+          "filtersTriggerAfter": null,
+          "lifecycleGroupAfter": false,
+          "selectedTabAfter": "OBS 642A view"
+        }
+      ],
+      "screenshot": "rich/03-view-switch-1440-light.png"
+    },
+    "4-lifecycle": {
+      "results": [
+        {
+          "pill": "All",
+          "href": "/org/e2e-test-org/clients",
+          "url": "/org/e2e-test-org/clients",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions",
+            "Carlos Mendez",
+            "Dormant Industries",
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "rowFica": [
+            "Done12 Nov 2026",
+            "Done12 Nov 2026",
+            "In progress",
+            "Done12 Nov 2026",
+            "Not started",
+            "Not started"
+          ],
+          "footer": "Showing 6 clients",
+          "subtitle": "6 clients",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "lifecycleCells": [
+            "Active",
+            "Active",
+            "Onboarding",
+            "Dormant",
+            "Prospect",
+            "Prospect"
+          ],
+          "activePill": "All"
+        },
+        {
+          "pill": "Prospect",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT",
+          "url": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT",
+          "rowNames": [
+            "Mkhize Family Trust",
+            "Zulu Prospect Holdings"
+          ],
+          "rowFica": [
+            "Not started",
+            "Not started"
+          ],
+          "footer": "Showing 2 clients",
+          "subtitle": "2 clients",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "lifecycleCells": [
+            "Prospect",
+            "Prospect"
+          ],
+          "activePill": "Prospect"
+        },
+        {
+          "pill": "Onboarding",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING",
+          "url": "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING",
+          "rowNames": [
+            "Carlos Mendez"
+          ],
+          "rowFica": [
+            "In progress"
+          ],
+          "footer": "Showing 1 client",
+          "subtitle": "1 client",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "lifecycleCells": [
+            "Onboarding"
+          ],
+          "activePill": "Onboarding"
+        },
+        {
+          "pill": "Active",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE",
+          "url": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE",
+          "rowNames": [
+            "Acme Corp",
+            "Bright Solutions"
+          ],
+          "rowFica": [
+            "Done12 Nov 2026",
+            "Done12 Nov 2026"
+          ],
+          "footer": "Showing 2 clients",
+          "subtitle": "2 clients",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "lifecycleCells": [
+            "Active",
+            "Active"
+          ],
+          "activePill": "Active"
+        },
+        {
+          "pill": "Dormant",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=DORMANT",
+          "url": "/org/e2e-test-org/clients?lifecycleStatus=DORMANT",
+          "rowNames": [
+            "Dormant Industries"
+          ],
+          "rowFica": [
+            "Done12 Nov 2026"
+          ],
+          "footer": "Showing 1 client",
+          "subtitle": "1 client",
+          "emptyText": null,
+          "emptyStateText": null,
+          "clearFiltersHref": null,
+          "lifecycleCells": [
+            "Dormant"
+          ],
+          "activePill": "Dormant"
+        },
+        {
+          "pill": "Offboarding",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING",
+          "url": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING",
+          "rowNames": [],
+          "rowFica": [],
+          "footer": null,
+          "subtitle": "0 clients",
+          "emptyText": "No clients match this view.\n\nClear filters",
+          "emptyStateText": null,
+          "clearFiltersHref": "/org/e2e-test-org/clients",
+          "lifecycleCells": null,
+          "activePill": "Offboarding"
+        },
+        {
+          "pill": "Offboarded",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED",
+          "url": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED",
+          "rowNames": [],
+          "rowFica": [],
+          "footer": null,
+          "subtitle": "0 clients",
+          "emptyText": "No clients match this view.\n\nClear filters",
+          "emptyStateText": null,
+          "clearFiltersHref": "/org/e2e-test-org/clients",
+          "lifecycleCells": null,
+          "activePill": "Offboarded"
+        }
+      ],
+      "pillsAtDefault": [
+        {
+          "label": "All",
+          "href": "/org/e2e-test-org/clients",
+          "active": true
+        },
+        {
+          "label": "Prospect",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT",
+          "active": false
+        },
+        {
+          "label": "Onboarding",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING",
+          "active": false
+        },
+        {
+          "label": "Active",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE",
+          "active": false
+        },
+        {
+          "label": "Dormant",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=DORMANT",
+          "active": false
+        },
+        {
+          "label": "Offboarding",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING",
+          "active": false
+        },
+        {
+          "label": "Offboarded",
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED",
+          "active": false
+        }
+      ],
+      "showIncompleteAtDefault": {
+        "tag": "a",
+        "href": "/org/e2e-test-org/clients?showIncomplete=true",
+        "active": false,
+        "title": null
+      },
+      "showIncompleteOn": {
+        "url": "/org/e2e-test-org/clients?showIncomplete=true",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust"
+        ],
+        "rowFica": [
+          "Done12 Nov 2026",
+          "Done12 Nov 2026",
+          "In progress",
+          "Done12 Nov 2026",
+          "Not started"
+        ],
+        "footer": "Showing 5 clients",
+        "subtitle": "5 clients",
+        "emptyText": null,
+        "emptyStateText": null,
+        "toggle": {
+          "tag": "a",
+          "href": "/org/e2e-test-org/clients",
+          "active": true,
+          "title": null
+        },
+        "completenessCells": [
+          "0%",
+          "0%",
+          "0%",
+          "0%",
+          "0%"
+        ],
+        "screenshot": "rich/04-show-incomplete-1440-light.png"
+      },
+      "showIncompleteOff": {
+        "url": "/org/e2e-test-org/clients"
+      },
+      "onActiveView": {
+        "url": "/org/e2e-test-org/clients?view=system%3Aactive",
+        "pills": [
+          {
+            "label": "All",
+            "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ALL",
+            "active": false
+          },
+          {
+            "label": "Prospect",
+            "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=PROSPECT",
+            "active": false
+          },
+          {
+            "label": "Onboarding",
+            "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ONBOARDING",
+            "active": false
+          },
+          {
+            "label": "Active",
+            "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ACTIVE",
+            "active": true
+          },
+          {
+            "label": "Dormant",
+            "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=DORMANT",
+            "active": false
+          },
+          {
+            "label": "Offboarding",
+            "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=OFFBOARDING",
+            "active": false
+          },
+          {
+            "label": "Offboarded",
+            "href": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=OFFBOARDED",
+            "active": false
+          }
+        ],
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions"
+        ]
+      },
+      "onActiveViewClickAll": {
+        "url": "/org/e2e-test-org/clients?view=system%3Aactive&lifecycleStatus=ALL",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings"
+        ],
+        "footer": "Showing 6 clients",
+        "activePill": "All",
+        "selectedTab": "Active"
+      }
+    },
+    "5-search": {
+      "term": "Acme",
+      "termMatchesAll": false,
+      "placeholder": "Search clients…",
+      "searchRegionLabel": "Search clients",
+      "match": {
+        "url": "/org/e2e-test-org/clients?search=Acme",
+        "title": "Kazi — Practice management, built for Africa",
+        "h1": "Clients",
+        "h1Count": 1,
+        "subtitle": "1 client",
+        "caption": "Clients — All clients",
+        "hasTable": true,
+        "rowCount": 1,
+        "rowNames": [
+          "Acme Corp"
+        ],
+        "rowFica": [
+          "Done12 Nov 2026"
+        ],
+        "rowTypes": [
+          "Individual"
+        ],
+        "rowCells": [
+          [
+            "Acme CorpIndividualCorporateVIP",
+            "Active",
+            "Done12 Nov 2026",
+            "2",
+            "R 8 625,00 · 1",
+            "R 0,00",
+            "0%",
+            "12 Nov 2026",
+            "contact@acme.example.com+1-555-0100",
+            "Client actions"
+          ]
+        ],
+        "footer": "Showing 1 client",
+        "headers": [
+          {
+            "text": "Client",
+            "arrow": "↑",
+            "visible": true,
+            "ariaSort": "ascending",
+            "sortHref": "/org/e2e-test-org/clients?search=Acme&sortBy=name&sortDir=desc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] w-full max-w-0"
+          },
+          {
+            "text": "Lifecycle",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/clients?search=Acme&sortBy=lifecycleStatus&sortDir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          },
+          {
+            "text": "FICA",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/clients?search=Acme&sortBy=ficaStatus&sortDir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          },
+          {
+            "text": "Open matters",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/clients?search=Acme&sortBy=openMatterCount&sortDir=asc",
+            "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right hidden @min-[55rem]:table-cell"
+          },
+          {
+            "text": "Outstanding fee notes",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/clients?search=Acme&sortBy=outstanding&sortDir=asc",
+            "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right"
+          },
+          {
+            "text": "Trust balance",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/clients?search=Acme&sortBy=trustBalance&sortDir=asc",
+            "className": "text-muted-foreground h-10 px-2 align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-right"
+          },
+          {
+            "text": "Completeness",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/clients?search=Acme&sortBy=completeness&sortDir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @min-[50rem]:table-cell"
+          },
+          {
+            "text": "Created",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": "none",
+            "sortHref": "/org/e2e-test-org/clients?search=Acme&sortBy=createdAt&sortDir=asc",
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @min-[61rem]:table-cell"
+          },
+          {
+            "text": "Contact",
+            "arrow": null,
+            "visible": false,
+            "ariaSort": null,
+            "sortHref": null,
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] hidden @min-[74rem]:table-cell"
+          },
+          {
+            "text": "Actions",
+            "arrow": null,
+            "visible": true,
+            "ariaSort": null,
+            "sortHref": null,
+            "className": "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium tracking-wider whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] w-10"
+          }
+        ],
+        "lifecyclePills": [
+          {
+            "label": "All",
+            "href": "/org/e2e-test-org/clients?search=Acme",
+            "active": true
+          },
+          {
+            "label": "Prospect",
+            "href": "/org/e2e-test-org/clients?search=Acme&lifecycleStatus=PROSPECT",
+            "active": false
+          },
+          {
+            "label": "Onboarding",
+            "href": "/org/e2e-test-org/clients?search=Acme&lifecycleStatus=ONBOARDING",
+            "active": false
+          },
+          {
+            "label": "Active",
+            "href": "/org/e2e-test-org/clients?search=Acme&lifecycleStatus=ACTIVE",
+            "active": false
+          },
+          {
+            "label": "Dormant",
+            "href": "/org/e2e-test-org/clients?search=Acme&lifecycleStatus=DORMANT",
+            "active": false
+          },
+          {
+            "label": "Offboarding",
+            "href": "/org/e2e-test-org/clients?search=Acme&lifecycleStatus=OFFBOARDING",
+            "active": false
+          },
+          {
+            "label": "Offboarded",
+            "href": "/org/e2e-test-org/clients?search=Acme&lifecycleStatus=OFFBOARDED",
+            "active": false
+          }
+        ],
+        "lifecycleGroupPresent": true,
+        "showIncomplete": {
+          "tag": "a",
+          "href": "/org/e2e-test-org/clients?search=Acme&showIncomplete=true",
+          "active": false,
+          "title": null
+        },
+        "viewTabs": [
+          {
+            "name": "All clients",
+            "selected": true,
+            "system": true
+          },
+          {
+            "name": "Active",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "FICA outstanding",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "With trust balance",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "OBS 642A view",
+            "selected": false,
+            "system": false
+          }
+        ],
+        "filtersTrigger": "Filters",
+        "searchValue": "Acme",
+        "emptyText": null,
+        "clearFiltersHref": null,
+        "emptyStateText": null,
+        "permissionDenied": null,
+        "screenshot": "rich/05-search-match-1440-light.png"
+      },
+      "emailTerm": "contact",
+      "emailMatch": {
+        "url": "/org/e2e-test-org/clients?search=contact",
+        "rowNames": [
+          "Acme Corp"
+        ],
+        "footer": "Showing 1 client"
+      },
+      "noMatch": {
+        "url": "/org/e2e-test-org/clients?search=zzqx-no-such-client",
+        "title": "Kazi — Practice management, built for Africa",
+        "h1": "Clients",
+        "h1Count": 1,
+        "subtitle": "0 clients",
+        "caption": null,
+        "hasTable": false,
+        "rowCount": 0,
+        "rowNames": [],
+        "rowFica": [],
+        "rowTypes": [],
+        "rowCells": [],
+        "footer": null,
+        "headers": [],
+        "lifecyclePills": [
+          {
+            "label": "All",
+            "href": "/org/e2e-test-org/clients?search=zzqx-no-such-client",
+            "active": true
+          },
+          {
+            "label": "Prospect",
+            "href": "/org/e2e-test-org/clients?search=zzqx-no-such-client&lifecycleStatus=PROSPECT",
+            "active": false
+          },
+          {
+            "label": "Onboarding",
+            "href": "/org/e2e-test-org/clients?search=zzqx-no-such-client&lifecycleStatus=ONBOARDING",
+            "active": false
+          },
+          {
+            "label": "Active",
+            "href": "/org/e2e-test-org/clients?search=zzqx-no-such-client&lifecycleStatus=ACTIVE",
+            "active": false
+          },
+          {
+            "label": "Dormant",
+            "href": "/org/e2e-test-org/clients?search=zzqx-no-such-client&lifecycleStatus=DORMANT",
+            "active": false
+          },
+          {
+            "label": "Offboarding",
+            "href": "/org/e2e-test-org/clients?search=zzqx-no-such-client&lifecycleStatus=OFFBOARDING",
+            "active": false
+          },
+          {
+            "label": "Offboarded",
+            "href": "/org/e2e-test-org/clients?search=zzqx-no-such-client&lifecycleStatus=OFFBOARDED",
+            "active": false
+          }
+        ],
+        "lifecycleGroupPresent": true,
+        "showIncomplete": {
+          "tag": "a",
+          "href": "/org/e2e-test-org/clients?search=zzqx-no-such-client&showIncomplete=true",
+          "active": false,
+          "title": null
+        },
+        "viewTabs": [
+          {
+            "name": "All clients",
+            "selected": true,
+            "system": true
+          },
+          {
+            "name": "Active",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "FICA outstanding",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "With trust balance",
+            "selected": false,
+            "system": true
+          },
+          {
+            "name": "OBS 642A view",
+            "selected": false,
+            "system": false
+          }
+        ],
+        "filtersTrigger": "Filters",
+        "searchValue": "zzqx-no-such-client",
+        "emptyText": "No clients match this view.\n\nClear filters",
+        "clearFiltersHref": "/org/e2e-test-org/clients",
+        "emptyStateText": null,
+        "permissionDenied": null,
+        "screenshot": "rich/05-search-empty-1440-light.png"
+      },
+      "afterClearFilters": {
+        "url": "/org/e2e-test-org/clients",
+        "rowCount": 6,
+        "footer": "Showing 6 clients",
+        "searchValue": ""
+      }
+    },
+    "6-filter-sheet": {
+      "triggerPresent": true,
+      "triggerText": "Filters",
+      "sheet": {
+        "title": "Filter clients",
+        "description": "Show only clients carrying every selected tag.",
+        "labels": [
+          "Tags"
+        ],
+        "buttons": [
+          "Add Tag",
+          "Clear",
+          "Apply",
+          "Close"
+        ],
+        "inputs": []
+      },
+      "sheetScreenshot": "rich/06-filter-sheet-1440-light.png",
+      "tagOptions": [
+        "Corporate",
+        "Estate",
+        "Litigation",
+        "VIP"
+      ],
+      "pickedTag": "Corporate",
+      "applied": {
+        "url": "/org/e2e-test-org/clients?tags=corporate",
+        "rowNames": [
+          "Acme Corp",
+          "Zulu Prospect Holdings"
+        ],
+        "footer": "Showing 2 clients",
+        "filtersTrigger": "Filters1",
+        "emptyText": null,
+        "pills": [
+          "/org/e2e-test-org/clients?tags=corporate",
+          "/org/e2e-test-org/clients?tags=corporate&lifecycleStatus=PROSPECT",
+          "/org/e2e-test-org/clients?tags=corporate&lifecycleStatus=ONBOARDING",
+          "/org/e2e-test-org/clients?tags=corporate&lifecycleStatus=ACTIVE",
+          "/org/e2e-test-org/clients?tags=corporate&lifecycleStatus=DORMANT",
+          "/org/e2e-test-org/clients?tags=corporate&lifecycleStatus=OFFBOARDING",
+          "/org/e2e-test-org/clients?tags=corporate&lifecycleStatus=OFFBOARDED"
+        ],
+        "showIncompleteHref": "/org/e2e-test-org/clients?tags=corporate&showIncomplete=true",
+        "sortHrefs": [
+          "/org/e2e-test-org/clients?tags=corporate&sortBy=name&sortDir=desc",
+          "/org/e2e-test-org/clients?tags=corporate&sortBy=lifecycleStatus&sortDir=asc",
+          "/org/e2e-test-org/clients?tags=corporate&sortBy=ficaStatus&sortDir=asc",
+          "/org/e2e-test-org/clients?tags=corporate&sortBy=openMatterCount&sortDir=asc",
+          "/org/e2e-test-org/clients?tags=corporate&sortBy=outstanding&sortDir=asc",
+          "/org/e2e-test-org/clients?tags=corporate&sortBy=trustBalance&sortDir=asc",
+          "/org/e2e-test-org/clients?tags=corporate&sortBy=completeness&sortDir=asc",
+          "/org/e2e-test-org/clients?tags=corporate&sortBy=createdAt&sortDir=asc"
+        ]
+      },
+      "appliedScreenshot": "rich/06-filter-applied-1440-light.png",
+      "appliedPlusIncomplete": {
+        "url": "/org/e2e-test-org/clients?tags=corporate&showIncomplete=true",
+        "rowNames": [
+          "Acme Corp"
+        ],
+        "footer": "Showing 1 client",
+        "emptyText": null,
+        "emptyStateText": null,
+        "filtersTrigger": "Filters1"
+      },
+      "afterSheetClear": {
+        "url": "/org/e2e-test-org/clients?showIncomplete=true"
+      }
+    },
+    "7-create-buttons": {
+      "New Client": {
+        "count": 1,
+        "disabled": false,
+        "dialogTitle": "Create Client",
+        "screenshot": "rich/07-new-client-1440-light.png"
+      }
+    },
+    "8-keyboard": {
+      "path": [
+        {
+          "tag": "a",
+          "text": "All",
+          "testid": null,
+          "href": "/org/e2e-test-org/clients",
+          "inThead": false
+        },
+        {
+          "tag": "a",
+          "text": "Prospect",
+          "testid": null,
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT",
+          "inThead": false
+        },
+        {
+          "tag": "a",
+          "text": "Onboarding",
+          "testid": null,
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING",
+          "inThead": false
+        },
+        {
+          "tag": "a",
+          "text": "Active",
+          "testid": null,
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE",
+          "inThead": false
+        },
+        {
+          "tag": "a",
+          "text": "Dormant",
+          "testid": null,
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=DORMANT",
+          "inThead": false
+        },
+        {
+          "tag": "a",
+          "text": "Offboarding",
+          "testid": null,
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING",
+          "inThead": false
+        },
+        {
+          "tag": "a",
+          "text": "Offboarded",
+          "testid": null,
+          "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED",
+          "inThead": false
+        },
+        {
+          "tag": "a",
+          "text": "Show incomplete",
+          "testid": "client-show-incomplete",
+          "href": "/org/e2e-test-org/clients?showIncomplete=true",
+          "inThead": false
+        },
+        {
+          "tag": "button",
+          "text": "Filters",
+          "testid": "client-filters-trigger",
+          "href": null,
+          "inThead": false
+        },
+        {
+          "tag": "a",
+          "text": "Client↑",
+          "testid": null,
+          "href": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc",
+          "inThead": true
+        }
+      ],
+      "tabsFromSearch": 10,
+      "focused": {
+        "text": "Client",
+        "href": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc",
+        "tag": "A",
+        "outline": "auto",
+        "boxShadow": "none"
+      },
+      "focusScreenshot": "rich/08-keyboard-focus-1440-light.png",
+      "after": {
+        "url": "/org/e2e-test-org/clients?sortBy=name&sortDir=desc",
+        "rowNames": [
+          "Zulu Prospect Holdings",
+          "Mkhize Family Trust",
+          "Dormant Industries",
+          "Carlos Mendez",
+          "Bright Solutions",
+          "Acme Corp"
+        ]
+      }
+    },
+    "9-combined": {
+      "start": {
+        "url": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=name&sortDir=desc",
+        "rowNames": [
+          "Acme Corp"
+        ],
+        "footer": "Showing 1 client",
+        "sortHrefs": [
+          {
+            "column": "Client",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=name&sortDir=asc",
+            "visible": true,
+            "ariaSort": "descending"
+          },
+          {
+            "column": "Lifecycle",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=lifecycleStatus&sortDir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "FICA",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=ficaStatus&sortDir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Open matters",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=openMatterCount&sortDir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Outstanding fee notes",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=outstanding&sortDir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Trust balance",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=trustBalance&sortDir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Completeness",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=completeness&sortDir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          },
+          {
+            "column": "Created",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=createdAt&sortDir=asc",
+            "visible": true,
+            "ariaSort": "none"
+          }
+        ],
+        "lifecyclePills": [
+          {
+            "label": "All",
+            "href": "/org/e2e-test-org/clients?search=Acme&sortBy=name&sortDir=desc",
+            "active": false
+          },
+          {
+            "label": "Prospect",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=PROSPECT&search=Acme&sortBy=name&sortDir=desc",
+            "active": false
+          },
+          {
+            "label": "Onboarding",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ONBOARDING&search=Acme&sortBy=name&sortDir=desc",
+            "active": false
+          },
+          {
+            "label": "Active",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=name&sortDir=desc",
+            "active": true
+          },
+          {
+            "label": "Dormant",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=DORMANT&search=Acme&sortBy=name&sortDir=desc",
+            "active": false
+          },
+          {
+            "label": "Offboarding",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING&search=Acme&sortBy=name&sortDir=desc",
+            "active": false
+          },
+          {
+            "label": "Offboarded",
+            "href": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED&search=Acme&sortBy=name&sortDir=desc",
+            "active": false
+          }
+        ],
+        "showIncompleteHref": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=name&sortDir=desc&showIncomplete=true",
+        "searchValue": "Acme"
+      },
+      "afterFicaSort": {
+        "clicked": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=ficaStatus&sortDir=asc",
+        "url": "/org/e2e-test-org/clients?lifecycleStatus=ACTIVE&search=Acme&sortBy=ficaStatus&sortDir=asc",
+        "rowNames": [
+          "Acme Corp"
+        ],
+        "footer": "Showing 1 client",
+        "searchValue": "Acme",
+        "activePill": "Active"
+      },
+      "afterAllPill": {
+        "url": "/org/e2e-test-org/clients?search=Acme&sortBy=ficaStatus&sortDir=asc",
+        "rowNames": [
+          "Acme Corp"
+        ],
+        "footer": "Showing 1 client"
+      },
+      "afterSearchCleared": {
+        "url": "/org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc",
+        "rowNames": [
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings",
+          "Carlos Mendez",
+          "Acme Corp",
+          "Bright Solutions",
+          "Dormant Industries"
+        ],
+        "footer": "Showing 6 clients"
+      },
+      "screenshot": "rich/09-combined-1440-light.png"
+    },
+    "10-empty": {
+      "searchNoMatch": {
+        "qs": "?search=zzqx-no-such-client",
+        "url": "/org/e2e-test-org/clients?search=zzqx-no-such-client",
+        "rowNames": [],
+        "rowFica": [],
+        "footer": null,
+        "subtitle": "0 clients",
+        "emptyText": "No clients match this view.\n\nClear filters",
+        "emptyStateText": null,
+        "hasTable": false,
+        "clearFiltersHref": "/org/e2e-test-org/clients",
+        "caption": null,
+        "selectedTab": "All clients",
+        "ariaSorts": [],
+        "screenshot": "rich/10-empty-searchNoMatch-1440-light.png"
+      },
+      "offboardedNone": {
+        "qs": "?lifecycleStatus=OFFBOARDED",
+        "url": "/org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED",
+        "rowNames": [],
+        "rowFica": [],
+        "footer": null,
+        "subtitle": "0 clients",
+        "emptyText": "No clients match this view.\n\nClear filters",
+        "emptyStateText": null,
+        "hasTable": false,
+        "clearFiltersHref": "/org/e2e-test-org/clients",
+        "caption": null,
+        "selectedTab": "All clients",
+        "ariaSorts": [],
+        "screenshot": "rich/10-empty-offboardedNone-1440-light.png"
+      },
+      "viewWithTrustBalance": {
+        "qs": "?view=system%3Awith-trust-balance",
+        "url": "/org/e2e-test-org/clients?view=system%3Awith-trust-balance",
+        "rowNames": [
+          "Bright Solutions",
+          "Dormant Industries"
+        ],
+        "rowFica": [
+          "Done12 Nov 2026",
+          "Done12 Nov 2026"
+        ],
+        "footer": "Showing 2 clients",
+        "subtitle": "2 clients",
+        "emptyText": null,
+        "emptyStateText": null,
+        "hasTable": true,
+        "clearFiltersHref": null,
+        "caption": "Clients — With trust balance",
+        "selectedTab": "With trust balance",
+        "ariaSorts": [
+          [
+            "Client",
+            "ascending"
+          ]
+        ]
+      },
+      "viewFicaOutstanding": {
+        "qs": "?view=system%3Afica-outstanding",
+        "url": "/org/e2e-test-org/clients?view=system%3Afica-outstanding",
+        "rowNames": [
+          "Carlos Mendez",
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings"
+        ],
+        "rowFica": [
+          "In progress",
+          "Not started",
+          "Not started"
+        ],
+        "footer": "Showing 3 clients",
+        "subtitle": "3 clients",
+        "emptyText": null,
+        "emptyStateText": null,
+        "hasTable": true,
+        "clearFiltersHref": null,
+        "caption": "Clients — FICA outstanding",
+        "selectedTab": "FICA outstanding",
+        "ariaSorts": [
+          [
+            "Client",
+            "ascending"
+          ]
+        ]
+      },
+      "showIncomplete": {
+        "qs": "?showIncomplete=true",
+        "url": "/org/e2e-test-org/clients?showIncomplete=true",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust"
+        ],
+        "rowFica": [
+          "Done12 Nov 2026",
+          "Done12 Nov 2026",
+          "In progress",
+          "Done12 Nov 2026",
+          "Not started"
+        ],
+        "footer": "Showing 5 clients",
+        "subtitle": "5 clients",
+        "emptyText": null,
+        "emptyStateText": null,
+        "hasTable": true,
+        "clearFiltersHref": null,
+        "caption": "Clients — All clients",
+        "selectedTab": "All clients",
+        "ariaSorts": [
+          [
+            "Client",
+            "ascending"
+          ]
+        ]
+      },
+      "unknownView": {
+        "qs": "?view=00000000-0000-0000-0000-000000000000",
+        "url": "/org/e2e-test-org/clients?view=00000000-0000-0000-0000-000000000000",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings"
+        ],
+        "rowFica": [
+          "Done12 Nov 2026",
+          "Done12 Nov 2026",
+          "In progress",
+          "Done12 Nov 2026",
+          "Not started",
+          "Not started"
+        ],
+        "footer": "Showing 6 clients",
+        "subtitle": "6 clients",
+        "emptyText": null,
+        "emptyStateText": null,
+        "hasTable": true,
+        "clearFiltersHref": null,
+        "caption": "Clients — All clients",
+        "selectedTab": "All clients",
+        "ariaSorts": [
+          [
+            "Client",
+            "ascending"
+          ]
+        ]
+      },
+      "badSort": {
+        "qs": "?sortBy=contact&sortDir=desc",
+        "url": "/org/e2e-test-org/clients?sortBy=contact&sortDir=desc",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings"
+        ],
+        "rowFica": [
+          "Done12 Nov 2026",
+          "Done12 Nov 2026",
+          "In progress",
+          "Done12 Nov 2026",
+          "Not started",
+          "Not started"
+        ],
+        "footer": "Showing 6 clients",
+        "subtitle": "6 clients",
+        "emptyText": null,
+        "emptyStateText": null,
+        "hasTable": true,
+        "clearFiltersHref": null,
+        "caption": "Clients — All clients",
+        "selectedTab": "All clients",
+        "ariaSorts": [
+          [
+            "Client",
+            "ascending"
+          ]
+        ]
+      }
+    },
+    "1b-viewports": {
+      "1440-light": {
+        "url": "/org/e2e-test-org/clients",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings"
+        ],
+        "footer": "Showing 6 clients",
+        "visibleHeaders": [
+          "Client",
+          "Lifecycle",
+          "FICA",
+          "Open matters",
+          "Outstanding fee notes",
+          "Trust balance",
+          "Completeness",
+          "Created",
+          "Actions"
+        ],
+        "hiddenHeaders": [
+          "Contact"
+        ],
+        "layout": {
+          "htmlClass": "light",
+          "viewport": {
+            "w": 1440,
+            "h": 900
+          },
+          "docScrollWidth": 1440,
+          "docClientWidth": 1440,
+          "pageScrollsSideways": false,
+          "mainWidth": 1184,
+          "table": {
+            "tableWidth": 1134,
+            "tableScrollWidth": 1134,
+            "containerSlot": "table-container",
+            "containerClientWidth": 1134,
+            "containerScrollWidth": 1134,
+            "containerOverflowX": "auto",
+            "tableScrollsSideways": false,
+            "overflowPx": 0,
+            "cqContainerWidth": 1134,
+            "firstScrollingAncestor": null,
+            "theadPosition": "static",
+            "thPosition": "static",
+            "lastHeaderRight": 1415,
+            "containerRight": 1415
+          }
+        },
+        "screenshot": "rich/01-default-1440-light.png",
+        "sortedByCreated": {
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Actions"
+          ],
+          "layout": {
+            "htmlClass": "light",
+            "viewport": {
+              "w": 1440,
+              "h": 900
+            },
+            "docScrollWidth": 1440,
+            "docClientWidth": 1440,
+            "pageScrollsSideways": false,
+            "mainWidth": 1184,
+            "table": {
+              "tableWidth": 1134,
+              "tableScrollWidth": 1134,
+              "containerSlot": "table-container",
+              "containerClientWidth": 1134,
+              "containerScrollWidth": 1134,
+              "containerOverflowX": "auto",
+              "tableScrollsSideways": false,
+              "overflowPx": 0,
+              "cqContainerWidth": 1134,
+              "firstScrollingAncestor": null,
+              "theadPosition": "static",
+              "thPosition": "static",
+              "lastHeaderRight": 1415,
+              "containerRight": 1415
+            }
+          },
+          "screenshot": "rich/01-sorted-created-1440-light.png"
+        },
+        "savedView": {
+          "url": "/org/e2e-test-org/clients?view=8ef586c4-cab0-40ea-814b-3db5531bbe20",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Contact",
+            "Actions"
+          ],
+          "layout": {
+            "htmlClass": "light",
+            "viewport": {
+              "w": 1440,
+              "h": 900
+            },
+            "docScrollWidth": 1440,
+            "docClientWidth": 1440,
+            "pageScrollsSideways": false,
+            "mainWidth": 1184,
+            "table": {
+              "tableWidth": 1134,
+              "tableScrollWidth": 1134,
+              "containerSlot": "table-container",
+              "containerClientWidth": 1134,
+              "containerScrollWidth": 1134,
+              "containerOverflowX": "auto",
+              "tableScrollsSideways": false,
+              "overflowPx": 0,
+              "cqContainerWidth": 1134,
+              "firstScrollingAncestor": null,
+              "theadPosition": "static",
+              "thPosition": "static",
+              "lastHeaderRight": 1415,
+              "containerRight": 1415
+            }
+          },
+          "screenshot": "rich/01-saved-view-1440-light.png"
+        }
+      },
+      "1440-dark": {
+        "url": "/org/e2e-test-org/clients",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings"
+        ],
+        "footer": "Showing 6 clients",
+        "visibleHeaders": [
+          "Client",
+          "Lifecycle",
+          "FICA",
+          "Open matters",
+          "Outstanding fee notes",
+          "Trust balance",
+          "Completeness",
+          "Created",
+          "Actions"
+        ],
+        "hiddenHeaders": [
+          "Contact"
+        ],
+        "layout": {
+          "htmlClass": "dark",
+          "viewport": {
+            "w": 1440,
+            "h": 900
+          },
+          "docScrollWidth": 1440,
+          "docClientWidth": 1440,
+          "pageScrollsSideways": false,
+          "mainWidth": 1184,
+          "table": {
+            "tableWidth": 1134,
+            "tableScrollWidth": 1134,
+            "containerSlot": "table-container",
+            "containerClientWidth": 1134,
+            "containerScrollWidth": 1134,
+            "containerOverflowX": "auto",
+            "tableScrollsSideways": false,
+            "overflowPx": 0,
+            "cqContainerWidth": 1134,
+            "firstScrollingAncestor": null,
+            "theadPosition": "static",
+            "thPosition": "static",
+            "lastHeaderRight": 1415,
+            "containerRight": 1415
+          }
+        },
+        "screenshot": "rich/01-default-1440-dark.png"
+      },
+      "1024-light": {
+        "url": "/org/e2e-test-org/clients",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings"
+        ],
+        "footer": "Showing 6 clients",
+        "visibleHeaders": [
+          "Client",
+          "Lifecycle",
+          "FICA",
+          "Outstanding fee notes",
+          "Trust balance",
+          "Actions"
+        ],
+        "hiddenHeaders": [
+          "Open matters",
+          "Completeness",
+          "Created",
+          "Contact"
+        ],
+        "layout": {
+          "htmlClass": "light",
+          "viewport": {
+            "w": 1024,
+            "h": 768
+          },
+          "docScrollWidth": 1024,
+          "docClientWidth": 1024,
+          "pageScrollsSideways": false,
+          "mainWidth": 768,
+          "table": {
+            "tableWidth": 718,
+            "tableScrollWidth": 718,
+            "containerSlot": "table-container",
+            "containerClientWidth": 718,
+            "containerScrollWidth": 718,
+            "containerOverflowX": "auto",
+            "tableScrollsSideways": false,
+            "overflowPx": 0,
+            "cqContainerWidth": 718,
+            "firstScrollingAncestor": null,
+            "theadPosition": "static",
+            "thPosition": "static",
+            "lastHeaderRight": 999,
+            "containerRight": 999
+          }
+        },
+        "screenshot": "rich/01-default-1024-light.png",
+        "sortedByCreated": {
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Created",
+            "Actions"
+          ],
+          "layout": {
+            "htmlClass": "light",
+            "viewport": {
+              "w": 1024,
+              "h": 768
+            },
+            "docScrollWidth": 1024,
+            "docClientWidth": 1024,
+            "pageScrollsSideways": false,
+            "mainWidth": 768,
+            "table": {
+              "tableWidth": 718,
+              "tableScrollWidth": 718,
+              "containerSlot": "table-container",
+              "containerClientWidth": 718,
+              "containerScrollWidth": 718,
+              "containerOverflowX": "auto",
+              "tableScrollsSideways": false,
+              "overflowPx": 0,
+              "cqContainerWidth": 718,
+              "firstScrollingAncestor": null,
+              "theadPosition": "static",
+              "thPosition": "static",
+              "lastHeaderRight": 999,
+              "containerRight": 999
+            }
+          },
+          "screenshot": "rich/01-sorted-created-1024-light.png"
+        },
+        "savedView": {
+          "url": "/org/e2e-test-org/clients?view=8ef586c4-cab0-40ea-814b-3db5531bbe20",
+          "visibleHeaders": [
+            "Client",
+            "Lifecycle",
+            "FICA",
+            "Open matters",
+            "Outstanding fee notes",
+            "Trust balance",
+            "Completeness",
+            "Created",
+            "Contact",
+            "Actions"
+          ],
+          "layout": {
+            "htmlClass": "light",
+            "viewport": {
+              "w": 1024,
+              "h": 768
+            },
+            "docScrollWidth": 1024,
+            "docClientWidth": 1024,
+            "pageScrollsSideways": false,
+            "mainWidth": 768,
+            "table": {
+              "tableWidth": 1021.3,
+              "tableScrollWidth": 1021,
+              "containerSlot": "table-container",
+              "containerClientWidth": 718,
+              "containerScrollWidth": 1021,
+              "containerOverflowX": "auto",
+              "tableScrollsSideways": true,
+              "overflowPx": 303,
+              "cqContainerWidth": 718,
+              "firstScrollingAncestor": "div.relative w-full overflow-x-auto (1021/718)",
+              "theadPosition": "static",
+              "thPosition": "static",
+              "lastHeaderRight": 1302,
+              "containerRight": 999
+            }
+          },
+          "screenshot": "rich/01-saved-view-1024-light.png"
+        }
+      },
+      "1024-dark": {
+        "url": "/org/e2e-test-org/clients",
+        "rowNames": [
+          "Acme Corp",
+          "Bright Solutions",
+          "Carlos Mendez",
+          "Dormant Industries",
+          "Mkhize Family Trust",
+          "Zulu Prospect Holdings"
+        ],
+        "footer": "Showing 6 clients",
+        "visibleHeaders": [
+          "Client",
+          "Lifecycle",
+          "FICA",
+          "Outstanding fee notes",
+          "Trust balance",
+          "Actions"
+        ],
+        "hiddenHeaders": [
+          "Open matters",
+          "Completeness",
+          "Created",
+          "Contact"
+        ],
+        "layout": {
+          "htmlClass": "dark",
+          "viewport": {
+            "w": 1024,
+            "h": 768
+          },
+          "docScrollWidth": 1024,
+          "docClientWidth": 1024,
+          "pageScrollsSideways": false,
+          "mainWidth": 768,
+          "table": {
+            "tableWidth": 718,
+            "tableScrollWidth": 718,
+            "containerSlot": "table-container",
+            "containerClientWidth": 718,
+            "containerScrollWidth": 718,
+            "containerOverflowX": "auto",
+            "tableScrollsSideways": false,
+            "overflowPx": 0,
+            "cqContainerWidth": 718,
+            "firstScrollingAncestor": null,
+            "theadPosition": "static",
+            "thPosition": "static",
+            "lastHeaderRight": 999,
+            "containerRight": 999
+          }
+        },
+        "screenshot": "rich/01-default-1024-dark.png"
+      }
+    },
+    "11-carol": {
+      "1440-light": {
+        "url": "/org/e2e-test-org/clients",
+        "h1": null,
+        "subtitle": null,
+        "hasTable": false,
+        "rowNames": [],
+        "rowFica": [],
+        "rowCells": [],
+        "footer": null,
+        "permissionDenied": "You don't have access to Clients Contact your organisation admin to update your role. Go to dashboard",
+        "viewTabs": [],
+        "lifecyclePills": [],
+        "filtersTrigger": null,
+        "headers": [],
+        "newClientButton": 0,
+        "saveViewButton": 0,
+        "layout": {
+          "htmlClass": "light",
+          "viewport": {
+            "w": 1440,
+            "h": 900
+          },
+          "docScrollWidth": 1440,
+          "docClientWidth": 1440,
+          "pageScrollsSideways": false,
+          "mainWidth": 1184,
+          "table": null
+        },
+        "screenshot": "rich/11-carol-default-1440-light.png"
+      },
+      "1024-light": {
+        "url": "/org/e2e-test-org/clients",
+        "h1": null,
+        "subtitle": null,
+        "hasTable": false,
+        "rowNames": [],
+        "rowFica": [],
+        "rowCells": [],
+        "footer": null,
+        "permissionDenied": "You don't have access to Clients Contact your organisation admin to update your role. Go to dashboard",
+        "viewTabs": [],
+        "lifecyclePills": [],
+        "filtersTrigger": null,
+        "headers": [],
+        "newClientButton": 0,
+        "saveViewButton": 0,
+        "layout": {
+          "htmlClass": "light",
+          "viewport": {
+            "w": 1024,
+            "h": 768
+          },
+          "docScrollWidth": 1024,
+          "docClientWidth": 1024,
+          "pageScrollsSideways": false,
+          "mainWidth": 768,
+          "table": null
+        },
+        "screenshot": "rich/11-carol-default-1024-light.png"
+      }
+    }
+  },
+  "console": [
+    {
+      "ctx": "alice-1440-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "alice-1440-dark",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "carol-1440-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "ctx": "carol-1024-light",
+      "type": "error",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1432bbnld5que.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chun",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    }
+  ],
+  "finishedAt": "2026-11-12T17:38:30.334Z"
+}

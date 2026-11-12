@@ -1,0 +1,122 @@
+{
+ "1024": {
+  "ths": [
+   {
+    "t": "Client↑",
+    "w": 16,
+    "l": 281
+   },
+   {
+    "t": "Lifecycle",
+    "w": 106,
+    "l": 297
+   },
+   {
+    "t": "FICA",
+    "w": 103,
+    "l": 403
+   },
+   {
+    "t": "Open matters",
+    "w": 77,
+    "l": 506
+   },
+   {
+    "t": "Outstanding fee notes",
+    "w": 134,
+    "l": 583
+   },
+   {
+    "t": "Trust balance",
+    "w": 108,
+    "l": 716
+   },
+   {
+    "t": "Completeness",
+    "w": 121,
+    "l": 825
+   },
+   {
+    "t": "Created",
+    "w": 101,
+    "l": 945
+   },
+   {
+    "t": "Contact",
+    "w": 208,
+    "l": 1046
+   },
+   {
+    "t": "Actions",
+    "w": 48,
+    "l": 1254
+   }
+  ],
+  "firstLink": {
+   "w": 0,
+   "h": 20,
+   "text": "Acme Corp",
+   "visibleWidth": false
+  }
+ },
+ "1440": {
+  "ths": [
+   {
+    "t": "Client↑",
+    "w": 129,
+    "l": 281
+   },
+   {
+    "t": "Lifecycle",
+    "w": 106,
+    "l": 410
+   },
+   {
+    "t": "FICA",
+    "w": 103,
+    "l": 516
+   },
+   {
+    "t": "Open matters",
+    "w": 77,
+    "l": 619
+   },
+   {
+    "t": "Outstanding fee notes",
+    "w": 134,
+    "l": 695
+   },
+   {
+    "t": "Trust balance",
+    "w": 108,
+    "l": 829
+   },
+   {
+    "t": "Completeness",
+    "w": 121,
+    "l": 937
+   },
+   {
+    "t": "Created",
+    "w": 101,
+    "l": 1058
+   },
+   {
+    "t": "Contact",
+    "w": 208,
+    "l": 1159
+   },
+   {
+    "t": "Actions",
+    "w": 48,
+    "l": 1367
+   }
+  ],
+  "firstLink": {
+   "w": 73,
+   "h": 20,
+   "text": "Acme Corp",
+   "visibleWidth": true
+  }
+ }
+}

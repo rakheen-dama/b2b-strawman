@@ -1,0 +1,5 @@
+## GET /api/me/capabilities as Carol (member)
+{"capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"role":"Member","isAdmin":false,"isOwner":false,"memberId":"fea5046d-8646-49f4-8f9e-7496af64d52f"}
+## GET /api/clients as Carol (member) -> HTTP
+[{"id":"eb77baa2-25b7-4650-b924-87251ac080c7","name":"Acme Corp","email":"contact@acme.example.com","phone":"+1-555-0100","clientType":"INDIVIDUAL","lifecycleStatus":"ACTIVE","status":"ACTIVE","createdAt":"2026-11-12T17:24:57.085517Z","lifecycleStatusChangedAt":"2026-11-12T17:24:57.598800Z","ficaStatus":"DONE","ficaLastVerifiedAt":"2026-11-12T17:24:57.587325Z","outstandingFeeNoteTotal":null,"outstandingFeeNoteCount":1,"currency":"ZAR","trustBalance":0,"openMatterCount":1,"completenessPercent":null,"tags":[],"customFields":{}}]
+HTTP 200

@@ -1,0 +1,28 @@
+== 1. tags
+POST /api/tags -> HTTP 201 {"id":"9b255f47-0ef5-4dbd-bbdb-eab9bab8e8ac","name":"VIP","slug":"vip","color":"#7c3aed","createdAt":"2026-11-12T18:35:15.971452719Z","updatedAt":"2026-11-12T18:35:15.971456010Z"}
+POST /api/tags -> HTTP 201 {"id":"6c6fb6fd-820f-4d99-b5d3-212c53820f40","name":"Corporate","slug":"corporate","color":"#2563eb","createdAt":"2026-11-12T18:35:16.005762760Z","updatedAt":"2026-11-12T18:35:16.005762844Z"}
+POST /api/tags -> HTTP 201 {"id":"239770dc-1032-4bf1-8452-dddce304e435","name":"Estate","slug":"estate","color":"#059669","createdAt":"2026-11-12T18:35:16.038437927Z","updatedAt":"2026-11-12T18:35:16.038438010Z"}
+POST /api/tags -> HTTP 201 {"id":"024b8e11-3a5f-4f1e-90a7-892ee3355531","name":"Litigation","slug":"litigation","color":"#dc2626","createdAt":"2026-11-12T18:35:16.071105510Z","updatedAt":"2026-11-12T18:35:16.071105594Z"}
+== 2. clients (POST /api/clients -> PROSPECT, FICA NOT_STARTED)
+POST /api/clients -> HTTP 201 {"id":"9d95710d-3331-4a75-9e2a-3adf7ce003dc","name":"Zulu Prospect Holdings","email":"info@zulu-prospect.example.com","phone":null,"idNumber":null,"status":"ACTIVE","notes":null,"createdBy":"c87d5608-335f-42ff-8e33-0cc05c45fb0c","createdByN
+POST /api/clients -> HTTP 201 {"id":"fbdb8b67-b539-48e6-adf7-4076edb40eaa","name":"Mkhize Family Trust","email":"trustees@mkhize.example.com","phone":"+27 21 555 0199","idNumber":null,"status":"ACTIVE","notes":null,"createdBy":"c87d5608-335f-42ff-8e33-0cc05c45fb0c","cre
+ids: Acme=0cb09704-891c-4f82-9fb9-0167da90fb6c Bright=3eb10aa2-fa70-4ef0-8e45-1eb26878cbff Dormant=9c25912c-d6b4-40fb-90be-cdc1e0db73cf Zulu=9d95710d-3331-4a75-9e2a-3adf7ce003dc
+== 3. client tags
+POST /api/clients/0cb09704-891c-4f82-9fb9-0167da90fb6c/tags -> HTTP 200 [{"id":"6c6fb6fd-820f-4d99-b5d3-212c53820f40","name":"Corporate","slug":"corporate","color":"#2563eb","createdAt":"2026-11-12T18:35:16.005763Z","updatedAt":"2026-11-12T18:35:16.005763Z"},{"id":"9b255f47-0ef5-4dbd-bbdb-eab9bab8e8ac","name":"
+POST /api/clients/3eb10aa2-fa70-4ef0-8e45-1eb26878cbff/tags -> HTTP 200 [{"id":"9b255f47-0ef5-4dbd-bbdb-eab9bab8e8ac","name":"VIP","slug":"vip","color":"#7c3aed","createdAt":"2026-11-12T18:35:15.971453Z","updatedAt":"2026-11-12T18:35:15.971456Z"}]
+POST /api/clients/9c25912c-d6b4-40fb-90be-cdc1e0db73cf/tags -> HTTP 200 [{"id":"239770dc-1032-4bf1-8452-dddce304e435","name":"Estate","slug":"estate","color":"#059669","createdAt":"2026-11-12T18:35:16.038438Z","updatedAt":"2026-11-12T18:35:16.038438Z"}]
+POST /api/clients/9d95710d-3331-4a75-9e2a-3adf7ce003dc/tags -> HTTP 200 [{"id":"6c6fb6fd-820f-4d99-b5d3-212c53820f40","name":"Corporate","slug":"corporate","color":"#2563eb","createdAt":"2026-11-12T18:35:16.005763Z","updatedAt":"2026-11-12T18:35:16.005763Z"},{"id":"239770dc-1032-4bf1-8452-dddce304e435","name":"
+== 4. trust deposits (primary account)
+POST /api/trust-accounts/2900433e-2e37-42b5-a42c-7736aef4ce25/transactions/deposit -> HTTP 201 {"id":"e6743410-74e6-44dc-9f8b-a309c9714c6a","trustAccountId":"2900433e-2e37-42b5-a42c-7736aef4ce25","transactionType":"DEPOSIT","amount":15000.00,"clientId":"3eb10aa2-fa70-4ef0-8e45-1eb26878cbff","matterId":"b9fb6324-729a-4747-829f-b8e4f27
+   status=RECORDED
+POST /api/trust-accounts/2900433e-2e37-42b5-a42c-7736aef4ce25/transactions/deposit -> HTTP 201 {"id":"bee11bba-12f3-42a8-8df4-19905205a2f0","trustAccountId":"2900433e-2e37-42b5-a42c-7736aef4ce25","transactionType":"DEPOSIT","amount":2500.00,"clientId":"9c25912c-d6b4-40fb-90be-cdc1e0db73cf","matterId":"80727e5e-b0c8-4e08-b5c1-ab7f858f
+   status=RECORDED
+== 5. completeness: referred_by required for DOCUMENT_GENERATION (Zulu has it filled -> 100%, others 0%)
+PATCH /api/field-definitions/e381d2f5-d4f5-4889-bc9f-535842f20332 -> HTTP 200 {"id":"e381d2f5-d4f5-4889-bc9f-535842f20332","entityType":"CUSTOMER","name":"Referred By","slug":"referred_by","fieldType":"TEXT","description":"Source of client referral for tracking","required":false,"defaultValue":null,"options":null,"va
+== result: GET /api/clients
+{"name":"Acme Corp","clientType":"INDIVIDUAL","lifecycleStatus":"ACTIVE","ficaStatus":"DONE","openMatterCount":2,"outstandingFeeNoteTotal":8625.00,"outstandingFeeNoteCount":1,"trustBalance":0,"completenessPercent":0,"tags":["Corporate","VIP"]}
+{"name":"Bright Solutions","clientType":"INDIVIDUAL","lifecycleStatus":"ACTIVE","ficaStatus":"DONE","openMatterCount":2,"outstandingFeeNoteTotal":0.00,"outstandingFeeNoteCount":0,"trustBalance":15000.00,"completenessPercent":0,"tags":["VIP"]}
+{"name":"Carlos Mendez","clientType":"INDIVIDUAL","lifecycleStatus":"ONBOARDING","ficaStatus":"IN_PROGRESS","openMatterCount":1,"outstandingFeeNoteTotal":0.00,"outstandingFeeNoteCount":0,"trustBalance":0,"completenessPercent":0,"tags":[]}
+{"name":"Dormant Industries","clientType":"INDIVIDUAL","lifecycleStatus":"DORMANT","ficaStatus":"DONE","openMatterCount":1,"outstandingFeeNoteTotal":0.00,"outstandingFeeNoteCount":0,"trustBalance":2500.00,"completenessPercent":0,"tags":["Estate"]}
+{"name":"Zulu Prospect Holdings","clientType":"COMPANY","lifecycleStatus":"PROSPECT","ficaStatus":"NOT_STARTED","openMatterCount":0,"outstandingFeeNoteTotal":0.00,"outstandingFeeNoteCount":0,"trustBalance":0,"completenessPercent":100,"tags":["Corporate","Estate","Litigation","VIP"]}
+{"name":"Mkhize Family Trust","clientType":"TRUST","lifecycleStatus":"PROSPECT","ficaStatus":"NOT_STARTED","openMatterCount":0,"outstandingFeeNoteTotal":0.00,"outstandingFeeNoteCount":0,"trustBalance":0,"completenessPercent":0,"tags":[]}

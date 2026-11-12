@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { StatCard, type StatCardDelta } from "@b2mash/ui/stat-card";
 import { SparklineTrend } from "@/components/charts/sparkline-trend";
 import { formatChartValue } from "@/lib/chart-format";
@@ -9,15 +10,24 @@ import { computeDelta, zeroFillTrend } from "@/lib/kpi";
 // Home KPI row (Phase 90 640A, arch §15.3.4; B1–B3, R1). Server Component — no "use client", no
 // recharts, no next/dynamic: four StatCards, the hours tile with a server-rendered SparklineTrend
 // (ADR-370). Firm-wide figures, so only the firm and owner audiences get the row (B2).
+// KpiRowSkeleton (640C) is Home's loading.tsx stand-in: same frame, labels and tile anatomy.
 
 const PERIOD_LABEL = "Last 30 days";
 const COMPARISON_LABEL = "previous 30 days";
 const REDACTED_HINT = "Visible to admins and owners";
 const TREND_WEEKS = 6;
 const SPARKLINE_LABEL = `Hours logged per week, last ${TREND_WEEKS} weeks`;
+/** SparklineTrend's fixed height, which the skeleton holds. */
+const SPARKLINE_HEIGHT = 40;
 
-/** Four tiles; no margin tile (R1). */
-const TILE_LABELS = ["Active matters", "Hours logged", "Billable %", "Overdue tasks"] as const;
+/** Four tiles, in row order; no margin tile (R1). */
+const TILE = {
+  activeMatters: "Active matters",
+  hours: "Hours logged",
+  billable: "Billable %",
+  overdue: "Overdue tasks",
+} as const;
+export const KPI_TILE_LABELS: ReadonlyArray<(typeof TILE)[keyof typeof TILE]> = Object.values(TILE);
 
 interface KpiRowProps {
   result: WidgetResult<KpiResponse>;
@@ -49,7 +59,7 @@ export function KpiRow({ result, to, seesFinancials }: KpiRowProps) {
 
   let tiles: ReactNode;
   if (result.state === "error") {
-    tiles = TILE_LABELS.map((label) => (
+    tiles = KPI_TILE_LABELS.map((label) => (
       <StatCard key={label} label={label} value={null} state="error" className="h-full" />
     ));
   } else {
@@ -60,12 +70,12 @@ export function KpiRow({ result, to, seesFinancials }: KpiRowProps) {
     tiles = (
       <>
         <StatCard
-          label="Active matters"
+          label={TILE.activeMatters}
           value={formatChartValue(k.activeMatterCount, "count")}
           className="h-full"
         />
         <StatCard
-          label="Hours logged"
+          label={TILE.hours}
           value={formatChartValue(k.totalHoursLogged, "hours")}
           delta={delta(
             computeDelta(k.totalHoursLogged, prev?.totalHoursLogged, "percent"),
@@ -76,13 +86,13 @@ export function KpiRow({ result, to, seesFinancials }: KpiRowProps) {
               values={weeks}
               label={SPARKLINE_LABEL}
               summary={hoursTrendSummary(weeks)}
-              height={40}
+              height={SPARKLINE_HEIGHT}
             />
           }
           className="h-full"
         />
         <StatCard
-          label="Billable %"
+          label={TILE.billable}
           value={k.billablePercent === null ? null : formatChartValue(k.billablePercent, "percent")}
           state={billableRedacted ? "redacted" : "ready"}
           hint={billableRedacted ? REDACTED_HINT : undefined}
@@ -94,7 +104,7 @@ export function KpiRow({ result, to, seesFinancials }: KpiRowProps) {
           className="h-full"
         />
         <StatCard
-          label="Overdue tasks"
+          label={TILE.overdue}
           value={formatChartValue(k.overdueTaskCount, "count")}
           className="h-full"
         />
@@ -102,11 +112,44 @@ export function KpiRow({ result, to, seesFinancials }: KpiRowProps) {
     );
   }
 
+  return <KpiRowFrame data-slot="kpi-row">{tiles}</KpiRowFrame>;
+}
+
+/**
+ * Home's loading state for the row (640C, spec 640.13): four loading StatCards in the steady-state
+ * anatomy — any non-undefined `delta` draws StatCard's delta skeleton, and the hours tile holds the
+ * sparkline's height (StatCard draws no sparkline slot while loading) — so nothing shifts on load.
+ */
+export function KpiRowSkeleton() {
   return (
-    <div data-slot="kpi-row" className="@container flex flex-col gap-2">
+    <KpiRowFrame>
+      <StatCard label={TILE.activeMatters} value={null} state="loading" className="h-full" />
+      <StatCard
+        label={TILE.hours}
+        value={null}
+        state="loading"
+        delta={delta(0, "percent")}
+        footer={<Skeleton className="w-full" style={{ height: SPARKLINE_HEIGHT }} />}
+        className="h-full"
+      />
+      <StatCard
+        label={TILE.billable}
+        value={null}
+        state="loading"
+        delta={delta(0, "points")}
+        className="h-full"
+      />
+      <StatCard label={TILE.overdue} value={null} state="loading" className="h-full" />
+    </KpiRowFrame>
+  );
+}
+
+function KpiRowFrame({ children, ...props }: ComponentProps<"div">) {
+  return (
+    <div {...props} className="@container flex flex-col gap-2">
       <p className="text-muted-foreground text-xs font-medium">{PERIOD_LABEL}</p>
       {/* 2×2 below @3xl (48rem), 4×1 at @3xl — same container-query idiom as DetailHero. */}
-      <div className="grid grid-cols-2 gap-4 @3xl:grid-cols-4">{tiles}</div>
+      <div className="grid grid-cols-2 gap-4 @3xl:grid-cols-4">{children}</div>
     </div>
   );
 }

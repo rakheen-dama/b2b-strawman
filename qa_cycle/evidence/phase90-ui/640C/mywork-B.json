@@ -1,0 +1,1242 @@
+{
+  "mywork-B-alice-1024-light": {
+    "htmlClass": "light",
+    "imgByRoleCount": 1,
+    "current": {
+      "box": {
+        "w": 720,
+        "h": 371
+      },
+      "cardBg": "#fdfeff",
+      "text": "This Week Nov 9 – Nov 15, 2026 TOTAL 3h 30m Billable 2h, Non-billable 1h 30m BILLABLE 2h NON-BILLABLE 1h 30m By Matter Ndlovu v RAF — Depth II mwdkfjx52f10 Billable: 2h 2h Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdkfjx52f10 Billable: 0m 1h 30m",
+      "hasMeter": true,
+      "meter": {
+        "ariaLabel": "Billable vs non-billable time",
+        "describedBy": "_r_q_",
+        "srSummary": "Billable 2h, Non-billable 1h 30m",
+        "srSummaryIsSrOnly": true,
+        "widthPx": 678,
+        "heightPx": 8,
+        "segments": [
+          {
+            "key": "billable",
+            "fillAttr": "var(--chart-1)",
+            "fillComputed": "#009787",
+            "widthPx": 387.4,
+            "title": "Billable: 2h"
+          },
+          {
+            "key": "nonBillable",
+            "fillAttr": "var(--chart-2)",
+            "fillComputed": "#e06623",
+            "widthPx": 290.6,
+            "title": "Non-billable: 1h 30m"
+          }
+        ],
+        "trackFill": "#eff1f5",
+        "gapCount": 1
+      },
+      "chartVars": {
+        "--chart-1": "#009787",
+        "--chart-2": "#e06623"
+      },
+      "swatches": [
+        {
+          "label": "Billable",
+          "bg": "#009787",
+          "size": 8
+        },
+        {
+          "label": "Non-billable",
+          "bg": "#e06623",
+          "size": 8
+        },
+        {
+          "label": "Billable: 2h",
+          "bg": "#009787",
+          "size": 6
+        },
+        {
+          "label": "Billable: 0m",
+          "bg": "#009787",
+          "size": 6
+        }
+      ],
+      "minContrast": 7.18,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 9 – Nov 15, 2026",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "Total",
+          "contrast": 7.18,
+          "fg": "#4d545f",
+          "bg": "#f6f8fa",
+          "fontSize": "12px"
+        },
+        {
+          "text": "3h 30m",
+          "contrast": 16.87,
+          "fg": "#14171c",
+          "bg": "#f6f8fa",
+          "fontSize": "24px"
+        },
+        {
+          "text": "Billable",
+          "contrast": 7.18,
+          "fg": "#4d545f",
+          "bg": "#f6f8fa",
+          "fontSize": "12px"
+        },
+        {
+          "text": "2h",
+          "contrast": 16.87,
+          "fg": "#14171c",
+          "bg": "#f6f8fa",
+          "fontSize": "20px"
+        },
+        {
+          "text": "Non-billable",
+          "contrast": 7.18,
+          "fg": "#4d545f",
+          "bg": "#f6f8fa",
+          "fontSize": "12px"
+        },
+        {
+          "text": "1h 30m",
+          "contrast": 7.18,
+          "fg": "#4d545f",
+          "bg": "#f6f8fa",
+          "fontSize": "20px"
+        },
+        {
+          "text": "By Matter",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        },
+        {
+          "text": "Ndlovu v RAF — Depth II mwdkfjx52f10",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        },
+        {
+          "text": "2h",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "2h",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        },
+        {
+          "text": "Khumalo Property Holdings — Erf 1234 San",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        },
+        {
+          "text": "0m",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "1h 30m",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [
+        "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+      ]
+    },
+    "empty": {
+      "weeksBack": 1,
+      "box": {
+        "w": 720,
+        "h": 106
+      },
+      "cardBg": "#fdfeff",
+      "text": "This Week Nov 2 – Nov 8, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#009787",
+        "--chart-2": "#e06623"
+      },
+      "swatches": [],
+      "minContrast": 7.57,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 2 – Nov 8, 2026",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [
+        "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+      ],
+      "ariaSnapshot": "- heading \"This Week\" [level=2]\n- button \"Previous week\"\n- text: Nov 2 – Nov 8, 2026\n- button \"Next week\"\n- paragraph: No time tracked this week"
+    }
+  },
+  "mywork-B-alice-1024-dark": {
+    "htmlClass": "dark",
+    "imgByRoleCount": 1,
+    "current": {
+      "box": {
+        "w": 720,
+        "h": 371
+      },
+      "cardBg": "#14171c",
+      "text": "This Week Nov 9 – Nov 15, 2026 TOTAL 3h 30m Billable 2h, Non-billable 1h 30m BILLABLE 2h NON-BILLABLE 1h 30m By Matter Ndlovu v RAF — Depth II mwdkfjx52f10 Billable: 2h 2h Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdkfjx52f10 Billable: 0m 1h 30m",
+      "hasMeter": true,
+      "meter": {
+        "ariaLabel": "Billable vs non-billable time",
+        "describedBy": "_r_q_",
+        "srSummary": "Billable 2h, Non-billable 1h 30m",
+        "srSummaryIsSrOnly": true,
+        "widthPx": 678,
+        "heightPx": 8,
+        "segments": [
+          {
+            "key": "billable",
+            "fillAttr": "var(--chart-1)",
+            "fillComputed": "#00aa99",
+            "widthPx": 387.4,
+            "title": "Billable: 2h"
+          },
+          {
+            "key": "nonBillable",
+            "fillAttr": "var(--chart-2)",
+            "fillComputed": "#df6c32",
+            "widthPx": 290.6,
+            "title": "Non-billable: 1h 30m"
+          }
+        ],
+        "trackFill": "#20242b",
+        "gapCount": 1
+      },
+      "chartVars": {
+        "--chart-1": "#00aa99",
+        "--chart-2": "#df6c32"
+      },
+      "swatches": [
+        {
+          "label": "Billable",
+          "bg": "#00aa99",
+          "size": 8
+        },
+        {
+          "label": "Non-billable",
+          "bg": "#df6c32",
+          "size": 8
+        },
+        {
+          "label": "Billable: 2h",
+          "bg": "#00aa99",
+          "size": 6
+        },
+        {
+          "label": "Billable: 0m",
+          "bg": "#00aa99",
+          "size": 6
+        }
+      ],
+      "minContrast": 6.27,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 9 – Nov 15, 2026",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "Total",
+          "contrast": 6.27,
+          "fg": "#989faa",
+          "bg": "#1a1e24",
+          "fontSize": "12px"
+        },
+        {
+          "text": "3h 30m",
+          "contrast": 16.73,
+          "fg": "#ffffff",
+          "bg": "#1a1e24",
+          "fontSize": "24px"
+        },
+        {
+          "text": "Billable",
+          "contrast": 6.27,
+          "fg": "#989faa",
+          "bg": "#1a1e24",
+          "fontSize": "12px"
+        },
+        {
+          "text": "2h",
+          "contrast": 16.73,
+          "fg": "#ffffff",
+          "bg": "#1a1e24",
+          "fontSize": "20px"
+        },
+        {
+          "text": "Non-billable",
+          "contrast": 6.27,
+          "fg": "#989faa",
+          "bg": "#1a1e24",
+          "fontSize": "12px"
+        },
+        {
+          "text": "1h 30m",
+          "contrast": 6.27,
+          "fg": "#989faa",
+          "bg": "#1a1e24",
+          "fontSize": "20px"
+        },
+        {
+          "text": "By Matter",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        },
+        {
+          "text": "Ndlovu v RAF — Depth II mwdkfjx52f10",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        },
+        {
+          "text": "2h",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "2h",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        },
+        {
+          "text": "Khumalo Property Holdings — Erf 1234 San",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        },
+        {
+          "text": "0m",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "1h 30m",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": []
+    },
+    "empty": {
+      "weeksBack": 1,
+      "box": {
+        "w": 720,
+        "h": 106
+      },
+      "cardBg": "#14171c",
+      "text": "This Week Nov 2 – Nov 8, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#00aa99",
+        "--chart-2": "#df6c32"
+      },
+      "swatches": [],
+      "minContrast": 6.74,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 2 – Nov 8, 2026",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [],
+      "ariaSnapshot": "- heading \"This Week\" [level=2]\n- button \"Previous week\"\n- text: Nov 2 – Nov 8, 2026\n- button \"Next week\"\n- paragraph: No time tracked this week"
+    }
+  },
+  "mywork-B-alice-1440-light": {
+    "htmlClass": "light",
+    "imgByRoleCount": 1,
+    "current": {
+      "box": {
+        "w": 1136,
+        "h": 371
+      },
+      "cardBg": "#fdfeff",
+      "text": "This Week Nov 9 – Nov 15, 2026 TOTAL 3h 30m Billable 2h, Non-billable 1h 30m BILLABLE 2h NON-BILLABLE 1h 30m By Matter Ndlovu v RAF — Depth II mwdkfjx52f10 Billable: 2h 2h Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdkfjx52f10 Billable: 0m 1h 30m",
+      "hasMeter": true,
+      "meter": {
+        "ariaLabel": "Billable vs non-billable time",
+        "describedBy": "_r_q_",
+        "srSummary": "Billable 2h, Non-billable 1h 30m",
+        "srSummaryIsSrOnly": true,
+        "widthPx": 1094,
+        "heightPx": 8,
+        "segments": [
+          {
+            "key": "billable",
+            "fillAttr": "var(--chart-1)",
+            "fillComputed": "#009787",
+            "widthPx": 625.1,
+            "title": "Billable: 2h"
+          },
+          {
+            "key": "nonBillable",
+            "fillAttr": "var(--chart-2)",
+            "fillComputed": "#e06623",
+            "widthPx": 468.9,
+            "title": "Non-billable: 1h 30m"
+          }
+        ],
+        "trackFill": "#eff1f5",
+        "gapCount": 1
+      },
+      "chartVars": {
+        "--chart-1": "#009787",
+        "--chart-2": "#e06623"
+      },
+      "swatches": [
+        {
+          "label": "Billable",
+          "bg": "#009787",
+          "size": 8
+        },
+        {
+          "label": "Non-billable",
+          "bg": "#e06623",
+          "size": 8
+        },
+        {
+          "label": "Billable: 2h",
+          "bg": "#009787",
+          "size": 6
+        },
+        {
+          "label": "Billable: 0m",
+          "bg": "#009787",
+          "size": 6
+        }
+      ],
+      "minContrast": 7.18,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 9 – Nov 15, 2026",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "Total",
+          "contrast": 7.18,
+          "fg": "#4d545f",
+          "bg": "#f6f8fa",
+          "fontSize": "12px"
+        },
+        {
+          "text": "3h 30m",
+          "contrast": 16.87,
+          "fg": "#14171c",
+          "bg": "#f6f8fa",
+          "fontSize": "24px"
+        },
+        {
+          "text": "Billable",
+          "contrast": 7.18,
+          "fg": "#4d545f",
+          "bg": "#f6f8fa",
+          "fontSize": "12px"
+        },
+        {
+          "text": "2h",
+          "contrast": 16.87,
+          "fg": "#14171c",
+          "bg": "#f6f8fa",
+          "fontSize": "20px"
+        },
+        {
+          "text": "Non-billable",
+          "contrast": 7.18,
+          "fg": "#4d545f",
+          "bg": "#f6f8fa",
+          "fontSize": "12px"
+        },
+        {
+          "text": "1h 30m",
+          "contrast": 7.18,
+          "fg": "#4d545f",
+          "bg": "#f6f8fa",
+          "fontSize": "20px"
+        },
+        {
+          "text": "By Matter",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        },
+        {
+          "text": "Ndlovu v RAF — Depth II mwdkfjx52f10",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        },
+        {
+          "text": "2h",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "2h",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        },
+        {
+          "text": "Khumalo Property Holdings — Erf 1234 San",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        },
+        {
+          "text": "0m",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "1h 30m",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [
+        "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+      ]
+    },
+    "empty": {
+      "weeksBack": 1,
+      "box": {
+        "w": 1136,
+        "h": 106
+      },
+      "cardBg": "#fdfeff",
+      "text": "This Week Nov 2 – Nov 8, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#009787",
+        "--chart-2": "#e06623"
+      },
+      "swatches": [],
+      "minContrast": 7.57,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 2 – Nov 8, 2026",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [
+        "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+      ],
+      "ariaSnapshot": "- heading \"This Week\" [level=2]\n- button \"Previous week\"\n- text: Nov 2 – Nov 8, 2026\n- button \"Next week\"\n- paragraph: No time tracked this week"
+    }
+  },
+  "mywork-B-alice-1440-dark": {
+    "htmlClass": "dark",
+    "imgByRoleCount": 1,
+    "current": {
+      "box": {
+        "w": 1136,
+        "h": 371
+      },
+      "cardBg": "#14171c",
+      "text": "This Week Nov 9 – Nov 15, 2026 TOTAL 3h 30m Billable 2h, Non-billable 1h 30m BILLABLE 2h NON-BILLABLE 1h 30m By Matter Ndlovu v RAF — Depth II mwdkfjx52f10 Billable: 2h 2h Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdkfjx52f10 Billable: 0m 1h 30m",
+      "hasMeter": true,
+      "meter": {
+        "ariaLabel": "Billable vs non-billable time",
+        "describedBy": "_r_q_",
+        "srSummary": "Billable 2h, Non-billable 1h 30m",
+        "srSummaryIsSrOnly": true,
+        "widthPx": 1094,
+        "heightPx": 8,
+        "segments": [
+          {
+            "key": "billable",
+            "fillAttr": "var(--chart-1)",
+            "fillComputed": "#00aa99",
+            "widthPx": 625.1,
+            "title": "Billable: 2h"
+          },
+          {
+            "key": "nonBillable",
+            "fillAttr": "var(--chart-2)",
+            "fillComputed": "#df6c32",
+            "widthPx": 468.9,
+            "title": "Non-billable: 1h 30m"
+          }
+        ],
+        "trackFill": "#20242b",
+        "gapCount": 1
+      },
+      "chartVars": {
+        "--chart-1": "#00aa99",
+        "--chart-2": "#df6c32"
+      },
+      "swatches": [
+        {
+          "label": "Billable",
+          "bg": "#00aa99",
+          "size": 8
+        },
+        {
+          "label": "Non-billable",
+          "bg": "#df6c32",
+          "size": 8
+        },
+        {
+          "label": "Billable: 2h",
+          "bg": "#00aa99",
+          "size": 6
+        },
+        {
+          "label": "Billable: 0m",
+          "bg": "#00aa99",
+          "size": 6
+        }
+      ],
+      "minContrast": 6.27,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 9 – Nov 15, 2026",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "Total",
+          "contrast": 6.27,
+          "fg": "#989faa",
+          "bg": "#1a1e24",
+          "fontSize": "12px"
+        },
+        {
+          "text": "3h 30m",
+          "contrast": 16.73,
+          "fg": "#ffffff",
+          "bg": "#1a1e24",
+          "fontSize": "24px"
+        },
+        {
+          "text": "Billable",
+          "contrast": 6.27,
+          "fg": "#989faa",
+          "bg": "#1a1e24",
+          "fontSize": "12px"
+        },
+        {
+          "text": "2h",
+          "contrast": 16.73,
+          "fg": "#ffffff",
+          "bg": "#1a1e24",
+          "fontSize": "20px"
+        },
+        {
+          "text": "Non-billable",
+          "contrast": 6.27,
+          "fg": "#989faa",
+          "bg": "#1a1e24",
+          "fontSize": "12px"
+        },
+        {
+          "text": "1h 30m",
+          "contrast": 6.27,
+          "fg": "#989faa",
+          "bg": "#1a1e24",
+          "fontSize": "20px"
+        },
+        {
+          "text": "By Matter",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        },
+        {
+          "text": "Ndlovu v RAF — Depth II mwdkfjx52f10",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        },
+        {
+          "text": "2h",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "2h",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        },
+        {
+          "text": "Khumalo Property Holdings — Erf 1234 San",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        },
+        {
+          "text": "0m",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "1h 30m",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": []
+    },
+    "empty": {
+      "weeksBack": 1,
+      "box": {
+        "w": 1136,
+        "h": 106
+      },
+      "cardBg": "#14171c",
+      "text": "This Week Nov 2 – Nov 8, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#00aa99",
+        "--chart-2": "#df6c32"
+      },
+      "swatches": [],
+      "minContrast": 6.74,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 2 – Nov 8, 2026",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [],
+      "ariaSnapshot": "- heading \"This Week\" [level=2]\n- button \"Previous week\"\n- text: Nov 2 – Nov 8, 2026\n- button \"Next week\"\n- paragraph: No time tracked this week"
+    }
+  },
+  "mywork-B-carol-1024-light": {
+    "htmlClass": "light",
+    "imgByRoleCount": 0,
+    "current": {
+      "box": {
+        "w": 720,
+        "h": 106
+      },
+      "cardBg": "#fdfeff",
+      "text": "This Week Nov 9 – Nov 15, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#009787",
+        "--chart-2": "#e06623"
+      },
+      "swatches": [],
+      "minContrast": 7.57,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 9 – Nov 15, 2026",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [
+        "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+      ]
+    },
+    "empty": {
+      "weeksBack": 1,
+      "box": {
+        "w": 720,
+        "h": 106
+      },
+      "cardBg": "#fdfeff",
+      "text": "This Week Nov 2 – Nov 8, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#009787",
+        "--chart-2": "#e06623"
+      },
+      "swatches": [],
+      "minContrast": 7.57,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 2 – Nov 8, 2026",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [
+        "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+      ],
+      "ariaSnapshot": "- heading \"This Week\" [level=2]\n- button \"Previous week\"\n- text: Nov 2 – Nov 8, 2026\n- button \"Next week\"\n- paragraph: No time tracked this week"
+    }
+  },
+  "mywork-B-carol-1024-dark": {
+    "htmlClass": "dark",
+    "imgByRoleCount": 0,
+    "current": {
+      "box": {
+        "w": 720,
+        "h": 106
+      },
+      "cardBg": "#14171c",
+      "text": "This Week Nov 9 – Nov 15, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#00aa99",
+        "--chart-2": "#df6c32"
+      },
+      "swatches": [],
+      "minContrast": 6.74,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 9 – Nov 15, 2026",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": []
+    },
+    "empty": {
+      "weeksBack": 1,
+      "box": {
+        "w": 720,
+        "h": 106
+      },
+      "cardBg": "#14171c",
+      "text": "This Week Nov 2 – Nov 8, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#00aa99",
+        "--chart-2": "#df6c32"
+      },
+      "swatches": [],
+      "minContrast": 6.74,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 2 – Nov 8, 2026",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [],
+      "ariaSnapshot": "- heading \"This Week\" [level=2]\n- button \"Previous week\"\n- text: Nov 2 – Nov 8, 2026\n- button \"Next week\"\n- paragraph: No time tracked this week"
+    }
+  },
+  "mywork-B-carol-1440-light": {
+    "htmlClass": "light",
+    "imgByRoleCount": 0,
+    "current": {
+      "box": {
+        "w": 1136,
+        "h": 106
+      },
+      "cardBg": "#fdfeff",
+      "text": "This Week Nov 9 – Nov 15, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#009787",
+        "--chart-2": "#e06623"
+      },
+      "swatches": [],
+      "minContrast": 7.57,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 9 – Nov 15, 2026",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [
+        "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+      ]
+    },
+    "empty": {
+      "weeksBack": 1,
+      "box": {
+        "w": 1136,
+        "h": 106
+      },
+      "cardBg": "#fdfeff",
+      "text": "This Week Nov 2 – Nov 8, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#009787",
+        "--chart-2": "#e06623"
+      },
+      "swatches": [],
+      "minContrast": 7.57,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.79,
+          "fg": "#14171c",
+          "bg": "#fdfeff",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 2 – Nov 8, 2026",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 7.57,
+          "fg": "#4d545f",
+          "bg": "#fdfeff",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [
+        "div.bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80"
+      ],
+      "ariaSnapshot": "- heading \"This Week\" [level=2]\n- button \"Previous week\"\n- text: Nov 2 – Nov 8, 2026\n- button \"Next week\"\n- paragraph: No time tracked this week"
+    }
+  },
+  "mywork-B-carol-1440-dark": {
+    "htmlClass": "dark",
+    "imgByRoleCount": 0,
+    "current": {
+      "box": {
+        "w": 1136,
+        "h": 106
+      },
+      "cardBg": "#14171c",
+      "text": "This Week Nov 9 – Nov 15, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#00aa99",
+        "--chart-2": "#df6c32"
+      },
+      "swatches": [],
+      "minContrast": 6.74,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 9 – Nov 15, 2026",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": []
+    },
+    "empty": {
+      "weeksBack": 1,
+      "box": {
+        "w": 1136,
+        "h": 106
+      },
+      "cardBg": "#14171c",
+      "text": "This Week Nov 2 – Nov 8, 2026 No time tracked this week",
+      "hasMeter": false,
+      "meter": null,
+      "chartVars": {
+        "--chart-1": "#00aa99",
+        "--chart-2": "#df6c32"
+      },
+      "swatches": [],
+      "minContrast": 6.74,
+      "lowContrast": [],
+      "texts": [
+        {
+          "text": "This Week",
+          "contrast": 17.96,
+          "fg": "#ffffff",
+          "bg": "#14171c",
+          "fontSize": "16px"
+        },
+        {
+          "text": "Nov 2 – Nov 8, 2026",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "12px"
+        },
+        {
+          "text": "No time tracked this week",
+          "contrast": 6.74,
+          "fg": "#989faa",
+          "bg": "#14171c",
+          "fontSize": "14px"
+        }
+      ],
+      "whiteSurfaces": [],
+      "ariaSnapshot": "- heading \"This Week\" [level=2]\n- button \"Previous week\"\n- text: Nov 2 – Nov 8, 2026\n- button \"Next week\"\n- paragraph: No time tracked this week"
+    }
+  }
+}

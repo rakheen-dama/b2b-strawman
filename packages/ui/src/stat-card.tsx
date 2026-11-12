@@ -159,10 +159,12 @@ function StatCard({
 
   let valueContent: React.ReactNode;
   if (state === "loading") {
+    // Exactly the ready value's line box (text-2xl → 2rem, text-lg → 1.75rem) so loading → ready
+    // causes no layout shift (Phase 90 640C).
     valueContent = (
       <Skeleton
         data-slot="stat-card-value-skeleton"
-        className={compact ? "h-5 w-16" : "h-7 w-24"}
+        className={compact ? "h-7 w-16" : "h-8 w-24"}
       />
     );
   } else if (!ready || value === null || value === undefined) {

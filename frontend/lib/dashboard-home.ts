@@ -2,6 +2,8 @@
 // rows, and therefore which reads the page fans out to. Pure — no directive, no I/O — so the
 // server-only fan-out (lib/dashboard-home-fetch.ts) and the page share one plan.
 
+import { cn } from "@/lib/utils";
+
 /**
  * Audiences are capability bundles, not roles. The built-in `member` role carries VIEW_TRUST, so
  * a single capability never promotes a fee earner: only owner, admin or FINANCIAL_VISIBILITY does.
@@ -52,11 +54,26 @@ export type WidgetResult<T> = { state: "ok"; data: T } | { state: "absent" } | {
 
 const TRUST_MODULE = "trust_accounting";
 
+type HomeRows = ReadonlyArray<ReadonlyArray<HomeWidget>>;
+
+/**
+ * The owner's rows, before per-widget gates. Exported (literal-typed) for Home's loading skeleton
+ * (640C), which draws this layout — it can't know the audience — so a widget added here fails to
+ * compile there until it has a skeleton.
+ */
+export const OWNER_HOME_ROWS = [
+  ["kpis"],
+  ["diary"],
+  ["unbilledWip", "debtors", "trustPosition"],
+  ["ficaOutstanding", "matterHealth", "sensitive"],
+  ["activity"],
+] as const satisfies HomeRows;
+
 /**
  * Row layout per audience, before per-widget gates (§12.6.3; Phase 90 §15.3.4 regrid: today →
  * money → risk → activity for firm and owner; fee earner unchanged, no KPI row — B2).
  */
-const AUDIENCE_ROWS: Record<HomeAudience, HomeWidget[][]> = {
+const AUDIENCE_ROWS: Record<HomeAudience, HomeRows> = {
   feeEarner: [["diary"], ["tasks", "unbilledWip"], ["matterHealth", "activity"]],
   firm: [
     ["kpis"],
@@ -65,13 +82,7 @@ const AUDIENCE_ROWS: Record<HomeAudience, HomeWidget[][]> = {
     ["ficaOutstanding", "sensitive"],
     ["activity"],
   ],
-  owner: [
-    ["kpis"],
-    ["diary"],
-    ["unbilledWip", "debtors", "trustPosition"],
-    ["ficaOutstanding", "matterHealth", "sensitive"],
-    ["activity"],
-  ],
+  owner: OWNER_HOME_ROWS,
 };
 
 /** The KPI row's rolling window (B1): the last 30 days including today, vs the 30 before. */
@@ -186,4 +197,12 @@ const ROW_SPAN: Record<number, string> = {
 
 export function rowSpanClass(count: number): string {
   return ROW_SPAN[count] ?? "lg:col-span-12";
+}
+
+/** A Home row: one column, then the 12-column grid from `lg`. Shared by the page and its skeleton. */
+export const HOME_ROW_CLASS = "grid grid-cols-1 gap-4 lg:grid-cols-12";
+
+/** A Home cell in a row of `count`: its span, with the widget stretched to the row's height. */
+export function homeCellClass(count: number): string {
+  return cn(rowSpanClass(count), "flex min-w-0 flex-col [&>*]:flex-1");
 }

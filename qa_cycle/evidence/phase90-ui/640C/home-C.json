@@ -1,0 +1,1907 @@
+{
+  "home-C-carol-1440-light-client": {
+    "user": "carol",
+    "width": "1440",
+    "theme": "light",
+    "navMode": "client",
+    "htmlClass": "light",
+    "skeletonObserved": true,
+    "skeletonScreenshotted": true,
+    "skeletonSamples": 81,
+    "inPageSamples": 252,
+    "inPageSkeletonSamples": 105,
+    "inPageSkeletonSpanMs": 4386,
+    "inPageStates": [
+      "other",
+      "skeleton",
+      "loaded"
+    ],
+    "skeletonDrift": {
+      "h1Y": [
+        90,
+        88.1,
+        88
+      ],
+      "mainY": [
+        64
+      ],
+      "headerH": [
+        56
+      ],
+      "kpiH": [
+        196
+      ],
+      "diaryY": [
+        390,
+        388.1,
+        388
+      ]
+    },
+    "firstSkeleton": {
+      "t": 2577,
+      "state": "skeleton",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 1969,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 90,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 0,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "matrix(1, 0, 0, 1, 0, 2)",
+      "rows": [
+        {
+          "y": 170,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": null,
+              "y": 170,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 390,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": null,
+              "y": 390,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 520,
+          "h": 514,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": null,
+              "y": 520,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 520,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 786,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1058,
+          "h": 583,
+          "w": 1136,
+          "ry": 968,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1058,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1058,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1336,
+              "h": 305,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1665,
+          "h": 346,
+          "w": 1136,
+          "ry": 1575,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1665,
+              "h": 346,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Hours logged",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Billable %",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": null,
+        "y": 170,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 1,
+      "homeTestidsInSkeleton": 0,
+      "ariaBusyRoot": "true",
+      "audience": null,
+      "docH": 2033
+    },
+    "sampleCount": 83,
+    "skeletonFirstAtMs": 130,
+    "firstLoadedAtMs": null,
+    "skeletonToLoadedMs": 4448,
+    "skeletonShot": "home-C-carol-1440-light-client-skeleton.png",
+    "loadedShot": "home-C-carol-1440-light-client-loaded.png",
+    "skeleton": {
+      "t": 6963,
+      "state": "skeleton",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 1969,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": null,
+              "y": 168,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 388,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": null,
+              "y": 388,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 518,
+          "h": 514,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": null,
+              "y": 518,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 518,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 784,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1056,
+          "h": 583,
+          "w": 1136,
+          "ry": 968,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1056,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1056,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1334,
+              "h": 305,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1663,
+          "h": 346,
+          "w": 1136,
+          "ry": 1575,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1663,
+              "h": 346,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Hours logged",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Billable %",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": null,
+        "y": 168,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 1,
+      "homeTestidsInSkeleton": 0,
+      "ariaBusyRoot": "true",
+      "audience": null,
+      "docH": 2033
+    },
+    "firstLoaded": {
+      "t": 7025,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 836,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 106,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 168,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 298,
+          "h": 250,
+          "w": 1136,
+          "ry": 210,
+          "cells": [
+            {
+              "testid": "home-cell-tasks",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 572,
+          "h": 250,
+          "w": 1136,
+          "ry": 484,
+          "cells": [
+            {
+              "testid": "home-cell-matterHealth",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-activity",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "My unbilled time",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": true,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 298,
+          "h": 250,
+          "w": 560
+        }
+      ],
+      "kpiFrame": null,
+      "testidsInRoot": 12,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "feeEarner",
+      "docH": 900
+    },
+    "loaded": {
+      "t": 13370,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 836,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 106,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 168,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 298,
+          "h": 250,
+          "w": 1136,
+          "ry": 210,
+          "cells": [
+            {
+              "testid": "home-cell-tasks",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 572,
+          "h": 250,
+          "w": 1136,
+          "ry": 484,
+          "cells": [
+            {
+              "testid": "home-cell-matterHealth",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-activity",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "My unbilled time",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": true,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 298,
+          "h": 250,
+          "w": 560
+        }
+      ],
+      "kpiFrame": null,
+      "testidsInRoot": 12,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "feeEarner",
+      "docH": 900
+    },
+    "restLoadedUnthrottled": {
+      "t": 3206,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 836,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 106,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 168,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 298,
+          "h": 250,
+          "w": 1136,
+          "ry": 210,
+          "cells": [
+            {
+              "testid": "home-cell-tasks",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 572,
+          "h": 250,
+          "w": 1136,
+          "ry": 484,
+          "cells": [
+            {
+              "testid": "home-cell-matterHealth",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-activity",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "My unbilled time",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": true,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 298,
+          "h": 250,
+          "w": 560
+        }
+      ],
+      "kpiFrame": null,
+      "testidsInRoot": 12,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "feeEarner",
+      "docH": 900
+    },
+    "deltaSkeletonVsLoaded": {
+      "h1Y": 0,
+      "rootOffsetTop": 0,
+      "rowCount": {
+        "skeleton": 5,
+        "loaded": 3
+      },
+      "rows": [
+        {
+          "index": 0,
+          "loadedCells": [
+            "home-cell-diary"
+          ],
+          "skeleton": {
+            "y": 168,
+            "h": 196
+          },
+          "loaded": {
+            "y": 168,
+            "h": 106
+          },
+          "dy": 0,
+          "dyLayout": 0,
+          "dh": -90
+        },
+        {
+          "index": 1,
+          "loadedCells": [
+            "home-cell-tasks",
+            "home-cell-unbilledWip"
+          ],
+          "skeleton": {
+            "y": 388,
+            "h": 106
+          },
+          "loaded": {
+            "y": 298,
+            "h": 250
+          },
+          "dy": -90,
+          "dyLayout": -90,
+          "dh": 144
+        },
+        {
+          "index": 2,
+          "loadedCells": [
+            "home-cell-matterHealth",
+            "home-cell-activity"
+          ],
+          "skeleton": {
+            "y": 518,
+            "h": 514
+          },
+          "loaded": {
+            "y": 572,
+            "h": 250
+          },
+          "dy": 54,
+          "dyLayout": 54,
+          "dh": -264
+        },
+        {
+          "index": 3,
+          "loadedCells": null,
+          "skeleton": {
+            "y": 1056,
+            "h": 583
+          },
+          "loaded": null,
+          "dy": null,
+          "dyLayout": null,
+          "dh": null
+        },
+        {
+          "index": 4,
+          "loadedCells": null,
+          "skeleton": {
+            "y": 1663,
+            "h": 346
+          },
+          "loaded": null,
+          "dy": null,
+          "dyLayout": null,
+          "dh": null
+        }
+      ],
+      "kpiFrame": {
+        "skeleton": {
+          "dataSlot": null,
+          "y": 168,
+          "h": 196,
+          "w": 1136
+        },
+        "loaded": null,
+        "dy": null,
+        "dh": null
+      }
+    },
+    "deltaSkeletonVsFirstLoaded": {
+      "h1Y": 0,
+      "rootOffsetTop": 0,
+      "rowCount": {
+        "skeleton": 5,
+        "loaded": 3
+      },
+      "rows": [
+        {
+          "index": 0,
+          "loadedCells": [
+            "home-cell-diary"
+          ],
+          "skeleton": {
+            "y": 168,
+            "h": 196
+          },
+          "loaded": {
+            "y": 168,
+            "h": 106
+          },
+          "dy": 0,
+          "dyLayout": 0,
+          "dh": -90
+        },
+        {
+          "index": 1,
+          "loadedCells": [
+            "home-cell-tasks",
+            "home-cell-unbilledWip"
+          ],
+          "skeleton": {
+            "y": 388,
+            "h": 106
+          },
+          "loaded": {
+            "y": 298,
+            "h": 250
+          },
+          "dy": -90,
+          "dyLayout": -90,
+          "dh": 144
+        },
+        {
+          "index": 2,
+          "loadedCells": [
+            "home-cell-matterHealth",
+            "home-cell-activity"
+          ],
+          "skeleton": {
+            "y": 518,
+            "h": 514
+          },
+          "loaded": {
+            "y": 572,
+            "h": 250
+          },
+          "dy": 54,
+          "dyLayout": 54,
+          "dh": -264
+        },
+        {
+          "index": 3,
+          "loadedCells": null,
+          "skeleton": {
+            "y": 1056,
+            "h": 583
+          },
+          "loaded": null,
+          "dy": null,
+          "dyLayout": null,
+          "dh": null
+        },
+        {
+          "index": 4,
+          "loadedCells": null,
+          "skeleton": {
+            "y": 1663,
+            "h": 346
+          },
+          "loaded": null,
+          "dy": null,
+          "dyLayout": null,
+          "dh": null
+        }
+      ],
+      "kpiFrame": {
+        "skeleton": {
+          "dataSlot": null,
+          "y": 168,
+          "h": 196,
+          "w": 1136
+        },
+        "loaded": null,
+        "dy": null,
+        "dh": null
+      }
+    },
+    "layoutShifts": [],
+    "cls": 0,
+    "clsExclRecentInput": 0,
+    "statesSeen": [
+      "other",
+      "skeleton",
+      "loaded"
+    ]
+  },
+  "home-C-carol-1440-light-reload": {
+    "user": "carol",
+    "width": "1440",
+    "theme": "light",
+    "navMode": "reload",
+    "htmlClass": "light",
+    "skeletonObserved": true,
+    "skeletonScreenshotted": false,
+    "skeletonSamples": 0,
+    "inPageSamples": 145,
+    "inPageSkeletonSamples": 1,
+    "inPageSkeletonSpanMs": 0,
+    "inPageStates": [
+      "skeleton",
+      "loaded"
+    ],
+    "skeletonDrift": {
+      "h1Y": [
+        90
+      ],
+      "mainY": [
+        64
+      ],
+      "headerH": [
+        56
+      ],
+      "kpiH": [
+        196
+      ],
+      "diaryY": [
+        390
+      ]
+    },
+    "firstSkeleton": {
+      "t": 7436,
+      "state": "skeleton",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 1969,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 90,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 0,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "matrix(1, 0, 0, 1, 0, 2)",
+      "rows": [
+        {
+          "y": 170,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": null,
+              "y": 170,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 390,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": null,
+              "y": 390,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 520,
+          "h": 514,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": null,
+              "y": 520,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 520,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 786,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1058,
+          "h": 583,
+          "w": 1136,
+          "ry": 968,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1058,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1058,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1336,
+              "h": 305,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1665,
+          "h": 346,
+          "w": 1136,
+          "ry": 1575,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1665,
+              "h": 346,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Hours logged",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Billable %",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": null,
+        "y": 170,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 1,
+      "homeTestidsInSkeleton": 0,
+      "ariaBusyRoot": "true",
+      "audience": null,
+      "docH": 2033
+    },
+    "sampleCount": 102,
+    "skeletonFirstAtMs": null,
+    "firstLoadedAtMs": null,
+    "skeletonToLoadedMs": 17,
+    "skeletonShot": null,
+    "loadedShot": "home-C-carol-1440-light-reload-loaded.png",
+    "skeleton": {
+      "t": 7436,
+      "state": "skeleton",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 1969,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 90,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 0,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "matrix(1, 0, 0, 1, 0, 2)",
+      "rows": [
+        {
+          "y": 170,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": null,
+              "y": 170,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 390,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": null,
+              "y": 390,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 520,
+          "h": 514,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": null,
+              "y": 520,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 520,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 786,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1058,
+          "h": 583,
+          "w": 1136,
+          "ry": 968,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1058,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1058,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1336,
+              "h": 305,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1665,
+          "h": 346,
+          "w": 1136,
+          "ry": 1575,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1665,
+              "h": 346,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Hours logged",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Billable %",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": null,
+        "y": 170,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 1,
+      "homeTestidsInSkeleton": 0,
+      "ariaBusyRoot": "true",
+      "audience": null,
+      "docH": 2033
+    },
+    "firstLoaded": {
+      "t": 7453,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 836,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88.1,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 0,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "matrix(1, 0, 0, 1, 0, 0.0524022)",
+      "rows": [
+        {
+          "y": 168.1,
+          "h": 106,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 168.1,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 298.1,
+          "h": 250,
+          "w": 1136,
+          "ry": 210,
+          "cells": [
+            {
+              "testid": "home-cell-tasks",
+              "y": 298.1,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 298.1,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 572.1,
+          "h": 250,
+          "w": 1136,
+          "ry": 484,
+          "cells": [
+            {
+              "testid": "home-cell-matterHealth",
+              "y": 572.1,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-activity",
+              "y": 572.1,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "My unbilled time",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": true,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 298.1,
+          "h": 250,
+          "w": 560
+        }
+      ],
+      "kpiFrame": null,
+      "testidsInRoot": 12,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "feeEarner",
+      "docH": 900
+    },
+    "loaded": {
+      "t": 13581,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 836,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 106,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 168,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 298,
+          "h": 250,
+          "w": 1136,
+          "ry": 210,
+          "cells": [
+            {
+              "testid": "home-cell-tasks",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 572,
+          "h": 250,
+          "w": 1136,
+          "ry": 484,
+          "cells": [
+            {
+              "testid": "home-cell-matterHealth",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-activity",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "My unbilled time",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": true,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 298,
+          "h": 250,
+          "w": 560
+        }
+      ],
+      "kpiFrame": null,
+      "testidsInRoot": 12,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "feeEarner",
+      "docH": 900
+    },
+    "restLoadedUnthrottled": {
+      "t": 3182,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 836,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 106,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 168,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 298,
+          "h": 250,
+          "w": 1136,
+          "ry": 210,
+          "cells": [
+            {
+              "testid": "home-cell-tasks",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 298,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 572,
+          "h": 250,
+          "w": 1136,
+          "ry": 484,
+          "cells": [
+            {
+              "testid": "home-cell-matterHealth",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-activity",
+              "y": 572,
+              "h": 250,
+              "w": 560
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "My unbilled time",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": true,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 298,
+          "h": 250,
+          "w": 560
+        }
+      ],
+      "kpiFrame": null,
+      "testidsInRoot": 12,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "feeEarner",
+      "docH": 900
+    },
+    "deltaSkeletonVsLoaded": {
+      "h1Y": -2,
+      "rootOffsetTop": 88,
+      "rowCount": {
+        "skeleton": 5,
+        "loaded": 3
+      },
+      "rows": [
+        {
+          "index": 0,
+          "loadedCells": [
+            "home-cell-diary"
+          ],
+          "skeleton": {
+            "y": 170,
+            "h": 196
+          },
+          "loaded": {
+            "y": 168,
+            "h": 106
+          },
+          "dy": -2,
+          "dyLayout": 0,
+          "dh": -90
+        },
+        {
+          "index": 1,
+          "loadedCells": [
+            "home-cell-tasks",
+            "home-cell-unbilledWip"
+          ],
+          "skeleton": {
+            "y": 390,
+            "h": 106
+          },
+          "loaded": {
+            "y": 298,
+            "h": 250
+          },
+          "dy": -92,
+          "dyLayout": -90,
+          "dh": 144
+        },
+        {
+          "index": 2,
+          "loadedCells": [
+            "home-cell-matterHealth",
+            "home-cell-activity"
+          ],
+          "skeleton": {
+            "y": 520,
+            "h": 514
+          },
+          "loaded": {
+            "y": 572,
+            "h": 250
+          },
+          "dy": 52,
+          "dyLayout": 54,
+          "dh": -264
+        },
+        {
+          "index": 3,
+          "loadedCells": null,
+          "skeleton": {
+            "y": 1058,
+            "h": 583
+          },
+          "loaded": null,
+          "dy": null,
+          "dyLayout": null,
+          "dh": null
+        },
+        {
+          "index": 4,
+          "loadedCells": null,
+          "skeleton": {
+            "y": 1665,
+            "h": 346
+          },
+          "loaded": null,
+          "dy": null,
+          "dyLayout": null,
+          "dh": null
+        }
+      ],
+      "kpiFrame": {
+        "skeleton": {
+          "dataSlot": null,
+          "y": 170,
+          "h": 196,
+          "w": 1136
+        },
+        "loaded": null,
+        "dy": null,
+        "dh": null
+      }
+    },
+    "deltaSkeletonVsFirstLoaded": {
+      "h1Y": -1.9,
+      "rootOffsetTop": 0,
+      "rowCount": {
+        "skeleton": 5,
+        "loaded": 3
+      },
+      "rows": [
+        {
+          "index": 0,
+          "loadedCells": [
+            "home-cell-diary"
+          ],
+          "skeleton": {
+            "y": 170,
+            "h": 196
+          },
+          "loaded": {
+            "y": 168.1,
+            "h": 106
+          },
+          "dy": -1.9,
+          "dyLayout": 0,
+          "dh": -90
+        },
+        {
+          "index": 1,
+          "loadedCells": [
+            "home-cell-tasks",
+            "home-cell-unbilledWip"
+          ],
+          "skeleton": {
+            "y": 390,
+            "h": 106
+          },
+          "loaded": {
+            "y": 298.1,
+            "h": 250
+          },
+          "dy": -91.9,
+          "dyLayout": -90,
+          "dh": 144
+        },
+        {
+          "index": 2,
+          "loadedCells": [
+            "home-cell-matterHealth",
+            "home-cell-activity"
+          ],
+          "skeleton": {
+            "y": 520,
+            "h": 514
+          },
+          "loaded": {
+            "y": 572.1,
+            "h": 250
+          },
+          "dy": 52.1,
+          "dyLayout": 54,
+          "dh": -264
+        },
+        {
+          "index": 3,
+          "loadedCells": null,
+          "skeleton": {
+            "y": 1058,
+            "h": 583
+          },
+          "loaded": null,
+          "dy": null,
+          "dyLayout": null,
+          "dh": null
+        },
+        {
+          "index": 4,
+          "loadedCells": null,
+          "skeleton": {
+            "y": 1665,
+            "h": 346
+          },
+          "loaded": null,
+          "dy": null,
+          "dyLayout": null,
+          "dh": null
+        }
+      ],
+      "kpiFrame": {
+        "skeleton": {
+          "dataSlot": null,
+          "y": 170,
+          "h": 196,
+          "w": 1136
+        },
+        "loaded": null,
+        "dy": null,
+        "dh": null
+      }
+    },
+    "layoutShifts": [
+      {
+        "t": 8974,
+        "value": 0.000006542164994855968,
+        "hadRecentInput": false,
+        "sources": [
+          {
+            "node": "H2[slot=null][testid=null].font-display text-foreground font-semibold text-base",
+            "prev": {
+              "x": 1066.078125,
+              "y": 717,
+              "w": 141,
+              "h": 24
+            },
+            "cur": {
+              "x": 1062.59375,
+              "y": 717,
+              "w": 146.796875,
+              "h": 24
+            }
+          }
+        ]
+      }
+    ],
+    "cls": 0,
+    "clsExclRecentInput": 0,
+    "statesSeen": [
+      "no-main",
+      "loaded"
+    ]
+  }
+}

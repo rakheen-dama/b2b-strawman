@@ -3,7 +3,11 @@
 import { useState, useTransition, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
+import { Card } from "@b2mash/ui/card";
+import { StackedMeter } from "@/components/charts/stacked-meter";
+import { WIDGET_ELEVATION_CLASS } from "@/components/dashboard/widget-parts";
 import { formatDuration } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { fetchMyTimeSummary } from "@/app/(app)/org/[slug]/my-work/actions";
 import type { MyWorkTimeSummary } from "@/lib/types";
 
@@ -74,10 +78,10 @@ export function WeeklyTimeSummary({ initialSummary, initialFrom }: WeeklyTimeSum
   const isEmpty = !summary || summary.totalMinutes === 0;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+    <Card className={cn("gap-0 p-5", WIDGET_ELEVATION_CLASS)}>
       {/* Week Navigation Header */}
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">This Week</h2>
+        <h2 className="text-foreground font-semibold">This Week</h2>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -89,7 +93,7 @@ export function WeeklyTimeSummary({ initialSummary, initialFrom }: WeeklyTimeSum
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <span className="min-w-[140px] text-center text-xs text-slate-600 dark:text-slate-400">
+          <span className="text-muted-foreground min-w-[140px] text-center text-xs">
             {isPending ? "Loading..." : weekLabel}
           </span>
           <Button
@@ -106,65 +110,112 @@ export function WeeklyTimeSummary({ initialSummary, initialFrom }: WeeklyTimeSum
       </div>
 
       {isEmpty ? (
-        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">No time tracked this week</p>
+        <p className="text-muted-foreground mt-4 text-sm">No time tracked this week</p>
       ) : (
-        <div className="mt-4 space-y-4">
-          {/* Stat Cards: Total, Billable, Non-billable */}
-          <div className="space-y-3">
-            <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
-              <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                Total
-              </p>
-              <p className="font-display text-2xl text-slate-900 dark:text-slate-100">
-                {formatDuration(summary!.totalMinutes)}
-              </p>
-            </div>
+        <WeekTotals summary={summary} />
+      )}
+    </Card>
+  );
+}
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Billable
-                </p>
-                <p className="font-display text-xl text-green-600 dark:text-green-400">
-                  {formatDuration(summary!.billableMinutes)}
-                </p>
-              </div>
-              <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Non-billable
-                </p>
-                <p className="font-display text-xl text-slate-600 dark:text-slate-400">
-                  {formatDuration(summary!.nonBillableMinutes)}
-                </p>
-              </div>
-            </div>
+/**
+ * The meter's parts in draw order. StackedMeter's categorical palette gives part i the colour
+ * --chart-(i+1), so each part carries that slot's swatch class — the legend reads it from here.
+ */
+const WEEK_PARTS = {
+  billable: { label: "Billable", swatch: "bg-chart-1" },
+  nonBillable: { label: "Non-billable", swatch: "bg-chart-2" },
+} as const;
+
+/**
+ * The week's figures. Billable vs non-billable is one whole split into two named parts, so it is
+ * a categorical StackedMeter (ADR-370): Billable = slot 1, Non-billable = slot 2 in a fixed order
+ * so a zero part keeps its colour. The two figure tiles are its legend (swatch + label, never
+ * colour alone); the meter's sr summary states the same formatDuration text the tiles show.
+ */
+function WeekTotals({ summary }: { summary: MyWorkTimeSummary }) {
+  const minutes: Record<keyof typeof WEEK_PARTS, number> = {
+    billable: summary.billableMinutes,
+    nonBillable: summary.nonBillableMinutes,
+  };
+  return (
+    <div className="mt-4 space-y-4">
+      {/* Stat Cards: Total, Billable, Non-billable */}
+      <div className="space-y-3">
+        <div className="bg-muted/50 rounded-md px-4 py-3">
+          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Total</p>
+          <p className="font-display text-foreground text-2xl">
+            {formatDuration(summary.totalMinutes)}
+          </p>
+        </div>
+
+        <StackedMeter
+          palette="categorical"
+          label="Billable vs non-billable time"
+          segments={(Object.keys(WEEK_PARTS) as Array<keyof typeof WEEK_PARTS>).map((key) => ({
+            key,
+            label: WEEK_PARTS[key].label,
+            value: minutes[key],
+            valueText: formatDuration(minutes[key]),
+          }))}
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-muted/50 rounded-md px-4 py-3">
+            <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
+              <span
+                aria-hidden="true"
+                className={cn(WEEK_PARTS.billable.swatch, "inline-block size-2 rounded-full")}
+              />
+              {WEEK_PARTS.billable.label}
+            </p>
+            <p className="font-display text-foreground text-xl">
+              {formatDuration(summary.billableMinutes)}
+            </p>
           </div>
+          <div className="bg-muted/50 rounded-md px-4 py-3">
+            <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
+              <span
+                aria-hidden="true"
+                className={cn(WEEK_PARTS.nonBillable.swatch, "inline-block size-2 rounded-full")}
+              />
+              {WEEK_PARTS.nonBillable.label}
+            </p>
+            <p className="font-display text-muted-foreground text-xl">
+              {formatDuration(summary.nonBillableMinutes)}
+            </p>
+          </div>
+        </div>
+      </div>
 
-          {/* By Matter Breakdown */}
-          {summary!.byMatter.length > 0 && (
-            <div className="border-t border-slate-200 pt-4 dark:border-slate-800">
-              <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">
-                By Matter
-              </h3>
-              <div className="space-y-2">
-                {summary!.byMatter.map((project) => (
-                  <div key={project.matterId} className="flex items-center justify-between text-sm">
-                    <span className="truncate text-slate-700 dark:text-slate-300">
-                      {project.matterName}
-                    </span>
-                    <div className="flex shrink-0 items-center gap-3">
-                      <span className="text-xs text-green-600 dark:text-green-400">
-                        {formatDuration(project.billableMinutes)}
-                      </span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">
-                        {formatDuration(project.totalMinutes)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+      {/* By Matter Breakdown */}
+      {summary.byMatter.length > 0 && (
+        <div className="border-border border-t pt-4">
+          <h3 className="text-muted-foreground mb-3 text-sm font-medium">By Matter</h3>
+          <div className="space-y-2">
+            {summary.byMatter.map((project) => (
+              <div key={project.matterId} className="flex items-center justify-between text-sm">
+                <span className="text-foreground truncate">{project.matterName}</span>
+                <div className="flex shrink-0 items-center gap-3">
+                  {/* Was colour-only (green); now the Billable swatch + an sr label. */}
+                  <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        WEEK_PARTS.billable.swatch,
+                        "inline-block size-1.5 rounded-full"
+                      )}
+                    />
+                    <span className="sr-only">Billable: </span>
+                    {formatDuration(project.billableMinutes)}
+                  </span>
+                  <span className="text-foreground font-medium">
+                    {formatDuration(project.totalMinutes)}
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       )}
     </div>

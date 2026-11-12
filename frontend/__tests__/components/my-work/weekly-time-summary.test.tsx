@@ -113,5 +113,44 @@ describe("WeeklyTimeSummary", () => {
     expect(screen.getByText("No time tracked this week")).toBeInTheDocument();
     expect(screen.queryByText("By Matter")).not.toBeInTheDocument();
     expect(screen.queryByText("Total")).not.toBeInTheDocument();
+    expect(screen.queryByRole("img")).toBeNull();
+  });
+
+  it("draws billable vs non-billable as a categorical meter whose sr summary states both", () => {
+    const { container } = render(
+      <WeeklyTimeSummary initialSummary={populatedSummary} initialFrom="2026-02-09" />
+    );
+
+    expect(
+      screen.getByRole("img", { name: "Billable vs non-billable time" })
+    ).toHaveAccessibleDescription("Billable 8h, Non-billable 2h");
+    expect(
+      Array.from(container.querySelectorAll("rect[data-segment]")).map((r) =>
+        r.getAttribute("fill")
+      )
+    ).toEqual(["var(--chart-1)", "var(--chart-2)"]);
+  });
+
+  it("states a zero non-billable part in the summary and draws only the billable part", () => {
+    const { container } = render(
+      <WeeklyTimeSummary
+        initialSummary={{
+          ...populatedSummary,
+          billableMinutes: 600,
+          nonBillableMinutes: 0,
+          totalMinutes: 600,
+        }}
+        initialFrom="2026-02-09"
+      />
+    );
+
+    expect(
+      screen.getByRole("img", { name: "Billable vs non-billable time" })
+    ).toHaveAccessibleDescription("Billable 10h, Non-billable 0m");
+    expect(
+      Array.from(container.querySelectorAll("rect[data-segment]")).map((r) =>
+        r.getAttribute("data-segment")
+      )
+    ).toEqual(["billable"]);
   });
 });

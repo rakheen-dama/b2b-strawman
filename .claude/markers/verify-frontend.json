@@ -1,7 +1,7 @@
 {
-  "commit": "4754eda99",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-641B, phase90/41B-matter-hero, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final code head)",
+  "commit": "706919c0a",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-642A, phase90/42A-clients-datatable, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final code head)",
   "exit": 0,
-  "ts": "2026-11-12T17:04:02Z",
-  "summary": "PR #1771 (Phase 90 641B) @4754eda99 (head 214672cf1 adds evidence only): FE-GATE exit 0 — 474 files, 4155 passed / 2 skipped; lint 0 errors. E2E fresh stack built from the worktree @4754eda99: test:e2e:projects 27 passed, legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS Alice 4 tiles / Carol 2 tiles, 1024 2x2 / 1440 4x1, light/dark, console 0. Frontend CI pass @214672cf1."
+  "ts": "2026-11-12T19:04:48Z",
+  "summary": "PR #1772 (Phase 90 642A) @706919c0a (head 2585352ba adds evidence only): FE-GATE exit 0 — 475 files, 4205 passed / 2 skipped; lint 0 errors. Fresh stacks built from the worktree @706919c0a: test:e2e:customers 18 passed / 2 skipped, legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline). OBS parity pristine 509 IDENTICAL / 2 explained DIFF; sticky header pins at 64px at 1024/1440, docScrollWidth = viewport at 390/768/1024/1440; console 0. Frontend CI pass @2585352ba."
 }

@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 
 // Shared bits of the Home widgets (614B; on the kit in 640B): the widget card shell (one density
 // and elevation for all nine), the header/footer link style, the quiet error line, the headline
-// figure and the status badge. Server-safe — no "use client", no hooks: server widgets import it.
+// figure, the list-row style and the status badge. Server-safe — no "use client", no hooks: server
+// widgets import it.
 
 /** Home card elevation (arch §15.2.5) — also for kit cards used as a widget (StatCard). */
 export const WIDGET_ELEVATION_CLASS = "shadow-(--shadow-card)";
@@ -13,6 +14,10 @@ export const WIDGET_CARD_CLASS = `gap-4 py-5 ${WIDGET_ELEVATION_CLASS}`;
 
 export const WIDGET_LINK_CLASS =
   "text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded-sm text-xs outline-none focus-visible:ring-2";
+
+/** A clickable list row inside a widget (task, matter, client, event): hover wash + focus ring. */
+export const WIDGET_ROW_CLASS =
+  "hover:bg-muted focus-visible:ring-ring flex items-center gap-2 rounded-md px-2 py-1.5 outline-none focus-visible:ring-2";
 
 interface WidgetCardProps extends Omit<ComponentProps<"div">, "title"> {
   title: ReactNode;

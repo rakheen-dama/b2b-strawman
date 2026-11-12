@@ -1,0 +1,10 @@
+- text: Unbilled WIP
+- link "Open unbilled work":
+  - /url: /org/e2e-test-org/invoices/unbilled
+- paragraph: R 19 425,00
+- paragraph: 10h 30m of unbilled time
+- figure "Unbilled WIP":
+  - application: R 0 R 8 k R 16 k Alice Owner Bob Admin Carol Member R 15 k R 3,6 k R 825
+  - paragraph: "Unbilled WIP: 3 bars; highest Alice Owner R 15 000,00, lowest Carol Member R 825,00."
+  - button "View as table"
+- paragraph: Disbursements not yet billed R 0,00

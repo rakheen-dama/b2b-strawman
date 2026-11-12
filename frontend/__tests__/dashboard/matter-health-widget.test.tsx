@@ -88,7 +88,7 @@ describe("MatterHealthWidget", () => {
     render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
 
     const row = (name: string) => screen.getByText(name).closest("button")!;
-    // The label stays in the accessibility tree at every width (sr-only below @md).
+    // The label stays in the accessibility tree at every width (sr-only below 40rem).
     expect(within(row("Website Redesign")).getByText("At Risk")).toBeInTheDocument();
     expect(within(row("Mobile App")).getByText("Healthy")).toBeInTheDocument();
     expect(within(row("API Migration")).getByText("Critical")).toBeInTheDocument();
@@ -96,6 +96,23 @@ describe("MatterHealthWidget", () => {
       within(row("API Migration")).getByText("Critical").closest("[data-tone]")
     ).toHaveAttribute("data-tone", "danger");
     expect(row("Website Redesign")).toHaveAccessibleName(/At Risk/);
+  });
+
+  it("renders every column; Progress and Hours reveal from a 30rem card, the label from 40rem", () => {
+    render(<MatterHealthWidget matters={mockProjects} orgSlug="acme" />);
+
+    const row = screen.getByText("Website Redesign").closest("button")!;
+    // All columns are in the DOM: the card's own width (container query) decides what shows.
+    expect(screen.getByText("Progress")).toBeInTheDocument();
+    expect(screen.getByText("Hours")).toBeInTheDocument();
+    expect(within(row).getByText("50%")).toBeInTheDocument();
+    expect(within(row).getByText("170.0h")).toBeInTheDocument();
+    expect(within(row).getByText("20/40")).toBeInTheDocument();
+
+    // Responsive-visibility contract (a 1440 half-width card is ~518px; 1024's is ~310px).
+    expect(screen.getByText("Progress")).toHaveClass("hidden", "@min-[30rem]:block");
+    expect(screen.getByText("Hours")).toHaveClass("hidden", "@min-[30rem]:block");
+    expect(within(row).getByText("At Risk")).toHaveClass("sr-only", "@min-[40rem]:not-sr-only");
   });
 
   it("keeps the sortable column headers and their sort state", () => {

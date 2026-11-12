@@ -1,0 +1,2258 @@
+{
+  "empty-alice-1024-light": {
+    "audience": "owner",
+    "htmlClass": "light",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 288,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 1 Hours logged 0,0h No hours logged in the last 6 weeks. Billable % — Not available Overdue tasks 0",
+        "truncated": [
+          {
+            "text": "No hours logged in the last 6 weeks.",
+            "sw": 263,
+            "cw": 1
+          },
+          {
+            "text": "Not available",
+            "sw": 187,
+            "cw": 1
+          }
+        ],
+        "title": null,
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 98
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 98
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 480,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 720,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 280,
+        "y": 610,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 270,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work Nothing unbilled. Billable time appears here until it is on a fee note.",
+        "truncated": [],
+        "title": {
+          "text": "Unbilled WIP",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "unbilled-wip-widget",
+            "w": 352,
+            "h": 270
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "hasChart": false,
+          "variant": "firm"
+        }
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "x": 648,
+        "y": 610,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 270,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 1 client owes fees Acme Corp R 8 625,00 Not yet overdue Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": [
+          {
+            "text": "Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+            "sw": 499,
+            "cw": 1
+          }
+        ],
+        "title": {
+          "text": "Debtors",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "debtors-widget",
+            "w": 352,
+            "h": 270
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 52,
+        "extra": null
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "x": 280,
+        "y": 896,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 248,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation R 0,00 Balanced Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 0,00 Client ledgers R 0,00 Last reconciliation Never reconciled Awaiting approval 0",
+        "truncated": [],
+        "title": {
+          "text": "Trust position",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "trust-position-widget",
+            "w": 720,
+            "h": 248
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "x": 280,
+        "y": 1168,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 286,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance Every active client has completed FICA. Incomplete profiles",
+        "truncated": [],
+        "title": {
+          "text": "FICA outstanding",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "fica-outstanding-widget",
+            "w": 352,
+            "h": 286
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 648,
+        "y": 1168,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 286,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS TASKS Website Redesign Acme Corp Unknown 0/0 View all matters →",
+        "truncated": [
+          {
+            "text": "Unknown",
+            "sw": 54,
+            "cw": 1
+          }
+        ],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 352,
+            "h": 286
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "containerWidth": 350,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 182
+            },
+            "Status": {
+              "visible": true,
+              "w": 48
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": false,
+              "w": 0
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 1,
+          "truncatedNames": 0,
+          "rows": [
+            {
+              "name": "Website Redesign",
+              "nameTruncated": false,
+              "nameW": 182,
+              "nameSW": 182,
+              "badgeTone": "neutral",
+              "badgeW": 20,
+              "labelText": "Unknown",
+              "labelSrOnly": true
+            }
+          ]
+        }
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "x": 280,
+        "y": 1470,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 305,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 0 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": [],
+        "title": {
+          "text": "Sensitive eventsLast 7 days",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "sensitive-events-widget",
+            "w": 720,
+            "h": 305
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 280,
+        "y": 1799,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 346,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity AO Alice Owner generated a statement of account \"statement-of-account-website-redesign-2026-11-12.pdf\" just now AO Information request REQ-0001 sent to Acme Corp just now AO Alice Owner created information request REQ-0001 just now AO Alice Owner sent fee note INV-0001 just now AO Alice Owner approved fee note INV-0001 just now AO Alice Owner opened the matter \"Website Redesign\" just now View all activity →",
+        "truncated": [
+          {
+            "text": "Alice Owner generated a statement of account \"statement-of-account-website-redesign-2026-11-12.pdf\"",
+            "sw": 599,
+            "cw": 564
+          }
+        ],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 720,
+            "h": 346
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "empty-alice-1024-dark": {
+    "audience": "owner",
+    "htmlClass": "dark",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 288,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 1 Hours logged 0,0h No hours logged in the last 6 weeks. Billable % — Not available Overdue tasks 0",
+        "truncated": [
+          {
+            "text": "No hours logged in the last 6 weeks.",
+            "sw": 263,
+            "cw": 1
+          },
+          {
+            "text": "Not available",
+            "sw": 187,
+            "cw": 1
+          }
+        ],
+        "title": null,
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 98
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 98
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 480,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 720,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 280,
+        "y": 610,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 270,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work Nothing unbilled. Billable time appears here until it is on a fee note.",
+        "truncated": [],
+        "title": {
+          "text": "Unbilled WIP",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "unbilled-wip-widget",
+            "w": 352,
+            "h": 270
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "hasChart": false,
+          "variant": "firm"
+        }
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "x": 648,
+        "y": 610,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 270,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 1 client owes fees Acme Corp R 8 625,00 Not yet overdue Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": [
+          {
+            "text": "Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+            "sw": 499,
+            "cw": 1
+          }
+        ],
+        "title": {
+          "text": "Debtors",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "debtors-widget",
+            "w": 352,
+            "h": 270
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 52,
+        "extra": null
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "x": 280,
+        "y": 896,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 248,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation R 0,00 Balanced Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 0,00 Client ledgers R 0,00 Last reconciliation Never reconciled Awaiting approval 0",
+        "truncated": [],
+        "title": {
+          "text": "Trust position",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "trust-position-widget",
+            "w": 720,
+            "h": 248
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "x": 280,
+        "y": 1168,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 286,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance Every active client has completed FICA. Incomplete profiles",
+        "truncated": [],
+        "title": {
+          "text": "FICA outstanding",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "fica-outstanding-widget",
+            "w": 352,
+            "h": 286
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 648,
+        "y": 1168,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 286,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS TASKS Website Redesign Acme Corp Unknown 0/0 View all matters →",
+        "truncated": [
+          {
+            "text": "Unknown",
+            "sw": 54,
+            "cw": 1
+          }
+        ],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 352,
+            "h": 286
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "containerWidth": 350,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 182
+            },
+            "Status": {
+              "visible": true,
+              "w": 48
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": false,
+              "w": 0
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 1,
+          "truncatedNames": 0,
+          "rows": [
+            {
+              "name": "Website Redesign",
+              "nameTruncated": false,
+              "nameW": 182,
+              "nameSW": 182,
+              "badgeTone": "neutral",
+              "badgeW": 20,
+              "labelText": "Unknown",
+              "labelSrOnly": true
+            }
+          ]
+        }
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "x": 280,
+        "y": 1470,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 305,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 0 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": [],
+        "title": {
+          "text": "Sensitive eventsLast 7 days",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "sensitive-events-widget",
+            "w": 720,
+            "h": 305
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 280,
+        "y": 1799,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 346,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity AO Alice Owner generated a statement of account \"statement-of-account-website-redesign-2026-11-12.pdf\" just now AO Information request REQ-0001 sent to Acme Corp just now AO Alice Owner created information request REQ-0001 just now AO Alice Owner sent fee note INV-0001 just now AO Alice Owner approved fee note INV-0001 just now AO Alice Owner opened the matter \"Website Redesign\" just now View all activity →",
+        "truncated": [
+          {
+            "text": "Alice Owner generated a statement of account \"statement-of-account-website-redesign-2026-11-12.pdf\"",
+            "sw": 599,
+            "cw": 564
+          }
+        ],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 720,
+            "h": 346
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "empty-alice-1440-light": {
+    "audience": "owner",
+    "htmlClass": "light",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 174,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 1 Hours logged 0,0h No hours logged in the last 6 weeks. Billable % — Not available Overdue tasks 0",
+        "truncated": [
+          {
+            "text": "No hours logged in the last 6 weeks.",
+            "sw": 263,
+            "cw": 1
+          },
+          {
+            "text": "Not available",
+            "sw": 187,
+            "cw": 1
+          }
+        ],
+        "title": null,
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 366,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 1136,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 280,
+        "y": 496,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work Nothing unbilled. Billable time appears here until it is on a fee note.",
+        "truncated": [],
+        "title": {
+          "text": "Unbilled WIP",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "unbilled-wip-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "hasChart": false,
+          "variant": "firm"
+        }
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "x": 856,
+        "y": 496,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 1 client owes fees Acme Corp R 8 625,00 Not yet overdue Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": [
+          {
+            "text": "Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+            "sw": 499,
+            "cw": 1
+          }
+        ],
+        "title": {
+          "text": "Debtors",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "debtors-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 32,
+        "extra": null
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "x": 280,
+        "y": 762,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 248,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation R 0,00 Balanced Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 0,00 Client ledgers R 0,00 Last reconciliation Never reconciled Awaiting approval 0",
+        "truncated": [],
+        "title": {
+          "text": "Trust position",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "trust-position-widget",
+            "w": 1136,
+            "h": 248
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "x": 280,
+        "y": 1034,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 262,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance Every active client has completed FICA. Incomplete profiles",
+        "truncated": [],
+        "title": {
+          "text": "FICA outstanding",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "fica-outstanding-widget",
+            "w": 560,
+            "h": 262
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 856,
+        "y": 1034,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 262,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS HOURS TASKS Website Redesign Acme Corp Unknown 0h 0/0 View all matters →",
+        "truncated": [],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 560,
+            "h": 262
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 29,
+        "extra": {
+          "containerWidth": 558,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 286
+            },
+            "Status": {
+              "visible": true,
+              "w": 96
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": true,
+              "w": 48
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 1,
+          "truncatedNames": 0,
+          "rows": [
+            {
+              "name": "Website Redesign",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "neutral",
+              "badgeW": 86,
+              "labelText": "Unknown",
+              "labelSrOnly": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "x": 280,
+        "y": 1312,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 305,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 0 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": [],
+        "title": {
+          "text": "Sensitive eventsLast 7 days",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "sensitive-events-widget",
+            "w": 1136,
+            "h": 305
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 280,
+        "y": 1641,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 346,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity AO Alice Owner generated a statement of account \"statement-of-account-website-redesign-2026-11-12.pdf\" just now AO Information request REQ-0001 sent to Acme Corp just now AO Alice Owner created information request REQ-0001 just now AO Alice Owner sent fee note INV-0001 just now AO Alice Owner approved fee note INV-0001 just now AO Alice Owner opened the matter \"Website Redesign\" just now View all activity →",
+        "truncated": [],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 1136,
+            "h": 346
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "empty-alice-1440-dark": {
+    "audience": "owner",
+    "htmlClass": "dark",
+    "cellCount": 9,
+    "cells": [
+      {
+        "widget": "kpis",
+        "testId": "home-cell-kpis",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 174,
+        "innerTestId": null,
+        "text": "Last 30 days Active matters 1 Hours logged 0,0h No hours logged in the last 6 weeks. Billable % — Not available Overdue tasks 0",
+        "truncated": [
+          {
+            "text": "No hours logged in the last 6 weeks.",
+            "sw": 263,
+            "cw": 1
+          },
+          {
+            "text": "Not available",
+            "sw": 187,
+            "cw": 1
+          }
+        ],
+        "title": null,
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          },
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 272,
+            "h": 150
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 366,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 1136,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 280,
+        "y": 496,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "Unbilled WIP Open unbilled work Nothing unbilled. Billable time appears here until it is on a fee note.",
+        "truncated": [],
+        "title": {
+          "text": "Unbilled WIP",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "unbilled-wip-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "hasChart": false,
+          "variant": "firm"
+        }
+      },
+      {
+        "widget": "debtors",
+        "testId": "home-cell-debtors",
+        "x": 856,
+        "y": 496,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "debtors-widget",
+        "text": "Debtors Open collections 1 client owes fees Acme Corp R 8 625,00 Not yet overdue Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00 Current 30 days 60 days 90+ days",
+        "truncated": [
+          {
+            "text": "Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00",
+            "sw": 499,
+            "cw": 1
+          }
+        ],
+        "title": {
+          "text": "Debtors",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "debtors-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 32,
+        "extra": null
+      },
+      {
+        "widget": "trustPosition",
+        "testId": "home-cell-trustPosition",
+        "x": 280,
+        "y": 762,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 248,
+        "innerTestId": "trust-position-widget",
+        "text": "Trust position Open reconciliation R 0,00 Balanced Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 0,00 Client ledgers R 0,00 Last reconciliation Never reconciled Awaiting approval 0",
+        "truncated": [],
+        "title": {
+          "text": "Trust position",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "trust-position-widget",
+            "w": 1136,
+            "h": 248
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "ficaOutstanding",
+        "testId": "home-cell-ficaOutstanding",
+        "x": 280,
+        "y": 1034,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 262,
+        "innerTestId": "fica-outstanding-widget",
+        "text": "FICA outstanding View all Open compliance Every active client has completed FICA. Incomplete profiles",
+        "truncated": [],
+        "title": {
+          "text": "FICA outstanding",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "fica-outstanding-widget",
+            "w": 560,
+            "h": 262
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 856,
+        "y": 1034,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 262,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health All At Risk Over estimate MATTER STATUS HOURS TASKS Website Redesign Acme Corp Unknown 0h 0/0 View all matters →",
+        "truncated": [],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 560,
+            "h": 262
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 29,
+        "extra": {
+          "containerWidth": 558,
+          "cols": {
+            "Matter": {
+              "visible": true,
+              "w": 286
+            },
+            "Status": {
+              "visible": true,
+              "w": 96
+            },
+            "Progress": {
+              "visible": false,
+              "w": 0
+            },
+            "Hours": {
+              "visible": true,
+              "w": 48
+            },
+            "Tasks": {
+              "visible": true,
+              "w": 48
+            }
+          },
+          "rowCount": 1,
+          "truncatedNames": 0,
+          "rows": [
+            {
+              "name": "Website Redesign",
+              "nameTruncated": false,
+              "nameW": 286,
+              "nameSW": 286,
+              "badgeTone": "neutral",
+              "badgeW": 86,
+              "labelText": "Unknown",
+              "labelSrOnly": false
+            }
+          ]
+        }
+      },
+      {
+        "widget": "sensitive",
+        "testId": "home-cell-sensitive",
+        "x": 280,
+        "y": 1312,
+        "className": "lg:col-span-6 lg:max-2xl:last:col-span-12 2xl:col-span-4 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 305,
+        "innerTestId": "sensitive-events-widget",
+        "text": "Sensitive events Last 7 days NOTICE 0 WARNING 0 CRITICAL 0 No sensitive events in the last 7 days. View all →",
+        "truncated": [],
+        "title": {
+          "text": "Sensitive eventsLast 7 days",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "sensitive-events-widget",
+            "w": 1136,
+            "h": 305
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 280,
+        "y": 1641,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 346,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity AO Alice Owner generated a statement of account \"statement-of-account-website-redesign-2026-11-12.pdf\" just now AO Information request REQ-0001 sent to Acme Corp just now AO Alice Owner created information request REQ-0001 just now AO Alice Owner sent fee note INV-0001 just now AO Alice Owner approved fee note INV-0001 just now AO Alice Owner opened the matter \"Website Redesign\" just now View all activity →",
+        "truncated": [],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 1136,
+            "h": 346
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "empty-carol-1024-light": {
+    "audience": "feeEarner",
+    "htmlClass": "light",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 720,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "x": 280,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 250,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": [],
+        "title": {
+          "text": "My tasks",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "my-tasks-widget",
+            "w": 352,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 648,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time 0m No unbilled time. Billable time you record stays here until it is on a fee note. Open timesheet",
+        "truncated": [],
+        "title": null,
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 250
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 105,
+        "extra": {
+          "hasChart": false,
+          "variant": "personal"
+        }
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 280,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 270,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health No matters yet Create a matter to start tracking health status.",
+        "truncated": [],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 352,
+            "h": 270
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 73,
+        "extra": {
+          "containerWidth": 350,
+          "cols": {},
+          "rowCount": 0,
+          "truncatedNames": 0,
+          "rows": []
+        }
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 648,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 270,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity No recent activity Activity will appear as your team works on matters.",
+        "truncated": [],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 352,
+            "h": 270
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "empty-carol-1024-dark": {
+    "audience": "feeEarner",
+    "htmlClass": "dark",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 720,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 720,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "x": 280,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 250,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": [],
+        "title": {
+          "text": "My tasks",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "my-tasks-widget",
+            "w": 352,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 648,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time 0m No unbilled time. Billable time you record stays here until it is on a fee note. Open timesheet",
+        "truncated": [],
+        "title": null,
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 352,
+            "h": 250
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 105,
+        "extra": {
+          "hasChart": false,
+          "variant": "personal"
+        }
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 280,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 270,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health No matters yet Create a matter to start tracking health status.",
+        "truncated": [],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 352,
+            "h": 270
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 73,
+        "extra": {
+          "containerWidth": 350,
+          "cols": {},
+          "rowCount": 0,
+          "truncatedNames": 0,
+          "rows": []
+        }
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 648,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 352,
+        "height": 270,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity No recent activity Activity will appear as your team works on matters.",
+        "truncated": [],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 352,
+            "h": 270
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "empty-carol-1440-light": {
+    "audience": "feeEarner",
+    "htmlClass": "light",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 1136,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "x": 280,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": [],
+        "title": {
+          "text": "My tasks",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "my-tasks-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 856,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time 0m No unbilled time. Billable time you record stays here until it is on a fee note. Open timesheet",
+        "truncated": [],
+        "title": null,
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 121,
+        "extra": {
+          "hasChart": false,
+          "variant": "personal"
+        }
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 280,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health No matters yet Create a matter to start tracking health status.",
+        "truncated": [],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "containerWidth": 558,
+          "cols": {},
+          "rowCount": 0,
+          "truncatedNames": 0,
+          "rows": []
+        }
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 856,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity No recent activity Activity will appear as your team works on matters.",
+        "truncated": [],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(7.73948 -0.41344 -4.03315)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  },
+  "empty-carol-1440-dark": {
+    "audience": "feeEarner",
+    "htmlClass": "dark",
+    "cellCount": 5,
+    "cells": [
+      {
+        "widget": "diary",
+        "testId": "home-cell-diary",
+        "x": 280,
+        "y": 168,
+        "className": "lg:col-span-12 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 1136,
+        "height": 106,
+        "innerTestId": "home-diary-widget",
+        "text": "Today's diary Open diary Nothing in the diary today",
+        "truncated": [],
+        "title": {
+          "text": "Today's diary",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "home-diary-widget",
+            "w": 1136,
+            "h": 106
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 21,
+        "extra": null
+      },
+      {
+        "widget": "tasks",
+        "testId": "home-cell-tasks",
+        "x": 280,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "my-tasks-widget",
+        "text": "My tasks Open my work Nothing assigned to you. Tasks assigned to you on a matter appear here.",
+        "truncated": [],
+        "title": {
+          "text": "My tasks",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "my-tasks-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": null
+      },
+      {
+        "widget": "unbilledWip",
+        "testId": "home-cell-unbilledWip",
+        "x": 856,
+        "y": 298,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "unbilled-wip-widget",
+        "text": "My unbilled time 0m No unbilled time. Billable time you record stays here until it is on a fee note. Open timesheet",
+        "truncated": [],
+        "title": null,
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "stat-card",
+            "testid": null,
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 0,
+        "emptyBottom": 121,
+        "extra": {
+          "hasChart": false,
+          "variant": "personal"
+        }
+      },
+      {
+        "widget": "matterHealth",
+        "testId": "home-cell-matterHealth",
+        "x": 280,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "matter-health-panel",
+        "text": "Matter Health No matters yet Create a matter to start tracking health status.",
+        "truncated": [],
+        "title": {
+          "text": "Matter Health",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "matter-health-panel",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "containerWidth": 558,
+          "cols": {},
+          "rowCount": 0,
+          "truncatedNames": 0,
+          "rows": []
+        }
+      },
+      {
+        "widget": "activity",
+        "testId": "home-cell-activity",
+        "x": 856,
+        "y": 572,
+        "className": "lg:col-span-6 flex min-w-0 flex-col [&>*]:flex-1",
+        "width": 560,
+        "height": 250,
+        "innerTestId": "recent-activity-widget",
+        "text": "Recent Activity No recent activity Activity will appear as your team works on matters.",
+        "truncated": [],
+        "title": {
+          "text": "Recent Activity",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "color": "lab(100 0 0)"
+        },
+        "minContrast": 99,
+        "lowContrast": [],
+        "whiteSurfaces": [],
+        "frames": [
+          {
+            "tag": "div",
+            "slot": "card",
+            "testid": "recent-activity-widget",
+            "w": 560,
+            "h": 250
+          }
+        ],
+        "cardCount": 1,
+        "emptyBottom": 53,
+        "extra": {
+          "testidCount": 1
+        }
+      }
+    ]
+  }
+}

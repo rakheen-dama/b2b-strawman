@@ -9,7 +9,12 @@ import { cn } from "@/lib/utils";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { RelativeDate } from "@/components/ui/relative-date";
-import { StatusBadge, type StatusTone, WidgetCard } from "@/components/dashboard/widget-parts";
+import {
+  StatusBadge,
+  type StatusTone,
+  WIDGET_ROW_CLASS,
+  WidgetCard,
+} from "@/components/dashboard/widget-parts";
 import { CAPABILITIES, RequiresCapability } from "@/lib/capabilities";
 import type { AuditEventResponse, AuditSeverity, EventTypeFacet } from "@/lib/api/audit-events";
 
@@ -173,7 +178,8 @@ function SensitiveEventsWidgetInner({
                   data-testid={`sensitive-row-${event.id}`}
                   onClick={() => router.push(href)}
                   className={cn(
-                    "hover:bg-muted focus-visible:ring-ring flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors outline-none focus-visible:ring-2",
+                    WIDGET_ROW_CLASS,
+                    "w-full text-left transition-colors",
                     idx % 2 === 1 && "bg-muted/50"
                   )}
                 >

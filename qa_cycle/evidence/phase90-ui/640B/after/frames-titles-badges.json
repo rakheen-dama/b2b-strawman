@@ -1,0 +1,464 @@
+{
+ "alice-light": {
+  "chartCard": {
+   "border": "0px solid",
+   "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "padding": "0px"
+  },
+  "titles": [
+   [
+    "kpis",
+    null,
+    "Last 30 days",
+    "12px",
+    "500",
+    "lab(35.5441 -0.826195 -7.36533)"
+   ],
+   [
+    "diary",
+    "card-title",
+    "Today's diary",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "unbilledWip",
+    "card-title",
+    "Unbilled WIP",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "debtors",
+    "card-title",
+    "Debtors",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "trustPosition",
+    "card-title",
+    "Trust position",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "ficaOutstanding",
+    "card-title",
+    "FICA outstanding",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "matterHealth",
+    "card-title",
+    "Matter Health",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "sensitive",
+    "card-title",
+    "Sensitive eventsLast 7 d",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "activity",
+    "card-title",
+    "Recent Activity",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ]
+  ],
+  "diaryEmpty": {
+   "cls": "text-sm text-slate-400",
+   "color": "lab(65.1376 -0.85035 -6.67907)"
+  },
+  "badges": [
+   [
+    "Difference -R ",
+    "warning",
+    "lab(34.9428 12.2278 41.6144)",
+    "oklab(0.961559 0.00512687 0.0186116)"
+   ],
+   [
+    "Not started",
+    "warning",
+    "lab(34.9428 12.2278 41.6144)",
+    "oklab(0.961559 0.00512687 0.0186116)"
+   ],
+   [
+    "In progress",
+    "info",
+    "lab(34.8934 -9.90835 -31.1341)",
+    "oklab(0.937757 -0.0101078 -0.0186454)"
+   ],
+   [
+    "Not started",
+    "warning",
+    "lab(34.9428 12.2278 41.6144)",
+    "oklab(0.961559 0.00512687 0.0186116)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ],
+   [
+    "Unknown",
+    "neutral",
+    "lab(35.5441 -0.826195 -7.36533)",
+    "lab(95.1124 -0.267148 -1.87211)"
+   ]
+  ]
+ },
+ "alice-dark": {
+  "chartCard": {
+   "border": "0px solid",
+   "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "padding": "0px"
+  },
+  "titles": [
+   [
+    "kpis",
+    null,
+    "Last 30 days",
+    "12px",
+    "500",
+    "lab(65.1376 -0.85035 -6.67907)"
+   ],
+   [
+    "diary",
+    "card-title",
+    "Today's diary",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "unbilledWip",
+    "card-title",
+    "Unbilled WIP",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "debtors",
+    "card-title",
+    "Debtors",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "trustPosition",
+    "card-title",
+    "Trust position",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "ficaOutstanding",
+    "card-title",
+    "FICA outstanding",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "matterHealth",
+    "card-title",
+    "Matter Health",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "sensitive",
+    "card-title",
+    "Sensitive eventsLast 7 d",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "activity",
+    "card-title",
+    "Recent Activity",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ]
+  ],
+  "diaryEmpty": {
+   "cls": "text-sm text-slate-400",
+   "color": "lab(65.1376 -0.85035 -6.67907)"
+  },
+  "badges": [
+   [
+    "Difference -R ",
+    "warning",
+    "lab(82.7031 11.199 50.3853)",
+    "oklab(0.2883 0.00175783 0.00999177)"
+   ],
+   [
+    "Not started",
+    "warning",
+    "lab(82.7031 11.199 50.3853)",
+    "oklab(0.2883 0.00175783 0.00999177)"
+   ],
+   [
+    "In progress",
+    "info",
+    "lab(82.6363 -11.2502 -25.6137)",
+    "oklab(0.274298 -0.0100453 -0.0238582)"
+   ],
+   [
+    "Not started",
+    "warning",
+    "lab(82.7031 11.199 50.3853)",
+    "oklab(0.2883 0.00175783 0.00999177)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ],
+   [
+    "Unknown",
+    "neutral",
+    "lab(65.1376 -0.85035 -6.67907)",
+    "lab(14.1047 -0.539318 -5.13909)"
+   ]
+  ]
+ },
+ "carol-light": {
+  "personal": {
+   "wrapperBorder": "0px",
+   "wrapperShadow": "none",
+   "innerSlot": "stat-card",
+   "innerBorder": "1px",
+   "innerShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(2.214 -0.134699 -1.01047 / 0.05) 0px 1px 2px 0px, lab(2.214 -0.134699 -1.01047 / 0.04) 0px 1px 3px 0px",
+   "nestedCards": 0
+  },
+  "titles": [
+   [
+    "diary",
+    "card-title",
+    "Today's diary",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "tasks",
+    "card-title",
+    "My tasks",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "unbilledWip",
+    "stat-card-label",
+    "My unbilled time",
+    "14px",
+    "400",
+    "lab(35.5441 -0.826195 -7.36533)"
+   ],
+   [
+    "matterHealth",
+    "card-title",
+    "Matter Health",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ],
+   [
+    "activity",
+    "card-title",
+    "Recent Activity",
+    "14px",
+    "500",
+    "lab(7.73948 -0.41344 -4.03315)"
+   ]
+  ],
+  "diaryEmpty": {
+   "cls": "text-sm text-slate-400",
+   "color": "lab(65.1376 -0.85035 -6.67907)"
+  },
+  "badges": [
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(36.5291 -36.4906 24.3663)",
+    "oklab(0.940558 -0.0184928 0.00882724)"
+   ]
+  ]
+ },
+ "carol-dark": {
+  "personal": {
+   "wrapperBorder": "0px",
+   "wrapperShadow": "none",
+   "innerSlot": "stat-card",
+   "innerBorder": "1px",
+   "innerShadow": "none",
+   "nestedCards": 0
+  },
+  "titles": [
+   [
+    "diary",
+    "card-title",
+    "Today's diary",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "tasks",
+    "card-title",
+    "My tasks",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "unbilledWip",
+    "stat-card-label",
+    "My unbilled time",
+    "14px",
+    "400",
+    "lab(65.1376 -0.85035 -6.67907)"
+   ],
+   [
+    "matterHealth",
+    "card-title",
+    "Matter Health",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ],
+   [
+    "activity",
+    "card-title",
+    "Recent Activity",
+    "14px",
+    "500",
+    "lab(100 0 0)"
+   ]
+  ],
+  "diaryEmpty": {
+   "cls": "text-sm text-slate-400",
+   "color": "lab(65.1376 -0.85035 -6.67907)"
+  },
+  "badges": [
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ],
+   [
+    "Healthy",
+    "success",
+    "lab(84.1504 -35.8587 23.2428)",
+    "oklab(0.274299 -0.0198304 0.00118963)"
+   ]
+  ]
+ }
+}

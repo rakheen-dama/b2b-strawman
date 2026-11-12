@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { AlertCircle, ListChecks } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { cn } from "@/lib/utils";
 import { formatLocalDate } from "@/lib/format";
 import type { MyWorkTaskItem, MyWorkTasksResponse } from "@/lib/types";
 import {
   StatusBadge,
   WIDGET_LINK_CLASS,
+  WIDGET_ROW_CLASS,
   WidgetCard,
   WidgetErrorLine,
   WidgetHeadline,
@@ -76,7 +78,7 @@ export function MyTasksWidget({ slug, today, data }: MyTasksWidgetProps) {
                 <li key={task.id}>
                   <Link
                     href={`/org/${slug}/matters/${task.matterId}?taskId=${task.id}`}
-                    className="hover:bg-muted focus-visible:ring-ring flex items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none focus-visible:ring-2"
+                    className={cn(WIDGET_ROW_CLASS, "text-sm")}
                   >
                     <span className="min-w-0 flex-1">
                       <span className="text-foreground block truncate">{task.title}</span>

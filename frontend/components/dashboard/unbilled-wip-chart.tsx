@@ -15,18 +15,31 @@ const BarChartPreset = dynamic(
   }
 );
 
-/** One bar band in px: recharts' 10% category gap on each side leaves a 24px bar. */
+/**
+ * One bar band in px: recharts' 10% category gap on each side leaves a 24px bar. Mirrors
+ * bar-chart.tsx `<BarChart>` (no `barCategoryGap`/`barSize` set → recharts' default "10%").
+ */
 const BAND_PX = 30;
-/** The preset's 16px top margin + the 30px value axis. */
+/**
+ * The preset's 16px top margin + the 30px value axis. Mirrors bar-chart.tsx
+ * `margin={{ top: 16, … bottom: 0 }}` and its horizontal `<XAxis type="number">` (no `height` set →
+ * recharts' default 30).
+ */
 const AXIS_PX = 46;
-/** ChartTableToggle: mt-3 + the 32px (size="sm") "View as table" button. */
+/**
+ * ChartTableToggle: mt-3 + the 32px (size="sm") "View as table" button. Mirrors
+ * chart-table-toggle.tsx's root `mt-3 flex flex-col gap-2` and `<Button size="sm">`
+ * (`h-8` in packages/ui/src/button.tsx).
+ */
 const TOGGLE_ROW_PX = 44;
-/** The preset folds earners past this into one "Other" bar. */
+/** The preset folds earners past this into one "Other" bar (bar-chart.tsx `maxBars = 10`). */
 const MAX_BARS = 10;
 
 /**
  * Inside the widget card the preset draws no frame of its own (no card in a card) and no header
- * (the widget's title names it; the figure keeps that name as its aria-label).
+ * (the widget's title names it; the figure keeps that name as its aria-label). Undoes
+ * chart-card.tsx's `<Card className="gap-4 py-5">` + `<CardContent className="px-5">` and the
+ * @b2mash/ui Card's own `rounded-lg border bg-card py-6 shadow-sm` (packages/ui/src/card.tsx).
  */
 const FRAMELESS_CLASS =
   "gap-0 rounded-none border-0 bg-transparent py-0 shadow-none *:data-[slot=card-content]:px-0";

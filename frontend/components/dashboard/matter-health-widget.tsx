@@ -17,7 +17,12 @@ import { cn } from "@/lib/utils";
 import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
-import { StatusBadge, type StatusTone, WidgetCard } from "@/components/dashboard/widget-parts";
+import {
+  StatusBadge,
+  type StatusTone,
+  WIDGET_ROW_CLASS,
+  WidgetCard,
+} from "@/components/dashboard/widget-parts";
 import type { MatterHealth } from "@/lib/dashboard-types";
 
 interface MatterHealthWidgetProps {
@@ -49,12 +54,15 @@ const HEALTH: Record<
   UNKNOWN: { label: "Unknown", tone: "neutral", icon: <HelpCircle /> },
 };
 
-// Column layout by the card's own width (container queries, 640B): at a half-width cell
-// (~352px) the matter name keeps the room — Hours and the health label show from @md (icon +
-// sr-only label below it), Progress from @xl. Header and rows share these classes.
-const COL_STATUS = "flex w-12 justify-center @md:w-24";
-const COL_PROGRESS = "hidden w-20 @xl:block";
-const COL_HOURS = "hidden w-12 text-right @md:block";
+// Column layout by the card's own content width (container queries, 640B), so the matter name
+// keeps the room. Measured Home widths: ~310px (1024 half), ~358 (2xl third), ~438 (1280 half),
+// ~518–566 (1440+ half); the thresholds sit clear of those so a column never flickers in or out.
+// Below 30rem: name, health icon (sr-only label), tasks. From 30rem: + Progress and Hours (the
+// pre-640B set). From 40rem: the health label shows too. Header and rows share these classes.
+const COL_STATUS = "flex w-12 justify-center @min-[40rem]:w-24";
+const COL_PROGRESS = "hidden w-20 @min-[30rem]:block";
+const COL_HOURS = "hidden w-12 text-right @min-[30rem]:block";
+const STATUS_LABEL = "sr-only @min-[40rem]:not-sr-only";
 const COL_TASKS = "w-12 text-right";
 const HEADER_BUTTON =
   "focus-visible:ring-ring rounded-sm tracking-wider uppercase outline-none focus-visible:ring-2";
@@ -213,7 +221,7 @@ export function MatterHealthWidget({ matters: projects, orgSlug }: MatterHealthW
                 key={project.matterId}
                 type="button"
                 onClick={() => router.push(`/org/${orgSlug}/matters/${project.matterId}`)}
-                className="hover:bg-muted focus-visible:ring-ring flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors outline-none focus-visible:ring-2"
+                className={cn(WIDGET_ROW_CLASS, "w-full text-left transition-colors")}
               >
                 {/* Name + Client stacked */}
                 <div className="min-w-0 flex-1">
@@ -226,10 +234,14 @@ export function MatterHealthWidget({ matters: projects, orgSlug }: MatterHealthW
                     </p>
                   )}
                 </div>
-                {/* Health: icon + label; the label is sr-only until the card is @md wide */}
+                {/* Health: icon + label; the label is sr-only until the card is 40rem wide */}
                 <div className={COL_STATUS}>
-                  <StatusBadge tone={health.tone} icon={health.icon} className="px-1 @md:px-2">
-                    <span className="sr-only @md:not-sr-only">{health.label}</span>
+                  <StatusBadge
+                    tone={health.tone}
+                    icon={health.icon}
+                    className="px-1 @min-[40rem]:px-2"
+                  >
+                    <span className={STATUS_LABEL}>{health.label}</span>
                   </StatusBadge>
                 </div>
                 {/* Progress Bar */}

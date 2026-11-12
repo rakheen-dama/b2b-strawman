@@ -2,11 +2,13 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { CircleDashed, CircleDot, ShieldCheck } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { cn } from "@/lib/utils";
 import type { FicaOutstandingResponse, FicaOutstandingStatus } from "@/lib/dashboard-types";
 import {
   StatusBadge,
   type StatusTone,
   WIDGET_LINK_CLASS,
+  WIDGET_ROW_CLASS,
   WidgetCard,
   WidgetErrorLine,
   WidgetHeadline,
@@ -83,7 +85,7 @@ export function FicaOutstandingWidget({ slug, data }: FicaOutstandingWidgetProps
                 <li key={client.clientId}>
                   <Link
                     href={`/org/${slug}/clients/${client.clientId}`}
-                    className="hover:bg-muted focus-visible:ring-ring flex items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none focus-visible:ring-2"
+                    className={cn(WIDGET_ROW_CLASS, "text-sm")}
                   >
                     <span className="text-foreground min-w-0 flex-1 truncate">
                       {client.clientName}

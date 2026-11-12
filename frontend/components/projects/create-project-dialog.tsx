@@ -140,159 +140,168 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
           <DialogDescription>Add a new matter to your organization.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. Dlamini v Road Accident Fund"
-                      maxLength={255}
-                      autoFocus
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Description{" "}
-                    <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="A brief description of the matter..."
-                      maxLength={2000}
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="dueDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Due Date <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="customerId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Client <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <select
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
-                    >
-                      <option value="">-- None --</option>
-                      {customers.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="referenceNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Reference Number{" "}
-                    <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. RAF-2026-001" maxLength={100} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Priority <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <select
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      className={nativeSelectClassName}
-                    >
-                      <option value="">Select priority…</option>
-                      <option value="LOW">Low</option>
-                      <option value="MEDIUM">Medium</option>
-                      <option value="HIGH">High</option>
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <WorkTypeSuggestions id="create-project-work-type-suggestions" />
-            <FormField
-              control={form.control}
-              name="workType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Work Type <span className="text-muted-foreground font-normal">(optional)</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={WORK_TYPE_PLACEHOLDER}
-                      maxLength={50}
-                      list="create-project-work-type-suggestions"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                Matter details
+              </p>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. Dlamini v Road Accident Fund"
+                        maxLength={255}
+                        autoFocus
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Description{" "}
+                      <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="A brief description of the matter..."
+                        maxLength={2000}
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="dueDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Due Date <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="customerId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Client <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <select
+                        value={field.value}
+                        onChange={field.onChange}
+                        className={nativeSelectClassName}
+                      >
+                        <option value="">-- None --</option>
+                        {customers.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                Classification
+              </p>
+              <FormField
+                control={form.control}
+                name="referenceNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Reference Number{" "}
+                      <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. RAF-2026-001" maxLength={100} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Priority <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <select
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        className={nativeSelectClassName}
+                      >
+                        <option value="">Select priority…</option>
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <WorkTypeSuggestions id="create-project-work-type-suggestions" />
+              <FormField
+                control={form.control}
+                name="workType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Work Type{" "}
+                      <span className="text-muted-foreground font-normal">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={WORK_TYPE_PLACEHOLDER}
+                        maxLength={50}
+                        list="create-project-work-type-suggestions"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
             <ModuleGate module="conflict_check">
               <div
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
+                className="border-border bg-muted rounded-lg border p-4"
                 data-testid="new-matter-conflict-check"
               >
                 <div className="flex items-center gap-2">
-                  <ShieldAlert className="size-4 text-slate-500" />
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Conflict Check
-                  </p>
+                  <ShieldAlert className="text-muted-foreground size-4" />
+                  <p className="text-foreground text-sm font-medium">Conflict Check</p>
                 </div>
                 <p className="text-muted-foreground mt-2 text-sm">
                   Run a conflict of interest check before creating this matter.
@@ -310,7 +319,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 </Button>
               </div>
             </ModuleGate>
-            <DialogFooter>
+            <DialogFooter className="border-border border-t pt-4">
               <Button
                 type="button"
                 variant="plain"

@@ -4,12 +4,7 @@ import { RetentionCard } from "@/components/legal/retention-card";
 import type { SetupStep } from "@/components/setup/types";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
-import {
-  getMatterBudget,
-  getMatterHealth,
-  getMatterMemberHours,
-  getMatterUpcomingDeadlines,
-} from "@/lib/api/matters";
+import { getMatterHealth, getMatterMemberHours } from "@/lib/api/matters";
 import { getOrgSettings } from "@/lib/api/settings";
 import { UpcomingDeadlinesTile } from "@/components/projects/upcoming-deadlines-tile";
 import { daysUntil, resolveDateRange } from "@/lib/date-utils";
@@ -27,9 +22,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type {
+  BudgetStatusResponse,
   MatterSetupStatus,
   FicaStatus,
   MatterTrustBalance,
+  MatterUpcomingDeadline,
   OutstandingSummary,
 } from "@/lib/types";
 import type { ReactNode } from "react";
@@ -121,6 +118,10 @@ export interface KPIDashboardProps {
   /** Matter trust balance; "absent" without VIEW_TRUST or with trust accounting off. */
   trustBalance: WidgetResult<MatterTrustBalance>;
   projectDueDate?: string | null;
+  /** The matter's upcoming court dates, read once by the page (641B; [] when off or failed). */
+  upcomingDeadlines: MatterUpcomingDeadline[];
+  /** The page's getMatterBudget read, shared with the Budget tab (641B); null = none or failed. */
+  budget: BudgetStatusResponse | null;
 }
 
 // --- KPIDashboard component (Tasks 534.2 + 534.3) ---
@@ -141,6 +142,8 @@ export async function KPIDashboard({
   outstandingSummary,
   trustBalance,
   projectDueDate,
+  upcomingDeadlines,
+  budget,
 }: KPIDashboardProps) {
   const { from, to } = resolveDateRange({});
 
@@ -148,19 +151,15 @@ export async function KPIDashboard({
   // (Phase 88 U17, ADR-354); other statuses render no card, so skip the settings read.
   const showsRetentionCard = projectStatus === "CLOSED" || projectStatus === "COMPLETED";
 
-  const [healthResult, memberHoursResult, budgetResult, upcomingDeadlinesResult, settingsResult] =
-    await Promise.allSettled([
-      getMatterHealth(projectId),
-      getMatterMemberHours(projectId, { from, to }),
-      getMatterBudget(projectId),
-      getMatterUpcomingDeadlines(projectId),
-      showsRetentionCard ? getOrgSettings() : Promise.resolve(null),
-    ]);
+  // Budget and upcoming deadlines arrive as props: the page reads each once (641B, ADR-373).
+  const [healthResult, memberHoursResult, settingsResult] = await Promise.allSettled([
+    getMatterHealth(projectId),
+    getMatterMemberHours(projectId, { from, to }),
+    showsRetentionCard ? getOrgSettings() : Promise.resolve(null),
+  ]);
 
   const health = settled(healthResult);
   const memberHours = settled(memberHoursResult);
-  const budgetStatus = settled(budgetResult);
-  const upcomingDeadlines = settled(upcomingDeadlinesResult) ?? [];
   const firmRetentionYears = settled(settingsResult)?.legalMatterRetentionYears ?? null;
 
   // Health status
@@ -170,7 +169,7 @@ export async function KPIDashboard({
   // Metrics from health
   const metrics = health?.metrics ?? null;
   const totalHours = memberHours?.reduce((sum, m) => sum + m.totalHours, 0) ?? 0;
-  const budgetPercent = budgetStatus?.hoursConsumedPct ?? null;
+  const budgetPercent = budget?.hoursConsumedPct ?? null;
 
   // Task completion
   const tasksDone = metrics?.tasksDone ?? 0;
@@ -355,7 +354,7 @@ export async function KPIDashboard({
       />
 
       {/* Upcoming deadlines tile */}
-      <UpcomingDeadlinesTile deadlines={upcomingDeadlines ?? []} />
+      <UpcomingDeadlinesTile deadlines={upcomingDeadlines} />
     </div>
   );
 }

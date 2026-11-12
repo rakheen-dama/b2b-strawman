@@ -1,0 +1,1277 @@
+[
+  {
+    "user": "alice",
+    "matter": "shared",
+    "matterId": "e56794da-53ad-41aa-83e1-8d65ee33dc50",
+    "matterNote": "Budget Test Project 6crh (budget + time, no client)",
+    "viewport": "1024x768",
+    "theme": "light",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-shared-1024-light.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/e56794da-53ad-41aa-83e1-8d65ee33dc50",
+      "htmlClass": "light",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Budget Test Project 6crhActiveInternal MatterClose MatterComplete Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Budget Test Project 6crh"
+        }
+      ],
+      "matterName": "Budget Test Project 6crh",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Close Matter",
+          "testid": "close-matter-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "Complete Matter",
+          "testid": "complete-project-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "",
+          "testid": "project-overflow-menu",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "Healthy",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-budget",
+          "text": "2%Fee estimate consumed"
+        },
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 0,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "alice",
+    "matter": "shared",
+    "matterId": "e56794da-53ad-41aa-83e1-8d65ee33dc50",
+    "matterNote": "Budget Test Project 6crh (budget + time, no client)",
+    "viewport": "1024x768",
+    "theme": "dark",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-shared-1024-dark.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/e56794da-53ad-41aa-83e1-8d65ee33dc50",
+      "htmlClass": "dark",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Budget Test Project 6crhActiveInternal MatterClose MatterComplete Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Budget Test Project 6crh"
+        }
+      ],
+      "matterName": "Budget Test Project 6crh",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Close Matter",
+          "testid": "close-matter-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "Complete Matter",
+          "testid": "complete-project-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "",
+          "testid": "project-overflow-menu",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "Healthy",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-budget",
+          "text": "2%Fee estimate consumed"
+        },
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 0,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "alice",
+    "matter": "shared",
+    "matterId": "e56794da-53ad-41aa-83e1-8d65ee33dc50",
+    "matterNote": "Budget Test Project 6crh (budget + time, no client)",
+    "viewport": "1440x900",
+    "theme": "light",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-shared-1440-light.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/e56794da-53ad-41aa-83e1-8d65ee33dc50",
+      "htmlClass": "light",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Budget Test Project 6crhActiveInternal MatterClose MatterComplete Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Budget Test Project 6crh"
+        }
+      ],
+      "matterName": "Budget Test Project 6crh",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Close Matter",
+          "testid": "close-matter-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "Complete Matter",
+          "testid": "complete-project-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "",
+          "testid": "project-overflow-menu",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "Healthy",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-budget",
+          "text": "2%Fee estimate consumed"
+        },
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 0,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "alice",
+    "matter": "shared",
+    "matterId": "e56794da-53ad-41aa-83e1-8d65ee33dc50",
+    "matterNote": "Budget Test Project 6crh (budget + time, no client)",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-shared-1440-dark.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/e56794da-53ad-41aa-83e1-8d65ee33dc50",
+      "htmlClass": "dark",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Budget Test Project 6crhActiveInternal MatterClose MatterComplete Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Budget Test Project 6crh"
+        }
+      ],
+      "matterName": "Budget Test Project 6crh",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Close Matter",
+          "testid": "close-matter-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "Complete Matter",
+          "testid": "complete-project-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "",
+          "testid": "project-overflow-menu",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "Healthy",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-budget",
+          "text": "2%Fee estimate consumed"
+        },
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 0,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "alice",
+    "matter": "rich",
+    "matterId": "1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+    "matterNote": "Website Redesign (client, fee notes)",
+    "viewport": "1024x768",
+    "theme": "light",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-rich-1024-light.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+      "htmlClass": "light",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Website RedesignActiveAcme CorpClose MatterComplete Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Website Redesign"
+        }
+      ],
+      "matterName": "Website Redesign",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Close Matter",
+          "testid": "close-matter-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "Complete Matter",
+          "testid": "complete-project-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "",
+          "testid": "project-overflow-menu",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "UnknownClient: Acme CorpNo tasks created yet",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-hours",
+          "text": "0.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 8 625,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "alice",
+    "matter": "rich",
+    "matterId": "1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+    "matterNote": "Website Redesign (client, fee notes)",
+    "viewport": "1024x768",
+    "theme": "dark",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-rich-1024-dark.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+      "htmlClass": "dark",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Website RedesignActiveAcme CorpClose MatterComplete Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Website Redesign"
+        }
+      ],
+      "matterName": "Website Redesign",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Close Matter",
+          "testid": "close-matter-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "Complete Matter",
+          "testid": "complete-project-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "",
+          "testid": "project-overflow-menu",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "UnknownClient: Acme CorpNo tasks created yet",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-hours",
+          "text": "0.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 8 625,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "alice",
+    "matter": "rich",
+    "matterId": "1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+    "matterNote": "Website Redesign (client, fee notes)",
+    "viewport": "1440x900",
+    "theme": "light",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-rich-1440-light.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+      "htmlClass": "light",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Website RedesignActiveAcme CorpClose MatterComplete Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Website Redesign"
+        }
+      ],
+      "matterName": "Website Redesign",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Close Matter",
+          "testid": "close-matter-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "Complete Matter",
+          "testid": "complete-project-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "",
+          "testid": "project-overflow-menu",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "UnknownClient: Acme CorpNo tasks created yet",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-hours",
+          "text": "0.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 8 625,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "alice",
+    "matter": "rich",
+    "matterId": "1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+    "matterNote": "Website Redesign (client, fee notes)",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-rich-1440-dark.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+      "htmlClass": "dark",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Website RedesignActiveAcme CorpClose MatterComplete Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Website Redesign"
+        }
+      ],
+      "matterName": "Website Redesign",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Close Matter",
+          "testid": "close-matter-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "Complete Matter",
+          "testid": "complete-project-btn",
+          "ariaLabel": null
+        },
+        {
+          "text": "",
+          "testid": "project-overflow-menu",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "UnknownClient: Acme CorpNo tasks created yet",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-hours",
+          "text": "0.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 8 625,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "alice",
+    "matter": "closed",
+    "matterId": "71588d0d-c986-4ff3-8eb4-55f8ca2e7a4c",
+    "matterNote": "Ndlovu v RAF Depth II (CLOSED, trust txns)",
+    "viewport": "1440x900",
+    "theme": "light",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "alice-closed-1440-light.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/71588d0d-c986-4ff3-8eb4-55f8ca2e7a4c",
+      "htmlClass": "light",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Ndlovu v RAF — Depth II mwdp05zs03d6ClosedLITIGATIONSipho Ndlovu mwdp05zs03d6Reopen Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Ndlovu v RAF — Depth II mwdp05zs03d6"
+        }
+      ],
+      "matterName": "Ndlovu v RAF — Depth II mwdp05zs03d6",
+      "statusBadge": "Closed",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [
+        {
+          "text": "Reopen Matter",
+          "testid": "reopen-matter-btn",
+          "ariaLabel": null
+        }
+      ],
+      "healthHeader": "HealthyClient: Sipho Ndlovu mwdp05zs03d6",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 3 750,00Trust balance"
+        },
+        {
+          "testid": "metric-card-invoices",
+          "text": "R 0,00Outstanding fee notes"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "carol",
+    "matter": "shared",
+    "matterId": "e56794da-53ad-41aa-83e1-8d65ee33dc50",
+    "matterNote": "Budget Test Project 6crh (budget + time, no client)",
+    "viewport": "1024x768",
+    "theme": "light",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "carol-shared-1024-light.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/e56794da-53ad-41aa-83e1-8d65ee33dc50",
+      "htmlClass": "light",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Budget Test Project 6crhActiveInternal Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Budget Test Project 6crh"
+        }
+      ],
+      "matterName": "Budget Test Project 6crh",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [],
+      "healthHeader": "Healthy",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-budget",
+          "text": "2%Fee estimate consumed"
+        },
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "carol",
+    "matter": "shared",
+    "matterId": "e56794da-53ad-41aa-83e1-8d65ee33dc50",
+    "matterNote": "Budget Test Project 6crh (budget + time, no client)",
+    "viewport": "1024x768",
+    "theme": "dark",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "carol-shared-1024-dark.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/e56794da-53ad-41aa-83e1-8d65ee33dc50",
+      "htmlClass": "dark",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Budget Test Project 6crhActiveInternal Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Budget Test Project 6crh"
+        }
+      ],
+      "matterName": "Budget Test Project 6crh",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [],
+      "healthHeader": "Healthy",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-budget",
+          "text": "2%Fee estimate consumed"
+        },
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "carol",
+    "matter": "shared",
+    "matterId": "e56794da-53ad-41aa-83e1-8d65ee33dc50",
+    "matterNote": "Budget Test Project 6crh (budget + time, no client)",
+    "viewport": "1440x900",
+    "theme": "light",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "carol-shared-1440-light.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/e56794da-53ad-41aa-83e1-8d65ee33dc50",
+      "htmlClass": "light",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Budget Test Project 6crhActiveInternal Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Budget Test Project 6crh"
+        }
+      ],
+      "matterName": "Budget Test Project 6crh",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [],
+      "healthHeader": "Healthy",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-budget",
+          "text": "2%Fee estimate consumed"
+        },
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "carol",
+    "matter": "shared",
+    "matterId": "e56794da-53ad-41aa-83e1-8d65ee33dc50",
+    "matterNote": "Budget Test Project 6crh (budget + time, no client)",
+    "viewport": "1440x900",
+    "theme": "dark",
+    "httpStatus": 200,
+    "h1ok": true,
+    "file": "carol-shared-1440-dark.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/e56794da-53ad-41aa-83e1-8d65ee33dc50",
+      "htmlClass": "dark",
+      "headerCardPresent": true,
+      "headerCardTag": "DIV",
+      "headerCardText": "Budget Test Project 6crhActiveInternal Matter",
+      "h1Count": 1,
+      "h1s": [
+        {
+          "testid": "matter-name",
+          "text": "Budget Test Project 6crh"
+        }
+      ],
+      "matterName": "Budget Test Project 6crh",
+      "statusBadge": "Active",
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": true,
+      "lifecycleButtons": [],
+      "healthHeader": "Healthy",
+      "metricGridPresent": true,
+      "metricCards": [
+        {
+          "testid": "metric-card-budget",
+          "text": "2%Fee estimate consumed"
+        },
+        {
+          "testid": "metric-card-hours",
+          "text": "2.0hHours logged"
+        },
+        {
+          "testid": "metric-card-tasks",
+          "text": "0%Task completion"
+        },
+        {
+          "testid": "metric-card-trust",
+          "text": "R 0,00Trust balance"
+        }
+      ],
+      "upcomingDeadlines": "Upcoming DeadlinesNo upcoming deadlines.",
+      "tabs": [
+        {
+          "text": "Details",
+          "selected": "false"
+        },
+        {
+          "text": "Overview",
+          "selected": "true"
+        },
+        {
+          "text": "Work",
+          "selected": "false"
+        },
+        {
+          "text": "Fees",
+          "selected": "false"
+        },
+        {
+          "text": "Client",
+          "selected": "false"
+        },
+        {
+          "text": "Diary",
+          "selected": "false"
+        },
+        {
+          "text": "Activity",
+          "selected": "false"
+        }
+      ]
+    },
+    "console": []
+  },
+  {
+    "user": "carol",
+    "matter": "rich",
+    "matterId": "1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+    "matterNote": "Website Redesign (client, fee notes)",
+    "viewport": "1440x900",
+    "theme": "light",
+    "httpStatus": 200,
+    "h1ok": false,
+    "file": "carol-rich-1440-light.png",
+    "facts": {
+      "url": "/org/e2e-test-org/matters/1960b1cd-0efd-4e2e-a55b-3fdcebf53365",
+      "htmlClass": "light",
+      "headerCardPresent": false,
+      "headerCardTag": null,
+      "headerCardText": null,
+      "h1Count": 0,
+      "h1s": [],
+      "matterName": null,
+      "statusBadge": null,
+      "closedAt": null,
+      "headerFieldsPresent": false,
+      "headerFields": null,
+      "lifecycleActionsPresent": false,
+      "lifecycleButtons": null,
+      "healthHeader": null,
+      "metricGridPresent": false,
+      "metricCards": [],
+      "upcomingDeadlines": null,
+      "tabs": []
+    },
+    "console": []
+  }
+]

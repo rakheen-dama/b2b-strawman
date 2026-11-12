@@ -10,14 +10,15 @@ import {
 } from "@/components/dashboard/widget-parts";
 
 /**
- * Aging buckets, oldest warmest. Existing palette only (no new tokens), and never colour alone:
- * each segment has a title, each row a visually hidden breakdown, and the card a text legend.
+ * Aging buckets, current → 90+ days. Ordered, so they take the one-hue ordinal `--aging-*` ramp
+ * (ADR-370) — not the categorical slots, not status colours ("current" is not "good"). Never colour
+ * alone: each segment has a title, each row a visually hidden breakdown, and the card a text legend.
  */
 const BUCKETS: ReadonlyArray<{ key: keyof DebtorBuckets; label: string; color: string }> = [
-  { key: "current", label: "Current", color: "var(--color-teal-500, #14b8a6)" },
-  { key: "d30", label: "30 days", color: "var(--color-slate-300, #cbd5e1)" },
-  { key: "d60", label: "60 days", color: "var(--color-amber-400, #fbbf24)" },
-  { key: "d90plus", label: "90+ days", color: "var(--color-amber-600, #d97706)" },
+  { key: "current", label: "Current", color: "var(--aging-current)" },
+  { key: "d30", label: "30 days", color: "var(--aging-d30)" },
+  { key: "d60", label: "60 days", color: "var(--aging-d60)" },
+  { key: "d90plus", label: "90+ days", color: "var(--aging-d90plus)" },
 ];
 
 interface DebtorsWidgetProps {

@@ -1,0 +1,38 @@
+  ✓  176 [chromium] › e2e/tests/projects/project-tasks.spec.ts:277:7 › PROJ-02: Project Tasks › 8. Comment notification deep-links to the comment in the task sheet (G88-M6) (2.9s)
+  ✓  179 [chromium] › e2e/tests/projects/project-tasks.spec.ts:322:7 › PROJ-02: Project Tasks › 9. Matter comment notification deep-links to the highlighted comment on the Comments tab (B7) (2.1s)
+
+
+  1) [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('button', { name: 'Approve' })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Approve' })
+        9 × locator resolved to 1 element
+          - unexpected value "1"
+
+
+      104 |       timeout: 15_000,
+      105 |     });
+    > 106 |     await expect(approveBtn).toHaveCount(0);
+          |                              ^
+      107 |
+      108 |     // Verify invoice number assigned (INV-XXXX)
+      109 |     await expect(page.getByText(/INV-\d+/).first()).toBeVisible({ timeout: 10000 });
+        at /Users/rakheendama/Projects/2026/worktree-637A-baseline/frontend/e2e/tests/invoices/invoice-lifecycle.spec.ts:106:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/invoices-invoice-lifecycle-41d5e--Lifecycle-DRAFT---APPROVED-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED 
+  14 skipped

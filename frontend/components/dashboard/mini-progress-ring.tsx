@@ -5,9 +5,9 @@ interface MiniProgressRingProps {
 }
 
 function autoColor(value: number): string {
-  if (value > 66) return "var(--color-green-500, #22c55e)";
-  if (value > 33) return "var(--color-amber-500, #f59e0b)";
-  return "var(--color-red-500, #ef4444)";
+  if (value > 66) return "var(--success)";
+  if (value > 33) return "var(--warning)";
+  return "var(--danger)";
 }
 
 export function MiniProgressRing({ value, size = 32, color }: MiniProgressRingProps) {
@@ -37,7 +37,7 @@ export function MiniProgressRing({ value, size = 32, color }: MiniProgressRingPr
         cy={center}
         r={radius}
         fill="none"
-        stroke="var(--color-muted, #e5e5e5)"
+        stroke="var(--muted)"
         strokeWidth={strokeWidth}
       />
       {/* Foreground arc */}

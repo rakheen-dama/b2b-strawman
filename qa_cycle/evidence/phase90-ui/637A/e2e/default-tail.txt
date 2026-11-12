@@ -1,0 +1,12 @@
+  ✓  172 [chromium] › e2e/tests/settings/tags.spec.ts:39:7 › TAG-01: Tags › Create tag (2.3s)
+  ✓  173 [chromium] › e2e/tests/settings/tax-settings.spec.ts:44:7 › SET-03: Tax Settings › Create tax rate (2.9s)
+  ✓  171 [chromium] › e2e/tests/projects/project-tasks.spec.ts:230:7 › PROJ-02: Project Tasks › 7. Assign member to task (4.0s)
+  ✓  174 [chromium] › e2e/tests/smoke.spec.ts:11:5 › owner can create a project (4.3s)
+  ✓  178 [chromium] › e2e/tests/smoke.spec.ts:27:5 › member cannot access admin settings (701ms)
+  ✓  176 [chromium] › e2e/tests/settings/tax-settings.spec.ts:61:7 › SET-03: Tax Settings › Tax applies to invoices (2.7s)
+  ✓  177 [chromium] › e2e/tests/projects/project-tasks.spec.ts:277:7 › PROJ-02: Project Tasks › 8. Comment notification deep-links to the comment in the task sheet (G88-M6) (2.7s)
+  ✓  175 [chromium] › e2e/tests/settings/tags.spec.ts:57:7 › TAG-01: Tags › Apply tag to entity (4.3s)
+  ✓  179 [chromium] › e2e/tests/projects/project-tasks.spec.ts:322:7 › PROJ-02: Project Tasks › 9. Matter comment notification deep-links to the highlighted comment on the Comments tab (B7) (2.6s)
+
+  14 skipped
+  165 passed (1.5m)

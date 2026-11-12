@@ -1,0 +1,6 @@
+start 2026-11-12T00:19:20Z head 874ba8df5
+e2e-up exit 0
+legal-lifecycle exit 0 ::  105 passed (2.9m)
+legal-depth-ii exit 0 ::  4 skipped; 40 passed (1.9m)
+default exit 0 ::  14 skipped; 165 passed (1.5m)
+end 2026-11-12T00:27:55Z

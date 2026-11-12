@@ -107,6 +107,7 @@ vi.mock("@/components/matters/matters-table", async (importOriginal) => {
 // Import page after mocks are set up
 import ProjectsPage from "./page";
 import { getTags, getViews } from "@/lib/api";
+import { unserializableProps } from "@/__tests__/helpers/rsc-props";
 
 // Mock NewFromTemplateDialog (client component with hooks)
 vi.mock("@/components/templates/NewFromTemplateDialog", () => ({
@@ -539,21 +540,6 @@ describe("ProjectsPage", () => {
     // React serialises as a client reference or server output); every other prop must be data.
     const NODE_SLOTS = new Set(["toolbar", "empty", "footer"]);
 
-    /** Paths of values the RSC boundary cannot carry: functions, and elements outside a slot. */
-    function unserializablePaths(value: unknown, path: string, inSlot: boolean): string[] {
-      if (typeof value === "function") return [path];
-      if (React.isValidElement(value)) return inSlot ? [] : [path];
-      if (Array.isArray(value)) {
-        return value.flatMap((item, i) => unserializablePaths(item, `${path}[${i}]`, inSlot));
-      }
-      if (typeof value === "object" && value !== null) {
-        return Object.entries(value).flatMap(([key, item]) =>
-          unserializablePaths(item, `${path}.${key}`, inSlot)
-        );
-      }
-      return [];
-    }
-
     it.each([
       ["default view with rows", {}, [makeProject({ customFields: { court: "Gauteng" } })]],
       ["saved view", { view: SAVED_VIEW_ID }, [makeProject()]],
@@ -585,9 +571,7 @@ describe("ProjectsPage", () => {
           })
         );
         expect(props.empty).toBeTruthy();
-        const offending = Object.entries(props).flatMap(([key, item]) =>
-          unserializablePaths(item, key, NODE_SLOTS.has(key))
-        );
+        const offending = unserializableProps(props, NODE_SLOTS);
         expect(offending).toEqual([]);
       }
     );

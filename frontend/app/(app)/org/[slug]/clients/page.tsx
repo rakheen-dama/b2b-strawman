@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { UserRound, Users } from "lucide-react";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { listClientRows } from "@/lib/api/clients";
@@ -31,7 +32,7 @@ import {
 } from "@/lib/clients-list";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
-import { ClientsTable } from "@/components/clients/clients-table";
+import { ClientsDataTable } from "@/components/clients/clients-table";
 import { ClientSearch } from "@/components/clients/client-search";
 import { ClientFiltersSheet } from "@/components/clients/client-filters-sheet";
 import { ClientLifecycleFilter } from "@/components/clients/client-lifecycle-filter";
@@ -163,110 +164,102 @@ export default async function ClientsPage({
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Clients</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {clientCount(visibleRows.length)}
-          </p>
-        </div>
-        <RequiresCapability cap="CUSTOMER_MANAGEMENT">
-          <CreateCustomerDialog slug={slug} />
-        </RequiresCapability>
-      </div>
+      <PageHeader
+        title="Clients"
+        description={clientCount(visibleRows.length)}
+        actions={
+          <RequiresCapability cap="CUSTOMER_MANAGEMENT">
+            <CreateCustomerDialog slug={slug} />
+          </RequiresCapability>
+        }
+      />
 
-      {/* Toolbar: views, search, lifecycle + completeness, filters */}
-      <div className="space-y-3">
-        {/* The view tabs scroll sideways on narrow screens; pb-1 keeps the active underline in view. */}
-        <div className="overflow-x-auto pb-1">
-          <Suspense fallback={null}>
-            <ViewSelectorClient
-              entityType="CUSTOMER"
-              views={views}
-              canCreate={true}
-              canCreateShared={isAdmin}
-              slug={slug}
-              allTags={allTags}
-              fieldDefinitions={fieldDefs}
-              onSave={handleCreateView}
-              systemViews={CLIENT_VIEW_OPTIONS}
-              defaultViewId={ALL_CLIENTS_VIEW_ID}
-              clearOnSavedView={SAVED_VIEW_IGNORED_PARAMS}
-            />
-          </Suspense>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Suspense fallback={null}>
-            <ClientSearch />
-          </Suspense>
-          <ClientLifecycleFilter
-            slug={slug}
-            query={query}
-            activeLifecycle={activeLifecycle}
-            viewLifecycle={viewLifecycle}
-            showLifecycle={!savedViewActive}
-            showIncomplete={showIncomplete}
-            showIncompleteLocked={showIncompleteLocked}
-          />
-          {/* F-3: the backend ignores tags on the saved-view path, so the filter hides there. */}
-          {!savedViewActive && allTags.length > 0 && (
+      <ClientsDataTable
+        slug={slug}
+        rows={visibleRows}
+        columns={columns}
+        customFieldNames={customFieldNames}
+        sort={sort}
+        query={query}
+        caption={`Clients — ${selection.view.name}`}
+        hideLowPriorityColumns={!explicitColumns}
+        toolbar={{
+          views: (
             <Suspense fallback={null}>
-              <ClientFiltersSheet allTags={allTags} />
+              <ViewSelectorClient
+                entityType="CUSTOMER"
+                views={views}
+                canCreate={true}
+                canCreateShared={isAdmin}
+                slug={slug}
+                allTags={allTags}
+                fieldDefinitions={fieldDefs}
+                onSave={handleCreateView}
+                systemViews={CLIENT_VIEW_OPTIONS}
+                defaultViewId={ALL_CLIENTS_VIEW_ID}
+                clearOnSavedView={SAVED_VIEW_IGNORED_PARAMS}
+              />
             </Suspense>
-          )}
-        </div>
-      </div>
-
-      {/* Clients table or empty state */}
-      {visibleRows.length === 0 ? (
-        filtered ? (
-          <div className="rounded-lg border border-dashed border-slate-200 px-6 py-10 text-center dark:border-slate-800">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              No clients match this view.
-            </p>
-            <Link
-              href={`/org/${slug}/clients`}
-              className="mt-2 inline-block text-sm font-medium text-teal-600 hover:underline"
-            >
-              Clear filters
-            </Link>
-          </div>
-        ) : showIncomplete ? (
-          <EmptyState
-            icon={UserRound}
-            title="All clients are complete"
-            description="All clients have 100% completeness."
-          />
-        ) : (
-          <EmptyState
-            icon={Users}
-            title="No clients yet"
-            description={
-              isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")
-            }
-            action={isAdmin ? <CreateCustomerDialog slug={slug} /> : undefined}
-          />
-        )
-      ) : (
-        <div className="space-y-2">
-          <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-            <ClientsTable
-              slug={slug}
-              rows={visibleRows}
-              columns={columns}
-              customFieldNames={customFieldNames}
-              sort={sort}
-              query={query}
-              caption={`Clients — ${selection.view.name}`}
-              hideLowPriorityColumns={!explicitColumns}
+          ),
+          search: (
+            <Suspense fallback={null}>
+              <ClientSearch />
+            </Suspense>
+          ),
+          filters: (
+            <>
+              <ClientLifecycleFilter
+                slug={slug}
+                query={query}
+                activeLifecycle={activeLifecycle}
+                viewLifecycle={viewLifecycle}
+                showLifecycle={!savedViewActive}
+                showIncomplete={showIncomplete}
+                showIncompleteLocked={showIncompleteLocked}
+              />
+              {/* F-3: the backend ignores tags on the saved-view path, so the filter hides there. */}
+              {!savedViewActive && allTags.length > 0 && (
+                <Suspense fallback={null}>
+                  <ClientFiltersSheet allTags={allTags} />
+                </Suspense>
+              )}
+            </>
+          ),
+        }}
+        empty={
+          filtered ? (
+            <div className="border-border rounded-lg border border-dashed px-6 py-10 text-center">
+              <p className="text-muted-foreground text-sm">No clients match this view.</p>
+              <Link
+                href={`/org/${slug}/clients`}
+                className="text-primary mt-2 inline-block text-sm font-medium underline-offset-4 hover:underline"
+              >
+                Clear filters
+              </Link>
+            </div>
+          ) : showIncomplete ? (
+            <EmptyState
+              icon={UserRound}
+              title="All clients are complete"
+              description="All clients have 100% completeness."
             />
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400" data-testid="clients-footer">
+          ) : (
+            <EmptyState
+              icon={Users}
+              title="No clients yet"
+              description={
+                isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")
+              }
+              action={isAdmin ? <CreateCustomerDialog slug={slug} /> : undefined}
+            />
+          )
+        }
+        footer={
+          <p className="text-muted-foreground text-xs" data-testid="clients-footer">
             Showing {clientCount(visibleRows.length)}
           </p>
-        </div>
-      )}
+        }
+      />
     </div>
   );
 }

@@ -281,7 +281,18 @@ describe("AppSidebar — collapsed icon rail", () => {
 });
 
 describe("AppSidebar — ⌘/Ctrl+B", () => {
-  it("toggles on a plain ⌘B / Ctrl+B and ignores one an editor already handled", () => {
+  let platformSpy: { mockRestore: () => void } | undefined;
+  const stubPlatform = (platform: string) => {
+    platformSpy = vi.spyOn(navigator, "platform", "get").mockReturnValue(platform);
+  };
+
+  afterEach(() => {
+    platformSpy?.mockRestore();
+    platformSpy = undefined;
+  });
+
+  it("on macOS toggles on ⌘B and ignores one an editor already handled", () => {
+    stubPlatform("MacIntel");
     renderSidebar({
       extra: (
         // Stands in for Tiptap/ProseMirror, which preventDefault()s Mod-b (bold).
@@ -296,11 +307,33 @@ describe("AppSidebar — ⌘/Ctrl+B", () => {
     fireEvent.keyDown(window, { key: "b", metaKey: true });
     expect(sidebarState()).toBe("collapsed");
 
-    fireEvent.keyDown(window, { key: "b", ctrlKey: true });
+    fireEvent.keyDown(window, { key: "b", metaKey: true });
     expect(sidebarState()).toBe("expanded");
   });
 
+  it("on macOS leaves Ctrl+B alone (native cursor-back; Tiptap does not bind it)", () => {
+    stubPlatform("MacIntel");
+    renderSidebar();
+
+    // fireEvent returns false when a listener called preventDefault().
+    expect(fireEvent.keyDown(window, { key: "b", ctrlKey: true })).toBe(true);
+    expect(sidebarState()).toBe("expanded");
+  });
+
+  it("off macOS toggles on Ctrl+B and ignores Meta(Win)+B", () => {
+    stubPlatform("Win32");
+    renderSidebar();
+    expect(sidebarState()).toBe("expanded");
+
+    expect(fireEvent.keyDown(window, { key: "b", metaKey: true })).toBe(true);
+    expect(sidebarState()).toBe("expanded");
+
+    expect(fireEvent.keyDown(window, { key: "b", ctrlKey: true })).toBe(false);
+    expect(sidebarState()).toBe("collapsed");
+  });
+
   it("ignores auto-repeat keydowns from a held ⌘B", () => {
+    stubPlatform("MacIntel");
     renderSidebar();
     expect(sidebarState()).toBe("expanded");
 

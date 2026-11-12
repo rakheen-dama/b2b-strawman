@@ -26,6 +26,16 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
+// Minimal shape of the (Chromium-only) User-Agent Client Hints API.
+type NavigatorWithUAData = Navigator & { userAgentData?: { platform?: string } };
+
+// ⌘ on Apple platforms, Ctrl elsewhere — the same split as Tiptap/ProseMirror's "Mod-".
+function isApplePlatform() {
+  const nav = navigator as NavigatorWithUAData;
+  const platform = nav.userAgentData?.platform || nav.platform || nav.userAgent;
+  return /mac|iphone|ipad|ipod/i.test(platform);
+}
+
 type SidebarContextProps = {
   state: "expanded" | "collapsed";
   open: boolean;
@@ -102,7 +112,10 @@ function SidebarProvider({
       if (event.defaultPrevented) return;
       // A held ⌘B auto-repeats; only the first keydown toggles.
       if (event.repeat) return;
-      if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
+      const modifier = isApplePlatform()
+        ? event.metaKey && !event.ctrlKey
+        : event.ctrlKey && !event.metaKey;
+      if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && modifier) {
         event.preventDefault();
         toggleSidebar();
       }

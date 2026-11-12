@@ -45,6 +45,18 @@ describe("StatCard", () => {
     expect(deltaRow(container)).toBeNull();
   });
 
+  it("loading: the value skeleton fills the ready value's line box in both variants (no shift)", () => {
+    // Ready value line box: text-2xl → 2rem (h-8) default; text-lg → 1.75rem (h-7) compact.
+    const { container, rerender } = render(
+      <StatCard label="Revenue" value={null} state="loading" />
+    );
+    const skeleton = () => container.querySelector('[data-slot="stat-card-value-skeleton"]');
+    expect(skeleton()).toHaveClass("h-8");
+
+    rerender(<StatCard label="Revenue" value={null} state="loading" variant="compact" />);
+    expect(skeleton()).toHaveClass("h-7");
+  });
+
   it("redacted: dash + sr 'Not available' + caller hint, and no delta even when passed", () => {
     const { container } = render(
       <StatCard

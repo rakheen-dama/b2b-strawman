@@ -15,7 +15,7 @@ Head under test: **`874ba8df5`** (PR #1759). Baseline: `../baseline/README.md` (
 |---|---|---|---|
 | legal-lifecycle | 105 passed | **105 passed** | yes |
 | legal-depth-ii | 40 passed, 4 skipped | **40 passed, 4 skipped** | yes |
-| E2E-DEFAULT | 157 passed, 1 failed (INV-02 flake), 7 did not run, 14 skipped | **165 passed, 14 skipped** | yes |
+| E2E-DEFAULT | 157 passed, 1 failed (INV-02, cause unconfirmed), 7 did not run, 14 skipped | **165 passed, 14 skipped** | yes |
 
 No spec edited; no role or test id changed.
 

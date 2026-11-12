@@ -1,7 +1,7 @@
 {
-  "commit": "4816cf4408a883c89ad29db1fb900e2effdaa0d8",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-637B, phase90/37B-theme-toggle-dead-charts, NODE_OPTIONS='' SHELL=/bin/bash)",
+  "commit": "57fa7a98f8c1bfc1a8167cad37f56368d727800f",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-638A, phase90/38A-sidebar-shell, NODE_OPTIONS='' SHELL=/bin/bash)",
   "exit": 0,
-  "ts": "2026-11-12T01:59:31Z",
-  "summary": "PR #1760 (Phase 90 637B) @4816cf440 (last frontend-touching commit; 76769c5e2 evidence-only, d6d7d52ee ADR-only): FE-GATE exit 0 — 460 files, 3903 passed / 2 skipped (3905). E2E-LEGAL fresh stack @4816cf440: legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped"
+  "ts": "2026-11-12T03:50:02Z",
+  "summary": "PR #1761 (Phase 90 638A) @57fa7a98f (last frontend-touching commit; e2a324e8c + c82647bf4 evidence-only under qa_cycle/): FE-GATE exit 0 — 458 files, 3899 passed / 2 skipped (3901). E2E-LEGAL fresh stack @57fa7a98f: test:e2e:navigation 16 passed, legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped"
 }

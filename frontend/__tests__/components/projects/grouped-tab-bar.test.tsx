@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
 import { MATTER_TAB_GROUPS } from "@/lib/constants/matter-tab-groups";
 import { resolveTabFromUrl, type TabGroup } from "@/lib/constants/tab-group-types";
@@ -365,5 +365,196 @@ describe("GroupedTabBar edge fades (642C)", () => {
     const { start, end } = fadeState(container);
     expect(start).toHaveClass("pointer-events-none");
     expect(end).toHaveClass("pointer-events-none");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 642C review fixes: scrollbar available whenever the row overflows; active trigger kept in view.
+// happy-dom has no layout, so the tests stub the layout getters on the prototypes before render
+// (the effects run on mount): each tab is TAB_W wide, laid out left to right, and the viewport is
+// VIEWPORT_W wide. Matter groups: details(0) overview(1) work(2) finance(3) client(4) schedule(5)
+// activity(6), so the row is 700px wide in a 300px viewport.
+// ---------------------------------------------------------------------------
+
+const TAB_W = 100;
+const VIEWPORT_W = 300;
+const EDGE_FADE_PX = 32; // w-8 edge fade, cleared when the row scrolls a trigger into view
+
+function isViewport(el: Element) {
+  return el.getAttribute("data-slot") === "scroll-area-viewport";
+}
+
+function tabPosition(el: Element) {
+  if (el.getAttribute("role") !== "tab" || !el.parentElement) return -1;
+  return Array.from(el.parentElement.children).indexOf(el);
+}
+
+function rowWidth(viewport: Element) {
+  return viewport.querySelectorAll('[role="tablist"] > [role="tab"]').length * TAB_W;
+}
+
+/** Stub a layout getter on `proto`, falling back to happy-dom's own value for unrelated elements. */
+function stubGetter<T extends object>(
+  proto: T,
+  prop: "offsetLeft" | "offsetWidth" | "clientWidth" | "scrollWidth",
+  value: (el: Element) => number | undefined
+) {
+  const original = Object.getOwnPropertyDescriptor(proto, prop)!.get!;
+  vi.spyOn(proto as Element & HTMLElement, prop, "get").mockImplementation(function (
+    this: Element
+  ) {
+    return value(this) ?? (original.call(this) as number);
+  });
+}
+
+function stubTabLayout({ viewportWidth = VIEWPORT_W }: { viewportWidth?: number } = {}) {
+  stubGetter(HTMLElement.prototype, "offsetLeft", (el) => {
+    const i = tabPosition(el);
+    return i === -1 ? undefined : i * TAB_W;
+  });
+  stubGetter(HTMLElement.prototype, "offsetWidth", (el) => {
+    if (isViewport(el)) return viewportWidth;
+    return tabPosition(el) === -1 ? undefined : TAB_W;
+  });
+  stubGetter(HTMLElement.prototype, "clientWidth", (el) =>
+    isViewport(el) ? viewportWidth : undefined
+  );
+  stubGetter(Element.prototype, "scrollWidth", (el) => (isViewport(el) ? rowWidth(el) : undefined));
+}
+
+function getViewport(container: HTMLElement) {
+  return container.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]')!;
+}
+
+function fadeVisibility(container: HTMLElement) {
+  return {
+    start: container
+      .querySelector('[data-slot="grouped-tab-bar-fade-start"]')!
+      .getAttribute("data-visible"),
+    end: container
+      .querySelector('[data-slot="grouped-tab-bar-fade-end"]')!
+      .getAttribute("data-visible"),
+  };
+}
+
+describe("GroupedTabBar keeps the active trigger in view (642C review)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("scrolls the row so an off-screen active trigger is fully visible on mount (deep link)", () => {
+    stubTabLayout();
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="audit" onTabChange={() => {}} />
+    );
+
+    // Activity is the 7th trigger (600–700px); its end lands inside the 300px viewport, clear of
+    // the end fade, and the browser would clamp at the 400px maximum.
+    const viewport = getViewport(container);
+    expect(viewport.scrollLeft).toBe(700 - VIEWPORT_W + EDGE_FADE_PX);
+    // A browser fires `scroll` after a programmatic scrollLeft change (happy-dom doesn't, so it is
+    // simulated); the fade listener then shows content hidden past the start edge only.
+    fireEvent.scroll(viewport);
+    expect(fadeVisibility(container)).toEqual({ start: "true", end: "false" });
+  });
+
+  it("leaves the scroll position alone when the active trigger is already visible", () => {
+    stubTabLayout();
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="overview" onTabChange={() => {}} />
+    );
+
+    expect(getViewport(container).scrollLeft).toBe(0);
+    expect(fadeVisibility(container)).toEqual({ start: "false", end: "true" });
+  });
+
+  it("re-runs when activeTab changes, scrolling either way only as far as needed", () => {
+    stubTabLayout();
+    const { container, rerender } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="overview" onTabChange={() => {}} />
+    );
+    const viewport = getViewport(container);
+
+    // Fees (300–400px) is past the end edge → its end is brought in.
+    rerender(
+      <GroupedTabBar groups={makeGroups()} activeTab="disbursements" onTabChange={() => {}} />
+    );
+    expect(viewport.scrollLeft).toBe(400 - VIEWPORT_W + EDGE_FADE_PX);
+
+    // Details (0–100px) is now past the start edge → scrolled back (clamped at 0).
+    rerender(<GroupedTabBar groups={makeGroups()} activeTab="details" onTabChange={() => {}} />);
+    expect(viewport.scrollLeft).toBe(0);
+
+    // Diary (500–600px) → its end is brought in again.
+    rerender(
+      <GroupedTabBar groups={makeGroups()} activeTab="court-dates" onTabChange={() => {}} />
+    );
+    expect(viewport.scrollLeft).toBe(600 - VIEWPORT_W + EDGE_FADE_PX);
+  });
+
+  it("re-runs on a sub-tab change within the active group (the trigger label changes width)", () => {
+    stubTabLayout();
+    const { container, rerender } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="time" onTabChange={() => {}} />
+    );
+    const viewport = getViewport(container);
+    expect(viewport.scrollLeft).toBe(400 - VIEWPORT_W + EDGE_FADE_PX);
+
+    // The user scrolls Fees back out of view, then picks another Fees sub-tab.
+    viewport.scrollLeft = 0;
+    fireEvent.scroll(viewport);
+    rerender(<GroupedTabBar groups={makeGroups()} activeTab="trust" onTabChange={() => {}} />);
+    expect(viewport.scrollLeft).toBe(400 - VIEWPORT_W + EDGE_FADE_PX);
+  });
+
+  it("never calls scrollIntoView (it would also scroll the page vertically)", () => {
+    stubTabLayout();
+    const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView");
+    render(<GroupedTabBar groups={makeGroups()} activeTab="audit" onTabChange={() => {}} />);
+
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+});
+
+describe("GroupedTabBar horizontal scrollbar (642C review)", () => {
+  const HORIZONTAL_SCROLLBAR = '[data-slot="scroll-area-scrollbar"][data-orientation="horizontal"]';
+
+  /** A ResizeObserver that reports once on observe, as a browser does for a laid-out element. */
+  class ReportingResizeObserver {
+    constructor(private readonly callback: ResizeObserverCallback) {}
+    observe() {
+      this.callback([], this as unknown as ResizeObserver);
+    }
+    unobserve() {}
+    disconnect() {}
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("mounts the scrollbar as soon as the row overflows, without any scroll (wheel-only mice)", async () => {
+    vi.stubGlobal("ResizeObserver", ReportingResizeObserver);
+    stubTabLayout(); // 700px row in a 300px viewport
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="overview" onTabChange={() => {}} />
+    );
+
+    // No scroll event is fired: with `type="scroll"` the bar would stay unmounted until one is.
+    await waitFor(() => expect(container.querySelector(HORIZONTAL_SCROLLBAR)).not.toBeNull());
+    expect(container.querySelector(HORIZONTAL_SCROLLBAR)).toHaveAttribute("data-state", "visible");
+  });
+
+  it("does not mount the scrollbar when the row fits", async () => {
+    vi.stubGlobal("ResizeObserver", ReportingResizeObserver);
+    stubTabLayout({ viewportWidth: 700 }); // 700px row in a 700px viewport
+    const { container } = render(
+      <GroupedTabBar groups={makeGroups()} activeTab="overview" onTabChange={() => {}} />
+    );
+
+    // Radix debounces its overflow check (rAF + 10ms); give it time to (not) appear.
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(container.querySelector(HORIZONTAL_SCROLLBAR)).toBeNull();
   });
 });

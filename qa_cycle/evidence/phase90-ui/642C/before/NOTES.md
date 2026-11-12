@@ -80,3 +80,7 @@ The active group's accessible name gains " · <sub-tab>" (e.g. "Work · Tasks").
 ## day-07-14 baseline
 
 4 passed / 2 failed / 10 did not run. Both failures come from re-running with the same `runId`: a duplicate Bob comment and a duplicate `DEP/MOROKA` deposit row cause strict-mode violations. Neither is a tab-bar failure. The tab-bar steps that ran (`openGroupedTab` work/tasks ×3, finance/time ×1, plus `getByRole("tabpanel")`) passed. Details and side effects on the stack are in `e2e-day-07-14-before.txt`.
+
+## Errata (642C review, PR #1774)
+
+The `scrolledBy` field in every `obs-before.json` `scroll[]` entry (it reads `0`) is unreliable. `html { scroll-behavior: smooth }` animates the programmatic scroll, and the probe read `scrollTop` straight after assigning it, so it got the start position back. The bar-top measurements are the valid evidence of non-sticky behaviour: `barTopBefore` → `barTopAfter`, taken 400 ms after the scroll had settled. Examples are matter `?tab=activity` 466 → −134 (off-screen), matter default 466 → 126, client default 467 → 301 and client `?tab=audit` 467 → 116. The before-state can't be re-captured, because the stack has moved on to the restyle. `obs-before.cjs` now captures the initial `scrollTop`, waits for the scroll to settle, reports `scrolledBy` as final − initial, and samples the bar rect in the same frame, so the after-OBS can reuse it.

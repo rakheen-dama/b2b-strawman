@@ -134,9 +134,13 @@ function barFacts(page) {
   });
 }
 
-// Which element actually scrolls the page (window vs an app-shell container)?
+// Which element actually scrolls the page (window vs an app-shell container)? Scrolls it by `dy` and
+// measures once the scroll has settled: `html { scroll-behavior: smooth }` animates programmatic
+// scrolls, so reading scrollTop right after the assignment returns the *start* position (the
+// original probe reported scrolledBy 0 for every run). scrolledBy = settled − initial scrollTop, and
+// barTopAfter is sampled in the same frame as the settled scrollTop.
 function scrollProbe(page, dy) {
-  return page.evaluate((dy) => {
+  return page.evaluate(async (dy) => {
     const bar = [...document.querySelectorAll('[data-testid="grouped-tab-bar"]')].find((b) => b.offsetParent !== null);
     const before = Math.round(bar.getBoundingClientRect().top);
     let scroller = null;
@@ -151,12 +155,28 @@ function scrollProbe(page, dy) {
     }
     const target = scroller || document.scrollingElement;
     const maxScroll = target.scrollHeight - target.clientHeight;
-    target.scrollTop += dy;
+    const initial = target.scrollTop;
+    target.scrollTop = initial + dy;
+    // Settle: scrollTop unchanged for 5 consecutive frames (or give up after ~3s).
+    const frame = () => new Promise((r) => requestAnimationFrame(() => r()));
+    let last = target.scrollTop;
+    let stable = 0;
+    for (let i = 0; i < 180 && stable < 5; i++) {
+      await frame();
+      const now = target.scrollTop;
+      stable = now === last ? stable + 1 : 0;
+      last = now;
+    }
+    const settled = target.scrollTop;
+    const after = Math.round(bar.getBoundingClientRect().top);
     return {
       scroller: scroller ? `${scroller.tagName.toLowerCase()}.${(scroller.getAttribute("class") || "").slice(0, 80)}` : "document.scrollingElement (window)",
       maxScroll,
-      scrolledBy: Math.round(target.scrollTop),
+      initialScrollTop: Math.round(initial),
+      scrolledBy: Math.round(settled - initial),
+      settled: stable >= 5,
       barTopBefore: before,
+      barTopAfter: after,
     };
   }, dy);
 }
@@ -308,8 +328,7 @@ function scrollProbe(page, dy) {
     for (const tab of [null, key === "matter" ? "activity" : "audit"]) {
       await load(page, tab ? `${pg.url}?tab=${tab}` : pg.url, "light");
       const p1 = await scrollProbe(page, 600);
-      await page.waitForTimeout(400);
-      const topAfter = await visibleBar(page).evaluate((b) => Math.round(b.getBoundingClientRect().top));
+      const topAfter = p1.barTopAfter;
       const inView = topAfter >= 0 && topAfter < 900;
       let file = null;
       if (!tab) {
@@ -317,7 +336,7 @@ function scrollProbe(page, dy) {
         await page.screenshot({ path: path.join(OUT, file) });
         shots.push(file);
       }
-      results.scroll.push({ page: key, tab: tab || "(default)", ...p1, barTopAfter: topAfter, barInView: inView, file });
+      results.scroll.push({ page: key, tab: tab || "(default)", ...p1, barInView: inView, file });
       console.log(`scroll ${key} ${tab || "default"} scroller=${p1.scroller} max=${p1.maxScroll} scrolled=${p1.scrolledBy} top ${p1.barTopBefore}→${topAfter} inView=${inView}`);
     }
   }

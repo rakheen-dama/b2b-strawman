@@ -47,9 +47,31 @@ const TRIGGER_CLASS = cn(
   "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset"
 );
 
-/** Edge fade overlays: shown only while there is tab content hidden past that edge. */
+/**
+ * `type="auto"`: Radix mounts the horizontal scrollbar whenever the row overflows (not only while it
+ * is being scrolled), so a mouse with a vertical wheel only can still drag it to reach hidden tabs.
+ * Radix positions the scrollbar absolutely at the bottom of the root. Only while it is mounted, the
+ * root reserves a strip of the same height (`pb-1.5` = `h-1.5`), so the scrollbar sits under the
+ * row and never covers the 2px active underline.
+ */
+const SCROLL_AREA_CLASS =
+  "w-full has-[[data-slot=scroll-area-scrollbar][data-orientation=horizontal]]:pb-1.5";
+const SCROLLBAR_CLASS = "h-1.5";
+
+/**
+ * Edge fade overlays: shown only while there is tab content hidden past that edge. They stop above
+ * the scrollbar strip (`bottom-1.5`), so they never wash out the thumb. They are only visible
+ * while the row overflows, which is also when the scrollbar is mounted.
+ */
 const FADE_CLASS =
-  "from-background pointer-events-none absolute inset-y-0 w-8 opacity-0 transition-opacity data-[visible=true]:opacity-100 motion-reduce:transition-none";
+  "from-background pointer-events-none absolute top-0 bottom-1.5 w-8 opacity-0 transition-opacity data-[visible=true]:opacity-100 motion-reduce:transition-none";
+
+/** Width of an edge fade (`w-8`); keeping the active tab in view clears it, not just the edge. */
+const EDGE_FADE_PX = 32;
+
+function findViewport(scrollArea: HTMLElement | null) {
+  return scrollArea?.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]') ?? null;
+}
 
 interface EdgeFades {
   start: boolean;
@@ -79,14 +101,12 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
   const [fades, setFades] = useState<EdgeFades>({ start: false, end: false });
 
   // Determine which group the active tab belongs to
-  const activeGroupId =
-    visibleGroups.find((g) => g.tabs.some((t) => t.id === activeTab))?.id ?? null;
+  const activeGroupIndex = visibleGroups.findIndex((g) => g.tabs.some((t) => t.id === activeTab));
+  const activeGroupId = activeGroupIndex === -1 ? null : visibleGroups[activeGroupIndex].id;
 
   // Edge fades follow the scroll viewport (scroll + resize of the viewport or the tab row).
   useEffect(() => {
-    const viewport = scrollAreaRef.current?.querySelector<HTMLElement>(
-      '[data-slot="scroll-area-viewport"]'
-    );
+    const viewport = findViewport(scrollAreaRef.current);
     if (!viewport) return;
 
     const update = () => {
@@ -113,6 +133,28 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
     };
   }, []);
 
+  // Keep the active trigger inside the scroll viewport, e.g. on a deep link such as
+  // `?tab=disbursements` at a narrow width, when the tab changes, or when the label grows
+  // ("Fees · Disbursements"). This only scrolls the row horizontally and only when the trigger is
+  // out of view. It runs in an effect after hydration and never uses `scrollIntoView`, which can
+  // also scroll the page vertically. Offsets are measured against the tab row (its `relative`
+  // makes it the offsetParent), which starts at x=0 of the scroll content. Changing `scrollLeft`
+  // makes the viewport fire `scroll`, and the edge-fade listener above then refreshes the fades.
+  useEffect(() => {
+    const viewport = findViewport(scrollAreaRef.current);
+    const trigger = activeGroupIndex === -1 ? null : groupRefs.current[activeGroupIndex];
+    if (!viewport || !trigger) return;
+
+    const { scrollLeft, clientWidth } = viewport;
+    const start = trigger.offsetLeft;
+    const end = start + trigger.offsetWidth;
+    if (start < scrollLeft) {
+      viewport.scrollLeft = Math.max(0, start - EDGE_FADE_PX);
+    } else if (end > scrollLeft + clientWidth) {
+      viewport.scrollLeft = Math.min(start, end - clientWidth + EDGE_FADE_PX);
+    }
+  }, [activeTab, activeGroupIndex]);
+
   // Keyboard: ArrowLeft / ArrowRight between group triggers
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
@@ -134,11 +176,11 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
 
   return (
     <div data-slot="grouped-tab-bar-sticky" className={STICKY_BAR_CLASS}>
-      <ScrollArea ref={scrollAreaRef} type="scroll" className="w-full">
+      <ScrollArea ref={scrollAreaRef} type="auto" className={SCROLL_AREA_CLASS}>
         <div
           role="tablist"
           data-testid="grouped-tab-bar"
-          className="flex w-max gap-2"
+          className="relative flex w-max gap-2"
           onKeyDown={handleKeyDown}
         >
           {visibleGroups.map((group, idx) => {
@@ -227,7 +269,7 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
             );
           })}
         </div>
-        <ScrollBar orientation="horizontal" className="h-1.5" />
+        <ScrollBar orientation="horizontal" className={SCROLLBAR_CLASS} />
       </ScrollArea>
       <div
         aria-hidden="true"

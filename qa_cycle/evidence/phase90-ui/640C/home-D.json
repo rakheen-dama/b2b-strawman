@@ -1,0 +1,1230 @@
+{
+  "home-D-bob-1440-light-client": {
+    "user": "bob",
+    "width": "1440",
+    "theme": "light",
+    "navMode": "client",
+    "htmlClass": "light",
+    "skeletonObserved": true,
+    "skeletonScreenshotted": true,
+    "skeletonSamples": 81,
+    "inPageSamples": 253,
+    "inPageSkeletonSamples": 106,
+    "inPageSkeletonSpanMs": 4394,
+    "inPageStates": [
+      "other",
+      "skeleton",
+      "loaded"
+    ],
+    "skeletonDrift": {
+      "h1Y": [
+        90,
+        88.2,
+        88
+      ],
+      "mainY": [
+        64
+      ],
+      "headerH": [
+        56
+      ],
+      "kpiH": [
+        196
+      ],
+      "diaryY": [
+        390,
+        388.2,
+        388
+      ]
+    },
+    "firstSkeleton": {
+      "t": 2628,
+      "state": "skeleton",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 1969,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 90,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 0,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "matrix(1, 0, 0, 1, 0, 2)",
+      "rows": [
+        {
+          "y": 170,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": null,
+              "y": 170,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 390,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": null,
+              "y": 390,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 520,
+          "h": 514,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": null,
+              "y": 520,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 520,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 786,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1058,
+          "h": 583,
+          "w": 1136,
+          "ry": 968,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1058,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1058,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1336,
+              "h": 305,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1665,
+          "h": 346,
+          "w": 1136,
+          "ry": 1575,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1665,
+              "h": 346,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Hours logged",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Billable %",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 194,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": null,
+        "y": 170,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 1,
+      "homeTestidsInSkeleton": 0,
+      "ariaBusyRoot": "true",
+      "audience": null,
+      "docH": 2033
+    },
+    "sampleCount": 83,
+    "skeletonFirstAtMs": 143,
+    "firstLoadedAtMs": null,
+    "skeletonToLoadedMs": 4455,
+    "skeletonShot": "home-D-bob-1440-light-client-skeleton.png",
+    "loadedShot": "home-D-bob-1440-light-client-loaded.png",
+    "skeleton": {
+      "t": 7022,
+      "state": "skeleton",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 1969,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": null,
+              "y": 168,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 388,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": null,
+              "y": 388,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 518,
+          "h": 514,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": null,
+              "y": 518,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 518,
+              "h": 250,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 784,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1056,
+          "h": 583,
+          "w": 1136,
+          "ry": 968,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1056,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1056,
+              "h": 262,
+              "w": 560
+            },
+            {
+              "testid": null,
+              "y": 1334,
+              "h": 305,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1663,
+          "h": 346,
+          "w": 1136,
+          "ry": 1575,
+          "cells": [
+            {
+              "testid": null,
+              "y": 1663,
+              "h": 346,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Hours logged",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": true,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Billable %",
+          "hasDelta": false,
+          "hasDeltaSkeleton": true,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "loading",
+          "role": "group",
+          "ariaBusy": "true",
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": null,
+        "y": 168,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 1,
+      "homeTestidsInSkeleton": 0,
+      "ariaBusyRoot": "true",
+      "audience": null,
+      "docH": 2033
+    },
+    "firstLoaded": {
+      "t": 7083,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 2016.5,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-kpis",
+              "y": 168,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 388,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 388,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 518,
+          "h": 576.5,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 518,
+              "h": 312.5,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-debtors",
+              "y": 518,
+              "h": 312.5,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-trustPosition",
+              "y": 846.5,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1118.5,
+          "h": 244,
+          "w": 1136,
+          "ry": 1030.5,
+          "cells": [
+            {
+              "testid": "home-cell-ficaOutstanding",
+              "y": 1118.5,
+              "h": 244,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-sensitive",
+              "y": 1118.5,
+              "h": 244,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 1386.5,
+          "h": 670,
+          "w": 1136,
+          "ry": 1298.5,
+          "cells": [
+            {
+              "testid": "home-cell-activity",
+              "y": 1386.5,
+              "h": 670,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Hours logged",
+          "hasDelta": true,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": true,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Billable %",
+          "hasDelta": true,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": "kpi-row",
+        "y": 168,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 32,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "firm",
+      "docH": 2081
+    },
+    "loaded": {
+      "t": 13477,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 2016.5,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-kpis",
+              "y": 168,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 388,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 388,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 518,
+          "h": 576.5,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 518,
+              "h": 312.5,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-debtors",
+              "y": 518,
+              "h": 312.5,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-trustPosition",
+              "y": 846.5,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1118.5,
+          "h": 244,
+          "w": 1136,
+          "ry": 1030.5,
+          "cells": [
+            {
+              "testid": "home-cell-ficaOutstanding",
+              "y": 1118.5,
+              "h": 244,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-sensitive",
+              "y": 1118.5,
+              "h": 244,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 1386.5,
+          "h": 670,
+          "w": 1136,
+          "ry": 1298.5,
+          "cells": [
+            {
+              "testid": "home-cell-activity",
+              "y": 1386.5,
+              "h": 670,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Hours logged",
+          "hasDelta": true,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": true,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Billable %",
+          "hasDelta": true,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": "kpi-row",
+        "y": 168,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 32,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "firm",
+      "docH": 2081
+    },
+    "restLoadedUnthrottled": {
+      "t": 3213,
+      "state": "loaded",
+      "both": false,
+      "main": {
+        "y": 64,
+        "h": 2016.5,
+        "w": 1184
+      },
+      "mainPaddingTop": "0px",
+      "header": {
+        "y": 8,
+        "h": 56,
+        "w": 1152
+      },
+      "h1": {
+        "y": 88,
+        "h": 32,
+        "w": 144
+      },
+      "rootOffsetTop": 88,
+      "rootOffsetParent": "DIV#",
+      "wrapperTransform": "none",
+      "rows": [
+        {
+          "y": 168,
+          "h": 196,
+          "w": 1136,
+          "ry": 80,
+          "cells": [
+            {
+              "testid": "home-cell-kpis",
+              "y": 168,
+              "h": 196,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 388,
+          "h": 106,
+          "w": 1136,
+          "ry": 300,
+          "cells": [
+            {
+              "testid": "home-cell-diary",
+              "y": 388,
+              "h": 106,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 518,
+          "h": 576.5,
+          "w": 1136,
+          "ry": 430,
+          "cells": [
+            {
+              "testid": "home-cell-unbilledWip",
+              "y": 518,
+              "h": 312.5,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-debtors",
+              "y": 518,
+              "h": 312.5,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-trustPosition",
+              "y": 846.5,
+              "h": 248,
+              "w": 1136
+            }
+          ]
+        },
+        {
+          "y": 1118.5,
+          "h": 244,
+          "w": 1136,
+          "ry": 1030.5,
+          "cells": [
+            {
+              "testid": "home-cell-ficaOutstanding",
+              "y": 1118.5,
+              "h": 244,
+              "w": 560
+            },
+            {
+              "testid": "home-cell-sensitive",
+              "y": 1118.5,
+              "h": 244,
+              "w": 560
+            }
+          ]
+        },
+        {
+          "y": 1386.5,
+          "h": 670,
+          "w": 1136,
+          "ry": 1298.5,
+          "cells": [
+            {
+              "testid": "home-cell-activity",
+              "y": 1386.5,
+              "h": 670,
+              "w": 1136
+            }
+          ]
+        }
+      ],
+      "tiles": [
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Active matters",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Hours logged",
+          "hasDelta": true,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": true,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Billable %",
+          "hasDelta": true,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        },
+        {
+          "state": "ready",
+          "role": "group",
+          "ariaBusy": null,
+          "label": "Overdue tasks",
+          "hasDelta": false,
+          "hasDeltaSkeleton": false,
+          "hasHint": false,
+          "hasSparkline": false,
+          "hasFooter": false,
+          "valueH": 32,
+          "y": 192,
+          "h": 172,
+          "w": 272
+        }
+      ],
+      "kpiFrame": {
+        "dataSlot": "kpi-row",
+        "y": 168,
+        "h": 196,
+        "w": 1136
+      },
+      "testidsInRoot": 32,
+      "homeTestidsInSkeleton": null,
+      "ariaBusyRoot": null,
+      "audience": "firm",
+      "docH": 2081
+    },
+    "deltaSkeletonVsLoaded": {
+      "h1Y": 0,
+      "rootOffsetTop": 0,
+      "rowCount": {
+        "skeleton": 5,
+        "loaded": 5
+      },
+      "rows": [
+        {
+          "index": 0,
+          "loadedCells": [
+            "home-cell-kpis"
+          ],
+          "skeleton": {
+            "y": 168,
+            "h": 196
+          },
+          "loaded": {
+            "y": 168,
+            "h": 196
+          },
+          "dy": 0,
+          "dyLayout": 0,
+          "dh": 0
+        },
+        {
+          "index": 1,
+          "loadedCells": [
+            "home-cell-diary"
+          ],
+          "skeleton": {
+            "y": 388,
+            "h": 106
+          },
+          "loaded": {
+            "y": 388,
+            "h": 106
+          },
+          "dy": 0,
+          "dyLayout": 0,
+          "dh": 0
+        },
+        {
+          "index": 2,
+          "loadedCells": [
+            "home-cell-unbilledWip",
+            "home-cell-debtors",
+            "home-cell-trustPosition"
+          ],
+          "skeleton": {
+            "y": 518,
+            "h": 514
+          },
+          "loaded": {
+            "y": 518,
+            "h": 576.5
+          },
+          "dy": 0,
+          "dyLayout": 0,
+          "dh": 62.5
+        },
+        {
+          "index": 3,
+          "loadedCells": [
+            "home-cell-ficaOutstanding",
+            "home-cell-sensitive"
+          ],
+          "skeleton": {
+            "y": 1056,
+            "h": 583
+          },
+          "loaded": {
+            "y": 1118.5,
+            "h": 244
+          },
+          "dy": 62.5,
+          "dyLayout": 62.5,
+          "dh": -339
+        },
+        {
+          "index": 4,
+          "loadedCells": [
+            "home-cell-activity"
+          ],
+          "skeleton": {
+            "y": 1663,
+            "h": 346
+          },
+          "loaded": {
+            "y": 1386.5,
+            "h": 670
+          },
+          "dy": -276.5,
+          "dyLayout": -276.5,
+          "dh": 324
+        }
+      ],
+      "kpiFrame": {
+        "skeleton": {
+          "dataSlot": null,
+          "y": 168,
+          "h": 196,
+          "w": 1136
+        },
+        "loaded": {
+          "dataSlot": "kpi-row",
+          "y": 168,
+          "h": 196,
+          "w": 1136
+        },
+        "dy": 0,
+        "dh": 0
+      }
+    },
+    "deltaSkeletonVsFirstLoaded": {
+      "h1Y": 0,
+      "rootOffsetTop": 0,
+      "rowCount": {
+        "skeleton": 5,
+        "loaded": 5
+      },
+      "rows": [
+        {
+          "index": 0,
+          "loadedCells": [
+            "home-cell-kpis"
+          ],
+          "skeleton": {
+            "y": 168,
+            "h": 196
+          },
+          "loaded": {
+            "y": 168,
+            "h": 196
+          },
+          "dy": 0,
+          "dyLayout": 0,
+          "dh": 0
+        },
+        {
+          "index": 1,
+          "loadedCells": [
+            "home-cell-diary"
+          ],
+          "skeleton": {
+            "y": 388,
+            "h": 106
+          },
+          "loaded": {
+            "y": 388,
+            "h": 106
+          },
+          "dy": 0,
+          "dyLayout": 0,
+          "dh": 0
+        },
+        {
+          "index": 2,
+          "loadedCells": [
+            "home-cell-unbilledWip",
+            "home-cell-debtors",
+            "home-cell-trustPosition"
+          ],
+          "skeleton": {
+            "y": 518,
+            "h": 514
+          },
+          "loaded": {
+            "y": 518,
+            "h": 576.5
+          },
+          "dy": 0,
+          "dyLayout": 0,
+          "dh": 62.5
+        },
+        {
+          "index": 3,
+          "loadedCells": [
+            "home-cell-ficaOutstanding",
+            "home-cell-sensitive"
+          ],
+          "skeleton": {
+            "y": 1056,
+            "h": 583
+          },
+          "loaded": {
+            "y": 1118.5,
+            "h": 244
+          },
+          "dy": 62.5,
+          "dyLayout": 62.5,
+          "dh": -339
+        },
+        {
+          "index": 4,
+          "loadedCells": [
+            "home-cell-activity"
+          ],
+          "skeleton": {
+            "y": 1663,
+            "h": 346
+          },
+          "loaded": {
+            "y": 1386.5,
+            "h": 670
+          },
+          "dy": -276.5,
+          "dyLayout": -276.5,
+          "dh": 324
+        }
+      ],
+      "kpiFrame": {
+        "skeleton": {
+          "dataSlot": null,
+          "y": 168,
+          "h": 196,
+          "w": 1136
+        },
+        "loaded": {
+          "dataSlot": "kpi-row",
+          "y": 168,
+          "h": 196,
+          "w": 1136
+        },
+        "dy": 0,
+        "dh": 0
+      }
+    },
+    "layoutShifts": [],
+    "cls": 0,
+    "clsExclRecentInput": 0,
+    "statesSeen": [
+      "other",
+      "skeleton",
+      "loaded"
+    ]
+  }
+}

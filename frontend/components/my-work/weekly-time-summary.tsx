@@ -119,12 +119,6 @@ export function WeeklyTimeSummary({ initialSummary, initialFrom }: WeeklyTimeSum
 }
 
 /**
- * The week's figures. Billable vs non-billable is one whole split into two named parts, so it is
- * a categorical StackedMeter (ADR-370): Billable = slot 1, Non-billable = slot 2 in a fixed order
- * so a zero part keeps its colour. The two figure tiles are its legend (swatch + label, never
- * colour alone); the meter's sr summary states the same formatDuration text the tiles show.
- */
-/**
  * The meter's parts in draw order. StackedMeter's categorical palette gives part i the colour
  * --chart-(i+1), so each part carries that slot's swatch class — the legend reads it from here.
  */
@@ -133,6 +127,12 @@ const WEEK_PARTS = {
   nonBillable: { label: "Non-billable", swatch: "bg-chart-2" },
 } as const;
 
+/**
+ * The week's figures. Billable vs non-billable is one whole split into two named parts, so it is
+ * a categorical StackedMeter (ADR-370): Billable = slot 1, Non-billable = slot 2 in a fixed order
+ * so a zero part keeps its colour. The two figure tiles are its legend (swatch + label, never
+ * colour alone); the meter's sr summary states the same formatDuration text the tiles show.
+ */
 function WeekTotals({ summary }: { summary: MyWorkTimeSummary }) {
   const minutes: Record<keyof typeof WEEK_PARTS, number> = {
     billable: summary.billableMinutes,

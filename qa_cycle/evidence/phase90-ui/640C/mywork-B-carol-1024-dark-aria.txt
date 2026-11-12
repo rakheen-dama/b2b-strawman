@@ -1,0 +1,5 @@
+- heading "This Week" [level=2]
+- button "Previous week"
+- text: Nov 9 – Nov 15, 2026
+- button "Next week"
+- paragraph: No time tracked this week

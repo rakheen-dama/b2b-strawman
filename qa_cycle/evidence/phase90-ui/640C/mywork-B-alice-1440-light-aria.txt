@@ -1,0 +1,14 @@
+- heading "This Week" [level=2]
+- button "Previous week"
+- text: Nov 9 – Nov 15, 2026
+- button "Next week"
+- paragraph: Total
+- paragraph: 3h 30m
+- img "Billable vs non-billable time"
+- text: Billable 2h, Non-billable 1h 30m
+- paragraph: Billable
+- paragraph: 2h
+- paragraph: Non-billable
+- paragraph: 1h 30m
+- heading "By Matter" [level=3]
+- text: "Ndlovu v RAF — Depth II mwdkfjx52f10 Billable: 2h 2h Khumalo Property Holdings — Erf 1234 Sandton Transfer mwdkfjx52f10 Billable: 0m 1h 30m"

@@ -5,6 +5,7 @@ import { getReportDefinitions } from "@/lib/api/reports";
 import { PermissionDenied } from "@/components/permission-denied";
 import type { ReportListResponse } from "@/lib/api/reports";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
+import { PageHeader } from "@b2mash/ui/page-header";
 import { EmptyState } from "@/components/empty-state";
 
 function ReportCard({
@@ -20,7 +21,7 @@ function ReportCard({
     <Link href={href}>
       <Card className="h-full transition-shadow hover:shadow-md">
         <CardHeader>
-          <CardTitle className="text-slate-950 dark:text-slate-50">{name}</CardTitle>
+          <CardTitle>{name}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -56,18 +57,13 @@ export default async function ReportsPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Reports</h1>
-      </div>
+      <PageHeader title="Reports" />
 
       {/* Profitability is a built-in page, not a backend report definition: this card is its single
           UI entry (Phase 87 S6a, ADR-339). Its page applies the same gate as this index (admin,
           owner or FINANCIAL_VISIBILITY), so anyone past the gate above may open it. */}
       <section className="space-y-4">
-        <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">
-          Firm performance
-        </h2>
+        <h2 className="font-display text-foreground text-xl">Firm performance</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <ReportCard
             href={`/org/${slug}/reports/profitability`}
@@ -91,9 +87,7 @@ export default async function ReportsPage({ params }: { params: Promise<{ slug: 
       ) : (
         data.categories.map((category) => (
           <section key={category.category} className="space-y-4">
-            <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">
-              {category.label}
-            </h2>
+            <h2 className="font-display text-foreground text-xl">{category.label}</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {category.reports.map((report) => (
                 <ReportCard

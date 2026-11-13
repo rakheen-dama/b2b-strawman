@@ -1,27 +1,21 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { EmptyCell, MoneyCell } from "@/components/data-table/cells";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import { HelpTip } from "@/components/help-tip";
 import { ProfitabilityRankingChart } from "@/components/profitability/profitability-ranking-chart";
-import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import {
   exportProfitabilityCsvAction,
   getOrgProfitability,
 } from "@/app/(app)/org/[slug]/profitability/actions";
 import type { OrgProfitabilityResponse, MatterProfitabilitySummary } from "@/lib/types";
-import { ArrowUpDown, Download } from "lucide-react";
+import { Download } from "lucide-react";
 
 interface ProjectProfitabilityTableProps {
   initialData: OrgProfitabilityResponse;
@@ -73,6 +67,86 @@ function sortProjects(
     return dir === "asc" ? cmp : -cmp;
   });
 }
+
+const DATE_INPUT_CLASS = "border-input bg-card text-foreground rounded-md border px-2 py-1 text-sm";
+
+/** A matter appears once per currency. */
+const getRowId = (matter: MatterProfitabilitySummary) => `${matter.matterId}-${matter.currency}`;
+
+const signClass = (value: number) =>
+  value >= 0 ? "text-success-foreground" : "text-danger-foreground";
+
+const notAvailable = <Badge variant="neutral">N/A</Badge>;
+
+const columns = defineColumns<MatterProfitabilitySummary>([
+  {
+    id: "projectName",
+    enableHiding: false,
+    meta: { label: "Matter", sortKey: "projectName", cellClassName: "font-medium" },
+    cell: ({ row }) => row.original.matterName,
+  },
+  {
+    id: "customerName",
+    meta: { label: "Client", sortKey: "customerName" },
+    cell: ({ row }) => row.original.clientName || <EmptyCell />,
+  },
+  {
+    id: "currency",
+    meta: { label: "Currency" },
+    cell: ({ row }) => row.original.currency,
+  },
+  {
+    id: "billableHours",
+    meta: { label: "Billable Hours", sortKey: "billableHours", align: "end" },
+    cell: ({ row }) => (
+      <span className="tabular-nums">{row.original.billableHours.toFixed(1)}h</span>
+    ),
+  },
+  {
+    id: "billableValue",
+    meta: { label: "Revenue", sortKey: "billableValue", align: "end" },
+    cell: ({ row }) => (
+      <MoneyCell amount={row.original.billableValue} currency={row.original.currency} />
+    ),
+  },
+  {
+    id: "costValue",
+    meta: { label: "Cost", sortKey: "costValue", align: "end" },
+    // A missing cost reads "N/A" (no cost rate), not the "—" placeholder of a missing client.
+    cell: ({ row }) =>
+      row.original.costValue != null ? (
+        <MoneyCell amount={row.original.costValue} currency={row.original.currency} />
+      ) : (
+        "N/A"
+      ),
+  },
+  {
+    id: "margin",
+    meta: { label: "Margin", sortKey: "margin", align: "end" },
+    cell: ({ row }) =>
+      row.original.margin != null ? (
+        <MoneyCell
+          amount={row.original.margin}
+          currency={row.original.currency}
+          className={signClass(row.original.margin)}
+        />
+      ) : (
+        notAvailable
+      ),
+  },
+  {
+    id: "marginPercent",
+    meta: { label: "Margin %", sortKey: "marginPercent", align: "end" },
+    cell: ({ row }) =>
+      row.original.marginPercent != null ? (
+        <span className={cn("tabular-nums", signClass(row.original.marginPercent))}>
+          {row.original.marginPercent.toFixed(1)}%
+        </span>
+      ) : (
+        notAvailable
+      ),
+  },
+]);
 
 export function ProjectProfitabilityTable({
   initialData,
@@ -134,7 +208,11 @@ export function ProjectProfitabilityTable({
     }
   }
 
-  const sorted = sortProjects(data.matters, sortField, sortDir);
+  // A new array only when the rows or the sort change: `data` identity is navigation for the kit.
+  const sorted = useMemo(
+    () => sortProjects(data.matters, sortField, sortDir),
+    [data.matters, sortField, sortDir]
+  );
 
   return (
     <Card>
@@ -145,7 +223,7 @@ export function ProjectProfitabilityTable({
             <HelpTip code="dashboard.profitability" />
           </CardTitle>
           <div className="flex flex-wrap items-center gap-2">
-            <label htmlFor="prof-from" className="text-sm text-slate-600 dark:text-slate-400">
+            <label htmlFor="prof-from" className="text-muted-foreground text-sm">
               From
             </label>
             <input
@@ -153,9 +231,9 @@ export function ProjectProfitabilityTable({
               type="date"
               value={from}
               onChange={(e) => handleDateChange(e.target.value, to)}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className={DATE_INPUT_CLASS}
             />
-            <label htmlFor="prof-to" className="text-sm text-slate-600 dark:text-slate-400">
+            <label htmlFor="prof-to" className="text-muted-foreground text-sm">
               To
             </label>
             <input
@@ -163,7 +241,7 @@ export function ProjectProfitabilityTable({
               type="date"
               value={to}
               onChange={(e) => handleDateChange(from, e.target.value)}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className={DATE_INPUT_CLASS}
             />
             <Button
               variant="outline"
@@ -180,140 +258,27 @@ export function ProjectProfitabilityTable({
       </CardHeader>
       <CardContent>
         <ProfitabilityRankingChart matters={data.matters} defaultCurrency={defaultCurrency} />
-        {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
+        {isPending && <div className="text-muted-foreground mb-4 text-sm">Loading...</div>}
         {error && (
-          <div role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">
+          <div role="alert" className="text-destructive mb-4 text-sm">
             {error}
           </div>
         )}
-        {sorted.length === 0 ? (
-          <p className="py-8 text-center text-sm text-slate-500">
-            No matter profitability data for this period
-          </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <button
-                    onClick={() => toggleSort("projectName")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Matter
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button
-                    onClick={() => toggleSort("customerName")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Client
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead>Currency</TableHead>
-                <TableHead className="text-right">
-                  <button
-                    onClick={() => toggleSort("billableHours")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Billable Hours
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <button
-                    onClick={() => toggleSort("billableValue")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Revenue
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <button
-                    onClick={() => toggleSort("costValue")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Cost
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <button
-                    onClick={() => toggleSort("margin")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Margin
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <button
-                    onClick={() => toggleSort("marginPercent")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Margin %
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sorted.map((project) => (
-                <TableRow key={`${project.matterId}-${project.currency}`}>
-                  <TableCell className="font-medium">{project.matterName}</TableCell>
-                  <TableCell>
-                    {project.clientName ? (
-                      project.clientName
-                    ) : (
-                      <span className="text-slate-400">&mdash;</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{project.currency}</TableCell>
-                  <TableCell className="text-right">{project.billableHours.toFixed(1)}h</TableCell>
-                  <TableCell className="text-right">
-                    {formatCurrency(project.billableValue, project.currency)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatCurrencySafe(project.costValue, project.currency)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {project.margin != null ? (
-                      <span
-                        className={cn(
-                          project.margin >= 0
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400"
-                        )}
-                      >
-                        {formatCurrency(project.margin, project.currency)}
-                      </span>
-                    ) : (
-                      <Badge variant="neutral">N/A</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {project.marginPercent != null ? (
-                      <span
-                        className={cn(
-                          project.marginPercent >= 0
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400"
-                        )}
-                      >
-                        {project.marginPercent.toFixed(1)}%
-                      </span>
-                    ) : (
-                      <Badge variant="neutral">N/A</Badge>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <DataTable
+          columns={columns}
+          data={sorted}
+          getRowId={getRowId}
+          sort={{ key: sortField, dir: sortDir, onSort: toggleSort }}
+          empty={
+            <p className="text-muted-foreground py-8 text-center text-sm">
+              No matter profitability data for this period
+            </p>
+          }
+          columnVisibility={false}
+          stickyHeader={false}
+          frame={false}
+          pageSize={null}
+        />
       </CardContent>
     </Card>
   );

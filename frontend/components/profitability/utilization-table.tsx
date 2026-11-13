@@ -1,22 +1,16 @@
 "use client";
 
-import { Fragment, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/data-table/data-table";
+import { defineColumns } from "@/components/data-table/define-columns";
 import { HelpTip } from "@/components/help-tip";
 import { UtilizationChart } from "@/components/profitability/utilization-chart";
 import { formatCurrencySafe } from "@/lib/format";
 import { getUtilization } from "@/app/(app)/org/[slug]/profitability/actions";
 import type { UtilizationResponse, MemberUtilizationRecord } from "@/lib/types";
-import { ArrowUpDown, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface UtilizationTableProps {
   initialData: UtilizationResponse;
@@ -25,6 +19,8 @@ interface UtilizationTableProps {
 }
 
 type SortField = "name" | "totalHours" | "billableHours" | "nonBillableHours" | "utilization";
+
+const DATE_INPUT_CLASS = "border-input bg-card text-foreground rounded-md border px-2 py-1 text-sm";
 
 function sortMembers(
   members: MemberUtilizationRecord[],
@@ -54,13 +50,109 @@ function sortMembers(
   });
 }
 
+const getRowId = (member: MemberUtilizationRecord) => member.memberId;
+
+const hasBreakdown = (member: MemberUtilizationRecord) => (member.currencies?.length ?? 0) > 0;
+
+function CurrencyBreakdown({ member }: { member: MemberUtilizationRecord }) {
+  return (
+    <div className="flex flex-wrap gap-4 py-1 pl-8 text-sm">
+      {member.currencies.map((c) => (
+        <div key={c.currency} className="flex items-center gap-2">
+          <span className="text-foreground font-medium">{c.currency}:</span>
+          <span className="text-muted-foreground">
+            Billable {formatCurrencySafe(c.billableValue, c.currency)}
+          </span>
+          <span className="text-muted-foreground">|</span>
+          <span className="text-muted-foreground">
+            Cost {formatCurrencySafe(c.costValue, c.currency)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const renderBreakdown = (member: MemberUtilizationRecord) => <CurrencyBreakdown member={member} />;
+
+const hours = (value: number) => <span className="tabular-nums">{value.toFixed(1)}h</span>;
+
+// Module-level (stable across renders): per-row UI state (expanded) is read from `row`, never from
+// closure state, so the cells (and the focused expander button) are not remounted on a toggle or a
+// sort.
+const columns = defineColumns<MemberUtilizationRecord>([
+  {
+    id: "expand",
+    enableHiding: false,
+    meta: { label: "", headerClassName: "w-8", cellClassName: "w-8" },
+    header: () => null,
+    cell: ({ row }) => {
+      if (!row.getCanExpand()) return null;
+      const expanded = row.getIsExpanded();
+      return (
+        <button
+          type="button"
+          onClick={row.getToggleExpandedHandler()}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label={expanded ? "Collapse currency breakdown" : "Expand currency breakdown"}
+        >
+          {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+        </button>
+      );
+    },
+  },
+  {
+    id: "name",
+    enableHiding: false,
+    meta: { label: "Name", sortKey: "name", cellClassName: "font-medium" },
+    cell: ({ row }) => row.original.memberName,
+  },
+  {
+    id: "totalHours",
+    meta: { label: "Total Hours", sortKey: "totalHours", align: "end" },
+    cell: ({ row }) => hours(row.original.totalHours),
+  },
+  {
+    id: "billableHours",
+    meta: { label: "Billable", sortKey: "billableHours", align: "end" },
+    cell: ({ row }) => hours(row.original.billableHours),
+  },
+  {
+    id: "nonBillableHours",
+    meta: { label: "Non-Billable", sortKey: "nonBillableHours", align: "end" },
+    cell: ({ row }) => hours(row.original.nonBillableHours),
+  },
+  {
+    id: "utilization",
+    meta: { label: "Utilization %", sortKey: "utilization", headerClassName: "w-[200px]" },
+    cell: ({ row }) => {
+      const percent = row.original.utilizationPercent;
+      return (
+        <div className="flex items-center gap-2">
+          <div className="bg-muted relative h-2 w-full overflow-hidden rounded-full">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all",
+                percent >= 70 ? "bg-success" : percent >= 40 ? "bg-warning" : "bg-muted-foreground"
+              )}
+              style={{ width: `${Math.min(percent, 100)}%` }}
+            />
+          </div>
+          <span className="text-muted-foreground w-12 text-right text-sm tabular-nums">
+            {percent.toFixed(1)}%
+          </span>
+        </div>
+      );
+    },
+  },
+]);
+
 export function UtilizationTable({ initialData, initialFrom, initialTo }: UtilizationTableProps) {
   const [data, setData] = useState<UtilizationResponse>(initialData);
   const [from, setFrom] = useState(initialFrom);
   const [to, setTo] = useState(initialTo);
   const [sortField, setSortField] = useState<SortField>("utilization");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -71,18 +163,6 @@ export function UtilizationTable({ initialData, initialFrom, initialTo }: Utiliz
       setSortField(field);
       setSortDir("desc");
     }
-  }
-
-  function toggleExpand(memberId: string) {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(memberId)) {
-        next.delete(memberId);
-      } else {
-        next.add(memberId);
-      }
-      return next;
-    });
   }
 
   function handleDateChange(newFrom: string, newTo: string) {
@@ -99,7 +179,11 @@ export function UtilizationTable({ initialData, initialFrom, initialTo }: Utiliz
     });
   }
 
-  const sorted = sortMembers(data.members, sortField, sortDir);
+  // A new array only when the rows or the sort change: `data` identity is navigation for the kit.
+  const sorted = useMemo(
+    () => sortMembers(data.members, sortField, sortDir),
+    [data.members, sortField, sortDir]
+  );
 
   return (
     <Card>
@@ -109,8 +193,8 @@ export function UtilizationTable({ initialData, initialFrom, initialTo }: Utiliz
             Team Utilization
             <HelpTip code="dashboard.utilisation" />
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <label htmlFor="util-from" className="text-sm text-slate-600 dark:text-slate-400">
+          <div className="flex flex-wrap items-center gap-2">
+            <label htmlFor="util-from" className="text-muted-foreground text-sm">
               From
             </label>
             <input
@@ -118,9 +202,9 @@ export function UtilizationTable({ initialData, initialFrom, initialTo }: Utiliz
               type="date"
               value={from}
               onChange={(e) => handleDateChange(e.target.value, to)}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className={DATE_INPUT_CLASS}
             />
-            <label htmlFor="util-to" className="text-sm text-slate-600 dark:text-slate-400">
+            <label htmlFor="util-to" className="text-muted-foreground text-sm">
               To
             </label>
             <input
@@ -128,162 +212,32 @@ export function UtilizationTable({ initialData, initialFrom, initialTo }: Utiliz
               type="date"
               value={to}
               onChange={(e) => handleDateChange(from, e.target.value)}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className={DATE_INPUT_CLASS}
             />
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <UtilizationChart members={data.members} />
-        {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
-        {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
-        {sorted.length === 0 ? (
-          <p className="py-8 text-center text-sm text-slate-500">
-            No utilization data for this period
-          </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-8" />
-                <TableHead>
-                  <button
-                    onClick={() => toggleSort("name")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Name
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <button
-                    onClick={() => toggleSort("totalHours")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Total Hours
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <button
-                    onClick={() => toggleSort("billableHours")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Billable
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <button
-                    onClick={() => toggleSort("nonBillableHours")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Non-Billable
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[200px]">
-                  <button
-                    onClick={() => toggleSort("utilization")}
-                    className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
-                  >
-                    Utilization %
-                    <ArrowUpDown className="size-3" />
-                  </button>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sorted.map((member) => {
-                const hasBreakdown = member.currencies && member.currencies.length > 0;
-                const isExpanded = expandedRows.has(member.memberId);
-                const percent = member.utilizationPercent;
-
-                return (
-                  <Fragment key={member.memberId}>
-                    <TableRow>
-                      <TableCell className="w-8">
-                        {hasBreakdown && (
-                          <button
-                            onClick={() => toggleExpand(member.memberId)}
-                            className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                            aria-label={
-                              isExpanded
-                                ? "Collapse currency breakdown"
-                                : "Expand currency breakdown"
-                            }
-                          >
-                            {isExpanded ? (
-                              <ChevronDown className="size-4" />
-                            ) : (
-                              <ChevronRight className="size-4" />
-                            )}
-                          </button>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">{member.memberName}</TableCell>
-                      <TableCell className="text-right">{member.totalHours.toFixed(1)}h</TableCell>
-                      <TableCell className="text-right">
-                        {member.billableHours.toFixed(1)}h
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {member.nonBillableHours.toFixed(1)}h
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                            <div
-                              className={cn(
-                                "h-full rounded-full transition-all",
-                                percent >= 70
-                                  ? "bg-green-500"
-                                  : percent >= 40
-                                    ? "bg-amber-500"
-                                    : "bg-slate-400"
-                              )}
-                              style={{
-                                width: `${Math.min(percent, 100)}%`,
-                              }}
-                            />
-                          </div>
-                          <span className="w-12 text-right text-sm text-slate-600 dark:text-slate-400">
-                            {percent.toFixed(1)}%
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    {hasBreakdown && isExpanded && (
-                      <TableRow
-                        key={`${member.memberId}-breakdown`}
-                        className="bg-slate-50 dark:bg-slate-900/50"
-                      >
-                        <TableCell />
-                        <TableCell colSpan={5}>
-                          <div className="flex flex-wrap gap-4 py-1 text-sm">
-                            {member.currencies.map((c) => (
-                              <div key={c.currency} className="flex items-center gap-2">
-                                <span className="font-medium text-slate-700 dark:text-slate-300">
-                                  {c.currency}:
-                                </span>
-                                <span className="text-slate-600 dark:text-slate-400">
-                                  Billable {formatCurrencySafe(c.billableValue, c.currency)}
-                                </span>
-                                <span className="text-slate-500">|</span>
-                                <span className="text-slate-600 dark:text-slate-400">
-                                  Cost {formatCurrencySafe(c.costValue, c.currency)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
-        )}
+        {isPending && <div className="text-muted-foreground mb-4 text-sm">Loading...</div>}
+        {error && <div className="text-destructive mb-4 text-sm">{error}</div>}
+        <DataTable
+          columns={columns}
+          data={sorted}
+          getRowId={getRowId}
+          sort={{ key: sortField, dir: sortDir, onSort: toggleSort }}
+          getRowCanExpand={hasBreakdown}
+          renderExpandedRow={renderBreakdown}
+          empty={
+            <p className="text-muted-foreground py-8 text-center text-sm">
+              No utilization data for this period
+            </p>
+          }
+          columnVisibility={false}
+          stickyHeader={false}
+          frame={false}
+          pageSize={null}
+        />
       </CardContent>
     </Card>
   );

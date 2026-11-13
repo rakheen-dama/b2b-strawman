@@ -331,6 +331,170 @@ describe("DataTable — URL sort headers", () => {
   });
 });
 
+describe("DataTable — client sort headers (onSort)", () => {
+  it("renders sortable headers as buttons calling onSort(sortKey), never links; unsortable stay plain", async () => {
+    const user = userEvent.setup();
+    const onSort = vi.fn();
+    renderTable({ sort: { key: "name", dir: "asc", onSort } });
+
+    const matter = screen.getByRole("columnheader", { name: "Matter" });
+    const button = within(matter).getByRole("button", { name: "Matter" });
+    expect(button).toHaveAttribute("type", "button");
+    expect(button.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    // The only link in the header row is none: client sort never navigates.
+    expect(within(screen.getAllByRole("row")[0]).queryAllByRole("link")).toHaveLength(0);
+
+    await user.click(
+      within(screen.getByRole("columnheader", { name: "Amount" })).getByRole("button")
+    );
+    expect(onSort).toHaveBeenCalledTimes(1);
+    expect(onSort).toHaveBeenCalledWith("amount");
+
+    expect(
+      within(screen.getByRole("columnheader", { name: "Note" })).queryByRole("button")
+    ).toBeNull();
+    expect(
+      within(screen.getByRole("columnheader", { name: "Actions" })).queryByRole("button")
+    ).toBeNull();
+  });
+
+  it("sets aria-sort on the active th exactly as the URL variant does", () => {
+    const onSort = vi.fn();
+    const { rerender } = renderTable({ sort: { key: "amount", dir: "desc", onSort } });
+    expect(screen.getByRole("columnheader", { name: "Amount" })).toHaveAttribute(
+      "aria-sort",
+      "descending"
+    );
+    expect(screen.getByRole("columnheader", { name: "Matter" })).toHaveAttribute(
+      "aria-sort",
+      "none"
+    );
+    expect(screen.getByRole("columnheader", { name: "Note" })).not.toHaveAttribute("aria-sort");
+
+    rerender(<DataTable {...tableProps({ sort: { key: "amount", dir: "asc", onSort } })} />);
+    expect(screen.getByRole("columnheader", { name: "Amount" })).toHaveAttribute(
+      "aria-sort",
+      "ascending"
+    );
+  });
+
+  it("renders rows in the given order: the kit never sorts them itself", async () => {
+    const user = userEvent.setup();
+    const onSort = vi.fn();
+    renderTable({ sort: { key: "name", dir: "desc", onSort } });
+    const names = () =>
+      screen
+        .getAllByTestId("fixture-row")
+        .map((tr) => within(tr).getAllByRole("cell")[0].textContent);
+    expect(names()).toEqual(ROWS.map((r) => r.name));
+    await user.click(screen.getByRole("button", { name: "Matter" }));
+    expect(names()).toEqual(ROWS.map((r) => r.name));
+  });
+});
+
+describe("DataTable — expandable rows", () => {
+  const expandColumns = defineColumns<Row>([
+    {
+      id: "expand",
+      enableHiding: false,
+      meta: { label: "" },
+      header: () => null,
+      cell: ({ row }) =>
+        row.getCanExpand() ? (
+          <button type="button" onClick={row.getToggleExpandedHandler()}>
+            {row.getIsExpanded() ? `Collapse ${row.original.id}` : `Expand ${row.original.id}`}
+          </button>
+        ) : null,
+    },
+    {
+      id: "name",
+      meta: { label: "Matter", sortKey: "name" },
+      cell: ({ row }) => row.original.name,
+    },
+    {
+      id: "amount",
+      meta: { label: "Amount", sortKey: "amount", align: "end" },
+      cell: ({ row }) => <MoneyCell amount={row.original.amount} />,
+    },
+  ]);
+  const expandProps = (overrides: Partial<DataTableProps<Row>> = {}) =>
+    tableProps({
+      columns: expandColumns,
+      // Row "b" has no amount: it cannot expand.
+      getRowCanExpand: (row) => row.amount !== null,
+      renderExpandedRow: (row) => <p>Detail for {row.name}</p>,
+      ...overrides,
+    });
+  const expandedRows = () => document.querySelectorAll('[data-slot="data-table-expanded-row"]');
+
+  it("renders no extra row by default and no toggle for a row that cannot expand", () => {
+    render(<DataTable {...expandProps()} />);
+    expect(screen.getAllByRole("row")).toHaveLength(1 + ROWS.length);
+    expect(expandedRows()).toHaveLength(0);
+    expect(screen.getByRole("button", { name: "Expand a" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Expand b" })).toBeNull();
+  });
+
+  it("toggling a row shows one full-width detail row right under it; toggling again removes it", async () => {
+    const user = userEvent.setup();
+    render(<DataTable {...expandProps()} />);
+
+    await user.click(screen.getByRole("button", { name: "Expand c" }));
+    expect(screen.getByRole("button", { name: "Collapse c" })).toBeInTheDocument();
+    const detail = expandedRows();
+    expect(detail).toHaveLength(1);
+    expect(detail[0].tagName).toBe("TR");
+    expect(detail[0]).not.toHaveAttribute("data-testid");
+    const cells = within(detail[0] as HTMLElement).getAllByRole("cell");
+    expect(cells).toHaveLength(1);
+    expect(cells[0]).toHaveAttribute("colspan", "3");
+    expect(cells[0]).toHaveTextContent("Detail for Transfer Erf 12");
+    // Directly after its own row.
+    const rows = screen.getAllByRole("row");
+    const own = screen.getAllByTestId("fixture-row")[2];
+    expect(rows.indexOf(detail[0] as HTMLElement)).toBe(rows.indexOf(own) + 1);
+
+    await user.click(screen.getByRole("button", { name: "Collapse c" }));
+    expect(expandedRows()).toHaveLength(0);
+    expect(screen.getAllByRole("row")).toHaveLength(1 + ROWS.length);
+  });
+
+  it("keeps a row expanded when a new data array arrives (a client sort or a refetch)", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<DataTable {...expandProps()} />);
+    await user.click(screen.getByRole("button", { name: "Expand a" }));
+    expect(expandedRows()).toHaveLength(1);
+
+    // A sort hands the kit a new, reordered array: the expansion is keyed by row id, not index.
+    rerender(<DataTable {...expandProps({ data: [...ROWS].reverse() })} />);
+    expect(screen.getByRole("button", { name: "Collapse a" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Expand c" })).toBeInTheDocument();
+    const detail = expandedRows();
+    expect(detail).toHaveLength(1);
+    expect(detail[0]).toHaveTextContent("Detail for Estate late Dlamini");
+    const rows = screen.getAllByRole("row");
+    const own = screen.getAllByTestId("fixture-row")[2];
+    expect(within(own).getAllByRole("cell")[1]).toHaveTextContent("Estate late Dlamini");
+    expect(rows.indexOf(detail[0] as HTMLElement)).toBe(rows.indexOf(own) + 1);
+  });
+
+  it("the detail row never opens rowHref", async () => {
+    const user = userEvent.setup();
+    render(<DataTable {...expandProps({ rowHref: (row) => `/org/acme/matters/${row.id}` })} />);
+    await user.click(screen.getByRole("button", { name: "Expand a" }));
+    expect(mockPush).not.toHaveBeenCalled();
+    await user.click(screen.getByText("Detail for Estate late Dlamini"));
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("without renderExpandedRow, nothing extra renders even if a row is expanded", async () => {
+    const user = userEvent.setup();
+    render(<DataTable {...expandProps({ renderExpandedRow: undefined })} />);
+    await user.click(screen.getByRole("button", { name: "Expand a" }));
+    expect(expandedRows()).toHaveLength(0);
+  });
+});
+
 describe("DataTable — column priority", () => {
   it("applies the container-query classes, except on the actively sorted column", () => {
     const { rerender } = renderTable({ sort: { key: "name", dir: "asc", hrefFor } });

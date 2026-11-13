@@ -16,10 +16,12 @@ interface DataTableColumnHeaderProps<T> {
 }
 
 /**
- * Default `DataTable` header (architecture §15.8.5): the column's `meta.label`, as a `next/link` to
- * `sort.hrefFor(meta.sortKey)` when the column is sortable. Sorting stays in the URL, so the header
- * never sorts client-side. The icon is `aria-hidden` so the `columnheader` name equals the label;
- * `aria-sort` itself sits on the `<th>` (set by `DataTable`).
+ * Default `DataTable` header (architecture §15.8.5): the column's `meta.label` when the column is
+ * sortable, as a `next/link` to `sort.hrefFor(meta.sortKey)` (URL-owned sort) or as a
+ * `<button type="button">` calling `sort.onSort(meta.sortKey)` (local-state sort). Either way the
+ * kit never sorts rows itself: the consumer (URL/RSC or local state) passes them sorted. The icon is
+ * `aria-hidden` so the `columnheader` name equals the label; `aria-sort` itself sits on the `<th>`
+ * (set by `DataTable`).
  */
 export function DataTableColumnHeader<T>({
   column,
@@ -39,15 +41,24 @@ export function DataTableColumnHeader<T>({
     <ArrowDown aria-hidden="true" className="size-3.5" />
   );
 
+  const className = cn(
+    "hover:text-foreground focus-visible:ring-ring/50 inline-flex items-center gap-1 rounded-sm outline-none focus-visible:ring-[3px]",
+    active && "text-foreground"
+  );
+
+  if ("onSort" in sort) {
+    const { onSort } = sort;
+    const sortKey = meta.sortKey;
+    return (
+      <button type="button" onClick={() => onSort(sortKey)} className={className}>
+        {content}
+        {icon}
+      </button>
+    );
+  }
+
   return (
-    <Link
-      href={sort.hrefFor(meta.sortKey)}
-      scroll={false}
-      className={cn(
-        "hover:text-foreground focus-visible:ring-ring/50 inline-flex items-center gap-1 rounded-sm outline-none focus-visible:ring-[3px]",
-        active && "text-foreground"
-      )}
-    >
+    <Link href={sort.hrefFor(meta.sortKey)} scroll={false} className={className}>
       {content}
       {icon}
     </Link>

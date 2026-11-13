@@ -1,0 +1,132 @@
+{
+ "ticks": [
+  {
+   "t": "Dec 2025",
+   "cx": 365
+  },
+  {
+   "t": "Jan 2026",
+   "cx": 451
+  },
+  {
+   "t": "Feb 2026",
+   "cx": 536
+  },
+  {
+   "t": "Mar 2026",
+   "cx": 622
+  },
+  {
+   "t": "Apr 2026",
+   "cx": 708
+  },
+  {
+   "t": "May 2026",
+   "cx": 793
+  },
+  {
+   "t": "Jun 2026",
+   "cx": 879
+  },
+  {
+   "t": "Jul 2026",
+   "cx": 964
+  },
+  {
+   "t": "Aug 2026",
+   "cx": 1050
+  },
+  {
+   "t": "Sep 2026",
+   "cx": 1136
+  },
+  {
+   "t": "Oct 2026",
+   "cx": 1221
+  },
+  {
+   "t": "Nov 2026",
+   "cx": 1307
+  }
+ ],
+ "sweep": [
+  {
+   "x": 1187,
+   "tooltip": [
+    "Oct 2026",
+    "Cashbook",
+    "R 0,00",
+    "Client ledgers",
+    "R 0,00"
+   ],
+   "visibility": "visible"
+  },
+  {
+   "x": 1247,
+   "tooltip": [
+    "Oct 2026",
+    "Cashbook",
+    "R 0,00",
+    "Client ledgers",
+    "R 0,00"
+   ],
+   "visibility": "visible"
+  },
+  {
+   "x": 1287,
+   "tooltip": [
+    "Nov 2026 (to date)",
+    "Cashbook",
+    "R 290 249,98",
+    "Client ledgers",
+    "R 290 275,50"
+   ],
+   "visibility": "visible"
+  },
+  {
+   "x": 1307,
+   "tooltip": [
+    "Nov 2026 (to date)",
+    "Cashbook",
+    "R 290 249,98",
+    "Client ledgers",
+    "R 290 275,50"
+   ],
+   "visibility": "visible"
+  },
+  {
+   "x": 1317,
+   "tooltip": [],
+   "visibility": "hidden"
+  },
+  {
+   "x": 1337,
+   "tooltip": [],
+   "visibility": "hidden"
+  },
+  {
+   "x": 1367,
+   "tooltip": [],
+   "visibility": "hidden"
+  }
+ ],
+ "keyboard": [
+  "Jan 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Feb 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Mar 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Apr 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "May 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Jun 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Jul 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Aug 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Sep 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Oct 2026 | Cashbook | R 0,00 | Client ledgers | R 0,00",
+  "Nov 2026 (to date) | Cashbook | R 290 249,98 | Client ledgers | R 290 275,50"
+ ],
+ "svgBox": {
+  "x": 301,
+  "y": 539,
+  "width": 1094,
+  "height": 240
+ }
+}

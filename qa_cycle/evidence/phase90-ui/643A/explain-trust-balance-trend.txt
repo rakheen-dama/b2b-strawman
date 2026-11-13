@@ -1,0 +1,22 @@
+-- EXPLAIN (ANALYZE, BUFFERS) of TrustTransactionRepository.findMonthlyBalanceMovements on the seeded e2e tenant (tenant_7d218705360b, post legal-lifecycle suite, 11 trust_transactions), head 859d257d2, 2026-11-13
+SET
+                                                                                          QUERY PLAN                                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=8.18..8.24 rows=1 width=68) (actual time=0.062..0.063 rows=1 loops=1)
+   Group Key: (CASE WHEN (transaction_date < '2025-12-01'::date) THEN NULL::date ELSE (date_trunc('month'::text, (transaction_date)::timestamp without time zone))::date END)
+   Buffers: shared hit=5
+   ->  Sort  (cost=8.18..8.19 rows=1 width=96) (actual time=0.050..0.051 rows=8 loops=1)
+         Sort Key: (CASE WHEN (transaction_date < '2025-12-01'::date) THEN NULL::date ELSE (date_trunc('month'::text, (transaction_date)::timestamp without time zone))::date END) NULLS FIRST
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=5
+         ->  Index Scan using idx_trust_txn_account_date on trust_transactions t  (cost=0.14..8.17 rows=1 width=96) (actual time=0.031..0.033 rows=8 loops=1)
+               Index Cond: ((trust_account_id = 'e42dc556-5564-4c4d-bd70-570c30738a8d'::uuid) AND (transaction_date <= '2026-11-13'::date))
+               Filter: ((status)::text = ANY ('{RECORDED,APPROVED}'::text[]))
+               Rows Removed by Filter: 3
+               Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=319
+ Planning Time: 0.943 ms
+ Execution Time: 0.108 ms
+(16 rows)
+

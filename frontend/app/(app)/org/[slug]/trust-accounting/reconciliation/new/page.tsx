@@ -167,17 +167,30 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       setUnmatchedTransactions(unmatched);
 
       // Create reconciliation if not already created
-      if (!reconciliation) {
+      let recon = reconciliation;
+      if (!recon) {
         const reconResult = await createReconciliation(selectedAccountId, {
           periodEnd,
           bankStatementId: statement.id,
         });
         if (reconResult.success && reconResult.data) {
-          setReconciliation(reconResult.data);
+          recon = reconResult.data;
+          setReconciliation(recon);
         } else {
           setError(reconResult.error ?? "Failed to create reconciliation");
           return;
         }
+      }
+
+      // A new reconciliation starts with every balance at zero; calculate it so the
+      // review step opens on real balances (and Complete is enabled if auto-match
+      // already resolved every line). On failure stay here; a retry recalculates.
+      const calcResult = await calculateReconciliation(recon.id);
+      if (calcResult.success && calcResult.data) {
+        setReconciliation(calcResult.data);
+      } else {
+        setError(calcResult.error ?? "Failed to calculate reconciliation");
+        return;
       }
 
       setCurrentStep(4);

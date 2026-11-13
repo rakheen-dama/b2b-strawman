@@ -1,0 +1,20 @@
+E2E-LEGAL + finance (fresh e2e-down → docker builder prune -f (2.179GB reclaimed) → e2e-up from worktree-epic-643B; E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001; nvm node v20.11.1, pnpm /opt/homebrew/bin/pnpm)
+Baseline (637.1 / prior slices): legal-lifecycle 105 passed; legal-depth-ii 40 passed / 4 skipped.
+Pre-check: backend "Started BackendApplication" 04:39:27Z; GET /api/reports/billing-trend?months=12 as Alice → 200 {"currency":"ZAR","from":"2025-12","to":"2026-11",…} on the empty tenant (all 12 points 0).
+
+Run 1 — head 606d8052d, unloaded fresh stack, no Maven verify or other heavy job running, sequential a → b → c on the same stack:
+  a) legal-lifecycle: 105 passed (2.9m; wall 175s)
+  b) legal-depth-ii:  40 passed / 4 skipped (1.9m; wall 112s) — the 4 skips are the opt-in null-prefetch-probe cases (as baseline)
+  c) finance (playwright.config.ts e2e/tests/finance/ = profitability.spec.ts + reports.spec.ts): 7 passed (3.1s; wall 4s), no reseed needed —
+     FIN-01 seeds run-unique client/matter/rate/time in beforeAll, FIN-02 reads the boot-seed fee note; neither conflicts with the lifecycle data.
+     incl. profitability.spec.ts:63 "Page loads with data", :71 "Project profitability view" (row filter + CSV export), :85 "Customer profitability view", :93 "Utilization metrics"
+  incl. day-90-review.spec.ts (profitability h1 / Revenue-Cost-Margin columns / Sipho+Moroka rows) ✓, day-60-interest.spec.ts (profitability-cost-note) ✓
+No failures, no retries (retries=0 locally).
+
+Run 2 — head 1d6dd0570 (D1 fix: single-line truncated horizontal category ticks), fresh stack: e2e-down → docker builder prune -f (2.988GB reclaimed) → SHELL=/bin/bash e2e-up from worktree-epic-643B (rc 0).
+Frontend image docteams-e2e-frontend built 2026-11-13 07:14:18 SAST (commit 1d6dd0570 is 07:11:29), and the rendered ranking ticks carry the new code ("Estate Late Pe…" + <title>Estate Late Peter Moroka …</title>).
+Same env as run 1 (E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS=""; nvm node v20.11.1 first on PATH; /opt/homebrew/bin/pnpm), unloaded machine, no Maven running, sequential a → b → c on the same stack:
+  a) legal-lifecycle: 105 passed (2.9m; wall 175s), rc 0
+  b) legal-depth-ii:  40 passed / 4 skipped (1.8m; wall 111s), rc 0 — the 4 skips are the opt-in null-prefetch-probe cases (as baseline)
+  c) finance (playwright.config.ts e2e/tests/finance/): 7 passed (2.6s; wall 3s), rc 0
+No failures, no flaky, no retries (retries=0 locally). Matches baseline and run 1.

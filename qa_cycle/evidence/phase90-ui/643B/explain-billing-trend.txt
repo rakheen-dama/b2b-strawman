@@ -1,0 +1,60 @@
+-- EXPLAIN (ANALYZE, BUFFERS) of BillingTrendService BILLED_SQL + COLLECTED_SQL (verbatim; named params bound as typed PREPARE params = the values getBillingTrend(12) uses on 2026-11-13 SAST) on the seeded e2e tenant (tenant_7d218705360b, after legal-lifecycle + legal-depth-ii + finance specs), head 606d8052d, 2026-11-13
+SET
+-- counts
+ invoices | payment_events 
+----------+----------------
+        8 |              2
+(1 row)
+
+-- 1) BILLED_SQL (BillingTrendService.java:56-64) — :currency=ZAR, :fromDate=2025-12-01 (date), :today=2026-11-13 (date)
+PREPARE
+                                                                                                    QUERY PLAN                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=10.24..10.28 rows=1 width=44) (actual time=0.037..0.037 rows=1 loops=1)
+   Group Key: ((date_trunc('month'::text, (issue_date)::timestamp with time zone))::date)
+   Buffers: shared hit=4
+   ->  Sort  (cost=10.24..10.25 rows=1 width=22) (actual time=0.030..0.031 rows=5 loops=1)
+         Sort Key: ((date_trunc('month'::text, (issue_date)::timestamp with time zone))::date)
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=4
+         ->  Seq Scan on invoices i  (cost=0.00..10.23 rows=1 width=22) (actual time=0.010..0.012 rows=5 loops=1)
+               Filter: ((issue_date >= '2025-12-01'::date) AND (issue_date <= '2026-11-13'::date) AND ((currency)::text = 'ZAR'::text) AND ((status)::text = ANY ('{APPROVED,SENT,PARTIALLY_PAID,PAID}'::text[])))
+               Rows Removed by Filter: 3
+               Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=99
+ Planning Time: 0.393 ms
+ Execution Time: 0.087 ms
+(15 rows)
+
+ month_start |  billed  | billed_count 
+-------------+----------+--------------
+ 2026-11-01  | 67007.63 |            5
+(1 row)
+
+-- 2) COLLECTED_SQL (BillingTrendService.java:67-75) — :currency=ZAR, :fromInstant=2025-12-01T00:00 SAST = 2025-11-30T22:00:00Z, :toInstantExclusive=2026-11-14T00:00 SAST = 2026-11-13T22:00:00Z (timestamptz)
+PREPARE
+                                                                                                  QUERY PLAN                                                                                                   
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=8.18..8.21 rows=1 width=44) (actual time=0.143..0.143 rows=1 loops=1)
+   Group Key: ((date_trunc('month'::text, (created_at AT TIME ZONE 'Africa/Johannesburg'::text)))::date)
+   Buffers: shared hit=2
+   ->  Sort  (cost=8.18..8.19 rows=1 width=22) (actual time=0.137..0.137 rows=2 loops=1)
+         Sort Key: ((date_trunc('month'::text, (created_at AT TIME ZONE 'Africa/Johannesburg'::text)))::date)
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=2
+         ->  Index Scan using idx_payment_events_status on payment_events pe  (cost=0.14..8.17 rows=1 width=22) (actual time=0.122..0.124 rows=2 loops=1)
+               Index Cond: (((status)::text = 'COMPLETED'::text) AND (created_at >= '2025-11-30 22:00:00+00'::timestamp with time zone) AND (created_at < '2026-11-13 22:00:00+00'::timestamp with time zone))
+               Filter: ((currency)::text = 'ZAR'::text)
+               Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.128 ms
+ Execution Time: 0.172 ms
+(15 rows)
+
+ month_start | collected | collected_count 
+-------------+-----------+-----------------
+ 2026-11-01  |  48750.00 |               2
+(1 row)
+

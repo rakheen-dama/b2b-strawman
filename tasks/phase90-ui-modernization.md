@@ -62,7 +62,7 @@ Phase 90 is a **visual phase**: no new entity, table, column, enum value, capabi
 | 641 | Matters — List on DataTable + Matter Hero (DetailHero KPI Strip) + Page Split (E5) | Frontend | 639A, 639C, 639D | M | 641A, 641B (0 verifies) | 641A **Done** (PR #1770); 641B **Done** (PR #1771) — **Epic 641 Done** |
 | 642 | Clients — List on DataTable + TrustBalanceCard Re-export Deleted, Client Hero, GroupedTabBar Restyle for Both Detail Pages (E6) | Frontend | 639A, 639C, 641B | M | 642A, 642B, 642C (0 verifies) | 642A **Done** (PR #1772); 642B **Done** (PR #1773); 642C **Done** (PR #1774) — **Epic 642 Done** |
 | 643 | Trust Dashboard + Reports/Profitability — Trust-Balance-Trend + Billing-Trend Endpoints, Charts, Reconciliation Card Fix (declared), Tables on DataTable (E7) | Backend + Frontend (together) | 639A, 639B, 639C | L | 643A, 643B, 643C (2 verifies) | **Done** — 643A (PR #1775), 643B (PR #1776), 643C (PR #1777) |
-| 644 | Exit Gate — Suites on a Fresh Stack, Observation Matrix, Metrics, Dark-Mode Debt List, Closure (E8; gate epic, no product code) | QA / Process / Docs | 637–643 merged | M | 644A, 644B (0 verifies; 644A runs the BE-VERIFY exit regression on `main`) | |
+| 644 | Exit Gate — Suites on a Fresh Stack, Observation Matrix, Metrics, Dark-Mode Debt List, Closure (E8; gate epic, no product code) | QA / Process / Docs | 637–643 merged | M | 644A, 644B (0 verifies; 644A runs the BE-VERIFY exit regression on `main`) | 644A **Done** (PR #1780); 644B pending |
 
 **Slice count: 21; backend verifies: 2** (643A, 643B) + P1 outside the phase. Product slices are sized to ≈12–20 files; 637B (≈25, founder-authorised) is the only one above the guide; 640C (3) and 642C (6) are small because their surfaces are small, not merged into neighbours (one surface family per PR keeps each E2E-LEGAL run attributable).
 
@@ -92,7 +92,7 @@ Every §15.10 id maps to **exactly one** task-file slice.
 | E7A | Trust dashboard + balance trend | **643A** | `phase90/43A-trust-dashboard-trend` | **verify: yes**; declared side-effect fix |
 | E7B | Fees billed vs collected + profitability charts | **643B** | `phase90/43B-billing-trend-charts` | **verify: yes** |
 | E7C | Profitability tables on DataTable + reports index | **643C** | `phase90/43C-profitability-tables-reports` | **Done** (PR #1777) |
-| E8A | Suites and gates on a fresh stack | **644A** | `phase90/44A-exit-suites` | evidence-only PR |
+| E8A | Suites and gates on a fresh stack | **644A** | `phase90/44A-exit-suites` | evidence-only PR — **Done** (PR #1780) |
 | E8B | Observation matrix, metrics, closure | **644B** | `phase90/44B-exit-closure` | docs PR (closure report in this file) |
 
 ---
@@ -196,7 +196,7 @@ Default serial order (one PR open at a time): **P1 → 637A → 637B → 638A �
 
 | Epic | PR | What must be green before merge | Notes |
 |------|----|----------------------------------|-------|
-| 644 | `phase90/44A-exit-suites` (evidence-only: `$EV/suites/**`), `phase90/44B-exit-closure` (docs-only: `$EV/**`, this file § Closure report, `architecture/ARCHITECTURE.md` Section 15 note line, `TASKS.md`, `adr/ADR-286-sidebar-layout-entity-detail.md` status line, re-shot PNGs) | 644A: E2E-LEGAL (lifecycle and depth-ii ≥ 637.1 baseline) + E2E-DEFAULT on one fresh stack (any time of day); FE-GATE + PORTAL-GATE + BE-VERIFY on the merged `main` head; `scripts/check-verify-markers.sh` over the phase's merged range (backend markers expected for P1, 643A, 643B). 644B: the §15.8.6 exit matrix observed on KC-STACK via Playwright MCP (28 + 5 persona/portal/marketing shots) with paths; §15.8.7 metrics before/after; dark-mode debt list table; review audit trail | No backend verify inside 644B (docs only). A suite regression found in 644A is fixed in its own PR before 644B, never waived (root `CLAUDE.md` §1). |
+| 644 | `phase90/44A-exit-suites` (evidence-only: `$EV/suites/**`), `phase90/44B-exit-closure` (docs-only: `$EV/**`, this file § Closure report, `architecture/ARCHITECTURE.md` Section 15 note line, `TASKS.md`, `adr/ADR-286-sidebar-layout-entity-detail.md` status line, re-shot PNGs) | 644A: E2E-LEGAL (lifecycle and depth-ii ≥ 637.1 baseline) + E2E-DEFAULT on one fresh stack (any time of day); FE-GATE + PORTAL-GATE + BE-VERIFY on the merged `main` head; `scripts/check-verify-markers.sh` over the phase's merged range (backend markers expected for P1, 643A, 643B). 644B: the §15.8.6 exit matrix observed on KC-STACK via Playwright MCP (28 + 5 persona/portal/marketing shots) with paths; §15.8.7 metrics before/after; dark-mode debt list table; review audit trail | No backend verify inside 644B (docs only). A suite regression found in 644A is fixed in its own PR before 644B, never waived (root `CLAUDE.md` §1). **644A Done (PR #1780, 2026-11-13), on `main` @ `2773ec9b6`:** BE-VERIFY 6871 tests / 0 F / 26 skipped; legal-lifecycle 105, legal-depth-ii 40 + 4 skipped (= baseline); E2E-DEFAULT 165 passed / 14 skipped / 0 failed (baseline INV-02 passed, but it stays open as an intermittent, not fixed); FE-GATE 4347 / 2 (477 files); PORTAL-GATE 284 + `/home` `/trust` `/invoices` OBS @1024 light; markers 20/20 PASS (#1758–#1777). No regression, so 644.3 was not triggered. Evidence: `$EV/suites/`. **Follow-ups (not 644B scope):** (a) exit-gate runner hardening, in its own tooling PR (CodeRabbit on #1780): resolve `<worktree>`/`<outdir>` to absolute paths and skip suites unless e2e-down/up/seed all succeed. (b) `compose/scripts/e2e-up.sh` reports success on a seed non-zero exit, a seed timeout or a Mailpit timeout, and its "Seed completed (container exited)" branch (`:107-109`) is not exit-code-aware. **For 644B:** portal `/trust` for the e2e contact (Acme Corp) is the empty state, because no suite deposits trust for Acme, so a populated portal trust shot needs a different client or a seeded deposit. |
 
 ### Merge-conflict hotspots and PR rules
 
@@ -633,13 +633,13 @@ PR rules restated (non-negotiable):
 
 **References**: Architecture §15.1 (baseline statement), §15.6.5 (debt list table), §15.6.7, §15.8.6 (exit observation matrix), §15.8.7, §15.10 E8A/E8B, §15.11, §15.12 #16; root `CLAUDE.md` §1, §3, §8–§9; memories `feedback_ui_changes_need_e2e_suite_run`, `env_playwright_legal_configs_dirty_tree`, `env_macos_sleep_kills_overnight_agents`.
 
-**Dependencies**: every code slice merged (637A–643C) and P1. **Scope**: QA / Process / Docs. **Verifies: 0** (644A's BE-VERIFY is the exit regression run on `main`, not a slice verify). **Estimated Effort**: M. **Status**:
+**Dependencies**: every code slice merged (637A–643C) and P1. **Scope**: QA / Process / Docs. **Verifies: 0** (644A's BE-VERIFY is the exit regression run on `main`, not a slice verify). **Estimated Effort**: M. **Status**: 644A **Done** (PR #1780, merge `ec1c11693`); 644B pending.
 
 ### Slices
 
 | Slice | Scope | Key deliverables / files | Files (est.) | Verify | Gates | Obs | Depends on |
 |-------|-------|--------------------------|--------------|--------|-------|-----|------------|
-| **644A** | e2e / process | `$EV/suites/README.md` (pass/fail/skip per suite vs 637.1, run timestamps, stack build SHA), `$EV/suites/markers.md` (`scripts/check-verify-markers.sh` output) | 0 product files (evidence only) | — | E2E-LEGAL + E2E-DEFAULT on one fresh stack; FE-GATE + PORTAL-GATE + BE-VERIFY on `main` | — | 637A–643C, P1 |
+| **644A** | e2e / process | `$EV/suites/README.md` (pass/fail/skip per suite vs 637.1, run timestamps, stack build SHA), `$EV/suites/markers.md` (`scripts/check-verify-markers.sh` output) | 0 product files (evidence only) | — | E2E-LEGAL + E2E-DEFAULT on one fresh stack; FE-GATE + PORTAL-GATE + BE-VERIFY on `main` | — | 637A–643C, P1 — **Done** (PR #1780) |
 | **644B** | QA + docs | `$EV/matrix/**` (28 + persona/portal/marketing screenshots, `README.md` index), `$EV/metrics.md`, this file § Closure report (debt list, backlog, OQ states), `architecture/ARCHITECTURE.md` (Section 15 note line + merge of the phase doc), `TASKS.md` rows, `adr/ADR-286-sidebar-layout-entity-detail.md` status line, re-shot PNGs in `documentation/screenshots/` / `frontend/public/screenshots/` | docs only | — | review audit trail | the whole slice | 644A |
 
 ### Tasks

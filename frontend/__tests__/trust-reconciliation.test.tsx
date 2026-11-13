@@ -454,6 +454,10 @@ describe("Trust Reconciliation", () => {
       success: true,
       data: makeRecon({ status: "DRAFT", isBalanced: false, completedAt: null }),
     });
+    mockCalculateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: false, completedAt: null }),
+    });
 
     // act() lets React.use(params) resolve its promise before the assertions.
     await act(async () => {
@@ -515,7 +519,8 @@ describe("Trust Reconciliation", () => {
     });
     let finishAutoMatch: (v: unknown) => void = () => {};
     mockAutoMatch.mockReturnValue(new Promise((resolve) => (finishAutoMatch = resolve)));
-    mockFetchBankStatement.mockResolvedValue({ id: "stmt-1", lines: [makeBankLine()] });
+    let finishRefresh: (v: unknown) => void = () => {};
+    mockFetchBankStatement.mockReturnValue(new Promise((resolve) => (finishRefresh = resolve)));
 
     await act(async () => {
       render(
@@ -544,6 +549,159 @@ describe("Trust Reconciliation", () => {
         data: { totalLines: 1, autoMatched: 0, alreadyMatched: 0, unmatched: 1 },
       });
     });
+    // Auto-match has resolved but the statement re-read has not: still blocked.
+    await waitFor(() => expect(mockFetchBankStatement).toHaveBeenCalledWith("stmt-1"));
+    expect(screen.getByTestId("auto-match-back-btn")).toBeDisabled();
+
+    await act(async () => {
+      finishRefresh({ id: "stmt-1", lines: [makeBankLine()] });
+    });
     await waitFor(() => expect(screen.getByTestId("auto-match-back-btn")).toBeEnabled());
+  });
+  // Drives the wizard to step 3 with an auto-match that resolves every line.
+  async function driveToReviewWithAllLinesAutoMatched() {
+    const line = makeBankLine({ id: "line-1" });
+    mockUploadBankStatement.mockResolvedValue({
+      success: true,
+      data: {
+        id: "stmt-1",
+        trustAccountId: "acc-1",
+        periodStart: "2026-03-01",
+        periodEnd: "2026-03-31",
+        openingBalance: 0,
+        closingBalance: 15000,
+        fileName: "march-2026.csv",
+        format: "CSV",
+        lineCount: 1,
+        matchedCount: 0,
+        status: "IMPORTED",
+        importedBy: "member-1",
+        createdAt: "2026-04-01T00:00:00Z",
+        updatedAt: "2026-04-01T00:00:00Z",
+        lines: [line],
+      },
+    });
+    mockAutoMatch.mockResolvedValue({
+      success: true,
+      data: { totalLines: 1, autoMatched: 1, alreadyMatched: 0, unmatched: 0 },
+    });
+    mockFetchBankStatement.mockResolvedValue({
+      id: "stmt-1",
+      lines: [{ ...line, matchStatus: "AUTO_MATCHED", trustTransactionId: "tx-1" }],
+    });
+    // What POST /api/trust-reconciliations returns: a DRAFT with every balance at zero.
+    mockCreateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({
+        status: "DRAFT",
+        isBalanced: false,
+        completedAt: null,
+        completedBy: null,
+        bankBalance: 0,
+        cashbookBalance: 0,
+        clientLedgerTotal: 0,
+        outstandingDeposits: 0,
+        outstandingPayments: 0,
+        adjustedBankBalance: 0,
+      }),
+    });
+
+    await act(async () => {
+      render(
+        <Suspense fallback={null}>
+          <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+        </Suspense>
+      );
+    });
+    await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+    fireEvent.change(screen.getByTestId("period-end-input"), {
+      target: { value: "2026-03-31" },
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    fireEvent.change(await screen.findByTestId("file-input"), {
+      target: { files: [new File(["csv"], "march-2026.csv", { type: "text/csv" })] },
+    });
+    await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    fireEvent.click(await screen.findByTestId("auto-match-btn"));
+    expect(await screen.findByText("Auto-matched 1 lines")).toBeInTheDocument();
+  }
+
+  // Test 8: the review step opens on calculated balances, so a statement that
+  // auto-match fully resolved can be completed without a manual action.
+  it("calculates the reconciliation on entering review so it can be completed", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({
+        status: "DRAFT",
+        isBalanced: true,
+        completedAt: null,
+        completedBy: null,
+        bankBalance: 15000,
+        cashbookBalance: 15000,
+        clientLedgerTotal: 15000,
+        outstandingDeposits: 0,
+        outstandingPayments: 0,
+        adjustedBankBalance: 15000,
+      }),
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1");
+    expect(screen.getByText("1 / 1 lines resolved")).toBeInTheDocument();
+    expect(screen.getByTestId("complete-reconciliation-btn")).toBeEnabled();
+  });
+
+  // Test 9: if that first calculation fails, the user stays on step 3 with the
+  // error (retrying recalculates the existing reconciliation; no second draft).
+  it("stays on the auto-match step with an error when the first calculation fails", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation.mockResolvedValueOnce({
+      success: false,
+      error: "Calculation failed",
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+
+    expect(await screen.findByText("Calculation failed")).toBeInTheDocument();
+    expect(screen.getByTestId("step-auto-match")).toBeInTheDocument();
+    expect(screen.queryByTestId("reconciliation-split-pane")).not.toBeInTheDocument();
+
+    mockCalculateReconciliation.mockResolvedValueOnce({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    expect(mockCreateReconciliation).toHaveBeenCalledTimes(1);
+    expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
+  });
+  // Test 10: while the review step is being prepared (transactions, create,
+  // calculate), Back and Review Matches are disabled, so a double-click cannot
+  // create a second draft and a late completion cannot land after Back.
+  it("disables Back and Review Matches while the review step is being prepared", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    let finishCalculate: (v: unknown) => void = () => {};
+    mockCalculateReconciliation.mockReturnValue(
+      new Promise((resolve) => (finishCalculate = resolve))
+    );
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    await waitFor(() => expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1"));
+    expect(screen.getByTestId("auto-match-back-btn")).toBeDisabled();
+    expect(screen.getByTestId("step-next-btn")).toBeDisabled();
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(mockCreateReconciliation).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      finishCalculate({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+      });
+    });
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
   });
 });

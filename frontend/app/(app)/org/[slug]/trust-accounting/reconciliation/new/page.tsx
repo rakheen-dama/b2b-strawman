@@ -67,6 +67,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     unmatched: number;
   } | null>(null);
   const [autoMatching, setAutoMatching] = useState(false);
+  const [startingReview, setStartingReview] = useState(false);
 
   // Step 4: Review
   const [lines, setLines] = useState<BankStatementLineResponse[]>([]);
@@ -154,6 +155,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   const handleStartReview = useCallback(async () => {
     if (!selectedAccountId || !statement) return;
     setError(null);
+    setStartingReview(true);
 
     try {
       // Fetch unmatched transactions
@@ -167,22 +169,37 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       setUnmatchedTransactions(unmatched);
 
       // Create reconciliation if not already created
-      if (!reconciliation) {
+      let recon = reconciliation;
+      if (!recon) {
         const reconResult = await createReconciliation(selectedAccountId, {
           periodEnd,
           bankStatementId: statement.id,
         });
         if (reconResult.success && reconResult.data) {
-          setReconciliation(reconResult.data);
+          recon = reconResult.data;
+          setReconciliation(recon);
         } else {
           setError(reconResult.error ?? "Failed to create reconciliation");
           return;
         }
       }
 
+      // A new reconciliation starts with every balance at zero; calculate it so the
+      // review step opens on real balances (and Complete is enabled if auto-match
+      // already resolved every line). On failure stay here; a retry recalculates.
+      const calcResult = await calculateReconciliation(recon.id);
+      if (calcResult.success && calcResult.data) {
+        setReconciliation(calcResult.data);
+      } else {
+        setError(calcResult.error ?? "Failed to calculate reconciliation");
+        return;
+      }
+
       setCurrentStep(4);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load review data");
+    } finally {
+      setStartingReview(false);
     }
   }, [selectedAccountId, statement, periodEnd, reconciliation]);
 
@@ -519,12 +536,12 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             )}
 
             <div className="flex justify-between pt-2">
-              {/* Blocked while auto-match runs: a late completion must not land on a changed account/period. */}
+              {/* Blocked while auto-match or review preparation runs: a late completion must not land on a changed account/period. */}
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setCurrentStep(2)}
-                disabled={autoMatching}
+                disabled={autoMatching || startingReview}
                 data-testid="auto-match-back-btn"
               >
                 Back
@@ -532,7 +549,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
               <Button
                 type="button"
                 onClick={handleStartReview}
-                disabled={!autoMatchResult}
+                disabled={!autoMatchResult || startingReview}
                 data-testid="step-next-btn"
               >
                 Review Matches

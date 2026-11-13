@@ -35,7 +35,7 @@ Columns: marker = the verified PR-branch commit recorded in the marker's `commit
 | #1776 | `5864da54d` | Phase 90 643B: fees billed vs collected + profitability charts (E7B) | backend frontend | backend `20955954f` (in `227022d21`); frontend `606d8052d` (in `227022d21`) | 0 |
 | #1777 | `54096a4fa` | Phase 90 643C: profitability tables on DataTable + reports index (E7C) | frontend | frontend `8ca3aab84` (in `3a40db5ed`) | 0 |
 
-Note: #1758 and #1759 both resolve to markers committed in `43f405922`. P1's backend marker (`1b414711a`) was written at P1's merge but never committed in a P1 bookkeeping commit (there is none: `git log f7b7dbdf1^..43f405922` shows only `f7b7dbdf1`, `cfe19b8d1`, `43f405922`). It was back-filled into the 637A bookkeeping commit `43f405922`, whose message says so (G88-F35 class). The script accepts it because the marker's `commit` is P1's PR-branch commit. The script accepts it because the marker's `commit` (`1b414711a`) is P1's PR-branch commit.
+Note: #1758 and #1759 both resolve to markers committed in `43f405922`. P1's backend marker (`1b414711a`) was written at P1's merge but never committed in a P1 bookkeeping commit (there is none: `git log f7b7dbdf1^..43f405922` shows only `f7b7dbdf1`, `cfe19b8d1`, `43f405922`). It was back-filled into the 637A bookkeeping commit `43f405922`, whose message says so (G88-F35 class). The script accepts it because the marker's `commit` is P1's PR-branch commit.
 
 <details><summary>Raw output</summary>
 

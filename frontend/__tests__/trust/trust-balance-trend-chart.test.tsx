@@ -131,16 +131,19 @@ describe("TrustBalanceTrendChart", () => {
     expect(within(table).getByRole("rowheader", { name: "Dec 2025" })).toBeInTheDocument();
   });
 
-  it("an account with no postings renders the compact empty state, not a flat line", () => {
+  // Zero balances do not mean "no postings" (a month can net to zero): the flat line is drawn.
+  it("an all-zero trend renders the chart, not an empty state", async () => {
     render(<TrustBalanceTrendChart trend={zeroMonths()} />);
 
-    const figure = screen.getByRole("figure", { name: "Trust balance trend" });
-    expect(within(figure).getByText("No trust postings yet.")).toBeInTheDocument();
-    expect(figure.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
-      "data-variant",
-      "compact"
+    const figure = await screen.findByRole("figure", { name: "Trust balance trend" });
+    const rows = JSON.parse(
+      (await screen.findByTestId("area-chart")).getAttribute("data-rows") ?? "[]"
     );
-    expect(screen.queryByTestId("area-chart")).not.toBeInTheDocument();
+    expect(rows).toHaveLength(12);
+    expect(rows[0].cashbook).toBe(0);
+    expect(rows[0].ledger).toBe(0);
+    expect(figure.querySelector('[data-slot="empty-state"]')).not.toBeInTheDocument();
+    expect(within(figure).queryByText("Balance trend not available.")).not.toBeInTheDocument();
   });
 
   it("an absent read (403/404) renders the compact empty state", () => {

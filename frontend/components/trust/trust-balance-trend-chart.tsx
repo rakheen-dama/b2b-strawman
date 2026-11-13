@@ -56,15 +56,6 @@ export function monthLabel(yearMonth: string): string {
   return name && year ? `${name} ${year}` : yearMonth;
 }
 
-/** No posting in or before the window: every point and both openings are 0. */
-function hasNoPostings(trend: TrustBalanceTrendResponse): boolean {
-  return (
-    trend.openingCashbookBalance === 0 &&
-    trend.openingClientLedgerTotal === 0 &&
-    trend.months.every((p) => p.cashbookBalance === 0 && p.clientLedgerTotal === 0)
-  );
-}
-
 interface TrustBalanceTrendChartProps {
   /** The trend read; `null` = absent (403/404) or failed (see `failed`). Plain data only. */
   trend: TrustBalanceTrendResponse | null;
@@ -75,8 +66,8 @@ interface TrustBalanceTrendChartProps {
 /**
  * Trust dashboard balance trend (Phase 90 643A, ADR-372): month-end cashbook vs client-ledger
  * balances for the last 12 SA months, the current month labelled "(to date)" and drawn dashed.
- * Absent, empty (no postings yet) and error states render through ChartCard without loading
- * recharts.
+ * Absent and error states render through ChartCard without loading recharts. An all-zero series
+ * is drawn as a flat line: zero balances do not mean "no postings" (a month can net to zero).
  */
 export function TrustBalanceTrendChart({ trend, failed = false }: TrustBalanceTrendChartProps) {
   const rows = useMemo<ChartRow[]>(
@@ -89,7 +80,7 @@ export function TrustBalanceTrendChart({ trend, failed = false }: TrustBalanceTr
     [trend]
   );
 
-  if (failed || !trend || hasNoPostings(trend)) {
+  if (failed || !trend) {
     return (
       <ChartCard
         title={TREND_TITLE}
@@ -97,12 +88,8 @@ export function TrustBalanceTrendChart({ trend, failed = false }: TrustBalanceTr
         state={failed ? "error" : "empty"}
         height={CHART_HEIGHT}
         emptyIcon={ChartArea}
-        emptyTitle={trend ? "No trust postings yet." : "Balance trend not available."}
-        emptyDescription={
-          trend
-            ? "Month-end balances appear once transactions are recorded."
-            : "The balance trend could not be shown for this account."
-        }
+        emptyTitle="Balance trend not available."
+        emptyDescription="The balance trend could not be shown for this account."
         errorMessage="Couldn't load the balance trend."
         data-testid="trust-balance-trend"
       >

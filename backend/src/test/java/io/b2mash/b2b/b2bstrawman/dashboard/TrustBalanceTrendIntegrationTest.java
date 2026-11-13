@@ -78,6 +78,11 @@ class TrustBalanceTrendIntegrationTest {
   private static final String NO_ACCOUNT_ORG_ID = "org_dash_trust_trend_noacct";
   private static final String NO_ACCOUNT_OWNER = "user_dtt_noacct_owner";
 
+  /** Primary GENERAL account closed, a non-primary one still active (its own tenant). */
+  private static final String CLOSED_PRIMARY_ORG_ID = "org_dash_trust_trend_closedprim";
+
+  private static final String CLOSED_PRIMARY_OWNER = "user_dtt_closedprim_owner";
+
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
@@ -185,6 +190,19 @@ class TrustBalanceTrendIntegrationTest {
         "DTT NoAcct Owner",
         "owner");
     enableTrustAccounting(noAccountSchema);
+
+    String closedPrimarySchema =
+        provisioningService
+            .provisionTenant(CLOSED_PRIMARY_ORG_ID, "Trust Trend Closed Primary Org", null)
+            .schemaName();
+    TestMemberHelper.syncMember(
+        mockMvc,
+        CLOSED_PRIMARY_ORG_ID,
+        CLOSED_PRIMARY_OWNER,
+        "dtt_closedprim@test.com",
+        "DTT ClosedPrim Owner",
+        "owner");
+    enableTrustAccounting(closedPrimarySchema);
   }
 
   @Test
@@ -380,22 +398,30 @@ class TrustBalanceTrendIntegrationTest {
 
   @Test
   void unknownAccountIdReturns404() throws Exception {
+    UUID unknown = UUID.randomUUID();
     mockMvc
         .perform(
             get(URL)
-                .param("accountId", UUID.randomUUID().toString())
+                .param("accountId", unknown.toString())
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.status").value(404));
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("TrustAccount not found"))
+        .andExpect(jsonPath("$.detail").value("No trustaccount found with id " + unknown));
   }
 
   @Test
   void callerWithoutViewTrustIsForbiddenLikeTheParts() throws Exception {
     var noTrust = TestJwtFactory.memberJwt(ORG_ID, NO_TRUST);
-    mockMvc.perform(get(URL).with(noTrust)).andExpect(status().isForbidden());
-    mockMvc
-        .perform(get("/api/trust-accounts/" + primaryAccountId + "/cashbook-balance").with(noTrust))
-        .andExpect(status().isForbidden());
+    for (String url :
+        List.of(URL, "/api/trust-accounts/" + primaryAccountId + "/cashbook-balance")) {
+      mockMvc
+          .perform(get(url).with(noTrust))
+          .andExpect(status().isForbidden())
+          .andExpect(jsonPath("$.status").value(403))
+          .andExpect(jsonPath("$.title").value("Access denied"))
+          .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+    }
   }
 
   @Test
@@ -412,7 +438,13 @@ class TrustBalanceTrendIntegrationTest {
     mockMvc
         .perform(get(URL).with(TestJwtFactory.ownerJwt(NO_MODULE_ORG_ID, NO_MODULE_OWNER)))
         .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This feature is not enabled for your organization. "
+                        + "An admin can enable it in Settings → Features."))
         .andExpect(jsonPath("$.moduleId").value("trust_accounting"));
   }
 
@@ -421,11 +453,45 @@ class TrustBalanceTrendIntegrationTest {
     mockMvc
         .perform(get(URL).with(TestJwtFactory.ownerJwt(NO_ACCOUNT_ORG_ID, NO_ACCOUNT_OWNER)))
         .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("No trust account"))
+        .andExpect(jsonPath("$.detail").value("No trust account has been configured"));
+  }
+
+  @Test
+  void closedPrimaryIsNotTheDefaultAccount() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(CLOSED_PRIMARY_ORG_ID, CLOSED_PRIMARY_OWNER);
+    String closedPrimary = createTrustAccount(owner, "Closed Primary", "62000000203", true);
+    String active = createTrustAccount(owner, "Still Active", "62000000204", false);
+    close(owner, closedPrimary);
+
+    // The closed account keeps is_primary = true, but the default resolves among ACTIVE accounts.
+    mockMvc
+        .perform(get(URL).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.trustAccountId").value(active))
+        .andExpect(jsonPath("$.accountName").value("Still Active"))
+        .andExpect(jsonPath("$.accounts", hasSize(1)))
+        .andExpect(jsonPath("$.accounts[0].id").value(active));
+
+    // No active account left → 404, not the closed primary.
+    close(owner, active);
+    mockMvc
+        .perform(get(URL).with(owner))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
         .andExpect(jsonPath("$.title").value("No trust account"))
         .andExpect(jsonPath("$.detail").value("No trust account has been configured"));
   }
 
   // --- helpers ---
+
+  private void close(JwtRequestPostProcessor jwt, String accountId) throws Exception {
+    mockMvc
+        .perform(post("/api/trust-accounts/" + accountId + "/close").with(jwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CLOSED"));
+  }
 
   /** Business date {@code monthsAgo} months back: the 5th, or the 1st of the current month. */
   private LocalDate day(int monthsAgo) {

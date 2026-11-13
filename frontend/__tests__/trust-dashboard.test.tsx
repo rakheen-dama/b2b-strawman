@@ -296,7 +296,7 @@ describe("TrustAccountingPage", () => {
     expect(tile("Reconciliation").queryByText(/in draft/)).not.toBeInTheDocument();
   });
 
-  it("an unbalanced draft reconciliation renders Unbalanced, in draft, and the difference line", async () => {
+  it("an unbalanced draft reconciliation renders Unbalanced, the draft period hint, and the difference line", async () => {
     setupDefaultMocks();
     mockFetchTrustPosition.mockResolvedValue({
       state: "ok",
@@ -313,9 +313,12 @@ describe("TrustAccountingPage", () => {
 
     const recon = tile("Reconciliation");
     expect(recon.getByText("Unbalanced")).toBeInTheDocument();
-    expect(recon.getByText(/Last reconciled/)).toHaveTextContent(
-      `Last reconciled ${formatLocalDate("2026-11-13")} · 0 days ago · in draft`
+    // A draft is not a reconciliation yet: the Home widget's copy, no "Last reconciled", no days-ago.
+    expect(recon.getByText(/in draft/)).toHaveTextContent(
+      new RegExp(`^Period to ${formatLocalDate("2026-11-13")}, in draft$`)
     );
+    expect(recon.queryByText(/Last reconciled/)).not.toBeInTheDocument();
+    expect(recon.queryByText(/days ago/)).not.toBeInTheDocument();
     expect(tile("Trust Balance").getByText(/^Difference/)).toHaveTextContent(
       /Difference R[\s\u00A0]1[,.]34/
     );

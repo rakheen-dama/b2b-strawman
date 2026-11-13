@@ -21,6 +21,7 @@ import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton"
 import { TrustBalanceTrendChart } from "@/components/trust/trust-balance-trend-chart";
 import { TrustTransactionsTable } from "@/components/trust/trust-transactions-table";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
+import { draftReconciliationText } from "@/lib/trust-reconciliation-copy";
 import type { WidgetResult } from "@/lib/dashboard-home";
 import type { TrustBalanceTrendResponse, TrustPositionResponse } from "@/lib/dashboard-types";
 import {
@@ -66,13 +67,16 @@ function daysAgo(days: number): string {
   return days === 1 ? "1 day ago" : `${days} days ago`;
 }
 
-/** "Last reconciled 31 Oct 2026 · 13 days ago" (+ " · in draft" for a DRAFT reconciliation). */
+/**
+ * "Last reconciled 31 Oct 2026 · 13 days ago"; a DRAFT is not yet reconciled, so it reads as the
+ * Home widget does — "Period to 13 Nov 2026, in draft" (no days-ago).
+ */
 function lastReconciledText(position: TrustPositionResponse, periodEnd: string): string {
+  if (position.lastReconciliationStatus === "DRAFT") return draftReconciliationText(periodEnd);
   const parts = [`Last reconciled ${formatLocalDate(periodEnd)}`];
   if (position.daysSinceReconciliation !== null && position.daysSinceReconciliation >= 0) {
     parts.push(daysAgo(position.daysSinceReconciliation));
   }
-  if (position.lastReconciliationStatus === "DRAFT") parts.push("in draft");
   return parts.join(" · ");
 }
 

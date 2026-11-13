@@ -58,6 +58,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.TrustAccountResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
@@ -599,16 +600,19 @@ public class DashboardService {
 
   /**
    * The trust-position account rule (shared with {@link #getTrustBalanceTrend}): the requested id
-   * (404 when unknown), else the primary GENERAL account, else the first active one, else 404 "No
-   * trust account".
+   * (404 when unknown), else the primary GENERAL account among the {@code accounts} (the ACTIVE
+   * ones), else the first active one, else 404 "No trust account". The default is picked from the
+   * active list, not {@code getPrimaryAccount()}: closing an account leaves its {@code is_primary}
+   * flag set, and a closed account must neither be the default nor stand in for "no account".
    */
   private TrustAccountResponse resolveTrustAccount(
       UUID accountId, List<TrustAccountResponse> accounts) {
     if (accountId != null) {
       return trustAccountService.getTrustAccount(accountId);
     }
-    return trustAccountService
-        .getPrimaryAccount()
+    return accounts.stream()
+        .filter(a -> a.isPrimary() && a.accountType() == TrustAccountType.GENERAL)
+        .findFirst()
         .or(() -> accounts.stream().findFirst())
         .orElseThrow(
             () ->

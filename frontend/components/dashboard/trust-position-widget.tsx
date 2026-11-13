@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
+import { draftReconciliationText } from "@/lib/trust-reconciliation-copy";
 import type { TrustPositionResponse } from "@/lib/dashboard-types";
 import {
   StatusBadge,
@@ -23,8 +24,10 @@ function isBalanced(difference: number): boolean {
 
 function lastReconciliationText(data: TrustPositionResponse): string {
   if (!data.lastReconciliationPeriodEnd) return "Never reconciled";
+  if (data.lastReconciliationStatus === "DRAFT") {
+    return draftReconciliationText(data.lastReconciliationPeriodEnd);
+  }
   const period = `Period to ${formatLocalDate(data.lastReconciliationPeriodEnd)}`;
-  if (data.lastReconciliationStatus === "DRAFT") return `${period}, in draft`;
   return data.lastReconciliationBalanced === false ? `${period}, not balanced` : period;
 }
 

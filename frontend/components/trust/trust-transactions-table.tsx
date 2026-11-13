@@ -61,9 +61,14 @@ export function TrustTransactionsTable({ rows, currency, empty }: TrustTransacti
         },
         {
           id: "reference",
-          meta: { label: "Reference" },
+          // Long system references (INT-CREDIT-<uuid>-<uuid>) wrap at any character instead of
+          // widening the table past the card (the kit cell is nowrap); capped so a short-column
+          // layout keeps room for Type, Amount and Status.
+          meta: { label: "Reference", cellClassName: "whitespace-normal [overflow-wrap:anywhere]" },
           cell: ({ row }) => (
-            <span className="text-foreground font-medium">{row.original.reference}</span>
+            <span className="text-foreground block max-w-md font-medium">
+              {row.original.reference}
+            </span>
           ),
         },
         {

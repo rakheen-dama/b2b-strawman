@@ -252,56 +252,61 @@ export default async function TrustAccountingPage({
 
       {dashboardData && (
         <>
-          {/* Summary Cards — labels frozen (e2e day-07-14-work-trust) */}
-          <div
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
-            data-testid="summary-cards"
-          >
-            <StatCard
-              label="Trust Balance"
-              icon={<Wallet />}
-              state={positionData ? "ready" : "error"}
-              value={positionData ? formatCurrency(positionData.cashbookBalance, currency) : null}
-              hint={
-                positionData ? (
-                  <TrustBalanceHint position={positionData} currency={currency} />
-                ) : null
-              }
-            />
+          {/* Summary Cards — labels frozen (e2e day-07-14-work-trust). Container-query columns
+              (640A KpiRow idiom), sized to the card: p-5 + a 13-character text-2xl mono value
+              (~188px) + gap-3 + the size-9 icon ≈ 276px per card, so 2-up from @xl (36rem) and
+              4-up only from @6xl (72rem); narrower than that the value would run under the icon. */}
+          <div className="@container">
+            <div
+              className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @6xl:grid-cols-4"
+              data-testid="summary-cards"
+            >
+              <StatCard
+                label="Trust Balance"
+                icon={<Wallet />}
+                state={positionData ? "ready" : "error"}
+                value={positionData ? formatCurrency(positionData.cashbookBalance, currency) : null}
+                hint={
+                  positionData ? (
+                    <TrustBalanceHint position={positionData} currency={currency} />
+                  ) : null
+                }
+              />
 
-            <StatCard
-              label="Active Clients"
-              icon={<Users />}
-              value={dashboardData.activeClients}
-              hint="Clients with trust balances"
-            />
+              <StatCard
+                label="Active Clients"
+                icon={<Users />}
+                value={dashboardData.activeClients}
+                hint="Clients with trust balances"
+              />
 
-            <StatCard
-              label="Pending Approvals"
-              icon={<Clock />}
-              state={positionData ? "ready" : "error"}
-              value={positionData ? pendingApprovals : null}
-              hint={
-                <span className="flex flex-wrap items-center gap-2">
-                  <span>Transactions awaiting approval</span>
-                  {pendingApprovals > 0 ? <Badge variant="warning">Needs attention</Badge> : null}
-                </span>
-              }
-            />
+              <StatCard
+                label="Pending Approvals"
+                icon={<Clock />}
+                state={positionData ? "ready" : "error"}
+                value={positionData ? pendingApprovals : null}
+                hint={
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span>Transactions awaiting approval</span>
+                    {pendingApprovals > 0 ? <Badge variant="warning">Needs attention</Badge> : null}
+                  </span>
+                }
+              />
 
-            <StatCard
-              label="Reconciliation"
-              icon={<Scale />}
-              state={positionData ? "ready" : "error"}
-              value={positionData ? <ReconciliationValue position={positionData} /> : null}
-              hint={
-                positionData
-                  ? positionData.lastReconciliationPeriodEnd
-                    ? lastReconciledText(positionData, positionData.lastReconciliationPeriodEnd)
-                    : "No reconciliation records found"
-                  : null
-              }
-            />
+              <StatCard
+                label="Reconciliation"
+                icon={<Scale />}
+                state={positionData ? "ready" : "error"}
+                value={positionData ? <ReconciliationValue position={positionData} /> : null}
+                hint={
+                  positionData
+                    ? positionData.lastReconciliationPeriodEnd
+                      ? lastReconciledText(positionData, positionData.lastReconciliationPeriodEnd)
+                      : "No reconciliation records found"
+                    : null
+                }
+              />
+            </div>
           </div>
 
           {/* Alerts Section */}

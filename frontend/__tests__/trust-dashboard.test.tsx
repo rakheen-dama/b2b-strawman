@@ -421,6 +421,26 @@ describe("TrustAccountingPage", () => {
     expect(screen.getByText("AWAITING APPROVAL")).toBeInTheDocument();
   });
 
+  // 643A OBS D1: the kit cell is nowrap, so a long system reference (INT-CREDIT-<uuid>-<uuid>)
+  // pushed Amount and Status out of the card. The reference cell wraps; the amount does not.
+  it("wraps long references so the amount and status stay in the card", async () => {
+    setupDefaultMocks();
+    const data = defaultDashboardData();
+    const reference = `INT-CREDIT-${"a1b2c3d4-e5f6-7890-abcd-ef1234567890"}-${"0f9e8d7c-6b5a-4321-9876-543210fedcba"}`;
+    mockFetchDashboardData.mockResolvedValue({
+      ...data,
+      recentTransactions: [{ ...data.recentTransactions[0], reference }],
+    });
+    await renderPage();
+
+    const cells = within(screen.getByText(reference).closest("tr") as HTMLElement).getAllByRole(
+      "cell"
+    );
+    expect(cells[1]).toHaveClass("whitespace-normal", "[overflow-wrap:anywhere]");
+    expect(cells[1]).not.toHaveClass("whitespace-nowrap");
+    expect(cells[3]).toHaveClass("whitespace-nowrap", "text-right");
+  });
+
   it("renders the empty recent-transactions state without a table", async () => {
     setupDefaultMocks();
     mockFetchDashboardData.mockResolvedValue({ ...defaultDashboardData(), recentTransactions: [] });

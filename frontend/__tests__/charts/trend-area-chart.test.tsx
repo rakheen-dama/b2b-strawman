@@ -453,6 +453,74 @@ describe("TrendAreaChart", () => {
     );
   });
 
+  // 643A OBS D3: trust's cashbook and client-ledger lines end at (almost) the same value; their
+  // end labels drew on top of each other. Converging ends fall back to the legend, and the right
+  // margin the labels needed goes with them.
+  it("drops overlapping end labels and their margin when the series converge (real recharts)", async () => {
+    withRealRecharts();
+    const converging = [
+      { month: "Sep 2026", cashbook: 120000, ledgers: 119000 },
+      { month: "Oct 2026", cashbook: 210000, ledgers: 208000 },
+      { month: "Nov 2026", cashbook: 290249.98, ledgers: 290000 },
+    ];
+    const series = [
+      { key: "cashbook", label: "Cashbook" },
+      { key: "ledgers", label: "Client ledgers" },
+    ];
+    const svgText = () =>
+      Array.from(document.querySelectorAll("svg.recharts-surface text")).map((t) => t.textContent);
+    // The plot clip spans the drawable width: 480 − 64 (y axis) − the left/right margins.
+    const plotWidth = () =>
+      Number(document.querySelector("svg.recharts-surface clipPath rect")?.getAttribute("width"));
+
+    const { rerender } = render(
+      <TrendAreaChart
+        title="Converging"
+        data={converging}
+        xKey="month"
+        series={series}
+        format="currency"
+      />
+    );
+    const curves = () => document.querySelectorAll("path.recharts-area-curve").length;
+    // Drawn (both curves) with neither end label, and the legend still names both series.
+    await waitFor(() => expect(curves()).toBe(2));
+    await waitFor(() => expect(plotWidth()).toBe(480 - 64 - 12));
+    expect(svgText()).not.toContain("Cashbook");
+    expect(svgText()).not.toContain("Client ledgers");
+    const legend = document.querySelector(".recharts-legend-wrapper") as HTMLElement;
+    expect(legend).toHaveTextContent("Cashbook");
+    expect(legend).toHaveTextContent("Client ledgers");
+
+    // Same with the dashed partial last period (the trust dashboard's shape).
+    rerender(
+      <TrendAreaChart
+        title="Converging"
+        data={converging}
+        xKey="month"
+        series={series}
+        format="currency"
+        partialLastPoint
+      />
+    );
+    await waitFor(() => expect(plotWidth()).toBe(480 - 64 - 12));
+    expect(svgText()).not.toContain("Cashbook");
+
+    // Separated ends keep their direct labels and the room for them.
+    rerender(
+      <TrendAreaChart
+        title="Converging"
+        data={converging.map((row) => ({ ...row, ledgers: row.ledgers / 2 }))}
+        xKey="month"
+        series={series}
+        format="currency"
+      />
+    );
+    await waitFor(() => expect(svgText()).toContain("Client ledgers"));
+    expect(svgText()).toContain("Cashbook");
+    expect(plotWidth()).toBe(480 - 64 - 88);
+  });
+
   it("shows a skeleton at chart height while loading", () => {
     render(
       <TrendAreaChart

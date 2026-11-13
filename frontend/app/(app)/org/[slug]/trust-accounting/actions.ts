@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { matterPath } from "@/lib/api/matters";
 import { settle } from "@/lib/settle";
 import type { WidgetResult } from "@/lib/dashboard-home";
+import type { TrustBalanceTrendResponse, TrustPositionResponse } from "@/lib/dashboard-types";
 import type {
   MatterTrustBalance,
   TrustAccount,
@@ -123,9 +124,34 @@ export async function fetchDashboardData(accountId: string): Promise<TrustDashbo
     totalBalance: cashbook.balance,
     activeClients,
     pendingApprovals: pendingApprovals.length,
-    lastReconciliationDate: null, // Reconciliation module not yet implemented
-    lastReconciliationBalanced: null,
     recentTransactions,
     alerts,
   };
+}
+
+/**
+ * Trust position for the dashboard's StatCards (Phase 90 643A, §15.3.6) — the same read as Home's
+ * trust widget, so the Reconciliation tile shows the latest reconciliation. 403/404 → absent;
+ * 401 → re-login; anything else → error. A read, not a mutation.
+ */
+export async function fetchTrustPosition(
+  accountId: string
+): Promise<WidgetResult<TrustPositionResponse>> {
+  return settle(true, "trust position", () =>
+    api.get<TrustPositionResponse>(
+      `/api/dashboard/trust-position?accountId=${encodeURIComponent(accountId)}`
+    )
+  );
+}
+
+/** Month-end balances for the trust balance trend chart (ADR-372). A read, not a mutation. */
+export async function fetchTrustBalanceTrend(
+  accountId: string,
+  months = 12
+): Promise<WidgetResult<TrustBalanceTrendResponse>> {
+  return settle(true, "trust balance trend", () =>
+    api.get<TrustBalanceTrendResponse>(
+      `/api/dashboard/trust-balance-trend?accountId=${encodeURIComponent(accountId)}&months=${months}`
+    )
+  );
 }

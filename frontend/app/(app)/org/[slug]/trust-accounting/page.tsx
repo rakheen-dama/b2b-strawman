@@ -10,78 +10,120 @@ import {
   AlertTriangle,
   Info,
   ArrowUpRight,
-  ArrowDownLeft,
 } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
+import { PageHeader } from "@b2mash/ui/page-header";
+import { StatCard } from "@b2mash/ui/stat-card";
 import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
-import { fetchTrustAccounts, fetchDashboardData } from "./actions";
+import { TrustBalanceTrendChart } from "@/components/trust/trust-balance-trend-chart";
+import { TrustTransactionsTable } from "@/components/trust/trust-transactions-table";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
+import type { WidgetResult } from "@/lib/dashboard-home";
+import type { TrustBalanceTrendResponse, TrustPositionResponse } from "@/lib/dashboard-types";
 import {
-  isInflowType,
-  transactionTypeLabel,
-  type TrustDashboardData,
-  type TrustTransactionStatus,
-  type TrustAlertSeverity,
-} from "@/lib/types";
+  fetchTrustAccounts,
+  fetchDashboardData,
+  fetchTrustPosition,
+  fetchTrustBalanceTrend,
+} from "./actions";
+import type { TrustAccount, TrustAlertSeverity, TrustDashboardData } from "@/lib/types";
 
 // ── Helpers ────────────────────────────────────────────────────────
-
-function formatCurrency(amount: number, currency = "ZAR"): string {
-  return new Intl.NumberFormat("en-ZA", {
-    style: "currency",
-    currency,
-  }).format(amount);
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function statusBadgeVariant(
-  status: TrustTransactionStatus
-): "success" | "warning" | "destructive" | "neutral" {
-  switch (status) {
-    case "APPROVED":
-      return "success";
-    case "AWAITING_APPROVAL":
-      return "warning";
-    case "REJECTED":
-      return "destructive";
-    case "RECORDED":
-    case "REVERSED":
-    default:
-      return "neutral";
-  }
-}
 
 function alertSeverityColor(severity: TrustAlertSeverity): string {
   switch (severity) {
     case "error":
-      return "text-red-600 dark:text-red-400";
+      return "text-danger-foreground";
     case "warning":
-      return "text-amber-600 dark:text-amber-400";
+      return "text-warning-foreground";
     case "info":
     default:
-      return "text-teal-600 dark:text-teal-400";
+      return "text-info-foreground";
   }
 }
 
 function AlertIcon({ severity }: { severity: TrustAlertSeverity }) {
   switch (severity) {
     case "error":
-      return <XCircle className="size-4 text-red-600 dark:text-red-400" />;
+      return <XCircle aria-hidden="true" className="size-4" />;
     case "warning":
-      return <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />;
+      return <AlertTriangle aria-hidden="true" className="size-4" />;
     case "info":
     default:
-      return <Info className="size-4 text-teal-600 dark:text-teal-400" />;
+      return <Info aria-hidden="true" className="size-4" />;
   }
+}
+
+/** Half a cent either way is a rounding artefact, not a difference (Home widget rule). */
+function isBalanced(difference: number): boolean {
+  return Math.abs(difference) < 0.005;
+}
+
+function daysAgo(days: number): string {
+  return days === 1 ? "1 day ago" : `${days} days ago`;
+}
+
+/** "Last reconciled 31 Oct 2026 · 13 days ago" (+ " · in draft" for a DRAFT reconciliation). */
+function lastReconciledText(position: TrustPositionResponse, periodEnd: string): string {
+  const parts = [`Last reconciled ${formatLocalDate(periodEnd)}`];
+  if (position.daysSinceReconciliation !== null && position.daysSinceReconciliation >= 0) {
+    parts.push(daysAgo(position.daysSinceReconciliation));
+  }
+  if (position.lastReconciliationStatus === "DRAFT") parts.push("in draft");
+  return parts.join(" · ");
+}
+
+function TrustBalanceHint({
+  position,
+  currency,
+}: {
+  position: TrustPositionResponse;
+  currency: string;
+}) {
+  const balanced = isBalanced(position.difference);
+  return (
+    <div className="space-y-0.5">
+      <p>{`${position.accountName} cashbook balance`}</p>
+      <p className="flex items-center gap-1">
+        {balanced ? (
+          <CheckCircle2 aria-hidden="true" className="text-success-foreground size-3 shrink-0" />
+        ) : (
+          <AlertTriangle aria-hidden="true" className="text-danger-foreground size-3 shrink-0" />
+        )}
+        <span>Client ledgers {formatCurrency(position.clientLedgerTotal, currency)}</span>
+        {balanced ? <span className="sr-only">(agrees with the cashbook)</span> : null}
+      </p>
+      {balanced ? null : (
+        <p className="text-danger-foreground">
+          Difference {formatCurrency(position.difference, currency)}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ReconciliationValue({ position }: { position: TrustPositionResponse }) {
+  if (!position.lastReconciliationPeriodEnd) {
+    return <span className="text-muted-foreground font-sans text-base">Not yet reconciled</span>;
+  }
+  const balanced = position.lastReconciliationBalanced === true;
+  return (
+    <span
+      className={`inline-flex items-center gap-2 font-sans text-base ${
+        balanced ? "text-success-foreground" : "text-danger-foreground"
+      }`}
+    >
+      {balanced ? (
+        <CheckCircle2 aria-hidden="true" className="size-4 shrink-0" />
+      ) : (
+        <XCircle aria-hidden="true" className="size-4 shrink-0" />
+      )}
+      {balanced ? "Balanced" : "Unbalanced"}
+    </span>
+  );
 }
 
 // ── Page ───────────────────────────────────────────────────────────
@@ -104,82 +146,82 @@ export default async function TrustAccountingPage({
   if (!enabledModules.includes("trust_accounting")) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <h2 className="font-display text-xl font-semibold text-slate-950 dark:text-slate-50">
-          Module Not Available
-        </h2>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+        <h2 className="font-display text-foreground text-xl font-semibold">Module Not Available</h2>
+        <p className="text-muted-foreground mt-2 text-sm">
           The Trust Accounting module is not enabled for your organization.
         </p>
       </div>
     );
   }
 
-  // Fetch trust accounts and find the primary one
-  let dashboardData: TrustDashboardData | null = null;
-  let accountName = "Trust Account";
+  const currency = settings.defaultCurrency;
+  let accounts: TrustAccount[] = [];
   let fetchError = false;
-  let hasTrustAccounts = false;
-
   try {
-    const accounts = await fetchTrustAccounts();
-    hasTrustAccounts = accounts.length > 0;
-    const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
+    accounts = await fetchTrustAccounts();
+  } catch (error) {
+    console.error("Failed to fetch trust accounts:", error);
+    fetchError = true;
+  }
+  const hasTrustAccounts = accounts.length > 0;
+  const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
 
-    if (primary) {
-      accountName = primary.accountName;
-      try {
-        dashboardData = await fetchDashboardData(primary.id);
-      } catch (dashboardErr) {
+  let dashboardData: TrustDashboardData | null = null;
+  let position: WidgetResult<TrustPositionResponse> = { state: "absent" };
+  let trend: WidgetResult<TrustBalanceTrendResponse> = { state: "absent" };
+  if (primary) {
+    // The tiles' cashbook / ledger / pending / reconciliation figures come from trust-position
+    // (the Home widget's read, 643A); Active Clients, alerts and recent transactions from the
+    // dashboard aggregation. The two settled reads never throw except to re-login (401).
+    [dashboardData, position, trend] = await Promise.all([
+      fetchDashboardData(primary.id).catch((dashboardErr: unknown) => {
         // Dashboard payload fetch failed, but the account list loaded. We still want the
         // header CTAs visible so users can reach Client Ledgers / Record Transaction,
         // which have their own data-fetching and may be usable independently.
         console.error("Failed to fetch trust dashboard data:", dashboardErr);
         fetchError = true;
-      }
-    }
-  } catch (error) {
-    console.error("Failed to fetch trust accounts:", error);
-    fetchError = true;
+        return null;
+      }),
+      fetchTrustPosition(primary.id),
+      fetchTrustBalanceTrend(primary.id, 12),
+    ]);
   }
+  const positionData = position.state === "ok" ? position.data : null;
+  const pendingApprovals = positionData?.pendingApprovalCount ?? 0;
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Trust Accounting
-          </h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            LSSA-compliant trust account management for client funds
-          </p>
-        </div>
-        {hasTrustAccounts && (
-          // Show nav CTAs whenever at least one trust account exists, even if the
-          // dashboard payload fetch failed. The Client Ledgers and Transactions pages
-          // do their own data loading and remain usable independently. PR #1004 review.
-          <div className="flex items-center gap-2">
-            <Button asChild variant="outline">
-              <Link href={`/org/${slug}/trust-accounting/client-ledgers`}>
-                <Users className="mr-2 size-4" />
-                Client Ledgers
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href={`/org/${slug}/trust-accounting/transactions`}>
-                <ArrowUpRight className="mr-2 size-4" />
-                Record Transaction
-              </Link>
-            </Button>
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Trust Accounting"
+        description="LSSA-compliant trust account management for client funds"
+        actions={
+          hasTrustAccounts ? (
+            // Show nav CTAs whenever at least one trust account exists, even if the
+            // dashboard payload fetch failed. The Client Ledgers and Transactions pages
+            // do their own data loading and remain usable independently. PR #1004 review.
+            <>
+              <Button asChild variant="outline">
+                <Link href={`/org/${slug}/trust-accounting/client-ledgers`}>
+                  <Users className="mr-2 size-4" />
+                  Client Ledgers
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href={`/org/${slug}/trust-accounting/transactions`}>
+                  <ArrowUpRight className="mr-2 size-4" />
+                  Record Transaction
+                </Link>
+              </Button>
+            </>
+          ) : undefined
+        }
+      />
 
       {fetchError && (
         <Card>
           <CardContent className="py-10 text-center">
-            <Scale className="mx-auto size-8 text-slate-400" />
-            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+            <Scale aria-hidden="true" className="text-muted-foreground mx-auto size-8" />
+            <p className="text-muted-foreground mt-3 text-sm">
               Unable to load trust account data. Please try again later.
             </p>
           </CardContent>
@@ -189,11 +231,11 @@ export default async function TrustAccountingPage({
       {!fetchError && !dashboardData && (
         <Card>
           <CardContent className="py-10 text-center">
-            <Scale className="mx-auto size-8 text-slate-400" />
-            <h3 className="font-display mt-3 text-lg font-semibold text-slate-950 dark:text-slate-50">
+            <Scale aria-hidden="true" className="text-muted-foreground mx-auto size-8" />
+            <h3 className="font-display text-foreground mt-3 text-lg font-semibold">
               No Trust Accounts
             </h3>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-muted-foreground mt-1 text-sm">
               No trust accounts have been set up yet. Create your first trust account to get
               started.
             </p>
@@ -206,113 +248,56 @@ export default async function TrustAccountingPage({
 
       {dashboardData && (
         <>
-          {/* Summary Cards */}
+          {/* Summary Cards — labels frozen (e2e day-07-14-work-trust) */}
           <div
             className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
             data-testid="summary-cards"
           >
-            {/* Total Balance */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Trust Balance
-                </CardTitle>
-                <Wallet className="size-4 text-slate-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
-                  {formatCurrency(dashboardData.totalBalance, settings.defaultCurrency)}
-                </div>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  {accountName} cashbook balance
-                </p>
-              </CardContent>
-            </Card>
+            <StatCard
+              label="Trust Balance"
+              icon={<Wallet />}
+              state={positionData ? "ready" : "error"}
+              value={positionData ? formatCurrency(positionData.cashbookBalance, currency) : null}
+              hint={
+                positionData ? (
+                  <TrustBalanceHint position={positionData} currency={currency} />
+                ) : null
+              }
+            />
 
-            {/* Active Clients */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Active Clients
-                </CardTitle>
-                <Users className="size-4 text-slate-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
-                  {dashboardData.activeClients}
-                </div>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  Clients with trust balances
-                </p>
-              </CardContent>
-            </Card>
+            <StatCard
+              label="Active Clients"
+              icon={<Users />}
+              value={dashboardData.activeClients}
+              hint="Clients with trust balances"
+            />
 
-            {/* Pending Approvals */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Pending Approvals
-                </CardTitle>
-                <Clock className="size-4 text-slate-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
-                    {dashboardData.pendingApprovals}
-                  </span>
-                  {dashboardData.pendingApprovals > 0 && (
-                    <Badge variant="warning">Needs attention</Badge>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  Transactions awaiting approval
-                </p>
-              </CardContent>
-            </Card>
+            <StatCard
+              label="Pending Approvals"
+              icon={<Clock />}
+              state={positionData ? "ready" : "error"}
+              value={positionData ? pendingApprovals : null}
+              hint={
+                <span className="flex flex-wrap items-center gap-2">
+                  <span>Transactions awaiting approval</span>
+                  {pendingApprovals > 0 ? <Badge variant="warning">Needs attention</Badge> : null}
+                </span>
+              }
+            />
 
-            {/* Last Reconciliation */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Reconciliation
-                </CardTitle>
-                {dashboardData.lastReconciliationBalanced === true ? (
-                  <CheckCircle2 className="size-4 text-green-600" />
-                ) : dashboardData.lastReconciliationBalanced === false ? (
-                  <XCircle className="size-4 text-red-600" />
-                ) : (
-                  <Scale className="size-4 text-slate-400" />
-                )}
-              </CardHeader>
-              <CardContent>
-                {dashboardData.lastReconciliationDate ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      {dashboardData.lastReconciliationBalanced ? (
-                        <span className="inline-flex size-2 rounded-full bg-green-500" />
-                      ) : (
-                        <span className="inline-flex size-2 rounded-full bg-red-500" />
-                      )}
-                      <span className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                        {dashboardData.lastReconciliationBalanced ? "Balanced" : "Unbalanced"}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      Last reconciled {formatDate(dashboardData.lastReconciliationDate)}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                      Not yet reconciled
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      No reconciliation records found
-                    </p>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+            <StatCard
+              label="Reconciliation"
+              icon={<Scale />}
+              state={positionData ? "ready" : "error"}
+              value={positionData ? <ReconciliationValue position={positionData} /> : null}
+              hint={
+                positionData
+                  ? positionData.lastReconciliationPeriodEnd
+                    ? lastReconciledText(positionData, positionData.lastReconciliationPeriodEnd)
+                    : "No reconciliation records found"
+                  : null
+              }
+            />
           </div>
 
           {/* Alerts Section */}
@@ -321,7 +306,7 @@ export default async function TrustAccountingPage({
               {dashboardData.alerts.map((alert, index) => (
                 <div
                   key={`${alert.type}-${index}`}
-                  className={`flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700 ${alertSeverityColor(alert.severity)}`}
+                  className={`border-border flex items-center gap-3 rounded-lg border px-4 py-3 ${alertSeverityColor(alert.severity)}`}
                 >
                   <AlertIcon severity={alert.severity} />
                   <span className="text-sm">{alert.message}</span>
@@ -329,6 +314,12 @@ export default async function TrustAccountingPage({
               ))}
             </div>
           )}
+
+          {/* Balance trend (below the fold at 1024×768 — loaded client-side, D5) */}
+          <TrustBalanceTrendChart
+            trend={trend.state === "ok" ? trend.data : null}
+            failed={trend.state === "error"}
+          />
 
           {/* Recent Transactions Table */}
           <Card>
@@ -345,78 +336,15 @@ export default async function TrustAccountingPage({
               </Button>
             </CardHeader>
             <CardContent>
-              {dashboardData.recentTransactions.length === 0 ? (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    No transactions recorded yet
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm" data-testid="transactions-table">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Date
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Reference
-                        </th>
-                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Type
-                        </th>
-                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Amount
-                        </th>
-                        <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dashboardData.recentTransactions.map((tx) => (
-                        <tr
-                          key={tx.id}
-                          className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                        >
-                          <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                            {formatDate(tx.transactionDate)}
-                          </td>
-                          <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
-                            {tx.reference}
-                          </td>
-                          <td className="py-3 pr-4">
-                            <Badge variant="neutral">
-                              {transactionTypeLabel(tx.transactionType)}
-                            </Badge>
-                          </td>
-                          <td className="py-3 pr-4 text-right">
-                            <span
-                              className={`inline-flex items-center gap-1 font-mono tabular-nums ${
-                                isInflowType(tx.transactionType)
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-slate-950 dark:text-slate-50"
-                              }`}
-                            >
-                              {isInflowType(tx.transactionType) ? (
-                                <ArrowDownLeft className="size-3" />
-                              ) : (
-                                <ArrowUpRight className="size-3" />
-                              )}
-                              {formatCurrency(tx.amount, settings.defaultCurrency)}
-                            </span>
-                          </td>
-                          <td className="py-3">
-                            <Badge variant={statusBadgeVariant(tx.status)}>
-                              {tx.status.replace(/_/g, " ")}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <TrustTransactionsTable
+                rows={dashboardData.recentTransactions}
+                currency={currency}
+                empty={
+                  <div className="py-8 text-center">
+                    <p className="text-muted-foreground text-sm">No transactions recorded yet</p>
+                  </div>
+                }
+              />
             </CardContent>
           </Card>
         </>

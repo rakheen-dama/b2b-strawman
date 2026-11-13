@@ -1,0 +1,6 @@
+643.2 backend red — HEAD 43142e947, before the controller method existed
+$ ./mvnw test -Dtest='TrustBalanceTrendIntegrationTest#defaultWindowIsTwelveSaMonthsOldestFirstWithPartialCurrentMonth' -q
+Body = {"detail":"No static resource api/dashboard/trust-balance-trend.","instance":"/api/dashboard/trust-balance-trend","status":404,"title":"Not Found"}
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 29.96 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.dashboard.TrustBalanceTrendIntegrationTest
+java.lang.AssertionError: Status expected:<200> but was:<404>
+[ERROR]   TrustBalanceTrendIntegrationTest.defaultWindowIsTwelveSaMonthsOldestFirstWithPartialCurrentMonth:196 Status expected:<200> but was:<404>

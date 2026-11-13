@@ -25,7 +25,7 @@ So **all 12 are stale** regardless of the page shown, because 638A/638B replaced
 | `matter-detail.png` | **`marketing/features-section.tsx:25`** | Old matter Overview (no hero tiles; tabs "Details · Overview · Work · Finance · Client · Schedule · Activity") | **yes**: matter detail | Old shell; 641B DetailHero + KPI strip; 642C tab bar | Same PR, from `../matrix/matter-detail-1440-light.png` |
 | `trust-accounting.png` | **`marketing/features-section.tsx:55`** | Old trust dashboard: 4 cards, raw Recent Transactions table | **yes**: trust dashboard | Old shell; 643A PageHeader, StatCards, balance-trend chart, DataTable | Same PR, from `../matrix/trust-1440-light.png` |
 | `invoices.png` | **`marketing/features-section.tsx:40`** | Fee Notes list (3 summary cards, raw table) | no (long tail) | Old shell only; the page body is unchanged by Phase 90 | Same PR (shell); or wait for Phase 91 §6 (fee notes onto the primitives) and shoot once |
-| `compliance.png` | **`marketing/features-section.tsx:70`** | Compliance: lifecycle distribution cards | no (long tail) | Old shell only | Same PR (shell); Phase 91 §9 light pass changes the body again |
+| `compliance.png` | **`marketing/features-section.tsx:70`** | Compliance: lifecycle distribution cards | no (long tail) | Old shell only | Same PR (shell); the long-tail light pass (backlog B-14, Phase 91 candidate) changes the body again |
 | `clients.png` | not referenced by code (QA docs only) | Old clients list with filter chips | yes: clients list | Old shell; 642A DataTable | Unreferenced asset: delete or re-shoot in the same PR |
 | `matters-list.png` | not referenced by code | Old matters list as **cards** | yes: matters list | Old shell; 641A DataTable | Same |
 | `profitability.png` | not referenced by code | **Not the profitability report:** a matter's Finance · Financials tab, empty state "No financial data yet" | no (name misleading) | Old shell | Delete as unreferenced, or rename and re-shoot from `../matrix/profitability-1440-light.png` |
@@ -38,7 +38,7 @@ So **all 12 are stale** regardless of the page shown, because 638A/638B replaced
 - Re-shoot the 5 code-referenced images. They are the ones a visitor sees.
 - Delete or keep the 7 unreferenced ones per the founder's call.
 - Gates: FE-GATE + frontend verify marker + Frontend CI.
-- Do it **after** Phase 91 settles the light-mode scheme (Phase 91 founder decision 2), or the images go stale again.
+- Do it **after** the light-mode scheme is settled (backlog B-16, Phase 91 candidate; `tasks/phase90-ui-modernization.md` § Closure report C.6 (b)), or the images go stale again.
 
 ## Documentation images (`documentation/screenshots/`)
 
@@ -64,5 +64,5 @@ These are **dated QA evidence**, referenced from checkpoint-result files and arc
 
 **Closed by 644B, "list" branch (ruling R2).**
 - 25 tracked files classified: 12 marketing + 12 docs PNG + 1 WebM. The spec's "14" was a miscount.
-- All 12 marketing PNGs are stale (old shell). The 5 code-referenced ones go to one follow-up frontend PR, preferably after Phase 91's colour-scheme decision.
+- All 12 marketing PNGs are stale (old shell). The 5 code-referenced ones go to one follow-up frontend PR, preferably after the colour-scheme decision (B-16).
 - The 13 documentation files are historical QA evidence and are kept as records.

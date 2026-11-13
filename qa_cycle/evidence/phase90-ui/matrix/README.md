@@ -44,7 +44,7 @@ Base URL `http://localhost:3000/org/mathebula-partners`. Matter = Estate Late Pe
 | `home-1024-dark.png` | Home | owner | 1024 | dark | OK. Cards, sparkline and KPI figures are legible. Diary hint is readable in dark. | 0 |
 | `home-1440-light.png` / `home-1440-light-full.png` | Home | owner | 1440 | light | OK (= top of -full). 4-up KPI row (Active matters 3, Hours 18,0h + sparkline, Billable 100,0%, Overdue 0); WIP empty state; Debtors (Lerato R 10 925,00); Trust position "Balanced"; FICA; Matter Health; Sensitive events; Recent activity. No clipping. | 0 |
 | `home-1440-dark.png` / `home-1440-dark-full.png` | Home | owner | 1440 | dark | OK (= top of -full). Every card is legible. In dark, the matter-health progress tracks for 0 % rows are very dark red (readable via the % column). | 0 |
-| `matters-1024-light.png` | Matters `/matters` | owner | 1024 | light | Renders. **Table scrolls horizontally inside its container**: 993 px in 718 px, so Fee earner / Trust / Next in diary are off-screen and reachable by scroll. This is the known 641A F1 density item, not a regression. | 0 |
+| `matters-1024-light.png` | Matters `/matters` | owner | 1024 | light | Renders. **Table scrolls horizontally inside its container**: 993 px in 718 px, so Fee earner / Trust / Next in diary are off-screen and reachable by scroll. This is the known 641A F1 density item, and it is a **cosmetic density regression**: 844 px before the phase, 904 px at 641A (the kit's inactive sort chevrons), 993 px at exit. Not illegible or broken (R8 not triggered); listed in backlog B-12. | 0 |
 | `matters-1024-dark.png` | Matters | owner | 1024 | dark | As light; dark tokens correct. The "Active" chip is inverted (light chip) by design. | 0 |
 | `matters-1440-light.png` | Matters | owner | 1440 | light | OK. All 9 columns. The table container is still 23 px too narrow (1157/1134), so the row "…" action column is half-clipped at the right edge (cosmetic; adds to 641A F1). | 0 |
 | `matters-1440-dark.png` | Matters | owner | 1440 | dark | As light. | 0 |
@@ -60,7 +60,7 @@ Base URL `http://localhost:3000/org/mathebula-partners`. Matter = Estate Late Pe
 | `client-detail-1024-dark.png` | Client detail | owner | 1024 | dark | OK. (The audit's only low-contrast item is the disabled "Verify with AI" button, which is intentional.) | 0 |
 | `client-detail-1440-light.png` | Client detail | owner | 1440 | light | OK. | 0 |
 | `client-detail-1440-dark.png` | Client detail | owner | 1440 | dark | OK. | 0 |
-| `trust-1024-light.png` | Trust dashboard `/trust-accounting` | owner | 1024 | light | OK. 4 tiles (Trust R 61 123,02, Active clients 2, Pending 0, "Not yet reconciled"). The balance-trend chart begins below the fold. The PageHeader description wraps to 2 lines. | 0 |
+| `trust-1024-light.png` | Trust dashboard `/trust-accounting` | owner | 1024 | light | OK. 4 tiles (Trust R 61 123,02, Active clients 2, Pending 0, "Not yet reconciled"). The balance-trend chart is cut by the fold. The PageHeader description wraps to 2 lines. | 0 |
 | `trust-1024-dark.png` | Trust dashboard | owner | 1024 | dark | OK. Chart axes legible. | 0 |
 | `trust-1440-light.png` | Trust dashboard | owner | 1440 | light | OK. Full trend card; the current month is dashed (partial). | 0 |
 | `trust-1440-dark.png` | Trust dashboard | owner | 1440 | dark | OK. | 0 |
@@ -91,7 +91,7 @@ The tab names were recorded from `[role=tab][aria-selected=true]` per shot (`obs
 | `matter-detail-member-carol-1440-light.png` | Matter detail (Moroka) | Carol, Member | 1440 | light | **As specified.** Hero tiles = **Trust balance R 50 100,00 + Next court date only**: Unbilled WIP and Outstanding are omitted. No Close/Complete actions; only "Generate Statement of Account". | 0 |
 | `portal-home-1024-light.png` | Portal `/home` (`:3002`) | Moroka Family Trust contact `moroka.trust@email.co.za` | 1024 | light | OK, populated. Pending info requests 0, Upcoming deadlines 0, Recent fee notes INV-0002 R 12 224,50, Last trust movement R 100,00. The top-left brand box is an empty outlined rectangle: the tenant's uploaded logo is a white image (the same white block shows in firm Settings › General › Logo; tenant data). | 0 |
 | `portal-trust-1024-light.png` | Portal `/trust` → redirects to `/trust/9181f514…` (single matter) | Moroka contact | 1024 | light | **Populated.** Trust balance R 50 100,00 "As of 11 Nov 2026"; 2 transactions (Deposit R 50 000,00, Transfer in R 100,00) with running balance; "No statement documents yet". | 1 warning: Next.js dev advisory "Detected `scroll-behavior: smooth` on the `<html>` element…" |
-| `portal-login-link-sent-1024-light.png` | Portal `/login?orgId=mathebula-partners` after "Send Magic Link" | — | 1024 | light | Dev-mode panel shows the magic link. The link was taken from the page (`portal-report.json` → `linkSource`); Mailpit was not needed. | 0 |
+| `portal-login-link-sent-1024-light.png` | Portal `/login?orgId=mathebula-partners` after "Send Magic Link" | — | 1024 | light | Dev-mode panel shows the magic link. The link was taken from the page (`portal-report.json` → `linkSource`); Mailpit was not needed. **The token visible in this image is dead:** it was consumed at 21:46:17 UTC (exchange, backend log), tokens are single-use with a 15-min TTL (`backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/MagicLinkService.java:28`, `TOKEN_TTL_MINUTES = 15`), and it was issued by a localhost dev stack. The PNG is kept as executed. | 0 |
 | `portal-exchange-after-link-1024-light.png` | Portal `/auth/exchange?token=…` | — | 1024 | light | **Finding P-1 (LOW, dev-only, pre-existing, not Phase 90).** The page shows "Login Failed — Link expired or invalid" although the backend logged "Exchanged magic link for portal JWT -- contact f6350605… customer 713a1f9a…" and `localStorage.portal_jwt` is set (`hasJwt: true`). Cause: `portal/app/auth/exchange/page.tsx` runs the exchange in a `useEffect`. Under `next dev` React StrictMode runs it twice: the first call stores the session but its `router.push` is skipped (`cancelled`), and the second call 401s on the consumed token. Production builds do not double-invoke effects (not observed here). Navigating to `/home` works. | 1 error: "Failed to load resource: 401" (the second exchange call) |
 | `marketing-stored-dark-1440.png` | Marketing `/` | anonymous, `kazi-theme=dark` stored + OS dark | 1440 | stored dark | **Still light (ADR-371).** `<html class="light">`, `style.colorScheme=light`, body background `lab(96.7 …)` (the light `--background`). The hero is the page's own dark-designed section in both themes; the light body shows below it (see -full shots). | 0 |
 | `marketing-control-no-pref-1440.png` / `-full.png` | Marketing `/` | anonymous, no stored preference, OS light | 1440 | default | Control. | 1 warning: Next.js dev "Image … /screenshots/invoices.png was detected as the LCP … add loading=eager" |
@@ -111,21 +111,29 @@ The tab names were recorded from `[role=tab][aria-selected=true]` per shot (`obs
 | 8 | Carol Home after restore | `role-flow/14-home-carol-after-restore-1440-light.png` | Back to `feeEarner`, the same cells as `home-member-carol-1440-light.png`, no KPI row. |
 | DB (read-only SELECT, after) | `org_roles ⋈ members` in `tenant_5039f2d497cf` | — | `Admin bob@ · Member carol@ · Owner thandi@`; no other role rows. |
 
+### Known limitation of `personas.cjs` (CodeRabbit on PR #1781)
+
+`scripts/personas.cjs` sets its cleanup flags **after** the write's UI wait: `created = true` only after the create dialog detaches (`:113`), and `assigned = true` only after `assignRole()` returns (`:119`). If the server accepted a write but the following wait threw, the `finally` block would skip the matching cleanup (restore Carol / delete the role), leaving tenant state behind.
+
+- **This run was unaffected.** `personas-report.json`: `error`, `restoreError` and `afterRestoreError` are all absent; `flow.roleVisibleAfterCreate: true`, `flow.restoreVerified: true`, `flow.roleVisibleAfterDelete: false`. Screenshots: `role-flow/team-10-carol-restored-sheet.png` (Carol back on Member with her original caps) and `role-flow/13-roles-after-delete.png` (the role is gone). The read-only SELECT after the run (table above) shows no leftover role row.
+- The script is kept byte-for-byte as executed (evidence rule, as in 644A), so it is not edited here.
+- **For any future reuse:** set each cleanup flag immediately **before** its write (e.g. `created = true` before clicking Create, `assigned = true` before `assignRole()`), and make the cleanup tolerate "nothing to undo".
+
 The only other tenant writes were magic-link tokens and emails for the Moroka portal contact (portal runs 1–3: backend log: tokens generated 21:44:31, 21:44:42, 21:46:14 UTC and exchanged 21:44:45, 21:46:17 UTC. The run-1 token was never exchanged and expires unused. That is 3 tokens across ~2 min, within the 3 / 5 min cap). No SQL writes.
 
 ## Verdict per surface (owner matrix)
 
-| Surface | Light 1024/1440 | Dark 1024/1440 | Defects observed (all pre-existing / already listed) |
+| Surface | Light 1024/1440 | Dark 1024/1440 | Defects observed (cosmetic; already listed by a slice unless marked **new**) |
 |---|---|---|---|
 | Home | OK | OK | diary hint slate-400 2.64:1 light (640B) |
-| Matters list | OK | OK | 1024 table h-scroll (641A F1); 1440 "…" column half-clipped (+23 px) |
-| Matter detail (+3 tabs) | OK | OK | 1024 hero pushes tabs (641B F2); Trust duplicated (641B F3); "Activity · Activity" (642C); time-tab green 2.97:1 (LOW) |
+| Matters list | OK | OK | 1024 table h-scroll (641A F1; density regression 904 → 993 px, B-12); **new:** 1440 "…" column half-clipped (+23 px, O-1, B-12) |
+| Matter detail (+3 tabs) | OK | OK | 1024 hero pushes tabs (641B F2); Trust duplicated (641B F3); "Activity · Activity" (642C); **new:** time-tab green 2.97:1 (LOW, O-2) |
 | Clients list | OK | OK | — |
 | Client detail | OK | OK | — |
 | Trust dashboard | OK | OK | — |
 | Profitability | OK | OK | 1024 matter table scroll (643C); truncated y labels (643B N5) |
 
-**No illegible or broken regression on any of the 7 in-scope surfaces, so ruling R8 is not triggered.** All 28 + 6 tab + 3 persona + 2 portal + marketing shots were taken.
+**No illegible or broken regression on any of the 7 in-scope surfaces, so ruling R8 is not triggered.** Cosmetic density regressions are listed in backlog B-12 (`tasks/phase90-ui-modernization.md` § Closure report C.6 (b)). All 28 + 6 tab + 3 persona + 2 portal + marketing shots were taken.
 
 Not observable on this tenant (stated, not claimed): KPI deltas (time entries on one day only); StatCard error state (OQ #27, vitest-only); a completed reconciliation (0 reconciliations); multi-currency profitability (643C, vitest-only).
 

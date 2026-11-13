@@ -15,6 +15,10 @@
  * `data` IDENTITY IS NAVIGATION: `DataTable` resets column visibility, row selection and the page
  * index whenever `data` is a new array. Pass the RSC rows through untouched; if the wrapper derives
  * rows (map/filter), `useMemo` the derivation on the RSC array, or every re-render resets the table.
+ * A client sort (`sort.onSort`) re-identifies `data` on EVERY sort click (the consumer passes a newly
+ * sorted array), so each click resets those three: keep selection, pagination and the "Columns"
+ * menu off on client-sort tables (`selectable` unset, `pageSize={null}`, `columnVisibility={false}`).
+ * Expanded rows are the exception: they survive a new `data` array (`autoResetExpanded: false`).
  *
  * Set `enableHiding: false` on the row's name/link column (it is the keyboard path and the e2e row
  * filter) and on any actions column; the "Columns" menu lists only hideable columns that have a
@@ -38,12 +42,19 @@ export interface DataTableUrlSort<K extends string = string> {
   dir: "asc" | "desc";
   /** Link target for a header: the page's sort href for that key (all other params kept). */
   hrefFor: (sortKey: K) => string;
+  /** Exclusive with `hrefFor`: a sort is URL-owned or local-state, never both. */
+  onSort?: never;
 }
 
 /**
  * Local-state sort (tables whose rows live in client state, e.g. the profitability cards): the
  * header is a `<button>` calling `onSort(meta.sortKey)`. The kit still never sorts rows itself: the
  * consumer sorts in its own state and passes the sorted array (`useMemo`) as `data`.
+ *
+ * Every sort click therefore hands the kit a NEW `data` array, which resets row selection, the page
+ * index and column visibility (see "`data` IDENTITY IS NAVIGATION" above): client-sort tables keep
+ * those features off (`selectable` unset, `pageSize={null}`, `columnVisibility={false}`). Expanded
+ * rows survive the new array.
  */
 export interface DataTableClientSort<K extends string = string> {
   /** The active sort key, or `null` when the table has no active sort. */
@@ -51,6 +62,8 @@ export interface DataTableClientSort<K extends string = string> {
   dir: "asc" | "desc";
   /** Called with the clicked column's `meta.sortKey`; the consumer decides the new key/dir. */
   onSort: (sortKey: K) => void;
+  /** Exclusive with `onSort`: a sort is URL-owned or local-state, never both. */
+  hrefFor?: never;
 }
 
 /** Sort state of a `DataTable`: URL-owned (`hrefFor`) or local-state (`onSort`). */

@@ -10,7 +10,7 @@ import { DataTable, type DataTableProps } from "@/components/data-table/data-tab
 import { CSV_BOM, toCsvField } from "@/components/data-table/data-table-csv";
 import { EmptyCell, MoneyCell } from "@/components/data-table/cells";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
-import { defineColumns } from "@/components/data-table/define-columns";
+import { defineColumns, type DataTableSort } from "@/components/data-table/define-columns";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -376,6 +376,20 @@ describe("DataTable — client sort headers (onSort)", () => {
       "aria-sort",
       "ascending"
     );
+  });
+
+  it("the sort union is exclusive: hrefFor and onSort together do not type-check", () => {
+    const url: DataTableSort<"name"> = { key: "name", dir: "asc", hrefFor: () => "?sort=name" };
+    const client: DataTableSort<"name"> = { key: "name", dir: "asc", onSort: () => {} };
+    const both = { key: "name" as const, dir: "asc" as const, hrefFor: () => "", onSort: () => {} };
+    // @ts-expect-error -- a sort is URL-owned (`hrefFor`) or local-state (`onSort`), never both
+    const invalid: DataTableSort<"name"> = both;
+    // Runtime narrowing matches the header's: `onSort !== undefined` → client variant.
+    expect([url, client, invalid].map((sort) => sort.onSort !== undefined)).toEqual([
+      false,
+      true,
+      true,
+    ]);
   });
 
   it("renders rows in the given order: the kit never sorts them itself", async () => {

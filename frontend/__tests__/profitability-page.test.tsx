@@ -275,6 +275,21 @@ describe("Profitability Page", () => {
       expect(firstRowName()).toHaveTextContent("Alice Smith");
     });
 
+    it("gives the expand toggle the kit's focus-visible ring, not the browser outline", () => {
+      render(
+        <UtilizationTable
+          initialData={makeUtilization()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
+      );
+      expect(screen.getByRole("button", { name: "Expand currency breakdown" })).toHaveClass(
+        "outline-none",
+        "focus-visible:ring-[3px]",
+        "focus-visible:ring-ring/50"
+      );
+    });
+
     it("expands and collapses a member's currency breakdown, which survives a sort", async () => {
       const user = userEvent.setup();
       render(
@@ -337,6 +352,29 @@ describe("Profitability Page", () => {
       expect(screen.getByText("Acme Corp")).toBeInTheDocument();
       expect(screen.getByText(/US\$15\s000,00/)).toBeInTheDocument();
       expect(screen.getByText(/US\$6\s000,00/)).toBeInTheDocument();
+    });
+
+    it("renders Revenue, Cost and Margin in the body font, not the kit's mono default (643C OBS D1)", () => {
+      render(
+        <ProjectProfitabilityTable
+          initialData={makeProfitability()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+          defaultCurrency={null}
+        />
+      );
+
+      const revenue = screen.getByText(/US\$15\s000,00/);
+      const cost = screen.getByText(/US\$9\s000,00/);
+      const margin = screen.getByText(/US\$6\s000,00/);
+      for (const money of [revenue, cost, margin]) {
+        expect(money).toHaveClass("font-sans", "tabular-nums");
+        expect(money).not.toHaveClass("font-mono");
+      }
+      expect(margin).toHaveClass("text-success-foreground");
+      // A missing cost stays the plain "N/A" text.
+      const betaRow = screen.getByText("Beta Project").closest("tr")!;
+      expect(within(betaRow).getAllByRole("cell")[5]).toHaveTextContent(/^N\/A$/);
     });
 
     it("shows N/A badge when margin data is missing", () => {

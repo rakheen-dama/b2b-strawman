@@ -78,6 +78,13 @@ const signClass = (value: number) =>
 
 const notAvailable = <Badge variant="neutral">N/A</Badge>;
 
+/**
+ * Money in the body font, not the kit's mono default: same typography as before the DataTable
+ * migration and as the Client Profitability table below, and mono figures widen this nowrap table
+ * enough (~33px at 1440) to cut off Margin (643C OBS D1).
+ */
+const MONEY_CLASS = "font-sans";
+
 const columns = defineColumns<MatterProfitabilitySummary>([
   {
     id: "projectName",
@@ -106,7 +113,11 @@ const columns = defineColumns<MatterProfitabilitySummary>([
     id: "billableValue",
     meta: { label: "Revenue", sortKey: "billableValue", align: "end" },
     cell: ({ row }) => (
-      <MoneyCell amount={row.original.billableValue} currency={row.original.currency} />
+      <MoneyCell
+        amount={row.original.billableValue}
+        currency={row.original.currency}
+        className={MONEY_CLASS}
+      />
     ),
   },
   {
@@ -115,7 +126,11 @@ const columns = defineColumns<MatterProfitabilitySummary>([
     // A missing cost reads "N/A" (no cost rate), not the "—" placeholder of a missing client.
     cell: ({ row }) =>
       row.original.costValue != null ? (
-        <MoneyCell amount={row.original.costValue} currency={row.original.currency} />
+        <MoneyCell
+          amount={row.original.costValue}
+          currency={row.original.currency}
+          className={MONEY_CLASS}
+        />
       ) : (
         "N/A"
       ),
@@ -128,7 +143,7 @@ const columns = defineColumns<MatterProfitabilitySummary>([
         <MoneyCell
           amount={row.original.margin}
           currency={row.original.currency}
-          className={signClass(row.original.margin)}
+          className={cn(MONEY_CLASS, signClass(row.original.margin))}
         />
       ) : (
         notAvailable

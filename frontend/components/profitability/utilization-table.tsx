@@ -93,7 +93,8 @@ const columns = defineColumns<MemberUtilizationRecord>([
         <button
           type="button"
           onClick={row.getToggleExpandedHandler()}
-          className="text-muted-foreground hover:text-foreground"
+          // Same focus ring as the kit's sort header buttons (`DataTableColumnHeader`).
+          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-[3px]"
           aria-label={expanded ? "Collapse currency breakdown" : "Expand currency breakdown"}
         >
           {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}

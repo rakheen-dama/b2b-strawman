@@ -46,7 +46,9 @@ export function DataTableColumnHeader<T>({
     active && "text-foreground"
   );
 
-  if ("onSort" in sort) {
+  // Not `"onSort" in sort`: both variants declare `onSort` (the URL one as `?: never`), so only a
+  // value check narrows the union.
+  if (sort.onSort !== undefined) {
     const { onSort } = sort;
     const sortKey = meta.sortKey;
     return (

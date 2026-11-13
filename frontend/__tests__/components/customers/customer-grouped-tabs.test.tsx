@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // ---------------------------------------------------------------------------
@@ -32,12 +32,6 @@ const mockUseAuditTabVisible = vi.fn(() => true);
 
 vi.mock("@/components/audit/audit-timeline-tab", () => ({
   useAuditTabVisible: () => mockUseAuditTabVisible(),
-}));
-
-vi.mock("motion/react", () => ({
-  motion: {
-    span: "span",
-  },
 }));
 
 // ---------------------------------------------------------------------------
@@ -206,5 +200,70 @@ describe("CustomerGroupedTabs", () => {
     // Should render as standalone (no dropdown chevron) — only 'requests' tab visible
     expect(complianceGroup.tagName).toBe("BUTTON");
     expect(complianceGroup.querySelector("svg")).toBeNull();
+  });
+
+  // -------------------------------------------------------------------------
+  // 642C (rulings §3.5): clients keep router.replace — a soft navigation — for every tab change;
+  // the matter page's history.replaceState mechanic must not leak in.
+  // -------------------------------------------------------------------------
+
+  describe("URL mechanics: router.replace on tab change", () => {
+    let replaceStateSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      replaceStateSpy = vi.spyOn(window.history, "replaceState").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      replaceStateSpy.mockRestore();
+    });
+
+    it("writes ?tab=invoices when the inactive Fees group is clicked", () => {
+      render(<CustomerGroupedTabs {...allPanels} />);
+
+      // Fees is inactive (Overview is the default), so its trigger navigates to its first sub-tab.
+      fireEvent.click(screen.getByTestId("tab-group-finance"));
+
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith("?tab=invoices");
+      expect(replaceStateSpy).not.toHaveBeenCalled();
+    });
+
+    it("keeps other query params when switching tabs", () => {
+      mockSearchParams = new URLSearchParams("tab=overview&foo=1");
+      render(<CustomerGroupedTabs {...allPanels} />);
+
+      fireEvent.click(screen.getByTestId("tab-group-finance"));
+
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      const url = String(mockReplace.mock.calls[0][0]);
+      const params = new URLSearchParams(url.replace(/^\?/, ""));
+      expect(params.get("tab")).toBe("invoices");
+      expect(params.get("foo")).toBe("1");
+    });
+
+    it("writes ?tab=rates when a Fees menu item is selected", () => {
+      mockSearchParams = new URLSearchParams("tab=invoices");
+      render(<CustomerGroupedTabs {...allPanels} />);
+
+      // Fees is the active group, so pointerdown + click opens its menu.
+      const feesGroup = screen.getByTestId("tab-group-finance");
+      fireEvent.pointerDown(feesGroup, { button: 0, pointerType: "mouse" });
+      fireEvent.click(feesGroup);
+      fireEvent.click(screen.getByTestId("tab-item-rates"));
+
+      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith("?tab=rates");
+      expect(replaceStateSpy).not.toHaveBeenCalled();
+    });
+
+    it("writes ?tab=audit when the single-tab Activity group is clicked", () => {
+      render(<CustomerGroupedTabs {...allPanels} />);
+
+      fireEvent.click(screen.getByTestId("tab-group-activity"));
+
+      expect(mockReplace).toHaveBeenCalledWith("?tab=audit");
+      expect(replaceStateSpy).not.toHaveBeenCalled();
+    });
   });
 });

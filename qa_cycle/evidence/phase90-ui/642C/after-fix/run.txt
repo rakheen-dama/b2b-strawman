@@ -1,0 +1,66 @@
+
+== matter 390 status=200 n=7 ids=tab-group-details,tab-group-overview,tab-group-work,tab-group-finance,tab-group-client,tab-group-schedule,tab-group-activity initial sl=0 entry=tab-group-details fv=true
+ ArrowRight: tab-group-overview[117.5-195.2 sl=0/210 sg=85.5 eg=162.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-work[203.2-269.4 sl=0/210 sg=171.2 eg=88.6 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-finance[263.4-326.8 sl=14/210 sg=231.4 eg=31.2 ov=0/0.8 fv=true NOT-CLEAR y=0 x=0]
+   tab-group-client[255.8-326.2 sl=93/210 sg=223.8 eg=31.8 ov=0/0.2 fv=true NOT-CLEAR y=0 x=0]
+   tab-group-schedule[275.2-325.8 sl=152/210 sg=243.2 eg=32.2 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-activity[275.8-357.5 sl=210/210 sg=243.8 eg=0.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ D→O scroll events: 0; wrap: tab-group-details[32-109.5 sl=0/210 sg=0 eg=248.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ Tab: tab-group-overview[117.5-195.2 sl=0/210 sg=85.5 eg=162.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-work[203.2-269.4 sl=0/210 sg=171.2 eg=88.6 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-finance[263.4-326.8 sl=14/210 sg=231.4 eg=31.2 ov=0/0.8 fv=true NOT-CLEAR y=0 x=0]
+   tab-group-client[255.8-326.2 sl=93/210 sg=223.8 eg=31.8 ov=0/0.2 fv=true NOT-CLEAR y=0 x=0]
+   tab-group-schedule[275.2-325.8 sl=152/210 sg=243.2 eg=32.2 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-activity[275.8-357.5 sl=210/210 sg=243.8 eg=0.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ ArrowLeft: tab-group-schedule[217.2-267.8 sl=210/210 sg=185.2 eg=90.2 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-client[138.8-209.2 sl=210/210 sg=106.8 eg=148.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-finance[67.4-130.8 sl=210/210 sg=35.4 eg=227.2 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-work[64.2-130.4 sl=139/210 sg=32.2 eg=227.6 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-overview[64.5-142.2 sl=53/210 sg=32.5 eg=215.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-details[32-109.5 sl=0/210 sg=0 eg=248.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ ArrowLeft wrap: tab-group-activity[275.8-357.5 sl=210/210 sg=243.8 eg=0.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ Shift+Tab: tab-group-schedule[217.2-267.8 sl=210/210 sg=185.2 eg=90.2 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-client[138.8-209.2 sl=210/210 sg=106.8 eg=148.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-finance[67.4-130.8 sl=210/210 sg=35.4 eg=227.2 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-work[64.2-130.4 sl=139/210 sg=32.2 eg=227.6 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-overview[64.5-142.2 sl=53/210 sg=32.5 eg=215.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-details[32-109.5 sl=0/210 sg=0 eg=248.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ rings: tab-group-client:true(0/0/0/0/0) tab-group-activity:true(0/0/0/0/0) tab-group-work:true(0/0/0/0/0)
+
+== client 390 status=200 n=6 ids=tab-group-details,tab-group-overview,tab-group-work,tab-group-finance,tab-group-compliance,tab-group-activity initial sl=0 entry=tab-group-details fv=true
+ ArrowRight: tab-group-overview[101.5-179.2 sl=0/205 sg=85.5 eg=194.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-work[187.2-270.1 sl=0/205 sg=171.2 eg=103.9 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-finance[278.1-341.4 sl=0/205 sg=262.1 eg=32.6 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-compliance[186.4-342.6 sl=163/205 sg=170.4 eg=31.4 ov=0/0.6 fv=true NOT-CLEAR y=0 x=0]
+   tab-group-activity[308.6-374.4 sl=205/205 sg=292.6 eg=-0.4 ov=0/0 fv=true CLEAR y=0 x=0]
+ D→O scroll events: 0; wrap: tab-group-details[16-93.5 sl=0/205 sg=0 eg=280.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ Tab: tab-group-overview[101.5-179.2 sl=0/205 sg=85.5 eg=194.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-work[187.2-270.1 sl=0/205 sg=171.2 eg=103.9 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-finance[278.1-341.4 sl=0/205 sg=262.1 eg=32.6 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-compliance[186.4-342.6 sl=163/205 sg=170.4 eg=31.4 ov=0/0.6 fv=true NOT-CLEAR y=0 x=0]
+   tab-group-activity[308.6-374.4 sl=205/205 sg=292.6 eg=-0.4 ov=0/0 fv=true CLEAR y=0 x=0]
+ ArrowLeft: tab-group-compliance[144.4-300.6 sl=205/205 sg=128.4 eg=73.4 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-finance[73.1-136.4 sl=205/205 sg=57.1 eg=237.6 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-work[48.2-131.1 sl=139/205 sg=32.2 eg=242.9 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-overview[48.5-126.2 sl=53/205 sg=32.5 eg=247.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-details[16-93.5 sl=0/205 sg=0 eg=280.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ ArrowLeft wrap: tab-group-activity[308.6-374.4 sl=205/205 sg=292.6 eg=-0.4 ov=0/0 fv=true CLEAR y=0 x=0]
+ Shift+Tab: tab-group-compliance[144.4-300.6 sl=205/205 sg=128.4 eg=73.4 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-finance[73.1-136.4 sl=205/205 sg=57.1 eg=237.6 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-work[48.2-131.1 sl=139/205 sg=32.2 eg=242.9 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-overview[48.5-126.2 sl=53/205 sg=32.5 eg=247.8 ov=0/0 fv=true CLEAR y=0 x=0]
+   tab-group-details[16-93.5 sl=0/205 sg=0 eg=280.5 ov=0/0 fv=true CLEAR y=0 x=0]
+ rings: tab-group-compliance:true(0/0/0/0/0) tab-group-activity:true(0/0/0/3/0) tab-group-work:true(0/0/0/0/0)
+deeplink matter {"testid":"tab-group-finance","text":"Fees · Disbursements","left":151,"right":326,"vpLeft":32,"vpRight":358,"scrollLeft":126,"max":321,"startGap":119,"endGap":32,"fadeStart":true,"fadeEnd":true,"clearOfFades":true,"scrollY":0,"maxScrollY":0,"tab":"disbursements","page":"matter","file":"deeplink-matter-390-disbursements.png"}
+deeplink client {"testid":"tab-group-activity","text":"Activity","left":309,"right":374,"vpLeft":16,"vpRight":374,"scrollLeft":205,"max":205,"startGap":293,"endGap":0,"fadeStart":true,"fadeEnd":false,"clearOfFades":true,"scrollY":0,"maxScrollY":0,"tab":"audit","page":"client","file":"deeplink-client-390-audit.png"}
+mouse {"case":"768 matter single-tab mouse click inside end fade","pick":{"testid":"tab-group-schedule","left":691,"right":742,"vpRight":728,"x":718,"y":688,"visiblePx":37,"fadeEnd":"true","scrollLeft":0,"selected":"false","hitIsTrigger":true},"tabBefore":null,"clk":[{"type":"pointerdown","target":"tab-group-schedule","scrollLeft":0,"activeFv":false},{"type":"mousedown","target":"tab-group-schedule","scrollLeft":0,"activeFv":false},{"type":"focusin","target":"tab-group-schedule","scrollLeft":0,"activeFv":false},{"type":"mouseup","target":"tab-group-schedule","scrollLeft":0,"activeFv":false},{"type":"click","target":"tab-group-schedule","scrollLeft":0,"activeFv":false}],"tab":"court-dates","selected":"true","scrollLeft":46,"navigated":true,"rowJumpedBeforeClick":false,"clickTarget":"tab-group-schedule","file":"mouse-matter-768-after-click.png"}
+locator.click tab-group-schedule {"tab":"court-dates","selected":"true"}
+mouse {"case":"390 matter dropdown mouse click inside end fade","pick":{"testid":"tab-group-client","left":349,"right":419,"vpRight":358,"x":353,"y":788,"visiblePx":9,"fadeEnd":"true","scrollLeft":0,"selected":"false","hitIsTrigger":true},"menu":{"open":true,"items":["tab-item-clients","tab-item-requests","tab-item-comments","tab-item-adverse-parties"],"rect":[230,626,390,764]},"clk":[{"type":"pointerdown","target":"tab-group-client","scrollLeft":0,"activeFv":false},{"type":"focusin","target":"DIV","scrollLeft":0,"activeFv":true},{"type":"click","target":"HTML","scrollLeft":0,"activeFv":true}],"rowJumpedBeforeOpen":false,"file":"mouse-matter-390-dropdown-open.png","afterEscape":{"testid":"tab-group-client","fv":true,"sl":93,"ov":[0,0.2]}}
+mouse {"case":"390 client dropdown mouse click inside end fade","pick":{"testid":"tab-group-compliance","left":349,"right":506,"vpRight":374,"x":364,"y":709,"visiblePx":25,"fadeEnd":"true","scrollLeft":0,"selected":"false","hitIsTrigger":true},"menu":{"open":true,"items":["tab-item-onboarding","tab-item-requests"],"rect":[230,733,390,807]},"clk":[{"type":"pointerdown","target":"tab-group-compliance","scrollLeft":0,"activeFv":false},{"type":"focusin","target":"DIV","scrollLeft":0,"activeFv":true},{"type":"click","target":"HTML","scrollLeft":0,"activeFv":true}],"rowJumpedBeforeOpen":false,"afterEscape":{"testid":"tab-group-compliance","fv":true,"sl":163,"ov":[0,0.6]}}
+wide matter 1440: {"page":"matter","viewport":"1440x900","tablists":1,"visibleTablists":1,"row":"1088/1088","overflows":false,"active":"tab-group-overview","underline":{"opacity":"1","height":"2px"},"n":7,"scrollLefts":[0],"rowScrollEvents":0,"allInBar":true,"allFocusVisible":true,"maxScrollY":0,"maxScrollX":0,"ringTrigger":"tab-group-work","boxShadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(52.8717 -45.7819 -2.8493) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px","ring":{"allMatch":true,"d":[0,0,0,0,0]},"file":null}
+wide client 1440: {"page":"client","viewport":"1440x900","tablists":1,"visibleTablists":1,"row":"1136/1136","overflows":false,"active":"tab-group-overview","underline":{"opacity":"1","height":"2px"},"n":6,"scrollLefts":[0],"rowScrollEvents":0,"allInBar":true,"allFocusVisible":true,"maxScrollY":0,"maxScrollX":0,"ringTrigger":"tab-group-work","boxShadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(52.8717 -45.7819 -2.8493) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px","ring":{"allMatch":true,"d":[0,0,0,0,0]},"file":"kbd-client-1440-ring-tab-group-work.png"}
+wide matter 1024: {"page":"matter","viewport":"1024x768","tablists":1,"visibleTablists":1,"row":"672/672","overflows":false,"active":"tab-group-overview","underline":{"opacity":"1","height":"2px"},"n":7,"scrollLefts":[0],"rowScrollEvents":0,"allInBar":true,"allFocusVisible":true,"maxScrollY":0,"maxScrollX":0,"ringTrigger":"tab-group-work","boxShadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(52.8717 -45.7819 -2.8493) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px","ring":{"allMatch":true,"d":[0,0,0,0,0]},"file":"kbd-matter-1024-ring-tab-group-work.png"}
+wide client 1024: {"page":"client","viewport":"1024x768","tablists":1,"visibleTablists":1,"row":"720/720","overflows":false,"active":"tab-group-overview","underline":{"opacity":"1","height":"2px"},"n":6,"scrollLefts":[0],"rowScrollEvents":0,"allInBar":true,"allFocusVisible":true,"maxScrollY":0,"maxScrollX":0,"ringTrigger":"tab-group-work","boxShadow":"rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, lab(52.8717 -45.7819 -2.8493) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px","ring":{"allMatch":true,"d":[0,0,0,0,0]},"file":null}
+console total: {"errors":1,"warnings":0,"hydration":0,"items":[{"who":"alice-wide","type":"error","text":"MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch","url":"/org/e2e-test-org/dashboard"}]}
+screenshots: 12 kbd-matter-390-arrow4-tab-group-client.png, kbd-matter-390-last-tab-group-activity.png, kbd-matter-390-arrowleft-tab-group-work.png, kbd-client-390-arrow4-tab-group-compliance.png, kbd-client-390-last-tab-group-activity.png, kbd-client-390-arrowleft-tab-group-work.png, deeplink-matter-390-disbursements.png, deeplink-client-390-audit.png, mouse-matter-768-after-click.png, mouse-matter-390-dropdown-open.png, kbd-client-1440-ring-tab-group-work.png, kbd-matter-1024-ring-tab-group-work.png

@@ -38,12 +38,6 @@ vi.mock("@/components/audit/audit-timeline-tab", () => ({
   useAuditTabVisible: () => mockUseAuditTabVisible(),
 }));
 
-vi.mock("motion/react", () => ({
-  motion: {
-    span: "span",
-  },
-}));
-
 // ---------------------------------------------------------------------------
 // Import component AFTER mocks
 // ---------------------------------------------------------------------------
@@ -348,6 +342,22 @@ describe("MatterTabs with GroupedTabBar integration", () => {
       const params = new URLSearchParams(url.replace(/^\?/, ""));
       expect(params.get("tab")).toBe("overview");
       expect(params.get("taskId")).toBe("t-1");
+    });
+
+    // 642C: the restyled bar keeps the matter URL mechanic for menu items too (rulings §3.5).
+    it("writes ?tab=disbursements via replaceState when a Fees menu item is selected", () => {
+      mockSearchParams = new URLSearchParams("tab=time");
+      render(<MatterTabs {...baseProps} disbursementsPanel={<div>Disbursements panel</div>} />);
+
+      // Fees is the active group, so pointerdown + click opens its menu.
+      const feesGroup = screen.getByTestId("tab-group-finance");
+      fireEvent.pointerDown(feesGroup, { button: 0, pointerType: "mouse" });
+      fireEvent.click(feesGroup);
+      fireEvent.click(screen.getByTestId("tab-item-disbursements"));
+
+      expect(replaceStateSpy).toHaveBeenCalledTimes(1);
+      expect(replaceStateSpy).toHaveBeenCalledWith(null, "", "?tab=disbursements");
+      expect(mockReplace).not.toHaveBeenCalled();
     });
 
     it("renders whatever tab the URL says, even after a click (no local tab state)", () => {

@@ -1,0 +1,8 @@
+  ✓   78 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:88:7 › INV-02: Invoice Lifecycle › DRAFT -> APPROVED (2.5s)
+  ✓   81 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:112:7 › INV-02: Invoice Lifecycle › APPROVED -> SENT (1.5s)
+  ✓   86 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:131:7 › INV-02: Invoice Lifecycle › SENT -> PAID (record payment) (5.0s)
+  ✓   93 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:192:7 › INV-02: Invoice Lifecycle › VOID a sent invoice (3.1s)
+  ✓  100 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:205:7 › INV-02: Invoice Lifecycle › VOID releases time entries (4.8s)
+  ✓  111 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:229:7 › INV-02: Invoice Lifecycle › Cannot edit approved invoice (2.2s)
+  ✓  119 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:251:7 › INV-02: Invoice Lifecycle › Cannot skip DRAFT -> SENT (197ms)
+  ✓  120 [chromium] › e2e/tests/invoices/invoice-lifecycle.spec.ts:262:7 › INV-02: Invoice Lifecycle › Cannot transition PAID -> VOID (75ms)

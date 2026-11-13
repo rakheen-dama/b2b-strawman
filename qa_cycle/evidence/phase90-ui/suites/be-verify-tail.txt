@@ -1,0 +1,3 @@
+[WARNING] Tests run: 6871, Failures: 0, Errors: 0, Skipped: 26
+[INFO] BUILD SUCCESS
+[INFO] Total time:  19:54 min

@@ -11,6 +11,7 @@ import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitP
 import {
   uploadBankStatement,
   autoMatch,
+  fetchBankStatement,
   manualMatch,
   excludeLine,
   unmatch,
@@ -131,11 +132,14 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     try {
       const result = await autoMatch(statement.id);
       if (result.success && result.data) {
+        // The auto-match response is counts only; re-read the statement for the
+        // lines with their post-match statuses (the review step renders them).
+        const updated = await fetchBankStatement(statement.id);
+        setLines(updated.lines);
         setAutoMatchResult({
           autoMatched: result.data.autoMatched,
           unmatched: result.data.unmatched,
         });
-        setLines(result.data.lines);
       } else {
         setError(result.error ?? "Auto-match failed");
       }
@@ -515,7 +519,14 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             )}
 
             <div className="flex justify-between pt-2">
-              <Button type="button" variant="outline" onClick={() => setCurrentStep(2)}>
+              {/* Blocked while auto-match runs: a late completion must not land on a changed account/period. */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCurrentStep(2)}
+                disabled={autoMatching}
+                data-testid="auto-match-back-btn"
+              >
                 Back
               </Button>
               <Button

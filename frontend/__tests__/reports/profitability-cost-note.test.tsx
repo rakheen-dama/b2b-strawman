@@ -18,6 +18,10 @@ vi.mock("@/lib/api", () => ({
   api: { get: (...args: unknown[]) => mockApiGet(...args) },
 }));
 
+// 643B: the page also reads the billing trend through settle() — stub both server-only modules.
+vi.mock("@/lib/api/reports", () => ({ getBillingTrend: vi.fn() }));
+vi.mock("@/lib/settle", () => ({ settle: vi.fn().mockResolvedValue({ state: "absent" }) }));
+
 vi.mock("@/components/profitability/profitability-content", () => ({
   ProfitabilityContent: () => <div data-testid="profitability-content-stub" />,
 }));

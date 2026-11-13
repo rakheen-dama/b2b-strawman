@@ -12,6 +12,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { HelpTip } from "@/components/help-tip";
+import { UtilizationChart } from "@/components/profitability/utilization-chart";
 import { formatCurrencySafe } from "@/lib/format";
 import { getUtilization } from "@/app/(app)/org/[slug]/profitability/actions";
 import type { UtilizationResponse, MemberUtilizationRecord } from "@/lib/types";
@@ -133,6 +134,7 @@ export function UtilizationTable({ initialData, initialFrom, initialTo }: Utiliz
         </div>
       </CardHeader>
       <CardContent>
+        <UtilizationChart members={data.members} />
         {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
         {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
         {sorted.length === 0 ? (

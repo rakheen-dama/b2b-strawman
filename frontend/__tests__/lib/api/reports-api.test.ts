@@ -75,6 +75,7 @@ import {
   exportReportCsv,
   exportReportPdf,
   exportProfitabilityCsv,
+  getBillingTrend,
 } from "@/lib/api/reports";
 import {
   executeReportAction,
@@ -105,6 +106,16 @@ describe("Reports API client", () => {
   it("getReportDefinitions calls GET /api/report-definitions", async () => {
     await getReportDefinitions();
     expect(mockGet).toHaveBeenCalledWith("/api/report-definitions");
+  });
+
+  it("getBillingTrend calls GET /api/reports/billing-trend?months=12 by default", async () => {
+    await getBillingTrend();
+    expect(mockGet).toHaveBeenCalledWith("/api/reports/billing-trend?months=12");
+  });
+
+  it("getBillingTrend passes months", async () => {
+    await getBillingTrend(3);
+    expect(mockGet).toHaveBeenCalledWith("/api/reports/billing-trend?months=3");
   });
 
   it("getReportDefinition calls GET /api/report-definitions/{slug}", async () => {

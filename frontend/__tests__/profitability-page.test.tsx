@@ -4,6 +4,53 @@ import userEvent from "@testing-library/user-event";
 import { UtilizationTable } from "@/components/profitability/utilization-table";
 import { ProjectProfitabilityTable } from "@/components/profitability/project-profitability-table";
 import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types";
+import { BillingTrendChart } from "@/components/profitability/billing-trend-chart";
+import { UTILIZATION_NOTE } from "@/components/profitability/utilization-chart";
+import type { BillingTrendResponse } from "@/lib/types";
+
+// happy-dom has no layout: stub recharts' SVG internals so the real presets → ChartCard (figure
+// name, sr summary, "View as table") render. next/dynamic is mocked globally (vitest.setup.ts:
+// React.lazy) — a chart resolves asynchronously the first time, hence findBy*.
+vi.mock("recharts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("recharts")>();
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="responsive-container">{children}</div>
+    ),
+    BarChart: ({
+      children,
+      data,
+      layout,
+    }: {
+      children: React.ReactNode;
+      data: unknown[];
+      layout?: string;
+    }) => (
+      <div data-testid="bar-chart" data-rows={JSON.stringify(data)} data-layout={layout}>
+        {children}
+      </div>
+    ),
+    Bar: ({ dataKey, fill }: { dataKey: string; fill?: string }) => (
+      <div data-testid={`bar-${dataKey}`} data-fill={fill} />
+    ),
+    AreaChart: ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
+      <div data-testid="area-chart" data-rows={JSON.stringify(data)}>
+        {children}
+      </div>
+    ),
+    Area: ({ dataKey, strokeDasharray }: { dataKey: string; strokeDasharray?: string }) => (
+      <div data-testid={`area-${dataKey}`} data-dash={strokeDasharray} />
+    ),
+    CartesianGrid: () => null,
+    XAxis: () => null,
+    YAxis: () => null,
+    LabelList: () => null,
+    ReferenceLine: () => null,
+    Tooltip: () => null,
+    Legend: () => null,
+  };
+});
 
 // Mock server actions
 const mockGetUtilization = vi.fn();
@@ -340,6 +387,189 @@ describe("Profitability Page", () => {
         expect(clickedDownloads).toEqual([]);
         expect(screen.getByTestId("profitability-export-csv")).not.toBeDisabled();
       });
+    });
+  });
+});
+
+const TREND_MONTHS = [
+  "2025-12",
+  "2026-01",
+  "2026-02",
+  "2026-03",
+  "2026-04",
+  "2026-05",
+  "2026-06",
+  "2026-07",
+  "2026-08",
+  "2026-09",
+  "2026-10",
+  "2026-11",
+];
+
+/** 12 months, Dec 2025 → Nov 2026 (to date). */
+function makeBillingTrend(): BillingTrendResponse {
+  return {
+    currency: "ZAR",
+    from: "2025-12",
+    to: "2026-11",
+    asOf: "2026-11-13",
+    months: TREND_MONTHS.map((month, i) => ({
+      month,
+      billed: 10000 + i * 1000,
+      billedCount: 3,
+      collected: 8000 + i * 500,
+      collectedCount: 2,
+      partial: i === 11,
+    })),
+  };
+}
+
+describe("Profitability charts (643B)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  describe("Fees Billed vs Collected", () => {
+    it("renders 12 months in the default currency with a to-date last point", async () => {
+      render(<BillingTrendChart trend={makeBillingTrend()} />);
+
+      const figure = await screen.findByRole("figure", { name: "Fees Billed vs Collected" });
+      expect(figure).toHaveTextContent("ZAR · VAT inclusive · last 12 months");
+      expect(figure).toHaveTextContent("independent of the date ranges below");
+      expect(figure).toHaveAttribute("data-testid", "billing-trend");
+
+      const rows = JSON.parse(screen.getByTestId("area-chart").getAttribute("data-rows") ?? "[]");
+      expect(rows).toHaveLength(12);
+      expect(rows[0].month).toBe("Dec 2025");
+      expect(rows[0].billed).toBe(10000);
+      expect(rows[0].collected).toBe(8000);
+      // The partial current month is drawn by the dashed companion series.
+      expect(rows[11].billed__partial).toBe(21000);
+      expect(rows[11].collected__partial).toBe(13500);
+      expect(screen.getByTestId("area-billed__partial")).toHaveAttribute("data-dash", "4 4");
+    });
+
+    it("an absent read (403/404) renders the compact empty state, not an alert", () => {
+      render(<BillingTrendChart trend={null} />);
+
+      const figure = screen.getByRole("figure", { name: "Fees Billed vs Collected" });
+      expect(within(figure).getByText("Billing trend not available.")).toBeInTheDocument();
+      expect(figure.querySelector('[data-slot="empty-state"]')).toHaveAttribute(
+        "data-variant",
+        "compact"
+      );
+      expect(screen.queryByTestId("area-chart")).not.toBeInTheDocument();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("a failed read renders the error line", () => {
+      render(<BillingTrendChart trend={null} failed />);
+
+      expect(screen.getByRole("status")).toHaveTextContent("Couldn't load the billing trend.");
+      expect(screen.queryByTestId("area-chart")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Team Utilization chart", () => {
+    it("draws one bar per fee earner, highest first, above the table", async () => {
+      const data = makeUtilization({
+        members: [{ ...makeUtilization().members[1] }, { ...makeUtilization().members[0] }],
+      });
+      render(
+        <UtilizationTable initialData={data} initialFrom="2026-02-01" initialTo="2026-02-14" />
+      );
+
+      const figure = await screen.findByRole("figure", { name: "Team Utilization" });
+      const rows = JSON.parse(
+        within(figure).getByTestId("bar-chart").getAttribute("data-rows") ?? "[]"
+      );
+      expect(rows.map((r: { feeEarner: string }) => r.feeEarner)).toEqual([
+        "Alice Smith",
+        "Bob Jones",
+      ]);
+      expect(rows[0].utilization).toBe(80);
+      // The kit's table mounts only on "View as table": the card keeps exactly its own table.
+      expect(screen.getAllByRole("table")).toHaveLength(1);
+      // The chart sits above the table.
+      expect(
+        figure.compareDocumentPosition(screen.getByRole("table")) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+      expect(screen.queryByText(UTILIZATION_NOTE)).not.toBeInTheDocument();
+    });
+
+    it("one fee earner → the note and the table, no chart", () => {
+      const data = makeUtilization({ members: [makeUtilization().members[0]] });
+      render(
+        <UtilizationTable initialData={data} initialFrom="2026-02-01" initialTo="2026-02-14" />
+      );
+
+      expect(screen.getByText(UTILIZATION_NOTE)).toBeInTheDocument();
+      expect(screen.queryByRole("figure")).not.toBeInTheDocument();
+      expect(screen.getByText("Alice Smith")).toBeInTheDocument();
+      expect(screen.getAllByRole("table")).toHaveLength(1);
+    });
+  });
+
+  describe("Matter Profitability ranking", () => {
+    it("ranks default-currency matters by margin and counts the others in a hint", async () => {
+      render(
+        <ProjectProfitabilityTable
+          initialData={makeProfitability()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+          defaultCurrency="USD"
+        />
+      );
+
+      const figure = await screen.findByRole("figure", { name: "Matter Profitability" });
+      const rows = JSON.parse(
+        within(figure).getByTestId("bar-chart").getAttribute("data-rows") ?? "[]"
+      );
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ matter: "Alpha Project", margin: 6000 });
+      expect(screen.getByText("Excludes 1 matter in other currencies")).toBeInTheDocument();
+      expect(screen.getAllByRole("table")).toHaveLength(1);
+    });
+
+    it("ranks losses below gains and keeps at most 10 bars", async () => {
+      const base = makeProfitability().matters[0];
+      const matters = Array.from({ length: 12 }, (_, i) => ({
+        ...base,
+        matterId: `m${i}`,
+        matterName: `Matter ${i}`,
+        margin: (i - 3) * 1000,
+      }));
+      render(
+        <ProjectProfitabilityTable
+          initialData={{ matters }}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+          defaultCurrency="USD"
+        />
+      );
+
+      const figure = await screen.findByRole("figure", { name: "Matter Profitability" });
+      const rows = JSON.parse(
+        within(figure).getByTestId("bar-chart").getAttribute("data-rows") ?? "[]"
+      );
+      expect(rows).toHaveLength(10);
+      expect(rows[0]).toMatchObject({ matter: "Matter 11", margin: 8000 });
+      expect(rows[9]).toMatchObject({ matter: "Matter 2", margin: -1000 });
+      expect(screen.queryByText(/in other currencies/)).not.toBeInTheDocument();
+    });
+
+    it("without a default currency there is no ranking chart", () => {
+      render(
+        <ProjectProfitabilityTable
+          initialData={makeProfitability()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
+      );
+
+      expect(screen.queryByRole("figure")).not.toBeInTheDocument();
+      expect(screen.queryByText(/in other currencies/)).not.toBeInTheDocument();
+      expect(screen.getByText("Alpha Project")).toBeInTheDocument();
     });
   });
 });

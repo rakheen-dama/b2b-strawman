@@ -14,6 +14,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { HelpTip } from "@/components/help-tip";
+import { ProfitabilityRankingChart } from "@/components/profitability/profitability-ranking-chart";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import {
   exportProfitabilityCsvAction,
@@ -26,6 +27,8 @@ interface ProjectProfitabilityTableProps {
   initialData: OrgProfitabilityResponse;
   initialFrom: string;
   initialTo: string;
+  /** Org default currency for the margin ranking; absent → no ranking chart (table unchanged). */
+  defaultCurrency?: string | null;
 }
 
 type SortField =
@@ -75,6 +78,7 @@ export function ProjectProfitabilityTable({
   initialData,
   initialFrom,
   initialTo,
+  defaultCurrency = null,
 }: ProjectProfitabilityTableProps) {
   const [data, setData] = useState<OrgProfitabilityResponse>(initialData);
   const [from, setFrom] = useState(initialFrom);
@@ -175,6 +179,7 @@ export function ProjectProfitabilityTable({
         </div>
       </CardHeader>
       <CardContent>
+        <ProfitabilityRankingChart matters={data.matters} defaultCurrency={defaultCurrency} />
         {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
         {error && (
           <div role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">

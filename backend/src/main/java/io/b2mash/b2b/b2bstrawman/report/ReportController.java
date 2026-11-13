@@ -25,9 +25,11 @@ public class ReportController {
       MediaType.parseMediaType("text/csv; charset=UTF-8");
 
   private final ReportService reportService;
+  private final BillingTrendService billingTrendService;
 
-  public ReportController(ReportService reportService) {
+  public ReportController(ReportService reportService, BillingTrendService billingTrendService) {
     this.reportService = reportService;
+    this.billingTrendService = billingTrendService;
   }
 
   @GetMapping("/api/matters/{matterId}/profitability")
@@ -74,6 +76,18 @@ public class ReportController {
 
     var response = reportService.getOrgProfitability(from, to, customerId, actor);
     return ResponseEntity.ok(response);
+  }
+
+  /**
+   * Fees billed (issue month) vs collected (SA payment month) over the last {@code months} SA
+   * calendar months (1–24, default 12), org default currency, oldest first, zero-filled (ADR-372).
+   * Same gate as the profitability report.
+   */
+  @GetMapping("/api/reports/billing-trend")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
+  public ResponseEntity<BillingTrendResponse> getBillingTrend(
+      @RequestParam(defaultValue = "12") int months) {
+    return ResponseEntity.ok(billingTrendService.getBillingTrend(months));
   }
 
   @GetMapping("/api/reports/profitability/export/csv")
@@ -145,4 +159,22 @@ public class ReportController {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public record OrgProfitabilityResponse(List<MatterProfitabilitySummary> matters) {}
+
+  /**
+   * GET /api/reports/billing-trend (Phase 90 643B, ADR-372): org default currency, oldest first.
+   */
+  public record BillingTrendResponse(
+      String currency, // org default currency; other currencies excluded
+      String from, // first month of the window, "2025-12"
+      String to, // current month, "2026-11"
+      LocalDate asOf, // LocalDate.now(clock), SA business date
+      List<BillingTrendPoint> months) {} // exactly `months` entries, zero-filled
+
+  public record BillingTrendPoint(
+      String month, // "2026-06"
+      BigDecimal billed, // Σ invoices.total (VAT-inclusive) by issue month
+      int billedCount,
+      BigDecimal collected, // Σ COMPLETED payment_events.amount by SA payment month
+      int collectedCount,
+      boolean partial) {} // true only for the current month
 }

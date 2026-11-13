@@ -52,6 +52,13 @@ vi.mock("recharts", async (importOriginal) => {
   };
 });
 
+// DataTable (643C) calls useRouter() for its optional row click.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/org/acme/reports/profitability",
+}));
+
 // Mock server actions
 const mockGetUtilization = vi.fn();
 const mockGetOrgProfitability = vi.fn();
@@ -209,6 +216,123 @@ describe("Profitability Page", () => {
 
       expect(mockGetUtilization).toHaveBeenCalledWith("2026-01-01", "2026-02-14");
     });
+
+    it("renders the kit column headers by name, with aria-sort on the default sort column", () => {
+      render(
+        <UtilizationTable
+          initialData={makeUtilization()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
+      );
+
+      for (const name of ["Name", "Total Hours", "Billable", "Non-Billable", "Utilization %"]) {
+        expect(screen.getByRole("columnheader", { name })).toBeInTheDocument();
+      }
+      // Default sort: utilization desc.
+      expect(screen.getByRole("columnheader", { name: "Utilization %" })).toHaveAttribute(
+        "aria-sort",
+        "descending"
+      );
+      expect(screen.getByRole("columnheader", { name: "Name" })).toHaveAttribute(
+        "aria-sort",
+        "none"
+      );
+      // Headers sort in local state: buttons, never links.
+      expect(screen.queryAllByRole("link")).toHaveLength(0);
+      expect(screen.getAllByRole("table")).toHaveLength(1);
+      // The name cell holds only the member name (e2e filters rows by an exact cell name).
+      expect(screen.getByRole("cell", { name: "Alice Smith" })).toBeInTheDocument();
+    });
+
+    it("clicking another header sorts by it descending; clicking again flips to ascending", async () => {
+      const user = userEvent.setup();
+      render(
+        <UtilizationTable
+          initialData={makeUtilization()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
+      );
+      const firstRowName = () => within(screen.getAllByRole("row")[1]).getAllByRole("cell")[1];
+
+      await user.click(screen.getByRole("button", { name: "Non-Billable" }));
+      expect(screen.getByRole("columnheader", { name: "Non-Billable" })).toHaveAttribute(
+        "aria-sort",
+        "descending"
+      );
+      expect(screen.getByRole("columnheader", { name: "Utilization %" })).toHaveAttribute(
+        "aria-sort",
+        "none"
+      );
+      expect(firstRowName()).toHaveTextContent("Bob Jones"); // 21h non-billable
+
+      await user.click(screen.getByRole("button", { name: "Non-Billable" }));
+      expect(screen.getByRole("columnheader", { name: "Non-Billable" })).toHaveAttribute(
+        "aria-sort",
+        "ascending"
+      );
+      expect(firstRowName()).toHaveTextContent("Alice Smith");
+    });
+
+    it("gives the expand toggle the kit's focus-visible ring, not the browser outline", () => {
+      render(
+        <UtilizationTable
+          initialData={makeUtilization()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
+      );
+      expect(screen.getByRole("button", { name: "Expand currency breakdown" })).toHaveClass(
+        "outline-none",
+        "focus-visible:ring-[3px]",
+        "focus-visible:ring-ring/50"
+      );
+    });
+
+    it("expands and collapses a member's currency breakdown, which survives a sort", async () => {
+      const user = userEvent.setup();
+      render(
+        <UtilizationTable
+          initialData={makeUtilization()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+        />
+      );
+
+      // Only Alice has currencies: one toggle, no breakdown row by default.
+      expect(screen.getAllByRole("button", { name: "Expand currency breakdown" })).toHaveLength(1);
+      expect(screen.getAllByRole("row")).toHaveLength(3);
+      expect(screen.queryByText("USD:")).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Expand currency breakdown" }));
+      const collapse = screen.getByRole("button", { name: "Collapse currency breakdown" });
+      expect(collapse).toHaveFocus();
+      expect(screen.getAllByRole("row")).toHaveLength(4);
+      const breakdown = screen.getByText("USD:").closest("tr")!;
+      expect(breakdown).toHaveTextContent(/Billable US\$4\s800,00/);
+      expect(breakdown).toHaveTextContent(/Cost US\$3\s200,00/);
+      // Directly under Alice's row.
+      const rows = screen.getAllByRole("row");
+      expect(
+        within(rows[rows.indexOf(breakdown) - 1]).getByText("Alice Smith")
+      ).toBeInTheDocument();
+
+      // Sort so Alice moves to the bottom: the breakdown stays open and follows her row.
+      await user.click(screen.getByRole("button", { name: /Utilization %/ }));
+      expect(
+        screen.getByRole("button", { name: "Collapse currency breakdown" })
+      ).toBeInTheDocument();
+      const afterSort = screen.getAllByRole("row");
+      expect(afterSort).toHaveLength(4);
+      expect(within(afterSort[1]).getByText("Bob Jones")).toBeInTheDocument();
+      expect(within(afterSort[2]).getByText("Alice Smith")).toBeInTheDocument();
+      expect(afterSort[3]).toHaveTextContent("USD:");
+
+      await user.click(screen.getByRole("button", { name: "Collapse currency breakdown" }));
+      expect(screen.queryByText("USD:")).not.toBeInTheDocument();
+      expect(screen.getAllByRole("row")).toHaveLength(3);
+    });
   });
 
   describe("ProjectProfitabilityTable", () => {
@@ -228,6 +352,30 @@ describe("Profitability Page", () => {
       expect(screen.getByText("Acme Corp")).toBeInTheDocument();
       expect(screen.getByText(/US\$15\s000,00/)).toBeInTheDocument();
       expect(screen.getByText(/US\$6\s000,00/)).toBeInTheDocument();
+    });
+
+    it("renders Revenue, Cost and Margin in the inherited table font, not the kit's mono default (643C OBS D1, re-OBS D2b)", () => {
+      render(
+        <ProjectProfitabilityTable
+          initialData={makeProfitability()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+          defaultCurrency={null}
+        />
+      );
+
+      const revenue = screen.getByText(/US\$15\s000,00/);
+      const cost = screen.getByText(/US\$9\s000,00/);
+      const margin = screen.getByText(/US\$6\s000,00/);
+      for (const money of [revenue, cost, margin]) {
+        expect(money).toHaveClass("font-[family-name:inherit]", "tabular-nums");
+        expect(money).not.toHaveClass("font-mono");
+        expect(money).not.toHaveClass("font-sans");
+      }
+      expect(margin).toHaveClass("text-success-foreground");
+      // A missing cost stays the plain "N/A" text.
+      const betaRow = screen.getByText("Beta Project").closest("tr")!;
+      expect(within(betaRow).getAllByRole("cell")[5]).toHaveTextContent(/^N\/A$/);
     });
 
     it("shows N/A badge when margin data is missing", () => {
@@ -273,6 +421,102 @@ describe("Profitability Page", () => {
 
       // Beta Project has no customer
       expect(screen.getByText("\u2014")).toBeInTheDocument();
+    });
+
+    it("renders the kit column headers by name, with aria-sort on Margin by default", () => {
+      render(
+        <ProjectProfitabilityTable
+          initialData={makeProfitability()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+          defaultCurrency={null}
+        />
+      );
+
+      for (const name of [
+        "Matter",
+        "Client",
+        "Currency",
+        "Billable Hours",
+        "Revenue",
+        "Cost",
+        "Margin",
+        "Margin %",
+      ]) {
+        expect(screen.getByRole("columnheader", { name })).toBeInTheDocument();
+      }
+      expect(screen.getByRole("columnheader", { name: "Margin" })).toHaveAttribute(
+        "aria-sort",
+        "descending"
+      );
+      // Currency is not sortable (as before).
+      expect(screen.getByRole("columnheader", { name: "Currency" })).not.toHaveAttribute(
+        "aria-sort"
+      );
+      expect(
+        within(screen.getByRole("columnheader", { name: "Currency" })).queryByRole("button")
+      ).toBeNull();
+      expect(screen.getAllByRole("table")).toHaveLength(1);
+      // Hours keep the dot decimal + "h" (e2e /\d+\.\dh/).
+      expect(screen.getByText("100.0h")).toBeInTheDocument();
+      // A missing cost reads "N/A" text.
+      const beta = screen.getByText("Beta Project").closest("tr")!;
+      expect(within(beta).getAllByRole("cell")[5]).toHaveTextContent("N/A");
+    });
+
+    it("sorts by a header button: Revenue descending, then ascending", async () => {
+      const user = userEvent.setup();
+      render(
+        <ProjectProfitabilityTable
+          initialData={makeProfitability({
+            matters: [
+              { ...makeProfitability().matters[0], billableValue: 5000 },
+              makeProfitability().matters[1],
+            ],
+          })}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+          defaultCurrency={null}
+        />
+      );
+      const firstMatter = () => within(screen.getAllByRole("row")[1]).getAllByRole("cell")[0];
+      // Default margin desc: Alpha (6000) above Beta (null → 0).
+      expect(firstMatter()).toHaveTextContent("Alpha Project");
+
+      await user.click(screen.getByRole("button", { name: "Revenue" }));
+      expect(screen.getByRole("columnheader", { name: "Revenue" })).toHaveAttribute(
+        "aria-sort",
+        "descending"
+      );
+      expect(screen.getByRole("columnheader", { name: "Margin" })).toHaveAttribute(
+        "aria-sort",
+        "none"
+      );
+      expect(firstMatter()).toHaveTextContent("Beta Project"); // 7500 > 5000
+
+      await user.click(screen.getByRole("button", { name: "Revenue" }));
+      expect(screen.getByRole("columnheader", { name: "Revenue" })).toHaveAttribute(
+        "aria-sort",
+        "ascending"
+      );
+      expect(firstMatter()).toHaveTextContent("Alpha Project");
+    });
+
+    it("keeps profitability-export-csv as the card's only Export CSV button", () => {
+      render(
+        <ProjectProfitabilityTable
+          initialData={makeProfitability()}
+          initialFrom="2026-02-01"
+          initialTo="2026-02-14"
+          defaultCurrency={null}
+        />
+      );
+
+      const exports = screen.getAllByRole("button", { name: /Export CSV/ });
+      expect(exports).toHaveLength(1);
+      expect(exports[0]).toHaveAttribute("data-testid", "profitability-export-csv");
+      // No kit "Columns" menu either (columnVisibility off).
+      expect(screen.queryByRole("button", { name: "Columns" })).not.toBeInTheDocument();
     });
 
     describe("Export CSV", () => {

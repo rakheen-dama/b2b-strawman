@@ -1,11 +1,12 @@
 // Adapted from admincn (shadcn-nextjs-admincn-admin-template 1.0.0): views/apps/users/list/user-table.tsx and user-table-columns.tsx (select column).
 // Used under the purchased admincn licence (founder-confirmed 2026-11-11); translated Base UI → Radix per ADR-368.
 "use client";
-// RSC boundary (Phase 90 OQ #19): DataTable takes function props (columns, sort.hrefFor, rowHref,
-// meta.csv), so render it ONLY from a "use client" module — a thin per-page wrapper that receives
-// serializable props and builds the functions itself. See define-columns.tsx.
+// RSC boundary (Phase 90 OQ #19): DataTable takes function props (columns, sort.hrefFor/onSort,
+// rowHref, getRowCanExpand, renderExpandedRow, meta.csv), so render it ONLY from a "use client"
+// module — a thin per-page wrapper that receives serializable props and builds the functions
+// itself. See define-columns.tsx.
 
-import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
+import { Fragment, useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   flexRender,
@@ -53,8 +54,10 @@ export interface DataTableProps<T, K extends string = string> {
   data: T[];
   getRowId: (row: T) => string;
   /**
-   * URL-owned sort: headers link to `hrefFor(meta.sortKey)`; `aria-sort` on the active `th`. `K` is
-   * inferred from `sort.key`, so `hrefFor` receives the page's own sort-key type.
+   * Sort state; `aria-sort` on the active `th`. URL-owned (`hrefFor`): headers link to
+   * `hrefFor(meta.sortKey)`. Local-state (`onSort`): headers are buttons calling
+   * `onSort(meta.sortKey)`. Either way `data` arrives already sorted; the kit never sorts rows. `K` is
+   * inferred from `sort.key`, so `hrefFor`/`onSort` receive the consumer's own sort-key type.
    */
   sort?: DataTableSort<K>;
   toolbar?: DataTableToolbarSlots;
@@ -96,6 +99,18 @@ export interface DataTableProps<T, K extends string = string> {
   caption?: string;
   /** Forwarded to the `<table>` element (e.g. `transactions-table`). */
   tableTestId?: string;
+  /**
+   * Which rows have a detail row (e.g. a per-currency breakdown). A cell toggles it with
+   * `row.getToggleExpandedHandler()` and reads `row.getIsExpanded()` / `row.getCanExpand()`, so the
+   * memoised columns need no state of their own. The expanded state is keyed by `getRowId` and
+   * survives a new `data` array (a client re-sort or a refetch), unlike visibility/selection/page.
+   */
+  getRowCanExpand?: (row: T) => boolean;
+  /**
+   * Content of the detail row rendered under an expanded row: one full-width cell (`colSpan` = the
+   * visible columns), no `rowTestId`, never opens `rowHref`.
+   */
+  renderExpandedRow?: (row: T) => ReactNode;
   /**
    * Draws the table frame: card background, border and rounded corners (default on). Pass `false`
    * when the table already sits inside a bordered surface (e.g. `<Card><CardContent>`) to avoid a
@@ -179,9 +194,11 @@ type Meta<T> = ColumnMeta<T, unknown> | undefined;
 /**
  * Client-mode list table on TanStack Table 8.21.3 (ADR-369, architecture §15.2.4 / §15.3.3).
  *
- * The URL owns view, filters, search and sort: TanStack runs with `manualSorting` and never sorts or
- * filters. TanStack owns only ephemeral state — column visibility, row selection, page index — and
- * all three reset when `data` changes identity (every RSC navigation sends a new array).
+ * The URL (or, for a local-state table, the consumer) owns view, filters, search and sort: TanStack
+ * runs with `manualSorting` and never sorts or filters. TanStack owns only ephemeral state — column
+ * visibility, row selection, page index — and all three reset when `data` changes identity (every
+ * RSC navigation sends a new array). Expanded detail rows (`getRowCanExpand`) are keyed by row id
+ * and deliberately survive a new `data` array.
  *
  * Markup is the semantic `ui/table` (`table`/`row`/`columnheader`/`cell`; never `role="grid"`). The
  * frame uses tokens and is NOT a `data-slot="card"` (finance specs count cards). Narrow screens use
@@ -206,6 +223,8 @@ export function DataTable<T, K extends string = string>({
   caption,
   tableTestId,
   frame = true,
+  getRowCanExpand,
+  renderExpandedRow,
 }: DataTableProps<T, K>) {
   const router = useRouter();
   const pageSize = normalisePageSize(pageSizeProp);
@@ -257,7 +276,12 @@ export function DataTable<T, K extends string = string>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    // Headers only call `hrefFor` with a column's `meta.sortKey`, which the consumer draws from `K`.
+    // `expanded` stays TanStack's own (uncontrolled) state, keyed by row id: no row model here
+    // auto-resets it, and this pins that a new `data` array keeps the open detail rows.
+    getRowCanExpand: getRowCanExpand ? (row) => getRowCanExpand(row.original) : undefined,
+    autoResetExpanded: false,
+    // Headers only call `hrefFor`/`onSort` with a column's `meta.sortKey`, which the consumer draws
+    // from `K`.
     meta: { dataTableSort: sort as DataTableSort | undefined },
   });
 
@@ -356,35 +380,46 @@ export function DataTable<T, K extends string = string>({
                     </TableRow>
                   ))
                 : table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-testid={rowTestId}
-                      data-state={row.getIsSelected() ? "selected" : undefined}
-                      className={cn(rowHref && "cursor-pointer")}
-                      onClick={
-                        rowHref ? (event) => openRow(event, rowHref(row.original)) : undefined
-                      }
-                    >
-                      {row.getVisibleCells().map((cell) => {
-                        const meta = cell.column.columnDef.meta;
-                        return (
-                          <TableCell
-                            key={cell.id}
-                            // A near-miss on a selection checkbox must not open the row.
-                            data-row-click={
-                              cell.column.id === SELECT_COLUMN_ID ? "ignore" : undefined
-                            }
-                            className={cn(
-                              meta?.align === "end" && "text-right",
-                              priorityClass(meta),
-                              meta?.cellClassName
-                            )}
-                          >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <Fragment key={row.id}>
+                      <TableRow
+                        data-testid={rowTestId}
+                        data-state={row.getIsSelected() ? "selected" : undefined}
+                        className={cn(rowHref && "cursor-pointer")}
+                        onClick={
+                          rowHref ? (event) => openRow(event, rowHref(row.original)) : undefined
+                        }
+                      >
+                        {row.getVisibleCells().map((cell) => {
+                          const meta = cell.column.columnDef.meta;
+                          return (
+                            <TableCell
+                              key={cell.id}
+                              // A near-miss on a selection checkbox must not open the row.
+                              data-row-click={
+                                cell.column.id === SELECT_COLUMN_ID ? "ignore" : undefined
+                              }
+                              className={cn(
+                                meta?.align === "end" && "text-right",
+                                priorityClass(meta),
+                                meta?.cellClassName
+                              )}
+                            >
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                      {renderExpandedRow && row.getIsExpanded() && (
+                        <TableRow
+                          data-slot="data-table-expanded-row"
+                          className="bg-muted/50 hover:bg-muted/50"
+                        >
+                          <TableCell colSpan={row.getVisibleCells().length}>
+                            {renderExpandedRow(row.original)}
                           </TableCell>
-                        );
-                      })}
-                    </TableRow>
+                        </TableRow>
+                      )}
+                    </Fragment>
                   ))}
             </TableBody>
           </Table>

@@ -99,6 +99,26 @@ describe("Profitability page cost note (615E)", () => {
     expect(screen.queryByTestId("profitability-content-stub")).not.toBeInTheDocument();
     expect(screen.getByTestId("profitability-cost-note")).toHaveTextContent(NOTE);
   });
+
+  // 643C (D6): the title block is the shared PageHeader; the note stays right under it.
+  it("renders one PageHeader h1 with the page sentence, the note right under it", async () => {
+    mockApiGet.mockRejectedValue(new Error("backend down"));
+
+    await renderPage();
+
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent("Profitability");
+    const header = screen.getByTestId("page-header");
+    expect(header).toHaveAttribute("data-slot", "page-header");
+    expect(header).toContainElement(headings[0]);
+    expect(header).toHaveTextContent(
+      "Team utilization, matter profitability, and client profitability across your organization"
+    );
+    const note = screen.getByTestId("profitability-cost-note");
+    expect(header).not.toContainElement(note);
+    expect(header.nextElementSibling).toBe(note);
+  });
 });
 
 /** 12 months of history, Dec 2025 → Nov 2026 (to date). */

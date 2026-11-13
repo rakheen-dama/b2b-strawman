@@ -10,6 +10,7 @@ import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types"
 import { ProfitabilityContent } from "@/components/profitability/profitability-content";
 import { BillingTrendChart } from "@/components/profitability/billing-trend-chart";
 import { todayInSA } from "@b2mash/shared/date";
+import { PageHeader } from "@b2mash/ui/page-header";
 
 /** Returns the first day of the current South African month and SA today as 'YYYY-MM-DD'. */
 function getCurrentMonthRange(): { from: string; to: string } {
@@ -59,15 +60,12 @@ export default async function ReportsProfitabilityPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Profitability</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Team utilization, matter profitability, and client profitability across your organization
-        </p>
+        <PageHeader
+          title="Profitability"
+          description="Team utilization, matter profitability, and client profitability across your organization"
+        />
         {/* Phase 87 ADR-340 / OQ #1: the cost leg still reads Expense until the follow-up lands. */}
-        <p
-          data-testid="profitability-cost-note"
-          className="mt-1 text-xs text-slate-500 dark:text-slate-400"
-        >
+        <p data-testid="profitability-cost-note" className="text-muted-foreground mt-1 text-xs">
           Costs reflect logged expenses only; disbursements are shown as fee-note lines
         </p>
       </div>

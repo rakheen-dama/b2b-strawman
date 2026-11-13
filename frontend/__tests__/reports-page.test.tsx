@@ -127,6 +127,50 @@ describe("ReportsPage", () => {
     );
   });
 
+  // 643C: the title block is the shared PageHeader; the cards and their links are unchanged.
+  it("renders exactly one h1 'Reports' inside the PageHeader", async () => {
+    await renderPage();
+
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent("Reports");
+    const header = screen.getByTestId("page-header");
+    expect(header).toHaveAttribute("data-slot", "page-header");
+    expect(header).toContainElement(headings[0]);
+    // No actions or links in the header: the first report link is still the Profitability card.
+    expect(header.querySelector("a")).toBeNull();
+  });
+
+  it("keeps the Firm performance and category h2s", async () => {
+    await renderPage();
+
+    expect(screen.getByRole("heading", { level: 2, name: "Firm performance" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Financial Reports" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Operational Reports" })
+    ).toBeInTheDocument();
+  });
+
+  it("each card link's accessible name starts with its title and wraps a Card", async () => {
+    await renderPage();
+
+    const cases: [RegExp, string][] = [
+      [/^Profitability/, "/org/acme/reports/profitability"],
+      [/^Revenue Summary/, "/org/acme/reports/revenue-summary"],
+      [/^Outstanding Invoices/, "/org/acme/reports/outstanding-invoices"],
+      [/^Team Utilization/, "/org/acme/reports/utilization"],
+    ];
+    for (const [name, href] of cases) {
+      const link = screen.getByRole("link", { name });
+      expect(link).toHaveAttribute("href", href);
+      expect(link.querySelector('[data-slot="card"]')).not.toBeNull();
+      expect(link).toHaveTextContent("Run report →");
+    }
+    expect(screen.getAllByRole("link")).toHaveLength(cases.length);
+  });
+
   it("hides the Profitability card when the user lacks FINANCIAL_VISIBILITY", async () => {
     vi.mocked(fetchMyCapabilities).mockResolvedValueOnce({
       capabilities: [],

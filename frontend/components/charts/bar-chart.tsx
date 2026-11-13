@@ -3,7 +3,17 @@
 "use client";
 
 import { ChartColumn } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, LabelList, ReferenceLine, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  ReferenceLine,
+  Text,
+  XAxis,
+  YAxis,
+  type YAxisTickContentProps,
+} from "recharts";
 import {
   ChartContainer,
   ChartLegend,
@@ -30,13 +40,79 @@ import {
   type ChartSeries,
 } from "./chart-summary";
 import { ChartTableToggle, usePrefersReducedMotion } from "./chart-table-toggle";
-import { BAR_CHART_TOP_MARGIN_PX, BAR_CHART_VALUE_AXIS_PX } from "./layout";
+import {
+  BAR_CHART_TOP_MARGIN_PX,
+  BAR_CHART_VALUE_AXIS_PX,
+  HORIZONTAL_CATEGORY_AXIS_PX,
+} from "./layout";
 
 /** Series-name direct labels for 2–4 series (ADR-370 §3); one series gets value labels instead. */
 const MAX_DIRECT_LABELS = 4;
 /** Rough width of one 12px label character — labels that would not fit are skipped, not clipped. */
 const LABEL_CHAR_PX = 7;
 const LABEL_GAP = 8;
+/** Gap between an axis and its tick labels. */
+const TICK_MARGIN = 8;
+/** recharts' default `tickSize`: it offsets the tick label even with `tickLine={false}`. */
+const TICK_SIZE = 6;
+/**
+ * Characters (ellipsis included) a horizontal chart's category label may use: the label column
+ * less the tick offset, at the 12px label character width. Deterministic — no text measuring.
+ */
+export const CATEGORY_TICK_MAX_CHARS = Math.floor(
+  (HORIZONTAL_CATEGORY_AXIS_PX - TICK_SIZE - TICK_MARGIN) / LABEL_CHAR_PX
+);
+
+/** `text` cut to `maxChars` characters, the last one an ellipsis; unchanged when it fits. */
+export function truncateLabel(text: string, maxChars: number): string {
+  const chars = Array.from(text);
+  if (chars.length <= maxChars) return text;
+  return `${chars
+    .slice(0, Math.max(0, maxChars - 1))
+    .join("")
+    .trimEnd()}…`;
+}
+
+/**
+ * A horizontal chart's category tick: one line, truncated to the label column (recharts would
+ * otherwise wrap a long name onto lines taller than its bar band, overlapping its neighbours). A
+ * truncated name keeps the full text as an SVG `<title>` (native hover); the summary, tooltip and
+ * table carry it too.
+ */
+export function CategoryTick({
+  x,
+  y,
+  textAnchor,
+  verticalAnchor,
+  className,
+  payload,
+  index,
+  tickFormatter,
+}: YAxisTickContentProps) {
+  const value = payload?.value;
+  const full = String(typeof tickFormatter === "function" ? tickFormatter(value, index) : value);
+  const text = truncateLabel(full, CATEGORY_TICK_MAX_CHARS);
+  return (
+    <g>
+      {text !== full ? <title>{full}</title> : null}
+      {/* No `width`: recharts would wrap the label onto more lines than its band holds. */}
+      <Text
+        x={x}
+        y={y}
+        textAnchor={textAnchor}
+        verticalAnchor={verticalAnchor}
+        className={className}
+        fill={CHART_THEME.axis}
+      >
+        {text}
+      </Text>
+    </g>
+  );
+}
+
+function renderCategoryTick(props: YAxisTickContentProps) {
+  return <CategoryTick {...props} />;
+}
 
 interface BarChartPresetProps extends ChartCardSlots {
   data: ChartRow[];
@@ -308,9 +384,9 @@ export function BarChartPreset({
                 dataKey={categoryKey}
                 tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                width={120}
-                tick={{ fill: CHART_THEME.axis }}
+                tickMargin={TICK_MARGIN}
+                width={HORIZONTAL_CATEGORY_AXIS_PX}
+                tick={renderCategoryTick}
               />
             </>
           ) : (

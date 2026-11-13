@@ -2,7 +2,11 @@ import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { BarChartPreset } from "@/components/charts/bar-chart";
+import {
+  BarChartPreset,
+  CATEGORY_TICK_MAX_CHARS,
+  truncateLabel,
+} from "@/components/charts/bar-chart";
 import { formatChartValue } from "@/lib/chart-format";
 
 // `mode.real` switches every mocked export to the real recharts for the un-mocked smoke renders
@@ -90,7 +94,7 @@ vi.mock("recharts", async (importOriginal) => {
  * silent observer; and
  * reduced motion, so bars draw at their final size (recharts hides labels while animating).
  */
-function withRealRecharts() {
+function withRealRecharts({ measureText = false }: { measureText?: boolean } = {}) {
   mode.real = true;
   vi.spyOn(window, "matchMedia").mockImplementation(
     (query: string) =>
@@ -104,6 +108,22 @@ function withRealRecharts() {
   vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
     this: HTMLElement
   ) {
+    // measureText: recharts' text-measuring span gets a 12px line's size (7px a character), so
+    // an axis keeps the tick labels a 240px-tall "text" would drop.
+    if (measureText && this.id === "recharts_measurement_span") {
+      const width = (this.textContent ?? "").length * 7;
+      return {
+        width,
+        height: 14,
+        top: 0,
+        left: 0,
+        right: width,
+        bottom: 14,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      };
+    }
     // The legend row is measured too: give it a row's height, not the whole box.
     const height = this.closest(".recharts-legend-wrapper") ? 24 : 240;
     return {
@@ -512,6 +532,84 @@ describe("BarChartPreset", () => {
     await waitFor(() => expect(label("Write-off")).toBeDefined());
     expect(label("Write-off")).toHaveAttribute("text-anchor", "end");
     expect(label("Fees")).toHaveAttribute("text-anchor", "start");
+  });
+
+  it("truncates a label past its character budget with an ellipsis, leaving short ones alone", () => {
+    expect(CATEGORY_TICK_MAX_CHARS).toBe(15);
+    expect(truncateLabel("Alice", 15)).toBe("Alice");
+    expect(truncateLabel("Exactly fifteen", 15)).toBe("Exactly fifteen");
+    expect(truncateLabel("Apex Shareholder Agreement", 15)).toBe("Apex Sharehold…");
+    // A cut that lands after a space drops the space before the ellipsis.
+    expect(truncateLabel("Ndlovu v RAF — Depth II", 16)).toBe("Ndlovu v RAF —…");
+  });
+
+  // OBS D1 (643B): long matter names wrapped onto 3–4 lines in the 120px label column and
+  // overlapped their neighbours' 30px bands. Horizontal category ticks are one truncated line.
+  it("draws horizontal category ticks on one truncated line, the full name in a <title>", async () => {
+    withRealRecharts({ measureText: true });
+    const names = [
+      "Estate Late Peter Moroka mwehnc0k3cef",
+      "Ndlovu v RAF mwehnc0k3cef",
+      "Ndlovu v RAF \u2014 Depth II mwehrexv2f8d",
+      "Apex Shareholder Agreement mwehnc0k3cef",
+      "QC Debt Recovery #1 mwehnc0k3cef",
+      "Alice",
+    ];
+    render(
+      <BarChartPreset
+        title="Real matter ranking"
+        data={names.map((matter, i) => ({ matter, fees: 600 - i * 100 }))}
+        categoryKey="matter"
+        series={[{ key: "fees", label: "Fees" }]}
+        orientation="horizontal"
+        format="count"
+      />
+    );
+
+    const figure = screen.getByRole("figure", { name: "Real matter ranking" });
+    const ticks = () =>
+      Array.from(
+        figure.querySelectorAll(".recharts-yAxis-tick-labels .recharts-cartesian-axis-tick-label")
+      );
+    await waitFor(() => expect(ticks()).toHaveLength(names.length));
+
+    ticks().forEach((tick, i) => {
+      const text = tick.querySelector("text");
+      // One line: a single tspan, coloured like every other kit axis label.
+      expect(text?.querySelectorAll("tspan")).toHaveLength(1);
+      expect(text).toHaveAttribute("fill", "var(--muted-foreground)");
+      const name = names[i];
+      if (name.length > CATEGORY_TICK_MAX_CHARS) {
+        expect(text?.textContent).toBe(truncateLabel(name, CATEGORY_TICK_MAX_CHARS));
+        expect(text?.textContent?.endsWith("…")).toBe(true);
+        expect(tick.querySelector("title")?.textContent).toBe(name);
+      } else {
+        expect(text?.textContent).toBe(name);
+        expect(tick.querySelector("title")).toBeNull();
+      }
+    });
+  });
+
+  it("leaves vertical-layout category ticks untruncated", async () => {
+    withRealRecharts({ measureText: true });
+    const name = "Estate Late Peter Moroka";
+    render(
+      <BarChartPreset
+        title="Real columns long"
+        data={[{ matter: name, fees: 10 }]}
+        categoryKey="matter"
+        series={[{ key: "fees", label: "Fees" }]}
+        format="count"
+      />
+    );
+
+    const figure = screen.getByRole("figure", { name: "Real columns long" });
+    const tick = () =>
+      figure.querySelector(".recharts-xAxis-tick-labels .recharts-cartesian-axis-tick-label");
+    await waitFor(() => expect(tick()).not.toBeNull());
+    const words = Array.from(tick()?.querySelectorAll("tspan") ?? []).map((t) => t.textContent);
+    expect(words.join(" ")).toBe(name);
+    expect(tick()?.querySelector("title")).toBeNull();
   });
 
   it("renders loading, empty and error states without the chart", () => {

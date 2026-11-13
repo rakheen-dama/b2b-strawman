@@ -8,6 +8,12 @@ export const BAR_CHART_TOP_MARGIN_PX = 16;
 /** BarChartPreset's horizontal value axis (`<XAxis type="number">`) height in px — recharts' default. */
 export const BAR_CHART_VALUE_AXIS_PX = 30;
 
+/**
+ * BarChartPreset's horizontal category axis (`<YAxis type="category">`) width in px: the label
+ * column. Its ticks stay on one line, truncated with an ellipsis to fit (OBS D1, 643B).
+ */
+export const HORIZONTAL_CATEGORY_AXIS_PX = 120;
+
 /** BarChartPreset's non-bar height of a horizontal chart: the top margin + the value axis. */
 export const HORIZONTAL_BAR_AXIS_PX = BAR_CHART_TOP_MARGIN_PX + BAR_CHART_VALUE_AXIS_PX;
 

@@ -62,7 +62,7 @@ Phase 90 is a **visual phase**: no new entity, table, column, enum value, capabi
 | 641 | Matters — List on DataTable + Matter Hero (DetailHero KPI Strip) + Page Split (E5) | Frontend | 639A, 639C, 639D | M | 641A, 641B (0 verifies) | 641A **Done** (PR #1770); 641B **Done** (PR #1771) — **Epic 641 Done** |
 | 642 | Clients — List on DataTable + TrustBalanceCard Re-export Deleted, Client Hero, GroupedTabBar Restyle for Both Detail Pages (E6) | Frontend | 639A, 639C, 641B | M | 642A, 642B, 642C (0 verifies) | 642A **Done** (PR #1772); 642B **Done** (PR #1773); 642C **Done** (PR #1774) — **Epic 642 Done** |
 | 643 | Trust Dashboard + Reports/Profitability — Trust-Balance-Trend + Billing-Trend Endpoints, Charts, Reconciliation Card Fix (declared), Tables on DataTable (E7) | Backend + Frontend (together) | 639A, 639B, 639C | L | 643A, 643B, 643C (2 verifies) | **Done** — 643A (PR #1775), 643B (PR #1776), 643C (PR #1777) |
-| 644 | Exit Gate — Suites on a Fresh Stack, Observation Matrix, Metrics, Dark-Mode Debt List, Closure (E8; gate epic, no product code) | QA / Process / Docs | 637–643 merged | M | 644A, 644B (0 verifies; 644A runs the BE-VERIFY exit regression on `main`) | 644A **Done** (PR #1780); 644B in review |
+| 644 | Exit Gate — Suites on a Fresh Stack, Observation Matrix, Metrics, Dark-Mode Debt List, Closure (E8; gate epic, no product code) | QA / Process / Docs | 637–643 merged | M | 644A, 644B (0 verifies; 644A runs the BE-VERIFY exit regression on `main`) | **Done** — 644A (PR #1780), 644B (PR #1781) |
 
 **Slice count: 21; backend verifies: 2** (643A, 643B) + P1 outside the phase. Product slices are sized to ≈12–20 files; 637B (≈25, founder-authorised) is the only one above the guide; 640C (3) and 642C (6) are small because their surfaces are small, not merged into neighbours (one surface family per PR keeps each E2E-LEGAL run attributable).
 
@@ -93,7 +93,7 @@ Every §15.10 id maps to **exactly one** task-file slice.
 | E7B | Fees billed vs collected + profitability charts | **643B** | `phase90/43B-billing-trend-charts` | **verify: yes** |
 | E7C | Profitability tables on DataTable + reports index | **643C** | `phase90/43C-profitability-tables-reports` | **Done** (PR #1777) |
 | E8A | Suites and gates on a fresh stack | **644A** | `phase90/44A-exit-suites` | evidence-only PR — **Done** (PR #1780) |
-| E8B | Observation matrix, metrics, closure | **644B** | `phase90/44B-exit-closure` | docs PR (closure report in this file) |
+| E8B | Observation matrix, metrics, closure | **644B** | `phase90/44B-exit-closure` | docs PR (closure report in this file) — **Done** (PR #1781) |
 
 ---
 ## Dependency Graph
@@ -633,14 +633,14 @@ PR rules restated (non-negotiable):
 
 **References**: Architecture §15.1 (baseline statement), §15.6.5 (debt list table), §15.6.7, §15.8.6 (exit observation matrix), §15.8.7, §15.10 E8A/E8B, §15.11, §15.12 #16; root `CLAUDE.md` §1, §3, §8–§9; memories `feedback_ui_changes_need_e2e_suite_run`, `env_playwright_legal_configs_dirty_tree`, `env_macos_sleep_kills_overnight_agents`.
 
-**Dependencies**: every code slice merged (637A–643C) and P1. **Scope**: QA / Process / Docs. **Verifies: 0** (644A's BE-VERIFY is the exit regression run on `main`, not a slice verify). **Estimated Effort**: M. **Status**: 644A **Done** (PR #1780, merge `ec1c11693`); 644B in review.
+**Dependencies**: every code slice merged (637A–643C) and P1. **Scope**: QA / Process / Docs. **Verifies: 0** (644A's BE-VERIFY is the exit regression run on `main`, not a slice verify). **Estimated Effort**: M. **Status**: 644A **Done** (PR #1780, merge `ec1c11693`); 644B **Done** (PR #1781, merge `1a4a96956`). **Epic 644 Done — Phase 90 complete.**
 
 ### Slices
 
 | Slice | Scope | Key deliverables / files | Files (est.) | Verify | Gates | Obs | Depends on |
 |-------|-------|--------------------------|--------------|--------|-------|-----|------------|
 | **644A** | e2e / process | `$EV/suites/README.md` (pass/fail/skip per suite vs 637.1, run timestamps, stack build SHA), `$EV/suites/markers.md` (`scripts/check-verify-markers.sh` output) | 0 product files (evidence only) | — | E2E-LEGAL + E2E-DEFAULT on one fresh stack; FE-GATE + PORTAL-GATE + BE-VERIFY on `main` | — | 637A–643C, P1 — **Done** (PR #1780) |
-| **644B** | QA + docs | `$EV/matrix/**` (28 + persona/portal/marketing screenshots, `README.md` index), `$EV/metrics.md`, this file § Closure report (debt list, backlog, OQ states), `architecture/ARCHITECTURE.md` (Section 15 note line + merge of the phase doc), `TASKS.md` rows, `adr/ADR-286-sidebar-layout-entity-detail.md` status line, re-shot PNGs in `documentation/screenshots/` / `frontend/public/screenshots/` | docs only | — | review audit trail | the whole slice | 644A — **in review** |
+| **644B** | QA + docs | `$EV/matrix/**` (28 + persona/portal/marketing screenshots, `README.md` index), `$EV/metrics.md`, this file § Closure report (debt list, backlog, OQ states), `architecture/ARCHITECTURE.md` (Section 15 note line + merge of the phase doc), `TASKS.md` rows, `adr/ADR-286-sidebar-layout-entity-detail.md` status line, re-shot PNGs in `documentation/screenshots/` / `frontend/public/screenshots/` | docs only | — | review audit trail | the whole slice | 644A — **Done** (PR #1781) |
 
 ### Tasks
 
@@ -715,7 +715,7 @@ Evidence paths use the shorthands at the top of this file (`$EV` = `qa_cycle/evi
 | Dark-mode long-tail walk (644.6) | **VERIFIED (walk done).** **73 pages: 60 PASS / 13 FAIL (1 illegible, 12 degraded (1 theme-independent)).** Debt list in C.5 | `$EV/darkmode/README.md`, `$EV/darkmode/walk.json` |
 | Docs and marketing images (644.8) | Classification: **VERIFIED** (ruling R2: 25 files classified, each with surface, why stale and a replacement plan). Re-shoot: **DEFERRED** (0 re-shot → follow-up frontend PR F-7) | `$EV/pngs/README.md` |
 | Architecture note line, ADR index, TASKS rows (644.9) | **VERIFIED** (changed in this PR, `git diff --stat main...HEAD`): Phase 90 note line; ADR-367..374 rows + ADR-286 superseded for matter and client detail by ADR-373, with the index preamble carve-out; Phase 90 rows | `architecture/ARCHITECTURE.md`, `kazi-architecture/90-adr-index.md`, `TASKS.md` |
-| Review audit trail (644.10) | **DEFERRED** until the orchestrator's review on this PR; this cell is replaced in the post-merge bookkeeping commit | PR body |
+| Review audit trail (644.10) | **VERIFIED** — two `general-purpose` reviewers (bug/quality + architecture) both `APPROVE @b5405bfd0` after 2 fix cycles; CodeRabbit REVIEWED (1 Minor, documented); PR #1781 merged as `1a4a96956` | PR #1781 body § Code Review Audit Trail |
 
 **No illegible or broken regression on any of the 7 in-scope surfaces, so ruling R8 is not triggered.** Every defect seen on them is cosmetic: already listed by its slice, or a new LOW (C.6 (d)). Cosmetic density regressions exist and are listed in B-12 (matters table at 1024, Client column collapse, 1440 "…" clip).
 

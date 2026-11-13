@@ -679,4 +679,29 @@ describe("Trust Reconciliation", () => {
     expect(mockCreateReconciliation).toHaveBeenCalledTimes(1);
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
   });
+  // Test 10: while the review step is being prepared (transactions, create,
+  // calculate), Back and Review Matches are disabled, so a double-click cannot
+  // create a second draft and a late completion cannot land after Back.
+  it("disables Back and Review Matches while the review step is being prepared", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    let finishCalculate: (v: unknown) => void = () => {};
+    mockCalculateReconciliation.mockReturnValue(
+      new Promise((resolve) => (finishCalculate = resolve))
+    );
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    await waitFor(() => expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1"));
+    expect(screen.getByTestId("auto-match-back-btn")).toBeDisabled();
+    expect(screen.getByTestId("step-next-btn")).toBeDisabled();
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(mockCreateReconciliation).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      finishCalculate({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+      });
+    });
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+  });
 });

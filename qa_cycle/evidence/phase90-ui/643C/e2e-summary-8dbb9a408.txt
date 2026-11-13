@@ -1,0 +1,12 @@
+HEAD 8dbb9a408
+up exit 0
+lifecycle exit 0
+depth exit 0
+finance exit 0
+== lifecycle
+  105 passed (3.0m)
+== depth
+  4 skipped
+  40 passed (1.8m)
+== finance
+  7 passed (2.8s)

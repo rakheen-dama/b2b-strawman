@@ -44,7 +44,7 @@ Base URL `http://localhost:3000/org/mathebula-partners`. Matter = Estate Late Pe
 | `home-1024-dark.png` | Home | owner | 1024 | dark | OK. Cards, sparkline and KPI figures are legible. Diary hint is readable in dark. | 0 |
 | `home-1440-light.png` / `home-1440-light-full.png` | Home | owner | 1440 | light | OK (= top of -full). 4-up KPI row (Active matters 3, Hours 18,0h + sparkline, Billable 100,0%, Overdue 0); WIP empty state; Debtors (Lerato R 10 925,00); Trust position "Balanced"; FICA; Matter Health; Sensitive events; Recent activity. No clipping. | 0 |
 | `home-1440-dark.png` / `home-1440-dark-full.png` | Home | owner | 1440 | dark | OK (= top of -full). Every card is legible. In dark, the matter-health progress tracks for 0 % rows are very dark red (readable via the % column). | 0 |
-| `matters-1024-light.png` | Matters `/matters` | owner | 1024 | light | Renders. **Table scrolls horizontally inside its container**: 993 px in 718 px, so Fee earner / Trust / Next in diary are off-screen and reachable by scroll. This is the known 641A F1 density item, and it is a **cosmetic density regression**: 844 px before the phase, 904 px at 641A (the kit's inactive sort chevrons), 993 px at exit. Not illegible or broken (R8 not triggered); listed in backlog B-12. | 0 |
+| `matters-1024-light.png` | Matters `/matters` | owner | 1024 | light | Renders. **Table scrolls horizontally inside its container**: 993 px in 718 px, so Fee earner / Trust / Next in diary are off-screen and reachable by scroll. This is the known 641A F1 density item (the kit's inactive sort chevrons), a **cosmetic density regression**. 641A measured 844 → 904 px in a 718 px container (e2e rich seed, before/after 641A, `../641A/after.json`); at exit the KC tenant measures 993 px in 718 px (different data — not comparable; `obs-report.json`). Not illegible or broken (R8 not triggered); listed in backlog B-12. | 0 |
 | `matters-1024-dark.png` | Matters | owner | 1024 | dark | As light; dark tokens correct. The "Active" chip is inverted (light chip) by design. | 0 |
 | `matters-1440-light.png` | Matters | owner | 1440 | light | OK. All 9 columns. The table container is still 23 px too narrow (1157/1134), so the row "…" action column is half-clipped at the right edge (cosmetic; adds to 641A F1). | 0 |
 | `matters-1440-dark.png` | Matters | owner | 1440 | dark | As light. | 0 |
@@ -126,7 +126,7 @@ The only other tenant writes were magic-link tokens and emails for the Moroka po
 | Surface | Light 1024/1440 | Dark 1024/1440 | Defects observed (cosmetic; already listed by a slice unless marked **new**) |
 |---|---|---|---|
 | Home | OK | OK | diary hint slate-400 2.64:1 light (640B) |
-| Matters list | OK | OK | 1024 table h-scroll (641A F1; density regression 904 → 993 px, B-12); **new:** 1440 "…" column half-clipped (+23 px, O-1, B-12) |
+| Matters list | OK | OK | 1024 table h-scroll, 993 px in 718 px on the KC tenant (641A F1, B-12; 641A's 844 → 904 px was on the e2e rich seed, not comparable); **new:** 1440 "…" column half-clipped (+23 px, O-1, B-12) |
 | Matter detail (+3 tabs) | OK | OK | 1024 hero pushes tabs (641B F2); Trust duplicated (641B F3); "Activity · Activity" (642C); **new:** time-tab green 2.97:1 (LOW, O-2) |
 | Clients list | OK | OK | — |
 | Client detail | OK | OK | — |

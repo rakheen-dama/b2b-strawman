@@ -18,6 +18,8 @@
 | Informational | 3 | Discussion / methodology notes, no enforcement |
 | **Total** | **278** | 270 numeric (010–279) + 8 T-series (T001–T008) |
 
+> **Phase 90 rows added 2026-11-13 (644B):** ADR-367..374 (Active, new cluster "Frontend design system" + Reporting & dashboards) and ADR-286 (Superseded in part by ADR-373). ADR-280..366 other than ADR-286 are still not indexed, so **the counts above were not re-tallied** and describe the 2026-05-10 snapshot only.
+
 ADR numbering starts at 010; the 001–009 range is intentionally unused.
 
 ---
@@ -240,14 +242,29 @@ Canonical: **ADR-046/047** (charts/layout) + **ADR-081..084** (reporting strateg
 | ADR | Title | Note |
 |---|---|---|
 | ADR-044 | dashboard-aggregation-caching | |
-| ADR-046 | dashboard-charting-approach | |
+| ADR-046 | dashboard-charting-approach | Amended by ADR-370 (chart kit on shadcn `chart` + recharts 3) |
 | ADR-047 | dashboard-layout-strategy | |
 | ADR-081 | report-query-strategy-pattern | |
 | ADR-082 | report-template-storage | |
 | ADR-083 | csv-generation-approach | |
 | ADR-084 | parameter-schema-design | |
-| ADR-205 | chart-theming-strategy | |
+| ADR-205 | chart-theming-strategy | Amended by ADR-370 (Kazi chart palette: categorical/sequential/status, `CHART_THEME` single source) |
 | ADR-246 | profile-gated-dashboard-widgets | |
+| ADR-370 | chart-kit-and-palette | Phase 90. Status line: "Accepted (amends ADR-046 and ADR-205)" |
+| ADR-372 | read-only-chart-series-endpoints | Phase 90. Trust balance trend + billing trend (billed vs collected); uncached reads, SA calendar months |
+
+### Frontend design system (Phase 90)
+
+Canonical: **ADR-367** (layering + "new page" rule). Chart kit: ADR-370 and the endpoints behind it, ADR-372, are under Reporting & dashboards.
+
+| ADR | Title | Note |
+|---|---|---|
+| ADR-367 | design-system-layering | `@b2mash/ui` primitives vs app-coupled frontend components; new pages use PageHeader/DataTable/kit. The lint rule is deferred (ADR text) |
+| ADR-368 | admincn-template-adoption | admincn adapted from Base UI to Radix; credit and licence |
+| ADR-369 | datatable-tanstack-client-mode | Refined in `tasks/phase90-ui-modernization.md` (`adr/` is append-only): 642A sticky header only from a 42rem `@container` frame; 643C `DataTableSort` URL/client variants + expandable rows |
+| ADR-371 | dark-mode-light-default | `next-themes`, light default, opt-in toggle; tokens over `dark:` pairs; long-tail debt list (Phase 90 closure C.5) |
+| ADR-373 | detail-hero-kpi-strip | Supersedes ADR-286 for the matter and client detail pages |
+| ADR-374 | theme-first-paint-head-script | Refines ADR-371 (blocking `<head>` script for the stored theme's first paint) |
 
 ### Custom field, tag, view
 
@@ -426,6 +443,7 @@ Canonical trust: **ADR-230..235**. Canonical legal entities: **ADR-247..250**. H
 | ADR-063 | compliance-packs-bundled-seed-data | ADR-240 | Unified pack catalog supersedes earlier seed bundling (in spirit) |
 | ADR-106 | template-clause-placeholder-strategy | ADR-123 | Replaced by Tiptap clauseBlock as source-of-truth |
 | ADR-182 | terminology-override-mechanism | ADR-185 | Body: explicit `Status: Superseded by ADR-185` |
+| ADR-286 | sidebar-layout-entity-detail | ADR-373 | **Partially: superseded for the matter and client detail pages only.** ADR-373's Status line: "supersedes ADR-286 for the matter and client detail pages". ADR-286 still holds for other entity detail pages. Its own file still reads `**Status**: Accepted` and is not edited (`adr/` is append-only, root `README.md:100`); this row is the status of record (Phase 90 644B) |
 
 ---
 

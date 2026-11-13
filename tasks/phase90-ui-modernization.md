@@ -2,13 +2,13 @@
 
 Phase 90 is a **visual phase**: no new entity, table, column, enum value, capability, migration, cache, write endpoint, page family, navigation zone, label, tab name, route or `data-testid`. Phases 87–89 fixed Kazi's information architecture and then its correctness; the presentation layer was never designed as a system — 94 inline `font-display text-3xl` h1s, ≈53 raw `<table`s, ≈217 hand-rolled card divs, three live chart usages beside five dead chart components, a `lib/chart-theme.ts` whose comments contradict its values, and a `.dark` token block nothing has ever applied. The phase builds a thin design-system layer on shadcn/ui (new-york, Radix — admincn template code is **translated**, never moved to Base UI) and moves the surfaces a design-partner firm sees first onto it: tokens + working opt-in dark mode, the app shell (shadcn `sidebar` + floating header), the primitives (PageHeader, StatCard, EmptyState in place, DetailHero, a chart kit of recharts presets + dependency-free SVG micro presets, a TanStack DataTable in client mode), the firm dashboard (KPI row + audience regrid), matters and clients (list on DataTable, detail on DetailHero), the trust dashboard and reports/profitability (real charts). The only behaviour changes are named and bounded: additive DataTable capabilities (column visibility, CSV of visible rows, opt-in page size), two read-only aggregate endpoints (`GET /api/dashboard/trust-balance-trend`, `GET /api/reports/billing-trend` — [ADR-372](../adr/ADR-372-read-only-chart-series-endpoints.md)), and one **declared side-effect fix** — the trust dashboard's Reconciliation card stops reading a hard-coded `null` (`trust-accounting/actions.ts:126-127`) because 643A re-sources it from `/api/dashboard/trust-position` (rulings §6). Architecture: [`architecture/phase90-ui-modernization.md`](../architecture/phase90-ui-modernization.md) (Section 15 — §15.2 component and token model, §15.3 flows, §15.6.6 selector compatibility, §15.8 file-level change tables and testing strategy, **§15.10 capability slices**, §15.12 open questions and the B-table); ADRs [367](../adr/ADR-367-design-system-layering.md)–[373](../adr/ADR-373-detail-hero-kpi-strip.md); binding rulings `.arch-rulings-phase90.md` (§2 founder rulings R1–R4, §3 thirteen corrections, §5 endpoints, §6 behaviour notes, §7 slicing — where the rulings and the architecture differ the rulings win; the architecture already follows them); requirements [`requirements/claude-code-prompt-phase90.md`](../requirements/claude-code-prompt-phase90.md) (founder decisions 1–7, constraints, out of scope).
 
-**Baseline the closure report measures against (§15.1 "Baseline statement", §15.8.7, HEAD `1bf85f0b1`, 2026-11-11):** tenant migrations V1–V14 (next free **V15**), global V1–V5 (next free **V6**) — untouched by this phase; legal-za template pack unchanged; `matters/[id]/page.tsx` 680 lines, `clients/[id]/page.tsx` 756, `trust-accounting/page.tsx` 426; inline display h1 = 94; raw hex in `frontend/{components,app}/**/*.tsx` = 37 by the §15.8.7 command (≈50 lines across `.ts/.tsx` by §15.2.5's wider count — OQ #22); dead chart/widget files 7; chart usages 3; ad-hoc `<table` and `dark:` line counts on in-scope files "measured at baseline". **637.1 records the measured numbers, FE-GATE green and the legal-lifecycle / legal-depth-ii pass counts on a fresh stack on `main` before any 637A code**, into `$EV/baseline/README.md` and this header; 644A/644B compare against those numbers, not memory. Evidence for every slice lands in `$EV/<slice>/`.
+**Baseline the closure report measures against (§15.1 "Baseline statement", §15.8.7, HEAD `1bf85f0b1`, 2026-11-11):** tenant migrations V1–V14 (next free **V15**), global V1–V5 (next free **V6**) — untouched by this phase [**corrected by 644B:** at the 637.1 baseline and at exit the series are tenant V1–**V15** (next free **V16**) and global V1–**V6** (next free **V7**). G89 Batch L (#1757) added both before `f7b7dbdf1`; Phase 90 added none. See § Closure report C.4]; legal-za template pack unchanged; `matters/[id]/page.tsx` 680 lines, `clients/[id]/page.tsx` 756, `trust-accounting/page.tsx` 426; inline display h1 = 94; raw hex in `frontend/{components,app}/**/*.tsx` = 37 by the §15.8.7 command (≈50 lines across `.ts/.tsx` by §15.2.5's wider count — OQ #22); dead chart/widget files 7; chart usages 3; ad-hoc `<table` and `dark:` line counts on in-scope files "measured at baseline". **637.1 records the measured numbers, FE-GATE green and the legal-lifecycle / legal-depth-ii pass counts on a fresh stack on `main` before any 637A code**, into `$EV/baseline/README.md` and this header; 644A/644B compare against those numbers, not memory. Evidence for every slice lands in `$EV/<slice>/`.
 
 **637.1 measured baseline (`main` @ `f7b7dbdf1`, 2026-11-12 — commands and raw output in `$EV/baseline/README.md`; these numbers, not the estimates above, are what 644A/644B compare against):** FE-GATE green, vitest **3763 passed / 2 skipped** (457 files); PORTAL-GATE green, **284 passed**; E2E-LEGAL on a fresh stack: legal-lifecycle **105 passed**, legal-depth-ii **40 passed / 4 skipped**; E2E-DEFAULT **157 passed / 1 failed / 7 did not run / 14 skipped** (the failure is INV-02 DRAFT→APPROVED — intermittent, cause unconfirmed; it passed on the next fresh stack — see the README); inline display h1 **99**; raw hex **6** by the §15.8.7 ERE command verbatim (macOS git ERE has no `\b`), **46** by its PCRE twin, **58** by the wider `.ts/.tsx` count (OQ #22); ad-hoc `<table` on the 57 in-scope files **1**; `dark:` on in-scope files **225** lines (frontend-wide 3,851 lines / 4,610 occurrences); dead chart/widget files **7**; chart usages **3**; detail page lines **680 / 756** (trust dashboard 426).
 
 **Slicing rule (rulings §7, founder authorisation 2026-11-11).** A slice is **one PR**; ≈12–20 files counted **including tests**, ≤ ~1500 new lines (shadcn CLI output excluded from the line budget but reviewed), never above 300 files (merge hook). **21 slices as designed in §15.10**, authorised by the founder on 2026-11-11 together with four bundled slices that root `CLAUDE.md` §7's "one fix per PR" would otherwise split: **637B** (ThemeProvider + toggle **and** the dead-chart-code deletion — ≈25 files, 13 of them deletions/test edits, authorised over the guide), **642A** (clients DataTable **and** the 5-line `customers/trust-balance-card.tsx` re-export deletion, rulings §3.7), **643A** (trust dashboard **and** the `trust-balance-trend` endpoint **and** the declared "never reconciled" fix), **643B** (the `billing-trend` endpoint **and** the profitability charts). **Only 643A and 643B touch Java → 2 backend verifies inside the phase** (+ prerequisite **P1** outside it, + 644A's exit regression run of BE-VERIFY on `main`, which is a gate run, not a slice verify). Every slice row carries **verify: yes / no** — **yes** = Java → full **BE-VERIFY** before the marker; **no** = **FE-GATE**; a slice touching `packages/ui` (637A, 639A) also runs **PORTAL-GATE**. The eight epic numbers **637–644** map E1→637 … E8→644; slices are re-lettered per epic in architecture order and the "Architecture slice → task-file slice" table maps every §15.10 id to exactly one slice so §15.10 / §15.12 references stay resolvable. Branch convention: `phase90/<nn><slice-letter>-<slug>` (e.g. `phase90/37A-tokens-palette`); P1 is `fix/kpi-previous-period-redaction`. **Every UI slice** (all of 637–643) re-runs **E2E-LEGAL** on a fresh stack before merge and records an **OBS** observation; the four primitive slices (639A–639D) ship no page of their own, so their full OBS is **carried by their first consumer** (639A → 640A, 639B → 640B, 639C → 641A, 639D → 640A) as a labelled section of that consumer's screenshots — an explicit task in the consumer slice — while vitest coverage of every primitive state ships in the primitive slice and any live call site a primitive slice re-points is observed in its own PR (§15.10 deviation note). Slices merged before 637B observe **light only**; 644B covers their dark pass. Integration tests ship in the slice with the code they test (643A/643B endpoint tests modelled on `$T/dashboard/TrustPositionIntegrationTest.java`). A slice that fixes behaviour has a **reproduce/observe-first** task (643A: vitest red first + browser observation). Labels, tab names, routes and `data-testid`s are frozen: every list, shell, header, hero and tab slice runs **SEL-COMPAT** and the PR says "no spec edited — no role changed" (or names the spec and the role, root `CLAUDE.md` §6 does not apply because no scenario changes). No server action is added this phase (§15.6.2) — a slice that finds itself adding one stops and re-specs. UI decisions go through the `frontend-design`, `vercel:shadcn`, `vercel:nextjs`, `vercel:react-best-practices` and `dataviz` skills, not first principles (memory `feedback_ui_questions_use_vercel_experts`).
 
-**Migrations: none (§15.7).** Tenant Flyway stays at V14 (next free V15), global at V5 (next free V6); `backend/db/BASELINE.md`, `global-baseline.snapshot` and `BaselineSchemaParityTest` are untouched; **no template-pack version bump**. The two endpoints are pure reads over `trust_transactions`, `invoices`, `payment_events` and `org_settings`; an index found necessary by an `EXPLAIN` is a separate, justified migration outside the phase. New runtime dependencies: exactly two — `next-themes` **0.4.6** (637B, ADR-371) and `@tanstack/react-table` **8.21.3** (639C, ADR-369), both pinned exact; recharts stays `^3.7.0`.
+**Migrations: none (§15.7).** Tenant Flyway stays at V14 (next free V15), global at V5 (next free V6) [**corrected by 644B:** V15 / next free V16 and V6 / next free V7; unchanged by the phase, C.4]; `backend/db/BASELINE.md`, `global-baseline.snapshot` and `BaselineSchemaParityTest` are untouched; **no template-pack version bump**. The two endpoints are pure reads over `trust_transactions`, `invoices`, `payment_events` and `org_settings`; an index found necessary by an `EXPLAIN` is a separate, justified migration outside the phase. New runtime dependencies: exactly two — `next-themes` **0.4.6** (637B, ADR-371) and `@tanstack/react-table` **8.21.3** (639C, ADR-369), both pinned exact; recharts stays `^3.7.0`.
 
 **Path shorthands used below:** `$B` = `backend/src/main/java/io/b2mash/b2b/b2bstrawman`, `$T` = `backend/src/test/java/io/b2mash/b2b/b2bstrawman`, `$U` = `packages/ui`, `$F` = `frontend`, `$FA` = `frontend/app/(app)/org/[slug]`, `$FC` = `frontend/components`, `$FT` = `frontend/__tests__`, `$FL` = `frontend/lib`, `$E` = `frontend/e2e/tests`, `$EH` = `frontend/e2e/helpers`, `$P` = `portal`, `$TPL` = `shadcn-nextjs-admincn-admin-template-1.0.0/default-layout/src` (gitignored reference — read, translate, never import, build or commit; ADR-368), `$EV` = `qa_cycle/evidence/phase90-ui`. **Gate shorthands:** **BE-VERIFY** = `cd backend && ./mvnw spotless:apply && bash scripts/verify.sh` with no positional goals, run detached with a marker file, **one verify at a time on the machine** (memory `background_bash_timeout_full_verify`, `orchestrator_verify_vs_fixer_same_worktree`); **FE-GATE** = `cd frontend && rm -rf .next && SHELL=/bin/bash NODE_OPTIONS="" pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build` (full vitest, never narrowed by path — root `CLAUDE.md` §5); **PORTAL-GATE** = `cd portal && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build`, plus `/home`, `/trust` and `/invoices` observed at 1024 in light (§15.6.3; portal never dark); **E2E-LEGAL** = fresh `bash compose/scripts/e2e-down.sh && docker builder prune -f && bash compose/scripts/e2e-up.sh` (gate-grade; `e2e-reseed.sh` does not wipe — memory `env_playwright_legal_configs_dirty_tree`) then `cd frontend && E2E_AUTH_MODE=mock PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle` **and** `pnpm test:e2e:legal-depth-ii`, in a worktree, at any time of day (no clock window — never schedule or wait for one), `git checkout -- frontend/test-results documentation/screenshots` after, **one e2e stack on the machine at a time** (ports 3001/8081/8090/5433); pass counts ≥ the 637.1 baseline; flags are passed without `--` (memory `env_pnpm_double_dash_playwright`); **E2E-DEFAULT** = `pnpm test:e2e` on the same fresh stack (slice-named subsets: `pnpm test:e2e:navigation`, `:projects`, `:customers`, or `pnpm test:e2e e2e/tests/finance/`); **KC-STACK** = `cd backend && ./mvnw -q clean compile -DskipTests`, `docker builder prune -f`, `bash compose/scripts/svc.sh start all` (memory `backend_restart_stale_classes`); **OBS** = a real-browser observation through Playwright MCP (memory `feedback_qa_use_playwright_not_chrome_ext`) on the :3001 mock stack (644B: Keycloak stack) of the slice's surfaces at **1024×768 and 1440×900 × light and dark** (light only before 637B merges), with the console checked for hydration warnings and errors, screenshots to `$EV/<slice>/` and linked in the PR body under one heading per surface — "observed" means the agent drove the page, never "the code looks right" (root `CLAUDE.md` §3); **OBS-CARRY** = the labelled "Primitive observation (639x)" section a consumer slice adds for a primitive slice; **SEL-COMPAT** = the §15.6.6 check for the slice's swap: grep `$E` and `$EH` for every role, accessible name, testid and URL mechanic in the slice's §15.6.6 row, run the named specs before and after, and paste a "selector → still present at file:line" table in the PR body; **DARK-AUDIT** = §15.6.5 steps 1–3 on the slice's files (grep `dark:`, raw `bg-white`, `text-slate-9xx`, `border-slate-*`, `#hex`; replace pairs a token covers; before/after `dark:` line count in the PR body); **MARKERS** = `.claude/markers/verify-{backend,frontend,portal}.json` per touched area, staged in the `/epic_v2` step-5 bookkeeping commit and checked by `scripts/check-verify-markers.sh` (635B). **Review:** every PR — docs-only included — gets CodeRabbit (bounded wait; `DEFERRED` only on genuine no-show) plus two `feature-dev:code-reviewer` passes and the audit-trail block (`## Verdict: APPROVE @<head-sha>`, required by `.claude/hooks/pre-pr-merge-gate.sh`) in the PR body; reviewers read the diff and the changed files in context and independently re-verify every OBS and SEL-COMPAT claim (open the screenshots, re-run one named spec), not the PR description.
 
@@ -20,9 +20,9 @@ Phase 90 is a **visual phase**: no new entity, table, column, enum value, capabi
 
 | # | Item | Recommended resolution | Owner | State |
 |---|---|---|---|---|
-| 1 | **KPI and utilization redaction is by role, not `FINANCIAL_VISIBILITY` (§15.12 #1).** A custom role with the capability sees "—" on Billable % and one utilization bar, while the WIP widget and profitability page admit it. | Keep this phase (visual only; render honestly); 640A and 643B each add a PR-body note; 644B files a backlog item to align both endpoints with the `unbilled-wip` capability idiom (behaviour change, own ADR). P1 does not change it. | P1 / 640A / 643B / 644B | Open |
+| 1 | **KPI and utilization redaction is by role, not `FINANCIAL_VISIBILITY` (§15.12 #1).** A custom role with the capability sees "—" on Billable % and one utilization bar, while the WIP widget and profitability page admit it. | Keep this phase (visual only; render honestly); 640A and 643B each add a PR-body note; 644B files a backlog item to align both endpoints with the `unbilled-wip` capability idiom (behaviour change, own ADR). P1 does not change it. | P1 / 640A / 643B / 644B | Deferred → backlog B-1 (own ADR; behaviour change). FV-role Home observed by 644B (`$EV/matrix/home-fv-role-carol-1440-light.png`) |
 | 2 | **Margin tile (§15.12 #2).** | Hidden (R1). The KPI row has four tiles; `averageMarginPercent` untouched. Populating it is a future ADR. | — | Decided (R1) |
-| 3 | **Sidebar stays slate-950 in light mode (§15.12 #3).** | Deliberate identity decision (§15.2.5). 637A observes it at 1024/1440 and the PR asks the founder one line: keep, or switch to the admincn light rail (token-only change in `$F/app/globals.css`). | 637A | Open |
+| 3 | **Sidebar stays slate-950 in light mode (§15.12 #3).** | Deliberate identity decision (§15.2.5). 637A observes it at 1024/1440 and the PR asks the founder one line: keep, or switch to the admincn light rail (token-only change in `$F/app/globals.css`). | 637A | Decided for Phase 90: kept (637A PR #1759 asked; slate-950 rail shipped). Reversal → Phase 91 founder decision 2 (new ADR) |
 | 4 | **`@tanstack/react-table` 8.21.3 vs npm `latest` 9.3.1 (§15.12 #4).** | Pin 8.21.3 exact (requirements say 8.x; `$TPL` table code is 8.21; v9 API differs); v9 is a separate dependency PR after the phase (644B backlog). | 639C | Decided (pin) |
 | 5 | **Theme preference per browser, not per user (§15.12 #5).** | localStorage `kazi-theme` as decided; a server preference needs a member-settings field (migration) — out of scope. | 637B | Decided |
 | 6 | **Trust trend replays currently effective rows by date (§15.12 #6).** A back-dated approval changes past months. | Intended (Section 35 reports, `calculateClientBalanceAsOfDate`); chart caption "Month-end balances as currently recorded". | 643A | Decided |
@@ -34,15 +34,15 @@ Phase 90 is a **visual phase**: no new entity, table, column, enum value, capabi
 | 12 | **`reports/[reportSlug]` results on DataTable (§15.12 #12).** | Left as is (budget) → 644B long-tail backlog. | 643C | Decided |
 | 13 | **Activity timeline primitive (§15.12 #13).** | Deferred — no slice touches the Activity tabs. | — | Decided |
 | 14 | **`completeness-visibility.test.tsx` covers more than the dead widget (§15.12 #14).** | Edited, never deleted: 637B drops the `IncompleteProfilesWidget` cases; 639D drops or re-points the `MiniProgressRing` cases (the live `SetupProgressCard` cases stay). | 637B / 639D | Decided |
-| 15 | **Server wrapper for the client-ledger card read may not exist (§15.12 #15).** `trust-accounting/actions.ts` has a `ClientLedgerCard` list read (`:102-103`, `?size=200`), not a per-client read. | 642B greps; if no per-client server read exists, adds `fetchClientLedgerCard(accountId, clientId)` to `$FA/trust-accounting/actions.ts` (no new endpoint — `GET /api/trust-accounts/{id}/client-ledgers/{clientId}` exists). Record in the PR body. | 642B | Open |
-| 16 | **Docs/marketing PNG refresh (§15.12 #16).** 14 under `documentation/screenshots/`, 12 under `frontend/public/screenshots/`. | 644B re-shoots the in-scope ones (curated mode + production build at 1440×900 for marketing) or lists each stale file. | 644B | Open |
+| 15 | **Server wrapper for the client-ledger card read may not exist (§15.12 #15).** `trust-accounting/actions.ts` has a `ClientLedgerCard` list read (`:102-103`, `?size=200`), not a per-client read. | 642B greps; if no per-client server read exists, adds `fetchClientLedgerCard(accountId, clientId)` to `$FA/trust-accounting/actions.ts` (no new endpoint — `GET /api/trust-accounts/{id}/client-ledgers/{clientId}` exists). Record in the PR body. | 642B | Resolved (642B, PR #1773): reused existing `fetchClientLedger` (`$FA/trust-accounting/client-ledgers/actions.ts:82`) |
+| 16 | **Docs/marketing PNG refresh (§15.12 #16).** 14 under `documentation/screenshots/`, 12 under `frontend/public/screenshots/`. | 644B re-shoots the in-scope ones (curated mode + production build at 1440×900 for marketing) or lists each stale file. | 644B | Closed (644B, list branch per orchestrator ruling R2): 25 files classified in `$EV/pngs/README.md`; re-shoot → follow-up frontend PR |
 | 17 | **Matter hero 4th tile (§15.12 #17).** | Next court date only (diary-date alternative dropped). | 641B | Decided |
 | 18 | **Client trust balance read twice on the client page (§15.12 #18).** | Accept this phase; 642B PR-body note; dedupe → 644B backlog. | 642B | Decided |
 | 19 | **(breakdown-found) RSC serialization boundary vs DataTable function props.** §15.2.4's `sort.hrefFor`, `rowHref` and `meta.csv` are functions; `frontend/CLAUDE.md` forbids passing functions from a Server Component to a `"use client"` component (Next 16 throws). | Resolved by breakdown rule: `DataTable` is only ever rendered from a client module. Each consumer gets a thin `"use client"` wrapper (`MattersDataTable`, `ClientsDataTable`, `TrustTransactionsTable`, the two profitability tables) that receives **the serializable props today's tables already take** (`slug`, `rows`, `columns`, `customFieldNames`, `sort`, `query`, `caption` — `matters-table.tsx:65-82`) and builds `hrefFor` from `buildSortHref` / `buildClientSortHref` (`$FL/matters-list.ts:195`, `$FL/clients-list.ts:242`, pure functions importable client-side) and `rowHref` inside the client module; toolbar slots and `empty` are pre-rendered `ReactNode`s from the RSC (allowed). 639C documents the rule in `define-columns.tsx` JSDoc and pins it with a vitest. | 639C (rule) / 641A, 642A, 643A, 643C | Resolved (breakdown rule) |
 | 20 | **(breakdown-found) shadcn CLI registry dependencies duplicate `@b2mash/ui`.** `$F/components.json` aliases `ui` to `@/components/ui`, but Kazi's button/input/separator/skeleton/badge/card live in `@b2mash/ui` (not in `$FC/ui/`). `add sidebar` pulls `button`, `input`, `separator`, `skeleton`, `sheet`, `tooltip`; `add toggle-group` pulls `toggle`; `baseColor` is `neutral`. | Each CLI slice (637B, 638A, 639B) runs the CLI on a clean tree, **declines** overwrites of existing `$FC/ui/{sheet,tooltip}.tsx`, deletes any generated `$FC/ui/{button,input,separator,skeleton}.tsx` and repoints the generated imports to `@b2mash/ui/*`, keeps `toggle.tsx` (new, needed), discards the CSS-variable append, and replaces neutral/zinc/gray with slate and indigo with teal (`frontend/CLAUDE.md`). The PR lists every CLI-generated file and its post-review diff. | 637B, 638A, 639B | Resolved (breakdown rule) |
 | 21 | **(breakdown-found) Where primitive tests live.** `$U` has no test runner (no `*.test.*`, no vitest config). | `stat-card.test.tsx` and `page-header.test.tsx` live in `$FT/components/ui/` and import `@b2mash/ui/stat-card` / `@b2mash/ui/page-header` (the 31-portal-importer package is exercised through the frontend's vitest). | 639A | Resolved (breakdown rule) |
 | 22 | **(breakdown-found) Baseline metric discrepancies.** Raw hex: §15.8.7 says 37 (`*.tsx` in components/app), §15.2.5 says ≈50 (`.ts/.tsx` incl. `lib/`); `dark:`: §15.1 says ≈3,850 lines, ADR-371 says ≈4,600 occurrences. | 637.1 runs both commands verbatim and records both numbers with their commands; 644B compares like with like. Neither number is a gate; the in-scope before/after per slice (DARK-AUDIT) is. | 637A / 644B | Resolved (637.1, PR #1759 — both numbers + commands in `$EV/baseline/README.md`) |
-| 23 | **(breakdown-found) `chart-components.test.tsx` empties out.** 637B drops Sparkline/RadialGauge, 639B drops DonutChart/ChartTooltip, 639D drops MicroStackedBar — the five imports at HEAD (`:4-8`). Rulings §3.8 say "edit, don't delete" because the file covered live components. | Whichever of the three merges **last** deletes the file once it has no `describe` left, citing this row (the live components it covered are then covered by `$FT/charts/*.test.tsx`); the earlier two edit. The rulings' intent (don't lose live coverage) is kept. | 637B / 639B / 639D | Open |
+| 23 | **(breakdown-found) `chart-components.test.tsx` empties out.** 637B drops Sparkline/RadialGauge, 639B drops DonutChart/ChartTooltip, 639D drops MicroStackedBar — the five imports at HEAD (`:4-8`). Rulings §3.8 say "edit, don't delete" because the file covered live components. | Whichever of the three merges **last** deletes the file once it has no `describe` left, citing this row (the live components it covered are then covered by `$FT/charts/*.test.tsx`); the earlier two edit. The rulings' intent (don't lose live coverage) is kept. | 637B / 639B / 639D | Resolved (639D, PR #1766): file deleted |
 | 24 | **(breakdown-found) Shared edits between 639D and 640B / 641B.** 639D re-points `debtors-widget.tsx` and `overview-metrics-strip.tsx` to micro presets; 640B restyles the debtors widget around it and 641B moves the strip onto StatCard. | Serial by dependency (640B and 641B both depend on 639D); 639D changes only the preset call site and its test; restyle belongs to the later slice. | 639D | Resolved (dependency) |
 | 25 | **(breakdown-found) Report DTO location.** §15.2.7 says `report/dto/` "only if the build finds none; otherwise follow where `OrgProfitabilityResponse` lives". There is no `report/dto` package: `OrgProfitabilityResponse`, `UtilizationResponse` and `MemberUtilizationRecord` are nested `public record`s in `$B/report/ReportController.java` (`:123-147`). Frontend `UtilizationResponse` / `OrgProfitabilityResponse` live in `$FL/types/billing.ts`; `$FL/types/reports.ts` does not exist. | 643B declares `BillingTrendResponse` / `BillingTrendPoint` as nested records in `ReportController` beside `OrgProfitabilityResponse`, and the TS mirror in `$FL/types/billing.ts`; `getBillingTrend` goes in `$FL/api/reports.ts` (covered by `$FT/lib/api/reports-api.test.ts`). | 643B | Resolved (breakdown rule) |
 | 26 | **(breakdown-found) Hero tile values cross an RSC boundary.** `MatterHeaderCard` and `ClientHeaderCard` are `"use client"`; `hero-tiles.ts` is server-only. | `HeroTile.value` / `hint` are formatted strings or pre-rendered JSX built in the server loader (status icon rendered there), never component references; `DetailHero` is client-compatible (no server-only import). | 639A / 641B / 642B | Resolved (breakdown rule) |
@@ -56,13 +56,13 @@ Phase 90 is a **visual phase**: no new entity, table, column, enum value, capabi
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 637 | Tokens + Kazi Chart Palette, ThemeProvider + Light/Dark/System Toggle, Dead Chart Code Deleted (E1) | packages/ui + Frontend | — (637.1 baseline first) | M | 637A, 637B (0 verifies) | **Done** (637A PR #1759, 637B PR #1760) |
-| 638 | App Shell — shadcn Sidebar (Cookie Collapse, ⌘/Ctrl+B, Mobile Sheet) + Floating Header + Command Palette Restyle (E2) | Frontend | 637A (638B also 637B) | M | 638A, 638B (0 verifies) || **Done** (PRs #1761, #1762) |
+| 638 | App Shell — shadcn Sidebar (Cookie Collapse, ⌘/Ctrl+B, Mobile Sheet) + Floating Header + Command Palette Restyle (E2) | Frontend | 637A (638B also 637B) | M | 638A, 638B (0 verifies) | **Done** (PRs #1761, #1762) |
 | 639 | Design-System Primitives — PageHeader, StatCard, EmptyState (in place), DetailHero, Chart Kit (recharts + SVG micro presets), DataTable (E3) | packages/ui + Frontend | 637A (639B, 639C after 639A) — ∥ 638 | L | 639A, 639B, 639C, 639D (0 verifies) | **Done** (PRs #1763, #1764, #1765, #1766) — 639A Done (PR #1763), 639B Done (PR #1764), 639C Done (PR #1765), 639D Done (PR #1766) |
 | 640 | Firm Dashboard — KPI Row + Audience Regrid (P1-gated), Widgets on the Kit, My Work + Loading Skeleton (E4) | Frontend | **P1 merged**, 639A, 639B, 639D | L | 640A, 640B, 640C (0 verifies) | **Done** (PRs #1767, #1768, #1769) — 640A Done (PR #1767), 640B Done (PR #1768), 640C Done (PR #1769) |
 | 641 | Matters — List on DataTable + Matter Hero (DetailHero KPI Strip) + Page Split (E5) | Frontend | 639A, 639C, 639D | M | 641A, 641B (0 verifies) | 641A **Done** (PR #1770); 641B **Done** (PR #1771) — **Epic 641 Done** |
 | 642 | Clients — List on DataTable + TrustBalanceCard Re-export Deleted, Client Hero, GroupedTabBar Restyle for Both Detail Pages (E6) | Frontend | 639A, 639C, 641B | M | 642A, 642B, 642C (0 verifies) | 642A **Done** (PR #1772); 642B **Done** (PR #1773); 642C **Done** (PR #1774) — **Epic 642 Done** |
 | 643 | Trust Dashboard + Reports/Profitability — Trust-Balance-Trend + Billing-Trend Endpoints, Charts, Reconciliation Card Fix (declared), Tables on DataTable (E7) | Backend + Frontend (together) | 639A, 639B, 639C | L | 643A, 643B, 643C (2 verifies) | **Done** — 643A (PR #1775), 643B (PR #1776), 643C (PR #1777) |
-| 644 | Exit Gate — Suites on a Fresh Stack, Observation Matrix, Metrics, Dark-Mode Debt List, Closure (E8; gate epic, no product code) | QA / Process / Docs | 637–643 merged | M | 644A, 644B (0 verifies; 644A runs the BE-VERIFY exit regression on `main`) | 644A **Done** (PR #1780); 644B pending |
+| 644 | Exit Gate — Suites on a Fresh Stack, Observation Matrix, Metrics, Dark-Mode Debt List, Closure (E8; gate epic, no product code) | QA / Process / Docs | 637–643 merged | M | 644A, 644B (0 verifies; 644A runs the BE-VERIFY exit regression on `main`) | 644A **Done** (PR #1780); 644B in review |
 
 **Slice count: 21; backend verifies: 2** (643A, 643B) + P1 outside the phase. Product slices are sized to ≈12–20 files; 637B (≈25, founder-authorised) is the only one above the guide; 640C (3) and 642C (6) are small because their surfaces are small, not merged into neighbours (one surface family per PR keeps each E2E-LEGAL run attributable).
 
@@ -633,14 +633,14 @@ PR rules restated (non-negotiable):
 
 **References**: Architecture §15.1 (baseline statement), §15.6.5 (debt list table), §15.6.7, §15.8.6 (exit observation matrix), §15.8.7, §15.10 E8A/E8B, §15.11, §15.12 #16; root `CLAUDE.md` §1, §3, §8–§9; memories `feedback_ui_changes_need_e2e_suite_run`, `env_playwright_legal_configs_dirty_tree`, `env_macos_sleep_kills_overnight_agents`.
 
-**Dependencies**: every code slice merged (637A–643C) and P1. **Scope**: QA / Process / Docs. **Verifies: 0** (644A's BE-VERIFY is the exit regression run on `main`, not a slice verify). **Estimated Effort**: M. **Status**: 644A **Done** (PR #1780, merge `ec1c11693`); 644B pending.
+**Dependencies**: every code slice merged (637A–643C) and P1. **Scope**: QA / Process / Docs. **Verifies: 0** (644A's BE-VERIFY is the exit regression run on `main`, not a slice verify). **Estimated Effort**: M. **Status**: 644A **Done** (PR #1780, merge `ec1c11693`); 644B in review.
 
 ### Slices
 
 | Slice | Scope | Key deliverables / files | Files (est.) | Verify | Gates | Obs | Depends on |
 |-------|-------|--------------------------|--------------|--------|-------|-----|------------|
 | **644A** | e2e / process | `$EV/suites/README.md` (pass/fail/skip per suite vs 637.1, run timestamps, stack build SHA), `$EV/suites/markers.md` (`scripts/check-verify-markers.sh` output) | 0 product files (evidence only) | — | E2E-LEGAL + E2E-DEFAULT on one fresh stack; FE-GATE + PORTAL-GATE + BE-VERIFY on `main` | — | 637A–643C, P1 — **Done** (PR #1780) |
-| **644B** | QA + docs | `$EV/matrix/**` (28 + persona/portal/marketing screenshots, `README.md` index), `$EV/metrics.md`, this file § Closure report (debt list, backlog, OQ states), `architecture/ARCHITECTURE.md` (Section 15 note line + merge of the phase doc), `TASKS.md` rows, `adr/ADR-286-sidebar-layout-entity-detail.md` status line, re-shot PNGs in `documentation/screenshots/` / `frontend/public/screenshots/` | docs only | — | review audit trail | the whole slice | 644A |
+| **644B** | QA + docs | `$EV/matrix/**` (28 + persona/portal/marketing screenshots, `README.md` index), `$EV/metrics.md`, this file § Closure report (debt list, backlog, OQ states), `architecture/ARCHITECTURE.md` (Section 15 note line + merge of the phase doc), `TASKS.md` rows, `adr/ADR-286-sidebar-layout-entity-detail.md` status line, re-shot PNGs in `documentation/screenshots/` / `frontend/public/screenshots/` | docs only | — | review audit trail | the whole slice | 644A — **in review** |
 
 ### Tasks
 
@@ -673,4 +673,315 @@ PR rules restated (non-negotiable):
 ---
 ## Closure report
 
-_Written by 644B._
+**Date:** 2026-11-13.
+
+**Measured on:** branch `phase90/44B-exit-closure`, based on `21be78447` (= `main`, the 644A bookkeeping commit).
+- Its product code is identical to the 644A gate head `2773ec9b6`: `git log --oneline 2773ec9b6..HEAD -- backend frontend portal packages gateway compose` prints nothing.
+- The KC dev stack was restarted from the shared main checkout @ `21be78447` at 23:27 SAST, per orchestrator ruling R3. Steps: `pnpm install` (adds the missing `next-themes`), backend `clean compile`, `docker builder prune -f`, `svc.sh start all`.
+- Port holders: backend java 45318, gateway 45473, frontend next-server 45528, portal next-server 45581. Proof that 643A/643B are served: `$EV/matrix/stack-proof.json`. Full provenance: `$EV/matrix/README.md` § Provenance.
+
+**Status vocabulary (root `CLAUDE.md` §3):**
+- **VERIFIED** = observed in a real browser or by a command run in this slice, with the artefact path given.
+- **MERGED-AWAITING-VERIFY** = merged and covered by unit tests, but the behaviour was not observed (here: not observable on this tenant).
+- **DEFERRED** = not done.
+- There is no PASS-with-note.
+
+Evidence paths use the shorthands at the top of this file (`$EV` = `qa_cycle/evidence/phase90-ui`).
+
+### C.1 Verdict
+
+| Part | Status | Evidence |
+|---|---|---|
+| Gates on merged `main` (644A) | **VERIFIED.** BE-VERIFY 6871 tests / 0 F / 0 E / 26 skipped; legal-lifecycle 105; legal-depth-ii 40 + 4 skipped; E2E-DEFAULT 165 / 0 F / 14 skipped; FE-GATE 477 files 4347 / 2; PORTAL-GATE 51 files 284 + portal OBS. Every count ≥ the 637.1 baseline | `$EV/suites/README.md`, `$EV/suites/summary.txt` |
+| Per-PR verify markers (644.2) | **VERIFIED.** 20 / 20 exit 0 under `scripts/check-verify-markers.sh --committed-only` over #1758–#1777 | `$EV/suites/markers.md` |
+| Home (owner) | **VERIFIED**, 1024/1440 × light/dark. KPI row, diary, WIP, debtors, trust position, FICA, matter health, sensitive events, activity all render; console 0 | `$EV/matrix/home-{1024,1440}-{light,dark}.png`, `home-1440-{light,dark}-full.png` |
+| Matters list | **VERIFIED**, 4 shots. Known density items only: 1024 table scrolls sideways (641A F1); new LOW: 1440 row "…" column half-clipped (+23 px) | `$EV/matrix/matters-{1024,1440}-{light,dark}.png` |
+| Matter detail (Overview + 3 tabs) | **VERIFIED**, 4 Overview shots + tabs Fees · Time recording, Fees · Trust, Activity · Activity at 1440 in both themes. Known: 1024 hero pushes the tab bar (641B F2), Trust duplicated in hero + Overview (641B F3), "Activity · Activity" label (642C); new LOW: time-tab billable green 2.97:1 (light) | `$EV/matrix/matter-detail-{1024,1440}-{light,dark}.png`, `matter-detail-tab-{time,trust,activity}-1440-{light,dark}.png` |
+| Clients list | **VERIFIED**, 4 shots, no defect observed | `$EV/matrix/clients-{1024,1440}-{light,dark}.png` |
+| Client detail | **VERIFIED**, 4 shots, hero 2×2 at 1024 / 4-up at 1440 | `$EV/matrix/client-detail-{1024,1440}-{light,dark}.png` |
+| Trust dashboard | **VERIFIED**, 4 shots; 12-month balance trend with a dashed partial month | `$EV/matrix/trust-{1024,1440}-{light,dark}.png` |
+| Profitability | **VERIFIED**, 4 shots + full-page at 1440; billing trend, utilisation, matter + client profitability. Known: 1024 matter table scrolls (643C), truncated y labels (643B N5) | `$EV/matrix/profitability-{1024,1440}-{light,dark}.png`, `profitability-1440-{light,dark}-full.png` |
+| Member (Carol) on Home | **VERIFIED.** `feeEarner` audience, no KPI row | `$EV/matrix/home-member-carol-1440-light.png` |
+| `FINANCIAL_VISIBILITY` custom role on Home (OQ #1) | **VERIFIED.** Billable % "—" + "Visible to admins and owners", no delta. The temporary role was created, assigned, restored (`restoreVerified: true`) and deleted, each step observed (ruling R6) | `$EV/matrix/home-fv-role-carol-1440-light.png`, `$EV/matrix/role-flow/`, `personas-report.json` |
+| Member on matter detail | **VERIFIED.** Hero = Trust balance + Next court date only; WIP and Outstanding omitted | `$EV/matrix/matter-detail-member-carol-1440-light.png` |
+| Portal `/home`, `/trust` at 1024 light | **VERIFIED.** Moroka contact, populated: trust R 50 100,00, 2 transactions | `$EV/matrix/portal-{home,trust}-1024-light.png`, `portal-report.json` |
+| Marketing `/` with stored dark preference | **VERIFIED still light.** `<html class="light">`; viewport and full-page are byte-identical to the no-preference control | `$EV/matrix/marketing-stored-dark-1440.png`, `marketing-stored-dark-rerun-1440*.png`, `marketing-report.json` |
+| Console on the matrix | **VERIFIED clean.** 0 errors / 0 warnings / 0 hydration warnings on every matrix page (`console.json` = `[]`; the sink is proven live by a probe). Portal `/trust`: 1 Next.js dev advisory (`scroll-behavior: smooth`). Portal exchange: 1 × 401 from the dev-only StrictMode double exchange (P-1, C.6) | `$EV/matrix/console.json`, `personas-console.json`, `$EV/darkmode/walk.json` (`probeCaptured`) |
+| KPI deltas (up/down) | **MERGED-AWAITING-VERIFY.** Not observable on this tenant: all 8 time entries are on 2026-11-11, so there is no previous period. Vitest-covered (640A) | `$EV/matrix/README.md` § "Not observable" |
+| StatCard error state (OQ #27) | **MERGED-AWAITING-VERIFY** (vitest-only by design: the KPI read is server-side). The loading state was observed in 640C | `$EV/640C/` |
+| A completed, balanced reconciliation on the trust tile | **MERGED-AWAITING-VERIFY.** The tenant has 0 reconciliations; creating one is a write outside 644B. The DRAFT state was observed in 643A | `$EV/643A/` |
+| Multi-currency / negative-margin profitability | **MERGED-AWAITING-VERIFY** (not seedable; vitest-only, 643C) | `$EV/643C/obs-summary.md` |
+| §15.8.7 metrics (644.5) | **VERIFIED**, re-run with the 637.1 commands. All targets met (C.4) | `$EV/metrics.md`, `$EV/metrics-raw.txt` |
+| Dark-mode long-tail walk (644.6) | **VERIFIED (walk done).** **73 pages: 60 PASS / 13 FAIL (1 illegible, 12 degraded).** Debt list in C.5 | `$EV/darkmode/README.md`, `$EV/darkmode/walk.json` |
+| Docs and marketing images (644.8) | **Listed** (ruling R2): 25 files classified, 0 re-shot. Re-shoot **DEFERRED** to a follow-up frontend PR (F-7) | `$EV/pngs/README.md` |
+| Architecture note line, ADR index, TASKS rows (644.9) | **Done in this PR.** `architecture/ARCHITECTURE.md` Phase 90 note line; `kazi-architecture/90-adr-index.md` ADR-367..374 + ADR-286 superseded-in-part; `TASKS.md` rows | this PR |
+| Review audit trail (644.10) | Pending: the orchestrator runs it on this PR | PR body |
+
+**No illegible or broken regression on any of the 7 in-scope surfaces, so ruling R8 is not triggered.** Every defect seen on them is cosmetic and was already listed by its slice, or is a new LOW (C.6 (d)).
+
+**Phase 90 exit: criteria met.**
+- The two mechanical gates (suites, markers) are green on the merged head.
+- The §15.8.6 matrix is observed with paths on the Keycloak stack.
+- Every §15.8.7 metric moved the right way, and both detail-page line targets are met.
+
+**Open founder decision (644.6, not resolved here):** dark mode ships as an **opt-in** toggle with a light default (ADR-371). The long tail has **1 illegible page**: `/my-work` (D-1). Its "Time today" figure and weekly total are black-on-black (1.0:1) in dark. There are also 12 degraded pages. **The founder decides whether D-1 blocks enabling dark mode for design partners.** The fix is a two-class token change (C.5).
+
+### C.2 Suites (644A)
+
+Head under test `main` @ `2773ec9b6` (every Phase 90 slice, plus #1778/#1779). One gate at a time, 2026-11-13 19:55–20:28 UTC. The fresh e2e stack was built from the 644A worktree. Source: `$EV/suites/README.md`.
+
+| Gate | 637.1 @`f7b7dbdf1` | 644A exit | Δ |
+|---|---|---|---|
+| BE-VERIFY | not in the baseline (FE-only) | exit 0, 6871 tests, 0 F, 0 E, 26 skipped (Maven 19:54 min) | n/a |
+| legal-lifecycle | 105 passed | 105 passed | = |
+| legal-depth-ii | 40 passed, 4 skipped | 40 passed, 4 skipped | = |
+| E2E-DEFAULT | 157 passed, 1 failed, 7 did not run, 14 skipped | 165 passed, 0 failed, 14 skipped | +8. INV-02 passed, so its 7 serial followers ran. **It stays an open intermittent baseline observation, not "fixed"** |
+| FE-GATE | 457 files, 3763 / 2 skipped | 477 files, 4347 / 2 skipped | +20 files, +584 tests (579 Phase 90 + 5 from #1778/#1779) |
+| PORTAL-GATE | 51 files, 284 | 51 files, 284 + OBS `/home` `/trust` `/invoices` @1024 light, console `[]` | = |
+
+- Flaky or retried tests: 0.
+- Specs amended by phase slices: none (`git diff --name-only f7b7dbdf1..2773ec9b6 -- frontend/e2e` is empty).
+- 644.3 (triage) was not triggered.
+
+### C.3 Markers
+
+- **20 / 20 PASS** (`$EV/suites/markers.md`): backend markers for P1 #1758, 643A #1775 and 643B #1776; a frontend marker for every UI slice; portal markers for 637A #1759, 639A #1763, 640A #1767 and 640C #1769.
+- This PR touches no `backend/`, `frontend/`, `portal/` or `packages/` path: `qa_cycle/`, `tasks/`, `architecture/`, `kazi-architecture/`, `TASKS.md` only. So `check-verify-markers.sh` classifies it as docs/tooling-only, and the merge hook requires only the review audit trail and green checks. The orchestrator records the post-merge run.
+
+### C.4 Metrics (before → after)
+
+Full commands, raw output and reconciliation: `$EV/metrics.md`, `$EV/metrics-raw.txt`. In-scope list: `$EV/metrics-inscope-baseline.txt`.
+
+| Metric | 637.1 | Exit | Target / note |
+|---|---|---|---|
+| Inline display h1 (`font-display text-3xl`) | 99 | **93** | −6, all six moved to `PageHeader` |
+| Raw hex, §15.8.7 ERE verbatim | 6 | **2** | ERE under-counts on macOS (no `\b`) |
+| Raw hex, PCRE `*.tsx` (OQ #22) | 46 | **32** | 13 are comment false positives |
+| Raw hex, wider `.ts/.tsx` incl. `lib` | 58 | **44** | |
+| Raw hex, wider incl. top-level files | 68 | **47** | 17 comment false positives; 30 real sites, all listed with dispositions in `metrics.md` |
+| Ad-hoc `<table` on in-scope files | 1 | **0** | |
+| `dark:` lines on in-scope files | 225 | **27** | −199 by the DARK-AUDITs, +1 comment (`chart-theme.ts:5`); reconciled per file |
+| `dark:` lines, whole frontend | 3851 | **3648** | −203 |
+| `dark:` occurrences, whole frontend | 4610 | **4379** | −231 |
+| Dead chart / widget files | 7 | **0** | |
+| Chart usages, 637.1 definition | 3 | **0** | old modules deleted |
+| Chart usages, 644.5 definition (importers of `$FC/charts/*`) | n/a | **10 importers / 9 live** | `overview-metrics-strip.tsx` has no production importer (B-9) |
+| `matters/[id]/page.tsx` lines | 680 | **384** | < 450 **met** |
+| `clients/[id]/page.tsx` lines | 756 | **380** | < 550 **met** |
+| `trust-accounting/page.tsx` lines | 426 | **363** | |
+
+**Like-with-like:** 6 of the 57 baseline in-scope paths were deleted by the phase: `desktop-sidebar`, `mobile-sidebar`, `nav-zone`, `matter-table-row`, `client-table-row` and `customers/trust-balance-card`. All six had 0 `dark:` and 0 `<table` at baseline, so neither sum moves. The 51 files the phase **added** carry 2 `dark:` lines, both in shadcn CLI files (`ui/toggle.tsx`, `ui/chart.tsx`).
+
+**The 27 in-scope `dark:` lines left:**
+- `auth-header-controls.tsx` 7 and `auth/user-menu-bff.tsx` 7 (hosted header controls, long tail per 638B);
+- `projects/kpi-dashboard.tsx` 10 (641B props-only ruling);
+- `matter-header-card.tsx:71` 1 and `reports/page.tsx:28` 1 (teal accents with no token);
+- `lib/chart-theme.ts:5` 1 (a comment).
+
+**Migrations: none.** `git diff --name-only f7b7dbdf1..HEAD -- backend/src/main/resources/db` is empty.
+- At baseline and exit: tenant **V1–V15 (next free V16)**, global **V1–V6 (next free V7)**.
+- This file's header said V14/V5 (true at `1bf85f0b1`, before G89 #1757) and `TASKS.md:5` said next free V12/V4. Both are corrected in this PR.
+- No template-pack bump.
+
+**Dependencies added:** exactly `next-themes` 0.4.6 and `@tanstack/react-table` 8.21.3 (exact pins, `frontend/package.json`).
+
+### C.5 Dark-mode long-tail debt list (§15.6.5 table)
+
+**Walk (644.6):**
+- Owner Thandi, dark (`kazi-theme=dark` + OS dark), 1440×900, KC stack, 2026-11-13 ≈21:50 UTC. Read-only: no clicks, submits or dialogs.
+- Scope: the 49 long-tail `page.tsx` files, minus `/settings` (a redirect) and the 5 settings family hosts. The hosts were walked as their 31 `?tab=` panels.
+- That gives 43 routes + 31 tabs = 74. `/invoices/billing-runs/[id]` was not walkable: the tenant has 0 billing runs, so there was nothing real to open.
+- **73 pages walked**, each HTTP 200 with `html.dark = true`.
+- An automated per-page contrast/surface/field audit (`walk.json` → `audit`) backs up the screenshot review.
+- The walk index with PASS/FAIL for every page is `$EV/darkmode/README.md` § "Walk index".
+
+**Result: 60 PASS, 13 FAIL: 1 illegible (`/my-work`), 12 degraded.**
+- Console over the 73 pages: 0 errors, 0 hydration warnings, 2 warnings. Both are `[tiptap warn]: Duplicate extension names found: ['link', 'underline']` on the two template-editor pages, pre-existing and not dark-related.
+
+| # | Page (route) | Symptom | Element / file:line | Severity | Proposed token fix | Screenshot |
+|---|---|---|---|---|---|---|
+| D-1 | `/my-work` | Black-on-black: the "Time today" figure (`0m`) and the weekly-rhythm total (`3.0h`) render `#14171c` on the `#14171c` card, **1.0:1** | `frontend/components/dashboard/todays-agenda.tsx:187` (`text-slate-900`, no dark pair; `time-progress-today`); `frontend/components/dashboard/weekly-rhythm-strip.tsx:85` (`text-slate-900`) | **illegible** | `text-slate-900` → `text-foreground` | `$EV/darkmode/my-work-1440-dark.png` |
+| D-2 | `/my-work` | Light slabs on the dark card. The 7 weekly-rhythm day bars and the time-today track paint `bg-slate-200` brighter than the teal fill, so the bar meaning inverts. The strip divider is a bright `border-slate-200` line, and the day hover is `bg-slate-50` | `weekly-rhythm-strip.tsx:60` (bar), `:84` (divider), `:49` (hover); `todays-agenda.tsx:194` (track) | degraded (the bar values cannot be read) | `bg-slate-200` → `bg-muted`; `border-slate-200` → `border-border`; `hover:bg-slate-50` → `hover:bg-accent` | `$EV/darkmode/my-work-1440-dark.png` |
+| D-3 | `/matters/new`, `/conflict-check`, `/legal/disbursements`, `/legal/adverse-parties`, `/settings/documents/templates/new`, `/settings/matters/checklists/new`, `/settings/matters/templates/[id]` (7 pages) | Native `<select>`s nearly invisible: border 1.15:1 on `bg-card` (1.29:1 on the page) with no fill, next to `Input`s that have a visible fill | `frontend/lib/styles/native-select.ts:7` (`nativeSelectClassName`, 6 importers) + inline copies: `components/legal/conflict-check-form.tsx:169,194,219`; `legal/disbursements/disbursements-list-client.tsx:54`; `legal/adverse-parties/adverse-party-registry-client.tsx:160`; `components/templates/CreateTemplateForm.tsx:99,117`; `components/compliance/CreateChecklistTemplateForm.tsx:131`; `components/templates/TemplateEditor.tsx:503` | degraded | `border-slate-200 … dark:border-slate-800 bg-transparent` → `border-input bg-transparent dark:bg-input/30` (the `Input` recipe) once in `nativeSelectClassName`, then replace the inline copies with the constant | `$EV/darkmode/{matters-new,conflict-check,legal-disbursements,legal-adverse-parties,settings-documents-templates-new,settings-matters-checklists-new,settings-matters-templates-id}-1440-dark.png` |
+| D-4 | `/settings/matters?tab=checklists`, `/settings/fees?tab=tariffs`, `/settings/firm?tab=general`, `/legal/disbursements/[id]` (4 pages) | Muted text `dark:text-slate-600` on near-black, **2.62:1** ("No", "Ongoing", the org-document "Uploaded" date). "No receipt uploaded" is 2.35:1 | `settings/matters/_tabs/checklists.tsx:121`; `components/rates/member-rates-table.tsx:222,349` (+ siblings `:201–224`, `:328–351`); `components/settings/org-documents-section.tsx:125`; `legal/disbursements/[id]/detail-client.tsx:326`. The pattern is in 14 `.tsx` files (`git grep -l "text-slate-400 dark:text-slate-600"`) | degraded | `text-slate-400 dark:text-slate-600` → `text-muted-foreground` | `$EV/darkmode/{settings-matters--checklists,settings-fees--tariffs,settings-firm--general,legal-disbursements-id}-1440-dark.png` |
+| D-5 | `/settings/connections?tab=xero` | "Connect to Xero": white on Xero blue `#13B5EA`, **2.38:1** (the same in light) | `frontend/components/integrations/XeroConnectionCard.tsx:141` | degraded | Brand exception: keep the brand fill and use dark text (`text-slate-950`, ≈ 8.6:1), or use a darker brand shade | `$EV/darkmode/settings-connections--xero-1440-dark.png` |
+
+- D-1 and D-2 are code Phase 90 did not touch. `git diff f7b7dbdf1..HEAD` on `todays-agenda.tsx` changes none of those classes, and `weekly-rhythm-strip.tsx` is unchanged. They are the visible symptom of the `todays-agenda.tsx` shared-component debt that 640B listed, exposed by the new opt-in dark mode.
+- `/my-work` is not one of the 7 matrix surfaces. Its kit components (`time-breakdown`, `weekly-time-summary`) render correctly in dark.
+
+**Non-dark observations from the walk** (listed in C.6 (d), not in this table):
+- L-1: `/my-work` task tables clip at 1440.
+- L-2: `/trust-accounting/transactions` with a 150-char reference pushes Amount/Status off the card.
+- L-3: the tenant logo is a white image (tenant data).
+
+**Shared-component dark debt carried from 640B (unchanged):**
+- `packages/ui` `Card` (`border-slate-200/80 dark:border-slate-800/80`), `Badge` status variants, `Skeleton`;
+- `health-badge.tsx`, `completion-progress-bar.tsx`, `severity-pill.tsx`, `todays-agenda.tsx`/`TodaysDiaryList`.
+
+Plus the 27 in-scope `dark:` lines named in C.4, and the long-tail `dark:` pairs that the C.6 (a) table counts per page.
+- ADR-371's long-tail rule stands: tokens replace pairs when a page is touched.
+- Phase 91's daily-use migration (founder decision 1) covers `/my-work`, fee notes, trust sub-pages and settings.
+
+### C.6 Backlog + OQ states
+
+"Phase 91" below means the Phase 91 requirements draft (`requirements/claude-code-prompt-phase91.md`, founder decisions 2026-11-12). It is not yet committed to `main`, and the sections named are its sections.
+
+#### (a) Long-tail adoption backlog (644.7; the ADR-367 "new page" rule)
+
+- Of the 57 `page.tsx` files under `$FA`, 8 are Phase 90 surfaces. `/my-work` is only partly one: its kit components are, but the page is not on `PageHeader`.
+- Page files that import `PageHeader` directly: `/clients`, `/matters`, `/reports`, `/reports/profitability`, `/trust-accounting`. `/dashboard` uses it via `dashboard-header.tsx`.
+- **None of the 49 long-tail page files imports `PageHeader`, `DataTable` or `$FC/charts/*`.** Re-checked per file at HEAD with `grep -c` (same method as the scout's route inventory).
+- Counts below are per page file: raw `<table` / inline display h1 / `dark:` lines. Components a page delegates to are not counted.
+
+| Family (owner) | Routes (`<table` / h1 / `dark:`) |
+|---|---|
+| Fee notes (→ Phase 91 §6) | `/invoices` (1/0/32), `/invoices/[id]` (0/0/3, 2 other `font-display`), `/invoices/billing-runs` (1/2/25), `/invoices/billing-runs/[id]` (0/2/6), `/invoices/billing-runs/new` (0/2/3), `/invoices/collections` (0/1/2), `/invoices/unbilled` (0/1/2) |
+| Trust sub-pages (→ Phase 91 §7) | `/trust-accounting/client-ledgers` (1/1/30), `…/client-ledgers/[clientId]` (1/1/33), `…/interest` (2/1/27), `…/investments` (1/1/28), `…/reconciliation` (1/1/21), `…/reconciliation/new` (0/1/21), `…/reports` (0/1/7), `…/transactions` (1/1/31) |
+| Personal (→ Phase 91 §8) | `/diary` (0/1/2), `/my-work` (0/0/1; components on the kit; dark D-1/D-2), `/my-work/timesheet` (0/0/2), `/notifications` (0/1/1) |
+| Settings (→ Phase 91 §4–§5) | `/settings` (redirect only); hosts `/settings/{firm,matters,fees,documents,connections}` (0/0/0, delegate to `_tabs/`; 31 tabs); `connections/ai/history` (0/2/6), `connections/automations/executions` (0/1/3), `connections/xero/sync-log` (0/2/15), `documents/templates/[id]/edit` (0/0/1), `documents/templates/new` (0/1/3), `matters/checklists/[id]` (1/2/18), `matters/checklists/[id]/edit` (0/2/6), `matters/checklists/new` (0/1/3), `matters/request-templates/[id]` (0/1/4), `matters/request-templates/new` (0/2/6), `matters/templates/[id]` (0/1/4) |
+| Light pass (→ Phase 91 §9) | `/compliance` (0/2/3), `/compliance/requests` (0/2/11), `/compliance/requests/[id]` (0/2/19), `/conflict-check` (0/1/4), `/legal/adverse-parties` (0/1/2), `/legal/disbursements` (0/1/2), `/legal/disbursements/[id]` (0/0/0), `/legal/tariffs` (0/1/4), `/team` (0/0/3, 1 plain `<h1`), `/ai/reviews` (0/2/4), `/information-requests/[id]` (0/1/3) |
+| **Not in Phase 91's scope list** | `/reports/[reportSlug]` (0/1/3): **OQ #12**, report-runner results on `DataTable` → backlog B-4. `/matters/new` (0/0/0; form page, dark D-3) → light pass candidate |
+
+#### (b) Deferred items (644.7)
+
+| Id | Item | Disposition |
+|---|---|---|
+| B-1 | **OQ #1:** KPI and utilization redaction is by role, not `FINANCIAL_VISIBILITY` (observed: `$EV/matrix/home-fv-role-carol-1440-light.png`). Also 643B: an FV-only custom role always sees the "two or more fee earners" note (`ReportService.java:122-131`, a wording question) | Backlog. **Own ADR + behaviour change** to align both endpoints with the `unbilled-wip` capability idiom. Not Phase 91 (that is a visual phase) |
+| B-2 | **OQ #4:** `@tanstack/react-table` 8.21.3 → v9 | Separate dependency PR after Phase 91 (v9 API differs; DataTable is the only importer) |
+| B-3 | **OQ #10:** firm-total aged-debtor bar | Backlog (needs a firm-total read; Phase 90 ruled out new endpoints) |
+| B-4 | **OQ #12:** `reports/[reportSlug]` results on `DataTable` | Backlog; not in Phase 91's scope list, so it needs an owner |
+| B-5 | **OQ #13:** activity timeline primitive | Backlog (no slice touched the Activity tabs) |
+| B-6 | **OQ #18** client trust balance read twice + **642B F9** `TrustBalanceCard` hard-codes `"ZAR"` while the hero follows the org default currency | One frontend PR (the 642B ruling bundles them) |
+| B-7 | Remaining raw-hex sites (637.4 list, re-measured: 30 real sites in `$EV/metrics.md`) | Xero brand (4), document-render CSS (8), invoice-preview error HTML (3), brand/tag-colour defaults and help text (10), a test fixture (2) and a shadcn registry selector (1) are intentional or data. Real debt: tag contrast text `#000000`/`#FFFFFF` (`TagInput.tsx:26`, `tags-content.tsx:17`) → tokens; Xero button text (D-5) |
+| B-8 | The lint rule ADR-367 defers ("banning `ui/table` imports outside DataTable", ADR-367:60) | Backlog until the long tail shrinks. Phase 91's exit metrics (PageHeader adoption, inline `<h1`, direct `<Table` by area) are its precondition |
+| B-9 | `projects/overview-metrics-strip.tsx`: no production importer (639D/641B), still a kit importer | Small deletion PR (with its test) |
+| B-10 | `frontend/CLAUDE.md` › Design System › Color System is stale (`--background oklch(94%)`, `--card 99.5%`, Input `focus-visible:ring-slate-500`; 637A) | Doc PR; **needs user authorisation** (CLAUDE.md edit). Best after Phase 91 settles the light scheme |
+| B-11 | `architecture/phase90-ui-modernization.md` §15.2.3 still says the StatCard sparkline slot has an "`aria-hidden` wrapper". 640A removed it, so the sr summary is announced | Doc note recorded here; the phase doc is not edited in 644B |
+| B-12 | **Density pass** (the "→ 644B density" items): 641A F1 matters table at 1024; 641B F2 hero pushes the tab bar at 1024; **642A F-642A-1 (MEDIUM)** Client column collapses to 16px when the table overflows; 642B F8 matter page scrolls at 390/768; 643C matter table scrolls at 1024 (`ui/table.tsx:84` nowrap); 638A F2 sidebar density at 1440×900 / 390 Sheet; 640A Matter health truncates names at 1024; 643A N2/N3; 643B From/To +5/+8px; 643C Client Profitability date row without `flex-wrap` (`customer-profitability-section.tsx:164`); 644B new: 1440 "…" column clip | → Phase 91 kinks register (founder decision 5). F-642A-1 is the one MEDIUM: flag it to the founder for "fix in Phase 91" |
+| B-13 | Dark debt: C.5 D-1…D-5 + the shared-component list + the 27 in-scope lines | D-1/D-2 → Phase 91 §8 (My Work), or a standalone 2-file token PR if the founder makes D-1 blocking. D-3 → one `nativeSelectClassName` PR. D-4 → a token sweep. D-5 → B-7 |
+
+#### (c) Every "→ 644B" item carried by a slice, with disposition
+
+| Source | Item | Disposition |
+|---|---|---|
+| 637A #1759 | Raw-hex long-tail list | B-7 |
+| 637A | `frontend/CLAUDE.md` Color System stale | B-10 |
+| 637A / 639D | `--aging-current` swatch ≈2.2:1 light / 2.65:1 dark (< 3:1) | Palette fix (`frontend/app/globals.css` chart tokens) → Phase 91 colour-scheme work (founder decision 2) |
+| 637B (via 640B) | A `kazi-theme` value with a space crashes the page | Bug → F-9 |
+| 638A #1761 | F2 sidebar density | B-12 |
+| 638B #1762 | Command palette focus not returned on close (LOW, pre-existing); `notification-bell`/`auth-header-controls`/`user-menu-bff` `dark:` pairs | a11y LOW → Phase 91 kinks register; `dark:` → B-13 |
+| 639A #1763 | Matters filtered-empty is a hand-rolled div, not `EmptyState` (A8) | → Phase 91 §3 (EmptyState sizing rule) |
+| 639B #1764 | `slot` all-or-none rule doc-only; `usePrefersReducedMotion` in `chart-table-toggle.tsx` (move to `$FL`); `MAX_DIRECT_LABELS`/`LABEL_CHAR_PX` duplicated (also 643A); donut HTML legend; My Work `7.0h (67%)` vs kit `7,0h` | Kit-hygiene backlog (one small frontend PR) |
+| 639D #1766 | useId/role=img/sr-only scaffold repeated across 3 presets | Kit-hygiene backlog (same PR) |
+| 640A #1767 | §15.2.3 aria-hidden note stale; Matter health truncation at 1024 | B-11; B-12 |
+| 640B #1768 | **sensitive-events failed read (`recent === null`) shows the clean state, a false all-clear** (pre-existing; CodeRabbit major) | Bug → F-8 (needs new error copy: a product copy decision) |
+| 640B | Sensitive "NOTICE n" vs "No sensitive events"; `todays-agenda.tsx` slate-400 2.64:1 (re-observed: `$EV/matrix/home-1024-light.png`); chart arrow keys reversed on horizontal bars + unnamed `role=application`; HealthBadge label map duplicated; Carol's personal StatCard title style; debtors legend bucket labels vs `AgingBuckets.java:14-15` | Phase 91 kinks register (a11y/copy items flagged as product decisions where copy changes) |
+| 640B | Shared-component dark debt (Card, Badge, Skeleton, health-badge, completion-progress-bar, severity-pill, todays-agenda) | B-13 (C.5) |
+| 640C #1769 | Rows below the diary are data-sized (+62.5px); faint dark skeleton blocks | Phase 91 kinks register |
+| 641A #1770 | F1 density; `ProjectStatusFilter` + `matters/loading.tsx` raw `dark:` / old h-9 skeleton; stale comment `data-table.tsx:108` | B-12; B-13; kit-hygiene PR |
+| 641B #1771 | `OverviewMetricsStrip` deletion candidate | B-9 |
+| 641B | F2 density; F3 Trust/Outstanding duplicated (hero + Overview KPIDashboard; observed `$EV/matrix/matter-detail-1440-light.png`), court tile hint repeats the court name, empty court tile sr text | B-12; F3 → Phase 91 kinks register |
+| 641B | F1 `ProjectUpcomingDeadlinesService` returns POSTPONED/CANCELLED/HEARD rows | Backend bug → F-4 |
+| 641B | F4 `project-closed-at` never renders; `project-overflow-menu` has no accessible name; member 403 on `/time-summary/by-member` | Bug backlog (pre-existing) |
+| 642A #1772 | F-642A-1 (MEDIUM) Client column collapse | B-12 (flagged MEDIUM) |
+| 642A | F-642A-2 Save View dialog Next off-screen at 1440×900; F-642A-3 no in-app path to Offboarding/Offboarded (product gap); F-642A-4 streamed hidden second `clients-table` (info); `clients/loading.tsx` 3 `dark:` + h-9; `client-lifecycle-filter.tsx` 3, `client-filters-sheet.tsx` 1 `dark:` | Kinks register; product gap → founder; info only; B-13 |
+| 642A | Merge-gate hook: `gh pr diff --name-only` HTTP 406 above 20,000 lines | Tooling → F-1 |
+| 642B #1773 | F8 matter page scrolls at 390/768 | B-12 |
+| 642B | F9 `"ZAR"` hard-code | B-6 |
+| 642B | F3 dead header smart-action button (`client-header-card-with-lifecycle.tsx:70`); F4 "N matters" counts closed matters; F5 member 403s (xero/connection, unbilled-summary); F6 clients-list Outstanding silently drops other-currency fee notes; stale comment `hero-tiles.test.ts:9` | Bug backlog (F6 is a correctness item: own PR) |
+| 642C #1774 | Inactive dropdown-group click opens the menu; tabpanels' `aria-labelledby` point at 36 non-existent ids; 278px trigger at 320px (design call); low-contrast scrollbar thumb; "Activity · Activity" (re-observed `$EV/matrix/matter-detail-tab-activity-1440-light.png`; G89-F28 candidate); `EDGE_FADE_PX` vs `w-8`; stale `motion/react` mocks in 3 tests | a11y (`aria-labelledby`) → its own small PR; the rest → Phase 91 kinks register / kit hygiene |
+| 643A #1775 | N1 last x tick lacks "(to date)"; N2 PageHeader squeeze at 768; N3 Reference column ≤1024; N4 cashbook ≈ ledger lines coincide; unused `totalBalance`/`pendingApprovals` in `fetchDashboardData`; trust-position-widget test lacks a DRAFT case; `MAX_DIRECT_LABELS` ×3 | Chart polish + kit hygiene backlog; N2/N3 → B-12 |
+| 643A | Primary-account bug class in `ClientTrustStatementContext.java:121` + `StatementOfAccountContextBuilder.java:562`; `TrustAccountService.getPrimaryAccount()` unused | Backend → F-5 |
+| 643B #1776 | D2 all-caps labels clip at the left edge (`tickSize`); N5 shared 14-char prefixes truncate identically (re-observed `$EV/matrix/profitability-1440-light-full.png`); `unbilled-wip-chart.tsx`/`trust-balance-trend-chart.tsx` should adopt `$FC/charts/layout.ts`; billing card description on the empty page; From/To overflow; billed = collected hides the billed line; tooltip lingers after focus moves | Chart polish backlog |
+| 643B | FV-only "two or more fee earners" wording | B-1 |
+| 643B | `BillingTrendService` SQL literal `'Africa/Johannesburg'` vs `KaziTime.ZONE` agreement test | Backend test → F-6 |
+| 643C #1777 | Client Profitability date row `flex-wrap`; matter table scrolls at 1024; `reports/loading.tsx` h-9 + raw `dark:` pair | B-12; B-13 |
+| 643C | `--font-sans` → Plex scoping vs the system-sans body (app-wide typography) | Phase 91 (typography decision with the colour scheme) |
+| 643C | Kit sort icons 14px vs 12px; stale chart tooltip after tabbing; hoist the money-font override into a `MoneyCell` prop | Kit hygiene backlog |
+| 643C | Multi-currency / negative margin / null cost not seedable | Stays vitest-only (C.1 MERGED-AWAITING-VERIFY) |
+| 643C | `reports/[reportSlug]` on DataTable | B-4 |
+| 644A #1780 | (a) exit-gate runner hardening; (b) `e2e-up.sh` seed exit code (`:107-109`) | Tooling → F-2, F-3 |
+| P1 review | Role-based KPI redaction vs `FINANCIAL_VISIBILITY` | B-1 |
+
+#### (d) New findings from the 644B observation (listed, not fixed; ruling R8)
+
+| Id | Finding | Severity | Evidence | Disposition |
+|---|---|---|---|---|
+| O-1 | Matters list at 1440: the table container is 23px too narrow (1157/1134), so the row "…" action column is half-clipped at the right edge | LOW (cosmetic) | `$EV/matrix/matters-1440-light.png` | B-12 |
+| O-2 | Matter Time tab: billable hours `text-green-600` at 2.97:1 on the table row (`components/projects/time-summary-panel.tsx:158`; light only) | LOW | `$EV/matrix/matter-detail-tab-time-1440-light.png` | Token sweep (`text-success-foreground`) |
+| O-3 (P-1) | Portal `/auth/exchange` under `next dev` shows "Link expired or invalid" although the exchange succeeded (backend log + `portal_jwt` set). React StrictMode runs the `useEffect` exchange twice, and the second call 401s on the consumed token. Production builds don't double-invoke; not observed there | LOW, dev-only, pre-existing | `$EV/matrix/portal-exchange-after-link-1024-light.png`, `portal-report.json` | F-10 |
+| O-4 (L-1) | `/my-work` at 1440: "My Tasks" / "Available Tasks" tables clip at the card's right edge | LOW (density) | `$EV/darkmode/my-work-1440-dark.png` | Phase 91 §8 |
+| O-5 (L-2) | `/trust-accounting/transactions`: an unbroken 150-char reference (G89 QA data) forces Amount/Status beyond the card edge | LOW (data-triggered layout) | `$EV/darkmode/trust-accounting-transactions-1440-dark.png` | Phase 91 §7 (`break-all`/max width on Reference) |
+| O-6 (L-3) | Tenant logo is a white image: white block in Settings › General, empty box in the portal header | info (tenant data) | `$EV/darkmode/settings-firm--general-1440-dark.png`, `$EV/matrix/portal-home-1024-light.png` | None (data) |
+| O-7 | `[tiptap warn]: Duplicate extension names found: ['link', 'underline']` on both template-editor pages | LOW (console) | `$EV/darkmode/console.json` | Editor-config backlog |
+
+#### (e) Follow-up PRs already named (outside Phase 90)
+
+| Id | Follow-up | Gate |
+|---|---|---|
+| F-1 | Merge-gate hook: fall back to paginated `pulls/{n}/files` when `gh pr diff --name-only` returns HTTP 406 (> 20,000 lines), and document both limits (642A) | tooling review |
+| F-2 | Exit-gate runner hardening: absolute `<worktree>`/`<outdir>`; skip suites unless e2e-down/up/seed all succeed (644A, CodeRabbit on #1780) | tooling review |
+| F-3 | `compose/scripts/e2e-up.sh` treats a seed non-zero exit, seed timeout or Mailpit timeout as success; `:107-109` is not exit-code-aware (644A) | tooling review |
+| F-4 | `ProjectUpcomingDeadlinesService`: SCHEDULED court rows only (641B F1) | BE-VERIFY |
+| F-5 | Primary-account bug class in `ClientTrustStatementContext.java:121` + `StatementOfAccountContextBuilder.java:562`; drop the unused `TrustAccountService.getPrimaryAccount()` (643A) | BE-VERIFY |
+| F-6 | `BillingTrendService` time-zone literal vs `KaziTime.ZONE` agreement test (643B) | BE-VERIFY |
+| F-7 | Re-shoot the 5 code-referenced marketing PNGs from a production build at 1440×900 light; decide on the 7 unreferenced ones (`$EV/pngs/README.md`). Best after Phase 91's colour-scheme decision | FE-GATE + frontend marker |
+| F-8 | Sensitive-events widget: a failed read shows the clean "No sensitive events" state (false all-clear; 640B, CodeRabbit major). Needs error copy (product decision) | FE-GATE |
+| F-9 | A `kazi-theme` localStorage value with a space crashes the page (637B, listed by 640B): validate the stored value in the head script / provider | FE-GATE + E2E |
+| F-10 | Portal exchange page idempotent under StrictMode (O-3) | PORTAL-GATE |
+
+#### (f) Open Questions: final states
+
+| # | Final state |
+|---|---|
+| 1 | **Deferred → B-1** (own ADR; behaviour change). FV-role Home observed: Billable % "—" + hint, no delta |
+| 2 | Decided (R1): margin tile hidden. Unchanged |
+| 3 | **Decided for Phase 90: kept.** 637A PR #1759 asked; the slate-950 light-mode rail shipped (observed in every light matrix shot). The founder reopened it on 2026-11-12 for Phase 91 (founder decision 2: a new ADR records the reversal) |
+| 4 | Decided (pin 8.21.3, 639C #1765). v9 → B-2 |
+| 5 | Decided: per-browser `kazi-theme` (`$FC/theme/theme-config.ts:6`). Unchanged |
+| 6–9 | Decided (643A/643B). Unchanged |
+| 10 | Decided → B-3 |
+| 11 | Decided: primary account only (642B). Unchanged |
+| 12 | Decided → B-4 (no Phase 91 owner yet) |
+| 13 | Decided (deferred) → B-5 |
+| 14 | Decided; done in 637B / 639D |
+| 15 | **Resolved (642B, PR #1773):** reused `fetchClientLedger` (`$FA/trust-accounting/client-ledgers/actions.ts:82`). The table said "Open"; corrected in this PR |
+| 16 | **Closed by 644B (list branch, ruling R2):** 25 files classified (the spec's "14" was a miscount), 0 re-shot → F-7 |
+| 17 | Decided: court date only (641B). Unchanged |
+| 18 | Decided → B-6 (with 642B F9) |
+| 19–21 | Resolved (breakdown rules). Unchanged |
+| 22 | Resolved (637.1). 644B compared like with like: both raw-hex numbers re-run (C.4) |
+| 23 | **Resolved (639D, PR #1766):** `chart-components.test.tsx` deleted. The table said "Open"; corrected in this PR |
+| 24–26, 28 | Resolved. Unchanged |
+| 27 | Resolved (honest scope): the StatCard error state stays **vitest-only**, never claimed as observed (C.1) |
+
+#### (g) Deviations from the 644 task text (each authorised or recorded)
+
+- **ADR-286 not edited (orchestrator ruling R1).**
+  - 644.9 asks for a status line on `adr/ADR-286-sidebar-layout-entity-detail.md`. Root `README.md:100` says: "`adr/` — **Append-only ADR corpus** — files are never edited for status. … *Active* status lives in `kazi-architecture/90-adr-index.md`".
+  - The supersession is therefore recorded only in the index: ADR-286 row "ADR-373 · Partially: superseded for the matter and client detail pages only".
+  - ADR-373's own Status line already states it.
+- **PNGs listed, not re-shot (ruling R2).** This keeps the PR docs-only (no frontend marker / FE-GATE). → F-7.
+- **Architecture merge = the note line, as Phases 86–89 did.**
+  - Phases 86–89 were never pasted into `architecture/ARCHITECTURE.md`. Its last numbered section is `## 10. Phase 4`; each phase doc stays a separate file linked from a note line at the top.
+  - The phase doc's own line 3 says to link it "like Phases 86–89".
+  - 644B adds the Phase 90 note line (Section 15 → `phase90-ui-modernization.md`, with the closure verdict) rather than duplicating 1052 lines into a file whose banner marks it historical.
+- **OBS via a Playwright library script, not Playwright MCP (ruling R4).** The MCP Chrome profile is held by the user's live session ("Browser is already in use"). Scripts are committed byte-for-byte as executed (`$EV/matrix/scripts/`, `$EV/darkmode/scripts/`), the same deviation as 637A–644A.
+- **Evidence folder `darkmode/`** instead of the brief's `darkwalk/`.
+- **Spec counts corrected:** "≈45 untouched pages" → 49 long-tail page files (73 walkable pages/tabs); "14 documentation screenshots" → 12 PNG + 1 WebM.
+
+### C.7 Lessons
+
+- **OBS catches what reviews pass.** In five consecutive slices (642B, 642C, 643A, 643B, 643C) the real-browser observation found a defect after the reviewers had approved; 640A and 640B OBS also found and fixed defects before merge. Examples: squeezed three-cell rows, an unreachable Progress column, a hero overflow at 390, focus hidden by a fade, unwrapped references, wrapped category ticks, and a `font-mono` money column widening a table. On layout changes, run OBS before trusting reviews, and probe 390/768, not only 1024/1440.
+- **Never overlap E2E-LEGAL with a Maven verify.** In 643A, a lifecycle run concurrent with BE-VERIFY lost 6 tests to the next@16.2.6 stale-refresh-under-load cascade.
+- **Container-query breakpoints must be checked against measured container widths, not viewport names.** Examples: 640B `@xl` was wider than the widest 566px container; 642A sticky header only from a 42rem frame.
+- **Tab underlines must key on `aria-selected`, not `data-state`.** Radix stamps open/closed on dropdown triggers (642C).
+- **Scroll containers with edge fades need a keyboard-focus OBS at narrow widths** (642C, WCAG 2.4.11).
+- **Recharts category ticks need a long-label OBS.** Ticks wrapped and overlapped until the kit truncated to one line (643B).
+- **`font-mono` money cells widen tables.** `font-sans` does not reset to the page font, because `--font-plex` lives on `<body>` (643C).
+- **Keep evidence JSON compact.** `gh pr diff --name-only` fails above 20,000 lines and the merge hook then denies (642A). Every Phase 90 evidence JSON is single-line.
+- **Evidence scripts: commit as executed, never edit after the run, never write a counterfactual capture to the as-rendered filename** (643C, 644A).
+- **`adr/` is append-only (root `README.md:100`).** Refinements go in the task file or a new ADR, and status goes in `kazi-architecture/90-adr-index.md`. 642A and 643C recorded ADR-369 refinements that way; 644B recorded ADR-286 that way (R1).
+- **The shared main checkout needs `pnpm install` after a dependency lands before the Keycloak stack can serve the phase.** The stale `node_modules` (no `next-themes`) gave `:3000` → 500. The backend also predated 643A/643B, so prove the new endpoints render (`stack-proof.json`) before the matrix.
+- **Status files go stale fast.** OQ #15/#23 stayed "Open" after the slices that closed them, and the migration numbers in this file's header and `TASKS.md:5` lagged G89. The slice that closes an OQ must edit its State cell in the same PR.
+- **An opt-in theme surfaces old code.** The one illegible dark page (`/my-work`) is code Phase 90 never touched. The long-tail walk is what found it, which is why ADR-371 requires the debt list before dark mode is offered to anyone.

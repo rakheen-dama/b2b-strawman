@@ -1,0 +1,156 @@
+# 644B metrics raw output (task 644.5). Run from the worktree root (bash -c per command).
+# HEAD 058d6f27e8a9108c78fa82582471fe36ebc9b08e (product code identical to 644A gate head 2773ec9b6), 2026-11-13T22:01:16Z, git 2.52.0
+# inscope.txt = a temporary copy of metrics-inscope-baseline.txt (the 57 paths of baseline/README.md <details>)
+
+$ git grep -c "font-display text-3xl" -- frontend/app frontend/components | awk -F: '{s+=$NF} END {print s}'
+93
+[exit 0]
+
+$ git grep -nE "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx" | wc -l
+       2
+[exit 0]
+
+$ git grep -nE "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx"
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/branding-section.tsx:92:      setError("Brand color must be a valid hex color (e.g., #1a2b3c).");
+frontend/components/settings/general-settings-form.tsx:137:      setMessage("Brand color must be a valid hex color (e.g., #1a2b3c).");
+[exit 0]
+
+$ git grep -nP "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.tsx" "frontend/app/**/*.tsx" | wc -l
+      32
+[exit 0]
+
+$ git grep -nP "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.ts" "frontend/components/**/*.tsx" "frontend/app/**/*.ts" "frontend/app/**/*.tsx" "frontend/lib/**/*.ts" "frontend/lib/**/*.tsx" | wc -l
+      44
+[exit 0]
+
+$ git grep -nP "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.ts" "frontend/components/**/*.tsx" "frontend/app/**/*.ts" "frontend/app/**/*.tsx" "frontend/lib/**/*.ts" "frontend/lib/**/*.tsx" "frontend/components/*.ts" "frontend/components/*.tsx" "frontend/lib/*.ts" | wc -l
+      47
+[exit 0]
+
+$ git grep -nP "#[0-9a-fA-F]{3,6}\b" -- "frontend/components/**/*.ts" "frontend/components/**/*.tsx" "frontend/app/**/*.ts" "frontend/app/**/*.tsx" "frontend/lib/**/*.ts" "frontend/lib/**/*.tsx" "frontend/components/*.ts" "frontend/components/*.tsx" "frontend/lib/*.ts" | cut -c1-160
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/branding-section.tsx:29:  const [brandColor, setBrandColor] = useState(settings.brandColor ?? "#000000");
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/branding-section.tsx:92:      setError("Brand color must be a valid hex color (e.g., #1a2b3c).");
+frontend/app/(app)/org/[slug]/settings/documents/_tabs/branding-section.tsx:187:            placeholder="#000000"
+frontend/app/(app)/org/[slug]/settings/firm/_tabs/general.tsx:54:        brandColor={settings.brandColor ?? "#000000"}
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields-content.tsx:82:  /** Names of inactive definitions that are still group members, by id (PR #1
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/custom-fields.tsx:62:  // before it is removed (PR #1752 review). Usually none; failures leave the id-prefi
+frontend/app/(app)/org/[slug]/settings/matters/_tabs/tags-content.tsx:17:  return luminance > 0.5 ? "#000000" : "#FFFFFF";
+frontend/app/(app)/org/[slug]/team/page.tsx:21:  // custom role's badge shows its name, not its slug (PR #1752 review).
+frontend/app/(app)/org/[slug]/trust-accounting/page.tsx:205:            // do their own data loading and remain usable independently. PR #1004 review.
+frontend/app/accept-invite/validate.ts:33: *      after PR #1059 only whitelisted the first shape).
+frontend/components/__tests__/app-sidebar.test.tsx:453:    const { unmount } = renderSidebar({ brandColor: "#1B3A4B" });
+frontend/components/__tests__/app-sidebar.test.tsx:459:    expect(document.documentElement.style.getPropertyValue("--brand-color")).toBe("#1B3A4B");
+frontend/components/comments/edit-comment-dialog.tsx:163:  // collide on Radix Slot reconciliation (PR #1242 pattern).
+frontend/components/customers/XeroContactBadge.tsx:32:      <Badge variant="neutral" className="bg-[#13B5EA]/10 text-[#13B5EA]">
+frontend/components/customers/edit-customer-dialog.tsx:164:  // OBS-2103 (PR #1239) avoided Radix `Slot` (`asChild`) because two adjacent
+frontend/components/editor/client-renderer.ts:25:    color: #333;
+frontend/components/editor/client-renderer.ts:29:    border-bottom: 3px solid var(--brand-color, #1a1a2e);
+frontend/components/editor/client-renderer.ts:36:    color: #666;
+frontend/components/editor/client-renderer.ts:39:    border-top: 1px solid #ccc;
+frontend/components/editor/client-renderer.ts:49:    background-color: #f5f5f5;
+frontend/components/editor/client-renderer.ts:52:    border-bottom: 2px solid #ddd;
+frontend/components/editor/client-renderer.ts:57:    border-bottom: 1px solid #eee;
+frontend/components/editor/client-renderer.ts:61:    color: #1a1a2e;
+frontend/components/field-definitions/FieldGroupDialog.tsx:445:                  // so two inactive members are told apart (PR #1752 review). With no name, the
+frontend/components/integrations/XeroConnectionCard.tsx:97:              <div className="flex size-10 items-center justify-center rounded-lg bg-[#13B5EA]/10">
+frontend/components/integrations/XeroConnectionCard.tsx:98:                <span className="text-lg font-bold text-[#13B5EA]">X</span>
+frontend/components/integrations/XeroConnectionCard.tsx:141:                className="bg-[#13B5EA] text-white hover:bg-[#0e9fd0]"
+frontend/components/matters/matter-tabs.tsx:127:  // at all — otherwise they click through to an empty pane (PR #1281 follow-up).
+frontend/components/rates/customer-rates-tab.tsx:48:// on Radix Slot reconciliation. Mirrors PR #1242's pattern for customer dialogs.
+frontend/components/settings/general-settings-form.tsx:137:      setMessage("Brand color must be a valid hex color (e.g., #1a2b3c).");
+frontend/components/settings/general-settings-form.tsx:307:              value={brandColor || "#000000"}
+frontend/components/settings/general-settings-form.tsx:315:              placeholder="#000000"
+frontend/components/shell/app-sidebar.tsx:226:            (#1B3A4B) on the slate-950 rail was illegible (G-A3, Phase 88 628B). */}
+frontend/components/tags/TagDialog.tsx:65:      setError("Color must be a valid hex color (e.g. #FF5733).");
+frontend/components/tags/TagDialog.tsx:129:                  placeholder="#FF5733"
+frontend/components/tags/TagDialog.tsx:139:              <p className="text-xs text-slate-500 dark:text-slate-400">Hex format, e.g. #FF5733</p>
+frontend/components/tags/TagInput.tsx:26:  return luminance > 0.5 ? "#000000" : "#FFFFFF";
+frontend/components/team/member-list.tsx:29:  /** Custom-role display names for the Role badge, for every viewer (PR #1752 review). */
+frontend/components/trust/TrustBalanceCard.tsx:124:  // (rendered only when `ledger` is present) instead of blanking the card (PR #1746 review).
+frontend/components/trust/ledger-totals-breakdown.tsx:78:              {/* The visual "−" is aria-hidden; say it for screen readers (PR #1746 review) */}
+frontend/components/ui/chart.tsx:68:          "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:str
+frontend/lib/__tests__/current-member.test.ts:5:// two can't drift (PR #1624 review: My work matched case-sensitively, the Diary didn't).
+frontend/lib/__tests__/nav-items.test.ts:222: * Before PR #1448 members had no AI entry point at all; the AI zone is gone in Phase 87 (ADR-339),
+frontend/lib/invoice-preview-error.ts:51:    `<style>body{font-family:system-ui,sans-serif;background:#f1f5f9;color:#0f172a;margin:0;padding:48px 16px}` +
+frontend/lib/invoice-preview-error.ts:52:    `main{max-width:560px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:24px}` +
+frontend/lib/invoice-preview-error.ts:53:    `h1{font-size:18px;margin:0 0 8px}p{font-size:14px;line-height:1.5;color:#334155;margin:0}</style>` +
+frontend/lib/types/legal.ts:74:  // Legacy keys on purpose — ConflictCheckService.ConflictDetail is JSONB-persisted (PR #1601 Q2); do not rename until storage/w
+[exit 0]
+
+$ tr '\n' '\0' < inscope.txt | xargs -0 git --literal-pathspecs grep -c "<table" -- | awk -F: '{s+=$NF} END {print s+0}'
+0
+[exit 0]
+
+$ tr '\n' '\0' < inscope.txt | xargs -0 git --literal-pathspecs grep -c "dark:" -- | awk -F: '{s+=$NF} END {print s+0}'
+27
+[exit 0]
+
+$ tr '\n' '\0' < inscope.txt | xargs -0 git --literal-pathspecs grep -c "dark:" --
+frontend/app/(app)/org/[slug]/reports/page.tsx:1
+frontend/components/auth-header-controls.tsx:7
+frontend/components/auth/user-menu-bff.tsx:7
+frontend/components/projects/kpi-dashboard.tsx:10
+frontend/components/projects/matter-header-card.tsx:1
+frontend/lib/chart-theme.ts:1
+[exit 0]
+
+$ git grep -c "dark:" -- "frontend/**/*.ts" "frontend/**/*.tsx" | awk -F: '{s+=$NF} END {print s}'
+3648
+[exit 0]
+
+$ git grep -o "dark:" -- "frontend/**/*.ts" "frontend/**/*.tsx" | wc -l
+    4379
+[exit 0]
+
+$ ls frontend/components/dashboard/{horizontal-bar-chart,radial-gauge,kpi-card,sparkline-chart,sparkline,incomplete-profiles-widget,information-requests-widget}.tsx | wc -l
+ls: frontend/components/dashboard/horizontal-bar-chart.tsx: No such file or directory
+ls: frontend/components/dashboard/incomplete-profiles-widget.tsx: No such file or directory
+ls: frontend/components/dashboard/information-requests-widget.tsx: No such file or directory
+ls: frontend/components/dashboard/kpi-card.tsx: No such file or directory
+ls: frontend/components/dashboard/radial-gauge.tsx: No such file or directory
+ls: frontend/components/dashboard/sparkline-chart.tsx: No such file or directory
+ls: frontend/components/dashboard/sparkline.tsx: No such file or directory
+       0
+[exit 0]
+
+$ git grep -lE "from \"@/components/dashboard/(donut-chart|mini-progress-ring|micro-stacked-bar)\"" -- frontend/app frontend/components
+[exit 1]
+
+$ git grep -lE "from \"@/components/charts/" -- frontend/app frontend/components | grep -v "^frontend/components/charts/"
+frontend/components/dashboard/debtors-widget.tsx
+frontend/components/dashboard/kpi-row.tsx
+frontend/components/dashboard/unbilled-wip-chart.tsx
+frontend/components/my-work/time-breakdown.tsx
+frontend/components/my-work/weekly-time-summary.tsx
+frontend/components/profitability/billing-trend-chart.tsx
+frontend/components/profitability/profitability-ranking-chart.tsx
+frontend/components/profitability/utilization-chart.tsx
+frontend/components/projects/overview-metrics-strip.tsx
+frontend/components/trust/trust-balance-trend-chart.tsx
+[exit 0]
+
+$ git grep -l "OverviewMetricsStrip" -- frontend/app frontend/components frontend/lib | grep -v "projects/overview-metrics-strip.tsx"
+[exit 1]
+
+$ wc -l "frontend/app/(app)/org/[slug]/matters/[id]/page.tsx" "frontend/app/(app)/org/[slug]/clients/[id]/page.tsx" "frontend/app/(app)/org/[slug]/trust-accounting/page.tsx"
+     384 frontend/app/(app)/org/[slug]/matters/[id]/page.tsx
+     380 frontend/app/(app)/org/[slug]/clients/[id]/page.tsx
+     363 frontend/app/(app)/org/[slug]/trust-accounting/page.tsx
+    1127 total
+[exit 0]
+
+$ git diff --name-only f7b7dbdf1..HEAD -- backend/src/main/resources/db
+[exit 0]
+
+$ ls backend/src/main/resources/db/migration/tenant | sort -V | tail -1; ls backend/src/main/resources/db/migration/global | sort -V | tail -1
+V15__g89_trust_investment_cancelled.sql
+V6__portal_trust_reference_200.sql
+[exit 0]
+
+$ git diff f7b7dbdf1..HEAD -- frontend/package.json portal/package.json packages/ui/package.json packages/shared/package.json | grep -E "^[+-] "
++    "@tanstack/react-table": "8.21.3",
++    "next-themes": "0.4.6",
++    "./page-header": "./src/page-header.tsx",
++    "./stat-card": "./src/stat-card.tsx",
+[exit 0]
+

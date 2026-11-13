@@ -3,7 +3,7 @@
 **Head under test:** `main` @ **`2773ec9b6f00fa03d564d503f4df267d11fd6206`** (2026-11-13) — every Phase 90 code slice (P1 #1758, 637A–643C #1759–#1777) merged, plus the two trust-reconciliation wizard fixes #1778/#1779 that landed after 643C.
 **Where:** detached worktree `worktree-epic-644A` (branch `phase90/44A-exit-suites` created at `origin/main`, no commits before this evidence).
 **Runner:** [`run-gates.sh`](run-gates.sh) — one gate at a time on the machine (BE-VERIFY first, then the fresh e2e stack, then FE-GATE, then PORTAL-GATE; never E2E alongside a Maven verify), under `caffeinate -is`, node **v20.11.1** (nvm; CI pin), pnpm by absolute path `/opt/homebrew/bin/pnpm`, `NODE_OPTIONS=""`.
-**Invocation (from the worktree root):** `mkdir -p /tmp/644A/run1 && nohup caffeinate -is bash /tmp/644A/run-gates.sh "$PWD" /tmp/644A/run1 > /tmp/644A/run1.nohup 2>&1 &` (detached; completion = `/tmp/644A/run1/DONE`). Steps outside the script are listed under *Manual steps* below.
+**Invocation (from the worktree root):** `mkdir -p /tmp/644A/run1 && cp qa_cycle/evidence/phase90-ui/suites/run-gates.sh /tmp/644A/run-gates.sh && nohup caffeinate -is bash /tmp/644A/run-gates.sh "$PWD" /tmp/644A/run1 > /tmp/644A/run1.nohup 2>&1 &` (detached; completion = `/tmp/644A/run1/DONE`). Steps outside the script are listed under *Manual steps* below.
 **Raw timeline:** [`summary.txt`](summary.txt) (UTC timestamps, exit codes, pass counts as printed by each tool).
 
 ## Verdict
@@ -62,11 +62,28 @@ PORTAL-GATE includes "`/home`, `/trust` and `/invoices` observed at 1024 in ligh
 - Cleanup: `git clean -f documentation/screenshots` (26 untracked PNGs that `git checkout --` cannot remove).
 - Evidence extraction:
   - `tail -8 /tmp/644A/run1/<suite>.log > <suite>-tail.txt` for legal-lifecycle, legal-depth-ii and default.
-  - `tail -6 /tmp/644A/run1/{fe,portal}-test.log > {fe,portal}-test-tail.txt`.
+  - `tail -6 /tmp/644A/run1/fe-test.log > fe-test-tail.txt` and `tail -6 /tmp/644A/run1/portal-test.log > portal-test-tail.txt` (two separate commands).
   - `grep -E 'Tests run:.*Fail|BUILD|Total time' be-verify.log | tail -3 > be-verify-tail.txt`.
   - `grep -E INV-02 default.log > default-inv02.txt`.
   - `cp summary.txt`.
 - Portal OBS: start the portal on :3012 as above, run `node portal-obs.cjs`, then stop the dev server.
+
+## Runner limitations (CodeRabbit on `1817ddf6d`) and why the recorded run is unaffected
+
+`run-gates.sh` is committed **verbatim as executed**, so it is not edited after the fact. CodeRabbit found two robustness gaps in it.
+
+1. **It does not normalise `<worktree>`/`<outdir>` to absolute paths.** A relative argument would misplace logs after the `cd`s. The recorded run passed absolute paths (`"$PWD"` and `/tmp/644A/run1`; see *Invocation*).
+2. **It records but does not gate on the `e2e-down`/`e2e-up` exit codes.** `e2e-up.sh` also reports success even if the seed or Mailpit wait fails. So a partial or stale stack would not stop the suites. In the recorded run every setup step succeeded, as `summary.txt` and the run-host logs show:
+   - `e2e-down exit 0`, which removed all containers and both volumes (`docteams-e2e_e2e_postgres_data`, `…_localstack_data`);
+   - `e2e-up exit 0`;
+   - backend, frontend, mock IDP and Mailpit all "ready";
+   - "Seed completed";
+   - `e2e-seed` container `ExitCode 0` (20:17:21 → 20:17:26Z);
+   - all six `e2e-*` containers created at 20:16:53Z by this `e2e-up`.
+
+   The suites ran on the freshly provisioned stack.
+
+A future exit-gate runner should resolve both paths up front and skip the suites unless teardown, startup and seed all succeed. That hardening is a tooling change for its own PR, not part of this evidence.
 
 ## Verify markers (644.2)
 

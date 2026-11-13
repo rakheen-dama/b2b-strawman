@@ -1,0 +1,36 @@
+start 2026-11-13T19:55:22Z head 2773ec9b6f00fa03d564d503f4df267d11fd6206 node v20.11.1
+be-verify start 2026-11-13T19:55:24Z
+spotless exit 0
+be-verify exit 0 end 2026-11-13T20:15:33Z
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.270 s -- in io.b2mash.b2b.b2bstrawman.architecture.PortalLinkBuilderArchTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.29 s -- in io.b2mash.b2b.b2bstrawman.architecture.TestConventionsTest
+[WARNING] Tests run: 6871, Failures: 0, Errors: 0, Skipped: 26
+be-failed-classes: none
+be-testcases: 6871
+be-skipped-testcases: 26
+e2e start 2026-11-13T20:15:37Z
+e2e-down exit 0
+prune exit 0
+e2e-up exit 0 2026-11-13T20:17:27Z
+pnpm install exit 0
+legal-lifecycle start 2026-11-13T20:17:36Z
+legal-lifecycle exit 0 ::  105 passed (3.2m) end 2026-11-13T20:20:50Z
+legal-depth-ii start 2026-11-13T20:20:50Z
+legal-depth-ii exit 0 ::  4 skipped; 40 passed (2.0m) end 2026-11-13T20:22:53Z
+default start 2026-11-13T20:22:53Z
+default exit 0 ::  14 skipped; 165 passed (1.7m) end 2026-11-13T20:24:34Z
+fe-gate start 2026-11-13T20:24:35Z
+fe lint ok
+fe typecheck ok
+fe format ok
+fe test ok
+fe build ok
+fe-gate exit 0 end 2026-11-13T20:28:14Z ::  Test Files 477 passed (477); Tests 4347 passed | 2 skipped (4349)
+portal-gate start 2026-11-13T20:28:14Z
+portal lint ok
+portal typecheck ok
+portal format ok
+portal test ok
+portal build ok
+portal-gate exit 0 end 2026-11-13T20:28:46Z ::  Test Files 51 passed (51); Tests 284 passed (284)
+end 2026-11-13T20:28:46Z

@@ -1,0 +1,17 @@
+# captured 2026-11-13T20:58:44Z from the still-running 644A e2e stack (no e2e-down since the run)
+$ docker inspect e2e-seed --format "{{.State.ExitCode}} {{.State.StartedAt}} {{.State.FinishedAt}}"
+0 2026-11-13T20:17:21.159173342Z 2026-11-13T20:17:26.268484345Z
+$ docker ps -a --filter name=e2e- --format "{{.Names}} {{.CreatedAt}} {{.Status}}"
+e2e-seed 2026-11-13 22:16:54 +0200 SAST Exited (0) 41 minutes ago
+e2e-frontend 2026-11-13 22:16:54 +0200 SAST Up 41 minutes (healthy)
+e2e-backend 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
+e2e-mock-idp 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
+e2e-localstack 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
+e2e-postgres 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
+e2e-mailpit 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
+$ docker logs e2e-seed 2>&1 | tail -3
+  SoA:      Website Redesign (shared with client)
+  Digest:   BIWEEKLY
+
+$ docker logs e2e-seed 2>&1 | grep -n "Complete"
+69:  E2E Boot-Seed Complete!

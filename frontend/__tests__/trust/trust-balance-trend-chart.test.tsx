@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TrustBalanceTrendChart, monthLabel } from "@/components/trust/trust-balance-trend-chart";
+import { TrustBalanceTrendChart } from "@/components/trust/trust-balance-trend-chart";
 import type { TrustBalanceTrendResponse } from "@/lib/dashboard-types";
 
 // happy-dom has no layout: stub recharts' SVG internals so the real TrendAreaChart → ChartCard
@@ -85,12 +85,6 @@ function zeroMonths(): TrustBalanceTrendResponse {
 
 describe("TrustBalanceTrendChart", () => {
   afterEach(() => cleanup());
-
-  it("labels months deterministically", () => {
-    expect(monthLabel("2026-06")).toBe("Jun 2026");
-    expect(monthLabel("2025-12")).toBe("Dec 2025");
-    expect(monthLabel("bogus")).toBe("bogus");
-  });
 
   it("renders the 12-month series with a to-date last point and an sr summary", async () => {
     render(<TrustBalanceTrendChart trend={twelveMonths()} />);

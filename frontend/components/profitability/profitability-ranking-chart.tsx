@@ -4,6 +4,12 @@ import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import type { ChartRow, ChartSeries } from "@/components/charts/chart-summary";
+import {
+  FRAMELESS_CHART_CLASS,
+  HORIZONTAL_BAR_AXIS_PX,
+  HORIZONTAL_BAR_BAND_PX,
+  TOGGLE_ROW_PX,
+} from "@/components/charts/layout";
 import type { MatterProfitabilitySummary } from "@/lib/types";
 
 // recharts is split out of the page bundle and mounted on the client only, behind a skeleton
@@ -29,17 +35,6 @@ const SERIES: ChartSeries[] = [{ key: "margin", label: "Margin", slot: 1 }];
  * rest into one summed "Other" bar — meaningless on a ranking.
  */
 const TOP = 10;
-
-/** One bar band in px (recharts' default 10% category gap; see unbilled-wip-chart.tsx). */
-const BAND_PX = 30;
-/** The preset's 16px top margin + the 30px value axis (see unbilled-wip-chart.tsx). */
-const AXIS_PX = 46;
-/** ChartTableToggle: mt-3 + the 32px "View as table" button (see unbilled-wip-chart.tsx). */
-const TOGGLE_ROW_PX = 44;
-
-/** No card in a card: the 640B frameless class (no frame, no header; the figure keeps its name). */
-const FRAMELESS_CLASS =
-  "gap-0 rounded-none border-0 bg-transparent py-0 shadow-none *:data-[slot=card-content]:px-0";
 
 /** Rows in other currencies are not summed into, or ranked against, the default currency. */
 export function excludedHint(count: number): string {
@@ -83,7 +78,7 @@ export function ProfitabilityRankingChart({
     return hint ? <div className="mb-4">{hint}</div> : null;
   }
 
-  const height = rows.length * BAND_PX + AXIS_PX;
+  const height = rows.length * HORIZONTAL_BAR_BAND_PX + HORIZONTAL_BAR_AXIS_PX;
   // The hint sits outside the preset (not its `footer`) so the skeleton box equals the ready box.
   return (
     <div className="mb-6 space-y-2">
@@ -106,7 +101,7 @@ export function ProfitabilityRankingChart({
           currency={defaultCurrency}
           maxBars={TOP}
           height={height}
-          className={FRAMELESS_CLASS}
+          className={FRAMELESS_CHART_CLASS}
         />
       </div>
       {hint}

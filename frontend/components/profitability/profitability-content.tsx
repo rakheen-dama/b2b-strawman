@@ -14,8 +14,8 @@ interface ProfitabilityContentProps {
   initialFrom: string;
   initialTo: string;
   /** Last 12 SA months; null = absent (403/404) or failed (see billingTrendFailed). Plain data. */
-  billingTrend?: BillingTrendResponse | null;
-  billingTrendFailed?: boolean;
+  billingTrend: BillingTrendResponse | null;
+  billingTrendFailed: boolean;
 }
 
 export function ProfitabilityContent({
@@ -23,8 +23,8 @@ export function ProfitabilityContent({
   initialProfitability,
   initialFrom,
   initialTo,
-  billingTrend = null,
-  billingTrendFailed = false,
+  billingTrend,
+  billingTrendFailed,
 }: ProfitabilityContentProps) {
   return (
     <div className="space-y-8">

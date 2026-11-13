@@ -27,8 +27,8 @@ interface ProjectProfitabilityTableProps {
   initialData: OrgProfitabilityResponse;
   initialFrom: string;
   initialTo: string;
-  /** Org default currency for the margin ranking; absent → no ranking chart (table unchanged). */
-  defaultCurrency?: string | null;
+  /** Org default currency for the margin ranking; `null` → no ranking chart (table unchanged). */
+  defaultCurrency: string | null;
 }
 
 type SortField =
@@ -78,7 +78,7 @@ export function ProjectProfitabilityTable({
   initialData,
   initialFrom,
   initialTo,
-  defaultCurrency = null,
+  defaultCurrency,
 }: ProjectProfitabilityTableProps) {
   const [data, setData] = useState<OrgProfitabilityResponse>(initialData);
   const [from, setFrom] = useState(initialFrom);

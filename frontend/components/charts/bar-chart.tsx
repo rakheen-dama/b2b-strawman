@@ -30,6 +30,7 @@ import {
   type ChartSeries,
 } from "./chart-summary";
 import { ChartTableToggle, usePrefersReducedMotion } from "./chart-table-toggle";
+import { BAR_CHART_TOP_MARGIN_PX, BAR_CHART_VALUE_AXIS_PX } from "./layout";
 
 /** Series-name direct labels for 2–4 series (ADR-370 §3); one series gets value labels instead. */
 const MAX_DIRECT_LABELS = 4;
@@ -283,7 +284,7 @@ export function BarChartPreset({
           accessibilityLayer
           data={chartRows}
           layout={horizontal ? "vertical" : "horizontal"}
-          margin={{ top: 16, right: rightMargin, bottom: 0, left: 0 }}
+          margin={{ top: BAR_CHART_TOP_MARGIN_PX, right: rightMargin, bottom: 0, left: 0 }}
         >
           <CartesianGrid
             vertical={horizontal}
@@ -295,6 +296,7 @@ export function BarChartPreset({
             <>
               <XAxis
                 type="number"
+                height={BAR_CHART_VALUE_AXIS_PX}
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}

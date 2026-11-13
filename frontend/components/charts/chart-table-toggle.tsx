@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { TOGGLE_ROW_CLASS } from "./layout";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -72,7 +73,7 @@ export function ChartTableToggle({ caption, columns, rows }: ChartTableTogglePro
   const panelId = useId();
 
   return (
-    <div data-slot="chart-table-toggle" className="mt-3 flex flex-col gap-2">
+    <div data-slot="chart-table-toggle" className={TOGGLE_ROW_CLASS}>
       <Button
         type="button"
         variant="ghost"

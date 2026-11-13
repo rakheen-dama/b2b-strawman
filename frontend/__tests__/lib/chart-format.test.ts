@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatAxisTick, formatChartValue } from "@/lib/chart-format";
+import { formatAxisTick, formatChartValue, monthLabel } from "@/lib/chart-format";
 import { formatCurrency } from "@/lib/format";
 
 describe("formatChartValue", () => {
@@ -67,5 +67,13 @@ describe("formatAxisTick", () => {
     expect(formatAxisTick(45.4, "percent")).toBe("45%");
     expect(formatAxisTick(-2.5, "points")).toBe("−2,5 pp");
     expect(formatAxisTick(1234567, "count")).toMatch(/^1\s234\s567$/);
+  });
+});
+
+describe("monthLabel", () => {
+  it("labels months deterministically", () => {
+    expect(monthLabel("2026-06")).toBe("Jun 2026");
+    expect(monthLabel("2025-12")).toBe("Dec 2025");
+    expect(monthLabel("bogus")).toBe("bogus");
   });
 });

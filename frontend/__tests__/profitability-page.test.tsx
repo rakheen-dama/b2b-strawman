@@ -219,6 +219,7 @@ describe("Profitability Page", () => {
           initialData={data}
           initialFrom="2026-02-01"
           initialTo="2026-02-14"
+          defaultCurrency={null}
         />
       );
 
@@ -236,6 +237,7 @@ describe("Profitability Page", () => {
           initialData={data}
           initialFrom="2026-02-01"
           initialTo="2026-02-14"
+          defaultCurrency={null}
         />
       );
 
@@ -251,6 +253,7 @@ describe("Profitability Page", () => {
           initialData={data}
           initialFrom="2026-02-01"
           initialTo="2026-02-14"
+          defaultCurrency={null}
         />
       );
 
@@ -264,6 +267,7 @@ describe("Profitability Page", () => {
           initialData={data}
           initialFrom="2026-02-01"
           initialTo="2026-02-14"
+          defaultCurrency={null}
         />
       );
 
@@ -310,6 +314,7 @@ describe("Profitability Page", () => {
             initialData={makeProfitability()}
             initialFrom="2026-02-01"
             initialTo="2026-02-14"
+            defaultCurrency={null}
           />
         );
 
@@ -332,6 +337,7 @@ describe("Profitability Page", () => {
             initialData={makeProfitability()}
             initialFrom="2026-02-01"
             initialTo="2026-02-14"
+            defaultCurrency={null}
           />
         );
 
@@ -356,6 +362,7 @@ describe("Profitability Page", () => {
             initialData={makeProfitability()}
             initialFrom="2026-02-01"
             initialTo="2026-02-14"
+            defaultCurrency={null}
           />
         );
 
@@ -377,6 +384,7 @@ describe("Profitability Page", () => {
             initialData={makeProfitability()}
             initialFrom="2026-02-01"
             initialTo="2026-02-14"
+            defaultCurrency={null}
           />
         );
 
@@ -431,7 +439,7 @@ describe("Profitability charts (643B)", () => {
 
   describe("Fees Billed vs Collected", () => {
     it("renders 12 months in the default currency with a to-date last point", async () => {
-      render(<BillingTrendChart trend={makeBillingTrend()} />);
+      render(<BillingTrendChart trend={makeBillingTrend()} failed={false} />);
 
       const figure = await screen.findByRole("figure", { name: "Fees Billed vs Collected" });
       expect(figure).toHaveTextContent("ZAR · VAT inclusive · last 12 months");
@@ -450,7 +458,7 @@ describe("Profitability charts (643B)", () => {
     });
 
     it("an absent read (403/404) renders the compact empty state, not an alert", () => {
-      render(<BillingTrendChart trend={null} />);
+      render(<BillingTrendChart trend={null} failed={false} />);
 
       const figure = screen.getByRole("figure", { name: "Fees Billed vs Collected" });
       expect(within(figure).getByText("Billing trend not available.")).toBeInTheDocument();
@@ -564,6 +572,7 @@ describe("Profitability charts (643B)", () => {
           initialData={makeProfitability()}
           initialFrom="2026-02-01"
           initialTo="2026-02-14"
+          defaultCurrency={null}
         />
       );
 

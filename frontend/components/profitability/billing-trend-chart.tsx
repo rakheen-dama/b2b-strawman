@@ -5,7 +5,8 @@ import dynamic from "next/dynamic";
 import { ChartArea } from "lucide-react";
 import { ChartCard } from "@/components/charts/chart-card";
 import type { ChartRow, ChartSeries } from "@/components/charts/chart-summary";
-import { monthLabel } from "@/components/trust/trust-balance-trend-chart";
+import { TOGGLE_ROW_PX } from "@/components/charts/layout";
+import { monthLabel } from "@/lib/chart-format";
 import type { BillingTrendResponse } from "@/lib/types";
 
 /** Visible card title and the figure's accessible name (spec §15.2.7). */
@@ -19,15 +20,10 @@ export const BILLING_TREND_SCOPE =
 
 /** The chart area (TrendAreaChart's default). */
 const CHART_HEIGHT = 240;
-/**
- * ChartTableToggle: mt-3 + the 32px (size="sm") "View as table" button, which the loading card
- * does not draw. Mirrors chart-table-toggle.tsx's root `mt-3` and `<Button size="sm">` (`h-8`).
- */
-const TOGGLE_ROW_PX = 44;
 
 // recharts is split out of the page bundle and mounted on the client only, behind a loading card
-// of the ready card's own box (same header, chart + toggle-row height), so nothing shifts when the
-// chart arrives (640B / 643A pattern).
+// of the ready card's own box (same header, chart + toggle-row height — the loading card draws no
+// toggle row), so nothing shifts when the chart arrives (640B / 643A pattern).
 const TrendAreaChart = dynamic(
   () => import("@/components/charts/trend-area-chart").then((mod) => mod.TrendAreaChart),
   {
@@ -56,7 +52,7 @@ interface BillingTrendChartProps {
   /** The billing-trend read; `null` = absent (403/404) or failed (see `failed`). Plain data only. */
   trend: BillingTrendResponse | null;
   /** The read failed (not 403/404): the card shows an error line instead of the chart. */
-  failed?: boolean;
+  failed: boolean;
 }
 
 /**
@@ -65,7 +61,7 @@ interface BillingTrendChartProps {
  * labelled "(to date)" and drawn dashed. Absent and error states render through ChartCard without
  * loading recharts. All-zero months are drawn as flat lines: nothing billed is still a value.
  */
-export function BillingTrendChart({ trend, failed = false }: BillingTrendChartProps) {
+export function BillingTrendChart({ trend, failed }: BillingTrendChartProps) {
   const rows = useMemo<ChartRow[]>(
     () =>
       trend?.months.map((point) => ({

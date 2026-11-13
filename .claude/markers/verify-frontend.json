@@ -1,7 +1,7 @@
 {
-  "commit": "dc9ce8920",
+  "commit": "b967e6dea",
   "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-11-13T09:15:23Z",
-  "summary": "PR #1778 FE-GATE @dc9ce8920 (node v20.11.1): lint 0 errors (78 pre-existing warnings), typecheck ok, format ok, vitest 477 files / 4344 passed / 2 skipped, build ok"
+  "ts": "2026-11-13T18:55:59Z",
+  "summary": "PR #1779 FE-GATE @b967e6dea (node v20.11.1): lint 0 errors (78 pre-existing warnings), typecheck ok, format ok, vitest 477 files / 4347 passed / 2 skipped, build ok"
 }

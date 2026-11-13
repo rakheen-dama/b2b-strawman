@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.MatterHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustBalanceTrendResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UnbilledWipResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -139,6 +140,19 @@ public class DashboardController {
   public ResponseEntity<TrustPositionResponse> getTrustPosition(
       @RequestParam(required = false) UUID accountId) {
     return ResponseEntity.ok(dashboardService.getTrustPosition(accountId));
+  }
+
+  /**
+   * Month-end cashbook and client-ledger balances for the primary (or requested) trust account over
+   * the last {@code months} SA calendar months (1–24, default 12), oldest first, zero-filled
+   * (ADR-372). Same gate as trust-position.
+   */
+  @GetMapping("/api/dashboard/trust-balance-trend")
+  @RequiresCapability("VIEW_TRUST")
+  public ResponseEntity<TrustBalanceTrendResponse> getTrustBalanceTrend(
+      @RequestParam(required = false) UUID accountId,
+      @RequestParam(defaultValue = "12") int months) {
+    return ResponseEntity.ok(dashboardService.getTrustBalanceTrend(accountId, months));
   }
 
   // --- Personal dashboard endpoint (Epic 79A) ---

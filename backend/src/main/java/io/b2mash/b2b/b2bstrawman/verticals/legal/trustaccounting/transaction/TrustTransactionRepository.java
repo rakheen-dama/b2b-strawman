@@ -223,6 +223,46 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("asOfDate") LocalDate asOfDate);
 
   /**
+   * Monthly net movements on one trust account for the trust-balance trend (Phase 90 643A, ADR-372,
+   * arch §15.3.7): one row per SA calendar month from {@code windowStart} to {@code today}, plus
+   * one row with a NULL {@code monthStart} holding everything dated before {@code windowStart} (the
+   * opening balance). {@code cashbookNet} uses the sign rule of {@link #calculateCashbookBalance};
+   * {@code ledgerNet} the rule of {@link #calculateClientBalanceAsOfDate} summed over clients (a
+   * row without a client — only INTEREST_LPFF, chk_trust_txn_customer_required — counts 0).
+   * RECORDED/APPROVED only; REVERSAL counts 0 (a reversed debit is itself REVERSED, G89-F13).
+   * {@code transaction_date} is already an SA business date (G88-F48), so months need no zone
+   * conversion: the date is truncated as a zone-less {@code timestamp}. Rows after {@code today}
+   * are excluded. Uses idx_trust_txn_account_date.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT CASE WHEN t.transaction_date < :windowStart THEN NULL
+                      ELSE CAST(date_trunc('month', CAST(t.transaction_date AS timestamp)) AS date)
+                 END AS monthStart,
+                 COALESCE(SUM(CASE
+                   WHEN t.transaction_type IN ('DEPOSIT','INTEREST_CREDIT') THEN t.amount
+                   WHEN t.transaction_type IN ('PAYMENT','FEE_TRANSFER','REFUND','INTEREST_LPFF') THEN -t.amount
+                   ELSE 0 END), 0) AS cashbookNet,
+                 COALESCE(SUM(CASE
+                   WHEN t.customer_id IS NULL THEN 0
+                   WHEN t.transaction_type IN ('DEPOSIT','TRANSFER_IN','INTEREST_CREDIT') THEN t.amount
+                   WHEN t.transaction_type IN ('PAYMENT','TRANSFER_OUT','FEE_TRANSFER','REFUND','INTEREST_LPFF') THEN -t.amount
+                   ELSE 0 END), 0) AS ledgerNet
+          FROM trust_transactions t
+          WHERE t.trust_account_id = :trustAccountId
+            AND t.status IN ('RECORDED', 'APPROVED')
+            AND t.transaction_date <= :today
+          GROUP BY 1
+          ORDER BY 1 NULLS FIRST
+          """)
+  List<TrustMonthlyMovementProjection> findMonthlyBalanceMovements(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("windowStart") LocalDate windowStart,
+      @Param("today") LocalDate today);
+
+  /**
    * Posted totals per client and transaction type on one trust account (G89-F13): RECORDED/APPROVED
    * rows only, REVERSAL excluded — a reversed debit is itself marked REVERSED, so it drops out of
    * its type's total, matching the balance. Feeds {@code LedgerTotals}, the client-ledger totals

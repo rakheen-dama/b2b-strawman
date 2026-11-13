@@ -26,6 +26,8 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.MemberHoursEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.PersonalDashboard;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrendPoint;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustBalanceTrendPoint;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustBalanceTrendResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse.TrustAccountRef;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UnbilledWipResponse;
@@ -55,9 +57,13 @@ import io.b2mash.b2b.b2bstrawman.timeentry.UnbilledWipByMemberProjection;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.TrustAccountResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustMonthlyMovementProjection;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -65,6 +71,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -98,6 +105,11 @@ public class DashboardService {
 
   static final int MAX_FICA_OUTSTANDING_LIMIT = 50;
 
+  /** Bounds of the trust-balance-trend {@code months} window (400 outside — not clamped). */
+  static final int MIN_TREND_MONTHS = 1;
+
+  static final int MAX_TREND_MONTHS = 24;
+
   private static final String DISBURSEMENTS_MODULE = "disbursements";
   private static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
 
@@ -114,6 +126,7 @@ public class DashboardService {
   private final InformationRequestService informationRequestService;
   private final TrustAccountService trustAccountService;
   private final TrustTransactionService trustTransactionService;
+  private final TrustTransactionRepository trustTransactionRepository;
   private final ClientLedgerService clientLedgerService;
   private final TrustReconciliationRepository trustReconciliationRepository;
   private final DisbursementRepository disbursementRepository;
@@ -140,6 +153,7 @@ public class DashboardService {
       InformationRequestService informationRequestService,
       TrustAccountService trustAccountService,
       TrustTransactionService trustTransactionService,
+      TrustTransactionRepository trustTransactionRepository,
       ClientLedgerService clientLedgerService,
       TrustReconciliationRepository trustReconciliationRepository,
       DisbursementRepository disbursementRepository,
@@ -158,6 +172,7 @@ public class DashboardService {
     this.informationRequestService = informationRequestService;
     this.trustAccountService = trustAccountService;
     this.trustTransactionService = trustTransactionService;
+    this.trustTransactionRepository = trustTransactionRepository;
     this.clientLedgerService = clientLedgerService;
     this.trustReconciliationRepository = trustReconciliationRepository;
     this.disbursementRepository = disbursementRepository;
@@ -501,16 +516,7 @@ public class DashboardService {
   public TrustPositionResponse getTrustPosition(UUID accountId) {
     moduleGuard.requireModule(TRUST_ACCOUNTING_MODULE);
     var accounts = trustAccountService.listTrustAccounts();
-    var account =
-        accountId != null
-            ? trustAccountService.getTrustAccount(accountId)
-            : trustAccountService
-                .getPrimaryAccount()
-                .or(() -> accounts.stream().findFirst())
-                .orElseThrow(
-                    () ->
-                        ResourceNotFoundException.withDetail(
-                            "No trust account", "No trust account has been configured"));
+    var account = resolveTrustAccount(accountId, accounts);
     BigDecimal cashbook = trustTransactionService.getCashbookBalance(account.id()).balance();
     BigDecimal ledger = clientLedgerService.getTotalTrustBalance(account.id()).balance();
     int pendingApprovals = trustTransactionService.getPendingApprovals(account.id()).size();
@@ -530,9 +536,95 @@ public class DashboardService {
         latest.map(TrustReconciliation::isBalanced).orElse(null),
         latest.map(r -> (int) ChronoUnit.DAYS.between(r.getPeriodEnd(), today)).orElse(null),
         pendingApprovals,
-        accounts.stream()
-            .map(a -> new TrustAccountRef(a.id(), a.accountName(), a.isPrimary()))
-            .toList());
+        accountRefs(accounts));
+  }
+
+  /**
+   * Month-end balances for {@code accountId} (else the primary, else the first account) over the
+   * last {@code months} SA calendar months, oldest first, zero-filled (ADR-372, arch §15.3.7).
+   * Replays the currently effective RECORDED/APPROVED rows by business date with the sign rules of
+   * calculateCashbookBalance / calculateClientBalanceAsOfDate; rows dated after today are excluded.
+   * The current month is "as of today" ({@code partial}). Not cached (no invalidation hook on trust
+   * writes, like trust-position).
+   */
+  @Transactional(readOnly = true)
+  public TrustBalanceTrendResponse getTrustBalanceTrend(UUID accountId, int months) {
+    moduleGuard.requireModule(TRUST_ACCOUNTING_MODULE);
+    if (months < MIN_TREND_MONTHS || months > MAX_TREND_MONTHS) {
+      throw new InvalidStateException("Invalid months", "'months' must be between 1 and 24");
+    }
+    var accounts = trustAccountService.listTrustAccounts();
+    var account = resolveTrustAccount(accountId, accounts);
+    LocalDate today = LocalDate.now(clock);
+    YearMonth current = YearMonth.from(today);
+    YearMonth first = current.minusMonths(months - 1L);
+
+    BigDecimal openingCashbook = BigDecimal.ZERO;
+    BigDecimal openingLedger = BigDecimal.ZERO;
+    Map<YearMonth, TrustMonthlyMovementProjection> byMonth = new HashMap<>();
+    for (var row :
+        trustTransactionRepository.findMonthlyBalanceMovements(
+            account.id(), first.atDay(1), today)) {
+      if (row.getMonthStart() == null) {
+        openingCashbook = row.getCashbookNet();
+        openingLedger = row.getLedgerNet();
+      } else {
+        byMonth.put(YearMonth.from(row.getMonthStart()), row);
+      }
+    }
+
+    List<TrustBalanceTrendPoint> points = new ArrayList<>(months);
+    BigDecimal cashbook = openingCashbook;
+    BigDecimal ledger = openingLedger;
+    for (YearMonth month = first; !month.isAfter(current); month = month.plusMonths(1)) {
+      var row = byMonth.get(month);
+      if (row != null) {
+        cashbook = cashbook.add(row.getCashbookNet());
+        ledger = ledger.add(row.getLedgerNet());
+      }
+      boolean partial = month.equals(current);
+      points.add(
+          new TrustBalanceTrendPoint(
+              month.toString(), partial ? today : month.atEndOfMonth(), cashbook, ledger, partial));
+    }
+    return new TrustBalanceTrendResponse(
+        account.id(),
+        account.accountName(),
+        orgSettingsService.getDefaultCurrency(),
+        today,
+        openingCashbook,
+        openingLedger,
+        points,
+        accountRefs(accounts));
+  }
+
+  /**
+   * The trust-position account rule (shared with {@link #getTrustBalanceTrend}): the requested id
+   * (404 when unknown), else the primary GENERAL account among the {@code accounts} (the ACTIVE
+   * ones), else the first active one, else 404 "No trust account". The default is picked from the
+   * active list, not {@code getPrimaryAccount()}: closing an account leaves its {@code is_primary}
+   * flag set, and a closed account must neither be the default nor stand in for "no account".
+   */
+  private TrustAccountResponse resolveTrustAccount(
+      UUID accountId, List<TrustAccountResponse> accounts) {
+    if (accountId != null) {
+      return trustAccountService.getTrustAccount(accountId);
+    }
+    return accounts.stream()
+        .filter(a -> a.isPrimary() && a.accountType() == TrustAccountType.GENERAL)
+        .findFirst()
+        .or(() -> accounts.stream().findFirst())
+        .orElseThrow(
+            () ->
+                ResourceNotFoundException.withDetail(
+                    "No trust account", "No trust account has been configured"));
+  }
+
+  /** The active trust accounts as selector refs (trust-position and trust-balance-trend). */
+  private static List<TrustAccountRef> accountRefs(List<TrustAccountResponse> accounts) {
+    return accounts.stream()
+        .map(a -> new TrustAccountRef(a.id(), a.accountName(), a.isPrimary()))
+        .toList();
   }
 
   /**

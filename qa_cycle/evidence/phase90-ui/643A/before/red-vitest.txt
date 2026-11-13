@@ -1,0 +1,7 @@
+643.1 frontend red — unmodified page.tsx at HEAD 43142e947 (only the test file changed)
+$ pnpm exec vitest run __tests__/trust-dashboard.test.tsx
+ FAIL  __tests__/trust-dashboard.test.tsx > TrustAccountingPage > a reconciled trust position renders Balanced and the period-end date
+TestingLibraryElementError: Unable to find an element with the text: Balanced. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+  (rendered Reconciliation tile:) Not yet reconciled / No reconciliation records found
+    201|     expect(cards.getByText("Balanced")).toBeInTheDocument();
+      Tests  1 failed | 6 passed (7)

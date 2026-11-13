@@ -1,0 +1,10 @@
+F1 red (CodeRabbit Major) — default trust account resolves to a CLOSED primary.
+Run at head d8ac25878, before the resolveTrustAccount fix:
+  ./mvnw test -Dtest="TrustBalanceTrendIntegrationTest#closedPrimaryIsNotTheDefaultAccount,TrustPositionIntegrationTest#closedPrimaryIsNotTheDefaultAccount" -q
+Setup (each in its own tenant, REST only): primary GENERAL account + non-primary GENERAL account;
+POST /api/trust-accounts/{primary}/close -> 200 status CLOSED (zero client balance); then GET without accountId.
+expected = the still-ACTIVE account id; 'but was' = the closed primary (the only other account in the tenant).
+
+[ERROR]   TrustBalanceTrendIntegrationTest.closedPrimaryIsNotTheDefaultAccount:457 JSON path "$.trustAccountId" expected:<8cd463f1-b800-42ed-96ab-d6149b288aed> but was:<fa835177-49d6-4fce-9e2d-ec8aa80b7d44>
+[ERROR]   TrustPositionIntegrationTest.closedPrimaryIsNotTheDefaultAccount:296 JSON path "$.trustAccountId" expected:<7b0da31c-ac36-4e98-acdd-53db5d458bb6> but was:<c0bfeb8e-1466-4842-ae7d-4e8ecf182b07>
+[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0

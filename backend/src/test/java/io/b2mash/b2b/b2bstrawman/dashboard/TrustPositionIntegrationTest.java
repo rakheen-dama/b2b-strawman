@@ -66,6 +66,11 @@ class TrustPositionIntegrationTest {
 
   private static final String NO_ACCOUNT_OWNER = "user_dtp_noacct_owner";
 
+  /** Primary GENERAL account closed, a non-primary one still active (its own tenant). */
+  private static final String CLOSED_PRIMARY_ORG_ID = "org_dash_trust_position_closedprim";
+
+  private static final String CLOSED_PRIMARY_OWNER = "user_dtp_closedprim_owner";
+
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
@@ -134,6 +139,19 @@ class TrustPositionIntegrationTest {
         "DTP NoAcct Owner",
         "owner");
     enableTrustAccounting(noAccountSchema);
+
+    String closedPrimarySchema =
+        provisioningService
+            .provisionTenant(CLOSED_PRIMARY_ORG_ID, "Trust Position Closed Primary Org", null)
+            .schemaName();
+    TestMemberHelper.syncMember(
+        mockMvc,
+        CLOSED_PRIMARY_ORG_ID,
+        CLOSED_PRIMARY_OWNER,
+        "dtp_closedprim@test.com",
+        "DTP ClosedPrim Owner",
+        "owner");
+    enableTrustAccounting(closedPrimarySchema);
   }
 
   @Test
@@ -259,6 +277,25 @@ class TrustPositionIntegrationTest {
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.title").value("No trust account"))
         .andExpect(jsonPath("$.detail").value("No trust account has been configured"));
+  }
+
+  @Test
+  void closedPrimaryIsNotTheDefaultAccount() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(CLOSED_PRIMARY_ORG_ID, CLOSED_PRIMARY_OWNER);
+    String closedPrimary = createTrustAccount(owner, "Closed Primary", "62000000103", true);
+    String active = createTrustAccount(owner, "Still Active", "62000000104", false);
+    mockMvc
+        .perform(post("/api/trust-accounts/" + closedPrimary + "/close").with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CLOSED"));
+
+    // The closed account keeps is_primary = true, but the default resolves among ACTIVE accounts.
+    mockMvc
+        .perform(get("/api/dashboard/trust-position").with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.trustAccountId").value(active))
+        .andExpect(jsonPath("$.accountName").value("Still Active"))
+        .andExpect(jsonPath("$.accounts", hasSize(1)));
   }
 
   // --- helpers ---

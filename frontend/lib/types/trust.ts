@@ -275,8 +275,6 @@ export interface TrustDashboardData {
   totalBalance: number;
   activeClients: number;
   pendingApprovals: number;
-  lastReconciliationDate: string | null;
-  lastReconciliationBalanced: boolean | null;
   recentTransactions: TrustTransaction[];
   alerts: TrustAlert[];
 }

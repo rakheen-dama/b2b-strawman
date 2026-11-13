@@ -2,9 +2,19 @@
 // Used under the purchased admincn licence (founder-confirmed 2026-11-11); translated Base UI → Radix per ADR-368.
 "use client";
 
-import { useId } from "react";
+import { useId, useLayoutEffect, useState } from "react";
 import { ChartArea } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+  getNiceTickValues,
+  usePlotArea,
+  useYAxisDomain,
+} from "recharts";
 import {
   ChartContainer,
   ChartLegend,
@@ -36,6 +46,10 @@ import { ChartTableToggle, usePrefersReducedMotion } from "./chart-table-toggle"
 const PARTIAL_SUFFIX = "__partial";
 /** Direct labels at the line end for 2–4 series (one series: the title names it). */
 const MAX_DIRECT_LABELS = 4;
+/** The y axis' tick count (recharts' default, stated so the collision check below mirrors it). */
+const Y_TICK_COUNT = 5;
+/** Line box of a 12px end label: two end labels closer than this (chart px) overlap. */
+const END_LABEL_HEIGHT = 14;
 
 interface TrendAreaChartProps extends ChartCardSlots {
   data: ChartRow[];
@@ -85,6 +99,49 @@ function EndLabel({ text, lastIndex, x, y, index, value }: EndLabelProps) {
       {text}
     </text>
   );
+}
+
+/**
+ * True when two of `values` (each direct-labelled series' last valued point) land within an end
+ * label's height of each other. Pixels follow recharts' linear y scale: the data domain widened to
+ * its nice ticks, across the plot height. Labels at different x are judged on y alone — erring
+ * towards the legend, never towards an overlap.
+ */
+function endLabelsCollide(
+  values: number[],
+  domain: readonly unknown[] | undefined,
+  plotHeight: number | undefined
+): boolean {
+  if (values.length < 2 || !plotHeight || !domain || domain.length !== 2) return false;
+  const [min, max] = domain.map(Number);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return false;
+  const ticks = getNiceTickValues([min, max], Y_TICK_COUNT, true);
+  const lo = Math.min(min, ticks[0] ?? min);
+  const hi = Math.max(max, ticks[ticks.length - 1] ?? max);
+  const pxPerUnit = hi > lo ? plotHeight / (hi - lo) : 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted.some((v, i) => i > 0 && (v - sorted[i - 1]) * pxPerUnit < END_LABEL_HEIGHT);
+}
+
+/**
+ * Chart child (inside recharts' context): reports whether the direct end labels would overlap.
+ * Converging lines fall back to the always-present legend + tooltip rather than nudged labels
+ * that detach from their lines (dataviz: "when end-labels collide, don't stack them"). The y scale
+ * does not depend on the right margin the parent drops, so the report is stable.
+ */
+function EndLabelCollision({
+  values,
+  onChange,
+}: {
+  values: number[];
+  onChange: (collide: boolean) => void;
+}) {
+  const domain = useYAxisDomain();
+  const plot = usePlotArea();
+  const collide = endLabelsCollide(values, domain, plot?.height);
+  // Layout effect: settles before paint, so overlapping labels never flash.
+  useLayoutEffect(() => onChange(collide), [collide, onChange]);
+  return null;
 }
 
 /** Row index of the last finite value of `key`, or -1. */
@@ -137,6 +194,7 @@ export function TrendAreaChart({
   "data-testid": testId,
 }: TrendAreaChartProps) {
   const reduceMotion = usePrefersReducedMotion();
+  const [endLabelsOverlap, setEndLabelsOverlap] = useState(false);
   const gradientId = `trend-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   const { rows, series } = foldSeries(data, inputSeries, format);
@@ -172,7 +230,13 @@ export function TrendAreaChart({
 
   const config: ChartConfig = Object.fromEntries(series.map((s) => [s.key, { label: s.label }]));
   const showLegend = series.length >= 2;
-  const directLabels = series.length >= 2 && series.length <= MAX_DIRECT_LABELS;
+  const labelable = series.length >= 2 && series.length <= MAX_DIRECT_LABELS;
+  const directLabels = labelable && !endLabelsOverlap;
+  // Each labelled series' last valued point (where its end label sits; the dashed companion of a
+  // partial last period ends on the same value).
+  const endValues = series
+    .map((s) => rows[lastValuedIndex(rows, s.key)]?.[s.key])
+    .filter((value): value is number => Number.isFinite(value));
   const fmt = (value: number) => formatChartValue(value, format, currency);
   const table = seriesTable({
     rows,
@@ -252,6 +316,7 @@ export function TrendAreaChart({
             tickLine={false}
             axisLine={false}
             tickMargin={8}
+            tickCount={Y_TICK_COUNT}
             width={64}
             tick={{ fill: CHART_THEME.axis }}
             tickFormatter={(value: number) => formatAxisTick(value, format, currency)}
@@ -286,6 +351,9 @@ export function TrendAreaChart({
             }}
           />
           {showLegend ? <ChartLegend content={<ChartLegendContent />} /> : null}
+          {labelable ? (
+            <EndLabelCollision values={endValues} onChange={setEndLabelsOverlap} />
+          ) : null}
           {series.map((s, index) => {
             // Isolation is judged on the unsplit rows: with a dashed last period, the solid series
             // dots every isolated point but the last, which its dashed companion draws.

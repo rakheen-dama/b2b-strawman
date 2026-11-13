@@ -194,3 +194,29 @@ export interface TrustPositionResponse {
   pendingApprovalCount: number;
   accounts: TrustAccountRef[];
 }
+
+/** One month of GET /api/dashboard/trust-balance-trend (oldest → newest). */
+export interface TrustBalanceTrendPoint {
+  /** "2026-06" (YearMonth). */
+  month: string;
+  /** yyyy-MM-dd — month end, or `asOf` for the current month. */
+  periodEnd: string;
+  cashbookBalance: number;
+  clientLedgerTotal: number;
+  /** true only for the current month ("to date"). */
+  partial: boolean;
+}
+
+/** GET /api/dashboard/trust-balance-trend?accountId&months (VIEW_TRUST + module; 404 = no account). */
+export interface TrustBalanceTrendResponse {
+  trustAccountId: string;
+  accountName: string;
+  /** Org default currency (trust accounts carry none). */
+  currency: string;
+  /** yyyy-MM-dd, SA business date. */
+  asOf: string;
+  openingCashbookBalance: number;
+  openingClientLedgerTotal: number;
+  months: TrustBalanceTrendPoint[];
+  accounts: TrustAccountRef[];
+}

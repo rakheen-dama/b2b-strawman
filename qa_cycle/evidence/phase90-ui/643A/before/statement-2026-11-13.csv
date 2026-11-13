@@ -1,0 +1,11 @@
+Standard Bank Trust Account - Acc 0123456789
+Date,Description,Reference,Amount,Balance
+2026-11-13,Opening Balance,,0.00,0.00
+2026-11-13,Deposit - Moroka,DEP/MOROKA/mwe6c12fa5b4,250000.00,250000.00
+2026-11-13,Deposit - QC,DEP/QC/mwe6c12fa5b4,45000.00,295000.00
+2026-11-13,Fee transfer - Moroka,FEE/MOROKA/mwe6c12fa5b4,-8500.00,286500.00
+2026-11-13,Client deposit,DEP/mwe6fybk12a3,5000.00,291500.00
+2026-11-13,Deeds office payment,PAY/DEEDS/mwe6fybk12a3,-1250.00,290250.00
+2026-11-13,Interest credit,,4.00,290254.00
+2026-11-13,Interest credit,,21.50,290275.50
+2026-11-13,LPFF interest share,,-25.52,290249.98

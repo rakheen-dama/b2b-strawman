@@ -31,6 +31,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementReposi
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import java.time.Clock;
 import java.time.Instant;
@@ -76,6 +77,7 @@ class DashboardActivityCacheTest {
             mock(InformationRequestService.class),
             mock(TrustAccountService.class),
             mock(TrustTransactionService.class),
+            mock(TrustTransactionRepository.class),
             mock(ClientLedgerService.class),
             mock(TrustReconciliationRepository.class),
             mock(DisbursementRepository.class),

@@ -150,6 +150,32 @@ export interface OrgProfitabilityResponse {
   matters: MatterProfitabilitySummary[];
 }
 
+/** One month of GET /api/reports/billing-trend (oldest → newest). */
+export interface BillingTrendPoint {
+  /** "2026-06" (YearMonth). */
+  month: string;
+  /** Σ fee-note totals (VAT inclusive) issued in the month — APPROVED, SENT, PARTIALLY_PAID, PAID. */
+  billed: number;
+  billedCount: number;
+  /** Σ completed payments received in the month (SA time) — part payments and trust fee transfers included. */
+  collected: number;
+  collectedCount: number;
+  /** true only for the current month ("to date"). */
+  partial: boolean;
+}
+
+/** GET /api/reports/billing-trend?months (FINANCIAL_VISIBILITY; org default currency only — ADR-372). */
+export interface BillingTrendResponse {
+  currency: string;
+  /** "2025-12" — first month of the window. */
+  from: string;
+  /** "2026-11" — the current month. */
+  to: string;
+  /** yyyy-MM-dd, SA business date. */
+  asOf: string;
+  months: BillingTrendPoint[];
+}
+
 export interface CurrencyBreakdown {
   currency: string;
   totalBillableHours: number;

@@ -1,11 +1,14 @@
 import { TrendingUp } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
+import { getBillingTrend } from "@/lib/api/reports";
+import { settle } from "@/lib/settle";
 import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
 import { PermissionDenied } from "@/components/permission-denied";
 import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types";
 import { ProfitabilityContent } from "@/components/profitability/profitability-content";
+import { BillingTrendChart } from "@/components/profitability/billing-trend-chart";
 import { todayInSA } from "@b2mash/shared/date";
 
 /** Returns the first day of the current South African month and SA today as 'YYYY-MM-DD'. */
@@ -34,6 +37,9 @@ export default async function ReportsProfitabilityPage({
   }
 
   const { from, to } = getCurrentMonthRange();
+  // Independent of the page's month range: always the last 12 SA months (ADR-372). Started first
+  // so it runs in parallel with the two reads below; settle() never throws (403/404 → absent).
+  const billingTrendRead = settle(true, "billing trend", () => getBillingTrend(12));
 
   let utilization: UtilizationResponse = { from, to, members: [] };
   let profitability: OrgProfitabilityResponse = { matters: [] };
@@ -46,6 +52,9 @@ export default async function ReportsProfitabilityPage({
   } catch {
     // Non-fatal: show empty state
   }
+
+  const billingTrend = await billingTrendRead;
+  const trend = billingTrend.state === "ok" ? billingTrend.data : null;
 
   return (
     <div className="space-y-8">
@@ -63,6 +72,9 @@ export default async function ReportsProfitabilityPage({
         </p>
       </div>
 
+      {/* The last 12 SA months, so it stays outside the current-month empty state below. */}
+      <BillingTrendChart trend={trend} failed={billingTrend.state === "error"} />
+
       {utilization.members.length === 0 && profitability.matters.length === 0 ? (
         <EmptyState
           icon={TrendingUp}
@@ -79,6 +91,7 @@ export default async function ReportsProfitabilityPage({
           initialProfitability={profitability}
           initialFrom={from}
           initialTo={to}
+          billingTrend={trend}
         />
       )}
     </div>

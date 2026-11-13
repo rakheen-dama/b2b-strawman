@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { ChartArea } from "lucide-react";
 import { ChartCard } from "@/components/charts/chart-card";
 import type { ChartRow, ChartSeries } from "@/components/charts/chart-summary";
+import { monthLabel } from "@/lib/chart-format";
 import type { TrustBalanceTrendResponse } from "@/lib/dashboard-types";
 
 /** Visible card title and the figure's name — not "Trust Balance", which names the StatCard. */
@@ -46,15 +47,6 @@ const SERIES: ChartSeries[] = [
   { key: "cashbook", label: "Cashbook", slot: 1 },
   { key: "ledger", label: "Client ledgers", slot: 3 },
 ];
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-/** Deterministic "2026-06" → "Jun 2026" (no Intl: identical on server and client). */
-export function monthLabel(yearMonth: string): string {
-  const [year, month] = yearMonth.split("-");
-  const name = MONTHS[Number(month) - 1];
-  return name && year ? `${name} ${year}` : yearMonth;
-}
 
 interface TrustBalanceTrendChartProps {
   /** The trend read; `null` = absent (403/404) or failed (see `failed`). Plain data only. */

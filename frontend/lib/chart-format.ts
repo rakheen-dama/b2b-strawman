@@ -124,3 +124,12 @@ export function formatAxisTick(
       return numberFormat(0, 0).format(value);
   }
 }
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Deterministic "2026-06" → "Jun 2026" (no Intl: identical on server and client). */
+export function monthLabel(yearMonth: string): string {
+  const [year, month] = yearMonth.split("-");
+  const name = MONTHS[Number(month) - 1];
+  return name && year ? `${name} ${year}` : yearMonth;
+}

@@ -2,7 +2,7 @@ import "server-only";
 
 import { api, ApiError, API_BASE, getAuthFetchOptions, resolveServerReturnTo } from "./client";
 import { redirectToReLogin } from "@/lib/auth/expiry";
-import type { ProblemDetail } from "@/lib/types";
+import type { BillingTrendResponse, ProblemDetail } from "@/lib/types";
 
 // ---- Response Interfaces ----
 
@@ -192,4 +192,9 @@ export async function exportProfitabilityCsv(from?: string, to?: string): Promis
   const qs = buildExportQueryParams({ from, to });
   const response = await fetchExport(withQuery("/api/reports/profitability/export/csv", qs));
   return response.text();
+}
+
+/** GET /api/reports/billing-trend — fees billed vs collected per SA month (default 12, 1–24). */
+export async function getBillingTrend(months = 12): Promise<BillingTrendResponse> {
+  return api.get<BillingTrendResponse>(`/api/reports/billing-trend?months=${months}`);
 }

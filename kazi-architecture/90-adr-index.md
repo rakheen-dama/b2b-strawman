@@ -2,9 +2,11 @@
 
 > **⚠️ Stale since Phase 86 (2026-10).** This folder is a **pre-Phase-86 snapshot** and has not been updated for the subtraction: Kazi is now legal-only (`legal-za`); schedules, retainers, proposals, capacity, the in-app/specialist AI assistants, accounting/consulting profiles and deadlines, PayFast subscriptions, the docs site and CRM were removed and archived at git tag `horizontal-platform-final` (mirror: https://github.com/rakheen-dama/kazi-horizontal-archive). Where this folder disagrees with the code, the code wins. See [`architecture/phase86-subtraction-legal-only.md`](../architecture/phase86-subtraction-legal-only.md) and [ADR-330](../adr/ADR-330-archive-tag-not-fork.md). ADR status lines for the superseded ADRs (070–318 ranges) now carry their Phase 86 supersession in the ADR files themselves — see [§11.11 ADR Index](../architecture/phase86-subtraction-legal-only.md#1111-adr-index). A full rewrite is a Phase 87 follow-up.
 
-**Purpose.** This file is a non-destructive **status overlay** for the 278 ADRs in `adr/`. The ADR files are unmoved; Phase 86 added status lines in the ADR files themselves, and this overlay predates them. Before Phase 86 this index was the single source of truth for "is this ADR currently in force?"; where it disagrees with an ADR's own status line, the ADR file wins. Module pages elsewhere in `kazi-architecture/` should link only to ADRs flagged **Active** below.
+**Purpose.** This file is a non-destructive **status overlay** for the 278 ADRs in `adr/`. The ADR files are unmoved; Phase 86 added status lines in the ADR files themselves, and this overlay predates them. Before Phase 86 this index was the single source of truth for "is this ADR currently in force?"; where it disagrees with an ADR's own status line, the ADR file wins — with one dated carve-out below. Module pages elsewhere in `kazi-architecture/` should link only to ADRs flagged **Active** below.
 
 **Last reviewed:** 2026-05-10
+
+> **Carve-out (2026-11-13, Phase 90 644B).** Root `README.md:100` made `adr/` an append-only corpus ("files are never edited for status… *Active* status lives in `kazi-architecture/90-adr-index.md`"). So a supersession or amendment **recorded in this index on or after 2026-11-13** governs over that ADR file's original status line. Rows recorded before that date are unchanged: the "ADR file wins" rule above still applies to them (e.g. the older Superseded rows) and to status lines written in the ADR files themselves (e.g. the Phase 86 lines). First case: ADR-286 (Superseded section).
 
 > **Methodology footnote.** Status was derived from ADR titles and headers; explicit `Status: Superseded` markers; supersession statements in later ADRs; and cross-reference with the `phases_complete.md` memory. Explicit `Status:` markers are rare — most supersession is recorded only inline in the body of the superseding ADR.
 
@@ -17,6 +19,8 @@
 | Stale | 8 | Decision was made but feature dropped or never built |
 | Informational | 3 | Discussion / methodology notes, no enforcement |
 | **Total** | **278** | 270 numeric (010–279) + 8 T-series (T001–T008) |
+
+> **Phase 90 rows added 2026-11-13 (644B):** ADR-367..374 (Active, new cluster "Frontend design system" + Reporting & dashboards) and ADR-286 (superseded by ADR-373 for the matter and client detail pages; future entity pages follow ADR-373, `ADR-373:75`; ADR-286's sidebar was never implemented, `ADR-373:14`). Section 15 (`architecture/phase90-ui-modernization.md`, not edited after the phase) has known errata, e.g. its theme first-paint text is superseded by ADR-374; the list is backlog item B-11 in `tasks/phase90-ui-modernization.md` § Closure report C.6 (b). ADR-280..366 other than ADR-286 are still not indexed, so **the counts above were not re-tallied** and describe the 2026-05-10 snapshot only.
 
 ADR numbering starts at 010; the 001–009 range is intentionally unused.
 
@@ -240,14 +244,29 @@ Canonical: **ADR-046/047** (charts/layout) + **ADR-081..084** (reporting strateg
 | ADR | Title | Note |
 |---|---|---|
 | ADR-044 | dashboard-aggregation-caching | |
-| ADR-046 | dashboard-charting-approach | |
+| ADR-046 | dashboard-charting-approach | Amended by ADR-370 (chart kit on shadcn `chart` + recharts 3) |
 | ADR-047 | dashboard-layout-strategy | |
 | ADR-081 | report-query-strategy-pattern | |
 | ADR-082 | report-template-storage | |
 | ADR-083 | csv-generation-approach | |
 | ADR-084 | parameter-schema-design | |
-| ADR-205 | chart-theming-strategy | |
+| ADR-205 | chart-theming-strategy | Amended by ADR-370 (Kazi chart palette: categorical/sequential/status, `CHART_THEME` single source) |
 | ADR-246 | profile-gated-dashboard-widgets | |
+| ADR-370 | chart-kit-and-palette | Phase 90. Status line: "Accepted (amends ADR-046 and ADR-205)" |
+| ADR-372 | read-only-chart-series-endpoints | Phase 90. Trust balance trend + billing trend (billed vs collected); uncached reads, SA calendar months |
+
+### Frontend design system (Phase 90)
+
+Canonical: **ADR-367** (layering + "new page" rule). Chart kit: ADR-370 and the endpoints behind it, ADR-372, are under Reporting & dashboards.
+
+| ADR | Title | Note |
+|---|---|---|
+| ADR-367 | design-system-layering | `@b2mash/ui` primitives vs app-coupled frontend components; new pages use PageHeader/DataTable/kit. The lint rule is deferred (ADR text) |
+| ADR-368 | admincn-template-adoption | admincn adapted from Base UI to Radix; credit and licence |
+| ADR-369 | datatable-tanstack-client-mode | Refined in `tasks/phase90-ui-modernization.md` (`adr/` is append-only): 642A sticky header only from a 42rem `@container` frame; 643C `DataTableSort` URL/client variants + expandable rows |
+| ADR-371 | dark-mode-light-default | `next-themes`, light default, opt-in toggle; tokens over `dark:` pairs; long-tail debt list (Phase 90 closure C.5). Refined by ADR-374 (first paint of the stored theme) |
+| ADR-373 | detail-hero-kpi-strip | Supersedes ADR-286 for the matter and client detail pages; any future entity page follows ADR-373 (`ADR-373:75`) |
+| ADR-374 | theme-first-paint-head-script | Refines ADR-371 (blocking `<head>` script for the stored theme's first paint) |
 
 ### Custom field, tag, view
 
@@ -426,6 +445,7 @@ Canonical trust: **ADR-230..235**. Canonical legal entities: **ADR-247..250**. H
 | ADR-063 | compliance-packs-bundled-seed-data | ADR-240 | Unified pack catalog supersedes earlier seed bundling (in spirit) |
 | ADR-106 | template-clause-placeholder-strategy | ADR-123 | Replaced by Tiptap clauseBlock as source-of-truth |
 | ADR-182 | terminology-override-mechanism | ADR-185 | Body: explicit `Status: Superseded by ADR-185` |
+| ADR-286 | sidebar-layout-entity-detail | ADR-373 | Superseded by ADR-373 for the matter and client detail pages (ADR-373's Status line); future entity pages follow ADR-373 (`ADR-373:75`: "Any future entity page follows this ADR"). ADR-286's 280px sidebar was never implemented (`ADR-373:14`: "HEAD does not render one"). Its own file still reads `**Status**: Accepted` and is not edited (`adr/` is append-only, root `README.md:100`); per the 2026-11-13 carve-out in the preamble, this row governs (Phase 90 644B) |
 
 ---
 

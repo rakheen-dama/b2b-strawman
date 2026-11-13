@@ -354,7 +354,7 @@ describe("Profitability Page", () => {
       expect(screen.getByText(/US\$6\s000,00/)).toBeInTheDocument();
     });
 
-    it("renders Revenue, Cost and Margin in the body font, not the kit's mono default (643C OBS D1)", () => {
+    it("renders Revenue, Cost and Margin in the inherited table font, not the kit's mono default (643C OBS D1, re-OBS D2b)", () => {
       render(
         <ProjectProfitabilityTable
           initialData={makeProfitability()}
@@ -368,8 +368,9 @@ describe("Profitability Page", () => {
       const cost = screen.getByText(/US\$9\s000,00/);
       const margin = screen.getByText(/US\$6\s000,00/);
       for (const money of [revenue, cost, margin]) {
-        expect(money).toHaveClass("font-sans", "tabular-nums");
+        expect(money).toHaveClass("font-[family-name:inherit]", "tabular-nums");
         expect(money).not.toHaveClass("font-mono");
+        expect(money).not.toHaveClass("font-sans");
       }
       expect(margin).toHaveClass("text-success-foreground");
       // A missing cost stays the plain "N/A" text.

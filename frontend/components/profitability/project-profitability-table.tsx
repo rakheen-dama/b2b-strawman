@@ -79,11 +79,14 @@ const signClass = (value: number) =>
 const notAvailable = <Badge variant="neutral">N/A</Badge>;
 
 /**
- * Money in the body font, not the kit's mono default: same typography as before the DataTable
- * migration and as the Client Profitability table below, and mono figures widen this nowrap table
- * enough (~33px at 1440) to cut off Margin (643C OBS D1).
+ * Money inherits the table's font instead of the kit's mono default, matching the other cells, the
+ * pre-migration matter money and the Client Profitability table below; mono figures also widen this
+ * nowrap table enough (~33px at 1440) to cut off Margin (643C OBS D1). Not `font-sans`: that is
+ * IBM Plex (`--font-sans: var(--font-plex)`), not the inherited stack (re-OBS D2b). The
+ * `family-name:` label is required for tailwind-merge to drop the kit's `font-mono`; a bare
+ * `font-[inherit]` is not recognised as a font family and both classes would survive.
  */
-const MONEY_CLASS = "font-sans";
+const MONEY_CLASS = "font-[family-name:inherit]";
 
 const columns = defineColumns<MatterProfitabilitySummary>([
   {

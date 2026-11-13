@@ -1,7 +1,7 @@
 {
-  "commit": "ad4f84ba4",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-642C, phase90/42C-grouped-tab-bar, node v20.11.1, NODE_OPTIONS='', orchestrator FE-GATE on final code head; 370f69a33 adds evidence only)",
+  "commit": "859d257d2",
+  "command": "cd frontend && rm -rf .next && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build  (worktree-epic-643A, PR #1775 head 859d257d2afd33ce8162a91c1138be28167133ed, node v20.11.1)",
   "exit": 0,
-  "ts": "2026-11-13T00:13:27Z",
-  "summary": "PR #1774 (Phase 90 642C) @ad4f84ba4: FE-GATE exit 0 — 476 files, 4283 passed / 2 skipped; lint 0 errors. Fresh stack built from the worktree @ad4f84ba4: test:e2e:customers 18 passed / 2 skipped, test:e2e:projects 27, legal-lifecycle 105, legal-depth-ii 40 passed / 4 skipped (= baseline; 4 fresh-stack runs across the code heads, all = baseline). OBS (after/, after-fix/, after-fix2/): sticky bar top 64px, client page no horizontal overflow at 390/768 (was 515/779), labels one line at 1024, underline/focus ring visible, keyboard focus + resize keep the tab clear of the fades, both ?tab= mechanics unchanged, console 0; SEL-COMPAT no spec edited — no role changed. Frontend CI pass @370f69a33."
+  "ts": "2026-11-13T02:30:42Z",
+  "summary": "lint 0 errors (78 pre-existing warnings), typecheck/format:check/build clean; vitest 477 files, 4305 passed / 2 skipped"
 }

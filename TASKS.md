@@ -730,7 +730,7 @@
 | 640 | Firm Dashboard — KPI Row + Audience Regrid, Widgets on the Kit, My Work + Loading (E4) | Frontend | **P1 merged**, 639A, 639B, 639D | L | 640A, 640B, 640C (0 verifies) | **Done** (PRs #1767, #1768, #1769) |
 | 641 | Matters — List on DataTable + Matter Hero (KPI Strip) + Page Split (E5) | Frontend | 639A, 639C, 639D | M | 641A, 641B (0 verifies) | 641A **Done** (PR #1770); 641B **Done** (PR #1771) — **Epic 641 Done** |
 | 642 | Clients — List on DataTable, Client Hero, GroupedTabBar Restyle (E6) | Frontend | 639A, 639C, 641B | M | 642A, 642B, 642C (0 verifies) | 642A **Done** (PR #1772); 642B **Done** (PR #1773); 642C **Done** (PR #1774) — **Epic 642 Done** |
-| 643 | Trust Dashboard + Reports/Profitability — Trust-Balance-Trend + Billing-Trend Endpoints, Charts, Reconciliation Card Fix, Tables on DataTable (E7) | Backend + Frontend | 639A, 639B, 639C | L | 643A, 643B, 643C (2 verifies) | |
+| 643 | Trust Dashboard + Reports/Profitability — Trust-Balance-Trend + Billing-Trend Endpoints, Charts, Reconciliation Card Fix, Tables on DataTable (E7) | Backend + Frontend | 639A, 639B, 639C | L | 643A, 643B, 643C (2 verifies) | 643A **Done** (PR #1775) |
 | 644 | Exit Gate — Suites on a Fresh Stack, Observation Matrix, Metrics, Dark-Mode Debt List, Closure (E8; gate epic, no product code) | QA / Process / Docs | 637–643 merged | M | 644A, 644B (0 verifies) | |
 
 

@@ -1,7 +1,7 @@
 {
-  "commit": "1b414711a542fd99362ae6c4b590c8b84ae5f20a",
-  "command": "caffeinate -is ./mvnw verify (worktree .claude/worktrees/p1-kpi-redaction, fix/kpi-previous-period-redaction; verify.sh preflight would refuse — it counts the running KC spring-boot:run backend/gateway JVMs as live verifies; 0 surefire/verify JVMs were running)",
+  "commit": "596a20d57",
+  "command": "cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q  (worktree-epic-643A, PR #1775 head 596a20d57b5ba782417fa218ce012f59ffd6d885)",
   "exit": 0,
-  "ts": "2026-11-11T21:07:00Z",
-  "summary": "PR #1758 (Phase 90 P1) @1b414711a: 6825 testcases / 0 failures / 0 errors / 26 skipped (counted <testcase> in surefire XML), BUILD SUCCESS 19:21."
+  "ts": "2026-11-13T01:43:47Z",
+  "summary": "6848 testcases / 0 failures / 0 errors / 26 skipped (823 surefire report files) — 26:58 min"
 }

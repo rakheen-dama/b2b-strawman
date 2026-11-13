@@ -9,9 +9,9 @@ e2e-mock-idp 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
 e2e-localstack 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
 e2e-postgres 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
 e2e-mailpit 2026-11-13 22:16:53 +0200 SAST Up 41 minutes (healthy)
-$ docker logs e2e-seed | tail -3
+$ docker logs e2e-seed 2>&1 | tail -3
   SoA:      Website Redesign (shared with client)
   Digest:   BIWEEKLY
 
-$ docker logs e2e-seed | grep -n "Complete"
+$ docker logs e2e-seed 2>&1 | grep -n "Complete"
 69:  E2E Boot-Seed Complete!

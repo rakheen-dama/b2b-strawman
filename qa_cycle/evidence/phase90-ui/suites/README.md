@@ -28,7 +28,7 @@ The baseline E2E-DEFAULT failure (INV-02 *DRAFT → APPROVED*, `e2e/tests/invoic
 ## Fresh stack (644.1)
 
 - Sequence (in the worktree, any time of day): `bash compose/scripts/e2e-down.sh` (exit 0, volumes wiped) → `SHELL=/bin/bash docker builder prune -f` (exit 0) → `bash compose/scripts/e2e-up.sh` (whole block — down, prune, up — 20:15:37 → 20:17:27Z; e2e-up exit 0, "Building from source at: …/worktree-epic-644A").
-- Containers: all six `e2e-*` containers created 22:16:53–54 SAST (= 20:16:53Z) by that `e2e-up`.
+- Containers: all six service containers plus `e2e-seed` (seven `e2e-*`) created 22:16:53–54 SAST (= 20:16:53–54Z) by that `e2e-up` (`stack-provenance.txt`; the run-time `e2e-containers.txt` was captured without `-a`, so it lists only the six running services).
 - Images (stack build provenance):
   - `docteams-e2e-frontend` `sha256:0d4e47a1bf40…` — built in this run (created 2026-11-13T20:16:53Z) from the worktree @ `2773ec9b6`.
   - `docteams-e2e-backend` `sha256:0f540ef6f0f1…` — every step resolved from layer cache, including `COPY src src` (image created 2026-11-13T04:39:09Z). BuildKit's COPY cache key is a content checksum, so a CACHED `COPY src src` means this run's backend build context was byte-identical to the one that produced that image. That fits the history: the image was built during 643B, after its last backend commit `20955954f` (04:02Z), and `git diff 5864da54d 2773ec9b6 -- backend/` is empty (`5864da54d` = 643B merge #1776, the last backend change on `main`). Backend correctness of this exact source is independently covered by BE-VERIFY above (compiled and tested from the worktree).

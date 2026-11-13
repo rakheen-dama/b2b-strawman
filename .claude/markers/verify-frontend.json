@@ -1,7 +1,7 @@
 {
-  "commit": "8ca3aab84",
-  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "dc9ce8920",
+  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-11-13T07:55:30Z",
-  "summary": "643C PR #1777 FE-GATE @8ca3aab84 (node v20.11.1): lint 0 errors (78 pre-existing warnings), typecheck ok, format ok, vitest 477 files / 4342 passed / 2 skipped, build ok"
+  "ts": "2026-11-13T09:15:23Z",
+  "summary": "PR #1778 FE-GATE @dc9ce8920 (node v20.11.1): lint 0 errors (78 pre-existing warnings), typecheck ok, format ok, vitest 477 files / 4344 passed / 2 skipped, build ok"
 }

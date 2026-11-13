@@ -77,9 +77,9 @@ PORTAL-GATE includes "`/home`, `/trust` and `/invoices` observed at 1024 in ligh
    - `e2e-down exit 0`, which removed all containers and both volumes (`docteams-e2e_e2e_postgres_data`, `…_localstack_data`);
    - `e2e-up exit 0`;
    - backend, frontend, mock IDP and Mailpit all "ready";
-   - "Seed completed";
-   - `e2e-seed` container `ExitCode 0` (20:17:21 → 20:17:26Z);
-   - all six `e2e-*` containers created at 20:16:53Z by this `e2e-up`.
+   - `e2e-up.sh` printed "Seed completed (container exited)". That message comes from a branch that is not exit-code-aware (`compose/scripts/e2e-up.sh:107-109`), so it is not proof on its own;
+   - `e2e-seed` container `ExitCode 0` (20:17:21 → 20:17:26Z), and the seed log reports "Boot-Seed Complete". This is the actual seed proof, captured in [`stack-provenance.txt`](stack-provenance.txt) from the still-running stack after the run;
+   - all six service containers plus `e2e-seed` created at 20:16:53–54Z by this `e2e-up` (`stack-provenance.txt`).
 
    The suites ran on the freshly provisioned stack.
 
@@ -100,6 +100,7 @@ See [`markers.md`](markers.md): `scripts/check-verify-markers.sh --committed-onl
 | `default-inv02.txt` | every INV-02 line from the E2E-DEFAULT log (all ✓) |
 | `fe-test-tail.txt`, `portal-test-tail.txt` | vitest totals |
 | `markers.md` | marker audit (644.2) |
+| `stack-provenance.txt` | post-run `docker inspect`/`ps -a`/seed-log capture of the e2e stack (seed exit code, container creation times) |
 | `portal-obs.cjs`, `portal/*.png`, `portal/obs-report.json` | PORTAL-GATE observation |
 
 Full logs (not committed; ~MBs) were in `/tmp/644A/run1/` on the run host.

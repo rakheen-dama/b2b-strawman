@@ -162,7 +162,8 @@ async function sortSweep(page, title, colTypes) {
         t.querySelectorAll("thead th button svg").forEach((s) => { s.style.width = "12px"; s.style.height = "12px"; }); const c = w();
         return { asRendered: a, noFontMono: b, noFontMonoIcons12: c, monoFont: getComputedStyle(document.body).getPropertyValue("--font-mono").slice(0, 60) };
       });
-      await cardLoc(page, MATTER).screenshot({ path: path.join(OUT, "matter-card-1440-light.png") });
+      // DOM was mutated above (counterfactual) — never write the as-rendered filename here.
+      await cardLoc(page, MATTER).screenshot({ path: path.join(OUT, "matter-card-counterfactual-modified-1440-light.png") });
     }
     R.console = msgs.splice(0);
     await ctx.close();

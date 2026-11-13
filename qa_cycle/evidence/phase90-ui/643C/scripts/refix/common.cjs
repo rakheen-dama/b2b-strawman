@@ -1,6 +1,7 @@
 // 643C OBS shared helpers (Node @playwright/test chromium, headless).
-const { chromium } = require("/Users/rakheendama/Projects/2026/worktree-epic-643C/frontend/node_modules/@playwright/test");
 const path = require("path");
+// Resolve Playwright from this checkout's frontend package (no user-specific absolute path).
+const { chromium } = require(require.resolve("@playwright/test", { paths: [path.resolve(__dirname, "../../../../../../frontend")] }));
 const BASE = "http://localhost:3001", API = "http://localhost:8081", SLUG = "e2e-test-org";
 const PROF = `${BASE}/org/${SLUG}/reports/profitability`, REPORTS = `${BASE}/org/${SLUG}/reports`;
 const OUT = path.join(__dirname, "..", "..", "after-fix");

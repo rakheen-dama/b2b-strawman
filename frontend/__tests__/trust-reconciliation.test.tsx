@@ -490,4 +490,60 @@ describe("Trust Reconciliation", () => {
     expect(screen.getByText("1 / 2 lines resolved")).toBeInTheDocument();
     expect(mockFetchBankStatement).toHaveBeenCalledWith("stmt-1");
   });
+  // Test 7: while auto-match (and the statement re-read) is in flight, the user
+  // cannot go back and change the account/period under it.
+  it("disables Back on the auto-match step while auto-match is running", async () => {
+    mockUploadBankStatement.mockResolvedValue({
+      success: true,
+      data: {
+        id: "stmt-1",
+        trustAccountId: "acc-1",
+        periodStart: "2026-03-01",
+        periodEnd: "2026-03-31",
+        openingBalance: 0,
+        closingBalance: 15000,
+        fileName: "march-2026.csv",
+        format: "CSV",
+        lineCount: 1,
+        matchedCount: 0,
+        status: "IMPORTED",
+        importedBy: "member-1",
+        createdAt: "2026-04-01T00:00:00Z",
+        updatedAt: "2026-04-01T00:00:00Z",
+        lines: [makeBankLine()],
+      },
+    });
+    let finishAutoMatch: (v: unknown) => void = () => {};
+    mockAutoMatch.mockReturnValue(new Promise((resolve) => (finishAutoMatch = resolve)));
+    mockFetchBankStatement.mockResolvedValue({ id: "stmt-1", lines: [makeBankLine()] });
+
+    await act(async () => {
+      render(
+        <Suspense fallback={null}>
+          <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+        </Suspense>
+      );
+    });
+    await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+    fireEvent.change(screen.getByTestId("period-end-input"), {
+      target: { value: "2026-03-31" },
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    fireEvent.change(await screen.findByTestId("file-input"), {
+      target: { files: [new File(["csv"], "march-2026.csv", { type: "text/csv" })] },
+    });
+    await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+
+    fireEvent.click(await screen.findByTestId("auto-match-btn"));
+    await waitFor(() => expect(screen.getByTestId("auto-match-back-btn")).toBeDisabled());
+
+    await act(async () => {
+      finishAutoMatch({
+        success: true,
+        data: { totalLines: 1, autoMatched: 0, alreadyMatched: 0, unmatched: 1 },
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId("auto-match-back-btn")).toBeEnabled());
+  });
 });

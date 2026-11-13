@@ -1,0 +1,5 @@
+[step3] Auto-matched 2 lines |  | 0 lines remaining for manual review
+[step4 progress] Matching Progress 2 / 2 lines resolved
+[step4 balances] Three-Way Balance Check |  | Bank Balance |  | R 3 750,00 |  | Cashbook Balance |  | R 290 249,98 |  | Client Ledger Total |  | R 290 275,50 |  | Outstanding Deposits |  | R 295 025,50 |  | Outstanding Payments |  | R 8 525,52 |  | Adjusted Bank Balance |  | R 290 249,98 |  | Reconciliation is not balanced | Complete Reconciliation
+[step4] Complete enabled on entry (no manual action): false
+[summary] pageerrors/console errors: 0

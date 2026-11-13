@@ -252,10 +252,12 @@ export interface TrustReconciliationResponse {
   updatedAt: string;
 }
 
+/** Counts only — mirrors backend `TrustReconciliationService.MatchResult`. The updated lines come from `GET /api/bank-statements/{id}`. */
 export interface MatchResultResponse {
+  totalLines: number;
   autoMatched: number;
+  alreadyMatched: number;
   unmatched: number;
-  lines: BankStatementLineResponse[];
 }
 
 // Dashboard types

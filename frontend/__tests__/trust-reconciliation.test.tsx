@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 // ── Mock server-only ─────────────────────────────────────────────
 vi.mock("server-only", () => ({}));
@@ -119,6 +120,7 @@ vi.mock("next/link", () => ({
 
 // ── Imports after mocks ──────────────────────────────────────────
 import ReconciliationListPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/page";
+import NewReconciliationPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page";
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
 import type {
@@ -403,5 +405,89 @@ describe("Trust Reconciliation", () => {
     const completeBtn = screen.getByTestId("complete-reconciliation-btn");
     expect(completeBtn).toBeDisabled();
     expect(screen.getByText("Reconciliation is not balanced")).toBeInTheDocument();
+  });
+  // Test 6: the wizard reaches the review step after auto-match. The backend's
+  // auto-match response is counts only (TrustReconciliationService.MatchResult);
+  // it has no `lines`, so the review step must take its lines from the statement.
+  it("reaches the review step with the statement's lines after auto-match", async () => {
+    const statement = {
+      id: "stmt-1",
+      trustAccountId: "acc-1",
+      periodStart: "2026-03-01",
+      periodEnd: "2026-03-31",
+      openingBalance: 125000,
+      closingBalance: 142500,
+      fileName: "march-2026.csv",
+      format: "CSV",
+      lineCount: 2,
+      matchedCount: 0,
+      status: "IMPORTED",
+      importedBy: "member-1",
+      createdAt: "2026-04-01T00:00:00Z",
+      updatedAt: "2026-04-01T00:00:00Z",
+      lines: [
+        makeBankLine({ id: "line-1", lineNumber: 1 }),
+        makeBankLine({ id: "line-2", lineNumber: 2, reference: "PAY/2026/002", amount: -2500 }),
+      ],
+    };
+    mockUploadBankStatement.mockResolvedValue({ success: true, data: statement });
+    // The real backend shape: counts only, no `lines`.
+    mockAutoMatch.mockResolvedValue({
+      success: true,
+      data: { totalLines: 2, autoMatched: 1, alreadyMatched: 0, unmatched: 1 },
+    });
+    mockFetchBankStatement.mockResolvedValue({
+      ...statement,
+      matchedCount: 1,
+      lines: [
+        makeBankLine({
+          id: "line-1",
+          lineNumber: 1,
+          matchStatus: "AUTO_MATCHED",
+          trustTransactionId: "tx-1",
+          matchConfidence: 0.8,
+        }),
+        makeBankLine({ id: "line-2", lineNumber: 2, reference: "PAY/2026/002", amount: -2500 }),
+      ],
+    });
+    mockCreateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: false, completedAt: null }),
+    });
+
+    // act() lets React.use(params) resolve its promise before the assertions.
+    await act(async () => {
+      render(
+        <Suspense fallback={null}>
+          <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+        </Suspense>
+      );
+    });
+
+    // Step 1: account (primary preselected) + period end
+    await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+    fireEvent.change(screen.getByTestId("period-end-input"), {
+      target: { value: "2026-03-31" },
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+
+    // Step 2: upload
+    fireEvent.change(await screen.findByTestId("file-input"), {
+      target: { files: [new File(["csv"], "march-2026.csv", { type: "text/csv" })] },
+    });
+    await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+
+    // Step 3: auto-match
+    fireEvent.click(await screen.findByTestId("auto-match-btn"));
+    expect(await screen.findByText("Auto-matched 1 lines")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+
+    // Step 4: the split pane shows both lines with their post-match statuses
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    expect(screen.getByTestId("bank-line-line-1")).toBeInTheDocument();
+    expect(screen.getByTestId("bank-line-line-2")).toBeInTheDocument();
+    expect(screen.getByText("1 / 2 lines resolved")).toBeInTheDocument();
+    expect(mockFetchBankStatement).toHaveBeenCalledWith("stmt-1");
   });
 });

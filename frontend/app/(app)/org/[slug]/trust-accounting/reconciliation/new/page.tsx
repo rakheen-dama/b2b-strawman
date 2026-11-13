@@ -11,6 +11,7 @@ import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitP
 import {
   uploadBankStatement,
   autoMatch,
+  fetchBankStatement,
   manualMatch,
   excludeLine,
   unmatch,
@@ -131,11 +132,15 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     try {
       const result = await autoMatch(statement.id);
       if (result.success && result.data) {
+        // The auto-match response is counts only; re-read the statement for the
+        // lines with their post-match statuses (the review step renders them).
+        const updated = await fetchBankStatement(statement.id);
+        setStatement(updated);
+        setLines(updated.lines);
         setAutoMatchResult({
           autoMatched: result.data.autoMatched,
           unmatched: result.data.unmatched,
         });
-        setLines(result.data.lines);
       } else {
         setError(result.error ?? "Auto-match failed");
       }

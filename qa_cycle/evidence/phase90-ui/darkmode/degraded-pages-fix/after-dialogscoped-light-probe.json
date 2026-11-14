@@ -1,0 +1,89 @@
+{
+  "label": "after-dialogscoped",
+  "theme": "light",
+  "at": "2026-11-14T13:43:39.274Z",
+  "pages": {},
+  "dialogs": {
+    "dialog-adverse-party": {
+      "scope": "[role=\"dialog\"]",
+      "htmlDark": false,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "_r_4_-form-item",
+          "cls": "dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-700 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.21,
+          "hasFill": false
+        },
+        {
+          "tag": "textarea",
+          "name": "notes",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.21,
+          "hasFill": false
+        }
+      ],
+      "fieldMinBorder": 1.21,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 7.05,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "dialog-new-disbursement": {
+      "scope": "[role=\"dialog\"]",
+      "htmlDark": false,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "_r_3_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-input/30 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.21,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_r_4_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-input/30 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.21,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_r_5_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-input/30 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.21,
+          "hasFill": false
+        },
+        {
+          "tag": "textarea",
+          "name": "description",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.21,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_r_8_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-input/30 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.21,
+          "hasFill": false
+        }
+      ],
+      "fieldMinBorder": 1.21,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 7.05,
+      "mutedOldMin": null,
+      "xero": null
+    }
+  },
+  "errors": []
+}

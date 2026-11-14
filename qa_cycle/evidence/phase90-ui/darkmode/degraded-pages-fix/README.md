@@ -15,6 +15,18 @@ The probe is `probe.js`, a Playwright-library script. It visits the 12 debt page
 
 0 console or page errors in either theme, before or after.
 
+**Dialog rows are scoped to the dialog.** CodeRabbit (#1785) found that the first probe measured the whole document while a
+dialog was open, so the dialog rows also counted page fields behind the overlay. `probe.js` now measures only inside
+`[role="dialog"]` for dialog captures. The dialogs were re-measured with that scope, before on `main` @59e7d62a8 and after
+on @9379f4d1f; see `*-dialogscoped-*-probe.json`:
+
+| Dialog | Fields | Dark border before → after | Dark surface before → after | Light |
+|---|---|---|---|---|
+| Adverse party | 2 | 1.29 → **1.92** | 1.00 → **1.07** | unchanged (1.21, no fill) |
+| New disbursement | 5 | 1.29 → **1.92** | 1.00 → **1.07** | unchanged (1.21, no fill) |
+
+The page rows in the main table were already document-scoped and are unaffected.
+
 **Not observable on this stack.** Two debt sites have no data here, so the source-scan guard covers them instead (`frontend/__tests__/dark-mode-contrast-guard.test.ts`):
 - `/legal/disbursements/[id]`, "No receipt uploaded": the e2e tenant has no disbursements.
 - the firm-documents "Uploaded" date on `/settings/firm?tab=general`: no org document has been uploaded.

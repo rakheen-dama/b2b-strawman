@@ -460,4 +460,24 @@ describe("TodaysAgenda", () => {
     expect(screen.getByTestId("next-deadline")).toBeInTheDocument();
     expect(screen.getByText("No upcoming deadlines")).toBeInTheDocument();
   });
+  // Dark-mode contrast (Phase 90 debt D-1/D-2).
+  it("uses theme tokens for the time-today figure and its track", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[]}
+        todayEntries={emptyEntries}
+        upcomingEvents={[]}
+      />
+    );
+
+    const block = screen.getByTestId("time-progress-today");
+    const figure = block.querySelector("span.font-mono");
+    expect(figure!.className).toContain("text-foreground");
+    expect(figure!.className).not.toContain("text-slate-900");
+    const track = block.querySelector(".rounded-full");
+    expect(track!.className).toContain("bg-muted");
+    expect(track!.className).not.toContain("bg-slate-200");
+  });
 });

@@ -184,14 +184,14 @@ export function TodaysAgenda({
           </p>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-mono font-medium text-slate-900 tabular-nums">
+              <span className="text-foreground font-mono font-medium tabular-nums">
                 {formatDuration(loggedMinutes)}
               </span>
               <span className="font-mono text-xs text-slate-400 tabular-nums">
                 / {formatDuration(dailyTargetMinutes)}
               </span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+            <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
               <div
                 className="h-full rounded-full bg-teal-500 transition-all"
                 style={{ width: `${progressPct}%` }}

@@ -46,8 +46,8 @@ export function WeeklyRhythmStrip({
               aria-pressed={isSelected}
               onClick={() => onDaySelect(isSelected ? null : i)}
               className={cn(
-                "flex flex-1 cursor-pointer flex-col items-center gap-0.5 rounded pt-1 pb-1 hover:bg-slate-50",
-                isSelected && "bg-teal-50",
+                "hover:bg-muted flex flex-1 cursor-pointer flex-col items-center gap-0.5 rounded pt-1 pb-1",
+                isSelected && "bg-teal-500/10",
                 isToday && "rounded ring-1 ring-teal-500"
               )}
             >
@@ -57,7 +57,7 @@ export function WeeklyRhythmStrip({
               >
                 {/* Background (remaining capacity) */}
                 <div
-                  className="absolute inset-x-1 bottom-0 rounded-sm bg-slate-200"
+                  className="bg-muted absolute inset-x-1 bottom-0 rounded-sm"
                   style={{ height: 32 }}
                 />
                 {/* Filled (logged hours) */}
@@ -81,8 +81,8 @@ export function WeeklyRhythmStrip({
         })}
       </div>
       {/* Weekly total */}
-      <div className="shrink-0 border-l border-slate-200 pl-2 text-right">
-        <p className="font-mono text-sm font-bold text-slate-900 tabular-nums">
+      <div className="border-border shrink-0 border-l pl-2 text-right">
+        <p className="text-foreground font-mono text-sm font-bold tabular-nums">
           {totalHours.toFixed(1)}h
         </p>
         <p className="text-[10px] text-slate-400">this week</p>

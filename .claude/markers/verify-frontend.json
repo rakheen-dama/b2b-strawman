@@ -1,7 +1,7 @@
 {
-  "commit": "532c26a39",
+  "commit": "39903d128",
   "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-11-14T12:34:58Z",
-  "summary": "PR #1784 FE-GATE @532c26a39 (node v20.11.1): lint 0 errors (78 pre-existing warnings), typecheck ok, format ok, vitest 477 files / 4351 passed / 2 skipped, build ok; full default e2e 165 passed / 14 skipped / 0 failed"
+  "ts": "2026-11-14T13:49:45Z",
+  "summary": "PR #1785 FE-GATE @39903d128 (node v20.11.1): lint 0 errors (78 pre-existing warnings), typecheck ok, format ok, vitest 478 files / 4357 passed / 2 skipped, build ok; fresh-stack e2e lifecycle 105, depth-ii 40/4, default 165/14/0"
 }

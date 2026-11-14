@@ -8,7 +8,7 @@ The probe is `probe.js`, a Playwright-library script. It visits the 12 debt page
 
 | Item | Measure | Dark before | Dark after | Light before → after |
 |---|---|---|---|---|
-| **D-3** native fields: 7 pages and 2 dialogs, 2–10 fields each | border vs card (min) | 1.15–1.29:1 | **1.72–1.92:1** (= the Input primitive) | 1.21–1.30 → unchanged |
+| **D-3** native fields: 7 pages and 2 dialogs, 1–10 fields each | border vs card (min) | 1.15–1.29:1 | **1.72–1.92:1** (= the Input primitive) | 1.21–1.30 → unchanged |
 | | field surface vs card | **1.00:1** (no fill) | 1.06–1.07:1 (the Input's `dark:bg-input/30` fill) | unchanged |
 | **D-4** muted text (`/settings/matters?tab=checklists`, `/settings/fees?tab=tariffs`) | text contrast (min) | 2.37–2.62:1 | **5.84:1** | 2.51–2.67 → **6.76** |
 | **D-5** Connect to Xero (`/settings/connections?tab=xero`) | text vs `#13B5EA` | 2.38:1 | **8.42:1** | 2.38 → **8.42** |
@@ -22,3 +22,9 @@ The probe is `probe.js`, a Playwright-library script. It visits the 12 debt page
 **Scope beyond the debt list**, all authorised: the D-3 fix covers every native `<select>`/`<textarea>`, which is 62 → 82 of 82 with the dark fill, in about 40 files. Many are in dialogs the 644B walk never opened. D-4 covers all 29 lines of the pattern in 17 files.
 
 Screenshots (`before-` / `after-`): `matters-new`, `conflict-check`, `dialog-new-disbursement` (D-3); `settings-fees--tariffs`, `settings-matters--checklists` (D-4); `settings-connections--xero` (D-5); plus `after-*-light.png` for matters-new and Xero.
+
+**D-5 screenshots.** The "Connect to Xero" button sits at y≈1558, below the 1000px viewport. The full-page
+`settings-connections--xero` shots therefore show the integrations cards above it, not the button. The 8.42 figure comes
+from the probe JSON (`xero.fill` / `xero.fg`). `after-xero-connect-card-dark.png` and `-light.png` are the button's
+card, scrolled into view (`xero-shot.js`), showing near-black text on the brand blue. There is no matching "before" card
+shot; the before colours (white on `#13B5EA`, 2.38:1) are in `before-*-probe.json`.

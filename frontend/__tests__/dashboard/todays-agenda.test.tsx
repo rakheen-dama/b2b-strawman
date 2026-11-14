@@ -480,4 +480,21 @@ describe("TodaysAgenda", () => {
     expect(track!.className).toContain("bg-muted");
     expect(track!.className).not.toContain("bg-slate-200");
   });
+  // Dark-mode contrast: "{n}d remaining" beyond 2 days used text-slate-600 (2.35:1 on
+  // the dark card). The token keeps slate-600 in light and lifts it to slate-400 in dark.
+  it("uses the muted-foreground token for a deadline more than two days out", () => {
+    render(
+      <TodaysAgenda
+        slug="acme"
+        today={today()}
+        diaryEvents={[]}
+        todayEntries={emptyEntries}
+        upcomingEvents={[makeEvent({ id: "u1", date: daysFromNow(3), title: "Later" })]}
+      />
+    );
+
+    const remaining = within(screen.getByTestId("next-deadline")).getByText("3d remaining");
+    expect(remaining.className).toContain("text-muted-foreground");
+    expect(remaining.className).not.toContain("text-slate-600");
+  });
 });

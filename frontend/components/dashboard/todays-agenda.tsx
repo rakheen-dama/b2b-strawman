@@ -231,7 +231,7 @@ export function TodaysAgenda({
                   <span
                     className={cn(
                       "text-xs font-medium",
-                      days <= 2 ? "text-amber-600" : "text-slate-600"
+                      days <= 2 ? "text-amber-600" : "text-muted-foreground"
                     )}
                   >
                     {days}d remaining

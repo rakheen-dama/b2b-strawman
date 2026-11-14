@@ -30,10 +30,6 @@ The light value is limited by the existing `text-slate-400` day label, which is 
 label predates this PR and is a follow-up. The small light drop (2.56 → 2.40) comes from the 10% teal-500 tint being a
 little darker than teal-50.
 
-The light figure is the existing `text-slate-400` day label, about 2.5:1 on white whether or not the day is selected. It
-predates this PR and is flagged separately. The before JSONs' figures used opaque backgrounds (teal-50 / slate-50), so no
-compositing was needed there.
-
 **Trade-off in light mode:** `bg-muted` is slate-100, so the light-mode tracks are one step lighter than the old slate-200
 (1.29 → 1.12 vs the card). They are still clearly visible (`after-rhythm-strip-light.png`). Using the shared token keeps
 one class for both themes (ADR-371: semantic tokens over `dark:` pairs).

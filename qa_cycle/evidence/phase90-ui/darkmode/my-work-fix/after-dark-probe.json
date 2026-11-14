@@ -1,0 +1,43 @@
+{
+  "label": "after",
+  "theme": "dark",
+  "at": "2026-11-14T04:30:46.407Z",
+  "resting": {
+    "htmlDark": true,
+    "cardBg": "lab(7.73948 -0.41344 -4.03315)",
+    "timeToday": {
+      "text": "10h 30m",
+      "color": "lab(100 0 0)",
+      "contrast": "17.93"
+    },
+    "weeklyTotal": {
+      "text": "10.5h",
+      "color": "lab(100 0 0)",
+      "contrast": "17.93"
+    },
+    "timeTrack": {
+      "bg": "lab(14.1047 -0.539318 -5.13909)",
+      "vsCard": "1.15"
+    },
+    "dayBarTrack": {
+      "bg": "lab(14.1047 -0.539318 -5.13909)",
+      "vsCard": "1.15"
+    },
+    "divider": {
+      "border": "lab(17.0059 -0.560075 -5.14781)",
+      "vsCard": "1.25"
+    },
+    "daysRemaining": "not shown (no upcoming deadline in data)"
+  },
+  "selectedAndHover": {
+    "selectedBg": "lab(69.3224 -52.2771 -5.23559 / 0.1)",
+    "selectedBgAlpha": 0.1,
+    "selectedBackdrop": "lab(7.73948 -0.41344 -4.03315)",
+    "selectedCompositeRgb": "rgb(18, 40, 43)",
+    "selectedLabelColor": "lab(65.1376 -0.85035 -6.67907)",
+    "selectedLabelRgb": "rgb(152, 159, 170)",
+    "selectedLabelContrast": "5.77",
+    "hoverBg": "lab(14.1047 -0.539318 -5.13909)"
+  },
+  "errors": []
+}

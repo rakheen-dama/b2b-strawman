@@ -3,8 +3,8 @@
 Observed on the e2e mock-auth stack (:3001) as Alice. "Before" is `main` @54d150a29. "After" is a fresh e2e stack
 built from `fix/my-work-dark-contrast` @2f7063cdf, so the after run has different time data: `10h 30m` and `10.5h`
 instead of `0m` and `13.0h`. The probe is `obs.js` (Playwright library, 1440×1000, `kazi-theme` set
-in localStorage plus the matching `colorScheme`). It measures computed colours. Contrast ratios are WCAG relative
-luminance from the browser's `lab()` values; the raw numbers are in the `*-probe.json` files.
+in localStorage plus the matching `colorScheme`). It measures computed colours. Contrast ratios in the main table are WCAG relative
+luminance from the browser's `lab()` values, using their L component; the raw numbers are in the `*-probe.json` files.
 
 | Element | Dark before | Dark after | Light before | Light after |
 |---|---|---|---|---|
@@ -15,10 +15,20 @@ luminance from the browser's `lab()` values; the raw numbers are in the `*-probe
 | Strip divider vs card | 13.71:1 | 1.25:1 | 1.29:1 | 1.27:1 |
 | Selected day / hover | near-white slabs (L≈98) | subtle teal tint / slate-800 | teal-50 / slate-50 | teal-500 at 10% / slate-100 |
 
-**Selected-day label contrast.** The after probe composites the 10%-alpha selected background over the card (luminance
-blend) before computing the ratio (`selectedLabelContrast` in the after JSONs):
-- Dark: **4.02:1**, up from 2.57:1 on the old near-white slab.
-- Light: **2.50:1**, against 2.57:1 before, so essentially unchanged.
+**Selected-day label contrast.** This is composited the way the browser paints it: the probe draws the card, then the
+10%-alpha selected background, onto a 1×1 sRGB canvas and reads the pixel back. The label is read the same way. These
+are the `selectedCompositeRgb`, `selectedLabelRgb` and `selectedLabelContrast` fields in the after JSONs. The before
+values are recomputed with the same canvas method from the recorded before colours (`before-recompute.js` →
+`before-selected-recompute.json`); the before JSONs' own `selectedLabelContrast` is the older lab-L approximation.
+
+| Selected-day label | Before (opaque teal-50) | After (teal-500 at 10% over the card) |
+|---|---|---|
+| Dark | 2.56:1 (near-white slab) | **5.77:1** |
+| Light | 2.56:1 | 2.40:1 (slightly lower) |
+
+The light value is limited by the existing `text-slate-400` day label, which is under 3:1 on any light background. The
+label predates this PR and is a follow-up. The small light drop (2.56 → 2.40) comes from the 10% teal-500 tint being a
+little darker than teal-50.
 
 The light figure is the existing `text-slate-400` day label, about 2.5:1 on white whether or not the day is selected. It
 predates this PR and is flagged separately. The before JSONs' figures used opaque backgrounds (teal-50 / slate-50), so no

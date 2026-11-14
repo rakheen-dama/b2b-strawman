@@ -1,0 +1,163 @@
+{
+  "label": "before",
+  "theme": "light",
+  "at": "2026-11-14T09:12:27.946Z",
+  "resting": {
+    "htmlDark": false,
+    "days": [
+      {
+        "pressed": "false",
+        "text": "Mon",
+        "cls": "text-[9px] font-medium uppercase text-slate-400",
+        "color": "lab(65.1376 -0.85035 -6.67907)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          152,
+          159,
+          170
+        ],
+        "contrast": 2.64
+      },
+      {
+        "pressed": "false",
+        "text": "Tue",
+        "cls": "text-[9px] font-medium uppercase text-slate-400",
+        "color": "lab(65.1376 -0.85035 -6.67907)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          152,
+          159,
+          170
+        ],
+        "contrast": 2.64
+      },
+      {
+        "pressed": "false",
+        "text": "Wed",
+        "cls": "text-[9px] font-medium uppercase text-slate-400",
+        "color": "lab(65.1376 -0.85035 -6.67907)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          152,
+          159,
+          170
+        ],
+        "contrast": 2.64
+      },
+      {
+        "pressed": "false",
+        "text": "Thu",
+        "cls": "text-[9px] font-medium uppercase text-slate-400",
+        "color": "lab(65.1376 -0.85035 -6.67907)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          152,
+          159,
+          170
+        ],
+        "contrast": 2.64
+      },
+      {
+        "pressed": "false",
+        "text": "Fri",
+        "cls": "text-[9px] font-medium uppercase text-slate-400",
+        "color": "lab(65.1376 -0.85035 -6.67907)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          152,
+          159,
+          170
+        ],
+        "contrast": 2.64
+      },
+      {
+        "pressed": "false",
+        "text": "Sat",
+        "cls": "text-[9px] font-medium uppercase text-teal-600",
+        "color": "lab(57.8785 -56.7944 -3.47964)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          0,
+          163,
+          143
+        ],
+        "contrast": 3.13
+      },
+      {
+        "pressed": "false",
+        "text": "Sun",
+        "cls": "text-[9px] font-medium uppercase text-slate-400",
+        "color": "lab(65.1376 -0.85035 -6.67907)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          152,
+          159,
+          170
+        ],
+        "contrast": 2.64
+      }
+    ],
+    "thisWeek": {
+      "text": "this week",
+      "cls": "text-[10px] text-slate-400",
+      "color": "lab(65.1376 -0.85035 -6.67907)",
+      "bgRgb": [
+        253,
+        254,
+        255
+      ],
+      "fgRgb": [
+        152,
+        159,
+        170
+      ],
+      "contrast": 2.64
+    }
+  },
+  "day0Selected": {
+    "pressed": "true",
+    "text": "Mon",
+    "cls": "text-[9px] font-medium uppercase text-slate-400",
+    "color": "lab(65.1376 -0.85035 -6.67907)",
+    "bgRgb": [
+      227,
+      247,
+      247
+    ],
+    "fgRgb": [
+      152,
+      159,
+      170
+    ],
+    "contrast": 2.4
+  },
+  "errors": []
+}

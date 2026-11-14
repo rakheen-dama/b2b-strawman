@@ -69,4 +69,26 @@ describe("WeeklyRhythmStrip", () => {
     expect(track!.className).toContain("bg-muted");
     expect(track!.className).not.toContain("bg-slate-200");
   });
+  // Light-mode label contrast: slate-400 day labels and "this week" measured 2.64:1 on
+  // white and today's teal-600 label 3.13:1, under 4.5:1 for 9-10px text.
+  it("uses readable label colours: muted-foreground days and total caption, darker teal for today", () => {
+    render(<WeeklyRhythmStrip {...defaultProps} />);
+
+    const todayDayOfWeek = parseIsoDate(todayInSA()).getDay();
+    const todayIndex = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
+    for (let i = 0; i < 7; i++) {
+      const dayLabel = screen.getByTestId(`rhythm-day-${i}`).querySelector("span")!;
+      if (i === todayIndex) {
+        expect(dayLabel.className).toContain("text-teal-700");
+        expect(dayLabel.className).toContain("dark:text-teal-600");
+      } else {
+        expect(dayLabel.className).toContain("text-muted-foreground");
+        expect(dayLabel.className).not.toContain("text-slate-400");
+      }
+    }
+
+    const caption = screen.getByText("this week");
+    expect(caption.className).toContain("text-muted-foreground");
+    expect(caption.className).not.toContain("text-slate-400");
+  });
 });

@@ -71,7 +71,7 @@ export function WeeklyRhythmStrip({
               <span
                 className={cn(
                   "text-[9px] font-medium uppercase",
-                  isToday ? "text-teal-600" : "text-slate-400"
+                  isToday ? "text-teal-700 dark:text-teal-600" : "text-muted-foreground"
                 )}
               >
                 {label}
@@ -85,7 +85,7 @@ export function WeeklyRhythmStrip({
         <p className="text-foreground font-mono text-sm font-bold tabular-nums">
           {totalHours.toFixed(1)}h
         </p>
-        <p className="text-[10px] text-slate-400">this week</p>
+        <p className="text-muted-foreground text-[10px]">this week</p>
       </div>
     </div>
   );

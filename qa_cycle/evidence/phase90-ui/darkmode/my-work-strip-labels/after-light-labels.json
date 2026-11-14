@@ -1,0 +1,163 @@
+{
+  "label": "after",
+  "theme": "light",
+  "at": "2026-11-14T09:24:49.278Z",
+  "resting": {
+    "htmlDark": false,
+    "days": [
+      {
+        "pressed": "false",
+        "text": "Mon",
+        "cls": "text-[9px] font-medium uppercase text-muted-foreground",
+        "color": "lab(35.5441 -0.826195 -7.36533)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          77,
+          84,
+          95
+        ],
+        "contrast": 7.57
+      },
+      {
+        "pressed": "false",
+        "text": "Tue",
+        "cls": "text-[9px] font-medium uppercase text-muted-foreground",
+        "color": "lab(35.5441 -0.826195 -7.36533)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          77,
+          84,
+          95
+        ],
+        "contrast": 7.57
+      },
+      {
+        "pressed": "false",
+        "text": "Wed",
+        "cls": "text-[9px] font-medium uppercase text-muted-foreground",
+        "color": "lab(35.5441 -0.826195 -7.36533)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          77,
+          84,
+          95
+        ],
+        "contrast": 7.57
+      },
+      {
+        "pressed": "false",
+        "text": "Thu",
+        "cls": "text-[9px] font-medium uppercase text-muted-foreground",
+        "color": "lab(35.5441 -0.826195 -7.36533)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          77,
+          84,
+          95
+        ],
+        "contrast": 7.57
+      },
+      {
+        "pressed": "false",
+        "text": "Fri",
+        "cls": "text-[9px] font-medium uppercase text-muted-foreground",
+        "color": "lab(35.5441 -0.826195 -7.36533)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          77,
+          84,
+          95
+        ],
+        "contrast": 7.57
+      },
+      {
+        "pressed": "false",
+        "text": "Sat",
+        "cls": "text-[9px] font-medium uppercase text-teal-700 dark:text-teal-600",
+        "color": "lab(44.4134 -33.1436 -4.22149)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          0,
+          120,
+          111
+        ],
+        "contrast": 5.31
+      },
+      {
+        "pressed": "false",
+        "text": "Sun",
+        "cls": "text-[9px] font-medium uppercase text-muted-foreground",
+        "color": "lab(35.5441 -0.826195 -7.36533)",
+        "bgRgb": [
+          253,
+          254,
+          255
+        ],
+        "fgRgb": [
+          77,
+          84,
+          95
+        ],
+        "contrast": 7.57
+      }
+    ],
+    "thisWeek": {
+      "text": "this week",
+      "cls": "text-muted-foreground text-[10px]",
+      "color": "lab(35.5441 -0.826195 -7.36533)",
+      "bgRgb": [
+        253,
+        254,
+        255
+      ],
+      "fgRgb": [
+        77,
+        84,
+        95
+      ],
+      "contrast": 7.57
+    }
+  },
+  "day0Selected": {
+    "pressed": "true",
+    "text": "Mon",
+    "cls": "text-[9px] font-medium uppercase text-muted-foreground",
+    "color": "lab(35.5441 -0.826195 -7.36533)",
+    "bgRgb": [
+      227,
+      247,
+      247
+    ],
+    "fgRgb": [
+      77,
+      84,
+      95
+    ],
+    "contrast": 6.88
+  },
+  "errors": []
+}

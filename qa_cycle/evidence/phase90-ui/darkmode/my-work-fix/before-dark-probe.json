@@ -1,0 +1,38 @@
+{
+  "label": "before",
+  "theme": "dark",
+  "at": "2026-11-14T03:19:19.646Z",
+  "resting": {
+    "htmlDark": true,
+    "cardBg": "lab(7.73948 -0.41344 -4.03315)",
+    "timeToday": {
+      "text": "0m",
+      "color": "lab(7.73948 -0.41344 -4.03315)",
+      "contrast": "1.00"
+    },
+    "weeklyTotal": {
+      "text": "13.0h",
+      "color": "lab(7.73948 -0.41344 -4.03315)",
+      "contrast": "1.00"
+    },
+    "timeTrack": {
+      "bg": "lab(89.5346 -0.418812 -2.99045)",
+      "vsCard": "13.71"
+    },
+    "dayBarTrack": {
+      "bg": "lab(89.5346 -0.418812 -2.99045)",
+      "vsCard": "13.71"
+    },
+    "divider": {
+      "border": "lab(89.5346 -0.418812 -2.99045)",
+      "vsCard": "13.71"
+    }
+  },
+  "selectedAndHover": {
+    "selectedBg": "lab(98.3189 -4.74921 -0.111711)",
+    "selectedLabelColor": "lab(65.1376 -0.85035 -6.67907)",
+    "selectedLabelContrast": "2.57",
+    "hoverBg": "lab(97.9027 -0.162244 -1.12439)"
+  },
+  "errors": []
+}

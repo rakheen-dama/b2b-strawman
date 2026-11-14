@@ -211,7 +211,7 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
               onChange={(e) => setRequestType(e.target.value as DataRequestType | "")}
               disabled={isPending}
               className={cn(
-                "border-input bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm",
+                "border-input bg-background ring-offset-background dark:bg-input/30 flex w-full rounded-md border px-3 py-2 text-sm",
                 "focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none",
                 "disabled:cursor-not-allowed disabled:opacity-50",
                 requestType === "" ? "text-muted-foreground" : "text-foreground"

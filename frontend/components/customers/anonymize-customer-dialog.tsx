@@ -221,7 +221,7 @@ export function AnonymizeCustomerDialog({
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:outline-none"
+                className="border-input focus-visible:ring-ring dark:bg-input/30 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:outline-none"
               >
                 <option value="Data subject request">Data subject request</option>
                 <option value="Regulatory compliance">Regulatory compliance</option>

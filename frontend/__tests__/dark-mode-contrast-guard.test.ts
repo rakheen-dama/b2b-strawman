@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it, expect } from "vitest";
+import ts from "typescript";
 import { FRONTEND_ROOT, readSourceTree } from "./helpers/source-scan";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 
@@ -46,6 +47,61 @@ function offendingLines(match: (line: string) => boolean): string[] {
   );
 }
 
+// Forced-light routes (outside /org/, ADR-371 §15.3): never painted dark, so exempt.
+const FORCED_LIGHT_FILES = new Set(["components/auth/mock-login-form.tsx"]);
+
+/**
+ * Every native <select>/<textarea> JSX element with its resolved class text. Classes come from
+ * string literals and template pieces inside `className` (including `cn(...)`), the shared
+ * `nativeSelectClassName`, and same-file constants (`const x = "..."` or `useMemo(() => "...")`).
+ */
+function nativeFields(): { where: string; cls: string }[] {
+  const out: { where: string; cls: string }[] = [];
+  for (const { rel, text } of readSourceTree(SCAN_ROOTS)) {
+    if (!rel.endsWith(".tsx") || !/<(select|textarea)\b/.test(text)) continue;
+    const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const literalsIn = (node: ts.Node): string[] => {
+      const acc: string[] = [];
+      const walk = (n: ts.Node) => {
+        if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) acc.push(n.text);
+        else if (ts.isTemplateHead(n) || ts.isTemplateMiddle(n) || ts.isTemplateTail(n))
+          acc.push(n.text);
+        else if (ts.isIdentifier(n) && n.text === "nativeSelectClassName")
+          acc.push(nativeSelectClassName);
+        else if (ts.isIdentifier(n) && consts.has(n.text)) acc.push(consts.get(n.text)!);
+        ts.forEachChild(n, walk);
+      };
+      walk(node);
+      return acc;
+    };
+    const consts = new Map<string, string>();
+    const collect = (n: ts.Node) => {
+      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.initializer)
+        consts.set(n.name.text, literalsIn(n.initializer).join(" "));
+      ts.forEachChild(n, collect);
+    };
+    collect(sf);
+    const visit = (n: ts.Node) => {
+      if (
+        (ts.isJsxOpeningElement(n) || ts.isJsxSelfClosingElement(n)) &&
+        ["select", "textarea"].includes(n.tagName.getText(sf))
+      ) {
+        const attr = n.attributes.properties.find(
+          (p) => ts.isJsxAttribute(p) && p.name.getText(sf) === "className"
+        ) as ts.JsxAttribute | undefined;
+        const line = sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
+        out.push({
+          where: `${rel}:${line}`,
+          cls: attr?.initializer ? literalsIn(attr.initializer).join(" ") : "",
+        });
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+  }
+  return out;
+}
+
 describe("dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5)", () => {
   it("self-test: recognises the old patterns and accepts the fixed ones", () => {
     const oldField =
@@ -77,6 +133,17 @@ describe("dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5)", () => {
 
   it("D-3: no form field keeps an unfilled, near-invisible border in dark mode", () => {
     expect(offendingLines(isUnfilledDarkField)).toEqual([]);
+  });
+
+  it("D-3: every native select/textarea with a border carries the Input dark fill", () => {
+    const fields = nativeFields();
+    expect(fields.length, "the scan finds the app's native fields").toBeGreaterThan(70);
+    const missing = fields
+      .filter(({ where }) => !FORCED_LIGHT_FILES.has(where.replace(/:\d+$/, "")))
+      .filter(({ cls }) => /(?<![\w:/-])border(?:-|\b)/.test(cls) || cls === "")
+      .filter(({ cls }) => !cls.includes("dark:bg-input/30"))
+      .map(({ where, cls }) => `${where} "${cls.slice(0, 60)}"`);
+    expect(missing).toEqual([]);
   });
 
   it("D-3: the shared native-select recipe matches the Input primitive in dark mode", () => {

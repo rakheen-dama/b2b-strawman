@@ -117,7 +117,7 @@ export async function renderRequestTemplatesTab({ slug }: SettingsTabProps) {
                       className={
                         template.active
                           ? "text-sm text-green-600 dark:text-green-400"
-                          : "text-sm text-slate-400 dark:text-slate-600"
+                          : "text-muted-foreground text-sm"
                       }
                     >
                       {template.active ? "Active" : "Inactive"}

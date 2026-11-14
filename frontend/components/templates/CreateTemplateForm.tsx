@@ -96,7 +96,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
                 id="new-template-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as TemplateCategory)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+                className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -114,7 +114,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
                 id="new-template-entity-type"
                 value={entityType}
                 onChange={(e) => setEntityType(e.target.value as TemplateEntityType)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+                className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
               >
                 {ENTITY_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>

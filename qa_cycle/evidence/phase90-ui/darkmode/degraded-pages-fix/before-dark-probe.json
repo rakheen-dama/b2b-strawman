@@ -1,0 +1,536 @@
+{
+  "label": "before",
+  "theme": "dark",
+  "at": "2026-11-14T12:05:49.215Z",
+  "pages": {
+    "matters-new": {
+      "url": "/org/e2e-test-org/matters/new",
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "customerId",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.15,
+          "hasFill": false
+        },
+        {
+          "tag": "textarea",
+          "name": "description",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1.06,
+          "borderVsCard": 1.72,
+          "hasFill": true
+        },
+        {
+          "tag": "select",
+          "name": "templateId",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.15,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "priority",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.15,
+          "hasFill": false
+        }
+      ],
+      "fieldMinBorder": 1.15,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "conflict-check": {
+      "url": "/org/e2e-test-org/conflict-check",
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "_R_qqav5ukpfiv5ulb_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_R_32qav5ukpfiv5ulb_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_R_52qav5ukpfiv5ulb_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        }
+      ],
+      "fieldMinBorder": 1.29,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "legal-disbursements": {
+      "url": "/org/e2e-test-org/legal/disbursements",
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "Matter filter",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "Category filter",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "Approval status filter",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "Billing status filter",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        }
+      ],
+      "fieldMinBorder": 1.29,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "legal-adverse-parties": {
+      "url": "/org/e2e-test-org/legal/adverse-parties",
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        }
+      ],
+      "fieldMinBorder": 1.29,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "settings-documents-templates-new": {
+      "url": "/org/e2e-test-org/settings/documents/templates/new",
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "new-template-category",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "new-template-entity-type",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "textarea",
+          "name": "new-template-css",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 font-mono text-sm",
+          "surfaceVsCard": 1.07,
+          "borderVsCard": 1.92,
+          "hasFill": true
+        }
+      ],
+      "fieldMinBorder": 1.29,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "settings-matters-checklists-new": {
+      "url": "/org/e2e-test-org/settings/matters/checklists/new",
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "checklist-customer-type",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "textarea",
+          "name": "checklist-description",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1.07,
+          "borderVsCard": 1.92,
+          "hasFill": true
+        }
+      ],
+      "fieldMinBorder": 1.29,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "settings-matters-templates-id": {
+      "url": "/org/e2e-test-org/settings/matters/templates/d3cc084e-c412-4e4f-881f-2d80f04e37c6",
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "textarea",
+          "name": "template-description",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1.07,
+          "borderVsCard": 1.92,
+          "hasFill": true
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        }
+      ],
+      "fieldMinBorder": 1.29,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "settings-matters--checklists": {
+      "url": "/org/e2e-test-org/settings/matters?tab=checklists",
+      "htmlDark": true,
+      "fields": [],
+      "fieldMinBorder": null,
+      "fieldMinSurface": null,
+      "mutedOld": [
+        {
+          "text": "No",
+          "oldPair": true,
+          "contrast": 2.62
+        },
+        {
+          "text": "No",
+          "oldPair": true,
+          "contrast": 2.62
+        },
+        {
+          "text": "No",
+          "oldPair": true,
+          "contrast": 2.62
+        }
+      ],
+      "mutedMin": 2.62,
+      "mutedOldMin": 2.62,
+      "xero": null
+    },
+    "settings-fees--tariffs": {
+      "url": "/org/e2e-test-org/settings/fees?tab=tariffs",
+      "htmlDark": true,
+      "fields": [],
+      "fieldMinBorder": null,
+      "fieldMinSurface": null,
+      "mutedOld": [
+        {
+          "text": "Ongoing",
+          "oldPair": true,
+          "contrast": 2.37
+        },
+        {
+          "text": "Ongoing",
+          "oldPair": true,
+          "contrast": 2.62
+        },
+        {
+          "text": "Ongoing",
+          "oldPair": true,
+          "contrast": 2.62
+        }
+      ],
+      "mutedMin": 2.37,
+      "mutedOldMin": 2.37,
+      "xero": null
+    },
+    "settings-firm--general": {
+      "url": "/org/e2e-test-org/settings/firm?tab=general",
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "textarea",
+          "name": "footer-text",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1.07,
+          "borderVsCard": 1.92,
+          "hasFill": true
+        },
+        {
+          "tag": "textarea",
+          "name": "paymentReferenceNote",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1.07,
+          "borderVsCard": 1.92,
+          "hasFill": true
+        }
+      ],
+      "fieldMinBorder": 1.92,
+      "fieldMinSurface": 1.07,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "legal-disbursements-id": {
+      "skipped": "no instance found in e2e data"
+    },
+    "settings-connections--xero": {
+      "url": "/org/e2e-test-org/settings/connections?tab=xero",
+      "htmlDark": true,
+      "fields": [],
+      "fieldMinBorder": null,
+      "fieldMinSurface": null,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": {
+        "fill": [
+          19,
+          181,
+          234
+        ],
+        "fg": [
+          255,
+          255,
+          255
+        ],
+        "contrast": 2.38
+      }
+    }
+  },
+  "dialogs": {
+    "dialog-adverse-party": {
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_r_4_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "textarea",
+          "name": "notes",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1.07,
+          "borderVsCard": 1.92,
+          "hasFill": true
+        }
+      ],
+      "fieldMinBorder": 1.29,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    },
+    "dialog-new-disbursement": {
+      "htmlDark": true,
+      "fields": [
+        {
+          "tag": "select",
+          "name": "Matter filter",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "Category filter",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "Approval status filter",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "Billing status filter",
+          "cls": "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_r_3_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_r_4_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "select",
+          "name": "_r_5_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        },
+        {
+          "tag": "textarea",
+          "name": "description",
+          "cls": "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-base transition-[color,box-shadow] outline-none placeholder:text-slate-400 focus-visible:border-slate-500 focus-visible:ring-[3px] focus-visible:ring-slate-500/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700",
+          "surfaceVsCard": 1.07,
+          "borderVsCard": 1.92,
+          "hasFill": true
+        },
+        {
+          "tag": "select",
+          "name": "_r_8_-form-item",
+          "cls": "flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300",
+          "surfaceVsCard": 1,
+          "borderVsCard": 1.29,
+          "hasFill": false
+        }
+      ],
+      "fieldMinBorder": 1.29,
+      "fieldMinSurface": 1,
+      "mutedOld": [],
+      "mutedMin": 5.84,
+      "mutedOldMin": null,
+      "xero": null
+    }
+  },
+  "errors": []
+}

@@ -198,30 +198,30 @@ export function MemberRatesTable({
                             {formatCurrency(activeRate.hourlyRate, activeRate.currency)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">Not set</span>
+                          <span className="text-muted-foreground">Not set</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate ? (
                           activeRate.currency
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate ? (
                           formatDate(activeRate.effectiveFrom)
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate?.effectiveTo ? (
                           formatDate(activeRate.effectiveTo)
                         ) : activeRate ? (
-                          <span className="text-slate-400 dark:text-slate-600">Ongoing</span>
+                          <span className="text-muted-foreground">Ongoing</span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -325,30 +325,30 @@ export function MemberRatesTable({
                             {formatCurrency(activeRate.hourlyCost, activeRate.currency)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">Not set</span>
+                          <span className="text-muted-foreground">Not set</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate ? (
                           activeRate.currency
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate ? (
                           formatDate(activeRate.effectiveFrom)
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate?.effectiveTo ? (
                           formatDate(activeRate.effectiveTo)
                         ) : activeRate ? (
-                          <span className="text-slate-400 dark:text-slate-600">Ongoing</span>
+                          <span className="text-muted-foreground">Ongoing</span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">

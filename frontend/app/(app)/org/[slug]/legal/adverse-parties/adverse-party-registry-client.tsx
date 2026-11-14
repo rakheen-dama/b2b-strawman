@@ -157,7 +157,7 @@ export function AdversePartyRegistryClient({
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value as AdversePartyType | "")}
-          className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
+          className="dark:bg-input/30 flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-700"
         >
           <option value="">All Types</option>
           <option value="NATURAL_PERSON">Natural Person</option>

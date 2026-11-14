@@ -426,7 +426,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                       setSelectedAccountId(e.target.value);
                       resetFromStep2();
                     }}
-                    className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50"
+                    className="dark:bg-input/30 h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 dark:border-slate-700 dark:text-slate-50"
                     data-testid="account-select"
                   >
                     {accounts.map((acct) => (

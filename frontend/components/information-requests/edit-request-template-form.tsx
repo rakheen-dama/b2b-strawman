@@ -340,7 +340,7 @@ export function EditRequestTemplateForm({ slug, template }: EditRequestTemplateF
                             responseType: e.target.value as ResponseType,
                           })
                         }
-                        className="flex h-8 rounded-md border border-slate-200 bg-transparent px-2 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+                        className="dark:bg-input/30 flex h-8 rounded-md border border-slate-200 bg-transparent px-2 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
                       >
                         <option value="FILE_UPLOAD">File Upload</option>
                         <option value="TEXT_RESPONSE">Text Response</option>

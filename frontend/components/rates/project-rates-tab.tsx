@@ -148,7 +148,7 @@ export function ProjectRatesTab({
                   {rate.effectiveTo ? (
                     formatDate(rate.effectiveTo)
                   ) : (
-                    <span className="text-slate-400 dark:text-slate-600">Ongoing</span>
+                    <span className="text-muted-foreground">Ongoing</span>
                   )}
                 </TableCell>
                 <TableCell className="text-right">

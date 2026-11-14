@@ -325,7 +325,7 @@ export function ReviewDraftsStep({
               <label className="text-sm font-medium">Due Date</label>
               <input
                 type="date"
-                className="w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-700"
+                className="dark:bg-input/30 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-700"
                 value={batchDueDate}
                 onChange={(e) => setBatchDueDate(e.target.value)}
               />
@@ -509,7 +509,7 @@ export function ReviewDraftsStep({
               <label className="text-sm font-medium">Due Date</label>
               <input
                 type="date"
-                className="w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-700"
+                className="dark:bg-input/30 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-700"
                 value={editDueDate}
                 onChange={(e) => setEditDueDate(e.target.value)}
               />
@@ -532,7 +532,7 @@ export function ReviewDraftsStep({
             <div className="space-y-2">
               <label className="text-sm font-medium">Notes</label>
               <textarea
-                className="w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-700"
+                className="dark:bg-input/30 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm dark:border-slate-700"
                 rows={4}
                 placeholder="Add notes..."
                 value={editNotes}

@@ -97,7 +97,7 @@ export function VisibilityConditionSection({
                 onConditionFieldSlugChange(e.target.value);
                 onConditionValueChange("");
               }}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
+              className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
             >
               <option value="">Select a field...</option>
               {availableControllingFields.map((f) => (
@@ -115,7 +115,7 @@ export function VisibilityConditionSection({
               id="fd-condition-operator"
               value={conditionOperator}
               onChange={(e) => onConditionOperatorChange(e.target.value as ConditionOperator)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
+              className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
             >
               {CONDITION_OPERATORS.map((op) => (
                 <option key={op.value} value={op.value}>
@@ -133,7 +133,7 @@ export function VisibilityConditionSection({
                 id="fd-condition-value"
                 value={conditionValue}
                 onChange={(e) => onConditionValueChange(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
+                className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
               >
                 <option value="">Select a value...</option>
                 {controllingField.options.map((opt) => (

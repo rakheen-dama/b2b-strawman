@@ -118,7 +118,7 @@ export async function renderChecklistsTab({ slug }: SettingsTabProps) {
                       className={
                         template.autoInstantiate
                           ? "text-green-600 dark:text-green-400"
-                          : "text-slate-400 dark:text-slate-600"
+                          : "text-muted-foreground"
                       }
                     >
                       {template.autoInstantiate ? "Yes" : "No"}

@@ -96,7 +96,7 @@ export function ConflictCheckHistory({
         <select
           value={resultFilter}
           onChange={(e) => setResultFilter(e.target.value as ConflictCheckResultType | "")}
-          className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
+          className="dark:bg-input/30 flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-700"
         >
           <option value="">All Results</option>
           <option value="NO_CONFLICT">No Conflict</option>
@@ -107,7 +107,7 @@ export function ConflictCheckHistory({
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value as ConflictCheckType | "")}
-          className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
+          className="dark:bg-input/30 flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-700"
         >
           <option value="">All Types</option>
           <option value="NEW_CLIENT">New Client</option>

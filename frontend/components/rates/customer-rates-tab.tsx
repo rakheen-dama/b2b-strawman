@@ -144,7 +144,7 @@ export function CustomerRatesTab({
                   {rate.effectiveTo ? (
                     formatDate(rate.effectiveTo)
                   ) : (
-                    <span className="text-slate-400 dark:text-slate-600">Ongoing</span>
+                    <span className="text-muted-foreground">Ongoing</span>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
@@ -305,7 +305,7 @@ function AddCustomerRateDialog({
               id="customer-rate-member"
               value={memberId}
               onChange={(e) => setMemberId(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-400"
+              className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:placeholder:text-slate-400"
               required
             >
               <option value="">Select a member...</option>

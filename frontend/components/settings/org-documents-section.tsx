@@ -122,7 +122,7 @@ export function OrgDocumentsSection({ slug, documents, isAdmin }: OrgDocumentsSe
                     <td className="px-4 py-3">
                       <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                     </td>
-                    <td className="hidden px-4 py-3 text-sm text-slate-400 lg:table-cell dark:text-slate-600">
+                    <td className="text-muted-foreground hidden px-4 py-3 text-sm lg:table-cell">
                       {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}
                     </td>
                   </tr>

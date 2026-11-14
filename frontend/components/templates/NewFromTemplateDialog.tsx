@@ -352,7 +352,7 @@ export function NewFromTemplateDialog({
                       id="new-proj-customer"
                       value={customerId}
                       onChange={(e) => handleCustomerChange(e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+                      className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
                     >
                       <option value="">None</option>
                       {customers.map((c) => (
@@ -375,7 +375,7 @@ export function NewFromTemplateDialog({
                       id="new-proj-lead"
                       value={projectLeadMemberId}
                       onChange={(e) => setProjectLeadMemberId(e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+                      className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
                     >
                       <option value="">Unassigned</option>
                       {orgMembers.map((m) => (

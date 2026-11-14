@@ -116,7 +116,7 @@ export function TagsContent({ slug, tags, canManage }: TagsContentProps) {
                         <code className="text-xs">{tag.color}</code>
                       </div>
                     ) : (
-                      <span className="text-slate-400 dark:text-slate-600">&mdash;</span>
+                      <span className="text-muted-foreground">&mdash;</span>
                     )}
                   </td>
                   {canManage && (

@@ -282,7 +282,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
               value={category}
               onChange={(e) => setCategory(e.target.value as TemplateCategory)}
               disabled={isUploading}
-              className="mt-1 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-slate-600"
+              className="dark:bg-input/30 mt-1 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-slate-600"
             >
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -300,7 +300,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
               value={entityType}
               onChange={(e) => setEntityType(e.target.value as TemplateEntityType)}
               disabled={isUploading}
-              className="mt-1 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-slate-600"
+              className="dark:bg-input/30 mt-1 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-slate-600"
             >
               {ENTITY_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>

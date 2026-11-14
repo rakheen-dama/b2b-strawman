@@ -134,7 +134,7 @@ export function TagInput({
     if (localTags.length === 0) {
       return (
         <div data-testid="tag-input">
-          <span className="text-sm text-slate-400 dark:text-slate-600">No tags</span>
+          <span className="text-muted-foreground text-sm">No tags</span>
         </div>
       );
     }

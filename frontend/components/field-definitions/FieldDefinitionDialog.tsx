@@ -101,7 +101,7 @@ export function FieldDefinitionDialog({
                 id="fd-entity-type"
                 value={form.entityType}
                 onChange={(e) => form.setEntityType(e.target.value as EntityType)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
+                className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
               >
                 {ENTITY_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -147,7 +147,7 @@ export function FieldDefinitionDialog({
               id="fd-field-type"
               value={form.fieldType}
               onChange={(e) => form.setFieldType(e.target.value as import("@/lib/types").FieldType)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
+              className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
             >
               {FIELD_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>

@@ -37,9 +37,7 @@ function TimelineStage({ label, date, isComplete, isActive, children }: Timeline
         <p
           className={cn(
             "text-sm font-medium",
-            isComplete || isActive
-              ? "text-slate-900 dark:text-slate-100"
-              : "text-slate-400 dark:text-slate-600"
+            isComplete || isActive ? "text-slate-900 dark:text-slate-100" : "text-muted-foreground"
           )}
         >
           {label}

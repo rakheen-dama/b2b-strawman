@@ -264,7 +264,7 @@ export function SaveAsTemplateDialog({
                           <select
                             value={taskRoles[task.id] ?? "UNASSIGNED"}
                             onChange={(e) => setTaskRole(task.id, e.target.value as AssigneeRole)}
-                            className="flex h-7 rounded border border-slate-200 bg-transparent px-2 py-0.5 text-xs shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+                            className="dark:bg-input/30 flex h-7 rounded border border-slate-200 bg-transparent px-2 py-0.5 text-xs shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
                           >
                             <option value="UNASSIGNED">Unassigned</option>
                             <option value="PROJECT_LEAD">Matter Lead</option>

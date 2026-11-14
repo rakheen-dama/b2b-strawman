@@ -176,7 +176,7 @@ function renderFieldInput(
             const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
             update("in", selected.length > 0 ? selected : "");
           }}
-          className="h-auto w-full rounded-md border border-slate-200 bg-transparent px-2 py-1 text-sm dark:border-slate-700"
+          className="dark:bg-input/30 h-auto w-full rounded-md border border-slate-200 bg-transparent px-2 py-1 text-sm dark:border-slate-700"
         >
           {fd.options.map((opt) => (
             <option key={opt.value} value={opt.value}>

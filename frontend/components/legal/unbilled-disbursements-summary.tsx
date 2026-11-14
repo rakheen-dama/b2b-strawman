@@ -80,7 +80,7 @@ export function UnbilledDisbursementsSummary({ matterId }: UnbilledDisbursements
           >
             {formatCurrency(data.totalAmount, data.currency)}
           </span>
-          <span className="text-slate-400 dark:text-slate-600"> &middot; </span>
+          <span className="text-muted-foreground"> &middot; </span>
           <span className="text-slate-600 dark:text-slate-400">VAT</span>{" "}
           <span
             data-testid="unbilled-disbursements-vat"

@@ -169,7 +169,7 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+                      className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
                     >
                       {REQUEST_TYPES.map((rt) => (
                         <option key={rt.value} value={rt.value}>

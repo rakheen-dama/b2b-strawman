@@ -138,7 +138,7 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
               <Button
                 onClick={handleConnect}
                 disabled={isConnecting}
-                className="bg-[#13B5EA] text-white hover:bg-[#0e9fd0]"
+                className="bg-[#13B5EA] text-slate-950 hover:bg-[#0e9fd0]"
               >
                 {isConnecting ? (
                   <>

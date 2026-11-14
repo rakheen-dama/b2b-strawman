@@ -322,9 +322,7 @@ export function DisbursementDetailClient({
                   Download receipt
                 </button>
               ) : (
-                <p className="mt-1 text-slate-400 italic dark:text-slate-600">
-                  No receipt uploaded
-                </p>
+                <p className="text-muted-foreground mt-1 italic">No receipt uploaded</p>
               )}
             </div>
           </CardContent>

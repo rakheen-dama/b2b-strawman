@@ -35,7 +35,7 @@ export function HeaderFactsStrip({ fields, testId, itemTestIdPrefix }: HeaderFac
           >
             <dt className={cn("flex items-baseline gap-1.5", hasVisibleTerm && "mr-1.5")}>
               {index > 0 && (
-                <span aria-hidden="true" className="text-slate-400 dark:text-slate-600">
+                <span aria-hidden="true" className="text-muted-foreground">
                   ·
                 </span>
               )}

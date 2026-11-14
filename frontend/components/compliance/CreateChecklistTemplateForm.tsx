@@ -128,7 +128,7 @@ export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFor
             id="checklist-customer-type"
             value={customerType}
             onChange={(e) => setCustomerType(e.target.value as ClientType)}
-            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+            className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
           >
             {CUSTOMER_TYPES.map((ct) => (
               <option key={ct.value} value={ct.value}>

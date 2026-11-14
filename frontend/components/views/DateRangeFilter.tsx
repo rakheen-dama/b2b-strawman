@@ -27,7 +27,7 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
         <select
           value={value.field}
           onChange={(e) => onChange({ ...value, field: e.target.value })}
-          className="h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 text-sm dark:border-slate-700"
+          className="dark:bg-input/30 h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 text-sm dark:border-slate-700"
         >
           {DATE_FIELDS.map((f) => (
             <option key={f.value} value={f.value}>

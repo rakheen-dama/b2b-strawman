@@ -51,7 +51,7 @@ export function DisbursementsListClient({
   const [dateTo, setDateTo] = useState<string>("");
 
   const selectClass =
-    "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800";
+    "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-700 dark:bg-input/30";
 
   // Tracks the most recent refetch request so out-of-order responses are discarded.
   const requestIdRef = useRef(0);

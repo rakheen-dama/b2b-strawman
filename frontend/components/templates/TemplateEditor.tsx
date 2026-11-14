@@ -500,7 +500,7 @@ export function TemplateEditor({
                           assigneeRole: e.target.value as TaskRow["assigneeRole"],
                         })
                       }
-                      className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
+                      className="dark:bg-input/30 flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-700"
                     >
                       <option value="UNASSIGNED">Unassigned</option>
                       <option value="PROJECT_LEAD">Matter Lead</option>

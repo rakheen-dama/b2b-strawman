@@ -306,7 +306,7 @@ function FieldInput({
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             aria-invalid={!!error}
-            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
+            className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
           >
             <option value="">Select...</option>
             {field.options?.map((opt) => (
@@ -364,7 +364,7 @@ function FieldInput({
               value={currencyObj.currency ?? ""}
               onChange={(e) => onChange({ ...currencyObj, currency: e.target.value })}
               disabled={disabled}
-              className="flex h-9 w-28 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
+              className="dark:bg-input/30 flex h-9 w-28 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
               aria-label="Currency"
             >
               <option value="">Currency</option>

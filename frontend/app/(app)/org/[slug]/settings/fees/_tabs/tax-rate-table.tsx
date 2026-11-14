@@ -174,7 +174,7 @@ export function TaxRateTable({ slug, taxRates }: TaxRateTableProps) {
                     {taxRate.active ? (
                       <span className="text-green-600 dark:text-green-400">Active</span>
                     ) : (
-                      <span className="text-slate-400 dark:text-slate-600">Inactive</span>
+                      <span className="text-muted-foreground">Inactive</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">

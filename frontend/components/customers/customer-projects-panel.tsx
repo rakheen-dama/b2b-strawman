@@ -173,10 +173,10 @@ export function CustomerProjectsPanel({
                         {formatLocalDate(project.dueDate)}
                       </span>
                     ) : (
-                      <span className="text-slate-400 dark:text-slate-600">{"\u2014"}</span>
+                      <span className="text-muted-foreground">{"\u2014"}</span>
                     )}
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-slate-400 lg:table-cell dark:text-slate-600">
+                  <td className="text-muted-foreground hidden px-4 py-3 text-sm lg:table-cell">
                     {formatDate(project.createdAt)}
                   </td>
                   {canManage && (
@@ -184,7 +184,7 @@ export function CustomerProjectsPanel({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="size-8 p-0 text-slate-400 hover:text-red-600 dark:text-slate-600 dark:hover:text-red-400"
+                        className="text-muted-foreground size-8 p-0 hover:text-red-600 dark:hover:text-red-400"
                         onClick={() => handleUnlink(project.id)}
                         disabled={isUnlinking || isPending}
                         title="Unlink matter"

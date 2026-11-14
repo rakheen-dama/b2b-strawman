@@ -120,9 +120,7 @@ export function FieldGroupSelector({
         ))}
 
         {appliedGroupObjects.length === 0 && !canManage && (
-          <span className="text-sm text-slate-400 dark:text-slate-600">
-            No field groups applied
-          </span>
+          <span className="text-muted-foreground text-sm">No field groups applied</span>
         )}
 
         {canManage && unappliedGroups.length > 0 && (
@@ -155,7 +153,7 @@ export function FieldGroupSelector({
                     >
                       {group.name}
                       {group.description && (
-                        <span className="ml-1 text-xs text-slate-400 dark:text-slate-600">
+                        <span className="text-muted-foreground ml-1 text-xs">
                           {group.description}
                         </span>
                       )}

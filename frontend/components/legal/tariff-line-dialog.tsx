@@ -164,7 +164,7 @@ export function TariffLineDialog({
               <select
                 value={selectedScheduleId ?? ""}
                 onChange={(e) => setSelectedScheduleId(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
+                className="dark:bg-input/30 flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-700"
               >
                 {schedules.map((s) => (
                   <option key={s.id} value={s.id}>

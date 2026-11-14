@@ -8,10 +8,11 @@ const D = __dirname, label = process.argv[2] || 'run', theme = process.argv[3] |
   const page = await ctx.newPage();
   const errs = [];
   page.on('pageerror', e => errs.push(e.message));
-  page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  page.on('console', m => { if (m.type() === 'error') errs.push(page.url() + ' :: ' + m.text()); });
   await page.goto('http://localhost:3001/mock-login', { waitUntil: 'load' });
   await page.getByRole('button', { name: /sign in/i }).click();
   await page.waitForURL(/\/org\//, { timeout: 60000 });
+  await page.waitForLoadState('load'); await page.waitForTimeout(4000);
   await page.evaluate(t => localStorage.setItem('kazi-theme', t), theme);
   await page.goto('http://localhost:3001/org/e2e-test-org/my-work', { waitUntil: 'load' });
   await page.getByTestId('time-progress-today').waitFor({ timeout: 60000 });
@@ -35,6 +36,7 @@ const D = __dirname, label = process.argv[2] || 'run', theme = process.argv[3] |
       timeTrack: { bg: getComputedStyle(track).backgroundColor, vsCard: ratio(getComputedStyle(track).backgroundColor, card) },
       dayBarTrack: { bg: getComputedStyle(bar).backgroundColor, vsCard: ratio(getComputedStyle(bar).backgroundColor, card) },
       divider: { border: getComputedStyle(divider).borderLeftColor, vsCard: ratio(getComputedStyle(divider).borderLeftColor, card) },
+      daysRemaining: (() => { const el = [...document.querySelectorAll('[data-testid="next-deadline"] span')].find(e => /d remaining$/.test(e.textContent)); return el ? { text: el.textContent, color: getComputedStyle(el).color, contrast: ratio(getComputedStyle(el).color, bgOf(el)) } : 'not shown (no upcoming deadline in data)'; })(),
     };
   });
   const out = { label, theme, at: new Date().toISOString(), resting: await probe() };

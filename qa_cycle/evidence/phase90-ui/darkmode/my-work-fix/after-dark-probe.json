@@ -1,17 +1,17 @@
 {
   "label": "after",
   "theme": "dark",
-  "at": "2026-11-14T03:21:02.349Z",
+  "at": "2026-11-14T03:36:01.151Z",
   "resting": {
     "htmlDark": true,
     "cardBg": "lab(7.73948 -0.41344 -4.03315)",
     "timeToday": {
-      "text": "0m",
+      "text": "10h 30m",
       "color": "lab(100 0 0)",
       "contrast": "17.93"
     },
     "weeklyTotal": {
-      "text": "13.0h",
+      "text": "10.5h",
       "color": "lab(100 0 0)",
       "contrast": "17.93"
     },
@@ -26,7 +26,8 @@
     "divider": {
       "border": "lab(17.0059 -0.560075 -5.14781)",
       "vsCard": "1.25"
-    }
+    },
+    "daysRemaining": "not shown (no upcoming deadline in data)"
   },
   "selectedAndHover": {
     "selectedBg": "lab(69.3224 -52.2771 -5.23559 / 0.1)",

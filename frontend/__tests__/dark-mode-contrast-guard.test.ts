@@ -50,56 +50,112 @@ function offendingLines(match: (line: string) => boolean): string[] {
 // Forced-light routes (outside /org/, ADR-371 §15.3): never painted dark, so exempt.
 const FORCED_LIGHT_FILES = new Set(["components/auth/mock-login-form.tsx"]);
 
+const MAX_VARIANTS = 64;
+
+/** Cartesian join of class-string alternatives, capped so pathological expressions stay cheap. */
+function product(parts: string[][]): string[] {
+  return parts
+    .reduce<string[]>((acc, alts) => acc.flatMap((a) => alts.map((b) => `${a} ${b}`.trim())), [""])
+    .slice(0, MAX_VARIANTS);
+}
+
 /**
- * Every native <select>/<textarea> JSX element with its resolved class text. Classes come from
- * string literals and template pieces inside `className` (including `cn(...)`), the shared
+ * Every native <select>/<textarea> JSX element in one source file, with each class string it can
+ * end up with. A conditional keeps its branches apart (`c ? "a" : "b"` -> ["a", "b"]; `c && "a"`
+ * -> ["", "a"]), so a branch with the dark fill cannot mask a branch without it. Classes are
+ * resolved through string and template literals, `cn(...)` / arrays / object keys, the shared
  * `nativeSelectClassName`, and same-file constants (`const x = "..."` or `useMemo(() => "...")`).
  */
-function nativeFields(): { where: string; cls: string }[] {
-  const out: { where: string; cls: string }[] = [];
-  for (const { rel, text } of readSourceTree(SCAN_ROOTS)) {
-    if (!rel.endsWith(".tsx") || !/<(select|textarea)\b/.test(text)) continue;
-    const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-    const literalsIn = (node: ts.Node): string[] => {
-      const acc: string[] = [];
-      const walk = (n: ts.Node) => {
-        if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) acc.push(n.text);
-        else if (ts.isTemplateHead(n) || ts.isTemplateMiddle(n) || ts.isTemplateTail(n))
-          acc.push(n.text);
-        else if (ts.isIdentifier(n) && n.text === "nativeSelectClassName")
-          acc.push(nativeSelectClassName);
-        else if (ts.isIdentifier(n) && consts.has(n.text)) acc.push(consts.get(n.text)!);
-        ts.forEachChild(n, walk);
+function nativeFieldsIn(rel: string, text: string): { where: string; variants: string[] }[] {
+  const out: { where: string; variants: string[] }[] = [];
+  const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const consts = new Map<string, string[]>();
+  const variants = (n: ts.Node): string[] => {
+    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) return [n.text];
+    if (ts.isTemplateExpression(n))
+      return product([
+        [n.head.text],
+        ...n.templateSpans.flatMap((sp) => [variants(sp.expression), [sp.literal.text]]),
+      ]);
+    if (ts.isIdentifier(n)) {
+      if (n.text === "nativeSelectClassName") return [nativeSelectClassName];
+      return consts.get(n.text) ?? [""];
+    }
+    if (ts.isConditionalExpression(n)) return [...variants(n.whenTrue), ...variants(n.whenFalse)];
+    if (ts.isBinaryExpression(n)) {
+      const op = n.operatorToken.kind;
+      if (op === ts.SyntaxKind.AmpersandAmpersandToken) return ["", ...variants(n.right)];
+      if (op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken)
+        return [...variants(n.left), ...variants(n.right)];
+      if (op === ts.SyntaxKind.PlusToken) return product([variants(n.left), variants(n.right)]);
+    }
+    if (ts.isParenthesizedExpression(n) || ts.isJsxExpression(n) || ts.isAsExpression(n))
+      return n.expression ? variants(n.expression) : [""];
+    if (ts.isArrowFunction(n)) {
+      if (!ts.isBlock(n.body)) return variants(n.body);
+      const returns: string[] = [];
+      const walk = (x: ts.Node) => {
+        if (ts.isReturnStatement(x) && x.expression) returns.push(...variants(x.expression));
+        else if (!ts.isFunctionLike(x)) ts.forEachChild(x, walk);
       };
-      walk(node);
-      return acc;
-    };
-    const consts = new Map<string, string>();
-    const collect = (n: ts.Node) => {
-      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.initializer)
-        consts.set(n.name.text, literalsIn(n.initializer).join(" "));
-      ts.forEachChild(n, collect);
-    };
-    collect(sf);
-    const visit = (n: ts.Node) => {
-      if (
-        (ts.isJsxOpeningElement(n) || ts.isJsxSelfClosingElement(n)) &&
-        ["select", "textarea"].includes(n.tagName.getText(sf))
-      ) {
-        const attr = n.attributes.properties.find(
-          (p) => ts.isJsxAttribute(p) && p.name.getText(sf) === "className"
-        ) as ts.JsxAttribute | undefined;
-        const line = sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
-        out.push({
-          where: `${rel}:${line}`,
-          cls: attr?.initializer ? literalsIn(attr.initializer).join(" ") : "",
-        });
-      }
-      ts.forEachChild(n, visit);
-    };
-    visit(sf);
-  }
+      ts.forEachChild(n.body, walk);
+      return returns.length ? returns : [""];
+    }
+    if (ts.isCallExpression(n)) return product(n.arguments.map(variants));
+    if (ts.isArrayLiteralExpression(n)) return product(n.elements.map(variants));
+    if (ts.isObjectLiteralExpression(n))
+      return product(
+        n.properties.map((p) =>
+          p.name && (ts.isStringLiteral(p.name) || ts.isIdentifier(p.name))
+            ? ["", p.name.text]
+            : [""]
+        )
+      );
+    // Anything else: combine whatever class text appears inside it.
+    const kids: string[][] = [];
+    ts.forEachChild(n, (c) => {
+      kids.push(variants(c));
+    });
+    return kids.length ? product(kids) : [""];
+  };
+  const collect = (n: ts.Node) => {
+    if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.initializer)
+      consts.set(n.name.text, variants(n.initializer));
+    ts.forEachChild(n, collect);
+  };
+  collect(sf);
+  const visit = (n: ts.Node) => {
+    if (
+      (ts.isJsxOpeningElement(n) || ts.isJsxSelfClosingElement(n)) &&
+      ["select", "textarea"].includes(n.tagName.getText(sf))
+    ) {
+      const attr = n.attributes.properties.find(
+        (p) => ts.isJsxAttribute(p) && p.name.getText(sf) === "className"
+      ) as ts.JsxAttribute | undefined;
+      const line = sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
+      out.push({
+        where: `${rel}:${line}`,
+        variants: attr?.initializer ? [...new Set(variants(attr.initializer))] : [""],
+      });
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
   return out;
+}
+
+const HAS_BORDER = /(?<![\w:/-])border(?:-|\b)/;
+
+/** A field fails if its classes are unresolvable, or any bordered alternative lacks the dark fill. */
+function unfilledField({ variants }: { variants: string[] }): boolean {
+  if (variants.every((v) => v.trim() === "")) return true;
+  return variants.some((v) => HAS_BORDER.test(v) && !v.includes("dark:bg-input/30"));
+}
+
+function nativeFields(): { where: string; variants: string[] }[] {
+  return readSourceTree(SCAN_ROOTS)
+    .filter(({ rel, text }) => rel.endsWith(".tsx") && /<(select|textarea)\b/.test(text))
+    .flatMap(({ rel, text }) => nativeFieldsIn(rel, text));
 }
 
 describe("dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5)", () => {
@@ -122,6 +178,25 @@ describe("dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5)", () => {
       )
     ).toBe(false);
 
+    // Element scan: each conditional branch is checked on its own.
+    const scan = (jsx: string) =>
+      nativeFieldsIn("self-test.tsx", `const C = () => (${jsx});`).map(unfilledField);
+    expect(scan('<select className="h-9 border dark:bg-input/30" />')).toEqual([false]);
+    expect(scan('<select className="h-9 border" />')).toEqual([true]);
+    expect(scan('<select className={on ? "border dark:bg-input/30" : "border"} />')).toEqual([
+      true,
+    ]);
+    expect(
+      scan('<select className={on ? "border dark:bg-input/30" : "border dark:bg-input/30"} />')
+    ).toEqual([false]);
+    expect(
+      scan('<select className={cn("h-9 border dark:bg-input/30", err && "border-red-500")} />')
+    ).toEqual([false]);
+    expect(scan('<select className={cn("h-9 border", ok && "dark:bg-input/30")} />')).toEqual([
+      true,
+    ]);
+    expect(scan("<select className={props.className} />")).toEqual([true]);
+
     expect(isLowContrastMuted('className="text-sm text-slate-400 dark:text-slate-600"')).toBe(true);
     expect(isLowContrastMuted('className="text-slate-400 italic dark:text-slate-600"')).toBe(true);
     expect(isLowContrastMuted('className="text-sm text-muted-foreground"')).toBe(false);
@@ -140,9 +215,10 @@ describe("dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5)", () => {
     expect(fields.length, "the scan finds the app's native fields").toBeGreaterThan(70);
     const missing = fields
       .filter(({ where }) => !FORCED_LIGHT_FILES.has(where.replace(/:\d+$/, "")))
-      .filter(({ cls }) => /(?<![\w:/-])border(?:-|\b)/.test(cls) || cls === "")
-      .filter(({ cls }) => !cls.includes("dark:bg-input/30"))
-      .map(({ where, cls }) => `${where} "${cls.slice(0, 60)}"`);
+      .filter(unfilledField)
+      .map(
+        ({ where, variants }) => `${where} ${JSON.stringify(variants.map((v) => v.slice(0, 50)))}`
+      );
     expect(missing).toEqual([]);
   });
 

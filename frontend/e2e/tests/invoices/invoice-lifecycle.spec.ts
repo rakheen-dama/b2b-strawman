@@ -95,8 +95,9 @@ test.describe.serial("INV-02: Invoice Lifecycle", () => {
       timeout: 10000,
     });
 
-    // Click Approve button
-    const approveBtn = page.getByRole("button", { name: "Approve" });
+    // Click Approve button. exact: the approval adds a "Fee note approved" audit-trail entry,
+    // a button whose name contains "Approve" — a substring match would still count it below.
+    const approveBtn = page.getByRole("button", { name: "Approve", exact: true });
     await expect(approveBtn).toBeVisible({ timeout: 5000 });
     await approveBtn.click();
     // APPROVED offers Send fee note instead of Approve (invoice-header-actions.tsx)

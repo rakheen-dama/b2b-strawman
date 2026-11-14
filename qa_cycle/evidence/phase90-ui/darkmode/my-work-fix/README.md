@@ -15,8 +15,14 @@ luminance from the browser's `lab()` values; the raw numbers are in the `*-probe
 | Strip divider vs card | 13.71:1 | 1.25:1 | 1.29:1 | 1.27:1 |
 | Selected day / hover | near-white slabs (L≈98) | subtle teal tint / slate-800 | teal-50 / slate-50 | teal-500 at 10% / slate-100 |
 
-The selected-day "label contrast" in `after-*-probe.json` (1.14) is a probe artefact: the new background is 10% alpha,
-and the probe does not composite it. The screenshots show the label is readable.
+**Selected-day label contrast.** The after probe composites the 10%-alpha selected background over the card (luminance
+blend) before computing the ratio (`selectedLabelContrast` in the after JSONs):
+- Dark: **4.02:1**, up from 2.57:1 on the old near-white slab.
+- Light: **2.50:1**, against 2.57:1 before, so essentially unchanged.
+
+The light figure is the existing `text-slate-400` day label, about 2.5:1 on white whether or not the day is selected. It
+predates this PR and is flagged separately. The before JSONs' figures used opaque backgrounds (teal-50 / slate-50), so no
+compositing was needed there.
 
 **Trade-off in light mode:** `bg-muted` is slate-100, so the light-mode tracks are one step lighter than the old slate-200
 (1.29 → 1.12 vs the card). They are still clearly visible (`after-rhythm-strip-light.png`). Using the shared token keeps

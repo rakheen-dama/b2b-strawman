@@ -1,7 +1,7 @@
 {
   "label": "after",
   "theme": "dark",
-  "at": "2026-11-14T03:36:01.151Z",
+  "at": "2026-11-14T03:37:16.378Z",
   "resting": {
     "htmlDark": true,
     "cardBg": "lab(7.73948 -0.41344 -4.03315)",
@@ -31,8 +31,10 @@
   },
   "selectedAndHover": {
     "selectedBg": "lab(69.3224 -52.2771 -5.23559 / 0.1)",
+    "selectedBgAlpha": 0.1,
+    "selectedBackdrop": "lab(7.73948 -0.41344 -4.03315)",
     "selectedLabelColor": "lab(65.1376 -0.85035 -6.67907)",
-    "selectedLabelContrast": "1.14",
+    "selectedLabelContrast": "4.02",
     "hoverBg": "lab(14.1047 -0.539318 -5.13909)"
   },
   "errors": []

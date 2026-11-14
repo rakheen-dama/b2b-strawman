@@ -49,7 +49,14 @@ const D = __dirname, label = process.argv[2] || 'run', theme = process.argv[3] |
   out.selectedAndHover = await page.evaluate(() => {
     const d0 = document.querySelector('[data-testid="rhythm-day-0"]'), d1 = document.querySelector('[data-testid="rhythm-day-1"]');
     const lbl = d0.querySelector('span');
-    const lum = c => { const m = c.match(/-?[\d.]+/g).map(Number); if (c.startsWith('lab(')) { const L = m[0]; return L > 8 ? ((L + 16) / 116) ** 3 : L / 903.3; } if (c.startsWith('oklch(') || c.startsWith('oklab(')) { const L = m[0] > 1 ? m[0] / 100 : m[0]; return L ** 3; } const [r, g, b] = m.slice(0, 3).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; }; const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return ((x + 0.05) / (y + 0.05)).toFixed(2); }; const sb = getComputedStyle(d0).backgroundColor, lc = getComputedStyle(lbl).color; return { selectedBg: sb, selectedLabelColor: lc, selectedLabelContrast: ratio(lc, sb), hoverBg: getComputedStyle(d1).backgroundColor };
+    const lum = c => { const m = c.match(/-?[\d.]+/g).map(Number); if (c.startsWith('lab(')) { const L = m[0]; return L > 8 ? ((L + 16) / 116) ** 3 : L / 903.3; } if (c.startsWith('oklch(') || c.startsWith('oklab(')) { const L = m[0] > 1 ? m[0] / 100 : m[0]; return L ** 3; } const [r, g, b] = m.slice(0, 3).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; }; const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return ((x + 0.05) / (y + 0.05)).toFixed(2); }; const sb = getComputedStyle(d0).backgroundColor, lc = getComputedStyle(lbl).color;
+    // Composite a translucent selected background over the card behind it (luminance blend, alpha from "/ a").
+    const alphaOf = c => { const m = c.match(/\/\s*([\d.]+)\s*\)/); return m ? Number(m[1]) : (c.startsWith('rgba(') ? Number(c.match(/[\d.]+/g)[3]) : 1); };
+    const bgBehind = el => { el = el.parentElement; while (el) { const c = getComputedStyle(el).backgroundColor; if (c && !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) return c; el = el.parentElement; } return 'rgb(255,255,255)'; };
+    const a = alphaOf(sb), under = bgBehind(d0);
+    const yEff = a * lum(sb) + (1 - a) * lum(under), yLbl = lum(lc);
+    const [hi, lo] = [yEff, yLbl].sort((p, q) => q - p);
+    return { selectedBg: sb, selectedBgAlpha: a, selectedBackdrop: under, selectedLabelColor: lc, selectedLabelContrast: ((hi + 0.05) / (lo + 0.05)).toFixed(2), hoverBg: getComputedStyle(d1).backgroundColor };
   });
   await page.getByTestId('weekly-rhythm-strip').screenshot({ path: `${D}/${label}-rhythm-strip-selected-${theme}.png` });
   out.errors = errs;

@@ -37,9 +37,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * G89-F44 (D14): the portal "Firm actions" tab showed trust refund approvals but no deposit and no
- * interest. A recorded deposit and each posted interest credit now surface — and only to the client
- * whose money it is: client A sees A's deposit and A's interest, never B's. Driven through the real
- * firm trust endpoints and the real {@code GET /portal/activity?tab=FIRM}.
+ * interest. A recorded deposit now surfaces — and only to the client whose money it is: client A
+ * sees A's deposit, never B's. (Interest credits are no longer posted — Phase 92 645A, section
+ * 86(5).) Driven through the real firm trust endpoints and the real {@code GET
+ * /portal/activity?tab=FIRM}.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,7 +51,6 @@ class PortalActivityTrustEventsIntegrationTest {
 
   private static final String ORG_ID = "org_pa_trust_events";
   private static final String OWNER = "user_pa_trust_owner";
-  private static final String APPROVER = "user_pa_trust_approver";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -80,8 +80,6 @@ class PortalActivityTrustEventsIntegrationTest {
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, OWNER, "pa_trust_owner@test.com", "Trust Owner", "owner"));
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, APPROVER, "pa_trust_approver@test.com", "Trust Approver", "admin");
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -98,10 +96,9 @@ class PortalActivityTrustEventsIntegrationTest {
                       matterB = lastMatter;
                     }));
 
-    String accountId = createAccountWithRate();
+    String accountId = createAccount();
     depositA = deposit(accountId, clientA, matterA, "40000.00", "DEP-PA-A");
     depositB = deposit(accountId, clientB, matterB, "25000.00", "DEP-PA-B");
-    postInterestRun(accountId, "2025-04-01", "2025-04-30");
   }
 
   @Test
@@ -112,17 +109,6 @@ class PortalActivityTrustEventsIntegrationTest {
     assertThat(entityIds(a, "trust_deposit.recorded")).containsExactly(depositA);
     assertThat(entityIds(b, "trust_deposit.recorded")).containsExactly(depositB);
     assertThat(summary(a, "trust_deposit.recorded")).isEqualTo("Trust deposit received");
-  }
-
-  @Test
-  void interestCredit_appearsForItsClientOnly() throws Exception {
-    var a = firmTab(clientA);
-    var b = firmTab(clientB);
-
-    assertThat(matterIds(a, "trust_interest_credit.recorded")).containsExactly(matterA.toString());
-    assertThat(matterIds(b, "trust_interest_credit.recorded")).containsExactly(matterB.toString());
-    assertThat(summary(a, "trust_interest_credit.recorded"))
-        .isEqualTo("Interest credited to your trust balance");
   }
 
   @Test
@@ -154,7 +140,7 @@ class PortalActivityTrustEventsIntegrationTest {
     return client;
   }
 
-  private String createAccountWithRate() throws Exception {
+  private String createAccount() throws Exception {
     var account =
         mockMvc
             .perform(
@@ -170,19 +156,7 @@ class PortalActivityTrustEventsIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    String accountId = TestEntityHelper.extractId(account);
-    mockMvc
-        .perform(
-            post("/api/trust-accounts/" + accountId + "/lpff-rates")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"effectiveFrom": "2025-01-01", "ratePercent": 0.0750,
-                     "lpffSharePercent": 0.7500, "notes": "PA rate"}
-                    """))
-        .andExpect(status().isCreated());
-    return accountId;
+    return TestEntityHelper.extractId(account);
   }
 
   /** Records a matter deposit dated 2025-03-01; returns the trust transaction id. */
@@ -205,38 +179,6 @@ class PortalActivityTrustEventsIntegrationTest {
     return TestEntityHelper.extractId(result);
   }
 
-  private void postInterestRun(String accountId, String start, String end) throws Exception {
-    var created =
-        mockMvc
-            .perform(
-                post("/api/trust-accounts/" + accountId + "/interest-runs")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"periodStart": "%s", "periodEnd": "%s"}
-                        """
-                            .formatted(start, end)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String runId = TestEntityHelper.extractId(created);
-    mockMvc
-        .perform(
-            post("/api/interest-runs/" + runId + "/calculate")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
-        .andExpect(status().isOk());
-    mockMvc
-        .perform(
-            post("/api/interest-runs/" + runId + "/approve")
-                .with(TestJwtFactory.adminJwt(ORG_ID, APPROVER)))
-        .andExpect(status().isOk());
-    mockMvc
-        .perform(
-            post("/api/interest-runs/" + runId + "/post")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
-        .andExpect(status().isOk());
-  }
-
   private List<Map<String, Object>> firmTab(UUID client) throws Exception {
     String token = portalJwtService.issueToken(client, ORG_ID);
     String body =
@@ -257,13 +199,6 @@ class PortalActivityTrustEventsIntegrationTest {
     return rows.stream()
         .filter(row -> eventType.equals(row.get("eventType")))
         .map(row -> row.get("entityId"))
-        .toList();
-  }
-
-  private static List<Object> matterIds(List<Map<String, Object>> rows, String eventType) {
-    return rows.stream()
-        .filter(row -> eventType.equals(row.get("eventType")))
-        .map(row -> row.get("matterId"))
         .toList();
   }
 

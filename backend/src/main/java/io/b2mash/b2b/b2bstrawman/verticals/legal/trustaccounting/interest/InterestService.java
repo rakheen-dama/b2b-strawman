@@ -457,6 +457,7 @@ public class InterestService {
   @Transactional
   public InterestRunResponse approveInterestRun(UUID runId) {
     moduleGuard.requireModule(MODULE_ID);
+    refuseInterestPosting();
 
     var approverId = RequestScopes.requireMemberId();
 
@@ -509,6 +510,7 @@ public class InterestService {
   @Transactional
   public InterestRunResponse postInterestRun(UUID runId) {
     moduleGuard.requireModule(MODULE_ID);
+    refuseInterestPosting();
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -718,6 +720,21 @@ public class InterestService {
   }
 
   // --- Private Helpers ---
+
+  /**
+   * Phase 92 645A (§16.3.1, ADR-375): interest on trust money vests in the Legal Practitioners'
+   * Fidelity Fund (section 86(5) of the Legal Practice Act), so a calculated run is never approved
+   * or posted. Called first, after the module guard, by both methods; always throws. No audit event
+   * (a refusal is not an event). The bodies behind it are deleted in 646A and the endpoints in
+   * 651A.
+   */
+  private static void refuseInterestPosting() {
+    throw new InvalidStateException(
+        "Interest runs are not posted",
+        "Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the "
+            + "Legal Practice Act). Kazi no longer posts calculated interest. Record interest from the "
+            + "bank statement instead.");
+  }
 
   /**
    * Interest is earned over a period that has ended: posting dates the ledger rows on period_end,

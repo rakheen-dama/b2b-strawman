@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
+import { Info } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import {
   fetchInterestRuns,
@@ -25,6 +27,10 @@ const STATUS_BADGE_VARIANT: Record<InterestRunStatus, "neutral" | "warning" | "s
   APPROVED: "warning",
   POSTED: "success",
 };
+
+// Phase 92 645A (§16.6.2, ADR-375): calculated interest is never posted
+const INTEREST_POSTING_NOTICE =
+  "Calculated interest is not posted. Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Record interest from the bank statement when you reconcile.";
 
 // ── Page ────────────────────────────────────────────────────────────
 
@@ -54,10 +60,6 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
 
   const hasManageTrust =
     capData.isAdmin || capData.isOwner || capData.capabilities.includes("MANAGE_TRUST");
-  const canApproveTrust =
-    capData.isAdmin || capData.isOwner || capData.capabilities.includes("APPROVE_TRUST_PAYMENT");
-  // The caller's members.id: hides self-approval (630B); the backend still refuses it.
-  const memberId = capData.memberId ?? null;
 
   // Fetch primary trust account
   let accountId: string | null = null;
@@ -99,6 +101,11 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
         </div>
       </div>
 
+      <Alert data-testid="interest-posting-notice">
+        <Info className="size-4" />
+        <AlertDescription>{INTEREST_POSTING_NOTICE}</AlertDescription>
+      </Alert>
+
       {/* Error State */}
       {(fetchError || accountFetchError) && (
         <Card>
@@ -122,13 +129,7 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
                 </CardDescription>
               </div>
               {hasManageTrust && accountId && (
-                <InterestPageClient
-                  accountId={accountId}
-                  variant="wizard"
-                  canApprove={canApproveTrust}
-                  currency={currency}
-                  memberId={memberId}
-                />
+                <InterestPageClient accountId={accountId} variant="wizard" currency={currency} />
               )}
             </div>
           </CardHeader>
@@ -205,9 +206,7 @@ export default async function InterestPage({ params }: { params: Promise<{ slug:
                             run={run}
                             accountId={run.trustAccountId}
                             currency={currency}
-                            memberId={memberId}
                             hasManageTrust={hasManageTrust}
-                            canApproveTrust={canApproveTrust}
                           />
                         </td>
                       </tr>

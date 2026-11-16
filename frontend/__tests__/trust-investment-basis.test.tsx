@@ -22,15 +22,11 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/investments/actions", () => ({
 // -- Mock interest run actions for wizard ---------------------------------
 const mockCreateInterestRun = vi.fn();
 const mockCalculateInterest = vi.fn();
-const mockApproveInterestRun = vi.fn();
-const mockPostInterestRun = vi.fn();
 const mockFetchInterestRunDetail = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
   createInterestRun: (...args: unknown[]) => mockCreateInterestRun(...args),
   calculateInterest: (...args: unknown[]) => mockCalculateInterest(...args),
-  approveInterestRun: (...args: unknown[]) => mockApproveInterestRun(...args),
-  postInterestRun: (...args: unknown[]) => mockPostInterestRun(...args),
   fetchInterestRunDetail: (...args: unknown[]) => mockFetchInterestRunDetail(...args),
 }));
 
@@ -323,14 +319,7 @@ describe("Epic 455 — Investment Basis", () => {
     });
 
     render(
-      <InterestRunWizard
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-        canApprove={true}
-        currency="ZAR"
-      />
+      <InterestRunWizard accountId="acc-1" open={true} onOpenChange={vi.fn()} currency="ZAR" />
     );
 
     // Fill period dates and submit step 1
@@ -408,14 +397,7 @@ describe("Epic 455 — Investment Basis", () => {
     });
 
     render(
-      <InterestRunWizard
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-        canApprove={true}
-        currency="ZAR"
-      />
+      <InterestRunWizard accountId="acc-1" open={true} onOpenChange={vi.fn()} currency="ZAR" />
     );
 
     // Fill period dates and submit step 1

@@ -35,30 +35,6 @@ export async function calculateInterest(
   }
 }
 
-export async function approveInterestRun(
-  runId: string
-): Promise<{ success: boolean; run?: InterestRun; error?: string }> {
-  try {
-    const run = await api.post<InterestRun>(`/api/interest-runs/${runId}/approve`, {});
-    return { success: true, run };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to approve interest run";
-    return { success: false, error: message };
-  }
-}
-
-export async function postInterestRun(
-  runId: string
-): Promise<{ success: boolean; run?: InterestRun; error?: string }> {
-  try {
-    const run = await api.post<InterestRun>(`/api/interest-runs/${runId}/post`, {});
-    return { success: true, run };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to post interest run";
-    return { success: false, error: message };
-  }
-}
-
 /** Deletes a mistaken DRAFT run and its allocations (630B, founder ruling §9.2). */
 export async function deleteInterestRun(
   runId: string

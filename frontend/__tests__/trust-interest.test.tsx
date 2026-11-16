@@ -8,8 +8,6 @@ vi.mock("server-only", () => ({}));
 const mockFetchInterestRuns = vi.fn();
 const mockCreateInterestRun = vi.fn();
 const mockCalculateInterest = vi.fn();
-const mockApproveInterestRun = vi.fn();
-const mockPostInterestRun = vi.fn();
 const mockDeleteInterestRun = vi.fn();
 const mockFetchInterestRunDetail = vi.fn();
 const mockFetchLpffRates = vi.fn();
@@ -19,8 +17,6 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
   fetchInterestRuns: (...args: unknown[]) => mockFetchInterestRuns(...args),
   createInterestRun: (...args: unknown[]) => mockCreateInterestRun(...args),
   calculateInterest: (...args: unknown[]) => mockCalculateInterest(...args),
-  approveInterestRun: (...args: unknown[]) => mockApproveInterestRun(...args),
-  postInterestRun: (...args: unknown[]) => mockPostInterestRun(...args),
   deleteInterestRun: (...args: unknown[]) => mockDeleteInterestRun(...args),
   fetchInterestRunDetail: (...args: unknown[]) => mockFetchInterestRunDetail(...args),
   fetchLpffRates: (...args: unknown[]) => mockFetchLpffRates(...args),
@@ -58,15 +54,18 @@ vi.mock("@/lib/api/settings", () => ({
   }),
 }));
 
+const mockFetchMyCapabilities = vi.fn();
 vi.mock("@/lib/api/capabilities", () => ({
-  fetchMyCapabilities: vi.fn().mockResolvedValue({
-    capabilities: ["VIEW_TRUST", "MANAGE_TRUST", "APPROVE_TRUST_PAYMENT"],
-    role: "OWNER",
-    isAdmin: false,
-    isOwner: true,
-    memberId: "member-viewer",
-  }),
+  fetchMyCapabilities: (...args: unknown[]) => mockFetchMyCapabilities(...args),
 }));
+
+const OWNER_CAPS = {
+  capabilities: ["VIEW_TRUST", "MANAGE_TRUST", "APPROVE_TRUST_PAYMENT"],
+  role: "OWNER",
+  isAdmin: false,
+  isOwner: true,
+  memberId: "member-viewer",
+};
 
 // ── Mock next/navigation ─────────────────────────────────────────
 vi.mock("next/navigation", () => ({
@@ -140,6 +139,7 @@ async function renderInterestPage() {
 describe("Trust Interest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetchMyCapabilities.mockResolvedValue(OWNER_CAPS);
   });
 
   afterEach(() => {
@@ -201,14 +201,7 @@ describe("Trust Interest", () => {
     });
 
     render(
-      <InterestRunWizard
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-        canApprove={true}
-        currency="ZAR"
-      />
+      <InterestRunWizard accountId="acc-1" open={true} onOpenChange={vi.fn()} currency="ZAR" />
     );
 
     // Wizard opens at step 1 by default; we need to create first to get to step 2.
@@ -290,92 +283,127 @@ describe("Trust Interest", () => {
     });
   });
 
-  it("post action transitions run to POSTED", async () => {
-    mockPostInterestRun.mockResolvedValue({
-      success: true,
-      run: makeRun({ id: "run-post", status: "POSTED", postedAt: "2026-04-05T12:00:00Z" }),
-    });
+  // ── Phase 92 645A (§16.6.2): no control approves or posts a run; the page carries the notice ──
 
-    // We need to render the wizard and advance to step 4.
-    // Mock the create, calculate, detail, and approve steps.
-    mockCreateInterestRun.mockResolvedValue({
-      success: true,
-      run: makeRun({ id: "run-post" }),
-    });
-    mockCalculateInterest.mockResolvedValue({
-      success: true,
-      run: makeRun({ id: "run-post" }),
-    });
-    mockFetchInterestRunDetail.mockResolvedValue({
-      run: makeRun({ id: "run-post" }),
-      allocations: [
-        {
-          id: "alloc-p1",
-          interestRunId: "run-post",
-          clientId: "cust-001",
-          averageDailyBalance: 50000,
-          daysInPeriod: 90,
-          grossInterest: 1250,
-          lpffShare: 625,
-          clientShare: 625,
-          trustTransactionId: null,
-          createdAt: "2026-04-01T09:00:00Z",
-        },
-      ],
-    });
-    mockApproveInterestRun.mockResolvedValue({
-      success: true,
-      run: makeRun({ id: "run-post", status: "APPROVED" }),
-    });
+  const NOTICE =
+    "Calculated interest is not posted. Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Record interest from the bank statement when you reconcile.";
 
-    const onSuccess = vi.fn();
+  // Every run status the page can list: never-calculated draft, calculated draft, approved, posted
+  const ALL_STATUSES = [
+    makeRun({ id: "d0", periodStart: "2025-01-01", periodEnd: "2025-01-31" }),
+    makeRun({ id: "d2", periodStart: "2025-02-01", periodEnd: "2025-02-28", allocationCount: 2 }),
+    makeRun({
+      id: "ap",
+      periodStart: "2025-03-01",
+      periodEnd: "2025-03-31",
+      status: "APPROVED",
+      approvedBy: "member-2",
+      allocationCount: 1,
+    }),
+    makeRun({
+      id: "po",
+      periodStart: "2025-04-01",
+      periodEnd: "2025-04-30",
+      status: "POSTED",
+      approvedBy: "member-2",
+      postedAt: "2025-05-02T10:00:00Z",
+      allocationCount: 1,
+    }),
+  ];
 
-    render(
-      <InterestRunWizard
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={onSuccess}
-        canApprove={true}
-        currency="ZAR"
-      />
-    );
+  // Names the posting controls had before Phase 92 645A (and anything else that would post or approve)
+  const POSTING_CONTROL = /post|approve/i;
 
-    // Step 1: Create
-    fireEvent.change(screen.getByLabelText("Period Start"), {
-      target: { value: "2026-01-01" },
-    });
-    fireEvent.change(screen.getByLabelText("Period End"), {
-      target: { value: "2026-03-31" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Create Run" }));
-
-    // Step 2: Calculate
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Calculate Interest" })).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Calculate Interest" }));
-
-    // Wait for allocations, then click Approve to advance
-    await waitFor(() => {
-      expect(screen.getByTestId("allocations-table")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Approve" }));
-
-    // Step 3: Approve
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Approve Run" })).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Approve Run" }));
-
-    // Step 4: Post
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Post to Ledger" })).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Post to Ledger" }));
-
-    await waitFor(() => {
-      expect(mockPostInterestRun).toHaveBeenCalledWith("run-post");
-    });
+  it("carries the section 86(5) notice, verbatim", async () => {
+    mockFetchInterestRuns.mockResolvedValue([]);
+    mockFetchLpffRates.mockResolvedValue([]);
+    await renderInterestPage();
+    expect(screen.getByTestId("interest-posting-notice")).toHaveTextContent(NOTICE);
   });
+
+  it.each([
+    ["owner", { ...OWNER_CAPS }],
+    ["admin", { ...OWNER_CAPS, role: "ADMIN", isAdmin: true, isOwner: false }],
+    [
+      "member with MANAGE_TRUST",
+      {
+        capabilities: ["VIEW_TRUST", "MANAGE_TRUST"],
+        role: "member",
+        isAdmin: false,
+        isOwner: false,
+        memberId: "m-1",
+      },
+    ],
+    [
+      "member with APPROVE_TRUST_PAYMENT",
+      {
+        capabilities: ["VIEW_TRUST", "APPROVE_TRUST_PAYMENT"],
+        role: "member",
+        isAdmin: false,
+        isOwner: false,
+        memberId: "m-2",
+      },
+    ],
+    [
+      "member with VIEW_TRUST only",
+      {
+        capabilities: ["VIEW_TRUST"],
+        role: "member",
+        isAdmin: false,
+        isOwner: false,
+        memberId: "m-3",
+      },
+    ],
+  ])(
+    "no Post, Post to Ledger, Approve or Review & approve control for any run status — %s",
+    async (_role, caps) => {
+      mockFetchMyCapabilities.mockResolvedValue(caps);
+      mockFetchInterestRuns.mockResolvedValue(ALL_STATUSES);
+      mockFetchLpffRates.mockResolvedValue([]);
+      await renderInterestPage();
+
+      expect(screen.getByTestId("interest-runs-table")).toBeInTheDocument();
+      for (const name of ["Post", "Post to Ledger", "Approve", "Approve Run", "Review & approve"]) {
+        expect(screen.queryByRole("button", { name })).toBeNull();
+      }
+      expect(screen.queryAllByRole("button", { name: POSTING_CONTROL })).toEqual([]);
+      expect(screen.getByTestId("interest-posting-notice")).toHaveTextContent(NOTICE);
+    }
+  );
+
+  it.each(["DRAFT", "APPROVED", "POSTED"] as const)(
+    "the wizard on a calculated %s run stops at the calculation — no approve or post step",
+    async (status) => {
+      const run = makeRun({ id: `run-${status}`, status, allocationCount: 1 });
+      mockFetchInterestRunDetail.mockResolvedValue({
+        run,
+        allocations: [
+          {
+            id: "alloc-w",
+            interestRunId: run.id,
+            clientId: "cust-001",
+            averageDailyBalance: 1000,
+            daysInPeriod: 31,
+            grossInterest: 10,
+            lpffShare: 5,
+            clientShare: 5,
+            trustTransactionId: null,
+            createdAt: "2026-04-01T09:00:00Z",
+          },
+        ],
+      });
+      render(
+        <InterestRunWizard
+          accountId="acc-1"
+          open={true}
+          onOpenChange={vi.fn()}
+          currency="ZAR"
+          initialRun={run as never}
+        />
+      );
+      await waitFor(() => expect(screen.getByText("Step 2 of 2 — Calculate")).toBeInTheDocument());
+      expect(screen.getByTestId("allocations-table")).toBeInTheDocument();
+      expect(screen.queryAllByRole("button", { name: POSTING_CONTROL })).toEqual([]);
+    }
+  );
 });

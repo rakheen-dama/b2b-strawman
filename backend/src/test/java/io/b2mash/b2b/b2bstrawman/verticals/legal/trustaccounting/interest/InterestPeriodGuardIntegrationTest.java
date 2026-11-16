@@ -43,6 +43,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>Dates are relative to the real SA clock ({@link KaziTime#ZONE}, the zone of the {@code Clock}
  * bean), so no {@code @MockitoBean Clock} and no extra Spring context cache key. Each test uses its
  * own funded trust account so one test's run can never overlap another's.
+ *
+ * <p>Since Phase 92 645A the section 86(5) posting guard refuses approve and post before the period
+ * check; the create guard is still exercised here.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -125,10 +128,10 @@ class InterestPeriodGuardIntegrationTest {
         .andExpect(jsonPath("$.periodEnd").value(today.toString()));
   }
 
-  // --- approve: a DRAFT created before the guard existed ---
+  // --- approve and post: refused by the Phase 92 posting guard first (645A) ---
 
   @Test
-  void approveInterestRun_legacyDraftWithFuturePeriod_rejected400() throws Exception {
+  void approveInterestRun_legacyDraftWithFuturePeriod_refusedByPostingGuard() throws Exception {
     var account = createFundedAccount("62000000903");
     var today = LocalDate.now(KaziTime.ZONE);
     var runId = saveLegacyRun(account, today, today.plusDays(1));
@@ -137,15 +140,13 @@ class InterestPeriodGuardIntegrationTest {
     mockMvc
         .perform(post("/api/interest-runs/" + runId + "/approve").with(ownerJwt()))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value(NOT_ENDED_TITLE));
+        .andExpect(jsonPath("$.title").value(InterestPostingGuardIntegrationTest.TITLE));
 
     assertThat(statusOf(runId)).isEqualTo("DRAFT");
   }
 
-  // --- post: an APPROVED run for a period that has not ended ---
-
   @Test
-  void postInterestRun_futurePeriod_rejected400() throws Exception {
+  void postInterestRun_futurePeriod_refusedByPostingGuard() throws Exception {
     var account = createFundedAccount("62000000904");
     var today = LocalDate.now(KaziTime.ZONE);
     var runId = saveLegacyRun(account, today, today.plusDays(1));
@@ -155,7 +156,7 @@ class InterestPeriodGuardIntegrationTest {
     mockMvc
         .perform(post("/api/interest-runs/" + runId + "/post").with(ownerJwt()))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value(NOT_ENDED_TITLE));
+        .andExpect(jsonPath("$.title").value(InterestPostingGuardIntegrationTest.TITLE));
 
     assertThat(statusOf(runId)).isEqualTo("APPROVED");
     // Nothing reached the ledger: no INTEREST_CREDIT / INTEREST_LPFF rows on this account

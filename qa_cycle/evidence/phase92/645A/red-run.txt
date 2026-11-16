@@ -1,0 +1,52 @@
+# 645A red run -- InterestPostingGuardIntegrationTest on unmodified InterestService
+commit: 251100d547debd9ffbcf592891d3b81c33d7a3bb (main 251100d54 + the new test only; InterestService.java untouched)
+command: ./mvnw test -Dtest=InterestPostingGuardIntegrationTest  (exit=1)
+
+## Surefire summary
+-------------------------------------------------------------------------------
+Test set: io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 30.45 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest.approveOnDraftRun_isRefusedWithTheSection86_5Message -- Time elapsed: 0.469 s <<< FAILURE!
+java.lang.AssertionError: Response status expected:<400> but was:<200>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$is$1(StatusResultMatchers.java:65)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions.assertProblem(ProblemDetailAssertions.java:19)
+	at io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions.assertProblemWithDetail(ProblemDetailAssertions.java:29)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest.approveOnDraftRun_isRefusedWithTheSection86_5Message(InterestPostingGuardIntegrationTest.java:198)
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest.refusedApproveAndPost_writeNoTrustTransaction -- Time elapsed: 0.047 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<200>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest.refusedApproveAndPost_writeNoTrustTransaction(InterestPostingGuardIntegrationTest.java:220)
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest.postOnApprovedRun_isRefusedWithTheSection86_5Message -- Time elapsed: 0.060 s <<< FAILURE!
+java.lang.AssertionError: Response status expected:<400> but was:<200>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$is$1(StatusResultMatchers.java:65)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions.assertProblem(ProblemDetailAssertions.java:19)
+	at io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions.assertProblemWithDetail(ProblemDetailAssertions.java:29)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest.postOnApprovedRun_isRefusedWithTheSection86_5Message(InterestPostingGuardIntegrationTest.java:179)
+
+
+## The unguarded approve/post calls (MockMvc print: URI, status, body head)
+      Request URI = /api/interest-runs/911fb124-b172-4226-b904-d6cf43053eb7/approve
+           Status = 200
+             Body = {"id":"911fb124-b172-4226-b904-d6cf43053eb7","trustAccountId":"304c3006-d91f-4191-a1f1-0ff8d05a10fe","periodStart":"2025-04-01","periodEnd":"2025-04-30","lpffRateId":"668c9cf3-dc50-423a-9b9c-063ab19ee338","totalInterest":308.22,"totalLpffShare":231.17,"totalClientShare":77.05,"status":"APPROVED","createdBy":"
+      Request URI = /api/interest-runs/be1eec64-d06b-4151-984f-6edb95052349/approve
+           Status = 200
+             Body = {"id":"be1eec64-d06b-4151-984f-6edb95052349","trustAccountId":"304c3006-d91f-4191-a1f1-0ff8d05a10fe","periodStart":"2025-05-01","periodEnd":"2025-05-31","lpffRateId":"668c9cf3-dc50-423a-9b9c-063ab19ee338","totalInterest":318.49,"totalLpffShare":238.87,"totalClientShare":79.62,"status":"APPROVED","createdBy":"
+      Request URI = /api/interest-runs/74c15242-5356-41b8-a04b-02c3a19d5dd9/post
+           Status = 200
+             Body = {"id":"74c15242-5356-41b8-a04b-02c3a19d5dd9","trustAccountId":"304c3006-d91f-4191-a1f1-0ff8d05a10fe","periodStart":"2025-03-01","periodEnd":"2025-03-31","lpffRateId":"668c9cf3-dc50-423a-9b9c-063ab19ee338","totalInterest":318.49,"totalLpffShare":238.87,"totalClientShare":79.62,"status":"POSTED","createdBy":"42
+
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 30.45 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE

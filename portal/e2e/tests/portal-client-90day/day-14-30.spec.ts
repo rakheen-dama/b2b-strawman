@@ -20,9 +20,9 @@ import { listMessageIds, waitForNewEmail } from "../../helpers/mailpit";
  * Phase 88 628G (R-2): the boot seed carries no Acme trust deposit (628F R-10), so `beforeAll`
  * records a RUN-UNIQUE deposit for Acme on Website Redesign through the firm API (RECORDED at once,
  * synced to the portal after commit). The test asserts the row by its run-unique description, never
- * a balance total (balances accumulate across runs). On a shared stack run this suite after the
- * legal lifecycle suite: a deposit gives Acme a trust balance, which a later Day 60 interest run
- * would include.
+ * a balance total (balances accumulate across runs). The order against the legal lifecycle suite
+ * does not matter: since Phase 92 645A (section 86(5)) the Day 60 interest run is calculated but
+ * never posted, so it cannot change Acme's trust balance.
  *
  * Phase 89 632C (OQ #10, G88-F32): the seed's INV-0001 stays SENT (Day 45 reads it), so the receipt
  * case uses ONE stable Acme fee note found-or-created by ensurePartPaidAcmeFeeNote() (notes marker,

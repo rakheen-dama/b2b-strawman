@@ -1,12 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -17,19 +15,16 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.gates.TrustBalanceZeroGate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateLpffRateRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService.InterestAllocationLineResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService.InterestAllocationResponse;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -51,9 +46,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * ADR-366 (G89-F22, founder D5–D8): a client's interest share is allocated to the matters it held
- * money in, pro-rata by balance-days, to the cent by largest remainder; posting writes one
- * INTEREST_CREDIT per matter line. Client-level totals (average daily balance, gross, LPFF, client
- * share) are unchanged by the split.
+ * money in, pro-rata by balance-days, to the cent by largest remainder. Client-level totals
+ * (average daily balance, gross, LPFF, client share) are unchanged by the split. Posting is refused
+ * since Phase 92 645A (section 86(5)); these tests cover the calculation only.
  *
  * <p>Each test uses its own trust account (so runs never overlap and the calculation sees only that
  * test's clients) and a period in the past (G89-F11 guard). Rate 7.5 %, 75 % to the LPFF unless a
@@ -84,12 +79,10 @@ class InterestMatterAllocationIntegrationTest {
   private io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository customerProjectRepository;
 
   @Autowired private jakarta.persistence.EntityManager entityManager;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private InterestService interestService;
   @Autowired private InterestAllocationLineRepository lineRepository;
-  @Autowired private TrustBalanceZeroGate trustBalanceZeroGate;
 
   private String tenantSchema;
   private UUID ownerId;
@@ -127,53 +120,14 @@ class InterestMatterAllocationIntegrationTest {
                     }));
   }
 
-  // --- 636B end to end ---
-
   @Test
-  void
-      phase89_636B_interestAllocatedToMatter_refundOfMatterPlusInterestApproved_matterAndClientZero_gatePasses()
-          throws Exception {
-    UUID account = newAccount();
-    UUID client = newClient("636B Client");
-    UUID matter = newMatter("636B Matter");
-    deposit(account, client, matter, "5000.00", LocalDate.of(2025, 2, 15));
-    approve(payment(account, client, matter, "1250.00", LocalDate.of(2025, 2, 20)));
-
-    UUID runId = postedRun(account, MAR_1, MAR_31);
-    var allocation = singleAllocation(runId);
-    var interest = allocation.clientShare();
-    assertThat(interest).isPositive();
-
-    // The whole client share sits on the matter: card == matter == 3 750 + interest
-    var expected = new BigDecimal("3750.00").add(interest);
-    assertThat(matterBalance(matter)).isEqualByComparingTo(expected);
-    assertThat(cardBalance(account, client)).isEqualByComparingTo(expected);
-
-    // One cent more is refused (card and matter hold the same money here, so the card check is the
-    // first to refuse; the matter guard alone is covered by TrustMatterDebitGuardIntegrationTest)
-    // ...
-    UUID overRefund = refund(account, client, matter, expected.add(new BigDecimal("0.01")));
-    assertThatThrownBy(() -> approve(overRefund))
-        .isInstanceOfSatisfying(
-            InvalidStateException.class,
-            e -> assertThat(e.getBody().getTitle()).isEqualTo("Insufficient trust balance"));
-    assertThat(matterBalance(matter)).isEqualByComparingTo(expected);
-
-    // ... the refund of matter + interest is approved and both ledgers reach zero
-    approve(refund(account, client, matter, expected));
-    assertThat(matterBalance(matter)).isEqualByComparingTo("0.00");
-    assertThat(cardBalance(account, client)).isEqualByComparingTo("0.00");
-    assertThat(gatePasses(matter)).isTrue();
-  }
-
-  @Test
-  void singleMatter_creditCarriesProjectId() throws Exception {
+  void singleMatter_lineCarriesMatter() throws Exception {
     UUID account = newAccount();
     UUID client = newClient("Single Matter Client");
     UUID matter = newMatter("Single Matter");
     deposit(account, client, matter, "100000.00", LocalDate.of(2025, 2, 1));
 
-    UUID runId = postedRun(account, MAR_1, MAR_31);
+    UUID runId = calculatedRun(account, MAR_1, MAR_31);
     var allocation = singleAllocation(runId);
 
     assertThat(allocation.lines()).hasSize(1);
@@ -181,18 +135,6 @@ class InterestMatterAllocationIntegrationTest {
     assertThat(line.matterId()).isEqualTo(matter);
     assertThat(line.matterName()).isEqualTo("Single Matter");
     assertThat(line.clientShare()).isEqualByComparingTo(allocation.clientShare());
-    assertThat(line.trustTransactionId()).isNotNull();
-    // Exactly one line: the allocation points at the same credit
-    assertThat(allocation.trustTransactionId()).isEqualTo(line.trustTransactionId());
-
-    var credit = transaction(line.trustTransactionId());
-    assertThat(credit.getTransactionType()).isEqualTo("INTEREST_CREDIT");
-    assertThat(credit.getProjectId()).isEqualTo(matter);
-    assertThat(credit.getCustomerId()).isEqualTo(client);
-    assertThat(credit.getAmount()).isEqualByComparingTo(allocation.clientShare());
-    assertThat(credit.getTransactionDate()).isEqualTo(MAR_31);
-    assertThat(credit.getReference())
-        .isEqualTo("INT-CREDIT-" + runId + "-" + matter + "-" + client.toString().substring(0, 8));
   }
 
   @Test
@@ -230,22 +172,6 @@ class InterestMatterAllocationIntegrationTest {
           .as("line %s within a cent of its pro-rata share", line.matterId())
           .isLessThan(new BigDecimal("0.01"));
     }
-
-    // Posting: one credit per line, each on its own matter; the card moves by the client share
-    approveAndPost(runId);
-    var posted = singleAllocation(runId);
-    assertThat(posted.trustTransactionId()).as("several lines: no single credit").isNull();
-    for (var line : posted.lines()) {
-      var credit = transaction(line.trustTransactionId());
-      assertThat(credit.getProjectId()).isEqualTo(line.matterId());
-      assertThat(credit.getAmount()).isEqualByComparingTo(line.clientShare());
-    }
-    assertThat(cardBalance(account, client))
-        .isEqualByComparingTo(new BigDecimal("35000.00").add(clientShare));
-    assertThat(matterBalance(matter1))
-        .isEqualByComparingTo(new BigDecimal("10000.00").add(m1.clientShare()));
-    assertThat(matterBalance(matter2))
-        .isEqualByComparingTo(new BigDecimal("20000.00").add(m2.clientShare()));
   }
 
   @Test
@@ -314,7 +240,7 @@ class InterestMatterAllocationIntegrationTest {
   }
 
   @Test
-  void coClientMatter_eachClientCreditedOnOwnCell() throws Exception {
+  void coClientMatter_eachClientGetsOwnLineOnTheMatter() throws Exception {
     UUID account = newAccount();
     UUID clientA = newClient("Co-client Alpha");
     UUID clientB = newClient("Co-client Beta");
@@ -322,7 +248,7 @@ class InterestMatterAllocationIntegrationTest {
     deposit(account, clientA, matter, "10000.00", LocalDate.of(2025, 2, 10));
     deposit(account, clientB, matter, "5000.00", LocalDate.of(2025, 2, 10));
 
-    UUID runId = postedRun(account, MAR_1, MAR_31);
+    UUID runId = calculatedRun(account, MAR_1, MAR_31);
     var allocations = allocations(runId);
     assertThat(allocations).hasSize(2);
 
@@ -331,35 +257,7 @@ class InterestMatterAllocationIntegrationTest {
       var line = allocation.lines().getFirst();
       assertThat(line.matterId()).isEqualTo(matter);
       assertThat(line.clientShare()).isEqualByComparingTo(allocation.clientShare());
-      var credit = transaction(line.trustTransactionId());
-      assertThat(credit.getCustomerId()).isEqualTo(allocation.clientId());
-      assertThat(credit.getProjectId()).isEqualTo(matter);
     }
-
-    // Two credits on the shared matter with distinct references (reference-based bank matching),
-    // each within the portal read-model's reference varchar(200) (global V6, G89-F36)
-    var references =
-        allocations.stream()
-            .map(a -> transaction(a.lines().getFirst().trustTransactionId()).getReference())
-            .toList();
-    assertThat(references).hasSize(2).doesNotHaveDuplicates();
-    assertThat(references)
-        .allSatisfy(
-            ref -> {
-              assertThat(ref).startsWith("INT-CREDIT-" + runId + "-" + matter + "-");
-              assertThat(ref.length()).isLessThanOrEqualTo(100);
-            });
-    assertThat(references)
-        .containsExactlyInAnyOrder(
-            "INT-CREDIT-" + runId + "-" + matter + "-" + clientA.toString().substring(0, 8),
-            "INT-CREDIT-" + runId + "-" + matter + "-" + clientB.toString().substring(0, 8));
-
-    var shareA = allocationOf(allocations, clientA).clientShare();
-    var shareB = allocationOf(allocations, clientB).clientShare();
-    assertThat(cell(account, clientA, matter))
-        .isEqualByComparingTo(new BigDecimal("10000.00").add(shareA));
-    assertThat(cell(account, clientB, matter))
-        .isEqualByComparingTo(new BigDecimal("5000.00").add(shareB));
   }
 
   @Test
@@ -434,37 +332,6 @@ class InterestMatterAllocationIntegrationTest {
           return null;
         });
     assertThat(linesOfAllocations(List.of(first.id(), second.id()))).isEmpty();
-  }
-
-  @Test
-  void postWithoutLines_fallsBackToSingleUnmatteredCredit() throws Exception {
-    UUID account = newAccount();
-    UUID client = newClient("Legacy Run Client");
-    UUID matter = newMatter("Legacy Run Matter");
-    deposit(account, client, matter, "40000.00", LocalDate.of(2025, 2, 10));
-
-    // A run calculated before V12 has no lines (D6: no backfill)
-    UUID runId = calculatedRun(account, MAR_1, MAR_31);
-    var allocation = singleAllocation(runId);
-    as(
-        ownerId,
-        () ->
-            transactionTemplate.execute(
-                tx -> lineRepository.deleteByInterestAllocationIdIn(List.of(allocation.id()))));
-
-    approveAndPost(runId);
-    var posted = singleAllocation(runId);
-    assertThat(posted.lines()).isEmpty();
-    assertThat(posted.trustTransactionId()).isNotNull();
-
-    var credit = transaction(posted.trustTransactionId());
-    assertThat(credit.getProjectId()).isNull();
-    assertThat(credit.getCustomerId()).isEqualTo(client);
-    assertThat(credit.getAmount()).isEqualByComparingTo(posted.clientShare());
-    assertThat(credit.getReference()).isEqualTo("INT-CREDIT-" + runId + "-" + client);
-    assertThat(cardBalance(account, client))
-        .isEqualByComparingTo(new BigDecimal("40000.00").add(posted.clientShare()));
-    assertThat(matterBalance(matter)).isEqualByComparingTo("40000.00");
   }
 
   // --- Helpers ---
@@ -590,25 +457,6 @@ class InterestMatterAllocationIntegrationTest {
     }
   }
 
-  private UUID refund(UUID account, UUID client, UUID matter, BigDecimal amount) {
-    int n = ++counter;
-    postingMatter(client, matter);
-    return as(
-        ownerId,
-        () ->
-            transactionService
-                .recordRefund(
-                    account,
-                    new RecordRefundRequest(
-                        client,
-                        matter,
-                        amount,
-                        "IMA-REF-" + n,
-                        "Refund of matter funds and interest",
-                        LocalDate.of(2025, 4, 15)))
-                .id());
-  }
-
   /** A debit as written before the G89-F12 guard: APPROVED straight into the ledger. */
   private void legacyApprovedPayment(
       UUID account, UUID client, UUID matter, String amount, LocalDate date) {
@@ -648,17 +496,6 @@ class InterestMatterAllocationIntegrationTest {
         });
   }
 
-  private void approveAndPost(UUID runId) {
-    as(approverId, () -> interestService.approveInterestRun(runId));
-    as(ownerId, () -> interestService.postInterestRun(runId));
-  }
-
-  private UUID postedRun(UUID account, LocalDate start, LocalDate end) {
-    var runId = calculatedRun(account, start, end);
-    approveAndPost(runId);
-    return runId;
-  }
-
   private List<InterestAllocationResponse> allocations(UUID runId) {
     return as(ownerId, () -> interestService.getInterestRunDetail(runId).allocations());
   }
@@ -693,40 +530,6 @@ class InterestMatterAllocationIntegrationTest {
 
   private List<InterestAllocationLine> linesOfAllocations(List<UUID> allocationIds) {
     return as(ownerId, () -> lineRepository.findByInterestAllocationIdIn(allocationIds));
-  }
-
-  private TrustTransaction transaction(UUID id) {
-    return as(ownerId, () -> transactionRepository.findById(id).orElseThrow());
-  }
-
-  private BigDecimal matterBalance(UUID matter) {
-    return as(ownerId, () -> transactionRepository.calculateBalanceByProjectId(matter));
-  }
-
-  private BigDecimal cell(UUID account, UUID client, UUID matter) {
-    return as(
-        ownerId, () -> transactionRepository.calculateMatterClientBalance(account, client, matter));
-  }
-
-  private BigDecimal cardBalance(UUID account, UUID client) {
-    return as(
-        ownerId,
-        () ->
-            ledgerCardRepository
-                .findByTrustAccountIdAndCustomerId(account, client)
-                .orElseThrow()
-                .getBalance());
-  }
-
-  private boolean gatePasses(UUID matter) {
-    return as(
-        ownerId,
-        () ->
-            transactionTemplate.execute(
-                tx ->
-                    trustBalanceZeroGate
-                        .evaluate(projectRepository.findById(matter).orElseThrow())
-                        .passed()));
   }
 
   private <T> T as(UUID memberId, Supplier<T> action) {

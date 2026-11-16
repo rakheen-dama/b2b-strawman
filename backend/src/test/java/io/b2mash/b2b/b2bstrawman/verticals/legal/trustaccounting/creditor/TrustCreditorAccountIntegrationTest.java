@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -81,6 +82,14 @@ class TrustCreditorAccountIntegrationTest {
   private static final String OWNER_SUBJECT = "user_trust_creditor_owner";
   private static final String MEMBER_SUBJECT = "user_trust_creditor_member";
 
+  /** A member on a custom role holding VIEW_LEGAL only — no VIEW_TRUST. */
+  private static final String NO_TRUST_SUBJECT = "user_trust_creditor_no_trust";
+
+  /** Module off — its own tenant, never given {@code trust_accounting}. */
+  private static final String NO_MODULE_ORG_ID = "org_trust_creditor_accounts_nomod";
+
+  private static final String NO_MODULE_OWNER_SUBJECT = "user_trust_creditor_nomod_owner";
+
   private static final String FUND_NAME =
       "Legal Practitioners' Fidelity Fund — interest and charges";
   private static final String UNIDENTIFIED_NAME = "Unidentified deposits";
@@ -157,6 +166,14 @@ class TrustCreditorAccountIntegrationTest {
         "trust_creditor_member@test.com",
         "Trust Creditor Member",
         "member");
+    var noTrustMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            NO_TRUST_SUBJECT,
+            "trust_creditor_no_trust@test.com",
+            "Trust Creditor No Trust",
+            "member");
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(
             () ->
@@ -166,6 +183,17 @@ class TrustCreditorAccountIntegrationTest {
                       settings.setEnabledModules(List.of("trust_accounting"));
                       orgSettingsRepository.save(settings);
                     }));
+    assignRole(noTrustMemberId, createCustomRole("Trust Creditor No Trust Role", "VIEW_LEGAL"));
+
+    // A second tenant with the module off (precedent: TrustPositionIntegrationTest)
+    provisioningService.provisionTenant(NO_MODULE_ORG_ID, "Trust Creditor No Module Org", null);
+    TestMemberHelper.syncMember(
+        mockMvc,
+        NO_MODULE_ORG_ID,
+        NO_MODULE_OWNER_SUBJECT,
+        "trust_creditor_nomod@test.com",
+        "Trust Creditor NoMod Owner",
+        "owner");
 
     // Part B — scratch schema: V17, seed, fingerprint, V18
     exec("DROP SCHEMA IF EXISTS \"%s\" CASCADE");
@@ -272,6 +300,32 @@ class TrustCreditorAccountIntegrationTest {
                 .with(TestJwtFactory.memberJwt(ORG_ID, MEMBER_SUBJECT)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2));
+  }
+
+  @Test
+  void aCallerWithoutViewTrust_isForbidden() throws Exception {
+    var accountId = createTrustAccount("Creditor Ledgers A5", "62000000105");
+    mockMvc
+        .perform(
+            get(creditorAccountsUrl(accountId))
+                .with(TestJwtFactory.memberJwt(ORG_ID, NO_TRUST_SUBJECT)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+  }
+
+  @Test
+  void moduleOff_isForbidden_beforeTheAccountIsLookedUp() throws Exception {
+    // An unknown id: the module guard answers 403 before the 404 existence check runs.
+    mockMvc
+        .perform(
+            get(creditorAccountsUrl(UUID.randomUUID().toString()))
+                .with(TestJwtFactory.ownerJwt(NO_MODULE_ORG_ID, NO_MODULE_OWNER_SUBJECT)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(jsonPath("$.moduleId").value("trust_accounting"));
   }
 
   // ============ Part B — scratch schema, V17 → V18 ============
@@ -493,6 +547,32 @@ class TrustCreditorAccountIntegrationTest {
     return TestEntityHelper.extractId(result);
   }
 
+  private String createCustomRole(String name, String capability) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/org-roles")
+                    .with(owner())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name":"%s","description":"Test role","capabilities":["%s"]}"""
+                            .formatted(name, capability)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+  }
+
+  private void assignRole(String memberId, String roleId) throws Exception {
+    mockMvc
+        .perform(
+            put("/api/members/" + memberId + "/role")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"orgRoleId\":\"%s\",\"capabilityOverrides\":[]}".formatted(roleId)))
+        .andExpect(status().isOk());
+  }
+
   private String getBody(String url) throws Exception {
     return mockMvc
         .perform(get(url).with(owner()))
@@ -599,13 +679,20 @@ class TrustCreditorAccountIntegrationTest {
             .replace("%date", date));
   }
 
-  /** Status, ledger, effects and links of every row — what V18 (and a re-run) must not touch. */
+  /**
+   * Type, amount, status, ledger, effects and links (client and matter included — the columns
+   * {@code chk_trust_txn_ledger_target} reasons about) of every row — what V18 (and a re-run) must
+   * not touch.
+   */
   private List<String> fingerprint() throws Exception {
     return texts(
-        "SELECT id || ':' || status || ':' || ledger || ':' || cashbook_effect || ':'"
-            + " || ledger_effect || ':' || COALESCE(posted_at::text, 'NULL') || ':'"
+        "SELECT id || ':' || transaction_type || ':' || amount || ':' || status || ':' || ledger"
+            + " || ':' || cashbook_effect || ':' || ledger_effect || ':'"
+            + " || COALESCE(posted_at::text, 'NULL') || ':'"
             + " || COALESCE(reversal_of::text, 'NULL') || ':'"
-            + " || COALESCE(reversed_by_id::text, 'NULL') || ':' || customer_id"
+            + " || COALESCE(reversed_by_id::text, 'NULL') || ':'"
+            + " || COALESCE(customer_id::text, 'NULL') || ':'"
+            + " || COALESCE(project_id::text, 'NULL')"
             + " FROM \"%s\".trust_transactions ORDER BY id");
   }
 

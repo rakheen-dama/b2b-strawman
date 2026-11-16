@@ -99,3 +99,29 @@ unchanged — now also called in reverseForUnmatch before any contra posts):
   TrustInvestmentSchema, InvestmentBasisInterest, InvestmentReportBasis, TrustClientMatterRequired, TrustReportQuery):
   169 <testcase> elements, 0 failures, 0 errors, 0 skipped. exit 0.
 Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.
+
+## Re-review fix — client trust statement leak
+
+### RED @600e4cbdb (test only; production code unchanged) — 2026-11-16 21:49 SAST
+$ ./mvnw test -Dtest="ClientTrustStatementContextIntegrationTest" -q
+ but was: "Clerk keyed the wrong matter, internal mix-up"
+[ERROR] Tests run: 5, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] Tests run: 5, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 12.48 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.template.ClientTrustStatementContextIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.template.ClientTrustStatementContextIntegrationTest.reversalLine_carriesAGeneratedDescription_neverTheFirmReason -- Time elapsed: 0.096 s <<< FAILURE!
+expected: "Reversal — REV-PAY-CTS-REV-001"
+  (the REVERSAL contra line on the Client Trust Statement context carried the firm user's reason; the test
+   reverses an approved R400 payment for a client with a R1 000 deposit through the real services)
+
+### GREEN after the fix — one shared rule TrustTransactionTypeLabels.clientDescription(type, description, reference)
+used by ClientTrustStatementContext (new), StatementOfAccountContextBuilder (private helper removed) and
+TrustLedgerPortalSyncService.portalDescription (delegates through the ADR-254 sanitiser, same output)
+  ClientTrustStatementContextIntegrationTest.reversalLine_carriesAGeneratedDescription_neverTheFirmReason PASS:
+    line description "Reversal — REV-PAY-CTS-REV-001"; payment line keeps "Payment to sheriff"; no line contains
+    the reason; rendered preview HTML contains REV-PAY-CTS-REV-001 and not "wrong matter" / "internal mix-up".
+  TrustTransactionTypeLabelsTest (+3): reversalLabel_agreesWithTheRegistryClientLabel,
+    clientDescription_reversalIsGenerated_neverTheFirmReason, clientDescription_everyOtherTypeKeepsItsOwnDescription.
+  Tier-2 targeted sweep, 35 classes (CTS context, CustomerContextBuilder, every statement/ and trustaccounting/ledger/
+  test class, TrustLedgerPortalSync, Portal*Trust*, PortalEmailNotificationChannel, PortalActivityTrustEvents,
+  TrustTransactionTypeLabels/Registry, every test grepping client-trust-statement, ArchUnit importers):
+  270 <testcase> elements, 0 failures, 0 errors, 0 skipped. exit 0.
+Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.

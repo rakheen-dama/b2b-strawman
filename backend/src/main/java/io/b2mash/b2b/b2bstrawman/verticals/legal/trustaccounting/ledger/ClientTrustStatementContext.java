@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -67,9 +68,10 @@ public class ClientTrustStatementContext {
    * The client's {@code trust} block: {@code account_name}, {@code opening_balance}, {@code
    * closing_balance}, {@code statement_date} and {@code lines} (each {@code transactionDate},
    * {@code type} — a readable label —, {@code transactionType}, {@code reference}, {@code
-   * description}, {@code amount}, {@code runningBalance}) and {@code status}; {@code status} "none"
-   * alone when the client has no trust activity; empty when the member may not see trust money
-   * ({@link TrustDataVisibility}).
+   * description} — {@link TrustTransactionTypeLabels#clientDescription}, so a reversal never prints
+   * the firm's reason —, {@code amount}, {@code runningBalance}) and {@code status}; {@code status}
+   * "none" alone when the client has no trust activity; empty when the member may not see trust
+   * money ({@link TrustDataVisibility}).
    */
   public Optional<Map<String, Object>> buildFor(UUID clientId) {
     if (!trustDataVisibility.visibleToCurrentMember()) {
@@ -91,7 +93,11 @@ public class ClientTrustStatementContext {
       row.put("type", typeLabel(line.transactionType()));
       row.put("transactionType", line.transactionType());
       row.put("reference", line.reference());
-      row.put("description", line.description());
+      // A REVERSAL line reads "Reversal — <reference>", never the firm user's reason (PR #1789)
+      row.put(
+          "description",
+          TrustTransactionTypeLabels.clientDescription(
+              line.transactionType(), line.description(), line.reference()));
       row.put("amount", line.amount());
       row.put("runningBalance", line.runningBalance());
       lines.add(row);

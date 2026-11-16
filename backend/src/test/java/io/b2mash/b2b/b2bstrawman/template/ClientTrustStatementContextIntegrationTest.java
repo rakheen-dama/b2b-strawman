@@ -21,6 +21,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSer
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -57,6 +59,10 @@ class ClientTrustStatementContextIntegrationTest {
 
   private static final String ORG_ID = "org_client_trust_statement_ctx_test";
   private static final String OWNER = "user_cts_owner";
+  private static final String APPROVER = "user_cts_approver";
+
+  /** The firm user's free-text reversal reason — never printed on a client document. */
+  private static final String REVERSAL_REASON = "Clerk keyed the wrong matter, internal mix-up";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
@@ -74,6 +80,8 @@ class ClientTrustStatementContextIntegrationTest {
 
   private String schema;
   private UUID memberId;
+  private UUID approverId;
+  private UUID accountId;
   private UUID clientId;
 
   @BeforeAll
@@ -84,6 +92,10 @@ class ClientTrustStatementContextIntegrationTest {
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, OWNER, "cts_owner@test.com", "CTS Owner", "owner"));
+    approverId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, APPROVER, "cts_approver@test.com", "CTS Approver", "admin"));
     clientId =
         inTenantTx(
             () -> {
@@ -108,6 +120,7 @@ class ClientTrustStatementContextIntegrationTest {
                               LocalDate.of(2026, 1, 1),
                               "Client trust statement test"))
                       .id();
+              this.accountId = accountId;
               trustTransactionService.recordDeposit(
                   accountId,
                   new RecordDepositRequest(
@@ -221,6 +234,82 @@ class ClientTrustStatementContextIntegrationTest {
         .containsExactly("DEP-CTS-001", "DEP-CTS-002");
   }
 
+  /**
+   * PR #1789 re-review (Phase 92 649B): since the contra model a {@code REVERSAL} row is listed on
+   * the client's ledger statement, and its own description is the firm user's free-text reversal
+   * reason. The Client Trust Statement goes to the client, so the line carries the generated
+   * "{@code Reversal — <reference>}" (the Statement of Account's and the portal's rule) and the
+   * reason appears nowhere in the context or the rendered document. The reversed payment keeps its
+   * own description.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void reversalLine_carriesAGeneratedDescription_neverTheFirmReason() throws Exception {
+    UUID reversalClient =
+        inTenantTx(
+            () -> {
+              UUID id =
+                  customerRepository
+                      .save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Mokoena Holdings", "mokoena@test.com", memberId))
+                      .getId();
+              trustTransactionService.recordDeposit(
+                  accountId,
+                  new RecordDepositRequest(
+                      id,
+                      trustMatterOf(id),
+                      new BigDecimal("1000.00"),
+                      "DEP-CTS-REV-001",
+                      "Deposit on instruction",
+                      LocalDate.of(2026, 3, 10)));
+              return id;
+            });
+    UUID paymentId =
+        inTenantTx(
+            () ->
+                trustTransactionService
+                    .recordPayment(
+                        accountId,
+                        new RecordPaymentRequest(
+                            reversalClient,
+                            trustMatterOf(reversalClient),
+                            new BigDecimal("400.00"),
+                            "PAY-CTS-REV-001",
+                            "Payment to sheriff",
+                            LocalDate.of(2026, 3, 12)))
+                    .id());
+    asApprover(() -> trustTransactionService.approveTransaction(paymentId, approverId));
+    inTenantTx(
+        () ->
+            trustTransactionService.reverseTransaction(
+                paymentId, new ReverseRequest(REVERSAL_REASON, null)));
+
+    Map<String, Object> context =
+        inTenantTx(() -> customerContextBuilder.buildContext(reversalClient, memberId));
+    var trust = (Map<String, Object>) context.get("trust");
+    var lines = (List<Map<String, Object>>) trust.get("lines");
+    assertThat(lines)
+        .extracting(l -> l.get("transactionType"))
+        .containsExactly("DEPOSIT", "PAYMENT", "REVERSAL");
+    var reversal = lines.getLast();
+    assertThat(reversal.get("reference")).isEqualTo("REV-PAY-CTS-REV-001");
+    assertThat(reversal.get("description")).isEqualTo("Reversal \u2014 REV-PAY-CTS-REV-001");
+    assertThat(lines.get(1).get("description")).isEqualTo("Payment to sheriff");
+    assertThat(lines)
+        .extracting(l -> String.valueOf(l.get("description")))
+        .noneMatch(d -> d.contains("wrong matter"));
+    assertThat((BigDecimal) trust.get("closing_balance")).isEqualByComparingTo("1000.00");
+
+    String html =
+        inTenantTx(
+            () -> pdfRenderingService.previewHtml(ctsTemplateId(), reversalClient, memberId));
+    assertThat(html)
+        .contains("REV-PAY-CTS-REV-001", "Payment to sheriff")
+        .doesNotContain("wrong matter")
+        .doesNotContain("internal mix-up");
+  }
+
   private UUID ctsTemplateId() {
     return inTenantTx(
         () ->
@@ -253,9 +342,20 @@ class ClientTrustStatementContextIntegrationTest {
   }
 
   private <T> T inTenantTx(String orgRole, Set<String> capabilities, Supplier<T> body) {
+    return inTenantTx(memberId, orgRole, capabilities, body);
+  }
+
+  /** The second member — a trust payment is never approved by the member who recorded it. */
+  private <T> T asApprover(Supplier<T> body) {
+    return inTenantTx(
+        approverId, "admin", Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"), body);
+  }
+
+  private <T> T inTenantTx(
+      UUID member, String orgRole, Set<String> capabilities, Supplier<T> body) {
     return ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.MEMBER_ID, member)
         .where(RequestScopes.ORG_ROLE, orgRole)
         .where(RequestScopes.CAPABILITIES, capabilities)
         .call(() -> transactionTemplate.execute(tx -> body.get()));

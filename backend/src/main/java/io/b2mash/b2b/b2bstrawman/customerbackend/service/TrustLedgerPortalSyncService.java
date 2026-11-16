@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -521,17 +522,17 @@ public class TrustLedgerPortalSyncService {
   // ── Pure helpers ──────────────────────────────────────────────────────
 
   /**
-   * The description the portal stores for a row. A {@code REVERSAL} row's own description is the
-   * firm user's free-text reversal reason, which never reaches the client (PR #1789 review): the
-   * portal gets a generated "{@code <client label> — <reference>}" instead. Every other type's
-   * description goes through the ADR-254 sanitiser unchanged.
+   * The description the portal stores for a row: the client-surface rule ({@link
+   * TrustTransactionTypeLabels#clientDescription} — a {@code REVERSAL} row reads "{@code Reversal —
+   * <reference>}", never the firm user's free-text reason, PR #1789 review) through the ADR-254
+   * sanitiser (140-char cap, {@code [internal]} strip, blank fallback).
    */
   private String portalDescription(TrustTransaction txn) {
-    if (TrustTransactionType.REVERSAL.name().equals(txn.getTransactionType())) {
-      return sanitiser.sanitise(
-          null, TrustTransactionType.REVERSAL.clientLabel(), txn.getReference());
-    }
-    return sanitiser.sanitise(txn.getDescription(), txn.getTransactionType(), txn.getReference());
+    return sanitiser.sanitise(
+        TrustTransactionTypeLabels.clientDescription(
+            txn.getTransactionType(), txn.getDescription(), txn.getReference()),
+        txn.getTransactionType(),
+        txn.getReference());
   }
 
   /**

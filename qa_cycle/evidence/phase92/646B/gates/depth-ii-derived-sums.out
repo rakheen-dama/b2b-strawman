@@ -1,0 +1,16 @@
+           name            | transaction_type | ledger_effect | creditor_account_id 
+---------------------------+------------------+---------------+---------------------
+ Sipho Ndlovu mwjvmxl1179a | DEPOSIT          |       5000.00 | 
+ Sipho Ndlovu mwjvmxl1179a | PAYMENT          |      -1250.00 | 
+(2 rows)
+
+ cashbook | sum_client | eq2  
+----------+------------+------
+  3750.00 |    3750.00 | 0.00
+(1 row)
+
+ creditor_accounts | trust_accounts | txn_with_creditor 
+-------------------+----------------+-------------------
+                 2 |              1 |                 0
+(1 row)
+

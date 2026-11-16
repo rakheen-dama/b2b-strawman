@@ -1,0 +1,309 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+Overview
+Transactions
+Client ledgers
+Other trust creditors
+Reconciliation
+Interest
+Investments
+Trust reports
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Home
+Search
+⌘K
+11 unread notifications
+11
+e2e-test-org
+AO
+Home
+
+What needs you today
+
+Last 30 days
+
+Active matters
+8
+Hours logged
+13,8h
+First week 0,0h, latest week 13,8h, peak 13,8h in week 6 of 6.
+Billable %
+100,0%
+Overdue tasks
+0
+Today's diary
+Open diary
+
+Nothing in the diary today
+
+Unbilled WIP
+Open unbilled work
+
+R 16 250,00
+
+6h 30m of unbilled time
+
+Alice Owner
+R 16 250,00
+
+Disbursements not yet billed
+R 0,00
+
+Debtors
+Open collections
+
+3
+
+clients owe fees
+
+Acme Corp
+R 8 625,00
+Not yet overdue
+Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Sipho Ndlovu mwjve82pbc51
+R 5 482,63
+Not yet overdue
+Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Moroka Family Trust mwjve82pbc51
+R 125,00
+Not yet overdue
+Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Current
+30 days
+60 days
+90+ days
+Trust position
+Open reconciliation
+
+R 0,00
+
+Balanced
+
+Mathebula & Partners Trust Account, Standard Bank
+
+Bank cashbook
+R 286 500,00
+Client ledgers
+R 286 500,00
+Last reconciliation
+Never reconciled
+Awaiting approval
+3
+FICA outstanding
+View all
+Open compliance
+
+3
+
+of 5 active clients without completed FICA
+
+Apex Holdings mwjve82pbc51
+Not started
+0 days
+Moroka Family Trust mwjve82pbc51
+In progress
+0 days
+QuickCollect Services mwjve82pbc51
+Not started
+0 days
+Incomplete profiles
+Matter Health
+All
+At Risk
+Over estimate
+MATTER
+STATUS
+PROGRESS
+HOURS
+TASKS
+
+Team spec mwjvhug0c37e
+
+Healthy
+0%
+0h
+0/9
+
+Apex Annual Returns mwjve82pbc51
+
+Apex Holdings mwjve82pbc51
+
+Healthy
+0%
+0h
+0/9
+
+Ndlovu Property Dispute mwjve82pbc51
+
+Sipho Ndlovu mwjve82pbc51
+
+Healthy
+0%
+0h
+0/9
+
+QC Debt Recovery #1 mwjve82pbc51
+
+QuickCollect Services mwjve82pbc51
+
+Healthy
+0%
+1.0h
+0/9
+
+Apex Shareholder Agreement mwjve82pbc51
+
+Apex Holdings mwjve82pbc51
+
+Healthy
+0%
+30m
+0/9
+
+Ndlovu v RAF mwjve82pbc51
+
+Sipho Ndlovu mwjve82pbc51
+
+Healthy
+0%
+5.3h
+0/9
+
+Estate Late Peter Moroka mwjve82pbc51
+
+Moroka Family Trust mwjve82pbc51
+
+Healthy
+22%
+7.0h
+2/9
+
+Website Redesign
+
+Acme Corp
+
+Unknown
+0%
+0h
+0/0
+View all matters →
+Sensitive events
+Last 7 days
+NOTICE
+5
+WARNING
+0
+CRITICAL
+0
+No sensitive events in the last 7 days.
+
+View all →
+Recent Activity
+CM
+
+Carol Member removed a member from the matter team
+
+2 minutes ago
+CM
+
+Carol Member added a member to the matter team
+
+2 minutes ago
+BA
+
+Bob Admin made a team member the matter lead
+
+2 minutes ago
+BA
+
+Bob Admin changed a matter team member's role to member
+
+2 minutes ago
+AO
+
+Alice Owner added a member to the matter team
+
+2 minutes ago
+AO
+
+Alice Owner opened the matter from template "Litigation (Personal Injury / General)"
+
+2 minutes ago
+AO
+
+Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwjve82pbc51)
+
+2 minutes ago
+AO
+
+Alice Owner generated document "engagement-letter-litigation-ndlovu-v-raf-mwjve82pbc51-2026-11-17.pdf" from template "Engagement Letter — Litigation"
+
+2 minutes ago
+AO
+
+Alice Owner opened the matter from template "Commercial (Corporate & Contract)"
+
+2 minutes ago
+AO
+
+Alice Owner logged 6h on task "Prepare Liquidation & Distribution account"
+
+2 minutes ago
+AO
+
+Alice Owner completed task "Open estate bank account"
+
+2 minutes ago
+AO
+
+Alice Owner claimed task "Open estate bank account"
+
+2 minutes ago
+AO
+
+Alice Owner completed task "Advertise for creditors (Gazette + local newspaper)"
+
+2 minutes ago
+AO
+
+Alice Owner claimed task "Advertise for creditors (Gazette + local newspaper)"
+
+2 minutes ago
+AO
+
+Alice Owner linked adverse party "Pillay Holdings (Pty) Ltd" to the matter
+
+2 minutes ago
+View all activity →
+Command Palette
+
+Search pages and settings

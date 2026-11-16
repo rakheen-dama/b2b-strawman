@@ -1,0 +1,272 @@
+{
+  "steps": {
+    "d": {
+      "creditorRows": "2",
+      "trustAccounts": "1",
+      "ledgerTargetPresent": "1",
+      "customerRequiredPresent": "0",
+      "typeCount": "25",
+      "txnTotal": "6",
+      "txnCreditorNotNull": "0",
+      "eq2": "0.00",
+      "cashbook": "286500.00",
+      "creditorAuditEvents": "2"
+    },
+    "a_alice": {
+      "zones": [
+        "TODAY",
+        "MATTERS",
+        "CLIENTS",
+        "FEES",
+        "TRUST",
+        "FIRM"
+      ],
+      "trustZonePresent": true,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Other trust creditors",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports"
+      ],
+      "clientLedgersIndex": 13,
+      "otherCreditorsIndex": 14,
+      "directlyAfterClientLedgers": true,
+      "otherCreditorsHref": "/org/e2e-test-org/trust-accounting/other-creditors",
+      "trustZoneLinks": [
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Other trust creditors",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports"
+      ],
+      "shot": "/Users/rakheendama/Projects/2026/646B-gates-evidence/obs/01-a-alice-sidebar-trust-zone.png"
+    },
+    "b_alice": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+      "h1": "Other trust creditors",
+      "documentTitle": "Kazi — Practice management, built for Africa",
+      "breadcrumb": "E2E Test Organization\nTrust accounting\nOther trust creditors",
+      "pageTestIdPresent": true,
+      "cardsPresent": true,
+      "cards": {
+        "FUND_INTEREST_AND_CHARGES": "Legal Practitioners' Fidelity Fund — interest and charges | R 0,00 | Interest received for the Fund, less bank charges",
+        "UNIDENTIFIED_DEPOSITS": "Unidentified deposits | R 0,00 | Deposits whose owner is not yet known"
+      },
+      "cardCount": 3,
+      "inDebitNotice": false,
+      "noAccountState": false,
+      "errorState": false,
+      "rawEnumsVisible": [],
+      "zeroBalanceCount": 2,
+      "somethingWentWrong": false,
+      "notFound": false,
+      "shot": "/Users/rakheendama/Projects/2026/646B-gates-evidence/obs/02-b-alice-other-creditors-page.png"
+    },
+    "b_alice_api": {
+      "tokenCookiePresent": true,
+      "status": 200,
+      "body": [
+        {
+          "id": "374cedb5-0005-40b8-b45f-a65d85e9f6a3",
+          "trustAccountId": "359eee4e-7195-4391-a21f-b4f1afedd569",
+          "accountType": "FUND_INTEREST_AND_CHARGES",
+          "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+          "balance": 0,
+          "inDebit": false,
+          "asAt": "2026-11-17"
+        },
+        {
+          "id": "f6a66e02-175a-402e-9047-552aeab0f306",
+          "trustAccountId": "359eee4e-7195-4391-a21f-b4f1afedd569",
+          "accountType": "UNIDENTIFIED_DEPOSITS",
+          "name": "Unidentified deposits",
+          "balance": 0,
+          "inDebit": false,
+          "asAt": "2026-11-17"
+        }
+      ],
+      "noTokenStatus": 401,
+      "frontendOriginStatus": 404
+    },
+    "bob_zone": {
+      "zones": [
+        "TODAY",
+        "MATTERS",
+        "CLIENTS",
+        "FEES",
+        "TRUST",
+        "FIRM"
+      ],
+      "trustZonePresent": true,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "AI reviews",
+        "Clients",
+        "FICA & compliance",
+        "Data requests",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Other trust creditors",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports"
+      ],
+      "clientLedgersIndex": 13,
+      "otherCreditorsIndex": 14,
+      "directlyAfterClientLedgers": true,
+      "otherCreditorsHref": "/org/e2e-test-org/trust-accounting/other-creditors",
+      "trustZoneLinks": [
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Other trust creditors",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports"
+      ],
+      "shot": "/Users/rakheendama/Projects/2026/646B-gates-evidence/obs/03-bob-sidebar-trust-zone.png"
+    },
+    "bob_page": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+      "h1": "Other trust creditors",
+      "documentTitle": "Kazi — Practice management, built for Africa",
+      "breadcrumb": "E2E Test Organization\nTrust accounting\nOther trust creditors",
+      "pageTestIdPresent": true,
+      "cardsPresent": true,
+      "cards": {
+        "FUND_INTEREST_AND_CHARGES": "Legal Practitioners' Fidelity Fund — interest and charges | R 0,00 | Interest received for the Fund, less bank charges",
+        "UNIDENTIFIED_DEPOSITS": "Unidentified deposits | R 0,00 | Deposits whose owner is not yet known"
+      },
+      "cardCount": 3,
+      "inDebitNotice": false,
+      "noAccountState": false,
+      "errorState": false,
+      "rawEnumsVisible": [],
+      "zeroBalanceCount": 2,
+      "somethingWentWrong": false,
+      "notFound": false,
+      "shot": "/Users/rakheendama/Projects/2026/646B-gates-evidence/obs/04-bob-other-creditors-page.png"
+    },
+    "c_carolCapabilities": "  slug  |                   trust_caps                    \n--------+-------------------------------------------------\n admin  | {APPROVE_TRUST_PAYMENT,MANAGE_TRUST,VIEW_TRUST}\n member | {VIEW_TRUST}\n owner  | {APPROVE_TRUST_PAYMENT,MANAGE_TRUST,VIEW_TRUST}\n(3 rows)\n\n",
+    "c_carol_zone": {
+      "zones": [
+        "TODAY",
+        "MATTERS",
+        "FEES",
+        "TRUST",
+        "FIRM"
+      ],
+      "trustZonePresent": true,
+      "links": [
+        "Home",
+        "My work",
+        "Diary",
+        "Matters",
+        "New matter",
+        "Conflict check",
+        "Adverse parties",
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Other trust creditors",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports"
+      ],
+      "clientLedgersIndex": 9,
+      "otherCreditorsIndex": 10,
+      "directlyAfterClientLedgers": true,
+      "otherCreditorsHref": "/org/e2e-test-org/trust-accounting/other-creditors",
+      "trustZoneLinks": [
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Other trust creditors",
+        "Reconciliation",
+        "Interest",
+        "Investments",
+        "Trust reports"
+      ],
+      "shot": "/Users/rakheendama/Projects/2026/646B-gates-evidence/obs/05-c-carol-sidebar-trust-zone.png"
+    },
+    "c_carol_page": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+      "h1": "Other trust creditors",
+      "documentTitle": "Kazi — Practice management, built for Africa",
+      "breadcrumb": "E2E Test Organization\nTrust accounting\nOther trust creditors",
+      "pageTestIdPresent": true,
+      "cardsPresent": true,
+      "cards": {
+        "FUND_INTEREST_AND_CHARGES": "Legal Practitioners' Fidelity Fund — interest and charges | R 0,00 | Interest received for the Fund, less bank charges",
+        "UNIDENTIFIED_DEPOSITS": "Unidentified deposits | R 0,00 | Deposits whose owner is not yet known"
+      },
+      "cardCount": 3,
+      "inDebitNotice": false,
+      "noAccountState": false,
+      "errorState": false,
+      "rawEnumsVisible": [],
+      "zeroBalanceCount": 2,
+      "somethingWentWrong": false,
+      "notFound": false,
+      "shot": "/Users/rakheendama/Projects/2026/646B-gates-evidence/obs/06-c-carol-other-creditors-page.png"
+    },
+    "c_carol_api": {
+      "tokenCookiePresent": true,
+      "status": 200,
+      "body": [
+        {
+          "id": "374cedb5-0005-40b8-b45f-a65d85e9f6a3",
+          "trustAccountId": "359eee4e-7195-4391-a21f-b4f1afedd569",
+          "accountType": "FUND_INTEREST_AND_CHARGES",
+          "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+          "balance": 0,
+          "inDebit": false,
+          "asAt": "2026-11-17"
+        },
+        {
+          "id": "f6a66e02-175a-402e-9047-552aeab0f306",
+          "trustAccountId": "359eee4e-7195-4391-a21f-b4f1afedd569",
+          "accountType": "UNIDENTIFIED_DEPOSITS",
+          "name": "Unidentified deposits",
+          "balance": 0,
+          "inDebit": false,
+          "asAt": "2026-11-17"
+        }
+      ],
+      "noTokenStatus": 401,
+      "frontendOriginStatus": 404
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "trustAccountId": "359eee4e-7195-4391-a21f-b4f1afedd569"
+}

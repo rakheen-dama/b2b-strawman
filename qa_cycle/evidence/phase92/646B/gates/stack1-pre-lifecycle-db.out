@@ -1,0 +1,13 @@
+           trust_account_id           |            account_name            |             creditor_id              |       account_type        |                           name                            |          created_at           
+--------------------------------------+------------------------------------+--------------------------------------+---------------------------+-----------------------------------------------------------+-------------------------------
+ 359eee4e-7195-4391-a21f-b4f1afedd569 | Mathebula & Partners Trust Account | 374cedb5-0005-40b8-b45f-a65d85e9f6a3 | FUND_INTEREST_AND_CHARGES | Legal Practitioners' Fidelity Fund — interest and charges | 2026-11-16 23:03:26.893151+00
+ 359eee4e-7195-4391-a21f-b4f1afedd569 | Mathebula & Partners Trust Account | f6a66e02-175a-402e-9047-552aeab0f306 | UNIDENTIFIED_DEPOSITS     | Unidentified deposits                                     | 2026-11-16 23:03:26.896524+00
+(2 rows)
+
+           event_type           |      entity_type       |              entity_id               |          occurred_at          |                                                                                                   details                                                                                                   
+--------------------------------+------------------------+--------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ trust_account.created          | trust_account          | 359eee4e-7195-4391-a21f-b4f1afedd569 | 2026-11-16 23:03:26.88985+00  | {"bank_name": "Standard Bank", "actor_name": "Alice Owner", "account_name": "Mathebula & Partners Trust Account", "account_type": "GENERAL"}
+ trust_creditor_account.created | trust_creditor_account | 374cedb5-0005-40b8-b45f-a65d85e9f6a3 | 2026-11-16 23:03:26.896797+00 | {"name": "Legal Practitioners' Fidelity Fund — interest and charges", "actor_name": "Alice Owner", "account_type": "FUND_INTEREST_AND_CHARGES", "trust_account_id": "359eee4e-7195-4391-a21f-b4f1afedd569"}
+ trust_creditor_account.created | trust_creditor_account | f6a66e02-175a-402e-9047-552aeab0f306 | 2026-11-16 23:03:26.897022+00 | {"name": "Unidentified deposits", "actor_name": "Alice Owner", "account_type": "UNIDENTIFIED_DEPOSITS", "trust_account_id": "359eee4e-7195-4391-a21f-b4f1afedd569"}
+(3 rows)
+

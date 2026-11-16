@@ -1,0 +1,47 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-646B @ 65d0f7f72
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-646B
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-646B/compose/docker-compose.e2e.yml logs -f backend frontend
+== worktree V18 sha1: 626ee618b57c0eaa70959a05831e9f135f921ad3
+== jar V18 sha1 (docker cp /app/app.jar): 626ee618b57c0eaa70959a05831e9f135f921ad3 -> IDENTICAL
+== jar contains (new in 646B): io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/TrustCreditorLedgerController.class
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |           description           | success |        installed_on        
+---------+---------------------------------+---------+----------------------------
+ 18      | phase92 trust creditor accounts | t       | 2026-11-16 23:10:23.988498
+ 17      | phase92 trust reversal contra   | t       | 2026-11-16 23:10:23.981739
+ 16      | phase92 trust posting core      | t       | 2026-11-16 23:10:23.962378
+ 15      | g89 trust investment cancelled  | t       | 2026-11-16 23:10:23.955395
+(4 rows)
+
+            conname            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              pg_get_constraintdef                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+-------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ chk_trust_txn_amount_positive | CHECK ((amount > (0)::numeric))
+ chk_trust_txn_ledger_target   | CHECK (((((ledger)::text = 'CLIENT'::text) AND (customer_id IS NOT NULL) AND (creditor_account_id IS NULL)) OR (((ledger)::text = 'CLIENT_INVESTMENT'::text) AND (customer_id IS NOT NULL) AND (investment_id IS NOT NULL) AND (creditor_account_id IS NULL)) OR (((ledger)::text = 'NON_CLIENT'::text) AND (creditor_account_id IS NOT NULL) AND (customer_id IS NULL) AND (project_id IS NULL)) OR (((ledger)::text = 'INTER_ACCOUNT'::text) AND (investment_id IS NOT NULL) AND (customer_id IS NULL) AND (project_id IS NULL) AND (creditor_account_id IS NULL))))
+ chk_trust_txn_posting         | CHECK ((((posted_at IS NULL) AND ((status)::text = ANY ((ARRAY['AWAITING_APPROVAL'::character varying, 'REJECTED'::character varying])::text[])) AND (cashbook_effect = (0)::numeric) AND (ledger_effect = (0)::numeric)) OR ((posted_at IS NOT NULL) AND ((status)::text = ANY ((ARRAY['RECORDED'::character varying, 'APPROVED'::character varying, 'REVERSED'::character varying])::text[])) AND (abs(ledger_effect) = amount) AND ((cashbook_effect = ledger_effect) OR (cashbook_effect = (0)::numeric)))))
+ chk_trust_txn_status          | CHECK (((status)::text = ANY ((ARRAY['RECORDED'::character varying, 'AWAITING_APPROVAL'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'REVERSED'::character varying])::text[])))
+ chk_trust_txn_type            | CHECK (((transaction_type)::text = ANY ((ARRAY['DEPOSIT'::character varying, 'PAYMENT'::character varying, 'TRANSFER_IN'::character varying, 'TRANSFER_OUT'::character varying, 'FEE_TRANSFER'::character varying, 'REFUND'::character varying, 'REVERSAL'::character varying, 'FUND_INTEREST'::character varying, 'FUND_SWEEP'::character varying, 'BANK_CHARGE'::character varying, 'CHARGE_REFUND'::character varying, 'UNIDENTIFIED_DEPOSIT'::character varying, 'UNIDENT_ALLOC_OUT'::character varying, 'UNIDENT_ALLOC_IN'::character varying, 'UNIDENT_FUND_PAY'::character varying, 'INV_PLACE'::character varying, 'INV_RECEIVE'::character varying, 'INV_INTEREST'::character varying, 'FUND_INV_SHARE'::character varying, 'INV_WITHDRAW'::character varying, 'INV_RETURN'::character varying, 'FIRM_INV_PLACE'::character varying, 'FIRM_INV_RECEIVE'::character varying, 'FIRM_INV_WITHDRAW'::character varying, 'FIRM_INV_RETURN'::character varying])::text[])))
+(5 rows)
+
+                  Table "tenant_7d218705360b.trust_creditor_accounts"
+      Column      |           Type           | Collation | Nullable |      Default      
+------------------+--------------------------+-----------+----------+-------------------
+ id               | uuid                     |           | not null | gen_random_uuid()
+ trust_account_id | uuid                     |           | not null | 
+ account_type     | character varying(40)    |           | not null | 
+ name             | character varying(200)   |           | not null | 
+ created_at       | timestamp with time zone |           | not null | now()
+Indexes:
+    "trust_creditor_accounts_pkey" PRIMARY KEY, btree (id)
+    "uq_trust_creditor_account_singleton" UNIQUE, btree (trust_account_id, account_type) WHERE account_type::text = ANY (ARRAY['FUND_INTEREST_AND_CHARGES'::character varying, 'UNIDENTIFIED_DEPOSITS'::character varying]::text[])
+Foreign-key constraints:
+    "trust_creditor_accounts_trust_account_id_fkey" FOREIGN KEY (trust_account_id) REFERENCES tenant_7d218705360b.trust_accounts(id)
+Referenced by:
+    TABLE "tenant_7d218705360b.trust_transactions" CONSTRAINT "trust_transactions_creditor_account_id_fkey" FOREIGN KEY (creditor_account_id) REFERENCES tenant_7d218705360b.trust_creditor_accounts(id)
+
+ trust_accounts | creditor_accounts | trust_txns 
+----------------+-------------------+------------
+              1 |                 2 |          0
+(1 row)
+

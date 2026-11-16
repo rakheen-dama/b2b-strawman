@@ -1,0 +1,166 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+FEES
+TRUST
+Overview
+Transactions
+Client ledgers
+Other trust creditors
+Reconciliation
+Interest
+Investments
+Trust reports
+FIRM
+Notifications
+CM
+
+Carol Member
+
+carol@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Home
+Search
+⌘K
+2 unread notifications
+2
+e2e-test-org
+CM
+Home
+
+What needs you today
+
+Today's diary
+Open diary
+
+Nothing in the diary today
+
+My tasks
+Open my work
+Nothing assigned to you.
+
+Tasks assigned to you on a matter appear here.
+
+My unbilled time
+0m
+No unbilled time. Billable time you record stays here until it is on a fee note.
+Open timesheet
+Matter Health
+All
+At Risk
+Over estimate
+MATTER
+STATUS
+PROGRESS
+HOURS
+TASKS
+
+Team spec mwjvhug0c37e
+
+Healthy
+0%
+0h
+0/9
+
+Ndlovu v RAF mwjve82pbc51
+
+Sipho Ndlovu mwjve82pbc51
+
+Healthy
+0%
+5.3h
+0/9
+View all matters →
+Recent Activity
+CM
+
+Carol Member removed a member from the matter team
+
+2 minutes ago
+CM
+
+Carol Member added a member to the matter team
+
+2 minutes ago
+BA
+
+Bob Admin made a team member the matter lead
+
+2 minutes ago
+BA
+
+Bob Admin changed a matter team member's role to member
+
+2 minutes ago
+AO
+
+Alice Owner added a member to the matter team
+
+2 minutes ago
+AO
+
+Alice Owner opened the matter from template "Litigation (Personal Injury / General)"
+
+2 minutes ago
+AO
+
+Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwjve82pbc51)
+
+2 minutes ago
+AO
+
+Alice Owner generated document "engagement-letter-litigation-ndlovu-v-raf-mwjve82pbc51-2026-11-17.pdf" from template "Engagement Letter — Litigation"
+
+2 minutes ago
+AO
+
+Alice Owner linked adverse party "Road Accident Fund" to the matter
+
+3 minutes ago
+AO
+
+Alice Owner created a draft fee note
+
+3 minutes ago
+AO
+
+Alice Owner logged 1h on task "Issue summons / combined summons"
+
+3 minutes ago
+AO
+
+Alice Owner started tracking prescription (prescribes 18 September 2029)
+
+3 minutes ago
+AO
+
+Alice Owner sent fee note INV-0003
+
+3 minutes ago
+AO
+
+Alice Owner approved fee note INV-0003
+
+3 minutes ago
+AO
+
+Alice Owner created a draft fee note
+
+3 minutes ago
+View all activity →
+Command Palette
+
+Search pages and settings

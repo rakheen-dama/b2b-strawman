@@ -1,0 +1,98 @@
+-- 646B OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-16T23:09:05.198Z
+
+== [d1: trust accounts]
+select id, account_name, account_type, is_primary, status, created_at from tenant_7d218705360b.trust_accounts order by created_at
+                  id                  |            account_name            | account_type | is_primary | status |          created_at           
+--------------------------------------+------------------------------------+--------------+------------+--------+-------------------------------
+ 359eee4e-7195-4391-a21f-b4f1afedd569 | Mathebula & Partners Trust Account | GENERAL      | t          | ACTIVE | 2026-11-16 23:03:26.888564+00
+(1 row)
+
+
+== [d2: creditor accounts per trust account]
+select c.trust_account_id, c.account_type, c.name, c.id, c.created_at from tenant_7d218705360b.trust_creditor_accounts c order by c.trust_account_id, c.account_type
+           trust_account_id           |       account_type        |                           name                            |                  id                  |          created_at           
+--------------------------------------+---------------------------+-----------------------------------------------------------+--------------------------------------+-------------------------------
+ 359eee4e-7195-4391-a21f-b4f1afedd569 | FUND_INTEREST_AND_CHARGES | Legal Practitioners' Fidelity Fund — interest and charges | 374cedb5-0005-40b8-b45f-a65d85e9f6a3 | 2026-11-16 23:03:26.893151+00
+ 359eee4e-7195-4391-a21f-b4f1afedd569 | UNIDENTIFIED_DEPOSITS     | Unidentified deposits                                     | f6a66e02-175a-402e-9047-552aeab0f306 | 2026-11-16 23:03:26.896524+00
+(2 rows)
+
+
+== [d3: creditor-account count per trust account (expected 2, one of each type)]
+select a.id as trust_account_id, a.account_name, count(c.id) as creditor_accounts, count(distinct c.account_type) as distinct_types from tenant_7d218705360b.trust_accounts a left join tenant_7d218705360b.trust_creditor_accounts c on c.trust_account_id=a.id group by a.id, a.account_name order by a.account_name
+           trust_account_id           |            account_name            | creditor_accounts | distinct_types 
+--------------------------------------+------------------------------------+-------------------+----------------
+ 359eee4e-7195-4391-a21f-b4f1afedd569 | Mathebula & Partners Trust Account |                 2 |              2
+(1 row)
+
+
+== [d4: ledger-target / customer-required constraints]
+select n.nspname, c.conname, pg_get_constraintdef(c.oid) from pg_constraint c join pg_namespace n on n.oid=c.connamespace where n.nspname='tenant_7d218705360b' and c.conname in ('chk_trust_txn_ledger_target','chk_trust_txn_customer_required') order by c.conname
+       nspname       |           conname           |                                                                                                                                                                                                                                                                          pg_get_constraintdef                                                                                                                                                                                                                                                                          
+---------------------+-----------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ tenant_7d218705360b | chk_trust_txn_ledger_target | CHECK (((((ledger)::text = 'CLIENT'::text) AND (customer_id IS NOT NULL) AND (creditor_account_id IS NULL)) OR (((ledger)::text = 'CLIENT_INVESTMENT'::text) AND (customer_id IS NOT NULL) AND (investment_id IS NOT NULL) AND (creditor_account_id IS NULL)) OR (((ledger)::text = 'NON_CLIENT'::text) AND (creditor_account_id IS NOT NULL) AND (customer_id IS NULL) AND (project_id IS NULL)) OR (((ledger)::text = 'INTER_ACCOUNT'::text) AND (investment_id IS NOT NULL) AND (customer_id IS NULL) AND (project_id IS NULL) AND (creditor_account_id IS NULL))))
+(1 row)
+
+
+== [d5: chk_trust_txn_type names]
+select count(*) as type_count, string_agg(m[1], ', ' order by ord) as names from pg_constraint c join pg_namespace n on n.oid=c.connamespace, lateral regexp_matches(pg_get_constraintdef(c.oid), '''([A-Z_]+)''::character varying', 'g') with ordinality as x(m, ord) where n.nspname='tenant_7d218705360b' and c.conname='chk_trust_txn_type'
+ type_count |                                                                                                                                                                                 names                                                                                                                                                                                 
+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+         25 | DEPOSIT, PAYMENT, TRANSFER_IN, TRANSFER_OUT, FEE_TRANSFER, REFUND, REVERSAL, FUND_INTEREST, FUND_SWEEP, BANK_CHARGE, CHARGE_REFUND, UNIDENTIFIED_DEPOSIT, UNIDENT_ALLOC_OUT, UNIDENT_ALLOC_IN, UNIDENT_FUND_PAY, INV_PLACE, INV_RECEIVE, INV_INTEREST, FUND_INV_SHARE, INV_WITHDRAW, INV_RETURN, FIRM_INV_PLACE, FIRM_INV_RECEIVE, FIRM_INV_WITHDRAW, FIRM_INV_RETURN
+(1 row)
+
+
+== [d6: trust_transactions creditor_account_id / investment_id / ledger]
+select count(*) as total, count(*) filter (where creditor_account_id is null) as creditor_null, count(*) filter (where investment_id is null) as investment_null, string_agg(distinct ledger, ',') as ledgers from tenant_7d218705360b.trust_transactions
+ total | creditor_null | investment_null | ledgers 
+-------+---------------+-----------------+---------
+     6 |             6 |               6 | CLIENT
+(1 row)
+
+
+== [d7: EQ-2]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) as cashbook,
+            (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as sum_client_ledgers,
+            (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null)
+          - (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as eq2_difference
+ cashbook  | sum_client_ledgers | eq2_difference 
+-----------+--------------------+----------------
+ 286500.00 |          286500.00 |           0.00
+(1 row)
+
+
+== [d8: derived creditor-account balances (expected 0.00 — no NON_CLIENT rows yet)]
+select c.account_type, coalesce(sum(t.ledger_effect) filter (where t.posted_at is not null),0) as balance from tenant_7d218705360b.trust_creditor_accounts c left join tenant_7d218705360b.trust_transactions t on t.creditor_account_id=c.id group by c.account_type order by 1
+       account_type        | balance 
+---------------------------+---------
+ FUND_INTEREST_AND_CHARGES |       0
+ UNIDENTIFIED_DEPOSITS     |       0
+(2 rows)
+
+
+== [d9: audit events for trust_creditor_account]
+select a.event_type, a.entity_type, a.entity_id, a.occurred_at, a.details from tenant_7d218705360b.audit_events a where a.entity_type in ('trust_creditor_account','trust_account') order by a.occurred_at
+           event_type           |      entity_type       |              entity_id               |          occurred_at          |                                                                                                   details                                                                                                   
+--------------------------------+------------------------+--------------------------------------+-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ trust_account.created          | trust_account          | 359eee4e-7195-4391-a21f-b4f1afedd569 | 2026-11-16 23:03:26.88985+00  | {"bank_name": "Standard Bank", "actor_name": "Alice Owner", "account_name": "Mathebula & Partners Trust Account", "account_type": "GENERAL"}
+ trust_creditor_account.created | trust_creditor_account | 374cedb5-0005-40b8-b45f-a65d85e9f6a3 | 2026-11-16 23:03:26.896797+00 | {"name": "Legal Practitioners' Fidelity Fund — interest and charges", "actor_name": "Alice Owner", "account_type": "FUND_INTEREST_AND_CHARGES", "trust_account_id": "359eee4e-7195-4391-a21f-b4f1afedd569"}
+ trust_creditor_account.created | trust_creditor_account | f6a66e02-175a-402e-9047-552aeab0f306 | 2026-11-16 23:03:26.897022+00 | {"name": "Unidentified deposits", "actor_name": "Alice Owner", "account_type": "UNIDENTIFIED_DEPOSITS", "trust_account_id": "359eee4e-7195-4391-a21f-b4f1afedd569"}
+(3 rows)
+
+
+== [d10: flyway v18]
+select version, description, success, installed_on from tenant_7d218705360b.flyway_schema_history where version='18'
+ version |           description           | success |        installed_on        
+---------+---------------------------------+---------+----------------------------
+ 18      | phase92 trust creditor accounts | t       | 2026-11-16 23:03:25.028965
+(1 row)
+
+
+== [c: role capability matrix (trust capabilities)]
+select r.slug, array_agg(c.capability order by c.capability) filter (where c.capability like '%TRUST%') as trust_caps from tenant_7d218705360b.org_roles r left join tenant_7d218705360b.org_role_capabilities c on c.org_role_id=r.id group by r.slug order by r.slug
+  slug  |                   trust_caps                    
+--------+-------------------------------------------------
+ admin  | {APPROVE_TRUST_PAYMENT,MANAGE_TRUST,VIEW_TRUST}
+ member | {VIEW_TRUST}
+ owner  | {APPROVE_TRUST_PAYMENT,MANAGE_TRUST,VIEW_TRUST}
+(3 rows)
+

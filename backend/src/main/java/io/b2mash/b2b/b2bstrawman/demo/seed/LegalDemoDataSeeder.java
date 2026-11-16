@@ -31,6 +31,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import java.math.BigDecimal;
@@ -80,6 +81,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
   private final VerticalModuleRegistry verticalModuleRegistry;
   private final TrustAccountRepository trustAccountRepository;
   private final TrustPostingService trustPostingService;
+  private final TrustCreditorLedgerService trustCreditorLedgerService;
   private final ChecklistTemplateRepository checklistTemplateRepository;
   private final ChecklistTemplateItemRepository checklistTemplateItemRepository;
   private final ChecklistInstanceRepository checklistInstanceRepository;
@@ -100,6 +102,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
       VerticalModuleRegistry verticalModuleRegistry,
       TrustAccountRepository trustAccountRepository,
       TrustPostingService trustPostingService,
+      TrustCreditorLedgerService trustCreditorLedgerService,
       ChecklistTemplateRepository checklistTemplateRepository,
       ChecklistTemplateItemRepository checklistTemplateItemRepository,
       ChecklistInstanceRepository checklistInstanceRepository,
@@ -119,6 +122,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     this.verticalModuleRegistry = verticalModuleRegistry;
     this.trustAccountRepository = trustAccountRepository;
     this.trustPostingService = trustPostingService;
+    this.trustCreditorLedgerService = trustCreditorLedgerService;
     this.checklistTemplateRepository = checklistTemplateRepository;
     this.checklistTemplateItemRepository = checklistTemplateItemRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
@@ -227,6 +231,9 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
             "Primary section 86 trust account (demo)");
     account = trustAccountRepository.save(account);
     UUID accountId = account.getId();
+    // ADR-376: the seeded account gets its two non-client creditor ledgers through the same opener
+    // TrustAccountService.createTrustAccount uses.
+    trustCreditorLedgerService.openDefaultAccounts(accountId);
 
     // G89-F28: client trust rows sit on one of the client's matters, so the portal trust view
     // (per client and matter) shows them.

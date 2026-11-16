@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -9,13 +10,15 @@ import java.util.Optional;
  * needs to know about a type, in one place. The column {@code trust_transactions.transaction_type}
  * stays {@code varchar(20)} and the entity field stays a {@code String} (R5, ADR-238); callers use
  * {@link #of(String)}. {@code TrustTransactionTypeSchemaTest} pins {@code chk_trust_txn_type} to
- * these constants. 646A carries the seven kept types; 646B adds the eighteen new ones.
+ * these constants: the 25 types. 646A carried the seven kept types; 646B added the eighteen
+ * non-client, investment and inter-account types; no slice before 647A posts them.
  */
 public enum TrustTransactionType {
   DEPOSIT(
       1,
       TrustLedger.CLIENT,
       1,
+      null,
       Approval.NONE,
       Reversal.NEEDS_APPROVAL,
       Origin.FIRM,
@@ -27,6 +30,7 @@ public enum TrustTransactionType {
       -1,
       TrustLedger.CLIENT,
       -1,
+      null,
       Approval.REQUIRED,
       Reversal.IMMEDIATE,
       Origin.FIRM,
@@ -38,6 +42,7 @@ public enum TrustTransactionType {
       -1,
       TrustLedger.CLIENT,
       -1,
+      null,
       Approval.REQUIRED,
       Reversal.IMMEDIATE,
       Origin.FIRM,
@@ -49,6 +54,7 @@ public enum TrustTransactionType {
       -1,
       TrustLedger.CLIENT,
       -1,
+      null,
       Approval.REQUIRED,
       Reversal.IMMEDIATE,
       Origin.FIRM,
@@ -60,6 +66,7 @@ public enum TrustTransactionType {
       0,
       TrustLedger.CLIENT,
       -1,
+      null,
       Approval.NONE,
       Reversal.PAIR,
       Origin.FIRM,
@@ -71,6 +78,7 @@ public enum TrustTransactionType {
       0,
       TrustLedger.CLIENT,
       1,
+      null,
       Approval.NONE,
       Reversal.VIA_PAIR,
       Origin.FIRM,
@@ -88,13 +96,230 @@ public enum TrustTransactionType {
       0,
       null,
       0,
+      null,
       Approval.WITH_ORIGINAL,
       Reversal.NONE,
       null,
       true,
       "trust_reversal",
       "Reversal",
-      "Reversal");
+      "Reversal"),
+  FUND_INTEREST(
+      1,
+      TrustLedger.NON_CLIENT,
+      1,
+      TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES,
+      Approval.NONE,
+      Reversal.IMMEDIATE,
+      Origin.BANK,
+      false,
+      "trust_fund_interest",
+      "Interest received for the Legal Practitioners' Fidelity Fund",
+      "Interest received for the Legal Practitioners' Fidelity Fund"),
+  FUND_SWEEP(
+      -1,
+      TrustLedger.NON_CLIENT,
+      -1,
+      TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES,
+      Approval.NONE,
+      Reversal.IMMEDIATE,
+      Origin.BANK,
+      false,
+      "trust_fund_sweep",
+      "Interest paid to the Legal Practitioners' Fidelity Fund",
+      "Interest paid to the Legal Practitioners' Fidelity Fund"),
+  BANK_CHARGE(
+      -1,
+      TrustLedger.NON_CLIENT,
+      -1,
+      TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES,
+      Approval.NONE,
+      Reversal.IMMEDIATE,
+      Origin.BANK,
+      false,
+      "trust_bank_charge",
+      "Bank charge",
+      "Bank charge"),
+  CHARGE_REFUND(
+      1,
+      TrustLedger.NON_CLIENT,
+      1,
+      TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES,
+      Approval.NONE,
+      Reversal.IMMEDIATE,
+      Origin.BANK,
+      false,
+      "trust_charge_refund",
+      "Bank charge refunded from the business account",
+      "Bank charge refunded from the business account"),
+  UNIDENTIFIED_DEPOSIT(
+      1,
+      TrustLedger.NON_CLIENT,
+      1,
+      TrustCreditorAccountType.UNIDENTIFIED_DEPOSITS,
+      Approval.NONE,
+      Reversal.OWNER,
+      Origin.BANK,
+      false,
+      "trust_unidentified_deposit",
+      "Unidentified deposit",
+      "Unidentified deposit"),
+  UNIDENT_ALLOC_OUT(
+      0,
+      TrustLedger.NON_CLIENT,
+      -1,
+      TrustCreditorAccountType.UNIDENTIFIED_DEPOSITS,
+      Approval.REQUIRED,
+      Reversal.PAIR,
+      Origin.FIRM,
+      false,
+      "trust_unident_alloc_out",
+      "Unidentified deposit allocated",
+      "Unidentified deposit allocated"),
+  UNIDENT_ALLOC_IN(
+      0,
+      TrustLedger.CLIENT,
+      1,
+      null,
+      Approval.WITH_PAIR,
+      Reversal.VIA_PAIR,
+      Origin.FIRM,
+      true,
+      "trust_unident_alloc_in",
+      "Deposit identified and allocated",
+      "Deposit identified and allocated"),
+  UNIDENT_FUND_PAY(
+      -1,
+      TrustLedger.NON_CLIENT,
+      -1,
+      TrustCreditorAccountType.UNIDENTIFIED_DEPOSITS,
+      Approval.REQUIRED,
+      Reversal.IMMEDIATE,
+      Origin.FIRM,
+      false,
+      "trust_unident_fund_pay",
+      "Unidentified deposit paid to the Fund",
+      "Unidentified deposit paid to the Fund"),
+  INV_PLACE(
+      -1,
+      TrustLedger.CLIENT,
+      -1,
+      null,
+      Approval.REQUIRED,
+      Reversal.NONE,
+      Origin.FIRM,
+      true,
+      "trust_inv_place",
+      "Placed in section 86(4) investment",
+      "Placed in section 86(4) investment"),
+  INV_RECEIVE(
+      1,
+      TrustLedger.CLIENT_INVESTMENT,
+      1,
+      null,
+      Approval.WITH_PAIR,
+      Reversal.NONE,
+      Origin.FIRM,
+      false,
+      "trust_inv_receive",
+      "Investment capital received",
+      "Investment capital received"),
+  INV_INTEREST(
+      1,
+      TrustLedger.CLIENT_INVESTMENT,
+      1,
+      null,
+      Approval.NONE,
+      Reversal.OWNER,
+      Origin.FIRM,
+      true,
+      "trust_inv_interest",
+      "Section 86(4) investment interest",
+      "Section 86(4) investment interest"),
+  FUND_INV_SHARE(
+      1,
+      TrustLedger.NON_CLIENT,
+      1,
+      TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES,
+      Approval.NONE,
+      Reversal.OWNER,
+      Origin.FIRM,
+      false,
+      "trust_fund_inv_share",
+      "Fund share of section 86(4) interest (5%)",
+      "Fund share of section 86(4) interest (5%)"),
+  INV_WITHDRAW(
+      -1,
+      TrustLedger.CLIENT_INVESTMENT,
+      -1,
+      null,
+      Approval.NONE,
+      Reversal.NONE,
+      Origin.FIRM,
+      false,
+      "trust_inv_withdraw",
+      "Investment withdrawn",
+      "Investment withdrawn"),
+  INV_RETURN(
+      1,
+      TrustLedger.CLIENT,
+      1,
+      null,
+      Approval.WITH_PAIR,
+      Reversal.NONE,
+      Origin.FIRM,
+      true,
+      "trust_inv_return",
+      "Investment returned to trust",
+      "Investment returned to trust"),
+  FIRM_INV_PLACE(
+      -1,
+      TrustLedger.INTER_ACCOUNT,
+      -1,
+      null,
+      Approval.REQUIRED,
+      Reversal.NONE,
+      Origin.FIRM,
+      false,
+      "trust_firm_inv_place",
+      "Placed in section 86(3) investment account",
+      "Placed in section 86(3) investment account"),
+  FIRM_INV_RECEIVE(
+      1,
+      TrustLedger.INTER_ACCOUNT,
+      1,
+      null,
+      Approval.WITH_PAIR,
+      Reversal.NONE,
+      Origin.FIRM,
+      false,
+      "trust_firm_inv_receive",
+      "Section 86(3) investment capital received",
+      "Section 86(3) investment capital received"),
+  FIRM_INV_WITHDRAW(
+      -1,
+      TrustLedger.INTER_ACCOUNT,
+      -1,
+      null,
+      Approval.NONE,
+      Reversal.NONE,
+      Origin.FIRM,
+      false,
+      "trust_firm_inv_withdraw",
+      "Section 86(3) investment withdrawn",
+      "Section 86(3) investment withdrawn"),
+  FIRM_INV_RETURN(
+      1,
+      TrustLedger.INTER_ACCOUNT,
+      1,
+      null,
+      Approval.WITH_PAIR,
+      Reversal.NONE,
+      Origin.FIRM,
+      false,
+      "trust_firm_inv_return",
+      "Section 86(3) investment returned to trust",
+      "Section 86(3) investment returned to trust");
 
   /** How a row of the type is posted. */
   public enum Approval {
@@ -136,6 +361,7 @@ public enum TrustTransactionType {
   private final int cashbookSign;
   private final TrustLedger ledger;
   private final int ledgerSign;
+  private final TrustCreditorAccountType creditorAccountType;
   private final Approval approval;
   private final Reversal reversal;
   private final Origin origin;
@@ -148,6 +374,7 @@ public enum TrustTransactionType {
       int cashbookSign,
       TrustLedger ledger,
       int ledgerSign,
+      TrustCreditorAccountType creditorAccountType,
       Approval approval,
       Reversal reversal,
       Origin origin,
@@ -158,6 +385,7 @@ public enum TrustTransactionType {
     this.cashbookSign = cashbookSign;
     this.ledger = ledger;
     this.ledgerSign = ledgerSign;
+    this.creditorAccountType = creditorAccountType;
     this.approval = approval;
     this.reversal = reversal;
     this.origin = origin;
@@ -214,6 +442,14 @@ public enum TrustTransactionType {
 
   public int ledgerSign() {
     return ledgerSign;
+  }
+
+  /**
+   * For a {@link TrustLedger#NON_CLIENT} type: which creditor account of the trust account the row
+   * moves (ADR-376); null for every other ledger.
+   */
+  public TrustCreditorAccountType creditorAccountType() {
+    return creditorAccountType;
   }
 
   public Approval approval() {

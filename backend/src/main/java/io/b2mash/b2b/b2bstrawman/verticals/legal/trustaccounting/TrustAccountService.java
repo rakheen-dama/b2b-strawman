@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.dto.MatterTrustBalanceResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
@@ -38,6 +39,7 @@ public class TrustAccountService {
   private final ProjectAccessService projectAccessService;
   private final TrustLedgerQueryRepository ledgerQueries;
   private final OrgSettingsService orgSettingsService;
+  private final TrustCreditorLedgerService creditorLedgerService;
 
   public TrustAccountService(
       TrustAccountRepository trustAccountRepository,
@@ -47,7 +49,8 @@ public class TrustAccountService {
       Clock clock,
       ProjectAccessService projectAccessService,
       TrustLedgerQueryRepository ledgerQueries,
-      OrgSettingsService orgSettingsService) {
+      OrgSettingsService orgSettingsService,
+      TrustCreditorLedgerService creditorLedgerService) {
     this.trustAccountRepository = trustAccountRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.moduleGuard = moduleGuard;
@@ -56,6 +59,7 @@ public class TrustAccountService {
     this.projectAccessService = projectAccessService;
     this.ledgerQueries = ledgerQueries;
     this.orgSettingsService = orgSettingsService;
+    this.creditorLedgerService = creditorLedgerService;
   }
 
   // --- DTO Records ---
@@ -195,6 +199,21 @@ public class TrustAccountService {
                     "bank_name", saved.getBankName(),
                     "account_type", saved.getAccountType().name()))
             .build());
+
+    // Every trust account carries its two non-client creditor ledgers (ADR-376)
+    for (var creditorAccount : creditorLedgerService.openDefaultAccounts(saved.getId())) {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("trust_creditor_account.created")
+              .entityType("trust_creditor_account")
+              .entityId(creditorAccount.getId())
+              .details(
+                  Map.of(
+                      "trust_account_id", saved.getId().toString(),
+                      "account_type", creditorAccount.getAccountType().name(),
+                      "name", creditorAccount.getName()))
+              .build());
+    }
 
     return toResponse(saved);
   }

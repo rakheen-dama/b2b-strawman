@@ -45,6 +45,7 @@ export const SEGMENT_LABELS: Record<string, string> = {
   "trust-accounting": "Trust accounting",
   "conflict-check": "Conflict check",
   "client-ledgers": "Client ledgers",
+  "other-creditors": "Other trust creditors",
   transactions: "Transactions",
   reconciliation: "Reconciliation",
   interest: "Interest",

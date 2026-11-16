@@ -454,19 +454,20 @@ describe("TrustBalanceCard", () => {
 });
 
 describe("Sidebar nav items", () => {
-  it("has 7 trust items in the trust zone with correct module and capability", () => {
+  it("has 8 trust items in the trust zone with correct module and capability", () => {
     const trustZone = NAV_GROUPS.find((g) => g.id === "trust");
     expect(trustZone).toBeDefined();
 
     const trustItems = trustZone!.items.filter(
       (item) => item.requiredModule === "trust_accounting"
     );
-    expect(trustItems).toHaveLength(7);
+    expect(trustItems).toHaveLength(8);
 
     const expectedLabels = [
       "Overview",
       "Transactions",
       "Client ledgers",
+      "Other trust creditors",
       "Reconciliation",
       "Interest",
       "Investments",

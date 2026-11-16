@@ -55,6 +55,7 @@ public class VerticalModuleRegistry {
                 new NavItem("/trust-accounting", "Trust Accounting", "legal"),
                 new NavItem("/trust-accounting/transactions", "Transactions", "legal"),
                 new NavItem("/trust-accounting/client-ledgers", "Client Ledgers", "legal"),
+                new NavItem("/trust-accounting/other-creditors", "Other Trust Creditors", "legal"),
                 new NavItem("/trust-accounting/reconciliation", "Reconciliation", "legal"),
                 new NavItem("/trust-accounting/interest", "Interest", "legal"),
                 new NavItem("/trust-accounting/investments", "Investments", "legal"),

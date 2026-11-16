@@ -419,3 +419,19 @@ export interface InterestAllocationLine {
   clientShare: number;
   trustTransactionId: string | null;
 }
+
+// Non-client trust creditors (Phase 92 646B, ADR-376) — GET /api/trust-accounts/{id}/creditor-accounts
+
+export type TrustCreditorAccountType = "FUND_INTEREST_AND_CHARGES" | "UNIDENTIFIED_DEPOSITS";
+
+/** One non-client creditor ledger of a trust account, its balance derived as at `asAt`. */
+export interface TrustCreditorAccount {
+  id: string;
+  trustAccountId: string;
+  /** Logic only (which card shows the in-debit notice) — never rendered; `name` is the label. */
+  accountType: TrustCreditorAccountType;
+  name: string;
+  balance: number;
+  inDebit: boolean;
+  asAt: string;
+}

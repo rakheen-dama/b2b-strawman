@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
@@ -13,6 +14,9 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateLpffRateRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccount;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -44,6 +49,7 @@ class TrustAccountServiceTest {
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private TrustCreditorAccountRepository creditorAccountRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -134,6 +140,63 @@ class TrustAccountServiceTest {
 
                   long auditCountAfter = auditEventRepository.count();
                   assertThat(auditCountAfter).isGreaterThan(auditCountBefore);
+                }));
+  }
+
+  @Test
+  void createTrustAccount_opensTheTwoNonClientCreditorAccounts() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response =
+                      trustAccountService.createTrustAccount(
+                          new CreateTrustAccountRequest(
+                              "Creditor Ledgers Account",
+                              "Nedbank",
+                              "198765",
+                              "5550001111",
+                              "GENERAL",
+                              false,
+                              false,
+                              null,
+                              LocalDate.of(2026, 2, 1),
+                              null));
+
+                  var creditorAccounts =
+                      creditorAccountRepository.findByTrustAccountId(response.id());
+                  assertThat(creditorAccounts)
+                      .extracting(
+                          TrustCreditorAccount::getAccountType, TrustCreditorAccount::getName)
+                      .containsExactlyInAnyOrder(
+                          tuple(
+                              TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES,
+                              "Legal Practitioners' Fidelity Fund — interest and charges"),
+                          tuple(
+                              TrustCreditorAccountType.UNIDENTIFIED_DEPOSITS,
+                              "Unidentified deposits"));
+                  assertThat(creditorAccounts)
+                      .allSatisfy(
+                          a -> {
+                            assertThat(a.getTrustAccountId()).isEqualTo(response.id());
+                            assertThat(a.getCreatedAt()).isNotNull();
+                          });
+
+                  // One trust_creditor_account.created audit per opened ledger (D2)
+                  for (var creditorAccount : creditorAccounts) {
+                    var events =
+                        auditEventRepository
+                            .findByFilter(
+                                "trust_creditor_account",
+                                creditorAccount.getId(),
+                                null,
+                                "trust_creditor_account.created",
+                                null,
+                                null,
+                                PageRequest.of(0, 10))
+                            .getContent();
+                    assertThat(events).hasSize(1);
+                  }
                 }));
   }
 

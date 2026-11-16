@@ -31,7 +31,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * cashbook R27 000,00 = client ledgers R30 000,00 + (−R3 000,00). The second client is left in
  * debit by R3 000,00 on purpose (the posting service applies no sufficiency check), so the demo
  * shows a creditor in debit. Before 646A the seeder wrote card-less rows straight to the repository
- * and the books were R27 000,00 out (649A path 11).
+ * and the books were R27 000,00 out (649A path 11). 646B: the seeded account also carries its two
+ * non-client creditor ledgers (ADR-376).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -108,5 +109,31 @@ class LegalDemoTrustBooksIntegrationTest {
     var inDebit = balances.stream().filter(b -> b.signum() < 0).toList();
     assertThat(inDebit).as("clients in debit").hasSize(1);
     assertThat(inDebit.getFirst()).isEqualByComparingTo("-3000.00");
+  }
+
+  @Test
+  void seededAccount_carriesBothNonClientCreditorLedgers_atZero() {
+    // 646B (D3, ADR-376): the seeder opens the two creditor accounts through the same opener as
+    // TrustAccountService.createTrustAccount; nothing has been posted to them.
+    var rows =
+        jdbcTemplate.queryForList(
+            "SELECT id, account_type FROM \"%s\".trust_creditor_accounts WHERE trust_account_id = ?"
+                .formatted(schema),
+            accountId);
+    assertThat(rows)
+        .extracting(r -> r.get("account_type"))
+        .containsExactlyInAnyOrder("FUND_INTEREST_AND_CHARGES", "UNIDENTIFIED_DEPOSITS");
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .run(
+            () -> {
+              for (var row : rows) {
+                BigDecimal balance =
+                    transactionTemplate.execute(
+                        tx -> ledgerQueries.creditorAccountBalance((UUID) row.get("id"), null));
+                assertThat(balance)
+                    .as("%s balance", row.get("account_type"))
+                    .isEqualByComparingTo("0");
+              }
+            });
   }
 }

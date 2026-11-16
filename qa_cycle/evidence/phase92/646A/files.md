@@ -155,3 +155,10 @@ Leftover untyped fixture keys (`trust-tabs-settings.test.tsx:344,387,424`, `trus
 - Tenant migration series V1…V15 confirmed at build time: **V16 is next free**, taken as `V16__phase92_trust_posting_core.sql`.
 - Main files actually changed: **34 Java** (6 new, 27 changed, 1 deleted — `ClientTrustBalanceProjection`) + **1 migration** = 35. That is the plan's 31 + the 3 optional Javadoc-only files, all three taken because the §13.0 grep flags them: `transaction/MatterBalanceRow.java`, `dto/MatterTrustBalanceResponse.java` (both family 2), `dashboard/DashboardService.java` (family 3).
 - No main file outside the plan was needed. Family 4 (tests, 40) and family 5 (frontend, 6) are stage B. Running total stays at the ruled ≈ 81.
+
+## Build-time re-grep (stage B — family 4 tests, family 5 frontend)
+
+- Tests: **41** (6 new + 35 changed) — the plan's 34 changed + `TrustInvestmentSchemaTest` (OQ #4 extra: its raw-SQL setup inserts a `RECORDED` deposit, which `chk_trust_txn_posting` now refuses without `posted_at`; the insert now carries the effect columns).
+- Beyond the brief's hand-set list, three more hand-set statuses violated the CHECK and were rewritten through the product: `TrustTransactionServiceTest` (`RECORDED → AWAITING_APPROVAL` deposit in `reverseAwaitingApprovalTransaction_throwsInvalidStateException`, `RECORDED → REJECTED` deposit in `cashbookBalance_excludesRejectedTransactions`) and `TrustPostingDateZoneIntegrationTest` (`AWAITING_APPROVAL → APPROVED` refund in `refundReversal_isDatedSastToday`).
+- Frontend: **6** as planned.
+- Total diff vs `e0b2be311`: **82 code files** (35 main incl. migration + 41 test + 6 frontend) + this evidence file.

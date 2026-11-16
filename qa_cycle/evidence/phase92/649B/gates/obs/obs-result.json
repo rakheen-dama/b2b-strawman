@@ -1,0 +1,241 @@
+{
+  "steps": {
+    "a": {
+      "balanceBefore": {
+        "sql": "45000.00",
+        "uiListRow": [
+          "QuickCollect Services mwjpngjb6fce",
+          "R 45 000,00",
+          "R 45 000,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "16 Nov 2026"
+        ]
+      },
+      "originalRowBefore": "16 Nov 2026 DEP/QC/mwjpngjb6fce Deposit R 45 000,00 RECORDED Reverse",
+      "reverseOfferedOnRecordedDeposit": true,
+      "dialogText": "Reverse Transaction This will create a reversal entry. A deposit reversal must be approved by another member before it takes effect. Reason Reversal date (optional) Leave blank for today. Use the date the bank shows the reversal. Cancel Reverse Transaction Close",
+      "dialogHasRawEnum": false,
+      "dialogHasApprovalNote": true,
+      "dateInputMin": "2026-11-16",
+      "submit": {
+        "closed": true,
+        "error": null
+      },
+      "contraRowPending": "16 Nov 2026 REV-DEP/QC/mwjpngjb6fce Reversal R 45 000,00 AWAITING APPROVAL Approve Reject",
+      "originalRowWhilePending": "16 Nov 2026 DEP/QC/mwjpngjb6fce Deposit R 45 000,00 RECORDED Reverse",
+      "reverseStillOfferedWhileContraPending": true,
+      "balanceWhilePending": {
+        "sql": "45000.00",
+        "uiListRow": [
+          "QuickCollect Services mwjpngjb6fce",
+          "R 45 000,00",
+          "R 45 000,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "16 Nov 2026"
+        ]
+      },
+      "eq2WhilePending": {
+        "cashbook": "286500.00",
+        "sumClient": "286500.00",
+        "diff": "0.00",
+        "out": " cashbook  | sum_client_ledgers | eq2_difference \n-----------+--------------------+----------------\n 286500.00 |          286500.00 |           0.00\n(1 row)\n\n"
+      },
+      "aliceSelfApproval": "Approve Reject The transaction recorder cannot be the sole approver. A different member with APPROVE_TRUST_PAYMENT capability must approve this transaction.",
+      "bobSeesApprove": true,
+      "bobApproveResult": "",
+      "contraRowApproved": "16 Nov 2026 REV-DEP/QC/mwjpngjb6fce Reversal R 45 000,00 APPROVED",
+      "originalRowAfterApproval": "16 Nov 2026 DEP/QC/mwjpngjb6fce Deposit R 45 000,00 REVERSED",
+      "reverseOfferedAfterApproval": false,
+      "balanceAfterApproval": {
+        "sql": "0.00",
+        "uiListRow": [
+          "QuickCollect Services mwjpngjb6fce",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "16 Nov 2026"
+        ]
+      },
+      "ledgerDetailHasRawReversal": false,
+      "ledgerDetailHasReversalLabel": true,
+      "eq2AfterApproval": {
+        "cashbook": "241500.00",
+        "sumClient": "241500.00",
+        "diff": "0.00",
+        "out": " cashbook  | sum_client_ledgers | eq2_difference \n-----------+--------------------+----------------\n 241500.00 |          241500.00 |           0.00\n(1 row)\n\n"
+      }
+    },
+    "b": {
+      "deposit": {
+        "closed": true,
+        "error": null
+      },
+      "payment": {
+        "closed": true,
+        "error": null
+      },
+      "paymentRowRecorded": "06 Nov 2026 OBS649B-PAY-PRTS1 Payment R 4 000,00 AWAITING APPROVAL Approve Reject",
+      "bobApprovePayment": "",
+      "paymentRowApproved": "06 Nov 2026 OBS649B-PAY-PRTS1 Payment R 4 000,00 APPROVED Reverse",
+      "balanceAfterPayment": {
+        "sql": "16000.00"
+      },
+      "reverseOfferedOnApprovedPayment": true,
+      "dialogText": "Reverse Transaction This will create a reversal entry. Please provide a reason. Reason Reversal date (optional) Leave blank for today. Use the date the bank shows the reversal. Cancel Reverse Transaction Close",
+      "dialogHasRawEnum": false,
+      "dateInputMin": "2026-11-06",
+      "beforeOriginalAttempt": {
+        "date": "2026-11-04",
+        "dialogStillOpen": true,
+        "rangeUnderflow": true,
+        "validationMessage": "Value must be 2026/11/06 or later.",
+        "errorText": null,
+        "contraRows": "0"
+      },
+      "futureAttempt": {
+        "date": "2026-11-19",
+        "closed": false,
+        "error": "The reversal date cannot be in the future",
+        "contraRows": "0"
+      },
+      "pastAttempt": {
+        "date": "2026-11-11",
+        "closed": true,
+        "error": null
+      },
+      "contraRow": "11 Nov 2026 REV-OBS649B-PAY-PRTS1 Reversal R 4 000,00 RECORDED",
+      "paymentRowAfterReversal": "06 Nov 2026 OBS649B-PAY-PRTS1 Payment R 4 000,00 REVERSED",
+      "contraTransactionDate": "2026-11-11",
+      "contraDateMatches": true,
+      "eq2": {
+        "cashbook": "261500.00",
+        "sumClient": "261500.00",
+        "diff": "0.00",
+        "out": " cashbook  | sum_client_ledgers | eq2_difference \n-----------+--------------------+----------------\n 261500.00 |          261500.00 |           0.00\n(1 row)\n\n"
+      }
+    },
+    "c": {
+      "asAt": {
+        "beforeOriginal 2026-11-05": "20000.00",
+        "between 2026-11-09": "16000.00",
+        "today 2026-11-16": "20000.00"
+      },
+      "ledgerDetailHasRawReversal": false,
+      "ledgerDetailShowsReasonFirmSide": false,
+      "statementText": "Run Report\nExport CSV\nExport PDF\n\nOpening Balance\n\nR 16 000,00\n\nClosing Balance\n\nR 20 000,00\n\nTotal Debits\n\nR 0,00\n\nTotal Credits\n\nR 4 000,00\n\nTransaction Count\n\n1\n\nDATE\tREFERENCE\tTYPE\tDESCRIPTION\tDEBIT\tCREDIT\tRUNNING BALANCE\n2026-11-11\tREV-OBS649B-PAY-PRTS1\tREVERSAL\tOBS649B reason B — payee bank rejected the EFT PRTS1\tR 0,00\tR 4 000,00\tR 20 000,00\n\nPage 1 of 1\n\nPrevious\nNext\nCommand Palette\n\nSearch pages and settings",
+      "statementHasRawREVERSAL": true,
+      "statementShowsReason": true
+    },
+    "d": {
+      "portalRowsWithReasonText": "0",
+      "portalReversalDescriptions": "Reversal — REV-DEP/QC/mwjpngjb6fce || Reversal — REV-OBS649B-PAY-PRTS1",
+      "firmSideContraDescriptions": "OBS649B reason A — bank returned the cheque PRTS1 || OBS649B reason B — payee bank rejected the EFT PRTS1"
+    },
+    "bonusMoroka": {
+      "balanceBefore": "241500.00",
+      "reverseOffered": true,
+      "submit": {
+        "closed": true,
+        "error": null
+      },
+      "bobApproveResult": "Approve Reject Insufficient trust balance for Moroka Family Trust mwjpngjb6fce. Available: R241 500,00, Requested: R250 000,00",
+      "contraRowAfter": "16 Nov 2026 REV-DEP/MOROKA/mwjpngjb6fce Reversal R 250 000,00 AWAITING APPROVAL Approve Reject",
+      "originalRowAfter": "16 Nov 2026 DEP/MOROKA/mwjpngjb6fce Deposit R 250 000,00 RECORDED Reverse",
+      "balanceAfter": "241500.00"
+    },
+    "final": {
+      "overviewCards": "Trust Balance\nR 261 500,00\n\nMathebula & Partners Trust Account cashbook balance\n\nClient ledgers R 261 500,00\n(agrees with the cashbook)\n\nActive Clients\n2\nClients with trust balances\nPending Approvals\n4\nTransactions awaiting approval\nNeeds attention\nReconciliation\nNot yet reconciled\nNo reconciliation records found",
+      "clientLedgerRows": [
+        {
+          "clientId": "37b362f9-357f-416a-8c78-f5c8518ea2b4",
+          "cells": [
+            "Moroka Family Trust mwjpngjb6fce",
+            "R 241 500,00",
+            "R 250 000,00",
+            "R 0,00",
+            "R 8 500,00",
+            "R 0,00",
+            "16 Nov 2026"
+          ]
+        },
+        {
+          "clientId": "f51c155a-7175-4c18-9ce5-0f983d4729fe",
+          "cells": [
+            "Apex Holdings mwjpngjb6fce",
+            "R 20 000,00",
+            "R 20 000,00",
+            "R 0,00",
+            "R 0,00",
+            "R 0,00",
+            "11 Nov 2026"
+          ]
+        },
+        {
+          "clientId": "72ada531-9256-446f-b8ce-bac4be1faac0",
+          "cells": [
+            "QuickCollect Services mwjpngjb6fce",
+            "R 0,00",
+            "R 0,00",
+            "R 0,00",
+            "R 0,00",
+            "R 0,00",
+            "16 Nov 2026"
+          ]
+        }
+      ],
+      "sqlClientBalances": "                name                |  balance  \n------------------------------------+-----------\n Apex Holdings mwjpngjb6fce         |  20000.00\n Moroka Family Trust mwjpngjb6fce   | 241500.00\n QuickCollect Services mwjpngjb6fce |      0.00\n(3 rows)\n\n",
+      "eq2": {
+        "cashbook": "261500.00",
+        "sumClient": "261500.00",
+        "diff": "0.00",
+        "out": " cashbook  | sum_client_ledgers | eq2_difference \n-----------+--------------------+----------------\n 261500.00 |          261500.00 |           0.00\n(1 row)\n\n"
+      }
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "dates": {
+    "today": "2026-11-16",
+    "deposit": "2026-11-01",
+    "payment": "2026-11-06",
+    "beforeOriginal": "2026-11-05",
+    "between": "2026-11-09",
+    "reversal": "2026-11-11",
+    "future": "2026-11-19",
+    "beforePaymentDate": "2026-11-04"
+  },
+  "refs": {
+    "apexDeposit": "OBS649B-DEP-PRTS1",
+    "apexPayment": "OBS649B-PAY-PRTS1"
+  },
+  "reasons": {
+    "A": "OBS649B reason A — bank returned the cheque PRTS1",
+    "B": "OBS649B reason B — payee bank rejected the EFT PRTS1",
+    "bonus": "OBS649B reason bonus — Moroka deposit PRTS1"
+  },
+  "ids": {
+    "qc": "72ada531-9256-446f-b8ce-bac4be1faac0",
+    "moroka": "37b362f9-357f-416a-8c78-f5c8518ea2b4",
+    "apex": "f51c155a-7175-4c18-9ce5-0f983d4729fe",
+    "qcDeposit": "06862ff6-33e4-495d-bb5b-bb610348deaa",
+    "morokaDeposit": "ccc6839d-37f6-4cb3-a7cc-4d411f9b465f",
+    "qcContra": "7ec784af-26de-46cc-9e9e-382df8b4d6c3",
+    "apexDeposit": "8efe8f70-b392-44eb-86e7-a5895a9516ff",
+    "apexPayment": "3aae6c83-d613-493e-a608-9fe8503cc9cf",
+    "apexContra": "bde8f441-719f-49f4-b1b0-eb39dad79c63",
+    "morokaContra": "a44714eb-6b89-40b8-89a8-c585cf1f6c91"
+  },
+  "baselineEq2": {
+    "cashbook": "286500.00",
+    "sumClient": "286500.00",
+    "diff": "0.00",
+    "out": " cashbook  | sum_client_ledgers | eq2_difference \n-----------+--------------------+----------------\n 286500.00 |          286500.00 |           0.00\n(1 row)\n\n"
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "commit": "3285515df",
-  "command": "cd backend && bash scripts/verify.sh -q  (./mvnw verify under caffeinate, worktree-epic-646A)",
+  "commit": "91e65c33d",
+  "command": "cd backend && bash scripts/verify.sh -q  (./mvnw verify under caffeinate, worktree-epic-649B)",
   "exit": 0,
-  "ts": "2026-11-16T18:04:05Z",
-  "summary": "PR #1788 (646A) head 3285515df — 6917 <testcase> / 0 failures / 0 errors / 26 skipped — 18 min (baseline 6890 after 649A: +28 new, -1 deleted)"
+  "ts": "2026-11-16T20:19:44Z",
+  "summary": "PR #1789 (649B) head 91e65c33d — 6945 <testcase> / 0 failures / 0 errors / 26 skipped — 25 min (baseline 6917 after 646A: +28)"
 }

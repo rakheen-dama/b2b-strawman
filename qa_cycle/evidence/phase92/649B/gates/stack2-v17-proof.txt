@@ -1,0 +1,33 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-649B @ 91e65c33d
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-649B
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-649B/compose/docker-compose.e2e.yml logs -f backend frontend
+== worktree V17 sha1: b6b2acb99337d6ef8eb4e86c1bd8f13ddf1cedc3
+== jar V17 sha1 (docker cp /app/app.jar): b6b2acb99337d6ef8eb4e86c1bd8f13ddf1cedc3 -> IDENTICAL
+== jar contains (new in 649B): io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionTypeLabels.class
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |          description           | success |        installed_on        
+---------+--------------------------------+---------+----------------------------
+ 17      | phase92 trust reversal contra  | t       | 2026-11-16 20:30:21.755592
+ 16      | phase92 trust posting core     | t       | 2026-11-16 20:30:21.735965
+ 15      | g89 trust investment cancelled | t       | 2026-11-16 20:30:21.730135
+ 14      | g89 contains trust data        | t       | 2026-11-16 20:30:21.722921
+(4 rows)
+
+             conname             |                                                                                                                                                                                                                                               pg_get_constraintdef                                                                                                                                                                                                                                               
+---------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ chk_trust_txn_amount_positive   | CHECK ((amount > (0)::numeric))
+ chk_trust_txn_customer_required | CHECK ((((transaction_type)::text = 'INTEREST_LPFF'::text) OR (customer_id IS NOT NULL)))
+ chk_trust_txn_posting           | CHECK ((((posted_at IS NULL) AND ((status)::text = ANY ((ARRAY['AWAITING_APPROVAL'::character varying, 'REJECTED'::character varying])::text[])) AND (cashbook_effect = (0)::numeric) AND (ledger_effect = (0)::numeric)) OR ((posted_at IS NOT NULL) AND ((status)::text = ANY ((ARRAY['RECORDED'::character varying, 'APPROVED'::character varying, 'REVERSED'::character varying])::text[])) AND (abs(ledger_effect) = amount) AND ((cashbook_effect = ledger_effect) OR (cashbook_effect = (0)::numeric)))))
+ chk_trust_txn_status            | CHECK (((status)::text = ANY ((ARRAY['RECORDED'::character varying, 'AWAITING_APPROVAL'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'REVERSED'::character varying])::text[])))
+ chk_trust_txn_type              | CHECK (((transaction_type)::text = ANY ((ARRAY['DEPOSIT'::character varying, 'PAYMENT'::character varying, 'TRANSFER_IN'::character varying, 'TRANSFER_OUT'::character varying, 'FEE_TRANSFER'::character varying, 'REFUND'::character varying, 'REVERSAL'::character varying])::text[])))
+(5 rows)
+
+Check constraints:
+    "chk_trust_txn_amount_positive" CHECK (amount > 0::numeric)
+    "chk_trust_txn_customer_required" CHECK (transaction_type::text = 'INTEREST_LPFF'::text OR customer_id IS NOT NULL)
+    "chk_trust_txn_posting" CHECK (posted_at IS NULL AND (status::text = ANY (ARRAY['AWAITING_APPROVAL'::character varying, 'REJECTED'::character varying]::text[])) AND cashbook_effect = 0::numeric AND ledger_effect = 0::numeric OR posted_at IS NOT NULL AND (status::text = ANY (ARRAY['RECORDED'::character varying, 'APPROVED'::character varying, 'REVERSED'::character varying]::text[])) AND abs(ledger_effect) = amount AND (cashbook_effect = ledger_effect OR cashbook_effect = 0::numeric))
+    "chk_trust_txn_status" CHECK (status::text = ANY (ARRAY['RECORDED'::character varying, 'AWAITING_APPROVAL'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'REVERSED'::character varying]::text[]))
+    "chk_trust_txn_type" CHECK (transaction_type::text = ANY (ARRAY['DEPOSIT'::character varying, 'PAYMENT'::character varying, 'TRANSFER_IN'::character varying, 'TRANSFER_OUT'::character varying, 'FEE_TRANSFER'::character varying, 'REFUND'::character varying, 'REVERSAL'::character varying]::text[]))
+Foreign-key constraints:

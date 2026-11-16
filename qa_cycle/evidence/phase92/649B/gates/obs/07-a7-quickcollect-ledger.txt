@@ -1,0 +1,104 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Notifications
+BA
+
+Bob Admin
+
+bob@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Client ledgers
+Client ledger
+Search
+⌘K
+20 unread notifications
+20
+e2e-test-org
+BA
+Back to Client Ledgers
+QuickCollect Services mwjpngjb6fce
+
+Client ledger detail and transaction history
+
+Trust Balance
+
+R 0,00
+
+Ledger totals
+
+Deposits
+R 0,00
+−
+less
+Payments
+R 0,00
+−
+less
+Fee transfers
+R 0,00
+−
+less
+Refunds
+R 0,00
+=Balance
+R 0,00
+Generate Statement
+Select a date range and generate a PDF statement for this client
+From
+To
+Print Statement
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Transfer In
+Transfer Out
+Fee Transfer
+Refund
+Interest Credit
+Interest LPFF
+Reversal
+From
+To
+Transaction History
+3 transactions found
+Date	Reference	Type	Amount	Status	Running Balance
+16 Nov 2026	REV-DEP/QC/mwjpngjb6fce	Reversal	
+R 45 000,00	APPROVED	—
+16 Nov 2026	INV-Nedbank-CALL-1122334455	Payment	
+R 30 000,00	AWAITING APPROVAL	—
+16 Nov 2026	DEP/QC/mwjpngjb6fce	Deposit	
+R 45 000,00	REVERSED	—
+Command Palette
+
+Search pages and settings

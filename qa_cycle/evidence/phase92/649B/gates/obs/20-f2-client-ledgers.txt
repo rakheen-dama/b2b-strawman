@@ -1,0 +1,54 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Notifications
+BA
+
+Bob Admin
+
+bob@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Client ledgers
+Search
+⌘K
+21 unread notifications
+21
+e2e-test-org
+BA
+Client Ledgers
+
+Trust account balances by client
+
+Non-zero balances only
+Search
+Client Balances
+3 clients found
+Client Name	Trust Balance	Total Deposits	Total Payments	Total Fee Transfers	Total Refunds	Last Transaction
+Moroka Family Trust mwjpngjb6fce	R 241 500,00	R 250 000,00	R 0,00	R 8 500,00	R 0,00	16 Nov 2026
+Apex Holdings mwjpngjb6fce	R 20 000,00	R 20 000,00	R 0,00	R 0,00	R 0,00	11 Nov 2026
+QuickCollect Services mwjpngjb6fce	R 0,00	R 0,00	R 0,00	R 0,00	R 0,00	16 Nov 2026
+Command Palette
+
+Search pages and settings

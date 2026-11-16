@@ -1,0 +1,138 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Notifications
+BA
+
+Bob Admin
+
+bob@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Search
+⌘K
+21 unread notifications
+21
+e2e-test-org
+BA
+Trust Accounting
+
+LSSA-compliant trust account management for client funds
+
+Client Ledgers
+Record Transaction
+Trust Balance
+R 261 500,00
+
+Mathebula & Partners Trust Account cashbook balance
+
+Client ledgers R 261 500,00
+(agrees with the cashbook)
+
+Active Clients
+2
+Clients with trust balances
+Pending Approvals
+4
+Transactions awaiting approval
+Needs attention
+Reconciliation
+Not yet reconciled
+No reconciliation records found
+4 transactions awaiting approval
+Trust balance trend
+Month-end balances as currently recorded (ZAR)
+Cashbook
+Client ledgers
+Dec 2025
+Jan 2026
+Feb 2026
+Mar 2026
+Apr 2026
+May 2026
+Jun 2026
+Jul 2026
+Aug 2026
+Sep 2026
+Oct 2026
+Nov 2026
+R 0
+R 70 k
+R 140 k
+R 210 k
+R 280 k
+
+Trust balance trend: Cashbook from R 0,00 in Dec 2025 to R 261 500,00 in Nov 2026 (to date), peak R 261 500,00 in Nov 2026 (to date); Client ledgers from R 0,00 in Dec 2025 to R 261 500,00 in Nov 2026 (to date), peak R 261 500,00 in Nov 2026 (to date).
+
+View as table
+Recent Transactions
+Last 10 transactions across all client ledgers
+View all
+Recent trust transactions
+DATE	REFERENCE	TYPE	AMOUNT	STATUS
+16 Nov 2026	
+DEP/MOROKA/mwjpngjb6fce
+	Deposit	
+R 250 000,00	RECORDED
+16 Nov 2026	
+FEE/MOROKA/mwjpngjb6fce
+	Fee Transfer	
+R 8 500,00	APPROVED
+16 Nov 2026	
+INV-Standard Bank-FD-0987654321
+	Payment	
+R 200 000,00	AWAITING APPROVAL
+16 Nov 2026	
+INV-Nedbank-CALL-1122334455
+	Payment	
+R 30 000,00	AWAITING APPROVAL
+16 Nov 2026	
+FEE/SIPHO/mwjpngjb6fce
+	Fee Transfer	
+R 500,00	AWAITING APPROVAL
+16 Nov 2026	
+REV-DEP/QC/mwjpngjb6fce
+	Reversal	
+R 45 000,00	APPROVED
+16 Nov 2026	
+DEP/QC/mwjpngjb6fce
+	Deposit	
+R 45 000,00	REVERSED
+16 Nov 2026	
+REV-DEP/MOROKA/mwjpngjb6fce
+	Reversal	
+R 250 000,00	AWAITING APPROVAL
+11 Nov 2026	
+REV-OBS649B-PAY-PRTS1
+	Reversal	
+R 4 000,00	RECORDED
+06 Nov 2026	
+OBS649B-PAY-PRTS1
+	Payment	
+R 4 000,00	REVERSED
+Command Palette
+
+Search pages and settings
+
+R 0

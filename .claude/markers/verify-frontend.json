@@ -1,7 +1,7 @@
 {
-  "commit": "3285515df",
-  "command": "cd frontend && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm build && pnpm test  (node v20.11.1, worktree-epic-646A)",
+  "commit": "91e65c33d",
+  "command": "cd frontend && rm -rf .next && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build  (node v20.11.1, worktree-epic-649B)",
   "exit": 0,
-  "ts": "2026-11-16T18:06:55Z",
-  "summary": "PR #1788 (646A) head 3285515df — lint 0 errors, typecheck/format/build OK, vitest 478 files / 4363 passed / 2 skipped (baseline 4363/2)"
+  "ts": "2026-11-16T19:59:54Z",
+  "summary": "PR #1789 (649B) head 91e65c33d — lint 0 errors (78 pre-existing warnings), typecheck/format/build OK, vitest 478 files / 4366 passed / 2 skipped (baseline 4363/2, +3)"
 }

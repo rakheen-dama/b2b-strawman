@@ -1,0 +1,11 @@
+           name            | transaction_type |  status  | amount  | ledger_effect | cashbook_effect | posted 
+---------------------------+------------------+----------+---------+---------------+-----------------+--------
+ Sipho Ndlovu mwjpxcxcf3a2 | DEPOSIT          | RECORDED | 5000.00 |       5000.00 |         5000.00 | t
+ Sipho Ndlovu mwjpxcxcf3a2 | PAYMENT          | APPROVED | 1250.00 |      -1250.00 |        -1250.00 | t
+(2 rows)
+
+ cashbook | sum_client | eq2_diff 
+----------+------------+----------
+  3750.00 |    3750.00 |     0.00
+(1 row)
+

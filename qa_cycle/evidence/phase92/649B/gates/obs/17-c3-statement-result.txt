@@ -1,0 +1,89 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Reports
+Client Ledger Statement
+Search
+⌘K
+14 unread notifications
+14
+e2e-test-org
+AO
+Back to Reports
+Client Ledger Statement
+
+Per-client transaction history with running balance.
+
+Trust Account
+*
+Mathebula & Partners Trust Account ••••6789
+Client
+*
+Apex Holdings mwjpngjb6fce
+From Date
+*
+To Date
+*
+Run Report
+Export CSV
+Export PDF
+
+Opening Balance
+
+R 16 000,00
+
+Closing Balance
+
+R 20 000,00
+
+Total Debits
+
+R 0,00
+
+Total Credits
+
+R 4 000,00
+
+Transaction Count
+
+1
+
+DATE	REFERENCE	TYPE	DESCRIPTION	DEBIT	CREDIT	RUNNING BALANCE
+2026-11-11	REV-OBS649B-PAY-PRTS1	REVERSAL	OBS649B reason B — payee bank rejected the EFT PRTS1	R 0,00	R 4 000,00	R 20 000,00
+
+Page 1 of 1
+
+Previous
+Next
+Command Palette
+
+Search pages and settings

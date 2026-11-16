@@ -1,0 +1,221 @@
+-- 649B OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-16T20:26:30.980Z
+
+== [baseline: customers]
+select id, name from tenant_7d218705360b.customers order by created_at
+                  id                  |                name                
+--------------------------------------+------------------------------------
+ 2c1b2166-ae84-48a7-a1e8-adbfd03fa2ce | Acme Corp
+ 73fc92e8-1f8a-4c25-bdce-152b77e8d624 | Sipho Ndlovu mwjpngjb6fce
+ f51c155a-7175-4c18-9ce5-0f983d4729fe | Apex Holdings mwjpngjb6fce
+ 37b362f9-357f-416a-8c78-f5c8518ea2b4 | Moroka Family Trust mwjpngjb6fce
+ 72ada531-9256-446f-b8ce-bac4be1faac0 | QuickCollect Services mwjpngjb6fce
+(5 rows)
+
+
+== [baseline: all trust transactions]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, approved_by, reference, description
+       from tenant_7d218705360b.trust_transactions where true order by created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect | reversal_of | reversed_by_id |             approved_by              |            reference            |                    description                    
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+-------------+----------------+--------------------------------------+---------------------------------+---------------------------------------------------
+ ccc6839d-37f6-4cb3-a7cc-4d411f9b465f | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-16       | t      | CLIENT |     250000.00 |       250000.00 |             |                |                                      | DEP/MOROKA/mwjpngjb6fce         | Estate Late Peter Moroka — transfer from executor
+ 06862ff6-33e4-495d-bb5b-bb610348deaa | DEPOSIT          |  45000.00 | RECORDED          | 2026-11-16       | t      | CLIENT |      45000.00 |        45000.00 |             |                |                                      | DEP/QC/mwjpngjb6fce             | QuickCollect Services — collections deposit
+ 47c6339c-9de1-456c-b7a9-ff2d3ad7c583 | FEE_TRANSFER     |   8500.00 | APPROVED          | 2026-11-16       | t      | CLIENT |      -8500.00 |        -8500.00 |             |                | 24726f45-bbfd-415e-8f0c-c78e9357022a | FEE/MOROKA/mwjpngjb6fce         | 
+ a4bb29c3-0a33-40a8-81ef-c123656bd9d1 | PAYMENT          | 200000.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 |             |                |                                      | INV-Standard Bank-FD-0987654321 | Trust investment placement at Standard Bank
+ 0d7f50d7-3333-4c52-b676-763a56fca4e7 | PAYMENT          |  30000.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 |             |                |                                      | INV-Nedbank-CALL-1122334455     | Trust investment placement at Nedbank
+ ef6d1514-ab87-41ea-9e5e-7a22ec2708b6 | FEE_TRANSFER     |    500.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 |             |                |                                      | FEE/SIPHO/mwjpngjb6fce          | 
+(6 rows)
+
+
+== [baseline EQ-2]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) as cashbook,
+            (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as sum_client_ledgers,
+            (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null)
+          - (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as eq2_difference
+ cashbook  | sum_client_ledgers | eq2_difference 
+-----------+--------------------+----------------
+ 286500.00 |          286500.00 |           0.00
+(1 row)
+
+
+== [a: after Alice submits (pending contra)]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, approved_by, reference, description
+       from tenant_7d218705360b.trust_transactions where id in ('06862ff6-33e4-495d-bb5b-bb610348deaa','7ec784af-26de-46cc-9e9e-382df8b4d6c3') order by created_at
+                  id                  | transaction_type |  amount  |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |             reversal_of              | reversed_by_id | approved_by |        reference        |                    description                    
+--------------------------------------+------------------+----------+-------------------+------------------+--------+--------+---------------+-----------------+--------------------------------------+----------------+-------------+-------------------------+---------------------------------------------------
+ 06862ff6-33e4-495d-bb5b-bb610348deaa | DEPOSIT          | 45000.00 | RECORDED          | 2026-11-16       | t      | CLIENT |      45000.00 |        45000.00 |                                      |                |             | DEP/QC/mwjpngjb6fce     | QuickCollect Services — collections deposit
+ 7ec784af-26de-46cc-9e9e-382df8b4d6c3 | REVERSAL         | 45000.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 | 06862ff6-33e4-495d-bb5b-bb610348deaa |                |             | REV-DEP/QC/mwjpngjb6fce | OBS649B reason A — bank returned the cheque PRTS1
+(2 rows)
+
+
+== [a: pending EQ-2]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) as cashbook,
+            (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as sum_client_ledgers,
+            (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null)
+          - (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as eq2_difference
+ cashbook  | sum_client_ledgers | eq2_difference 
+-----------+--------------------+----------------
+ 286500.00 |          286500.00 |           0.00
+(1 row)
+
+
+== [a: after Bob approves]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, approved_by, reference, description
+       from tenant_7d218705360b.trust_transactions where id in ('06862ff6-33e4-495d-bb5b-bb610348deaa','7ec784af-26de-46cc-9e9e-382df8b4d6c3') order by created_at
+                  id                  | transaction_type |  amount  |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |             reversal_of              |            reversed_by_id            |             approved_by              |        reference        |                    description                    
+--------------------------------------+------------------+----------+----------+------------------+--------+--------+---------------+-----------------+--------------------------------------+--------------------------------------+--------------------------------------+-------------------------+---------------------------------------------------
+ 06862ff6-33e4-495d-bb5b-bb610348deaa | DEPOSIT          | 45000.00 | REVERSED | 2026-11-16       | t      | CLIENT |      45000.00 |        45000.00 |                                      | 7ec784af-26de-46cc-9e9e-382df8b4d6c3 |                                      | DEP/QC/mwjpngjb6fce     | QuickCollect Services — collections deposit
+ 7ec784af-26de-46cc-9e9e-382df8b4d6c3 | REVERSAL         | 45000.00 | APPROVED | 2026-11-16       | t      | CLIENT |     -45000.00 |       -45000.00 | 06862ff6-33e4-495d-bb5b-bb610348deaa |                                      | 24726f45-bbfd-415e-8f0c-c78e9357022a | REV-DEP/QC/mwjpngjb6fce | OBS649B reason A — bank returned the cheque PRTS1
+(2 rows)
+
+
+== [a: approved EQ-2]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) as cashbook,
+            (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as sum_client_ledgers,
+            (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null)
+          - (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as eq2_difference
+ cashbook  | sum_client_ledgers | eq2_difference 
+-----------+--------------------+----------------
+ 241500.00 |          241500.00 |           0.00
+(1 row)
+
+
+== [b: Apex deposit + payment (approved)]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, approved_by, reference, description
+       from tenant_7d218705360b.trust_transactions where id in ('8efe8f70-b392-44eb-86e7-a5895a9516ff','3aae6c83-d613-493e-a608-9fe8503cc9cf') order by created_at
+                  id                  | transaction_type |  amount  |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect | reversal_of | reversed_by_id |             approved_by              |     reference     |         description          
+--------------------------------------+------------------+----------+----------+------------------+--------+--------+---------------+-----------------+-------------+----------------+--------------------------------------+-------------------+------------------------------
+ 8efe8f70-b392-44eb-86e7-a5895a9516ff | DEPOSIT          | 20000.00 | RECORDED | 2026-11-01       | t      | CLIENT |      20000.00 |        20000.00 |             |                |                                      | OBS649B-DEP-PRTS1 | OBS 649B funding deposit
+ 3aae6c83-d613-493e-a608-9fe8503cc9cf | PAYMENT          |  4000.00 | APPROVED | 2026-11-06       | t      | CLIENT |      -4000.00 |        -4000.00 |             |                | 24726f45-bbfd-415e-8f0c-c78e9357022a | OBS649B-PAY-PRTS1 | OBS 649B payee: Deeds Office
+(2 rows)
+
+
+== [b: Apex payment + contra]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, approved_by, reference, description
+       from tenant_7d218705360b.trust_transactions where id in ('3aae6c83-d613-493e-a608-9fe8503cc9cf','bde8f441-719f-49f4-b1b0-eb39dad79c63') order by created_at
+                  id                  | transaction_type | amount  |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |             reversal_of              |            reversed_by_id            |             approved_by              |       reference       |                     description                      
+--------------------------------------+------------------+---------+----------+------------------+--------+--------+---------------+-----------------+--------------------------------------+--------------------------------------+--------------------------------------+-----------------------+------------------------------------------------------
+ 3aae6c83-d613-493e-a608-9fe8503cc9cf | PAYMENT          | 4000.00 | REVERSED | 2026-11-06       | t      | CLIENT |      -4000.00 |        -4000.00 |                                      | bde8f441-719f-49f4-b1b0-eb39dad79c63 | 24726f45-bbfd-415e-8f0c-c78e9357022a | OBS649B-PAY-PRTS1     | OBS 649B payee: Deeds Office
+ bde8f441-719f-49f4-b1b0-eb39dad79c63 | REVERSAL         | 4000.00 | RECORDED | 2026-11-11       | t      | CLIENT |       4000.00 |         4000.00 | 3aae6c83-d613-493e-a608-9fe8503cc9cf |                                      |                                      | REV-OBS649B-PAY-PRTS1 | OBS649B reason B — payee bank rejected the EFT PRTS1
+(2 rows)
+
+
+== [b: after payment reversal EQ-2]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) as cashbook,
+            (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as sum_client_ledgers,
+            (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null)
+          - (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as eq2_difference
+ cashbook  | sum_client_ledgers | eq2_difference 
+-----------+--------------------+----------------
+ 261500.00 |          261500.00 |           0.00
+(1 row)
+
+
+== [c: Apex as-at client balances]
+select 'beforeOriginal' as point, date '2026-11-05' as as_at, coalesce(sum(ledger_effect),0) as client_balance from tenant_7d218705360b.trust_transactions where ledger='CLIENT' and posted_at is not null and customer_id='f51c155a-7175-4c18-9ce5-0f983d4729fe' and transaction_date <= '2026-11-05' union all select 'between' as point, date '2026-11-09' as as_at, coalesce(sum(ledger_effect),0) as client_balance from tenant_7d218705360b.trust_transactions where ledger='CLIENT' and posted_at is not null and customer_id='f51c155a-7175-4c18-9ce5-0f983d4729fe' and transaction_date <= '2026-11-09' union all select 'today' as point, date '2026-11-16' as as_at, coalesce(sum(ledger_effect),0) as client_balance from tenant_7d218705360b.trust_transactions where ledger='CLIENT' and posted_at is not null and customer_id='f51c155a-7175-4c18-9ce5-0f983d4729fe' and transaction_date <= '2026-11-16'
+     point      |   as_at    | client_balance 
+----------------+------------+----------------
+ beforeOriginal | 2026-11-05 |       20000.00
+ between        | 2026-11-09 |       16000.00
+ today          | 2026-11-16 |       20000.00
+(3 rows)
+
+
+== [c: statement-equivalent rows (posted, CLIENT, Apex, between..today)]
+select transaction_date, transaction_type, status, ledger_effect, reference, description from tenant_7d218705360b.trust_transactions where ledger='CLIENT' and posted_at is not null and customer_id='f51c155a-7175-4c18-9ce5-0f983d4729fe' and transaction_date between '2026-11-09' and '2026-11-16' order by transaction_date, created_at
+ transaction_date | transaction_type |  status  | ledger_effect |       reference       |                     description                      
+------------------+------------------+----------+---------------+-----------------------+------------------------------------------------------
+ 2026-11-11       | REVERSAL         | RECORDED |       4000.00 | REV-OBS649B-PAY-PRTS1 | OBS649B reason B — payee bank rejected the EFT PRTS1
+(1 row)
+
+
+== [d: portal read model for QuickCollect + Apex]
+select customer_id, transaction_type, amount, running_balance, transaction_date, reference, description from portal.portal_trust_transaction where customer_id in ('72ada531-9256-446f-b8ce-bac4be1faac0','f51c155a-7175-4c18-9ce5-0f983d4729fe') order by customer_id, transaction_date, recorded_at
+             customer_id              | transaction_type |  amount  | running_balance | transaction_date |        reference        |                 description                 
+--------------------------------------+------------------+----------+-----------------+------------------+-------------------------+---------------------------------------------
+ 72ada531-9256-446f-b8ce-bac4be1faac0 | DEPOSIT          | 45000.00 |        45000.00 | 2026-11-16       | DEP/QC/mwjpngjb6fce     | QuickCollect Services — collections deposit
+ 72ada531-9256-446f-b8ce-bac4be1faac0 | REVERSAL         | 45000.00 |            0.00 | 2026-11-16       | REV-DEP/QC/mwjpngjb6fce | Reversal — REV-DEP/QC/mwjpngjb6fce
+ f51c155a-7175-4c18-9ce5-0f983d4729fe | DEPOSIT          | 20000.00 |        20000.00 | 2026-11-01       | OBS649B-DEP-PRTS1       | OBS 649B funding deposit
+ f51c155a-7175-4c18-9ce5-0f983d4729fe | PAYMENT          |  4000.00 |        16000.00 | 2026-11-06       | OBS649B-PAY-PRTS1       | OBS 649B payee: Deeds Office
+ f51c155a-7175-4c18-9ce5-0f983d4729fe | REVERSAL         |  4000.00 |        20000.00 | 2026-11-11       | REV-OBS649B-PAY-PRTS1   | Reversal — REV-OBS649B-PAY-PRTS1
+(5 rows)
+
+
+== [d: portal balances]
+select customer_id, matter_id, current_balance, last_transaction_at from portal.portal_trust_balance where customer_id in ('72ada531-9256-446f-b8ce-bac4be1faac0','f51c155a-7175-4c18-9ce5-0f983d4729fe')
+             customer_id              |              matter_id               | current_balance |      last_transaction_at      
+--------------------------------------+--------------------------------------+-----------------+-------------------------------
+ 72ada531-9256-446f-b8ce-bac4be1faac0 | f0c15383-6d09-4408-850c-2f68f9905135 |            0.00 | 2026-11-16 20:26:41.052472+00
+ f51c155a-7175-4c18-9ce5-0f983d4729fe | 4d0be146-2778-4cc6-923f-9182190f6dc6 |        20000.00 | 2026-11-16 20:28:50.224136+00
+(2 rows)
+
+
+== [bonus: Moroka deposit + refused contra]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, approved_by, reference, description
+       from tenant_7d218705360b.trust_transactions where id in ('ccc6839d-37f6-4cb3-a7cc-4d411f9b465f','a44714eb-6b89-40b8-89a8-c585cf1f6c91') order by created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |             reversal_of              | reversed_by_id | approved_by |          reference          |                    description                    
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+--------------------------------------+----------------+-------------+-----------------------------+---------------------------------------------------
+ ccc6839d-37f6-4cb3-a7cc-4d411f9b465f | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-16       | t      | CLIENT |     250000.00 |       250000.00 |                                      |                |             | DEP/MOROKA/mwjpngjb6fce     | Estate Late Peter Moroka — transfer from executor
+ a44714eb-6b89-40b8-89a8-c585cf1f6c91 | REVERSAL         | 250000.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 | ccc6839d-37f6-4cb3-a7cc-4d411f9b465f |                |             | REV-DEP/MOROKA/mwjpngjb6fce | OBS649B reason bonus — Moroka deposit PRTS1
+(2 rows)
+
+
+== [final: per-client derived balances]
+select c.name, coalesce(sum(t.ledger_effect),0) as balance from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.customers c on c.id=t.customer_id where t.ledger='CLIENT' and t.posted_at is not null group by c.name order by c.name
+                name                |  balance  
+------------------------------------+-----------
+ Apex Holdings mwjpngjb6fce         |  20000.00
+ Moroka Family Trust mwjpngjb6fce   | 241500.00
+ QuickCollect Services mwjpngjb6fce |      0.00
+(3 rows)
+
+
+== [final EQ-2]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) as cashbook,
+            (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as sum_client_ledgers,
+            (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null)
+          - (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as eq2_difference
+ cashbook  | sum_client_ledgers | eq2_difference 
+-----------+--------------------+----------------
+ 261500.00 |          261500.00 |           0.00
+(1 row)
+
+
+== [final: invariants (all expected 0)]
+select
+      (select count(*) from tenant_7d218705360b.trust_transactions where status in ('RECORDED','APPROVED','REVERSED') and posted_at is null) as posted_status_unposted,
+      (select count(*) from tenant_7d218705360b.trust_transactions where status in ('AWAITING_APPROVAL','REJECTED') and (posted_at is not null or ledger_effect<>0 or cashbook_effect<>0)) as pending_with_effect,
+      (select count(*) from tenant_7d218705360b.trust_transactions where posted_at is not null and (abs(ledger_effect)<>amount or (cashbook_effect<>ledger_effect and cashbook_effect<>0))) as bad_shape,
+      (select count(*) from tenant_7d218705360b.trust_transactions o where o.status='REVERSED' and (o.reversed_by_id is null or not exists (select 1 from tenant_7d218705360b.trust_transactions r where r.id=o.reversed_by_id and r.reversal_of=o.id and r.posted_at is not null))) as reversed_without_posted_contra,
+      (select count(*) from tenant_7d218705360b.trust_transactions r join tenant_7d218705360b.trust_transactions o on o.id=r.reversal_of where r.posted_at is not null and (r.ledger_effect <> -o.ledger_effect or r.cashbook_effect <> -o.cashbook_effect)) as contra_not_negation,
+      (select count(*) from tenant_7d218705360b.trust_transactions r join tenant_7d218705360b.trust_transactions o on o.id=r.reversal_of where r.posted_at is not null and (o.ledger_effect + r.ledger_effect) <> 0) as pair_not_net_zero
+ posted_status_unposted | pending_with_effect | bad_shape | reversed_without_posted_contra | contra_not_negation | pair_not_net_zero 
+------------------------+---------------------+-----------+--------------------------------+---------------------+-------------------
+                      0 |                   0 |         0 |                              0 |                   0 |                 0
+(1 row)
+
+
+== [final: all trust transactions]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, approved_by, reference, description
+       from tenant_7d218705360b.trust_transactions where true order by created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |             reversal_of              |            reversed_by_id            |             approved_by              |            reference            |                     description                      
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------------------------+------------------------------------------------------
+ ccc6839d-37f6-4cb3-a7cc-4d411f9b465f | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-16       | t      | CLIENT |     250000.00 |       250000.00 |                                      |                                      |                                      | DEP/MOROKA/mwjpngjb6fce         | Estate Late Peter Moroka — transfer from executor
+ 06862ff6-33e4-495d-bb5b-bb610348deaa | DEPOSIT          |  45000.00 | REVERSED          | 2026-11-16       | t      | CLIENT |      45000.00 |        45000.00 |                                      | 7ec784af-26de-46cc-9e9e-382df8b4d6c3 |                                      | DEP/QC/mwjpngjb6fce             | QuickCollect Services — collections deposit
+ 47c6339c-9de1-456c-b7a9-ff2d3ad7c583 | FEE_TRANSFER     |   8500.00 | APPROVED          | 2026-11-16       | t      | CLIENT |      -8500.00 |        -8500.00 |                                      |                                      | 24726f45-bbfd-415e-8f0c-c78e9357022a | FEE/MOROKA/mwjpngjb6fce         | 
+ a4bb29c3-0a33-40a8-81ef-c123656bd9d1 | PAYMENT          | 200000.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 |                                      |                                      |                                      | INV-Standard Bank-FD-0987654321 | Trust investment placement at Standard Bank
+ 0d7f50d7-3333-4c52-b676-763a56fca4e7 | PAYMENT          |  30000.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 |                                      |                                      |                                      | INV-Nedbank-CALL-1122334455     | Trust investment placement at Nedbank
+ ef6d1514-ab87-41ea-9e5e-7a22ec2708b6 | FEE_TRANSFER     |    500.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 |                                      |                                      |                                      | FEE/SIPHO/mwjpngjb6fce          | 
+ 7ec784af-26de-46cc-9e9e-382df8b4d6c3 | REVERSAL         |  45000.00 | APPROVED          | 2026-11-16       | t      | CLIENT |     -45000.00 |       -45000.00 | 06862ff6-33e4-495d-bb5b-bb610348deaa |                                      | 24726f45-bbfd-415e-8f0c-c78e9357022a | REV-DEP/QC/mwjpngjb6fce         | OBS649B reason A — bank returned the cheque PRTS1
+ 8efe8f70-b392-44eb-86e7-a5895a9516ff | DEPOSIT          |  20000.00 | RECORDED          | 2026-11-01       | t      | CLIENT |      20000.00 |        20000.00 |                                      |                                      |                                      | OBS649B-DEP-PRTS1               | OBS 649B funding deposit
+ 3aae6c83-d613-493e-a608-9fe8503cc9cf | PAYMENT          |   4000.00 | REVERSED          | 2026-11-06       | t      | CLIENT |      -4000.00 |        -4000.00 |                                      | bde8f441-719f-49f4-b1b0-eb39dad79c63 | 24726f45-bbfd-415e-8f0c-c78e9357022a | OBS649B-PAY-PRTS1               | OBS 649B payee: Deeds Office
+ bde8f441-719f-49f4-b1b0-eb39dad79c63 | REVERSAL         |   4000.00 | RECORDED          | 2026-11-11       | t      | CLIENT |       4000.00 |         4000.00 | 3aae6c83-d613-493e-a608-9fe8503cc9cf |                                      |                                      | REV-OBS649B-PAY-PRTS1           | OBS649B reason B — payee bank rejected the EFT PRTS1
+ a44714eb-6b89-40b8-89a8-c585cf1f6c91 | REVERSAL         | 250000.00 | AWAITING_APPROVAL | 2026-11-16       | f      | CLIENT |          0.00 |            0.00 | ccc6839d-37f6-4cb3-a7cc-4d411f9b465f |                                      |                                      | REV-DEP/MOROKA/mwjpngjb6fce     | OBS649B reason bonus — Moroka deposit PRTS1
+(11 rows)
+

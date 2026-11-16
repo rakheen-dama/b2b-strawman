@@ -1,0 +1,97 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Notifications
+BA
+
+Bob Admin
+
+bob@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Transactions
+Search
+⌘K
+20 unread notifications
+20
+e2e-test-org
+BA
+Transactions
+
+Trust account transaction history
+
+Record Transaction
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Transfer In
+Transfer Out
+Fee Transfer
+Refund
+Interest Credit
+Interest LPFF
+Reversal
+From
+To
+Client ID
+Matter ID
+Transaction History
+7 transactions found
+Date	Reference	Type	Amount	Status	Actions
+16 Nov 2026	DEP/MOROKA/mwjpngjb6fce	Deposit	
+R 250 000,00	RECORDED	
+Reverse
+16 Nov 2026	FEE/MOROKA/mwjpngjb6fce	Fee Transfer	
+R 8 500,00	APPROVED	
+Reverse
+16 Nov 2026	INV-Standard Bank-FD-0987654321	Payment	
+R 200 000,00	AWAITING APPROVAL	
+Approve
+Reject
+
+16 Nov 2026	INV-Nedbank-CALL-1122334455	Payment	
+R 30 000,00	AWAITING APPROVAL	
+Approve
+Reject
+
+16 Nov 2026	FEE/SIPHO/mwjpngjb6fce	Fee Transfer	
+R 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+16 Nov 2026	REV-DEP/QC/mwjpngjb6fce	Reversal	
+R 45 000,00	APPROVED	
+16 Nov 2026	DEP/QC/mwjpngjb6fce	Deposit	
+R 45 000,00	REVERSED	
+Command Palette
+
+Search pages and settings

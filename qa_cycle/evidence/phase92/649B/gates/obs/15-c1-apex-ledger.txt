@@ -1,0 +1,105 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Client ledgers
+Client ledger
+Search
+⌘K
+14 unread notifications
+14
+e2e-test-org
+AO
+Back to Client Ledgers
+Apex Holdings mwjpngjb6fce
+
+Client ledger detail and transaction history
+
+Trust Balance
+
+R 20 000,00
+
+Ledger totals
+
+Deposits
+R 20 000,00
+−
+less
+Payments
+R 0,00
+−
+less
+Fee transfers
+R 0,00
+−
+less
+Refunds
+R 0,00
+=Balance
+R 20 000,00
+Generate Statement
+Select a date range and generate a PDF statement for this client
+From
+To
+Print Statement
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Transfer In
+Transfer Out
+Fee Transfer
+Refund
+Interest Credit
+Interest LPFF
+Reversal
+From
+To
+Transaction History
+3 transactions found
+Date	Reference	Type	Amount	Status	Running Balance
+11 Nov 2026	REV-OBS649B-PAY-PRTS1	Reversal	
+R 4 000,00	RECORDED	—
+06 Nov 2026	OBS649B-PAY-PRTS1	Payment	
+R 4 000,00	REVERSED	—
+01 Nov 2026	OBS649B-DEP-PRTS1	Deposit	
+R 20 000,00	RECORDED	R 20 000,00
+Command Palette
+
+Search pages and settings

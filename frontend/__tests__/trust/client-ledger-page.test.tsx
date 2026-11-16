@@ -116,7 +116,6 @@ function setupDefaultMocks() {
     totalRefunds: 1000,
     totalTransfersIn: 0,
     totalTransfersOut: 0,
-    totalInterestCredited: 0,
     lastTransactionDate: "2026-11-02",
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-11-02T00:00:00Z",
@@ -283,7 +282,7 @@ describe("Client ledger card — totals reconcile to the balance (G89-F13)", () 
     return screen.getByTestId(`ledger-total-${key}`).querySelector("dd")?.textContent ?? null;
   }
 
-  it("shows Deposits + Interest − Payments − Fee transfers − Refunds = Balance", async () => {
+  it("shows Deposits − Payments − Fee transfers − Refunds = Balance", async () => {
     setupDefaultMocks();
     mockFetchClientHistory.mockResolvedValue({
       content: [],
@@ -298,7 +297,7 @@ describe("Client ledger card — totals reconcile to the balance (G89-F13)", () 
     const summary = screen.getByTestId("client-summary");
     expect(within(summary).getByTestId("ledger-totals-breakdown")).toBeInTheDocument();
     expect(total("deposits")).toBe(formatCurrency(10000, "ZAR"));
-    expect(total("interest")).toBe(formatCurrency(0, "ZAR"));
+    expect(screen.queryByTestId("ledger-total-interest")).toBeNull();
     expect(total("payments")).toBe(formatCurrency(0, "ZAR"));
     expect(total("fee-transfers")).toBe(formatCurrency(1150, "ZAR"));
     expect(total("refunds")).toBe(formatCurrency(1000, "ZAR"));
@@ -317,7 +316,6 @@ describe("Client ledger card — totals reconcile to the balance (G89-F13)", () 
       clientName: "Moroka Holdings",
       balance: 600,
       totalDeposits: 1000,
-      totalInterestCredited: 0,
       totalTransfersIn: 200,
       totalPayments: 0,
       totalFeeTransfers: 0,

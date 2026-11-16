@@ -48,6 +48,7 @@ Rules that bind every slice: read `backend/CLAUDE.md` and `frontend/CLAUDE.md` f
 > **Founder rulings, 2026-11-16 (these close #1 and #2 and confirm the cut):**
 > - **The 35-slice cut stands** (25 certain backend verifies); the 25-file bound is not raised for the phase.
 > - **#1 — 646A: size bound waived for this slice only.** One PR, built and reviewed as five commits by file family; one verify. If the real file count goes well past the ≈ 48 estimate, the builder stops and reports.
+> - **#1 addendum (2026-11-16, after the 646A scout counted 78 files: 31 main, 1 migration, 40 tests, 6 FE): waiver EXTENDED to ≈ 80 files.** Same shape — one PR, five commits by file family, one full verify, commit-by-commit review. Variant B (keep old repository sum methods) and the two-slice split are rejected. The builder stops again only if the count goes well past 80.
 > - **#2 — 651A: size bound waived for this slice only** (≈ 29 files, 16 whole-file deletions). One PR, one verify.
 > - Wherever this file says 646A or 651A "awaits a size ruling", read these rulings instead. #3–#14 remain at their proposed defaults, unruled.
 

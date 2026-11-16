@@ -1652,6 +1652,32 @@ class ActivityMessageFormatterTest {
         .isEqualTo("Alice approved the trust transaction");
   }
 
+  /**
+   * Phase 92 646E (D5): a type beyond the original six reads its noun from the registry label
+   * ({@code TrustTransactionType.label()}); an unknown code still reads "trust transaction" and
+   * never throws (D4).
+   */
+  @Test
+  void computedTrustApprovalForARegistryOnlyType_readsTheRegistryLabel() {
+    assertThat(
+            message(
+                "trust_unident_fund_pay.approved",
+                "trust_transaction",
+                d("transaction_type", "UNIDENT_FUND_PAY", "amount", "2500.00")))
+        .isEqualTo(
+            "Alice approved the unidentified deposit paid to the Fund of R2" + NB + "500,00");
+    assertThat(
+            message(
+                "trust_fund_sweep.rejected",
+                "trust_transaction",
+                d("transaction_type", "FUND_SWEEP")))
+        .isEqualTo("Alice rejected the interest paid to the Legal Practitioners' Fidelity Fund");
+    assertThat(
+            message(
+                "trust_mystery.approved", "trust_transaction", d("transaction_type", "NOT_A_TYPE")))
+        .isEqualTo("Alice approved the trust transaction");
+  }
+
   /** Every key the publishers emit today that can reach the matter feed / Home, plus neighbours. */
   private static final List<String[]> INVENTORY_KEYS =
       List.of(

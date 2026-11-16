@@ -1,6 +1,6 @@
 # ADR-230: Double-Entry vs Single-Entry Trust Ledger
 
-**Status**: Accepted
+**Status**: Accepted (amended by [ADR-378](ADR-378-ledger-balances-derived-from-posting-effects.md))
 
 **Context**:
 

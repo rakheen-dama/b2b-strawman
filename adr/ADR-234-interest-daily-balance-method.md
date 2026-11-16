@@ -1,6 +1,6 @@
 # ADR-234: Interest Calculation — Daily Balance Method
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-375](ADR-375-statement-driven-trust-interest.md)
 
 **Context**:
 

@@ -1,6 +1,6 @@
 # ADR-235: Statutory vs Configurable LPFF Share for Section 86(4) Investments
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-375](ADR-375-statement-driven-trust-interest.md)
 
 **Context**:
 

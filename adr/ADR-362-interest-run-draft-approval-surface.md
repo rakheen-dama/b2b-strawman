@@ -1,6 +1,6 @@
 # ADR-362: Interest runs are persisted drafts with a second-member approval surface
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-375](ADR-375-statement-driven-trust-interest.md)
 
 **Context**:
 

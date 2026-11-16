@@ -1,6 +1,6 @@
 # ADR-366: Interest credits allocated to matters
 
-**Status**: Accepted (amends [ADR-234](ADR-234-interest-daily-balance-method.md))
+**Status**: Superseded by [ADR-375](ADR-375-statement-driven-trust-interest.md)
 
 **Context**:
 

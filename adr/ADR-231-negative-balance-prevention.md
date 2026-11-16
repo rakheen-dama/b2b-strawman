@@ -1,6 +1,6 @@
 # ADR-231: Negative Balance Prevention Strategy
 
-**Status**: Accepted
+**Status**: Accepted (amended by [ADR-378](ADR-378-ledger-balances-derived-from-posting-effects.md))
 
 **Context**:
 
